@@ -37,19 +37,13 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
-import javax.swing.text.DefaultEditorKit;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.core.CslEditorKit;
-import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
-import org.netbeans.modules.php.editor.indent.FmtOptions;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -102,6 +96,18 @@ public class ToggleBlockCommentActionTest extends PHPCodeCompletionTestBase {
 
     public void testIsue207153()throws Exception {
         testInFile("testfiles/actions/issue207153.php");
+    }
+
+    public void testIssue213706_01()throws Exception {
+        testInFile("testfiles/actions/issue213706_01.php");
+    }
+
+    public void testIssue213706_02()throws Exception {
+        testInFile("testfiles/actions/issue213706_02.php");
+    }
+
+    public void testIssue213706_03()throws Exception {
+        testInFile("testfiles/actions/issue213706_03.php");
     }
 
     protected void testInFile(String file) throws Exception {

@@ -96,6 +96,17 @@ public final class CndFileUtils {
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        } else {
+            tmpDirFile = new File(System.getProperty("netbeans.user")); //NOI18N
+            tmpDirFile = FileUtil.normalizeFile(tmpDirFile);
+            tmpDirFo = FileUtil.toFileObject(tmpDirFile);
+            if (tmpDirFo != null) {
+                try {
+                    afileFileSystem = tmpDirFo.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         if (afileFileSystem == null) {
             afileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
@@ -115,11 +126,11 @@ public final class CndFileUtils {
             absPath = absPath.toUpperCase();
             caseSenstive = !new File(absPath).exists();
             tmpFile.delete();
-            FileUtil.addFileChangeListener(FSL);
         } catch (IOException ex) {
             caseSenstive = Utilities.isUnix() && !Utilities.isMac();
         }
         TRUE_CASE_SENSITIVE_SYSTEM = caseSenstive;
+        FileUtil.addFileChangeListener(FSL);
     }
 
     public static boolean isSystemCaseSensitive() {
@@ -672,12 +683,17 @@ public final class CndFileUtils {
         }
 
         private void cleanCachesImpl(String file) {
-            if (TRACE_EXTERNAL_CHANGES) {
-                System.err.println("clean cache for " + file);
+            String absPath = changeStringCaseIfNeeded(getLocalFileSystem(), file);
+            if (isWindows) {
+                absPath = absPath.replace('/', '\\');
             }
-            getFilesMap(getLocalFileSystem()).remove(file);
+            Flags removed = getFilesMap(getLocalFileSystem()).remove(absPath);
+            if (TRACE_EXTERNAL_CHANGES) {
+                System.err.printf("clean cache for %s->%s\n", absPath, removed);
+            }            
             for (CndFileExistSensitiveCache cache : getCaches()) {
                 cache.invalidateFile(file);
+                cache.invalidateFile(absPath);
             }
         }
     }

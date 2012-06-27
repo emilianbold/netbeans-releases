@@ -38,16 +38,18 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.awt.Cursor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -73,6 +75,8 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
+    private ProjectConfigurationProvider<?> pcp;
+    private ConfigChangeListener chl = null;
 
     public JFXProjectOpenedHook(final Lookup lkp) {
         Parameters.notNull("lkp", lkp); //NOI18N
@@ -86,6 +90,17 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     protected synchronized void projectOpened() {
         if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.OPEN);
+
+            //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
+            //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
+            Preferences prefs = ProjectUtils.getPreferences(prj, Project.class, false);
+            prefs.put("issue214819_fx_enabled", "true"); //NOI18N
+
+            pcp = prj.getLookup().lookup(ProjectConfigurationProvider.class);
+            assert pcp != null;
+            LOGGER.log(Level.INFO, "FX PCP: " + pcp.toString());
+            chl = new ConfigChangeListener(prj);
+            pcp.addPropertyChangeListener(chl);
 
             // create Default JavaFX platform if necessary
             // #205341
@@ -158,6 +173,11 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     protected void projectClosed() {
         if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.CLOSE);
+            assert pcp != null;
+            if(chl != null) {
+                pcp.removePropertyChangeListener(chl);
+                chl = null;
+            }
         }
     }
 
@@ -248,4 +268,22 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         });
     }
 
+    private static final class ConfigChangeListener implements PropertyChangeListener {
+        private final Project prj;
+        public ConfigChangeListener(Project p) {
+            this.prj = p;
+        }
+        @Override public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getPropertyName().equals(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE)) {
+                LOGGER.log(Level.FINE, "FX config change: " + evt.toString()); // NOI18N
+                final Lookup look = prj.getLookup();
+                JFXProjectProperties props = JFXProjectProperties.getInstanceIfExists(look);
+                if(props == null || props.hasPreloaderInAnyConfig()) {
+                    JFXProjectProperties.cleanup(look);
+                    props = JFXProjectProperties.getInstance(look);
+                    props.updatePreloaderDependencies();
+                }
+            }
+        }
+    }
 }

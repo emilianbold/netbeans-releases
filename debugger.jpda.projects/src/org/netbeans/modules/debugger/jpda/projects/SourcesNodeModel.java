@@ -91,8 +91,10 @@ public class SourcesNodeModel implements NodeModel {
                 if (p != null) {
                     ProjectInformation pi = (ProjectInformation) p.getLookup ().
                         lookup (ProjectInformation.class);
-                    return java.text.MessageFormat.format(NbBundle.getBundle(SourcesNodeModel.class).getString(
-                            "CTL_SourcesModel_Column_Name_ProjectSources"), new Object [] { f.getPath(), pi.getDisplayName() });
+                    if (pi != null) {
+                        return java.text.MessageFormat.format(NbBundle.getBundle(SourcesNodeModel.class).getString(
+                                "CTL_SourcesModel_Column_Name_ProjectSources"), new Object [] { f.getPath(), pi.getDisplayName() });
+                    }
                 }
                 return java.text.MessageFormat.format(NbBundle.getBundle(SourcesNodeModel.class).getString(
                         "CTL_SourcesModel_Column_Name_LibrarySources"), new Object [] { f.getPath() });

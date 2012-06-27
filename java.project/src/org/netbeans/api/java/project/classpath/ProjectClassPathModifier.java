@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  * An API for project's classpaths modification.
@@ -194,7 +195,7 @@ public class ProjectClassPathModifier {
                 }
                 final FileObject fo;
                 if (urlToAdd.isAbsolute()) {
-                    fo = FileUtil.toFileObject(new File(urlToAdd));
+                    fo = FileUtil.toFileObject(Utilities.toFile(urlToAdd));
                 } else {
                     File f = PropertyUtils.resolveFile(projectFolderFile, LibrariesSupport.convertURIToFilePath(urlToAdd));
                     fo = FileUtil.toFileObject(f);

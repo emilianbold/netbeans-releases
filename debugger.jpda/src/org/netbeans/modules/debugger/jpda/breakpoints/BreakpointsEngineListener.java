@@ -53,6 +53,7 @@ import java.util.Iterator;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -391,10 +392,14 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 }
             }
         }
-        logger.finer("BreakpointsEngineListener: created impl "+bpi+" for "+b);
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer("BreakpointsEngineListener: created impl "+bpi+" for "+b);
+        }
         if (bpiToRemove != null) {
             bpiToRemove.remove();
-            logger.finer("BreakpointsEngineListener: removed impl "+bpiToRemove);
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("BreakpointsEngineListener: removed impl "+bpiToRemove);
+            }
         }
     }
 
@@ -404,7 +409,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
             impl = breakpointToImpl.remove(b);
             if (impl == null) return false;
         }
-        logger.finer("BreakpointsEngineListener: removed impl "+impl+" for "+b);
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer("BreakpointsEngineListener: removed impl "+impl+" for "+b);
+        }
         impl.remove ();
         return true;
     }

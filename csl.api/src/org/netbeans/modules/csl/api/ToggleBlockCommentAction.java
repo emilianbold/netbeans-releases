@@ -634,8 +634,7 @@ public class ToggleBlockCommentAction extends BaseAction {
 
     private void comment(BaseDocument doc, int startOffset, int lineCount, String lineCommentString) throws BadLocationException {
         for (int offset = startOffset; lineCount > 0; lineCount--) {
-            int firstNonWhitePos = Utilities.getRowFirstNonWhite(doc, offset);
-            doc.insertString(firstNonWhitePos, lineCommentString, null); // NOI18N
+            doc.insertString(offset, lineCommentString, null); // NOI18N
             offset = Utilities.getRowStart(doc, offset, +1);
         }
     }

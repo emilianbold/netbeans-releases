@@ -1822,8 +1822,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 }
 :
 (
-    (   ( (LITERAL_constexpr | LITERAL_static)? LITERAL_auto declarator[declOther, 0]) => 
-        (LITERAL_constexpr | LITERAL_static)?
+    (   ( (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
+        (LITERAL_constexpr | LITERAL_static | literal_inline | LITERAL_friend)*
     |
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
@@ -2552,7 +2552,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 		)
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
+        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
@@ -3835,7 +3835,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             )
         )+
 
-        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false, false])?)?
+        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => (GREATERTHAN)+ lazy_expression[false, false])?)?
     ;
 
 protected
@@ -3947,6 +3947,11 @@ balanceSquaresInExpression
 protected    
 balanceLessthanGreaterthanInExpression
     :
+        // IZ 167547 : 100% CPU core usage with C++ project.
+        // This is check for too complicated tecmplates.
+        // If template depth is more then 20 we just skip it.
+        (templateDepthChecker[20]) => templateDepthChecker[20]
+    |
         // IZ 140991 : Parser "hangs" on Loki.
         // This is predicate for fast T<T<...>> pattern recognition.
         (simpleBalanceLessthanGreaterthanInExpression)=> simpleBalanceLessthanGreaterthanInExpression
@@ -4190,8 +4195,8 @@ optor_simple_tokclass
 	 SHIFTLEFT|SHIFTRIGHT|
 	 ASSIGNEQUAL|TIMESEQUAL|DIVIDEEQUAL|MODEQUAL|PLUSEQUAL|MINUSEQUAL|
 	 SHIFTLEFTEQUAL|SHIFTRIGHTEQUAL|BITWISEANDEQUAL|BITWISEXOREQUAL|BITWISEOREQUAL|
-	 EQUAL|NOTEQUAL|LESSTHAN|GREATERTHAN|LESSTHANOREQUALTO|GREATERTHANOREQUALTO|OR|AND|
-	 PLUSPLUS|MINUSMINUS|COMMA|POINTERTO|POINTERTOMBR
+         EQUAL|NOTEQUAL|LESSTHAN|GREATERTHAN (options {greedy=true;}: GREATERTHAN)?|LESSTHANOREQUALTO|GREATERTHANOREQUALTO|OR|AND|
+	 PLUSPLUS|MINUSMINUS|COMMA|POINTERTO|POINTERTOMBR         
 	)
 	;
 

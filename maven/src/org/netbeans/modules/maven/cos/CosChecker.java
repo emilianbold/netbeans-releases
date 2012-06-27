@@ -97,6 +97,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -227,7 +230,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     }
 
 
-    private boolean checkRunMainClass(RunConfig config) {
+    private boolean checkRunMainClass(final RunConfig config) {
         String actionName = config.getActionName();
         //compile on save stuff
         if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
@@ -254,7 +257,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 }
 
                 Map<String, Object> params = new HashMap<String, Object>();
-                params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
+                params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName() + "/CoS");
                 String proppath = config.getProperties().get("exec.workingdir"); //NOI18N
                 if (proppath != null) {
                     params.put(JavaRunner.PROP_WORK_DIR, FileUtil.normalizeFile(new File(proppath)));
@@ -306,7 +309,16 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     if (supported) {
                         try {
                             collectStartupArgs(config, params);
-                            JavaRunner.execute(action2Quick, params);
+                            ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
+                            warnCoSInOutput(tsk, config);
+                            tsk.addTaskListener(new TaskListener() {
+
+                                @Override
+                                public void taskFinished(Task task) {
+                                    warnTestCoS(config);
+                                }
+                            });
+                            
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         } catch (UnsupportedOperationException ex) {
@@ -324,7 +336,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         return true;
     }
 
-    private boolean checkRunTest(RunConfig config) {
+    private boolean checkRunTest(final RunConfig config) {
         String actionName = config.getActionName();
         if (!(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
@@ -432,7 +444,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             
             List<String> jvmProps = new ArrayList<String>();
             Set<String> jvmPropNames = new HashSet<String>();
-            params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
+            params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName() + "/CoS");
             String dir = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                     Constants.PLUGIN_SUREFIRE, "basedir", "test"); //NOI18N
             //TODO there's another property named workingDirectory that overrides  basedir.
@@ -513,7 +525,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     File root = FileUtilities.resolveFilePath(base, add);
                     if (root != null) {
                         try {
-                            URL url = root.toURI().toURL();
+                            URL url = Utilities.toURI(root).toURL();
                             if (FileUtil.isArchiveFile(url)) {
                                 url = FileUtil.getArchiveRoot(url);
                             }
@@ -540,7 +552,15 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             if (supported) {
                 try {
                     collectStartupArgs(config, params);
-                    ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
+                    final ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
+                    warnCoSInOutput(tsk, config);
+                    tsk.addTaskListener(new TaskListener() {
+
+                        @Override
+                        public void taskFinished(Task task) {
+                            warnTestCoS(config);
+                        }
+                    });
                 //TODO listen on result of execution
                 //if failed, tweak the timestamps to force a non-CoS build
                 //next time around.
@@ -826,13 +846,13 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     }
 
     @StaticResource private static final String SUGGESTION = "org/netbeans/modules/maven/resources/suggestion.png";
-    private static boolean warned;
+    private static boolean warnedNoCoS;
     @Messages({
         "CosChecker.no_test_cos.title=Not using Compile on Save",
         "CosChecker.no_test_cos.details=Compile on Save mode can speed up single test execution for many projects."
     })
     private static void warnNoTestCoS(RunConfig config) {
-        if (warned) {
+        if (warnedNoCoS) {
             return;
         }
         final Project project = config.getProject();
@@ -841,10 +861,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         }
         final Notification n = NotificationDisplayer.getDefault().notify(CosChecker_no_test_cos_title(), ImageUtilities.loadImageIcon(SUGGESTION, true), CosChecker_no_test_cos_details(), new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
-                CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
-                if (prv != null) {
-                    prv.showCustomizer(ModelHandle2.PANEL_COMPILE);
-                }
+                showCompilePanel(project);
             }
         }, NotificationDisplayer.Priority.LOW);
         RequestProcessor.getDefault().post(new Runnable() {
@@ -852,9 +869,69 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 n.clear();
             }
         }, 15 * 1000);
-        warned = true;
+        warnedNoCoS = true;
+    }
+    
+    private static boolean warnedCoS;
+    @Messages({
+        "CosChecker.test_cos.title=Using Compile on Save (CoS)",
+        "CosChecker.test_cos.details=CoS mode is not executing tests through Maven. Disable if causing problems."
+    })
+    private static void warnTestCoS(RunConfig config) {
+        if (warnedCoS) {
+            return;
+        }
+        final Project project = config.getProject();
+        if (project == null) {
+            return;
+        }
+        final Notification n = NotificationDisplayer.getDefault().notify(CosChecker_test_cos_title(), ImageUtilities.loadImageIcon(SUGGESTION, true), CosChecker_test_cos_details(), new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                showCompilePanel(project);
+            }
+
+        }, NotificationDisplayer.Priority.LOW);
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override public void run() {
+                n.clear();
+            }
+        }, 15 * 1000);
+        warnedCoS = true;
+    }
+    
+    private static void showCompilePanel(Project project) {
+        CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
+        if (prv != null) {
+            prv.showCustomizer(ModelHandle2.PANEL_COMPILE);
+        }
     }
 
+    //this method has a problem of timing. There is the executor's task running in some other thread and
+    // and we try to write to it. In reality for short lived executions it either prints first or never at all.
+    // I suppose that for long running tasks we cannot guarantee the position at which the warning appears.
+    private void warnCoSInOutput(final ExecutorTask tsk, final RunConfig config) throws IOException {
+        return;
+//        if (IOColorPrint.isSupported(tsk.getInputOutput())) {
+//            IOColorPrint.print(tsk.getInputOutput(), "NetBeans: Compile on Save Execution is not done through Maven.", null, false, Color.GRAY);
+//            IOColorPrint.print(tsk.getInputOutput(), "Disable if it's causing problems.\n", new OutputListener() {
+//
+//                @Override
+//                public void outputLineSelected(OutputEvent ev) {
+//                }
+//                
+//                @Override
+//                public void outputLineAction(OutputEvent ev) {
+//                    showCompilePanel(config.getProject());
+//                }
+//
+//                @Override
+//                public void outputLineCleared(OutputEvent ev) {
+//                }
+//            }, false, Color.BLUE.darker());
+//        }
+    }
+
+    
     @ProjectServiceProvider(service=ProjectOpenedHook.class, projectType="org-netbeans-modules-maven")
     public static class CosPOH extends ProjectOpenedHook {
 

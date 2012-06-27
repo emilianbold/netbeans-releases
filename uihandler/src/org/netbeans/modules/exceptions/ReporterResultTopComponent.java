@@ -65,6 +65,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -342,7 +343,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         }finally{
             fw.close();
         }
-        return tmpFile.toURI().toURL();
+        return Utilities.toURI(tmpFile).toURL();
     }
 
     private static void handleIOException(URL url, IOException ex) {

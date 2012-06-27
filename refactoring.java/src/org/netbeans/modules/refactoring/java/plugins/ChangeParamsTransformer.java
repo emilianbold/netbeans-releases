@@ -189,7 +189,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     if (p.equals(element)) {
                         List<ExpressionTree> paramList = getNewCompatibleArguments();
                         MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
-                                make.Identifier(element),
+                                constructorRefactoring? make.Identifier("this") : make.Identifier(element),
                                 paramList);
                         TypeMirror methodReturnType = element.getReturnType();
                         boolean hasReturn = true;
@@ -225,7 +225,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     
     @Override
     public Tree visitNewClass(NewClassTree tree, Element p) {
-        if (constructorRefactoring && !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
+        if (constructorRefactoring && !compatible && !workingCopy.getTreeUtilities().isSynthetic(getCurrentPath())) {
             ExecutableElement constructor = (ExecutableElement) p;
             final Trees trees = workingCopy.getTrees();
             Element el = trees.getElement(getCurrentPath());

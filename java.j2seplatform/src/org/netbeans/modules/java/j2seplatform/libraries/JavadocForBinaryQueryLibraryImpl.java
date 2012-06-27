@@ -122,21 +122,23 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
             
         }
 
-        boolean isNormalizedURL = isNormalizedURL(b);
-        for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
-            for (Library lib : mgr.getLibraries()) {
-                if (!lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
-                    continue;
-                }
-                for (URL entry : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
-                    URL normalizedEntry;
-                    if (isNormalizedURL) {
-                        normalizedEntry = getNormalizedURL(entry);
-                    } else {
-                        normalizedEntry = entry;
+        final Boolean isNormalizedURL = isNormalizedURL(b);
+        if (isNormalizedURL != null) {
+            for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
+                for (Library lib : mgr.getLibraries()) {
+                    if (!lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
+                        continue;
                     }
-                    if (b.equals(normalizedEntry)) {
-                        return new R(lib);
+                    for (URL entry : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
+                        URL normalizedEntry;
+                        if (isNormalizedURL == Boolean.TRUE) {
+                            normalizedEntry = getNormalizedURL(entry);
+                        } else {
+                            normalizedEntry = entry;
+                        }
+                        if (b.equals(normalizedEntry)) {
+                            return new R(lib);
+                        }
                     }
                 }
             }
@@ -146,7 +148,11 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
 
     private URL getNormalizedURL (URL url) {
         //URL is already nornalized, return it
-        if (isNormalizedURL(url)) {
+        final Boolean isNormalized = isNormalizedURL(url);
+        if (isNormalized == null) {
+            return null;
+        }
+        if (isNormalized == Boolean.TRUE) {
             return url;
         }
         //Todo: Should listen on the LibrariesManager and cleanup cache
@@ -173,9 +179,13 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
      * @param URL url
      * @return true if  the URL is normal
      */
-    private static boolean isNormalizedURL (URL url) {
+    private static Boolean isNormalizedURL (URL url) {
         if ("jar".equals(url.getProtocol())) { //NOI18N
             url = FileUtil.getArchiveFile(url);
+            if (url == null) {
+                //Broken URL
+                return null;
+            }
         }
         return "file".equals(url.getProtocol());    //NOI18N
     }

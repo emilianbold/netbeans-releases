@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -192,11 +191,6 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
      */
     private Rectangle2D.Float allocation = new Rectangle2D.Float();
     
-    /**
-     * Extra height of 1/3 of viewport's window height added to the real views' allocation.
-     */
-    private float extraVirtualHeight;
-
     private final TabExpander tabExpander;
     
     /**
@@ -261,7 +255,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 if (axis == View.X_AXIS) {
                     span = preferredWidth;
                 } else { // Y_AXIS
-                    span = preferredHeight + extraVirtualHeight;
+                    span = preferredHeight + op.getExtraVirtualHeight();
                 }
                 return span;
             } finally {
@@ -391,7 +385,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
 
     public double getY(int pViewIndex) {
-        return children.startVisualOffset(pViewIndex);
+        return children.getY(pViewIndex);
     }
 
     @Override
@@ -438,9 +432,13 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
 
     @Override
     public void setSize(float width, float height) {
-        // Currently the view is not designed to possibly shrink/extend its size according to the given size.
+        // This method is called outside of VH lock
         if (width != allocation.width) {
             op.markAllocationWidthChange(width);
+            // Update visible dimension early to avoid a visible "double resizing"
+            if (SwingUtilities.isEventDispatchThread()) {
+                op.updateVisibleDimension(false);
+            }
         }
         if (height != allocation.height) {
             op.markAllocationHeightChange(height);
@@ -452,7 +450,12 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     void setAllocationHeight(float height) {
+        if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
+            ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DV.setAllocationHeight(): " + // NOI18N
+                    allocation.height + " to " + height + '\n'); // NOI18N
+        }
         allocation.height = height;
+        updateBaseY();
     }
 
     /**
@@ -472,29 +475,6 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
      */
     public Rectangle2D.Double getAllocationCopy() {
         return new Rectangle2D.Double(0d, 0d, allocation.getWidth(), allocation.getHeight());
-    }
-
-    void updateExtraVirtualHeight(JViewport viewport) {
-        float extraHeight;
-        if (!DISABLE_END_VIRTUAL_SPACE && viewport != null) {
-            // Compute same value regardless whether there's a horizontal scrollbar visible or not.
-            // This is important to avoid flickering caused by vertical shrinking of the text component
-            // so that vertical scrollbar appears and then appearing of a horizontal scrollbar
-            // (in case there was a line nearly wide as viewport's width without Vscrollbar)\
-            // which in turn causes viewport's height to decrease and triggers recomputation again etc.
-            extraHeight = viewport.getExtentSize().height;
-            Component parent;
-            if ((parent = viewport.getParent()) instanceof JScrollPane) {
-                JScrollBar hScrollBar = ((JScrollPane)parent).getHorizontalScrollBar();
-                if (hScrollBar != null && hScrollBar.isVisible()) {
-                    extraHeight += hScrollBar.getHeight();
-                }
-            }
-            extraHeight /= 3; // One third of viewport's extent height
-        } else {
-            extraHeight = 0f;
-        }
-        this.extraVirtualHeight = extraHeight;
     }
 
     /**
@@ -539,11 +519,23 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         float newHeight = children.height();
         if (newHeight != preferredHeight) {
             preferredHeight = newHeight;
+            updateBaseY();
             return true;
         }
         return false;
     }
 
+    void updateBaseY() {
+        float baseY = op.asTextField
+                ? (float) Math.floor((allocation.height - preferredHeight) / 2.0f)
+                : 0f;
+        if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
+            ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DV.updateBaseY(): " + // NOI18N
+                    children.getBaseY() + " to " + baseY + ", asTextField=" + op.asTextField + '\n'); // NOI18N
+        }
+        children.setBaseY(baseY);
+    }
+            
     void markChildrenLayoutInvalid() {
         if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
             ViewUtils.log(ViewHierarchyImpl.SPAN_LOG,
@@ -603,27 +595,27 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     @Override
-    public void setParent(View parent) {
+    public void setParent(final View parent) {
         if (parent != null) {
             Container container = parent.getContainer();
             assert (container != null) : "Container is null"; // NOI18N
             assert (container instanceof JTextComponent) : "Container not JTextComponent"; // NOI18N
-            JTextComponent tc = (JTextComponent) container;
+            final JTextComponent tc = (JTextComponent) container;
             pMutex = (PriorityMutex) tc.getClientProperty(MUTEX_CLIENT_PROPERTY);
             if (pMutex == null) {
                 pMutex = new PriorityMutex();
                 tc.putClientProperty(MUTEX_CLIENT_PROPERTY, pMutex);
             }
-            if (lock()) {
-                try {
-                    super.setParent(parent);
+
+            runReadLockTransaction(new Runnable() {
+                @Override
+                public void run() {
+                    DocumentView.super.setParent(parent);
                     textComponent = tc;
                     op.parentViewSet();
                     updateStartEndOffsets();
-                } finally {
-                    unlock();
                 }
-            }
+            });
 
         } else { // Setting null parent
             // Set the textComponent to null under mutex
@@ -768,11 +760,11 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 unlock();
             }
         }
-        return 0d;
+        return children.getBaseY();
     }
     
     public double modelToYNeedsLock(int offset) {
-        double retY = 0d;
+        double retY = children.getBaseY();
         op.checkViewsInited();
         if (op.isActive()) {
             int index = getViewIndex(offset);
@@ -795,7 +787,7 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                 // covers only portion of document since offset == 0 should be covered and it falls into first pView.
                 int lastOffset = 0;
                 int lastIndex = 0;
-                double lastY = 0d;
+                double lastY = children.getBaseY();
                 for (int i = 0; i < offsets.length; i++) {
                     int offset = offsets[i];
                     double y;
@@ -937,6 +929,10 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         }
     }
     
+    boolean isDocumentLocked() {
+        return DocumentUtilities.isReadLocked(getDocument());
+    }
+    
     void checkMutexAcquiredIfLogging() {
         if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
             checkLocked();
@@ -1000,12 +996,15 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
                     // Check TextLayoutCache correctness - all PVs with non-null children
                     // should be present in the cache
                     TextLayoutCache tlCache = op.getTextLayoutCache();
-                    for (int i = 0; i < viewCount; i++) {
-                        ParagraphView pView = getParagraphView(i);
-                        boolean inCache = tlCache.contains(pView);
-                        if (!pView.isChildrenNull() != inCache) {
-                            err = "Invalid TLCaching for pView[" + i + "]: inCache=" + inCache; // NOI18N
-                            break;
+                    err = tlCache.findIntegrityError();
+                    if (err == null) {
+                        for (int i = 0; i < viewCount; i++) {
+                            ParagraphView pView = getParagraphView(i);
+                            boolean inCache = tlCache.contains(pView);
+                            if (!pView.isChildrenNull() != inCache) {
+                                err = "Invalid TLCaching for pView[" + i + "]: inCache=" + inCache; // NOI18N
+                                break;
+                            }
                         }
                     }
                 }

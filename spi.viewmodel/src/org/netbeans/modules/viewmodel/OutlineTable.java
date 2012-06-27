@@ -576,6 +576,7 @@ ExplorerManager.Provider, PropertyChangeListener {
                     }
                     d = 1;
                 }
+                c.setHidden(false); // The tree column can not be hidden
             }
         }
         if (addDefaultColumn) {

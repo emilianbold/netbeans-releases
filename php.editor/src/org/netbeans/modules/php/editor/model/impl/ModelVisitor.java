@@ -177,8 +177,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (scopeHasBeenModified) {
             modelBuilder.reset();
         }
-        MethodScopeImpl methodScope = MethodScopeImpl.createElement(currentScope, node);
-        modelBuilder.setCurrentScope(methodScope);
+        if (currentScope instanceof TypeScope) {
+            MethodScopeImpl methodScope = MethodScopeImpl.createElement(currentScope, node);
+            modelBuilder.setCurrentScope(methodScope);
+        } else {
+            modelBuilder.setCurrentScope((ScopeImpl) currentScope);
+        }
         super.visit(node);
         modelBuilder.reset();
     }
@@ -364,16 +368,31 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(UseTraitStatementPart node) {
-        super.addToPath(node);
+        occurencesBuilder.prepare(Kind.TRAIT, node.getName(), modelBuilder.getCurrentScope());
+        super.visit(node);
     }
 
     @Override
     public void visit(TraitMethodAliasDeclaration node) {
+        Expression traitName = node.getTraitName();
+        if (traitName instanceof NamespaceName) {
+            occurencesBuilder.prepare(Kind.TRAIT, traitName, modelBuilder.getCurrentScope());
+        }
         super.visit(node);
     }
 
     @Override
     public void visit(TraitConflictResolutionDeclaration node) {
+        ScopeImpl currentScope = modelBuilder.getCurrentScope();
+        Expression preferredTraitName = node.getPreferredTraitName();
+        if (preferredTraitName instanceof NamespaceName) {
+            occurencesBuilder.prepare(Kind.TRAIT, preferredTraitName, currentScope);
+        }
+        for (Expression suppressedTraitName : node.getSuppressedTraitNames()) {
+            if (suppressedTraitName instanceof NamespaceName) {
+                occurencesBuilder.prepare(Kind.TRAIT, suppressedTraitName, currentScope);
+            }
+        }
         super.visit(node);
     }
 
@@ -653,7 +672,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(FieldAccess node) {
         Variable field = node.getField();
-        if (field.isDollared()) {
+        if (field.isDollared() || field instanceof ReflectionVariable) {
             scan(field);
         } else {
             occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());

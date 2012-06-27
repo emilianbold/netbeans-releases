@@ -33,18 +33,28 @@ package org.netbeans.modules.cnd.classview.actions;
 import javax.swing.JMenuItem;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.classview.ClassViewTopComponent;
-import org.netbeans.modules.cnd.classview.resources.I18n;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
  *
  * @author Alexander Simon
  */
+@ActionID(id = "org.netbeans.modules.cnd.classview.actions.SelectInClassesAction", category = "Window/SelectDocumentNode")
+@ActionRegistration(lazy = true, displayName = "#CTL_NavigateSelectInClasses")
+@ActionReferences(value = {
+    @ActionReference(path = "Shortcuts", name = "DS-9"),
+    @ActionReference(path = "Menu/GoTo", position = 2750)})
 public class SelectInClassesAction extends CookieAction {
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         CsmOffsetableDeclaration decl = ContextUtils.getContext(activatedNodes);
         if (decl != null){
@@ -60,18 +70,21 @@ public class SelectInClassesAction extends CookieAction {
     @Override
     public JMenuItem getPopupPresenter() {
         JMenuItem item = super.getPopupPresenter();
-        item.setText(I18n.getMessage("CTL_SelectInClasses")); // NOI18N
+        item.setText( NbBundle.getMessage(SelectInClassesAction.class, "CTL_SelectInClasses")); // NOI18N
         return item;
     }
 
+    @Override
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
     
+    @Override
     public String getName() {
-        return I18n.getMessage("CTL_NavigateSelectInClasses"); // NOI18N
+        return NbBundle.getMessage(SelectInClassesAction.class, "CTL_NavigateSelectInClasses"); // NOI18N
     }
     
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] {
             DataObject.class
@@ -84,6 +97,7 @@ public class SelectInClassesAction extends CookieAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

@@ -682,6 +682,14 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 2);
     }
 
+    public void testIntroduceFieldFix213972() throws Exception {
+        performFixTest("package test; public class Test {public void test1() {|int i = 3;|} public void test2() {int i = 3;}}",
+                       "package test; public class Test { private int i = 3; public void test1() {} public void test2() {}}",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, true, EnumSet
+                .<Modifier>of(Modifier.PRIVATE), false, true),
+                       3, 1);
+    }
+
     public void testIntroduceFieldFixNewClassTree179766() throws Exception {
         performFixTest("package test;\n" +
                        "public class Test {\n" +

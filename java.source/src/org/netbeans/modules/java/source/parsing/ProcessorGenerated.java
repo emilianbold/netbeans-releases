@@ -57,6 +57,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -66,6 +68,7 @@ import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -73,6 +76,8 @@ import org.openide.util.Parameters;
  */
 //@NotThreadSafe
 public final class ProcessorGenerated extends TransactionContext.Service {
+
+    private static final Logger LOG = Logger.getLogger(ProcessorGenerated.class.getName());
     
     public enum Type {
         SOURCE,
@@ -80,7 +85,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     }
     
     private final boolean writeable;
-    private static final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
+    private final Map<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> generated =
             new HashMap<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>>();
     private ClasspathInfo owner;
     private ClassPath userSources;
@@ -112,6 +117,9 @@ public final class ProcessorGenerated extends TransactionContext.Service {
          @NonNull final ClassPath aptSources) {
         Parameters.notNull("owner", owner);             //NOI18N
         Parameters.notNull("userSources", userSources); //NOI18N
+        if (!writeable) {
+            return;
+        }
         if (this.owner != null) {
             throw new IllegalStateException(MessageFormat.format(
                 "Previous owner: {0}({1}), New owner: {2}({3})",                //NOI18N
@@ -122,10 +130,6 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         }
         assert this.userSources == null;
         assert this.aptSources == null;
-        
-        if (!writeable) {
-            return;
-        }
         
         this.userSources = userSources;
         this.aptSources = aptSources;
@@ -139,6 +143,14 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         if (!writeable) {
             return;
         }
+        LOG.log(
+            Level.FINE,
+            "Generated: {0} from: {1} type: {2}",   //NOI18N
+            new Object[]{
+                file.toUri(),
+                forSource,
+                type
+        });
         Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>> insertInto =
                 generated.get(forSource);
         if (insertInto == null) {
@@ -213,12 +225,12 @@ public final class ProcessorGenerated extends TransactionContext.Service {
                 }
                 apt = true;
             }
-            final File sourceRoot = new File (sourceRootURL.toURI());
+            final File sourceRoot = Utilities.toFile(sourceRootURL.toURI());
             final File classCache = apt ?
-                new File (AptCacheForSourceQuery.getClassFolder(sourceRootURL).toURI()):
+                Utilities.toFile(AptCacheForSourceQuery.getClassFolder(sourceRootURL).toURI()):
                 JavaIndex.getClassFolder(sourceRoot);
             if (!genSources.isEmpty()) {
-                final File sourceFile = new File(forSource.toURI());
+                final File sourceFile = Utilities.toFile(forSource.toURI());
                 final String relativePath = FileObjects.stripExtension(FileObjects.getRelativePath(sourceRoot, sourceFile));
                 final File cacheFile = new File (classCache, relativePath+'.'+FileObjects.RAPT);
                 if (!cacheFile.getParentFile().exists()) {
@@ -238,7 +250,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
                 final StringBuilder sb = readResources(resFile, currentResources);
                 boolean changed = false;
                 for (javax.tools.FileObject file : genResources) {
-                    String resPath = FileObjects.getRelativePath(classCache.toURI().toURL(), file.toUri().toURL());
+                    String resPath = FileObjects.getRelativePath(Utilities.toURI(classCache).toURL(), file.toUri().toURL());
                     if (currentResources.add(resPath)) {
                         sb.append(resPath);
                         sb.append('\n');    //NOI18N

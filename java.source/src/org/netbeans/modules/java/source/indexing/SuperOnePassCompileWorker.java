@@ -97,7 +97,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         final Set<File> createdFiles = previous != null ? previous.createdFiles : new HashSet<File>();
         final Set<Indexable> finished = previous != null ? previous.finishedFiles : new HashSet<Indexable>();
         final Set<ElementHandle<TypeElement>> modifiedTypes = previous != null ? previous.modifiedTypes : new HashSet<ElementHandle<TypeElement>>();
-        final Set<CompileTuple> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<CompileTuple>();
+        final Set<javax.tools.FileObject> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<javax.tools.FileObject>();
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(file2FQNs);
 
         final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
@@ -122,7 +122,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             jt = null;
                             units = null;
                             dc.cleanDiagnostics();
-                            System.gc();
+                            mem.free();
                         }
                         if (jt == null) {
                             jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), dc, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
@@ -165,7 +165,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             jt = null;
                             units = null;
                             dc.cleanDiagnostics();
-                            System.gc();
+                            mem.free();
                         }
                     }
                 }
@@ -174,18 +174,18 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
         }
         if (nop) {
-            return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         if (jt == null || units == null || JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER) {
-            return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.failure(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         if (context.isCancelled()) {
             return null;
         }
         if (mem.isLowMemory()) {
             units = null;
-            System.gc();
-            return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            mem.free();
+            return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         Iterable<? extends Processor> processors = jt.getProcessors();
         boolean aptEnabled = processors != null && processors.iterator().hasNext();
@@ -196,8 +196,8 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
             if (mem.isLowMemory()) {
                 units = null;
-                System.gc();
-                return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                mem.free();
+                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             jt.analyze(types);
             if (context.isCancelled()) {
@@ -205,8 +205,8 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
             if (mem.isLowMemory()) {
                 units = null;
-                System.gc();
-                return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                mem.free();
+                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
                 CompileTuple active = unit.second;
@@ -238,8 +238,8 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
             if (mem.isLowMemory()) {
                 units = null;
-                System.gc();
-                return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+                mem.free();
+                return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             for (JavaFileObject generated : jt.generate(types)) {
                 if (generated instanceof FileObjects.FileBase) {
@@ -253,7 +253,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 JavaCustomIndexer.setErrors(context, active, dc);
                 finished.add(active.indexable);
             }
-            return new ParsingOutput(true, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+            return ParsingOutput.success(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         } catch (CouplingAbort ca) {
             //Coupling error
             TreeLoader.dumpCouplingAbort(ca, null);
@@ -309,6 +309,6 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 }
             }
         }
-        return new ParsingOutput(false, file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
+        return ParsingOutput.failure(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
     }
 }

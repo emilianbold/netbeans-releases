@@ -182,7 +182,7 @@ final class CppMetaModel implements PropertyChangeListener {
                     fireObjectParsed(doc);
 		}
 	    }, reparseDelay);
-	} else if (file.needsUpdate()) {
+	} else if (file.needsUpdate(doc)) {
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "CppMetaModel.scheduleParsing: Starting update parse for " +
 			getShortName(doc));

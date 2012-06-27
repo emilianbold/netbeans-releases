@@ -387,6 +387,8 @@ public final class MultiViewFactory {
 
         @Override
         public int getPersistenceType() {
+            if( !map.containsKey("persistenceType") )
+                return TopComponent.PERSISTENCE_NEVER; //#212993
             return get("persistenceType", Integer.class);
         }
 

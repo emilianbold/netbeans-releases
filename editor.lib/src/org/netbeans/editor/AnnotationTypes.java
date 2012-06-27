@@ -119,10 +119,12 @@ public class AnnotationTypes {
 
     /**  Returns instance of AnnotationTypes singleton. */
     public static AnnotationTypes getTypes() {
-        if (annoTypes == null) {
-            annoTypes = new AnnotationTypes();
+        AnnotationTypes types = annoTypes;
+        if (types == null) {
+            types = new AnnotationTypes();
+            annoTypes = types;
         }
-        return annoTypes;
+        return types;
     }
     
     /** Gets Image which represents the default glyph icon. It is 

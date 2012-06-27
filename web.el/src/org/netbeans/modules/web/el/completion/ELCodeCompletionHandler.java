@@ -45,6 +45,7 @@ import com.sun.el.parser.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +70,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.el.*;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
+import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
@@ -82,6 +84,26 @@ import org.openide.util.Exceptions;
  */
 public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
+    private static Set<String> keywordFixedTexts = null;
+
+    /**
+     * Gets Set of {@link ELTokenId#fixedText()} values with {@link ELTokenId.ELTokenCategories.KEYWORDS} category.<br/>
+     * Result is resolved and stored on first method call into static field {@link #keywordFixedTexts}.
+     * On next call is returned the same Set instance.
+     * @return Set of {@link ELTokenId#fixedText()} values with {@link ELTokenId.ELTokenCategories.KEYWORDS} category.
+     */
+    private static synchronized Set<String> getKeywordFixedTexts() {
+        if (keywordFixedTexts == null) {
+            keywordFixedTexts = new HashSet<String>();
+            for (ELTokenId elTokenId : ELTokenId.values()) {
+                if (ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elTokenId)) {
+                    keywordFixedTexts.add(elTokenId.fixedText());
+                }
+            }
+        }
+        return keywordFixedTexts;
+    }
+ 
     @Override
     public CodeCompletionResult complete(final CodeCompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(50);
@@ -230,7 +252,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     continue;
                 }
                 
-                if (!enclosed.getModifiers().contains(Modifier.PUBLIC)) {
+                if (!enclosed.getModifiers().contains(Modifier.PUBLIC) ||
+                        enclosed.getModifiers().contains(Modifier.STATIC)) {
                     continue;
                 }
                 String methodName = enclosed.getSimpleName().toString();
@@ -238,12 +261,46 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 if (!prefix.matches(propertyName)) {
                     continue;
                 }
-                ELJavaCompletionItem item = new ELJavaCompletionItem(info, enclosed, elElement);
-                item.setSmart(true);
-                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
-                proposals.add(item);
+                
+                // Now check methodName or propertyName is EL keyword.
+                if (getKeywordFixedTexts().contains(propertyName) || 
+                        getKeywordFixedTexts().contains(methodName) ) {
+                    continue;
+                }
+                if (ELPlugin.Query.isValidProperty(enclosed, context.getParserResult().getSnapshot().getSource(), info, context)) {
+                    ELVariableCompletionItem completionItem = new ELVariableCompletionItem(propertyName, ELTypeUtilities.getTypeNameFor(info, enclosed));
+                    completionItem.setSmart(true);
+                    completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
+
+                    proposals.add(completionItem);
+                } else {
+                    ELJavaCompletionItem completionItem;
+                    
+                    if (enclosed.getParameters().isEmpty() && !contains(proposals, propertyName)) {
+                        completionItem = new ELJavaCompletionItem(info, enclosed, elElement); //
+                    } else {
+                        completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement);
+                    }
+                    
+                    completionItem.setSmart(false);
+                    completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
+
+                    proposals.add(completionItem);
+                }
             }
         }
+    }
+    
+    private boolean contains(List<CompletionProposal> completionProposals, String propertyName) {
+        if (propertyName == null || propertyName.isEmpty()) {
+            return true;
+        }
+        for (CompletionProposal completionProposal : completionProposals) {
+            if (propertyName.equals(completionProposal.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void proposeImpicitObjects(CompilationContext info, CodeCompletionContext context,

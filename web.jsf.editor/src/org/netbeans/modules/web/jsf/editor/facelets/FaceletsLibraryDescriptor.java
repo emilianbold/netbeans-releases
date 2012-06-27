@@ -160,9 +160,10 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
                         String aName = getTextContent(attrNode, "name"); //NOI18N
                         String aType = getTextContent(attrNode, "type"); //NOI18N
                         String aDescription = getTextContent(attrNode, "description"); //NOI18N
+                        String aMethodSignature = getTextContent(attrNode, "method-signature"); //NOI18N
                         boolean aRequired = Boolean.parseBoolean(getTextContent(attrNode, "required")); //NOI18N
 
-                        attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aType, aRequired));
+                        attrs.put(aName, new Attribute.DefaultAttribute(aName, aDescription, aType, aRequired, aMethodSignature));
                     }
 
                     tags.put(tagName, new TagImpl(tagName, tagDescription, attrs));

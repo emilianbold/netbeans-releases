@@ -822,6 +822,7 @@ public abstract class WebRestSupport extends RestSupport {
     
     private void configRestPackages( String... packs ) throws IOException {
         try {
+	    addResourceConfigToWebApp("/webresources/*");
             FileObject ddFO = getWebXml();
             WebApp webApp = getWebApp();
             if (webApp == null) {
@@ -832,62 +833,46 @@ public abstract class WebRestSupport extends RestSupport {
             }
             boolean needsSave = false;
             Servlet adaptorServlet = getRestServletAdaptor(webApp);
-            if (adaptorServlet == null) {
-                adaptorServlet = (Servlet) webApp.createBean("Servlet"); // NOI18N
-                adaptorServlet.setServletName(REST_SERVLET_ADAPTOR);
-                if ( hasSpringSupport() ){
-                    adaptorServlet
-                        .setServletClass(REST_SPRING_SERVLET_ADAPTOR_CLASS);
+	    if ( adaptorServlet == null ){
+		return;
+	    }
+            InitParam[] initParams = adaptorServlet.getInitParam();
+            boolean initParamFound = false;
+            for (InitParam initParam : initParams) {
+                if (initParam.getParamName().equals(JERSEY_PROP_PACKAGES)) {
+                    initParamFound = true;
+                    String paramValue = initParam.getParamValue();
+                    if (paramValue != null) {
+                        paramValue = paramValue.trim();
+                    }
+                    else {
+                        paramValue = "";
+                    }
+                    if (paramValue.length() == 0 || paramValue.equals(".")){ // NOI18N
+                        initParam.setParamValue(getPackagesList(packs));
+                        needsSave = true;
+                    }
+                    else {
+                        String[] existed = paramValue.split(";");
+                        LinkedHashSet<String> set = new LinkedHashSet<String>();
+                        set.addAll(Arrays.asList(existed));
+                        set.addAll(Arrays.asList(packs));
+                        initParam.setParamValue(getPackagesList(set));
+                        needsSave = existed.length != set.size();
+                    }
                 }
-                else {
-                    adaptorServlet
-                        .setServletClass(REST_SERVLET_ADAPTOR_CLASS);
-                }
+            }
+            if (!initParamFound) {
                 InitParam initParam = createJerseyPackagesInitParam(adaptorServlet,
                         packs);
                 adaptorServlet.addInitParam(initParam);
-                webApp.addServlet(adaptorServlet);
                 needsSave = true;
-            }
-            else {
-                InitParam[] initParams = adaptorServlet.getInitParam();
-                boolean initParamFound = false;
-                for (InitParam initParam : initParams) {
-                    if (initParam.getParamName().equals(JERSEY_PROP_PACKAGES)) {
-                        initParamFound = true;
-                        String paramValue = initParam.getParamValue();
-                        if (paramValue != null) {
-                            paramValue = paramValue.trim();
-                        }
-                        else {
-                            paramValue = "";
-                        }
-                        if (paramValue.length() == 0 || paramValue.equals(".")){ // NOI18N
-                            initParam.setParamValue(getPackagesList(packs));
-                            needsSave = true;
-                        }
-                        else {
-                            String[] existed = paramValue.split(";");
-                            LinkedHashSet<String> set = new LinkedHashSet<String>();
-                            set.addAll(Arrays.asList(existed));
-                            set.addAll(Arrays.asList(packs));
-                            initParam.setParamValue(getPackagesList(set));
-                            needsSave = existed.length != set.size();
-                        }
-                    }
-                }
-                if (!initParamFound) {
-                    InitParam initParam = createJerseyPackagesInitParam(adaptorServlet,
-                            packs);
-                    adaptorServlet.addInitParam(initParam);
-                    needsSave = true;
-                }
             }
             if (needsSave) {
                 webApp.write(ddFO);
                 logResourceCreation(project);
             }
-        }
+	}
         catch (ClassNotFoundException e) {
             throw new IllegalArgumentException(e);
         }

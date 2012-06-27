@@ -177,10 +177,11 @@ public final class ContextAnalyzer {
     /**
      * utility method to perform enable/disable logic for refactoring actions
      * @param lookup
+     * @param notOnlyFile action is disabled when the selection is on File
      * @param onlyFromEditor action is enabled only in editor
      * @return 
      */
-    public static boolean canRefactorSingle(Lookup lookup, boolean onlyFromEditor) {
+    public static boolean canRefactorSingle(Lookup lookup, boolean notOnlyFile, boolean onlyFromEditor) {
         Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
         if(nodes.size() != 1) {
             return false;
@@ -188,9 +189,13 @@ public final class ContextAnalyzer {
         Node node = nodes.iterator().next();
         TreePathHandle tph = node.getLookup().lookup(TreePathHandle.class);
         if (tph != null) {
-            return JavaRefactoringUtils.isRefactorable(tph.getFileObject());
+            if(JavaRefactoringUtils.isRefactorable(tph.getFileObject())) {
+                return !onlyFromEditor || isFromEditor(lookup.lookup(EditorCookie.class));
+            } else {
+                return false;
+            }
         }
-        DataObject dObj = node.getCookie(DataObject.class);
+        DataObject dObj = node.getLookup().lookup(DataObject.class);
         if(null == dObj) {
             return false;
         }
@@ -203,7 +208,7 @@ public final class ContextAnalyzer {
         if (isFromEditor(ec)) {
             return true;
         }
-        return !onlyFromEditor;
+        return !notOnlyFile;
     }
     
     private static abstract class TreePathHandleTask implements Runnable, CancellableTask<CompilationController> {

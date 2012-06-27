@@ -103,7 +103,7 @@ import org.netbeans.modules.cnd.modelutil.ParamStr;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.openide.util.Lookup;
-
+import org.netbeans.swing.plaf.LFCustoms;
 /**
  *
  * @author  Vladimir Voskresensky
@@ -122,8 +122,7 @@ public abstract class CsmResultItem implements CompletionItem {
     protected int selectionEndOffset = -1;
     protected int substituteOffset = -1;
     CsmObject associatedObject;
-    private static final Color KEYWORD_COLOR = Color.gray;
-    private static final Color TYPE_COLOR = Color.black;
+    private static final Color KEYWORD_COLOR = Color.lightGray;
     private int priority;
     private SubstitutionHint hint;
 
@@ -147,7 +146,7 @@ public abstract class CsmResultItem implements CompletionItem {
     }
     
     protected static Color getTypeColor(CsmType type) {
-        return type.isBuiltInBased(false) ? KEYWORD_COLOR : TYPE_COLOR;
+        return type.isBuiltInBased(false) ? LFCustoms.shiftColor(KEYWORD_COLOR) : LFCustoms.getTextFgColor();
     }
 
     public void setSubstituteOffset(int substituteOffset) {
@@ -973,19 +972,19 @@ public abstract class CsmResultItem implements CompletionItem {
                 mtdName = ctr.getName();
             }
             int i = 0;
-            for (Object prm : ctr.getParameters()) {
+            for (CsmParameter prm : ctr.getParameters()) {
                 if (prm == null) {
                     continue;
                 }
-                CsmType type = ((CsmParameter) prm).getType();
+                CsmType type = prm.getType();
                 if (type == null) {
                     // only var args parameters could have null types
                     assert (((CsmParameter) prm).isVarArgs()) : " non var arg " + prm + " of class " + prm.getClass().getName();
-                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), true, KEYWORD_COLOR)); //NOI18N
+                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), prm.getText().toString(), true, LFCustoms.shiftColor(KEYWORD_COLOR))); //NOI18N
                     varArgIndex = i;
                 } else {
                     String typeName = getTypeName(type, instantiateTypes);
-                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), false, TYPE_COLOR /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), prm.getText().toString(), false, LFCustoms.getTextFgColor() /*getTypeColor(type.getClassifier())*/));
                 }
                 i++;
             }
@@ -1048,16 +1047,12 @@ public abstract class CsmResultItem implements CompletionItem {
             List<String> ret = new ArrayList<String>();
             for (Iterator<ParamStr> it = getParams().iterator(); it.hasNext();) {
                 StringBuilder sb = new StringBuilder();
-                ParamStr ps = it.next();
-                sb.append(ps.getSimpleTypeName());
+                ParamStr ps = it.next();                
                 if (ps.isVarArg()) {
+                    sb.append(ps.getSimpleTypeName());
                     sb.append("..."); // NOI18N
                 } else {
-                    String name = ps.getName();
-                    if (name != null && name.length() > 0) {
-                        sb.append(" "); // NOI18N
-                        sb.append(name);
-                    }
+                    sb.append(ps.getText());
                 }
                 if (it.hasNext()) {
                     sb.append(", "); // NOI18N

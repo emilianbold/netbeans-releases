@@ -44,7 +44,6 @@ package org.netbeans.modules.parsing.impl;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,7 +62,7 @@ public class RunWhenScanFinishedSupport {
 
     private static final Logger LOG = Logger.getLogger(RunWhenScanFinishedSupport.class.getName());
     //Scan lock
-    private static final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     //Deferred task until scan is done
     private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
 
@@ -102,6 +101,10 @@ public class RunWhenScanFinishedSupport {
         } finally {
             lock.writeLock().unlock();
         }
+    }
+    
+    public static boolean isScanningThread() {
+        return lock.isWriteLockedByCurrentThread();
     }
 
     @NonNull

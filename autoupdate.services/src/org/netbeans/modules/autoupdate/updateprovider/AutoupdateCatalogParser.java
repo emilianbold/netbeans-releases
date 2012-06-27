@@ -127,6 +127,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private static final String MODULE_GROUP_ATTR_NAME = "name"; // NOI18N
     
     private static final String NOTIFICATION_ATTR_URL = "url"; // NOI18N
+    private static final String CONTENT_DESCRIPTION_ATTR_URL = "url"; // NOI18N
     
     private static final String LICENSE_ATTR_NAME = "name"; // NOI18N
     
@@ -258,7 +259,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private Stack<ModuleDescriptor> currentModule = new Stack<ModuleDescriptor> ();
     private Stack<Map <String,String>> currentLicense = new Stack<Map <String,String>> ();
     private Stack<String> currentNotificationUrl = new Stack<String> ();
-    private Stack<String> currentContentDescriptionUrl = new Stack<String> ();
+    private Stack<String> currentContentDescriptionUrl = new Stack<String>();
     private Map<String, UpdateLicenseImpl> name2license = new HashMap<String, UpdateLicenseImpl> ();
     private List<String> lines = new ArrayList<String> ();
     private int bufferInitSize = 0;
@@ -310,7 +311,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                 currentNotificationUrl.pop ();
                 break;
             case content_description :
-                // write catalog notification
+                // write content description
                 if (this.provider != null && ! lines.isEmpty ()) {
                     StringBuilder sb = new StringBuilder (bufferInitSize);
                     for (String line : lines) {
@@ -319,15 +320,12 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                     String contentDescription = sb.toString ();
                     String contentDescriptionUrl = currentContentDescriptionUrl.peek ();
                     if (contentDescriptionUrl != null && contentDescriptionUrl.length () > 0) {
-                        contentDescription += (contentDescription.length () > 0 ? "<br>" : "") + // NOI18N
-                                "<a name=\"update_center_content_description\" href=\"" + contentDescriptionUrl + "\">" + contentDescriptionUrl + "</a>"; // NOI18N
-                    } else {
-                        contentDescription += (contentDescription.length () > 0 ? "<br>" : "") +
-                                "<a name=\"update_center_content_description\"/>"; // NOI18N
+                        contentDescription = "<a name=\"update_center_content_description\" href=\"" + // NOI18N
+                                contentDescriptionUrl + "\">" + contentDescription + "</a>"; // NOI18N
                     }
                     provider.setContentDescription(contentDescription);
                 }
-                currentNotificationUrl.pop ();
+                currentContentDescriptionUrl.pop();
                 break;
             case module_notification :
                 // write module notification
@@ -452,6 +450,9 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             case notification :
                 currentNotificationUrl.push (attributes.getValue (NOTIFICATION_ATTR_URL));
                 break;
+            case content_description :
+                currentContentDescriptionUrl.push(attributes.getValue (CONTENT_DESCRIPTION_ATTR_URL));
+                break;
             case external_package :
                 ERR.info ("Not supported yet.");
                 break;
@@ -554,6 +555,10 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             isEager = Boolean.parseBoolean (eager);
             isAutoload = Boolean.parseBoolean (autoload);
             isPreferredUpdate = Boolean.parseBoolean(preferred);
+            
+            if (isPreferredUpdate) {
+                Utilities.writeFirstClassModule(moduleCodeName);
+            }
                         
             String licName = module.getValue (MODULE_ATTR_LICENSE);
             lic = UpdateLicense.createUpdateLicense (licName, null);

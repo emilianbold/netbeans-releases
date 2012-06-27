@@ -46,6 +46,7 @@ import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.IndexingManagerAccessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -75,7 +76,7 @@ public class EventSupportTest extends NbTestCase {
         final File src = new File (wd,"src");
         src.mkdirs();
         try {
-            IndexingManager.getDefault().refreshIndexAndWait(src.toURI().toURL(), null);
+            IndexingManager.getDefault().refreshIndexAndWait(Utilities.toURI(src).toURL(), null);
         } catch (IllegalStateException ae) {
             assertTrue("IllegalStateException not expected when EventSupport.releaseCompletionCondition called by IndexingManager.refreshIndexAndWait", false);
         }

@@ -318,8 +318,10 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
 
         indexFileLabel.setLabelFor(indexFileTextField);
-
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
+
+        indexFileTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_Browse")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -338,7 +340,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         });
         Mnemonics.setLocalizedText(phpOptionsLabel, NbBundle.getMessage(RunAsScript.class, "RunAsScript.phpOptionsLabel.text")); // NOI18N
 
-        phpOptionsTextField.setColumns(5);
+        phpOptionsTextField.setColumns(20);
         Mnemonics.setLocalizedText(hintLabel, "dummy"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -363,7 +365,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
                     .addGroup(layout.createParallelGroup(Alignment.LEADING)
                         .addComponent(argsTextField, Alignment.TRAILING, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                            .addComponent(indexFileTextField)
+                            .addComponent(indexFileTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                             .addPreferredGap(ComponentPlacement.RELATED)
                             .addComponent(indexFileBrowseButton))
                         .addComponent(runAsCombo, Alignment.TRAILING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)

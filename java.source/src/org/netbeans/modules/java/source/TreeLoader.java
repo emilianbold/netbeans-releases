@@ -159,6 +159,9 @@ public class TreeLoader extends LazyTreeLoader {
         try {
             assert DISABLE_CONFINEMENT_TEST || JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked() || !contended;
             if (clazz != null) {
+                if (Enter.instance(context).getEnv(clazz) != null) {
+                    return true;
+                }
                 try {
                     FileObject fo = SourceUtils.getFile(clazz, cpInfo);
                     final JavacTaskImpl jti = context.get(JavacTaskImpl.class);
@@ -330,10 +333,21 @@ public class TreeLoader extends LazyTreeLoader {
                 return;
             }
             int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
-            assert index > 0;
-            File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
-            jfm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
-            jti.generate(Collections.singletonList(clazz));
+            assert index > 0 : String.format("source: %s binary name: %s", surl, binaryName);   //NOI18N
+            if (index > 0) {
+                File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
+                jfm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
+                jti.generate(Collections.singletonList(clazz));
+            } else {
+                LOGGER.log(
+                   Level.INFO,
+                   "Invalid binary name when writing sym file for class: {0}, source: {1}, binary name {2}",    // NOI18N
+                   new Object[] {
+                       clazz.flatname,
+                       surl,
+                       binaryName
+                   });
+            }
         } catch (InvalidSourcePath isp) {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {

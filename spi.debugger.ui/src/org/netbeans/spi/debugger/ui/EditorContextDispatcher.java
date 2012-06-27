@@ -54,12 +54,15 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.editor.NbEditorUtilities;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
@@ -71,7 +74,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -79,7 +81,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
 
 /**
  * Dispatcher of context-related events and provider of active elements in the IDE.
@@ -135,12 +136,12 @@ public final class EditorContextDispatcher {
         return context;
     }
 
-    private final EditorLookupListener editorLookupListener;
     
     private final RequestProcessor refreshProcessor;
     private final Lookup.Result<FileObject> resFileObject;
-    private final Lookup.Result<EditorCookie> resEditorCookie;
-    private final PropertyChangeListener  tcListener;
+    private final PropertyChangeListener  erListener;
+    private final ThreadLocal<CoalescedChange> lookupCoalescedChange = new ThreadLocal<CoalescedChange>();
+    private final RequestProcessor ccrp = new RequestProcessor("Coalesced Change Request Processor", 1, false, false); // NOI18N
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private final Map<String, PropertyChangeSupport> pcsByMIMEType = new HashMap<String, PropertyChangeSupport>();
@@ -149,21 +150,17 @@ public final class EditorContextDispatcher {
     private Map<String, Object> lastMIMETypeEvents = new HashMap<String, Object>();
 
     private static final Reference<FileObject> NO_FILE = new WeakReference<FileObject>(null);
-    private static final Reference<EditorCookie> NO_COOKIE = new WeakReference<EditorCookie>(null);
-    private static final Reference<JEditorPane> NO_EDITOR = new WeakReference<JEditorPane>(null);
+    private static final Reference<JTextComponent> NO_TEXT_COMPONENT = new WeakReference<JTextComponent>(null);
     private static final Reference<FileChangeListener> NO_FILE_CHANGE = new WeakReference<FileChangeListener>(null);
 
     private String currentURL;
     private Reference<FileObject> currentFile = NO_FILE;
-    private Reference<EditorCookie> currentEditorCookie = NO_COOKIE;
-    private Reference<JEditorPane> currentOpenedPane = NO_EDITOR;
     private FileChangeListener currentFileChangeListener = null;
     private Reference<FileChangeListener> currentFileChangeListenerWeak = NO_FILE_CHANGE;
+    private Reference<JTextComponent> currentTextComponent = NO_TEXT_COMPONENT;
     
     // Most recent in editor:
     private Reference<FileObject> mostRecentFileRef = NO_FILE;
-    private Reference<EditorCookie> mostRecentEditorCookieRef = NO_COOKIE;
-    private Reference<JEditorPane> mostRecentOpenedPaneRef = NO_EDITOR;
     private FileChangeListener mostRecentFileChangeListener = null;
     private Reference<FileChangeListener> mostRecentFileChangeListenerWeak = NO_FILE_CHANGE;
     
@@ -175,26 +172,15 @@ public final class EditorContextDispatcher {
         resFileObject.addLookupListener(ell);
         ell.lookupChanged(false); // To initialize data
         
-        resEditorCookie = Utilities.actionsGlobalContext().lookupResult(EditorCookie.class);
-        editorLookupListener = new EditorLookupListener(EditorCookie.class);
-        resEditorCookie.addLookupListener(editorLookupListener);
-        editorLookupListener.lookupChanged(false); // To initialize data
-
-        tcListener = new EditorLookupListener(TopComponent.class);
+        erListener = new EditorRegistryListener();
+        EditorRegistry.addPropertyChangeListener(WeakListeners.propertyChange(erListener, EditorRegistry.class));
         SwingUtilities.invokeLater(new Runnable() {
-            // getOpenedPanes() MUST be called on AWT.
             public void run() {
-                synchronized (tcListener) {
-                    // To initialize data:
-                    ((EditorLookupListener) tcListener).updateCurrentOpenedPane(
-                            TopComponent.getRegistry().getActivated(),
-                            currentEditorCookie.get(),
-                            false);
-                }
+                // To initialize data:
+                ((EditorRegistryListener) erListener).update(false);
             }
         });
-        TopComponent.getRegistry ().addPropertyChangeListener (WeakListeners.propertyChange(
-                tcListener, TopComponent.getRegistry()));
+        
     }
     
     /**
@@ -230,12 +216,17 @@ public final class EditorContextDispatcher {
      * @return The current {@link org.openide.cookies.EditorCookie} or
      *         <code>null</code> when there is no currently edited file.
      */
-    private synchronized EditorCookie getCurrentEditorCookie() {
-        if (getCurrentEditor() != null) {
-            return currentEditorCookie.get();
-        } else {
-            return null;
+    private EditorCookie getCurrentEditorCookie() {
+        JEditorPane editor = getCurrentEditor();
+        if (editor != null) {
+            Document document = editor.getDocument();
+            DataObject dataObject = NbEditorUtilities.getDataObject(document);
+            if (dataObject != null) {
+                EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+                return ec;
+            }
         }
+        return null;
     }
     
     /**
@@ -244,7 +235,12 @@ public final class EditorContextDispatcher {
      *         <code>null</code> when there is no currently edited file.
      */
     public synchronized JEditorPane getCurrentEditor() {
-        return currentOpenedPane.get();
+        JTextComponent ctc = currentTextComponent.get();
+        if (ctc instanceof JEditorPane) {
+            return ((JEditorPane) ctc);
+        } else {
+            return null;
+        }
     }
     
     /**
@@ -329,16 +325,27 @@ public final class EditorContextDispatcher {
         return ""; // NOI18N
     }
     
-    private synchronized EditorCookie getMostRecentEditorCookie() {
-        if (getMostRecentEditor() != null) {
-            return mostRecentEditorCookieRef.get();
+    private EditorCookie getMostRecentEditorCookie() {
+        JEditorPane editor = getMostRecentEditor();
+        if (editor != null) {
+            Document document = editor.getDocument();
+            DataObject dataObject = NbEditorUtilities.getDataObject(document);
+            if (dataObject != null) {
+                EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+                return ec;
+            }
+        }
+        return null;
+
+    }
+    
+    public JEditorPane getMostRecentEditor() {
+        JTextComponent ctc = EditorRegistry.lastFocusedComponent();
+        if (ctc instanceof JEditorPane) {
+            return ((JEditorPane) ctc);
         } else {
             return null;
         }
-    }
-    
-    public synchronized JEditorPane getMostRecentEditor() {
-        return mostRecentOpenedPaneRef.get();
     }
     
     /**
@@ -535,8 +542,9 @@ public final class EditorContextDispatcher {
         }
     }
 
-    private class EditorLookupListener extends Object implements LookupListener, PropertyChangeListener {
+    private class EditorLookupListener extends Object implements LookupListener {
         
+        private RequestProcessor.Task cctask;
         private Class type;
         
         public EditorLookupListener(Class type) {
@@ -544,11 +552,38 @@ public final class EditorContextDispatcher {
         }
         
         public void resultChanged(LookupEvent ev) {
-            lookupChanged(true);
+            // It can happen, that we're called many times in one AWT cycle...
+            coalescedLookupChanged();
+        }
+        
+        private void coalescedLookupChanged() {
+            CoalescedChange cc = lookupCoalescedChange.get();
+            if (cc == null) {
+                cc = new CoalescedChange();
+                lookupCoalescedChange.set(cc);
+            }
+            if (cc.isCoalescing()) {
+                RequestProcessor.Task task;
+                synchronized (this) {
+                    if (cctask == null) {
+                        cctask = ccrp.create(new Runnable() {
+                            @Override
+                            public void run() {
+                                lookupChanged(true);
+                            }
+                        });
+                    }
+                    task = cctask;
+                }
+                task.schedule(2);
+            } else {
+                lookupChanged(true);
+            }
+            cc.done();
         }
 
         private void lookupChanged(final boolean doFire) {
-            //System.err.println("EditorContextDispatcher.resultChanged(), type = "+type);
+            //System.err.println("EditorContextDispatcher.resultChanged(), type = "+type+" in "+Thread.currentThread());
             if (type == FileObject.class) {
                 Collection<? extends FileObject> fos = resFileObject.allInstances();
                 FileObject oldFile;
@@ -576,203 +611,6 @@ public final class EditorContextDispatcher {
                 if (doFire && oldFile != newFile) {
                     refreshProcessor.post(new EventFirer(PROP_FILE, oldFile, newFile));
                 }
-            } else if (type == EditorCookie.class) {
-                Collection<? extends EditorCookie> ecs = resEditorCookie.allInstances();
-                final EditorCookie newEditor;
-                final EditorCookie oldEditor;
-                synchronized (EditorContextDispatcher.this) {
-                    oldEditor = currentEditorCookie.get();
-                    if (oldEditor instanceof EditorCookie.Observable) {
-                        ((EditorCookie.Observable) oldEditor).removePropertyChangeListener(this);
-                    }
-                    if (ecs.size() == 0) {
-                        newEditor = null;
-                    } else {
-                        newEditor = ecs.iterator().next();
-                    }
-                    if (newEditor instanceof EditorCookie.Observable) {
-                        ((EditorCookie.Observable) newEditor).addPropertyChangeListener(this);
-                    }
-                    currentEditorCookie = newEditor == null ? NO_COOKIE : new WeakReference<EditorCookie>(newEditor);
-                    if (currentFile.get() != null) {
-                        if (newEditor != null) {
-                            mostRecentEditorCookieRef = new WeakReference<EditorCookie>(newEditor);
-                        }
-                    }
-                    if (newEditor == null) {
-                        currentOpenedPane = NO_EDITOR;
-                    }
-                }
-                if (newEditor != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        // getOpenedPanes() MUST be called on AWT.
-                        public void run() {
-                            updateCurrentOpenedPane(TopComponent.getRegistry().getActivated(), newEditor, doFire);
-                        }
-                    });
-                } else if (doFire && oldEditor != newEditor) {
-                    //  newEditor == null
-                    refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, null));
-                }
-                /* Fire the editor event only when JEditorPane is set/unset
-                if (oldEditor != newEditor) {
-                //    refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
-                }
-                 */
-            }
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            String propertyName = evt.getPropertyName();
-            //System.err.println("EditorContextDispatcher.propertyChanged("+evt.getPropertyName()+": "+evt.getOldValue()+", "+evt.getNewValue()+"), type = "+type);
-            if (type == TopComponent.class) {
-                if (propertyName.equals(TopComponent.Registry.PROP_ACTIVATED)) {
-                    TopComponent newComponnet = (TopComponent) evt.getNewValue();
-                    updateCurrentOpenedPane(newComponnet, null, true);
-                }
-            }
-            if (evt.getSource() instanceof EditorCookie.Observable) {
-                final Object source = evt.getSource();
-                SwingUtilities.invokeLater(new Runnable() {
-                    // getOpenedPanes() MUST be called on AWT.
-                    public void run() {
-                        updateCurrentOpenedPane(TopComponent.getRegistry().getActivated(), source, true);
-                    }
-                });
-            }
-        }
-
-        private void updateCurrentOpenedPane(TopComponent activeComponent, Object source,
-                                             boolean doFire) {
-            JEditorPane oldEditor;
-            JEditorPane newEditor;
-            String MIMEType = null;
-            EditorCookie ec;
-            boolean isSetPane;
-            boolean loadOpenPane;
-            do {
-                oldEditor = null;
-                newEditor = null;
-                isSetPane = false;
-                loadOpenPane = false;
-                synchronized (EditorContextDispatcher.this) {
-                    ec = currentEditorCookie.get();
-                    if ((source == null || source == ec)) {
-                        oldEditor = currentOpenedPane.get();
-                        if (ec != null && activeComponent != null) {
-                            if (ec.getDocument() == null &&  // !currentEditorCookie.prepareDocument().isFinished() &&
-                                (ec instanceof EditorCookie.Observable)) {
-                                // Document is not yet loaded, wait till we're notified that it is.
-                                // See issue #147988
-                                logger.fine("Document "+ ec +" NOT yet loaded...");  // NOI18N
-                                return ;
-                            }
-                            loadOpenPane = true;
-                        }
-                    }
-                }
-                if (loadOpenPane) {
-                    long t1 = 0l;
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("Document " + ec + " loaded, updating...");  // NOI18N
-                        t1 = System.nanoTime();
-                    }
-                    // Do not call under synchronized block
-                    JEditorPane openedPane = NbDocument.findRecentEditorPane(ec);
-                    if (logger.isLoggable(Level.FINE)) {
-                        long t2 = System.nanoTime();
-                        logger.fine("Time to find opened panes = "+(t2 - t1)+" ns = "+(t2 - t1)/1000000+" ms.");  // NOI18N
-                    }
-                    if ((openedPane != null) && activeComponent.isAncestorOf(openedPane)) {
-                        newEditor = openedPane;
-                        isSetPane = true;
-                    }
-                }
-                synchronized (EditorContextDispatcher.this) {
-                    EditorCookie ec2 = currentEditorCookie.get();
-                    if (ec2 != ec) {
-                        // The current editor cookie has changed in between, try once more...
-                        continue;
-                    }
-                    if (!isSetPane && source == null) {
-                        newEditor = null;
-                    }
-                    currentOpenedPane = newEditor == null ? NO_EDITOR : new WeakReference<JEditorPane>(newEditor);
-                    FileObject f = currentFile.get();
-                    if (f != null) {
-                        if (newEditor != null) {
-                            mostRecentOpenedPaneRef = new WeakReference<JEditorPane>(newEditor);
-                            reAttachFileChangeListener(mostRecentFileRef.get(), f, false);
-                            mostRecentFileRef = new WeakReference<FileObject>(f);
-                            if (ec != null) {
-                                mostRecentEditorCookieRef = new WeakReference<EditorCookie>(ec);
-                            }
-                        }
-                        if (doFire && oldEditor != newEditor) {
-                            lazyRetrieveMIMETypeAndFire(oldEditor, newEditor, f);
-                            doFire = false;
-                        }
-                    } else {
-                        MIMEType = null;
-                    }
-                    //System.err.println("\nCurrent Opened Pane = "+currentOpenedPane+", currentFile = "+currentFile+"\n");
-                }
-            } while (false);
-            if (doFire && oldEditor != newEditor) {
-                refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
-            }
-        }
-        
-        private void lazyRetrieveMIMETypeAndFire(final JEditorPane oldEditor, final JEditorPane newEditor, final FileObject f) {
-            refreshProcessor.post(new Runnable() {
-                @Override
-                public void run() {
-                    String MIMEType = f.getMIMEType();
-                    new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType).run();
-                }
-            });
-            
-        }
-
-        private void reAttachFileChangeListener(FileObject oldFile, FileObject newFile, boolean current) {
-            // Must be called in synchronized block
-            assert Thread.holdsLock(EditorContextDispatcher.this);
-            if (current) {
-                if (oldFile != null) {
-                    FileChangeListener chw = currentFileChangeListenerWeak.get();
-                    if (chw != null) {
-                        AddRemoveFileListenerInEQThread.removeFileChangeListener(oldFile, chw);
-                        currentFileChangeListenerWeak = NO_FILE_CHANGE;
-                        currentFileChangeListener = null;
-                    }
-                }
-                if (newFile != null) {
-                    currentFileChangeListener = new FileRenameListener();
-                    FileChangeListener chw =
-                            WeakListeners.create(FileChangeListener.class,
-                                                 currentFileChangeListener,
-                                                 newFile);
-                    AddRemoveFileListenerInEQThread.addFileChangeListener(newFile, chw);
-                    currentFileChangeListenerWeak = new WeakReference<FileChangeListener>(chw);
-                }
-            } else {
-                if (oldFile != null) {
-                    FileChangeListener chw = mostRecentFileChangeListenerWeak.get();
-                    if (chw != null) {
-                        AddRemoveFileListenerInEQThread.removeFileChangeListener(oldFile, chw);
-                        mostRecentFileChangeListenerWeak = NO_FILE_CHANGE;
-                        mostRecentFileChangeListener = null;
-                    }
-                }
-                if (newFile != null) {
-                    mostRecentFileChangeListener = new FileRenameListener();
-                    FileChangeListener chw =
-                            WeakListeners.create(FileChangeListener.class,
-                                                 mostRecentFileChangeListener,
-                                                 newFile);
-                    AddRemoveFileListenerInEQThread.addFileChangeListener(newFile, chw);
-                    mostRecentFileChangeListenerWeak = new WeakReference<FileChangeListener>(chw);
-                }
             }
         }
         
@@ -791,6 +629,131 @@ public final class EditorContextDispatcher {
         
     }
     
+    private class EditorRegistryListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propertyName = evt.getPropertyName();
+            if (propertyName.equals(EditorRegistry.FOCUS_GAINED_PROPERTY) ||
+                propertyName.equals(EditorRegistry.FOCUS_LOST_PROPERTY) ||
+                propertyName.equals(EditorRegistry.FOCUSED_DOCUMENT_PROPERTY)) {
+                
+                update(true);
+            }
+        }
+        
+        private void update(boolean doFire) {
+            JTextComponent focusedComponent = EditorRegistry.focusedComponent();
+            JTextComponent oldEditor;
+            JTextComponent newEditor;
+            String MIMEType = null;
+            synchronized (EditorContextDispatcher.this) {
+                oldEditor = currentTextComponent.get();
+                if (focusedComponent != null) {
+                    currentTextComponent = new WeakReference(focusedComponent);
+                } else {
+                    currentTextComponent = NO_TEXT_COMPONENT;
+                }
+                newEditor = currentTextComponent.get();
+                FileObject f = currentFile.get();
+                if (f != null) {
+                    if (newEditor != null) {
+                        reAttachFileChangeListener(mostRecentFileRef.get(), f, false);
+                        mostRecentFileRef = new WeakReference<FileObject>(f);
+                    }
+                    if (doFire && oldEditor != newEditor) {
+                        lazyRetrieveMIMETypeAndFire(oldEditor, newEditor, f);
+                        doFire = false;
+                    }
+                } else {
+                    MIMEType = null;
+                }
+            }
+            if (doFire && oldEditor != newEditor) {
+                refreshProcessor.post(new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType));
+            }
+        }
+        
+        private void lazyRetrieveMIMETypeAndFire(final JTextComponent oldEditor, final JTextComponent newEditor, final FileObject f) {
+            refreshProcessor.post(new Runnable() {
+                @Override
+                public void run() {
+                    String MIMEType = f.getMIMEType();
+                    new EventFirer(PROP_EDITOR, oldEditor, newEditor, MIMEType).run();
+                }
+            });
+            
+        }
+
+    }
+    
+    private void reAttachFileChangeListener(FileObject oldFile, FileObject newFile, boolean current) {
+        // Must be called in synchronized block
+        assert Thread.holdsLock(EditorContextDispatcher.this);
+        if (current) {
+            if (oldFile != null) {
+                FileChangeListener chw = currentFileChangeListenerWeak.get();
+                if (chw != null) {
+                    AddRemoveFileListenerInEQThread.removeFileChangeListener(oldFile, chw);
+                    currentFileChangeListenerWeak = NO_FILE_CHANGE;
+                    currentFileChangeListener = null;
+                }
+            }
+            if (newFile != null) {
+                currentFileChangeListener = new FileRenameListener();
+                FileChangeListener chw =
+                        WeakListeners.create(FileChangeListener.class,
+                                                currentFileChangeListener,
+                                                newFile);
+                AddRemoveFileListenerInEQThread.addFileChangeListener(newFile, chw);
+                currentFileChangeListenerWeak = new WeakReference<FileChangeListener>(chw);
+            }
+        } else {
+            if (oldFile != null) {
+                FileChangeListener chw = mostRecentFileChangeListenerWeak.get();
+                if (chw != null) {
+                    AddRemoveFileListenerInEQThread.removeFileChangeListener(oldFile, chw);
+                    mostRecentFileChangeListenerWeak = NO_FILE_CHANGE;
+                    mostRecentFileChangeListener = null;
+                }
+            }
+            if (newFile != null) {
+                mostRecentFileChangeListener = new FileRenameListener();
+                FileChangeListener chw =
+                        WeakListeners.create(FileChangeListener.class,
+                                                mostRecentFileChangeListener,
+                                                newFile);
+                AddRemoveFileListenerInEQThread.addFileChangeListener(newFile, chw);
+                mostRecentFileChangeListenerWeak = new WeakReference<FileChangeListener>(chw);
+            }
+        }
+    }
+
+    private static final class CoalescedChange {
+        
+        private static final int NUM = 5; // Start coalescing after 5 fast calls
+        private static final long TD = 20; // 20ms delta
+        private long lastTime = 0l;
+        private int num = 0;
+        
+        public CoalescedChange() {
+        }
+        
+        public void done() {
+            lastTime = System.currentTimeMillis();
+        }
+
+        private boolean isCoalescing() {
+            if (System.currentTimeMillis() <= (lastTime + TD)) {
+                num++;
+            } else {
+                num = 0;
+            }
+            return num > NUM;
+        }
+
+    }
+
     /**
      * Use this class to add or remove file change listener in EQ thread.
      * The addition or removal of a listener may require some disk operations.
@@ -801,7 +764,7 @@ public final class EditorContextDispatcher {
         
         private enum AddRemove { ADD, REMOVE }
         private static final Queue<Work> work = new LinkedList<Work>();
-        private static final RequestProcessor rp = new RequestProcessor(AddRemoveFileListenerInEQThread.class.getName());
+        private static final RequestProcessor rp = new RequestProcessor(AddRemoveFileListenerInEQThread.class.getName(), 1, false, false);
         private static Task t;
         private static final int TIMEOUT = 250; // Can spend 250ms in EQ at most
         

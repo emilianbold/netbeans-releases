@@ -52,6 +52,7 @@ import org.netbeans.modules.projectapi.TimedWeakReference;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -123,21 +124,21 @@ public class FileOwnerQueryTest extends NbTestCase {
     
     public void testFileOwner() throws Exception {
         assertEquals("correct project from projfile FileObject", p, FileOwnerQuery.getOwner(projfile));
-        URI u = FileUtil.toFile(projfile).toURI();
+        URI u = Utilities.toURI(FileUtil.toFile(projfile));
         assertEquals("correct project from projfile URI " + u, p, FileOwnerQuery.getOwner(u));
         assertEquals("correct project from projfile2 FileObject", p, FileOwnerQuery.getOwner(projfile2));
-        assertEquals("correct project from projfile2 URI", p, FileOwnerQuery.getOwner(FileUtil.toFile(projfile2).toURI()));
+        assertEquals("correct project from projfile2 URI", p, FileOwnerQuery.getOwner(Utilities.toURI(FileUtil.toFile(projfile2))));
         assertEquals("correct project from projdir FileObject", p, FileOwnerQuery.getOwner(projdir));
-        assertEquals("correct project from projdir URI", p, FileOwnerQuery.getOwner(FileUtil.toFile(projdir).toURI()));
+        assertEquals("correct project from projdir URI", p, FileOwnerQuery.getOwner(Utilities.toURI(FileUtil.toFile(projdir))));
         // Check that it loads the project even though we have not touched it yet:
         Project p2 = FileOwnerQuery.getOwner(subprojfile);
         Project subproj = ProjectManager.getDefault().findProject(subprojdir);
         assertEquals("correct project from subprojdir FileObject", subproj, p2);
-        assertEquals("correct project from subprojdir URI", subproj, FileOwnerQuery.getOwner(FileUtil.toFile(subprojdir).toURI()));
+        assertEquals("correct project from subprojdir URI", subproj, FileOwnerQuery.getOwner(Utilities.toURI(FileUtil.toFile(subprojdir))));
         assertEquals("correct project from subprojfile FileObject", subproj, FileOwnerQuery.getOwner(subprojfile));
-        assertEquals("correct project from subprojfile URI", subproj, FileOwnerQuery.getOwner(FileUtil.toFile(subprojfile).toURI()));
+        assertEquals("correct project from subprojfile URI", subproj, FileOwnerQuery.getOwner(Utilities.toURI(FileUtil.toFile(subprojfile))));
         assertEquals("no project from randomfile FileObject", null, FileOwnerQuery.getOwner(randomfile));
-        assertEquals("no project from randomfile URI", null, FileOwnerQuery.getOwner(FileUtil.toFile(randomfile).toURI()));
+        assertEquals("no project from randomfile URI", null, FileOwnerQuery.getOwner(Utilities.toURI(FileUtil.toFile(randomfile))));
         assertEquals("no project in C:\\", null, FileOwnerQuery.getOwner(URI.create("file:/C:/")));
     }
     
@@ -323,6 +324,17 @@ public class FileOwnerQueryTest extends NbTestCase {
         System.gc();
         assertEquals("now have an owner", p, FileOwnerQuery.getOwner(ext2));        
         assertEquals("still correct for the first external root", p, FileOwnerQuery.getOwner(ext1));
+    }
+    
+    public void testUnowned() throws Exception {
+        FileObject subdir = projdir.createFolder("subUnowned");
+        FileObject subfile = subdir.createData("subfile");
+        assertEquals(p, FileOwnerQuery.getOwner(subfile));
+        FileOwnerQuery.markExternalOwner(subdir, FileOwnerQuery.UNOWNED, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals(null, FileOwnerQuery.getOwner(subfile));
+        FileOwnerQuery.markExternalOwner(subdir, null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        assertEquals(p, FileOwnerQuery.getOwner(subfile));
+        
     }
     
     // XXX test URI usage of external owner

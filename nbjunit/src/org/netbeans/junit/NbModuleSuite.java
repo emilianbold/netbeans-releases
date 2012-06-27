@@ -780,7 +780,7 @@ public class NbModuleSuite {
             dirs.add(new File(platform, "lib"));
             
             File jdkHome = new File(System.getProperty("java.home"));
-            if (!"Mac OS X".equals(System.getProperty("os.name"))) {
+            if (new File(jdkHome.getParentFile(), "lib").exists()) {
                 jdkHome = jdkHome.getParentFile();
             }
             dirs.add(new File(jdkHome, "lib"));
@@ -1474,7 +1474,7 @@ public class NbModuleSuite {
             super.runTest(test, result);
             LOG.log(Level.FINE, "Finished: {0}", test);
             if (e == result.errorCount() && f == result.failureCount()) {
-                NbModuleLogHandler.checkFailures((TestCase) test, result);
+                NbModuleLogHandler.checkFailures((TestCase) test, result, test instanceof NbTestCase ? ((NbTestCase) test).getWorkDirPath() : Manager.getWorkDirPath());
             }
         }
     }

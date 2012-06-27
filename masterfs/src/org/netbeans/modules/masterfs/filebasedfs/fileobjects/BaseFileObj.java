@@ -222,6 +222,9 @@ public abstract class BaseFileObj extends FileObject {
      
     @Override
     public FileObject copy(FileObject target, String name, String ext) throws IOException {
+        if (FileUtil.isParentOf(this, target)) {
+            FSException.io("EXC_CopyChild", this, target); // NOI18N                
+        }
         ProvidedExtensions extensions = getProvidedExtensions();
 
         File to = getToFile(target, name, ext);
@@ -259,6 +262,9 @@ public abstract class BaseFileObj extends FileObject {
 
     @Override
     public final FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+        if (FileUtil.isParentOf(this, target)) {
+            FSException.io("EXC_MoveChild", this, target); // NOI18N                
+        }
         ProvidedExtensions extensions = getProvidedExtensions();
         File to = getToFile(target, name, ext);
 

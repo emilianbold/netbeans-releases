@@ -63,6 +63,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -107,7 +108,7 @@ public class COSSynchronizingIndexer extends CustomIndexer {
                             context.getRoot()
                         });
                 } else if (FileUtil.isParentOf(context.getRoot(), resource)) {
-                    updated.add(new File(url.toURI()));
+                    updated.add(Utilities.toFile(url.toURI()));
                 }
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
@@ -115,7 +116,7 @@ public class COSSynchronizingIndexer extends CustomIndexer {
         }
 
         try {
-            File sourceRootFile = new File(context.getRootURI().toURI());
+            File sourceRootFile = Utilities.toFile(context.getRootURI().toURI());
 
             if (!context.checkForEditorModifications()) { // #187514, see also #152222 and JavaCustomIndexer
                 BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), sourceRootFile, Collections.<File>emptyList(), updated, true);
@@ -157,14 +158,14 @@ public class COSSynchronizingIndexer extends CustomIndexer {
 
             for (Indexable d : deleted) {
                 try {
-                    deletedFiles.add(new File(d.getURL().toURI()));
+                    deletedFiles.add(Utilities.toFile(d.getURL().toURI()));
                 } catch (URISyntaxException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
 
             try {
-                File sourceRootFile = new File(context.getRootURI().toURI());
+                File sourceRootFile = Utilities.toFile(context.getRootURI().toURI());
 
                 BuildArtifactMapperImpl.classCacheUpdated(context.getRootURI(), sourceRootFile, deletedFiles, Collections.<File>emptyList(), true);
             } catch (URISyntaxException ex) {

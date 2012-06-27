@@ -51,6 +51,8 @@ import java.awt.Rectangle;
 import java.awt.event.*;
 import java.lang.ref.WeakReference;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.RecentViewListAction;
@@ -315,6 +317,13 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             int y = screen.y + ((screen.height / 2) - (popupDim.height / 2));
             popup.setLocation(x, y);
             popup.pack();
+            MenuSelectionManager.defaultManager().addChangeListener( new ChangeListener() {
+                @Override
+                public void stateChanged( ChangeEvent e ) {
+                    MenuSelectionManager.defaultManager().removeChangeListener( this );
+                    hidePopup();
+                }
+            });
             popup.setVisible(true);
             // #82743 - on JDK 1.5 popup steals focus from main window for a millisecond,
             // so we have to delay attaching of focus listener

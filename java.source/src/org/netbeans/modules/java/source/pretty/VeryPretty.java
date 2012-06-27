@@ -2329,6 +2329,8 @@ public final class VeryPretty extends JCTree.Visitor {
                     print("/* ");
                     break;
                 case JAVADOC:
+                    if (!onlyWhitespaces)
+                        newline();
                     toLeftMargin();
                     print("/**");
                     newline();
@@ -2357,6 +2359,8 @@ public final class VeryPretty extends JCTree.Visitor {
                     newline();
                     toLeftMargin();
                     print(" */");
+                    newline();
+                    toLeftMargin();
                     break;
             }
         }

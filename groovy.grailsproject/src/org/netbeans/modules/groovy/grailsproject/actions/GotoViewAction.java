@@ -41,15 +41,14 @@
  */
 package org.netbeans.modules.groovy.grailsproject.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.text.JTextComponent;
-import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.groovy.grailsproject.NavigationSupport;
+import java.io.File;
 import static org.netbeans.modules.groovy.grailsproject.actions.Bundle.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
 @Messages("CTL_GotoViewAction=Go to Grails Vi&ew")
@@ -58,21 +57,38 @@ import org.openide.util.NbBundle.Messages;
 @ActionReferences(value = {
     @ActionReference(path = "Menu/GoTo", position = 575),
     @ActionReference(path = "Editors/text/x-groovy/Popup/goto", position = 100),
-    @ActionReference(path = "Editors/text/x-gsp/Popup/goto", position = 100)})
-
-public final class GotoViewAction extends BaseAction {
+    @ActionReference(path = "Editors/text/x-gsp/Popup/goto", position = 100)
+})
+public final class GotoViewAction extends GotoBaseAction {
 
     public GotoViewAction() {
         super(CTL_GotoViewAction()); // NOI18N
     }
 
     @Override
-    public boolean isEnabled() {
-        return NavigationSupport.isActionEnabled(this);
+    protected FileObject getTargetFO(String fileName, FileObject sourceFO) {
+        File targetFile = new File(getTargetFilePath(fileName, sourceFO));
+        FileObject targetFO = FileUtil.toFileObject(FileUtil.normalizeFile(targetFile));
+
+        // do not navigate to itself
+        if (sourceFO.equals(targetFO)) {
+            return null;
+        }
+
+        return targetFO;
     }
 
     @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        NavigationSupport.openArtifact(this, target);
+    protected String getTargetFilePath(String filename, FileObject sourceFO) {
+        // this needs to be done if we are moving from controller
+        if (filename.endsWith("Controller")) {
+            filename = filename.replaceAll("Controller$", "");
+        }
+        if (filename.length() > 1) {
+            filename = Character.toLowerCase(filename.charAt(0)) + filename.substring(1);
+        } else {
+            filename = filename.toLowerCase();
+        }
+        return getExtendedBaseDir(sourceFO, "views") + filename + File.separator + "show.gsp"; //NOI18N
     }
 }

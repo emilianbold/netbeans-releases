@@ -193,11 +193,6 @@ public class DocumentFinder
         if (endOffset == -1){
             endOffset = doc.getLength();
         }
-        if (startOffset>endOffset){
-            int temp = startOffset;
-            startOffset = endOffset;
-            endOffset = temp;
-        }
         DocFinder finder = getFinder(doc, props, oppositeDir, false);
         if (finder == null){
             return null;
@@ -234,9 +229,12 @@ public class DocumentFinder
                 ? docText.subSequence(blockSearchStartOffset, blockSearchEndOffset)
                 : docText;
         int initOffset;
-        if (back && !blockSearch)
-            initOffset = (endOffset<doc.getLength()) ? endOffset : startOffset;
-        else if (back && blockSearch)
+        if (blockSearch && endOffset < startOffset) {
+            int temp = endOffset;
+            endOffset = startOffset;
+            startOffset = temp;
+        }
+        if (back && blockSearch)
             initOffset = endOffset - startOffset;
         else if (!back && blockSearch) 
             initOffset = startOffset - blockSearchStartOffset;
@@ -873,7 +871,7 @@ public class DocumentFinder
     private static abstract class GenericBwdFinder extends AbstractFinder {
 
         public final int find(int initOffset, CharSequence chars) {
-            int offset = (initOffset != 0) ? initOffset-1 : chars.length() - 1;
+            int offset = initOffset-1;
             int limitPos = 0;
             int limitOffset = chars.length();
             while (offset >= 0 && offset < limitOffset) {
@@ -1224,7 +1222,7 @@ public class DocumentFinder
                     do {
                         initOffset++;
                     } while(initOffset < chars.length() && matcher.find(initOffset) && matcher.end() - matcher.start() == 0);
-                    if(matcher.end() - matcher.start() > 0)
+                    if(matcher.find(initOffset) && matcher.end() - matcher.start() > 0)
                         return find(initOffset,chars);
                     else
                         return -1;

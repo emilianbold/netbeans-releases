@@ -46,7 +46,6 @@ package org.netbeans.api.java.source;
 import com.sun.javadoc.Doc;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Scope;
-import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
@@ -318,37 +317,22 @@ public final class ElementUtilities {
      */
     public Iterable<? extends Element> getLocalMembersAndVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
-        HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
         Elements elements = JavacElements.instance(ctx);
-        Types types = JavacTypes.instance(ctx);
         TypeElement cls;
         while(scope != null) {
             if ((cls = scope.getEnclosingClass()) != null) {
-                for (Element local : scope.getLocalElements())
+                for (Element local : scope.getLocalElements()) {
                     if (acceptor == null || acceptor.accept(local, null)) {
-                        CharSequence name = local.getSimpleName();
-                        ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(local, h, types)) {
+                        if (!isHidden(local, members, elements)) {
                             members.add(local);
-                            if (h == null) {
-                                h = new ArrayList<Element>();
-                                hiders.put(name, h);
-                            }
-                            h.add(local);
                         }
                     }
+                }
                 TypeMirror type = cls.asType();
                 for (Element member : elements.getAllMembers(cls)) {
                     if (acceptor == null || acceptor.accept(member, type)) {
-                        CharSequence name = member.getSimpleName();
-                        ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(member, h, types)) {
+                        if (!isHidden(member, members, elements)) {
                             members.add(member);
-                            if (h == null) {
-                                h = new ArrayList<Element>();
-                                hiders.put(name, h);
-                            }
-                            h.add(member);
                         }
                     }
                 }
@@ -356,15 +340,8 @@ public final class ElementUtilities {
                 for (Element local : scope.getLocalElements()) {
                     if (!local.getKind().isClass() && !local.getKind().isInterface() &&
                         (acceptor == null || acceptor.accept(local, local.getEnclosingElement().asType()))) {
-                        CharSequence name = local.getSimpleName();
-                        ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(local, h, types)) {
+                        if (!isHidden(local, members, elements)) {
                             members.add(local);
-                            if (h == null) {
-                                h = new ArrayList<Element>();
-                                hiders.put(name, h);
-                            }
-                            h.add(local);
                         }
                     }
                 }
@@ -378,22 +355,15 @@ public final class ElementUtilities {
      */
     public Iterable<? extends Element> getLocalVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
-        HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
-        Types types = JavacTypes.instance(ctx);
+        Elements elements = JavacElements.instance(ctx);
         while(scope != null && scope.getEnclosingClass() != null) {
-            for (Element local : scope.getLocalElements())
+            for (Element local : scope.getLocalElements()) {
                 if (acceptor == null || acceptor.accept(local, null)) {
-                    CharSequence name = local.getSimpleName();
-                    ArrayList<Element> h = hiders.get(name);
-                    if (!isHidden(local, h, types)) {
+                    if (!isHidden(local, members, elements)) {
                         members.add(local);
-                        if (h == null) {
-                            h = new ArrayList<Element>();
-                            hiders.put(name, h);
-                        }
-                        h.add(local);
                     }
                 }
+            }
             scope = scope.getEnclosingScope();
         }
         return members;
@@ -407,61 +377,41 @@ public final class ElementUtilities {
      * </ul>
      */
     public Iterable<? extends TypeElement> getGlobalTypes(ElementAcceptor acceptor) {
-        HashSet<TypeElement> members = new HashSet<TypeElement>();
-        HashMap<CharSequence, ArrayList<Element>> hiders = new HashMap<CharSequence, ArrayList<Element>>();
+        ArrayList<TypeElement> members = new ArrayList<TypeElement>();
         Trees trees = JavacTrees.instance(ctx);
-        Types types = JavacTypes.instance(ctx);
+        Elements elements = JavacElements.instance(ctx);
         for (CompilationUnitTree unit : Collections.singletonList(info.getCompilationUnit())) {
             TreePath path = new TreePath(unit);
             Scope scope = trees.getScope(path);
             while (scope != null && scope instanceof JavacScope && !((JavacScope)scope).isStarImportScope()) {
-                for (Element local : scope.getLocalElements())
+                for (Element local : scope.getLocalElements()) {
                     if (local.getKind().isClass() || local.getKind().isInterface()) {
-                        CharSequence name = local.getSimpleName();
-                        ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(local, h, types)) {
+                        if (!isHidden(local, members, elements)) {
                             if (acceptor == null || acceptor.accept(local, null))
                                 members.add((TypeElement)local);
-                            if (h == null) {
-                                h = new ArrayList<Element>();
-                                hiders.put(name, h);
-                            }
-                            h.add(local);
                         }
                     }
+                }
                 scope = scope.getEnclosingScope();
             }
             Element element = trees.getElement(path);
             if (element != null && element.getKind() == ElementKind.PACKAGE) {
                 for (Element member : element.getEnclosedElements()) {
-                    CharSequence name = member.getSimpleName();
-                    ArrayList<Element> h = hiders.get(name);
-                    if (!isHidden(member, h, types)) {
+                    if (!isHidden(member, members, elements)) {
                         if (acceptor == null || acceptor.accept(member, null))
                             members.add((TypeElement) member);
-                        if (h == null) {
-                            h = new ArrayList<Element>();
-                            hiders.put(name, h);
-                        }
-                        h.add(member);
                     }
                 }
             }
             while (scope != null) {
-                for (Element local : scope.getLocalElements())
+                for (Element local : scope.getLocalElements()) {
                     if (local.getKind().isClass() || local.getKind().isInterface()) {
-                        CharSequence name = local.getSimpleName();
-                        ArrayList<Element> h = hiders.get(name);
-                        if (!isHidden(local, h, types)) {
+                        if (!isHidden(local, members, elements)) {
                             if (acceptor == null || acceptor.accept(local, null))
                                 members.add((TypeElement)local);
-                            if (h == null) {
-                                h = new ArrayList<Element>();
-                                hiders.put(name, h);
-                            }
-                            h.add(local);
                         }
                     }
+                }
                 scope = scope.getEnclosingScope();
             }
         }
@@ -480,21 +430,8 @@ public final class ElementUtilities {
         boolean accept(Element e, TypeMirror type);
     }
 
-    private boolean isHidden(Element member, Iterable<Element> hiders, Types types) {
-        if (hiders != null) {
-            for (Element hider : hiders) {
-                if (hider == member || (hider.getClass() == member.getClass() && //TODO: getClass() should not be used here
-                    hider.getSimpleName() == member.getSimpleName() &&
-                    ((hider.getKind() != ElementKind.METHOD && hider.getKind() != ElementKind.CONSTRUCTOR)
-                    || types.isSubsignature((ExecutableType)hider.asType(), (ExecutableType)member.asType()))))
-		    return true;
-            }
-        }
-        return false;
-    }
-    
-    private boolean isHidden(Element member, List<Element> members, Elements elements) {
-        for (ListIterator<Element> it = members.listIterator(); it.hasNext();) {
+    private boolean isHidden(Element member, List<? extends Element> members, Elements elements) {
+        for (ListIterator<? extends Element> it = members.listIterator(); it.hasNext();) {
             Element hider = it.next();
             if (hider == member)
                 return true;

@@ -86,7 +86,7 @@ public class Util {
     // XXX this method could probably be removed... use standard FileUtil stuff
     static URL getRootURL  (final File f) {        
         try {
-            URL url = f.toURI().toURL();
+            URL url = Utilities.toURI(f).toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot (url);
             }

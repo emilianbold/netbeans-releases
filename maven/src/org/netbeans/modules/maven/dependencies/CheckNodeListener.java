@@ -43,16 +43,12 @@
  */
 package org.netbeans.modules.maven.dependencies;
 
-import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Collection;
-import javax.swing.Action;
-import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
@@ -75,6 +71,7 @@ public class CheckNodeListener implements MouseListener, KeyListener {
         this.isQuery = isQuery;
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         // todo (#pf): we need to solve problem between click and double
         // click - click should be possible only on the check box area
@@ -136,9 +133,11 @@ public class CheckNodeListener implements MouseListener, KeyListener {
         }
     }
     
+    @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
         // Enter key was pressed, find the reference in document
         int keyCode = e.getKeyCode();
@@ -157,15 +156,19 @@ public class CheckNodeListener implements MouseListener, KeyListener {
         }
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mousePressed(MouseEvent event) {
         JTree tree = (JTree) event.getSource();
         int x = event.getX();
@@ -186,19 +189,8 @@ public class CheckNodeListener implements MouseListener, KeyListener {
         Object o = node.getUserObject();
 
     }
-
-    private void showPopup(Collection<? extends Action> actions, Component c, int x, int y) {
-        if (actions.isEmpty()) {
-            return;
-        }
-        JPopupMenu menu = new JPopupMenu();
-
-        for (Action a:actions) {
-            menu.add(a);
-        }
-        menu.show(c, x, y);
-    }
     
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyChar() == ' ') {
             JTree tree = (JTree) e.getSource();

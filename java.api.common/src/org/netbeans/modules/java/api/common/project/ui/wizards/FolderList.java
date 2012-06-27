@@ -86,6 +86,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /**
@@ -383,7 +384,7 @@ public final class FolderList extends javax.swing.JPanel {
 
     public static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {
         Project p;
-        if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null 
+        if ((p = FileOwnerQuery.getOwner(Utilities.toURI(file)))!=null
             && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {
             final Sources sources = p.getLookup().lookup(Sources.class);
             if (sources == null) {

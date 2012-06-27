@@ -53,6 +53,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * JUnit tests queries.
@@ -69,6 +70,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
     }
 
 
+    @Override
     public URL[] findUnitTests(FileObject fileObject) {
         try {
             String str = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getTestSourceDirectory();
@@ -78,7 +80,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
                 if (fl.equals(param)) {
                     return null;
                 }
-                URI uri = fl.toURI();
+                URI uri = Utilities.toURI(fl);
                 URL entry = uri.toURL();
                 if  (!entry.toExternalForm().endsWith("/")) { //NOI18N
                     entry = new URL(entry.toExternalForm() + "/"); //NOI18N
@@ -91,6 +93,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
         return null;
     }
 
+    @Override
     public URL[] findSources(FileObject fileObject) {
         try {
             String str = project.getLookup().lookup(NbMavenProject.class).getMavenProject().getBuild().getSourceDirectory();
@@ -100,7 +103,7 @@ public class MavenTestForSourceImpl implements MultipleRootsUnitTestForSourceQue
                 if (fl.equals(param)) {
                     return null;
                 }
-                URI uri = fl.toURI();
+                URI uri = Utilities.toURI(fl);
                 URL entry = uri.toURL();
                 if  (!entry.toExternalForm().endsWith("/")) { //NOI18N
                     entry = new URL(entry.toExternalForm() + "/"); //NOI18N

@@ -445,6 +445,12 @@ public final class DefaultPlugin extends TestNGPlugin {
      * @return created test files
      */
     @Messages({"MSG_StatusBar_CreateTest_Begin=Creating tests ...", 
+         "# {0} - skipped class name",
+        "# {1} - reason for skipping",
+        "MSG_skipped_class=Class {0} was skipped because it was {1}.",
+        "# {0} - reason for skipping the classes",
+        "MSG_skipped_classes=Some classes were skipped because they were {0}.",
+        "MSG_No_test_created=No tests were created because no testable class was found.",
         "PROP_testng_testClassTemplate=Templates/UnitTests/EmptyTestNGTest.java",
         "PROP_testng_testSuiteTemplate=Templates/UnitTests/TestNGSuite.xml"})
     @Override
@@ -566,12 +572,7 @@ public final class DefaultPlugin extends TestNGPlugin {
             if (skipped.size() == 1) {
                 // one class? report it
                 SkippedClass skippedClass = skipped.iterator().next();
-
-                message = NbBundle.getMessage(
-                        DefaultPlugin.class,
-                        "MSG_skipped_class",                            //NOI18N
-                        skippedClass.clsName,
-                        strReason(skippedClass.reason, "COMMA", "AND"));//NOI18N
+                message = Bundle.MSG_skipped_class(skippedClass.clsName, strReason(skippedClass.reason, "COMMA", "AND")); //NOI18N
             } else {
                 // more classes, report a general error
                 // combine the results
@@ -580,10 +581,7 @@ public final class DefaultPlugin extends TestNGPlugin {
                     reason = TestabilityResult.combine(reason, sc.reason);
                 }
 
-                message = NbBundle.getMessage(
-                        DefaultPlugin.class,
-                        "MSG_skipped_classes",                          //NOI18N
-                        strReason(reason, "COMMA", "OR"));              //NOI18N
+                message = Bundle.MSG_skipped_classes(strReason(reason, "COMMA", "OR")); //NOI18N
             }
             TestUtil.notifyUser(message, NotifyDescriptor.INFORMATION_MESSAGE);
 
@@ -593,9 +591,7 @@ public final class DefaultPlugin extends TestNGPlugin {
             Mutex.EVENT.writeAccess(new Runnable() {
                 public void run() {
                     TestUtil.notifyUser(
-                            NbBundle.getMessage(
-                                    DefaultPlugin.class,
-                                    "MSG_No_test_created"),     //NOI18N
+                            Bundle.MSG_No_test_created(),
                             NotifyDescriptor.INFORMATION_MESSAGE);
                 }
             });
@@ -1102,8 +1098,7 @@ public final class DefaultPlugin extends TestNGPlugin {
         String strComma = Bundle.COMMA();
         String strAnd = andKey.equals("OR") ? Bundle.OR() : Bundle.AND();
         String strReason = reason.getReason( // string representation of the reasons
-                        strComma.substring(1, strComma.length()-1),
-                        strAnd.substring(1, strAnd.length()-1));
+                        strComma, strAnd);
 
         return strReason;
 
@@ -1112,11 +1107,9 @@ public final class DefaultPlugin extends TestNGPlugin {
     /**
      *
      */
+    @NbBundle.Messages({"# {0} - class name", "FMT_generator_status_creating=Creating: {0} ..."})
     private static String getCreatingMsg(String className) {
-        return NbBundle.getMessage(
-                DefaultPlugin.class,
-                "FMT_generator_status_creating",                        //NOI18N
-                className);
+        return Bundle.FMT_generator_status_creating(className);
     }
 
     /**
@@ -1130,11 +1123,9 @@ public final class DefaultPlugin extends TestNGPlugin {
     /**
      *
      */
+    @NbBundle.Messages({"# {0} - source folder", "FMT_generator_status_ignoring=Ignoring: {0} ..."})
     private static String getIgnoringMsg(String sourceName, String reason) {
-        return NbBundle.getMessage(
-                DefaultPlugin.class,
-                "FMT_generator_status_ignoring",                        //NOI18N
-                sourceName);
+        return Bundle.FMT_generator_status_ignoring(sourceName);
     }
 
     

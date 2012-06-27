@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.tasks.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 
@@ -50,14 +48,14 @@ import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
  *
  * @author jpeska
  */
-public abstract class RepositoryAction extends AbstractAction{
+public abstract class RepositoryAction extends AbstractAction {
 
-    private List<RepositoryNode> repositoryNodes;
+    private RepositoryNode[] repositoryNodes;
 
-        public RepositoryAction(String name, RepositoryNode... repositoryNodes) {
-            super(name);
-            this.repositoryNodes = Arrays.asList(repositoryNodes);
-        }
+    public RepositoryAction(String name, RepositoryNode... repositoryNodes) {
+        super(name);
+        this.repositoryNodes = repositoryNodes;
+    }
 
     @Override
     public boolean isEnabled() {
@@ -69,7 +67,7 @@ public abstract class RepositoryAction extends AbstractAction{
         return true;
     }
 
-    public List<RepositoryNode> getRepositoryNodes() {
+    public RepositoryNode[] getRepositoryNodes() {
         return repositoryNodes;
     }
 }

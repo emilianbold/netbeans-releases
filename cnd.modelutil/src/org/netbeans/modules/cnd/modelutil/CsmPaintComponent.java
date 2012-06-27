@@ -63,7 +63,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JPanel;
-
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  *
@@ -101,9 +101,8 @@ public abstract class CsmPaintComponent extends JPanel {
         "", " ", "[]", "(", ")", ", ", "String", THROWS // NOI18N
     };
     
-    private static final Color KEYWORD_COLOR = Color.darkGray;
-    private static final Color TYPE_COLOR = Color.black;
-    private static final Color POSTFIX_COLOR = Color.gray;
+    private final static Color KEYWORD_COLOR = Color.gray;
+    private final static Color POSTFIX_COLOR = Color.lightGray;
     
     private Icon icon;
     
@@ -128,21 +127,22 @@ public abstract class CsmPaintComponent extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         // clear background
+        Color postfixColor = LFCustoms.shiftColor(POSTFIX_COLOR);
         g.setColor(getBackground());
         java.awt.Rectangle r = g.getClipBounds();
         g.fillRect(r.x, r.y, r.width, r.height);
         draw(g);
         
         if(!postfixes.isEmpty()) {
-            drawString(g, " (", POSTFIX_COLOR); // NOI18N
+            drawString(g, " (", postfixColor); // NOI18N
             Iterator iter = postfixes.iterator();
             while(iter.hasNext()) {
                 ((PostfixString) iter.next()).Draw(g);
                 if(iter.hasNext()) {
-                    drawString(g, ",  ", POSTFIX_COLOR); // NOI18N
+                    drawString(g, ",  ", postfixColor); // NOI18N
                 }
             } 
-            drawString(g, ")", POSTFIX_COLOR); // NOI18N
+            drawString(g, ")", postfixColor); // NOI18N
         }        
     }
     
@@ -372,7 +372,7 @@ public abstract class CsmPaintComponent extends JPanel {
         }
         
         public PostfixString(String text, int fontStyle) {
-            this(text, CsmPaintComponent.POSTFIX_COLOR, fontStyle);            
+            this(text, LFCustoms.shiftColor(CsmPaintComponent.POSTFIX_COLOR), fontStyle);
         }
         
         void Draw(Graphics g) {            
@@ -397,7 +397,7 @@ public abstract class CsmPaintComponent extends JPanel {
 
         private String pkgName;
         private boolean displayFullNamespacePath;
-        private Color NAMESPACE_COLOR = Color.green.darker().darker().darker();
+        private Color NAMESPACE_COLOR = LFCustoms.shiftColor(new Color(64,255,64));
         
         public NamespacePaintComponent(){
             super();
@@ -436,7 +436,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class NamespaceAliasPaintComponent extends CsmPaintComponent{
 
         private String aliasName;
-        private Color NAMESPACE_COLOR = Color.green.darker().darker().darker();
+        private Color NAMESPACE_COLOR = LFCustoms.shiftColor(new Color(64,255,64));
         
         public NamespaceAliasPaintComponent(){
             super();
@@ -467,7 +467,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class EnumPaintComponent extends CsmPaintComponent {
         
         String formatEnumName;
-        private Color ENUM_COLOR = Color.red.darker().darker().darker().darker();
+        private Color ENUM_COLOR = LFCustoms.shiftColor(new Color(255,64,64));
         private boolean displayFQN;
         
         public void EnumPaintComponent(String formatEnumName){
@@ -504,7 +504,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class EnumeratorPaintComponent extends CsmPaintComponent {
         
         String formatEnumeratorName;
-        private Color ENUMERATOR_COLOR = Color.blue.darker().darker().darker().darker();
+        private Color ENUMERATOR_COLOR = LFCustoms.shiftColor(new Color(64,64,255));
         private boolean displayFQN;
         
         public void EnumeratorPaintComponent(String formatEnumeratorName){
@@ -542,7 +542,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class ClassPaintComponent extends CsmPaintComponent{
         
         String formatClassName;
-        private Color CLASS_COLOR = Color.red.darker().darker().darker();
+        private Color CLASS_COLOR = LFCustoms.shiftColor(new Color(255,64,64));
         private boolean displayFQN;
         
         public void setFormatClassName(String formatClassName){
@@ -576,7 +576,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class TypedefPaintComponent extends CsmPaintComponent{
         
         String formatTypedefName;
-        private final Color TYPEDEF_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.TYPEDEF); //Color.blue.darker().darker().darker();
+        private final Color TYPEDEF_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.TYPEDEF); //new Color(64,64,255).darker().darker().darker();
         //private boolean displayFQN;
         
         public void setFormatTypedefName(String formatTypedefName){
@@ -609,7 +609,7 @@ public abstract class CsmPaintComponent extends JPanel {
 
     public static class StructPaintComponent extends ClassPaintComponent{
         
-        private Color STRUCT_COLOR = Color.red.darker().darker();
+        private Color STRUCT_COLOR = LFCustoms.shiftColor(new Color(255,64,64));
         
         @Override
         protected Color getColor(){
@@ -623,7 +623,7 @@ public abstract class CsmPaintComponent extends JPanel {
     
     public static class UnionPaintComponent extends ClassPaintComponent{
         
-        private Color UNION_COLOR = Color.red.darker();
+        private Color UNION_COLOR = LFCustoms.shiftColor(new Color(255,64,64));
         
         @Override
         protected Color getColor(){
@@ -636,7 +636,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class FieldPaintComponent extends CsmPaintComponent{
-        private Color FIELD_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.CLASS_FIELD);//Color.blue.darker();
+        private Color FIELD_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.CLASS_FIELD);//new Color(64,64,255).darker();
         protected String typeName;
         protected Color typeColor;
         protected String fldName;
@@ -720,7 +720,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class LocalVariablePaintComponent extends FieldPaintComponent {
-        private Color VARIABLE_COLOR = Color.red.darker().darker().darker();
+        private Color VARIABLE_COLOR = LFCustoms.shiftColor(new Color(255,64,64));
         
         public LocalVariablePaintComponent(){
             super();
@@ -739,7 +739,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class FileLocalVariablePaintComponent extends FieldPaintComponent {
-        private Color VARIABLE_COLOR = Color.blue.darker().darker().darker();
+        private Color VARIABLE_COLOR = LFCustoms.shiftColor(new Color(64,64,255));
         
         public FileLocalVariablePaintComponent(){
             super();
@@ -752,7 +752,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class GlobalVariablePaintComponent extends FieldPaintComponent {
-        private Color VARIABLE_COLOR = Color.blue.darker().darker().darker();
+        private Color VARIABLE_COLOR = LFCustoms.shiftColor(new Color(64,64,255));
         
         public GlobalVariablePaintComponent(){
             super();
@@ -765,8 +765,8 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class MacroPaintComponent extends CsmPaintComponent{
-        private Color MACRO_NAME_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.DEFINED_MACRO);//Color.green.darker().darker();
-        private Color MACRO_PARAMETER_NAME_COLOR = new Color(163, 102, 10);//Color.magenta.darker();
+        private Color MACRO_NAME_COLOR = CsmFontColorManager.instance().getColor(FontColorProvider.Entity.DEFINED_MACRO);//new Color(64,255,64).darker().darker();
+        private Color MACRO_PARAMETER_NAME_COLOR = LFCustoms.shiftColor(new Color(227, 166, 74));//Color.magenta.darker();
         private List params = null;
         private String name;
 
@@ -848,7 +848,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class TemplateParameterPaintComponent extends CsmPaintComponent{
-        private Color PARAMETER_NAME_COLOR = Color.BLACK.darker().darker();
+        private Color PARAMETER_NAME_COLOR = LFCustoms.getTextFgColor();
         private List params = null;
         private String name;
 
@@ -897,7 +897,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
 
     public static class LabelPaintComponent extends  CsmPaintComponent {
-        private Color LABEL_NAME_COLOR = Color.BLACK.darker().darker();
+        private Color LABEL_NAME_COLOR = LFCustoms.getTextFgColor();
         private List params = null;
         private String name;
 
@@ -947,8 +947,8 @@ public abstract class CsmPaintComponent extends JPanel {
     
     public static class ConstructorPaintComponent extends CsmPaintComponent{
         
-        private Color CONSTRUCTOR_COLOR = Color.orange.darker().darker();
-        private Color PARAMETER_NAME_COLOR = new Color(163, 102, 10);//Color.magenta.darker();
+        private Color CONSTRUCTOR_COLOR = LFCustoms.shiftColor(Color.orange);
+        private Color PARAMETER_NAME_COLOR = LFCustoms.shiftColor(new Color(227, 166, 74));//Color.magenta.darker();
         private List params = new ArrayList();
         private List excs = new ArrayList();
         private String name;
@@ -992,14 +992,22 @@ public abstract class CsmPaintComponent extends JPanel {
         }
         
         protected void drawParameter(Graphics g, ParamStr prm, boolean strike) {
-            
-            //drawType
-            drawString(g, prm.getSimpleTypeName(), prm.getTypeColor(), null, strike);
-            
             String parmName = prm.getName();
-            if (parmName != null && parmName.length() > 0) {
-                drawString(g, " ", strike); // NOI18N
-                drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
+            String simpleTypeName = prm.getSimpleTypeName();
+            int indexOfSqr = simpleTypeName.indexOf('['); // NOI18N
+            if(indexOfSqr == -1) {
+                drawString(g, simpleTypeName, prm.getTypeColor(), null, strike);
+                if (parmName != null && parmName.length() > 0) {
+                    drawString(g, " ", strike); // NOI18N
+                    drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
+                }
+            } else {
+                drawString(g, simpleTypeName.substring(0, indexOfSqr), prm.getTypeColor(), null, strike);
+                if (parmName != null && parmName.length() > 0) {
+                    drawString(g, " ", strike); // NOI18N
+                    drawString(g, prm.getName(), PARAMETER_NAME_COLOR, null, strike);
+                }
+                drawString(g, simpleTypeName.substring(indexOfSqr), prm.getTypeColor(), null, strike);
             }
         }
         
@@ -1020,7 +1028,7 @@ public abstract class CsmPaintComponent extends JPanel {
         
         protected void drawExceptions(Graphics g, List exc, boolean strike) {
             if (exc.size() > 0) {
-                drawString(g, THROWS, KEYWORD_COLOR, null, strike);
+                drawString(g, THROWS, LFCustoms.shiftColor(KEYWORD_COLOR), null, strike);
                 for (Iterator it = exc.iterator(); it.hasNext();) {
                     ExceptionStr ex = (ExceptionStr) it.next();
                     drawString(g, ex.getName(), ex.getTypeColor(), null, strike);
@@ -1061,16 +1069,7 @@ public abstract class CsmPaintComponent extends JPanel {
         }    
         
         protected String toStringParameter(ParamStr prm) {
-            StringBuilder buf = new StringBuilder();
-            //type
-            buf.append(prm.getSimpleTypeName());
-            //name
-            String parmName = prm.getName();
-            if (parmName != null && parmName.length() > 0) {
-                buf.append(' '); // NOI18N
-                buf.append(prm.getName());
-            }
-            return buf.toString();
+            return prm.getText();
         }
         
         protected String toStringParameterList(List prmList) {
@@ -1106,7 +1105,7 @@ public abstract class CsmPaintComponent extends JPanel {
     public static class MethodPaintComponent extends ConstructorPaintComponent {
         
         //private Color PARAMETER_NAME_COLOR = Color.magenta.darker();
-        private Color METHOD_COLOR = Color.black;//red.darker().darker();
+        private Color METHOD_COLOR = LFCustoms.getTextFgColor();
         private String typeName;
         private Color typeColor;
         private boolean drawTypeAsPrefix = false;
@@ -1191,7 +1190,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
 
     public static class FileLocalFunctionPaintComponent extends MethodPaintComponent {
-        private Color FUN_COLOR = Color.black;//red.darker().darker();
+        private Color FUN_COLOR = LFCustoms.getTextFgColor();
         
         public FileLocalFunctionPaintComponent(){
             super();
@@ -1204,7 +1203,7 @@ public abstract class CsmPaintComponent extends JPanel {
     }
     
     public static class GlobalFunctionPaintComponent extends MethodPaintComponent {
-        private Color FUN_COLOR = Color.black;//.red.darker().darker();
+        private Color FUN_COLOR = LFCustoms.getTextFgColor();
         
         public GlobalFunctionPaintComponent(){
             super();
@@ -1278,7 +1277,7 @@ public abstract class CsmPaintComponent extends JPanel {
         @Override
         protected void draw(Graphics g){
             drawIcon(g, null);
-            drawString(g, str, TYPE_COLOR);
+            drawString(g, str, LFCustoms.getTextFgColor());
         }
 
         @Override

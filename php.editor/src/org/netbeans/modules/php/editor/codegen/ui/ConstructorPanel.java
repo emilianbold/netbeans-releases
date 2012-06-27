@@ -50,15 +50,15 @@ package org.netbeans.modules.php.editor.codegen.ui;
 
 import java.awt.Dimension;
 import java.util.List;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator;
 import org.netbeans.modules.php.editor.codegen.CGSInfo;
+import org.netbeans.modules.php.editor.codegen.ComboBoxModelElement;
 import org.netbeans.modules.php.editor.codegen.Property;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -87,59 +87,38 @@ public class ConstructorPanel extends JPanel {
     }
 
     private void initPanel(CGSGenerator.GenType genType) {
-        String panelTitle = "";                     //NOI18N
         boolean customizeMethodGeneration = true;
         String name = "";
         if (properties.size() > 0) {
             name = properties.get(0).getName();
         }
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        switch (genType) {
-            case CONSTRUCTOR:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_CONSTRUCTOR");    //NOI18N
-                customizeMethodGeneration = false;
-                break;
-            case GETTER:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS");    //NOI18N
-                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getGetterExample(name));
-                }
-                break;
-            case SETTER:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_SETTERS");    //NOI18N
-                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getSetterExample(name));
-                }
-                break;
-            case GETTER_AND_SETTER:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS_AND_SETTERS");    //NOI18N
-                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
-                    model.addElement(way.getSimpleDescription() + ": " + way.getGetterExample(name) + ", " + way.getSetterExample(name));
-                }
-                break;
-            case METHODS:
-                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_METHODS");    //NOI18N
-                customizeMethodGeneration = false;
-                Dimension preferredSize = getPreferredSize();
-                setPreferredSize(new Dimension((int)(preferredSize.getWidth()*1.3), (int)(preferredSize.getHeight()*1.3)));
+        ComboBoxModel model = genType.getModel(name);
+        if (genType.equals(CGSGenerator.GenType.METHODS)) {
+            customizeMethodGeneration = false;
+            Dimension preferredSize = getPreferredSize();
+            setPreferredSize(new Dimension((int)(preferredSize.getWidth()*1.3), (int)(preferredSize.getHeight()*1.3)));
         }
-        this.label.setText(panelTitle);
+        this.label.setText(genType.getPanelTitle());
         this.pGSCustomize.setVisible(customizeMethodGeneration);
         if (customizeMethodGeneration) {
             cbMethodGeneration.setModel(model);
             int index = 0;
             if (cgsInfo.getHowToGenerate() != null) {
-                for (CGSGenerator.GenWay genWay : CGSGenerator.GenWay.values()) {
-                    if (genWay.equals(cgsInfo.getHowToGenerate())) {
+                for (int i = 0; i < model.getSize(); i++) {
+                    Object modelElement = model.getElementAt(index);
+                    assert modelElement instanceof ComboBoxModelElement;
+                    if (cgsInfo.getHowToGenerate().equals(((ComboBoxModelElement) modelElement).getGenWay())) {
                         break;
                     }
-                    index++;
+                    index = i;
                 }
             }
             cbMethodGeneration.setSelectedIndex(index);
         }
         cbGenerateDoc.setSelected(cgsInfo.isGenerateDoc());
         cbGenerateDoc.setVisible(false);
+        fluentSetterCheckBox.setVisible(genType.isFluentSetterVisible());
+        fluentSetterCheckBox.setSelected(cgsInfo.isFluentSetter());
     }
 
     private void initTree(){
@@ -171,7 +150,6 @@ public class ConstructorPanel extends JPanel {
     protected void initTree(JTree tree) {
     }
 
-
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -187,6 +165,7 @@ public class ConstructorPanel extends JPanel {
         jLabel1 = new javax.swing.JLabel();
         cbMethodGeneration = new javax.swing.JComboBox();
         cbGenerateDoc = new javax.swing.JCheckBox();
+        fluentSetterCheckBox = new javax.swing.JCheckBox();
 
         label.setDisplayedMnemonic('G');
         label.setLabelFor(scrollPane);
@@ -228,11 +207,19 @@ public class ConstructorPanel extends JPanel {
         cbMethodGeneration.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbMethodGeneration.AccessibleContext.accessibleDescription")); // NOI18N
 
         cbGenerateDoc.setMnemonic('e');
+        cbGenerateDoc.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "LBL_Generate_Documentation")); // NOI18N
         cbGenerateDoc.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        cbGenerateDoc.setLabel(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "LBL_Generate_Documentation")); // NOI18N
         cbGenerateDoc.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbGenerateDocActionPerformed(evt);
+            }
+        });
+
+        fluentSetterCheckBox.setMnemonic('F');
+        fluentSetterCheckBox.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.fluentSetterCheckBox.text")); // NOI18N
+        fluentSetterCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fluentSetterCheckBoxActionPerformed(evt);
             }
         });
 
@@ -240,13 +227,17 @@ public class ConstructorPanel extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
-                    .addComponent(label, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(cbGenerateDoc, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
-                    .addComponent(pGSCustomize, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .addComponent(cbGenerateDoc, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE)
+                    .addComponent(pGSCustomize, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(label)
+                            .addComponent(fluentSetterCheckBox))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -255,11 +246,13 @@ public class ConstructorPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(label)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 206, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pGSCustomize, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbGenerateDoc)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(fluentSetterCheckBox)
                 .addContainerGap())
         );
 
@@ -277,18 +270,24 @@ public class ConstructorPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbMethodGenerationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMethodGenerationActionPerformed
-        int selectedIndex = cbMethodGeneration.getSelectedIndex();
-        cgsInfo.setHowToGenerate(CGSGenerator.GenWay.values()[selectedIndex]);
+        Object selectedItem = cbMethodGeneration.getSelectedItem();
+        assert selectedItem instanceof ComboBoxModelElement;
+        cgsInfo.setHowToGenerate(((ComboBoxModelElement) selectedItem).getGenWay());
     }//GEN-LAST:event_cbMethodGenerationActionPerformed
 
     private void cbGenerateDocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbGenerateDocActionPerformed
         cgsInfo.setGenerateDoc(cbGenerateDoc.isSelected());
     }//GEN-LAST:event_cbGenerateDocActionPerformed
 
+    private void fluentSetterCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fluentSetterCheckBoxActionPerformed
+        cgsInfo.setFluentSetter(fluentSetterCheckBox.isSelected());
+    }//GEN-LAST:event_fluentSetterCheckBoxActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox cbGenerateDoc;
     private javax.swing.JComboBox cbMethodGeneration;
+    private javax.swing.JCheckBox fluentSetterCheckBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel label;
     private javax.swing.JPanel pGSCustomize;

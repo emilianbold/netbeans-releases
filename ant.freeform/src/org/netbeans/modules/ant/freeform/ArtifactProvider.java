@@ -58,6 +58,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.ErrorManager;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 
@@ -124,7 +125,7 @@ final class ArtifactProvider implements AntArtifactProvider {
         }
         File locF = new File(locationResolved);
         if (locF.isAbsolute()) {
-            return locF.toURI();
+            return Utilities.toURI(locF);
         } else {
             // Project-relative path.
             try {

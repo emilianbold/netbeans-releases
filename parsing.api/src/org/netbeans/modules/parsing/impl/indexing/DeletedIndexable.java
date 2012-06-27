@@ -75,7 +75,12 @@ public final class DeletedIndexable implements IndexableImpl, FileObjectProvider
     @Override
     public URL getURL() {
         try {
-            return Util.resolveUrl(root, relativePath, false);
+            
+            return Util.resolveUrl(
+                    root,
+                    relativePath,
+                    relativePath.isEmpty() || relativePath.charAt(relativePath.length()-1) == '/'?
+                        null : Boolean.FALSE);
         } catch (MalformedURLException ex) {
             LOG.log(Level.WARNING, null, ex);
             return null;

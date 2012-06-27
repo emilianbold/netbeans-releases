@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.projectimport.eclipse.core.spi.LaunchConfiguration;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -148,7 +149,7 @@ final class WorkspaceParser {
         }
         Document xml;
         try {
-            xml = XMLUtil.parse(new InputSource(workspace.getUserJSFLibraries().toURI().toString()), false, true, XMLUtil.defaultErrorHandler(), null);
+            xml = XMLUtil.parse(new InputSource(Utilities.toURI(workspace.getUserJSFLibraries()).toString()), false, true, XMLUtil.defaultErrorHandler(), null);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(workspace.getUserJSFLibraries() + ": " + e.toString()).initCause(e); // NOI18N
             throw ioe;
@@ -328,7 +329,7 @@ final class WorkspaceParser {
             for (File launch : launches) {
                 Document doc;
                 try {
-                    doc = XMLUtil.parse(new InputSource(launch.toURI().toString()), false, false, null, null);
+                    doc = XMLUtil.parse(new InputSource(Utilities.toURI(launch).toString()), false, false, null, null);
                 } catch (SAXException x) {
                     throw new ProjectImporterException("Could not parse " + launch, x);
                 }

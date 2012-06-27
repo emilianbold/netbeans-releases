@@ -79,12 +79,21 @@ public final class ImportUtils {
     public static List<String> normalizeParameters(List<String> list){
         List<String> res = new ArrayList<String>();
         for (String s : list){
-            if (s.indexOf('=')>0){
-                if(s.indexOf('\\') > 0){
-                    s = s.replace('\\', '/');
-                }
-                if(s.indexOf('"')>0) {
-                    s = s.replace("\"", ""); // NOI18N
+            if (s.startsWith("'") && s.endsWith("'") || // NOI18N
+                s.startsWith("\"") && s.endsWith("\"")){ // NOI18N
+                s = s.substring(1,s.length()-1);
+            }
+            int i = s.indexOf('='); // NOI18N
+            if (i > 0){
+                String rest = s.substring(i+1);
+                String var = s.substring(0,i+1);
+                if (var.startsWith("-DCMAKE")) { //NOI18N
+                    // cmake does not remove quotes of flags parameters
+                    if (rest.startsWith("'") && rest.endsWith("'") || // NOI18N
+                        rest.startsWith("\"") && rest.endsWith("\"")){ // NOI18N
+                        rest = rest.substring(1,rest.length()-1);
+                        s = var+rest;
+                    }
                 }
             }
             res.add(s);

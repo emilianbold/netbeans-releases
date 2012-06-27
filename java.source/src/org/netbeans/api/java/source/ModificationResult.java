@@ -178,7 +178,7 @@ public final class ModificationResult {
         for (List<Difference> ds:diffs.values()) {
             for (Difference d: ds) {
                 if (d.getKind() == Difference.Kind.CREATE) {
-                    newFiles.add(new File(((CreateChange) d).getFileObject().toUri()));
+                    newFiles.add(org.openide.util.Utilities.toFile(((CreateChange) d).getFileObject().toUri()));
                 }
             }
         }

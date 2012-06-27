@@ -47,6 +47,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -65,6 +67,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private JEditorPane editorPane;
     private Object oldValue;
     private static JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent();
+    private static final Logger LOG = Logger.getLogger(SearchComboBoxEditor.class.getName());
     
     public SearchComboBoxEditor() {
         editorPane = new JEditorPane();
@@ -74,7 +77,9 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, tfkeys);
         tfkeys = referenceTextField.getFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
         editorPane.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, tfkeys);
+        LOG.log(Level.FINE, "Constructor - Reference Font: Name: {0}, Size: {1}\n", new Object[]{referenceTextField.getFont().getFontName(), referenceTextField.getFont().getSize()});
         editorPane.setFont(referenceTextField.getFont());
+        LOG.log(Level.FINE, "Constructor - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
         final Insets margin = referenceTextField.getMargin();
         final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
         
@@ -133,6 +138,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     }
     
     public static void changeToOneLineEditorPane(JEditorPane editorPane) {
+        editorPane.putClientProperty("AsTextField", Boolean.TRUE);
         editorPane.putClientProperty(
             "HighlightsLayerExcludes", //NOI18N
             ".*(?<!TextSelectionHighlighting)$" //NOI18N
@@ -174,6 +180,9 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             new EmptyBorder (0, 0, 0, 0)
         );     
         editorPane.setBackground(referenceTextField.getBackground());
+        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
+        editorPane.setFont(referenceTextField.getFont());
+        LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()});
     }
 
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {

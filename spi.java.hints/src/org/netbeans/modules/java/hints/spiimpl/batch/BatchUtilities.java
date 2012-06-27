@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.java.hints.spiimpl.batch;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ImportTree;
-import com.sun.source.util.TreePath;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.util.Log;
 import java.io.IOException;
@@ -69,9 +66,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.PathConversionMode;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -80,7 +77,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -378,35 +374,77 @@ public class BatchUtilities {
     }
 
     public static Map<ClasspathInfo, Collection<FileObject>> sortFiles(Collection<? extends FileObject> from) {
-        Map<List<Object>, Collection<FileObject>> m = new HashMap<List<Object>, Collection<FileObject>>();
+        Map<CPCategorizer, Collection<FileObject>> m = new HashMap<CPCategorizer, Collection<FileObject>>();
 
         for (FileObject f : from) {
-            List<Object> cps = new ArrayList<Object>(4);
+            CPCategorizer cpCategorizer = new CPCategorizer(f);
 
-            cps.add(ClassPath.getClassPath(f, ClassPath.BOOT));
-            cps.add(ClassPath.getClassPath(f, ClassPath.COMPILE));
-
-            ClassPath sourceCP = ClassPath.getClassPath(f, ClassPath.SOURCE);
-
-            cps.add(sourceCP);
-            cps.add(sourceCP != null ? sourceCP.findOwnerRoot(f) : null);
-
-            Collection<FileObject> files = m.get(cps);
+            Collection<FileObject> files = m.get(cpCategorizer);
 
             if (files == null) {
-                m.put(cps, files = new LinkedList<FileObject>());
+                m.put(cpCategorizer, files = new LinkedList<FileObject>());
             }
 
             files.add(f);
         }
-
+        
         Map<ClasspathInfo, Collection<FileObject>> result = new IdentityHashMap<ClasspathInfo, Collection<FileObject>>();
 
-        for (Entry<List<Object>, Collection<FileObject>> e : m.entrySet()) {
-            result.put(ClasspathInfo.create((ClassPath) e.getKey().get(0), (ClassPath) e.getKey().get(1), (ClassPath) e.getKey().get(2)), e.getValue());
+        for (Entry<CPCategorizer, Collection<FileObject>> e : m.entrySet()) {
+            result.put(ClasspathInfo.create(e.getKey().boot, e.getKey().compile, e.getKey().source), e.getValue());
+        }
+        
+        return result;
+    }
+    
+    private static final class CPCategorizer {
+        private final String cps;
+        private final ClassPath boot;
+        private final ClassPath compile;
+        private final ClassPath source;
+        private final FileObject sourceRoot;
+
+        public CPCategorizer(FileObject file) {
+            this.boot = ClassPath.getClassPath(file, ClassPath.BOOT);
+            this.compile = ClassPath.getClassPath(file, ClassPath.COMPILE);
+            this.source = ClassPath.getClassPath(file, ClassPath.SOURCE);
+            this.sourceRoot = source != null ? source.findOwnerRoot(file) : null;
+            
+            StringBuilder cps = new StringBuilder();
+            
+            if (boot != null) cps.append(boot.toString(PathConversionMode.PRINT));
+            if (compile != null) cps.append(compile.toString(PathConversionMode.PRINT));
+            if (source != null) cps.append(source.toString(PathConversionMode.PRINT));
+            
+            this.cps = cps.toString();
         }
 
-        return result;
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 53 * hash + this.cps.hashCode();
+            hash = 53 * hash + (this.sourceRoot != null ? this.sourceRoot.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CPCategorizer other = (CPCategorizer) obj;
+            if (!this.cps.equals(other.cps)) {
+                return false;
+            }
+            if (this.sourceRoot != other.sourceRoot && (this.sourceRoot == null || !this.sourceRoot.equals(other.sourceRoot))) {
+                return false;
+            }
+            return true;
+        }
+        
     }
 
     public static final String ENSURE_DEPENDENCY = "ensure-dependency";

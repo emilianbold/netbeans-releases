@@ -102,6 +102,14 @@ made subject to such option by the copyright holder.
         <font style="italic" />
     </fontcolor>
    
+    <!-- JavaCharacterTokenId categories -->
+    <fontcolor name="character-escape" default="character">
+        <font style="bold" />
+    </fontcolor>
+    <fontcolor name="character-escape-invalid" default="character">
+        <font style="italic" />
+    </fontcolor>
+   
     <!-- JavadocTokenId categories -->
     <fontcolor name="javadoc-tag" foreColor="0000CC" default="comment">
         <font style="bold" />

@@ -101,7 +101,7 @@ public abstract class URLMapper {
     
     private static Collection<? extends URLMapper> getMappers() {
         if (mappers == null) {
-            mappers = Lookup.getDefault().lookup(new Lookup.Template<URLMapper>(URLMapper.class));
+            mappers = Lookup.getDefault().lookupResult(URLMapper.class);
         }
         return mappers.allInstances();
     }

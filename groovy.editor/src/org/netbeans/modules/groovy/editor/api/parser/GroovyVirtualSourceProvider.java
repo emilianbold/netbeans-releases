@@ -96,11 +96,13 @@ import org.openide.util.Exceptions;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider.class)
 public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
+    @Override
     public Set<String> getSupportedExtensions() {
         return Collections.singleton("groovy"); // NOI18N
 
     }
 
+    @Override
     public void translate(Iterable<File> files, File sourceRoot, Result result) {
         JavaStubGenerator generator = new JavaStubGenerator();
         FileObject rootFO = FileUtil.toFileObject(sourceRoot);
@@ -118,10 +120,10 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                         pkg = pkg.replace('/', '.');
                         StringBuilder sb = new StringBuilder();
                         if (!pkg.equals("")) { // NOI18N
-                            sb.append("package " + pkg + ";"); // NOI18N
+                            sb.append("package ").append(pkg).append(";"); // NOI18N
                         }
                         String name = fo.getName();
-                        sb.append("public class " + name + "{}"); // NOI18N
+                        sb.append("public class ").append(name).append("{}"); // NOI18N
                         result.add(file, pkg, name, sb.toString());
                     }
                 }
@@ -147,41 +149,28 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         final List<ClassNode> resultList = new ArrayList<ClassNode>();
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
-//            try {
-//                SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
-//                    public void run(GroovyParserResult result) throws Exception {
-//                        AstRootElement astRootElement = result.getRootElement();
-//                        if (astRootElement != null) {
-//                            ModuleNode moduleNode = astRootElement.getModuleNode();
-//                            if (moduleNode != null) {
-//                                resultList.addAll(moduleNode.getClasses());
-//                            }
-//                        }
-//                    }
-//                    public void cancel() {}
-//                }, false);
-//            } catch (Exception ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-            try {
-                Source source = Source.create(fo);
-                // FIXME can we move this out of task (?)
-                ParserManager.parse(Collections.singleton(source), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+            Source source = Source.create(fo);
+            // Check is here brecause of issue #213967
+            if (GroovyLanguage.GROOVY_MIME_TYPE.equals(source.getMimeType())) {
+                try {
+                    // FIXME can we move this out of task (?)
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
 
-                        ASTRoot astRootElement = result.getRootElement();
-                        if (astRootElement != null) {
-                            ModuleNode moduleNode = astRootElement.getModuleNode();
-                            if (moduleNode != null) {
-                                resultList.addAll(moduleNode.getClasses());
+                            ASTRoot astRootElement = result.getRootElement();
+                            if (astRootElement != null) {
+                                ModuleNode moduleNode = astRootElement.getModuleNode();
+                                if (moduleNode != null) {
+                                    resultList.addAll(moduleNode.getClasses());
+                                }
                             }
                         }
-                    }
-                });
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                    });
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         }
 
@@ -425,7 +414,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         }
 
         private void genEnumFields(List fields, PrintWriter out) {
-            if (fields.size() == 0) {
+            if (fields.isEmpty()) {
                 return;
             }
             boolean first = true;
@@ -467,7 +456,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
             }
             BlockStatement block = (BlockStatement) code;
             List stats = block.getStatements();
-            if (stats == null || stats.size() == 0) {
+            if (stats == null || stats.isEmpty()) {
                 return null;
             }
             Statement stat = (Statement) stats.get(0);
@@ -818,6 +807,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
     }
 
+    @Override
     public boolean index() {
         return false;
     }

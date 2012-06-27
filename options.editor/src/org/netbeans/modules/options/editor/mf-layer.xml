@@ -164,6 +164,10 @@ made subject to such option by the copyright holder.
         <folder name="Editor">
             <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Category.displayName"/>
             <attr name="position" intvalue="200"/>
+            <file name="General">
+                <attr name="include" stringvalue="config/Preferences.properties"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.General.displayName"/>
+            </file>
             <file name="Macros">
                 <attr name="include" stringvalue="config/Editors/Macros/.*"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.options.editor.Bundle#Editor.Options.Export.Macros.displayName"/>

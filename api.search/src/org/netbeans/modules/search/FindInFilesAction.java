@@ -82,7 +82,7 @@ import org.openide.util.actions.CallableSystemAction;
  * @author  Marian Petras
  */
 @ActionID(id = "org.netbeans.modules.search.FindInFilesAction", category = "Edit")
-@ActionRegistration(lazy = false, displayName = "#LBL_Action_FindInFiles")
+@ActionRegistration(lazy = false, displayName = "#LBL_Action_FindInProjects")
 @ActionReferences({
     @ActionReference(path = "Shortcuts", name = "DS-F"),
     @ActionReference(path = "Menu/Edit", position = 2400, separatorBefore = 2300)
@@ -113,12 +113,22 @@ public class FindInFilesAction extends CallableSystemAction {
     private static final String VAR_LAST_SEARCH_SCOPE_TYPE
                                 = "lastScopeType";                      //NOI18N
 
-    protected boolean preferScopeSelection = false;
+    private final String name;
+    protected final boolean preferScopeSelection;
 
     public FindInFilesAction() {
+        this(false);
     }
 
-    protected FindInFilesAction(boolean preferScopeSelection) {
+    private FindInFilesAction(boolean preferScopeSelection) {
+        this("LBL_Action_FindInProjects", preferScopeSelection);        //NOI18N
+    }
+
+    /**
+     * Constructor that initializes action name. See #214693.
+     */
+    protected FindInFilesAction(String nameKey, boolean preferScopeSelection) {
+        this.name = NbBundle.getMessage(getClass(), nameKey);
         this.preferScopeSelection = preferScopeSelection;
     }
 
@@ -199,10 +209,7 @@ public class FindInFilesAction extends CallableSystemAction {
     
     @Override
     public String getName() {
-        String key = Utils.hasProjectSearchScope()
-                     ? "LBL_Action_FindInProjects"                      //NOI18N
-                     : "LBL_Action_FindInFiles";                        //NOI18N
-        return NbBundle.getMessage(getClass(), key);
+        return name;
     }
 
     @Override

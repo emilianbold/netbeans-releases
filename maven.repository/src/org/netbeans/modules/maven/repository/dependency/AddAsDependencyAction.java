@@ -68,6 +68,7 @@ public class AddAsDependencyAction extends AbstractAction {
         this.record = record;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
          StringBuffer buffer = new StringBuffer();
          buffer.append("<b>"); //NOI18N

@@ -101,20 +101,4 @@ final class Utils {
 
         return cbuf;
  }
-
-    /**
-     * Check whether there is a projects-related search scope.
-     */
-    public static boolean hasProjectSearchScope() {
-        boolean hasProjectSearchScope = false;
-        SearchScopeList ssl = new SearchScopeList();
-        for (SearchScopeDefinition ssd : ssl.getSeachScopeDefinitions()) {
-            if (ssd.getTypeId().matches(".*project.*")) {
-                hasProjectSearchScope = true;
-                break;
-            }
-        }
-        ssl.clean();
-        return hasProjectSearchScope;
-    }
 }

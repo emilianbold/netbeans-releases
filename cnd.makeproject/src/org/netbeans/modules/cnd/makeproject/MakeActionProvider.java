@@ -121,6 +121,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.ShellValidationSupport;
@@ -141,6 +142,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
@@ -892,129 +894,158 @@ public final class MakeActionProvider implements ActionProvider {
                 return false;
             }
             MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-            String outputFile = null;
-            if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
-                outputFile = cCompilerConfiguration.getOutputFile(item, conf, false);
-                if(item.getFolder().isTest()) {
-                    outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
-                }
-            } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
-                outputFile = ccCompilerConfiguration.getOutputFile(item, conf, false);
-                if(item.getFolder().isTest()) {
-                    outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
-                }
-            } else if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
-                FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
-                outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, false);
-                if(item.getFolder().isTest()) {
-                    outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
-                }
-            } else if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
-                AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
-                outputFile = assemblerConfiguration.getOutputFile(item, conf, false);
-                if(item.getFolder().isTest()) {
-                    outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
-                }
-            } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
-                CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
-                outputFile = customToolConfiguration.getOutputs().getValue();
-            }
+            String outputFile = getOutputFile(conf, item, itemConfiguration);
             if (conf.isMakefileConfiguration()) {
-                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                AbstractCompiler ccCompiler = null;
-                AllOptionsProvider optionProvider = null;
-                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                    ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                    optionProvider = itemConfiguration.getCCompilerConfiguration();
-                } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                    ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                    optionProvider = itemConfiguration.getCCCompilerConfiguration();
-                } 
-                if (ccCompiler == null) {
-                    return false;
-                }
-                AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
-                if (options != null) {
-                    String compileLine = options.getAllOptions(ccCompiler);
-                    if (compileLine != null) {
-                        int hasPath = compileLine.indexOf('#');// NOI18N
-                        if (hasPath >= 0) {
-                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
-                            profile.setRunDirectory(compileLine.substring(0, hasPath));
-                            String command = compileLine.substring(hasPath+1).trim();
-                            if (command.length() > 0 && command.charAt(0) != '-') {// NOI18N
-                                int i = command.indexOf(' ');
-                                if (i > 0) {
-                                    command = command.substring(i+1).trim();
-                                }
-                            }
-                            if (command.indexOf('\"') > 0) {// NOI18N
-                                int i = command.indexOf("\\\"");// NOI18N
-                                if (i < 0) {
-                                    command = command.replace("\"", "\\\"");// NOI18N
-                                }
-                            }
-                            profile.setArgs(command);
-                            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
-                            actionEvents.add(projectActionEvent);
-                            return true;
-                        }
-                    }
-                } else {
-                    if (optionProvider != null) {
-                        String compileLine = optionProvider.getAllOptions(ccCompiler);
-                        if (compileLine != null) {
-                            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
-                            profile.setRunDirectory(makeArtifact.getWorkingDirectory());
-                            String command = compileLine.trim();
-                            if (command.indexOf('\"') > 0) {// NOI18N
-                                int i = command.indexOf("\\\"");// NOI18N
-                                if (i < 0) {
-                                    command = command.replace("\"", "\\\"");// NOI18N
-                                }
-                            }
-                            command = command+" -o /dev/null"; // NOI18N
-                            command = command+" -c "+item.getAbsolutePath(); // NOI18N
-                            profile.setArgs(command);
-                            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, ccCompiler.getPath(), conf, profile, true, context);
-                            actionEvents.add(projectActionEvent);
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-            outputFile = conf.expandMacros(outputFile);
-            // Clean command
-            String commandLine;
-            String args;
-            if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
-                commandLine = "cmd.exe"; // NOI18N
-                args = "/c rm -rf " + outputFile; // NOI18N
+                return compileSingleUnmanage(actionEvents, conf, makeArtifact, context, actionEvent, item, itemConfiguration);
             } else {
-                commandLine = "rm"; // NOI18N
-                args = "-rf " + outputFile; // NOI18N
+                compileSingleManage(actionEvents, conf, makeArtifact, context, actionEvent, pd, outputFile);
             }
-            RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
-            profile.setArgs(args);
-            ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.CLEAN, commandLine, conf, profile, true);
-            actionEvents.add(projectActionEvent);
-            // Build commandLine
-            commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
-            args = ""; // NOI18N
-            int index = commandLine.indexOf(' '); // NOI18N
-            if (index > 0) {
-                args = commandLine.substring(index + 1);
-                commandLine = commandLine.substring(0, index);
-            }
-            profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
-            profile.setArgs(args);
-            projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true, context);
-            actionEvents.add(projectActionEvent);
         }
         return true;
+    }
+    
+    private String getOutputFile(MakeConfiguration conf, Item item, ItemConfiguration itemConfiguration) {
+        String outputFile = null;
+        if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+            CCompilerConfiguration cCompilerConfiguration = itemConfiguration.getCCompilerConfiguration();
+            outputFile = cCompilerConfiguration.getOutputFile(item, conf, false);
+            if(item.getFolder().isTest()) {
+                outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+            }
+        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+            CCCompilerConfiguration ccCompilerConfiguration = itemConfiguration.getCCCompilerConfiguration();
+            outputFile = ccCompilerConfiguration.getOutputFile(item, conf, false);
+            if(item.getFolder().isTest()) {
+                outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+            }
+        } else if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
+            FortranCompilerConfiguration fortranCompilerConfiguration = itemConfiguration.getFortranCompilerConfiguration();
+            outputFile = fortranCompilerConfiguration.getOutputFile(item, conf, false);
+            if(item.getFolder().isTest()) {
+                outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+            }
+        } else if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
+            AssemblerConfiguration assemblerConfiguration = itemConfiguration.getAssemblerConfiguration();
+            outputFile = assemblerConfiguration.getOutputFile(item, conf, false);
+            if(item.getFolder().isTest()) {
+                outputFile = outputFile.replace(MakeConfiguration.OBJECTDIR_MACRO, "${TESTDIR}"); // NOI18N
+            }
+        } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
+            CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
+            outputFile = customToolConfiguration.getOutputs().getValue();
+        }
+        return conf.expandMacros(outputFile);
+    }
+        
+    private boolean compileSingleUnmanage(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, MakeArtifact makeArtifact, Lookup context, Type actionEvent, Item item, ItemConfiguration itemConfiguration) {
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        AbstractCompiler ccCompiler = null;
+        AllOptionsProvider optionProvider = null;
+        if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+            ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+            optionProvider = itemConfiguration.getCCompilerConfiguration();
+        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+            ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            optionProvider = itemConfiguration.getCCCompilerConfiguration();
+        } 
+        if (ccCompiler == null) {
+            return false;
+        }
+        AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
+        if (options != null) {
+            String compileLine = options.getAllOptions(ccCompiler);
+            if (compileLine != null) {
+                int hasPath = compileLine.indexOf('#');// NOI18N
+                if (hasPath >= 0) {
+                    RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
+                    profile.setRunDirectory(compileLine.substring(0, hasPath));
+                    String command = compileLine.substring(hasPath+1).trim();
+                    if (command.length() > 0 && command.charAt(0) != '-') {// NOI18N
+                        int i = command.indexOf(' ');
+                        if (i > 0) {
+                            command = command.substring(i+1).trim();
+                        }
+                    }
+                    if (command.indexOf('"') > 0) {// NOI18N
+                        int i = command.indexOf("\\\"");// NOI18N
+                        if (i < 0) {
+                            command = command.replace("\"", "\\\"");// NOI18N
+                        }
+                    }
+                    profile.setArgs(command);
+                    String compilerPath = convertPath(ccCompiler.getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
+                    ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, compilerPath, conf, profile, true, context);
+                    actionEvents.add(projectActionEvent);
+                    return true;
+                }
+            }
+        } else if (optionProvider != null) {
+            String compileLine = optionProvider.getAllOptions(ccCompiler);
+            if (compileLine != null) {
+                RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
+                profile.setRunDirectory(makeArtifact.getWorkingDirectory());
+                String command = compileLine.trim();
+                if (command.indexOf('"') > 0) {// NOI18N
+                    int i = command.indexOf("\\\"");// NOI18N
+                    if (i < 0) {
+                        command = command.replace("\"", "\\\"");// NOI18N
+                    }
+                }
+                command = command+" -o "+getDevNull(conf.getDevelopmentHost().getExecutionEnvironment(), compilerSet); // NOI18N
+                command = command+" -c "+item.getAbsolutePath(); // NOI18N
+                profile.setArgs(command);
+                String compilerPath = convertPath(ccCompiler.getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, compilerPath, conf, profile, true, context);
+                actionEvents.add(projectActionEvent);
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private String getDevNull(ExecutionEnvironment execEnv, CompilerSet compilerSet) {
+        if (execEnv.isLocal() && Utilities.isWindows()){
+            if (!compilerSet.getCompilerFlavor().isCygwinCompiler()) {
+                return "NUL"; // NOI18N
+            }
+        }
+        return "/dev/null"; // NOI18N
+    }
+    
+    private String convertPath(String path, ExecutionEnvironment execEnv) {
+        if (execEnv.isLocal()) {
+            return LinkSupport.resolveWindowsLink(path);
+        }
+        return path;
+    }
+
+    private void compileSingleManage(ArrayList<ProjectActionEvent> actionEvents, MakeConfiguration conf, MakeArtifact makeArtifact, Lookup context, Type actionEvent, MakeConfigurationDescriptor pd, String outputFile) {
+        // Clean command
+        String commandLine;
+        String args;
+        if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+            commandLine = "cmd.exe"; // NOI18N
+            args = "/c rm -rf " + outputFile; // NOI18N
+        } else {
+            commandLine = "rm"; // NOI18N
+            args = "-rf " + outputFile; // NOI18N
+        }
+        RunProfile profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
+        profile.setArgs(args);
+        ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, ProjectActionEvent.PredefinedType.CLEAN, commandLine, conf, profile, true);
+        actionEvents.add(projectActionEvent);
+        // Build commandLine
+        commandLine = getMakeCommand(pd, conf) + " -f nbproject" + '/' + "Makefile-" + conf.getName() + ".mk " + outputFile; // Unix path // NOI18N
+        args = ""; // NOI18N
+        int index = commandLine.indexOf(' '); // NOI18N
+        if (index > 0) {
+            args = commandLine.substring(index + 1);
+            commandLine = commandLine.substring(0, index);
+        }
+        profile = new RunProfile(makeArtifact.getWorkingDirectory(), conf.getDevelopmentHost().getBuildPlatform(), conf);
+        profile.setArgs(args);
+        projectActionEvent = new ProjectActionEvent(project, actionEvent, commandLine, conf, profile, true, context);
+        actionEvents.add(projectActionEvent);
     }
 
     private boolean onTestSingleStep(ArrayList<ProjectActionEvent> actionEvents, MakeConfigurationDescriptor pd, MakeConfiguration conf, Lookup context, Type actionEvent) {
@@ -1318,7 +1349,7 @@ public final class MakeActionProvider implements ActionProvider {
                 Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
                 Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
-                if (CndUtils.isUnitTestMode()) {
+                if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                     errormsg += "\n (build platform id =" + buildPlatformId + " host platform id = " + hostPlatformId + ")"; //NOI18N
                     new Exception(errormsg).printStackTrace(System.err);
                 } else {
@@ -1416,7 +1447,7 @@ public final class MakeActionProvider implements ActionProvider {
             SunStudioUserCounter.countIDE(cs.getDirectory(), execEnv);
         }
         if (runBTA) {
-            if (CndUtils.isUnitTestMode()) {
+            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                 // do not show any dialogs in unit test mode, just silently fail validation
                 lastValidation = false;
             } else {//if (conf.getDevelopmentHost().isLocalhost()) {

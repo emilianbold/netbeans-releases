@@ -10,13 +10,13 @@ source init.sh
 
 rm -rf $DIST
 
-#if [ ! -z $WORKSPACE ]; then
+if [ ! -z $WORKSPACE ]; then
     #I'm under hudson and have sources here, I need to clone them
     #Clean obsolete sources first
-#    rm -rf $NB_ALL
-#    hg clone -U $WORKSPACE $NB_ALL
-#    hg -R $NB_ALL update $NB_BRANCH
-#fi
+    rm -rf $NB_ALL
+    hg clone -U $WORKSPACE $NB_ALL
+    hg -R $NB_ALL update $NB_BRANCH
+fi
 
 #if [ $ML_BUILD == 1 ]; then
 #    cd $NB_ALL

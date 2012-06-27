@@ -51,12 +51,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
@@ -76,7 +77,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author marekfukala
  */
 @ServiceProvider(service=ELPlugin.class)
-public class FaceletsELPlugin implements ELPlugin {
+public class FaceletsELPlugin extends ELPlugin {
 
     private static final String PLUGIN_NAME = "JSF Facelets EL Plugin"; //NOI18N
 
@@ -126,14 +127,14 @@ public class FaceletsELPlugin implements ELPlugin {
 
     @Override
     public List<ResourceBundle> getResourceBundles(FileObject file, ResolverContext context) {
-        WebModule wm = WebModule.getWebModule(file);
-        if (wm == null) {
+        Project project = FileOwnerQuery.getOwner(file);
+        if (project == null) {
             return Collections.emptyList();
         }
 
         // caches bundles if not loaded yet
         if (context.getContent(FaceletsELPlugin.class.getName()) == null) {
-            context.setContent(FaceletsELPlugin.class.getName(), JSFResourceBundlesProvider.getResourceBundles(wm));
+            context.setContent(FaceletsELPlugin.class.getName(), JSFResourceBundlesProvider.getResourceBundles(project));
         }
 
         return (List<ResourceBundle>) context.getContent(FaceletsELPlugin.class.getName());

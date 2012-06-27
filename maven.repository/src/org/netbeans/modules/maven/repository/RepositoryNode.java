@@ -215,7 +215,7 @@ public class RepositoryNode extends AbstractNode {
             indexURL.setDisplayName(LBL_Remote_Index_URL());
             Node.Property<?> lastIndexed = new PropertySupport.ReadOnly<Date>("lastIndexed", Date.class, LBL_last_indexed(), null) {
                 @Override public Date getValue() throws IllegalAccessException, InvocationTargetException {
-                    return RepositoryPreferences.getInstance().getLastIndexUpdate(info.getId());
+                    return RepositoryPreferences.getLastIndexUpdate(info.getId());
                 }
             };
             basicProps.put(new Node.Property<?>[] {

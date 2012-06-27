@@ -74,6 +74,15 @@ public class CdiGlyphAction extends AbstractAction {
 
     public CdiGlyphAction(){
         putValue(NAME, NbBundle.getMessage(CdiGlyphAction.class, "TXT_GlyphActionName"));  // NOI18N
+        putValue("supported-annotation-types", new String[] {
+            "org-netbeans-modules-web-beans-annotations-injection-point",
+            "org-netbeans-modules-web-beans-annotations-delegate-point",
+            "org-netbeans-modules-web-beans-annotations-decorated-bean",
+            "org-netbeans-modules-web-beans-annotations-event",
+            "org-netbeans-modules-web-beans-annotations-observer",
+            "org-netbeans-modules-editor-annotations-intercepted"
+        });
+        
     }
 
     /* (non-Javadoc)

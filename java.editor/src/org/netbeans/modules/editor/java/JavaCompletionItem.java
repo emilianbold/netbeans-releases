@@ -55,6 +55,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
@@ -76,6 +77,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
@@ -95,6 +97,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  *
@@ -813,193 +816,202 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
-            final StringBuilder template = new StringBuilder();
-            Source s = Source.create(doc);
-            try {
-                ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                        controller.toPhase(Phase.RESOLVED);
-                        final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                        DeclaredType type = typeHandle.resolve(controller);
-                        final TypeElement elem = type != null ? (TypeElement)type.asElement() : null;
-                        boolean asTemplate = false;
-                        StringBuilder sb = new StringBuilder();
-                        if (elem != null) {
-                            int cnt = 1;
-                            if (addSimpleName) {
-                                sb.append(elem.getSimpleName());
-                            } else {
-                                sb.append("${PAR"); //NOI18N
-                                sb.append(cnt++);
-                                if ((type == null || type.getKind() != TypeKind.ERROR) &&
-                                        EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
-                                    sb.append(" type=\""); //NOI18N
-                                    sb.append(elem.getQualifiedName());
-                                    sb.append("\" default=\""); //NOI18N
-                                    sb.append(elem.getSimpleName());
-                                } else {
-                                    sb.append(" default=\""); //NOI18N
-                                    sb.append(elem.getQualifiedName());
-                                }
-                                sb.append("\" editable=false}"); //NOI18N
-                            }
-                            Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
-                            if (tas != null && tas.hasNext()) {
-                                sb.append('<'); //NOI18N
-                                if (!insideNew || elem.getModifiers().contains(Modifier.ABSTRACT) 
-                                    || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
-                                    while (tas.hasNext()) {
-                                        TypeMirror ta = tas.next();
+            final Source s = Source.create(doc);
+            final AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                public void run() {
+                    try {
+                        final StringBuilder template = new StringBuilder();
+                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                if (cancel.get())
+                                    return;
+                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                controller.toPhase(Phase.RESOLVED);
+                                if (cancel.get())
+                                    return;
+                                final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                                DeclaredType type = typeHandle.resolve(controller);
+                                final TypeElement elem = type != null ? (TypeElement)type.asElement() : null;
+                                boolean asTemplate = false;
+                                StringBuilder sb = new StringBuilder();
+                                if (elem != null) {
+                                    int cnt = 1;
+                                    if (addSimpleName) {
+                                        sb.append(elem.getSimpleName());
+                                    } else {
                                         sb.append("${PAR"); //NOI18N
                                         sb.append(cnt++);
-                                        if (ta.getKind() == TypeKind.TYPEVAR) {
-                                            TypeVariable tv = (TypeVariable)ta;
-                                            if (smartType || elem != tv.asElement().getEnclosingElement()) {
-                                                sb.append(" editable=false default=\""); //NOI18N
-                                                sb.append(Utilities.getTypeName(controller, ta, true));
-                                                asTemplate = true;
-                                            } else {
-                                                sb.append(" typeVar=\""); //NOI18N
-                                                sb.append(tv.asElement().getSimpleName());
-                                                sb.append("\" type=\""); //NOI18N
-                                                ta = tv.getUpperBound();
-                                                sb.append(Utilities.getTypeName(controller, ta, true));
-                                                sb.append("\" default=\""); //NOI18N
-                                                sb.append(Utilities.getTypeName(controller, ta, false));
-                                                if (addTypeVars && SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
-                                                    asTemplate = true;
-                                            }
-                                            sb.append("\"}"); //NOI18N
-                                        } else if (ta.getKind() == TypeKind.WILDCARD) {
+                                        if ((type == null || type.getKind() != TypeKind.ERROR) &&
+                                                EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
                                             sb.append(" type=\""); //NOI18N
-                                            TypeMirror bound = ((WildcardType)ta).getExtendsBound();
-                                            if (bound == null)
-                                                bound = ((WildcardType)ta).getSuperBound();
-                                            sb.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
+                                            sb.append(elem.getQualifiedName());
                                             sb.append("\" default=\""); //NOI18N
-                                            sb.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
-                                            sb.append("\"}"); //NOI18N
-                                            asTemplate = true;
-                                        } else if (ta.getKind() == TypeKind.ERROR) {
-                                            sb.append(" default=\""); //NOI18N
-                                            sb.append(((ErrorType)ta).asElement().getSimpleName());
-                                            sb.append("\"}"); //NOI18N
-                                            asTemplate = true;
+                                            sb.append(elem.getSimpleName());
                                         } else {
-                                            sb.append(" type=\""); //NOI18N
-                                            sb.append(Utilities.getTypeName(controller, ta, true));
-                                            sb.append("\" default=\""); //NOI18N
-                                            sb.append(Utilities.getTypeName(controller, ta, false));
-                                            sb.append("\" editable=false}"); //NOI18N
+                                            sb.append(" default=\""); //NOI18N
+                                            sb.append(elem.getQualifiedName());
+                                        }
+                                        sb.append("\" editable=false}"); //NOI18N
+                                    }
+                                    Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
+                                    if (tas != null && tas.hasNext()) {
+                                        sb.append('<'); //NOI18N
+                                        if (!insideNew || elem.getModifiers().contains(Modifier.ABSTRACT) 
+                                            || controller.getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
+                                            while (tas.hasNext()) {
+                                                TypeMirror ta = tas.next();
+                                                sb.append("${PAR"); //NOI18N
+                                                sb.append(cnt++);
+                                                if (ta.getKind() == TypeKind.TYPEVAR) {
+                                                    TypeVariable tv = (TypeVariable)ta;
+                                                    if (smartType || elem != tv.asElement().getEnclosingElement()) {
+                                                        sb.append(" editable=false default=\""); //NOI18N
+                                                        sb.append(Utilities.getTypeName(controller, ta, true));
+                                                        asTemplate = true;
+                                                    } else {
+                                                        sb.append(" typeVar=\""); //NOI18N
+                                                        sb.append(tv.asElement().getSimpleName());
+                                                        sb.append("\" type=\""); //NOI18N
+                                                        ta = tv.getUpperBound();
+                                                        sb.append(Utilities.getTypeName(controller, ta, true));
+                                                        sb.append("\" default=\""); //NOI18N
+                                                        sb.append(Utilities.getTypeName(controller, ta, false));
+                                                        if (addTypeVars && SourceVersion.RELEASE_5.compareTo(controller.getSourceVersion()) <= 0)
+                                                            asTemplate = true;
+                                                    }
+                                                    sb.append("\"}"); //NOI18N
+                                                } else if (ta.getKind() == TypeKind.WILDCARD) {
+                                                    sb.append(" type=\""); //NOI18N
+                                                    TypeMirror bound = ((WildcardType)ta).getExtendsBound();
+                                                    if (bound == null)
+                                                        bound = ((WildcardType)ta).getSuperBound();
+                                                    sb.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
+                                                    sb.append("\" default=\""); //NOI18N
+                                                    sb.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
+                                                    sb.append("\"}"); //NOI18N
+                                                    asTemplate = true;
+                                                } else if (ta.getKind() == TypeKind.ERROR) {
+                                                    sb.append(" default=\""); //NOI18N
+                                                    sb.append(((ErrorType)ta).asElement().getSimpleName());
+                                                    sb.append("\"}"); //NOI18N
+                                                    asTemplate = true;
+                                                } else {
+                                                    sb.append(" type=\""); //NOI18N
+                                                    sb.append(Utilities.getTypeName(controller, ta, true));
+                                                    sb.append("\" default=\""); //NOI18N
+                                                    sb.append(Utilities.getTypeName(controller, ta, false));
+                                                    sb.append("\" editable=false}"); //NOI18N
+                                                    asTemplate = true;
+                                                }
+                                                if (tas.hasNext())
+                                                    sb.append(", "); //NOI18N
+                                            }
+                                        } else {
                                             asTemplate = true;
                                         }
-                                        if (tas.hasNext())
-                                            sb.append(", "); //NOI18N
+                                        sb.append('>'); //NOI18N
                                     }
-                                } else {
-                                    asTemplate = true;
-                                }
-                                sb.append('>'); //NOI18N
-                            }
-                            for(int i = 0; i < dim; i++) {
-                                sb.append("[${PAR"); //NOI18N
-                                sb.append(cnt++);
-                                sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
-                                asTemplate = true;
-                            }
-                        }
-                        if (asTemplate) {
-                            if (insideNew)
-                                sb.append("${cursor completionInvoke}"); //NOI18N
-                            if (finalLen > 0) {
-                                doc.runAtomic (new Runnable () {
-                                    public void run () {
-                                        try {
-                                            doc.remove(offset, finalLen);
-                                        } catch (BadLocationException e) {
-                                            // Can't update
-                                        }
-                                    }
-                                });
-                            }
-                            if (autoImport && elem != null)
-                                AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), elem.getEnclosingElement().asType());
-                            sb.append(text);
-                            template.append(sb);
-                        } else {
-                            // Update the text
-                            doc.runAtomic (new Runnable () {
-                                public void run () {
-                                    try {
-                                        Position semiPosition = semiPos > -1 && !insideNew ? doc.createPosition(semiPos) : null;
-                                        TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
-                                        CharSequence cs = enclName == null ? elem != null ? elem.getSimpleName() : simpleName : AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem));
-                                        if (!insideNew)
-                                            cs = text.insert(0, cs);
-                                        String textToReplace = doc.getText(offset, finalLen);
-                                        Position pos = doc.createPosition(offset);
-                                        if (textToReplace.contentEquals(cs)) return;
-                                        doc.remove(offset, finalLen);
-                                        doc.insertString(pos.getOffset(), cs.toString(), null);
-                                        if (semiPosition != null)
-                                            doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                                    } catch (BadLocationException e) {
-                                        // Can't update
+                                    for(int i = 0; i < dim; i++) {
+                                        sb.append("[${PAR"); //NOI18N
+                                        sb.append(cnt++);
+                                        sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
+                                        asTemplate = true;
                                     }
                                 }
-                            });
-                            if (autoImport && elem != null)
-                                AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), elem.getEnclosingElement().asType());
-                            if (insideNew && type != null && type.getKind() == TypeKind.DECLARED) {
-                                ExecutableElement ctor = null;
-                                Trees trees = controller.getTrees();
-                                Scope scope = controller.getTreeUtilities().scopeFor(embeddedOffset);
-                                int val = 0; // no constructors seen yet
-                                for (ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
-                                    if (trees.isAccessible(scope, ee, type)) {
-                                        if (ctor != null) {
-                                            val = 2; // more than one accessible constructors seen
-                                            break;
-                                        }
-                                        ctor = ee;
-                                    }
-                                    val = 1; // constructor seen
-                                }
-                                if (val != 1 || ctor != null) {
-                                    final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
-                                            val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
-                                            createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, null, false, false, false, false, true, -1, false, getWhiteList());
-                                    try {
-                                        final Position offPosition = doc.createPosition(offset);
-                                        SwingUtilities.invokeLater(new Runnable() {
-                                            public void run() {
-                                                if (item != null) {
-                                                    item.substituteText(c, offPosition.getOffset(), c.getSelectionEnd() - offPosition.getOffset(), text.toString(), assignToVar);
-                                                } else {
-                                                    //Temporary ugly solution
-                                                    SwingUtilities.invokeLater(new Runnable() {
-                                                        public void run() {
-                                                            Completion.get().showCompletion();
-                                                        }
-                                                    });
+                                if (asTemplate) {
+                                    if (insideNew)
+                                        sb.append("${cursor completionInvoke}"); //NOI18N
+                                    if (finalLen > 0) {
+                                        doc.runAtomic (new Runnable () {
+                                            public void run () {
+                                                try {
+                                                    doc.remove(offset, finalLen);
+                                                } catch (BadLocationException e) {
+                                                    // Can't update
                                                 }
                                             }
                                         });
                                     }
-                                    catch (BadLocationException e) {}
+                                    if (autoImport && elem != null)
+                                        AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), elem.getEnclosingElement().asType());
+                                    sb.append(text);
+                                    template.append(sb);
+                                } else {
+                                    // Update the text
+                                    doc.runAtomic (new Runnable () {
+                                        public void run () {
+                                            try {
+                                                Position semiPosition = semiPos > -1 && !insideNew ? doc.createPosition(semiPos) : null;
+                                                TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
+                                                CharSequence cs = enclName == null ? elem != null ? elem.getSimpleName() : simpleName : AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem));
+                                                if (!insideNew)
+                                                    cs = text.insert(0, cs);
+                                                String textToReplace = doc.getText(offset, finalLen);
+                                                Position pos = doc.createPosition(offset);
+                                                if (textToReplace.contentEquals(cs)) return;
+                                                doc.remove(offset, finalLen);
+                                                doc.insertString(pos.getOffset(), cs.toString(), null);
+                                                if (semiPosition != null)
+                                                    doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                                            } catch (BadLocationException e) {
+                                                // Can't update
+                                            }
+                                        }
+                                    });
+                                    if (autoImport && elem != null)
+                                        AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), elem.getEnclosingElement().asType());
+                                    if (insideNew && type != null && type.getKind() == TypeKind.DECLARED) {
+                                        ExecutableElement ctor = null;
+                                        Trees trees = controller.getTrees();
+                                        Scope scope = controller.getTreeUtilities().scopeFor(embeddedOffset);
+                                        int val = 0; // no constructors seen yet
+                                        for (ExecutableElement ee : ElementFilter.constructorsIn(elem.getEnclosedElements())) {
+                                            if (trees.isAccessible(scope, ee, type)) {
+                                                if (ctor != null) {
+                                                    val = 2; // more than one accessible constructors seen
+                                                    break;
+                                                }
+                                                ctor = ee;
+                                            }
+                                            val = 1; // constructor seen
+                                        }
+                                        if (val != 1 || ctor != null) {
+                                            final JavaCompletionItem item = val == 0 ? createDefaultConstructorItem(elem, offset, true) :
+                                                    val == 2 || Utilities.hasAccessibleInnerClassConstructor(elem, scope, trees) ? null :
+                                                    createExecutableItem(controller, ctor, (ExecutableType)controller.getTypes().asMemberOf(type, ctor), offset, null, false, false, false, false, true, -1, false, getWhiteList());
+                                            try {
+                                                final Position offPosition = doc.createPosition(offset);
+                                                SwingUtilities.invokeLater(new Runnable() {
+                                                    public void run() {
+                                                        if (item != null) {
+                                                            item.substituteText(c, offPosition.getOffset(), c.getSelectionEnd() - offPosition.getOffset(), text.toString(), assignToVar);
+                                                        } else {
+                                                            //Temporary ugly solution
+                                                            SwingUtilities.invokeLater(new Runnable() {
+                                                                public void run() {
+                                                                    Completion.get().showCompletion();
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                            catch (BadLocationException e) {}
+                                        }
+                                    }
                                 }
                             }
+                        });
+                        CodeTemplateManager ctm = template.length() > 0 ? CodeTemplateManager.get(doc) : null;
+                        if (ctm != null) {
+                            ctm.createTemporary(template.toString()).insert(c);
                         }
+                    } catch (ParseException pe) {
                     }
-                });
-            } catch (ParseException pe) {
-            }
-            CodeTemplateManager ctm = template.length() > 0 ? CodeTemplateManager.get(doc) : null;
-            if (ctm != null) {
-                ctm.createTemporary(template.toString()).insert(c);
-            }
+                }
+            }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
         }
         
         public String toString() {
@@ -1059,7 +1071,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     static class TypeParameterItem extends JavaCompletionItem {
         
-        private static final String TYPE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
 
         private String simpleName;
         private String leftText;
@@ -1083,7 +1094,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         protected String getLeftHtmlText() {
             if (leftText == null)
-                leftText = TYPE_PARAMETER_COLOR + simpleName + COLOR_END;
+                leftText = LFCustoms.getTextFgColorHTML() + simpleName + COLOR_END;
             return leftText;
         }
         
@@ -1324,21 +1335,30 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 final Position endPos = assignToVarText == null ? null : doc.createPosition(offset);
                 super.substituteText(c, offset, len, toAdd != null ? toAdd : assignToVar && assignToVarText != null ? ";" : null, assignToVar); //NOI18N
                 if (autoImport) {
-                    Source s = Source.create(c.getDocument());
-                    try {
-                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                            @Override
-                            public void run(ResultIterator resultIterator) throws Exception {
-                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                controller.toPhase(Phase.RESOLVED);
-                                final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                                VariableElement ve = getElementHandle().resolve(controller);
-                                if (ve != null)
-                                    AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ve.getEnclosingElement().asType());
+                    final Source s = Source.create(c.getDocument());
+                    final AtomicBoolean cancel = new AtomicBoolean();
+                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                        public void run() {
+                            try {
+                                ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                                    @Override
+                                    public void run(ResultIterator resultIterator) throws Exception {
+                                        if (cancel.get())
+                                            return;
+                                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                        controller.toPhase(Phase.RESOLVED);
+                                        if (cancel.get())
+                                            return;
+                                        final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                                        VariableElement ve = getElementHandle().resolve(controller);
+                                        if (ve != null)
+                                            AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ve.getEnclosingElement().asType());
+                                    }
+                                });
+                            } catch (ParseException pe) {
                             }
-                        });
-                    } catch (ParseException pe) {
-                    }
+                        }
+                    }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
                 }
                 if (assignToVar && assignToVarText != null) {
                     final CodeTemplateManager ctm = CodeTemplateManager.get(doc);
@@ -1386,7 +1406,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
         private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
         private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         private static ImageIcon icon[][] = new ImageIcon[2][4];
 
@@ -1469,7 +1488,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             if (leftText == null) {
                 StringBuilder lText = new StringBuilder();
-                lText.append(METHOD_COLOR);
+                lText.append(LFCustoms.getTextFgColorHTML());
                 if (!isInherited)
                     lText.append(BOLD);
                 if (isDeprecated || isBlackListed())
@@ -1575,21 +1594,30 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     if ("(".equals(toAdd)) //NOI18N
                         c.setCaretPosition(c.getCaretPosition() - 1);
                     if (autoImport) {
-                        Source s = Source.create(doc);
-                        try {
-                            ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                                @Override
-                                public void run(ResultIterator resultIterator) throws Exception {
-                                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                    controller.toPhase(Phase.RESOLVED);
-                                    final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                                    ExecutableElement ee = getElementHandle().resolve(controller);
-                                    if (ee != null)
-                                        AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
+                        final Source s = Source.create(doc);
+                        final AtomicBoolean cancel = new AtomicBoolean();
+                        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                            public void run() {
+                                try {
+                                    ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                                        @Override
+                                        public void run(ResultIterator resultIterator) throws Exception {
+                                            if (cancel.get())
+                                                return;
+                                            final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                            controller.toPhase(Phase.RESOLVED);
+                                            if (cancel.get())
+                                                return;
+                                            final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                                            ExecutableElement ee = getElementHandle().resolve(controller);
+                                            if (ee != null)
+                                                AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
+                                        }
+                                    });
+                                } catch (ParseException pe) {                    
                                 }
-                            });
-                        } catch (ParseException pe) {                    
-                        }
+                            }
+                        }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
                     }
                     if (assignToVar && assignToVarText != null) {
                         final CodeTemplateManager ctm = CodeTemplateManager.get(doc);
@@ -1648,14 +1676,24 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                     }
                     final int length = len;
+                    final StringBuilder sb = new StringBuilder();
+                    if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen())
+                        sb.append(' '); //NOI18N
+                    sb.append('('); //NOI18N
                     doc.runAtomic (new Runnable () {
                         public void run () {
                         try {
                             Position pos = doc.createPosition(offset);
                             Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                            if (length > 0)
-                                doc.remove(pos.getOffset(), length);
-                            doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
+                            String textToReplace = doc.getText(pos.getOffset(), length);
+                            if (textToReplace.contentEquals(getInsertPrefix() + sb.toString())) {
+                                c.setCaretPosition(c.getCaretPosition() + sb.length());                            
+                                sb.delete(0, sb.length());
+                            } else {
+                                if (length > 0)
+                                    doc.remove(pos.getOffset(), length);
+                                doc.insertString(pos.getOffset(), getInsertPrefix().toString(), null);
+                            }
                             int caretPos = pos.getOffset();
                             if (semiPosition != null) {
                                 doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
@@ -1667,30 +1705,35 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         }
                     });
                     if (autoImport) {
-                        Source s = Source.create(doc);
-                        try {
-                            ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                                @Override
-                                public void run(ResultIterator resultIterator) throws Exception {
-                                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                    controller.toPhase(Phase.RESOLVED);
-                                    final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                                    ExecutableElement ee = getElementHandle().resolve(controller);
-                                    if (ee != null)
-                                        AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
+                        final Source s = Source.create(doc);
+                        final AtomicBoolean cancel = new AtomicBoolean();
+                        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                            public void run() {
+                                try {
+                                    ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                                        @Override
+                                        public void run(ResultIterator resultIterator) throws Exception {
+                                            if (cancel.get())
+                                                return;
+                                            final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                            controller.toPhase(Phase.RESOLVED);
+                                            if (cancel.get())
+                                                return;
+                                            final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                                            ExecutableElement ee = getElementHandle().resolve(controller);
+                                            if (ee != null)
+                                                AutoImport.resolveImport(controller, controller.getTreeUtilities().pathFor(embeddedOffset), ee.getEnclosingElement().asType());
+                                        }
+                                    });
+                                } catch (ParseException pe) {                    
                                 }
-                            });
-                        } catch (ParseException pe) {                    
-                        }
+                            }
+                        }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
                     }
                     CodeTemplateManager ctm = CodeTemplateManager.get(doc);
                     if (ctm != null) {
-                        final StringBuilder sb = new StringBuilder();
-                        boolean guessArgs = Utilities.guessMethodArguments();
-                        if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen())
-                        sb.append(' '); //NOI18N
-                        sb.append('('); //NOI18N
                         if (text.length() > 1) {
+                            boolean guessArgs = Utilities.guessMethodArguments();
                             for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
                                 ParamDesc paramDesc = it.next();
                                 sb.append("${"); //NOI18N
@@ -1721,7 +1764,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             sb.insert(0, assignToVarText);
                             c.setCaretPosition(startPos.getOffset());
                         }
-                        ctm.createTemporary(sb.toString()).insert(c);
+                        if (sb.length() > 0)
+                            ctm.createTemporary(sb.toString()).insert(c);
                         Completion.get().showToolTip();
                     }
                 }
@@ -1873,7 +1917,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
         private static final String GETTER_BADGE_PATH = "org/netbeans/modules/java/editor/resources/getter_badge.png"; //NOI18N
         private static final String SETTER_BADGE_PATH = "org/netbeans/modules/java/editor/resources/setter_badge.png"; //NOI18N
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         
         private static ImageIcon superIcon;
@@ -1924,7 +1967,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             if (leftText == null) {
                 StringBuilder lText = new StringBuilder();
-                lText.append(METHOD_COLOR);
+                lText.append(LFCustoms.getTextFgColorHTML());
                 lText.append(BOLD);
                 lText.append(name);
                 lText.append(BOLD_END);
@@ -2498,7 +2541,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class ParametersItem extends JavaCompletionItem {
         
         private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
 
         protected ElementHandle<ExecutableElement> elementHandle;
         private boolean isDeprecated;
@@ -2569,7 +2611,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 for (int i = 0; i < params.size(); i++) {
                     ParamDesc paramDesc = params.get(i);
                     if (i == activeParamsIndex)
-                        lText.append(COLOR_END).append(ACTIVE_PARAMETER_COLOR).append(BOLD);
+                        lText.append(COLOR_END).append(LFCustoms.getTextFgColorHTML()).append(BOLD);
                     lText.append(escape(paramDesc.typeName));
                     lText.append(' ');
                     lText.append(paramDesc.name);
@@ -2746,38 +2788,47 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
-            Source s = Source.create(doc);
-            try {
-                ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                        controller.toPhase(Phase.RESOLVED);
-                        final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                        final DeclaredType type = typeHandle.resolve(controller);
-                        // Update the text
-                        doc.runAtomic (new Runnable () {
-                            public void run () {
-                                try {
-                                    Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                                    TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
-                                    text.insert(0, "@" + AutoImport.resolveImport(controller, tp, type)); //NOI18N
-                                    String textToReplace = doc.getText(offset, finalLen);
-                                    if (textToReplace.contentEquals(text)) return;
-                                    Position pos = doc.createPosition(offset);
-                                    doc.remove(pos.getOffset(), finalLen);
-                                    doc.insertString(pos.getOffset(), text.toString(), null);
-                                    if (semiPosition != null)
-                                        doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                                } catch (BadLocationException e) {
-                                    // Can't update
-                                }
+            final Source s = Source.create(doc);
+            final AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                public void run() {
+                    try {
+                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                if (cancel.get())
+                                    return;
+                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                controller.toPhase(Phase.RESOLVED);
+                                if (cancel.get())
+                                    return;
+                                final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                                final DeclaredType type = typeHandle.resolve(controller);
+                                // Update the text
+                                doc.runAtomic (new Runnable () {
+                                    public void run () {
+                                        try {
+                                            Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                                            TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
+                                            text.insert(0, "@" + AutoImport.resolveImport(controller, tp, type)); //NOI18N
+                                            String textToReplace = doc.getText(offset, finalLen);
+                                            if (textToReplace.contentEquals(text)) return;
+                                            Position pos = doc.createPosition(offset);
+                                            doc.remove(pos.getOffset(), finalLen);
+                                            doc.insertString(pos.getOffset(), text.toString(), null);
+                                            if (semiPosition != null)
+                                                doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                                        } catch (BadLocationException e) {
+                                            // Can't update
+                                        }
+                                    }
+                                });
                             }
                         });
+                    } catch (ParseException pe) {
                     }
-                });
-            } catch (ParseException pe) {
-            }
+                }
+            }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
         }
     }
     
@@ -3208,102 +3259,111 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
             final int finalLen = len;
             final StringBuilder template = new StringBuilder();
-            Source s = Source.create(doc);
-            try {
-                ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                        controller.toPhase(Phase.RESOLVED);
-                        DeclaredType type = typeHandle.resolve(controller);
-                        int cnt = 1;
-                        template.append("${PAR#"); //NOI18N
-                        template.append(cnt++);
-                        template.append(" type=\""); //NOI18N
-                        template.append(((TypeElement)type.asElement()).getQualifiedName());
-                        template.append("\" default=\""); //NOI18N
-                        template.append(((TypeElement)type.asElement()).getSimpleName());
-                        template.append("\" editable=false}"); //NOI18N
-                        Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
-                        if (tas.hasNext()) {
-                            template.append('<'); //NOI18N
-                            while (tas.hasNext()) {
-                                TypeMirror ta = tas.next();
+            final Source s = Source.create(doc);
+            final AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                public void run() {
+                    try {
+                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                if (cancel.get())
+                                    return;
+                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                controller.toPhase(Phase.RESOLVED);
+                                if (cancel.get())
+                                    return;
+                                DeclaredType type = typeHandle.resolve(controller);
+                                int cnt = 1;
                                 template.append("${PAR#"); //NOI18N
                                 template.append(cnt++);
-                                if (ta.getKind() == TypeKind.TYPEVAR) {
-                                    template.append(" type=\""); //NOI18N
-                                    ta = ((TypeVariable)ta).getUpperBound();
-                                    template.append(Utilities.getTypeName(controller, ta, true));
-                                    template.append("\" default=\""); //NOI18N
-                                    template.append(Utilities.getTypeName(controller, ta, false));
-                                    template.append("\"}"); //NOI18N
-                                } else if (ta.getKind() == TypeKind.WILDCARD) {
-                                    template.append(" type=\""); //NOI18N
-                                    TypeMirror bound = ((WildcardType)ta).getExtendsBound();
-                                    if (bound == null)
-                                        bound = ((WildcardType)ta).getSuperBound();
-                                    template.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
-                                    template.append("\" default=\""); //NOI18N
-                                    template.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
-                                    template.append("\"}"); //NOI18N
-                                } else if (ta.getKind() == TypeKind.ERROR) {
-                                    template.append(" default=\""); //NOI18N
-                                    template.append(((ErrorType)ta).asElement().getSimpleName());
-                                    template.append("\"}"); //NOI18N
-                                } else {
-                                    template.append(" type=\""); //NOI18N
-                                    template.append(Utilities.getTypeName(controller, ta, true));
-                                    template.append("\" default=\""); //NOI18N
-                                    template.append(Utilities.getTypeName(controller, ta, false));
-                                    template.append("\" editable=false}"); //NOI18N
+                                template.append(" type=\""); //NOI18N
+                                template.append(((TypeElement)type.asElement()).getQualifiedName());
+                                template.append("\" default=\""); //NOI18N
+                                template.append(((TypeElement)type.asElement()).getSimpleName());
+                                template.append("\" editable=false}"); //NOI18N
+                                Iterator<? extends TypeMirror> tas = type.getTypeArguments().iterator();
+                                if (tas.hasNext()) {
+                                    template.append('<'); //NOI18N
+                                    while (tas.hasNext()) {
+                                        TypeMirror ta = tas.next();
+                                        template.append("${PAR#"); //NOI18N
+                                        template.append(cnt++);
+                                        if (ta.getKind() == TypeKind.TYPEVAR) {
+                                            template.append(" type=\""); //NOI18N
+                                            ta = ((TypeVariable)ta).getUpperBound();
+                                            template.append(Utilities.getTypeName(controller, ta, true));
+                                            template.append("\" default=\""); //NOI18N
+                                            template.append(Utilities.getTypeName(controller, ta, false));
+                                            template.append("\"}"); //NOI18N
+                                        } else if (ta.getKind() == TypeKind.WILDCARD) {
+                                            template.append(" type=\""); //NOI18N
+                                            TypeMirror bound = ((WildcardType)ta).getExtendsBound();
+                                            if (bound == null)
+                                                bound = ((WildcardType)ta).getSuperBound();
+                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, true) : "Object"); //NOI18N
+                                            template.append("\" default=\""); //NOI18N
+                                            template.append(bound != null ? Utilities.getTypeName(controller, bound, false) : "Object"); //NOI18N
+                                            template.append("\"}"); //NOI18N
+                                        } else if (ta.getKind() == TypeKind.ERROR) {
+                                            template.append(" default=\""); //NOI18N
+                                            template.append(((ErrorType)ta).asElement().getSimpleName());
+                                            template.append("\"}"); //NOI18N
+                                        } else {
+                                            template.append(" type=\""); //NOI18N
+                                            template.append(Utilities.getTypeName(controller, ta, true));
+                                            template.append("\" default=\""); //NOI18N
+                                            template.append(Utilities.getTypeName(controller, ta, false));
+                                            template.append("\" editable=false}"); //NOI18N
+                                        }
+                                        if (tas.hasNext())
+                                            template.append(", "); //NOI18N
+                                    }
+                                    template.append('>'); //NOI18N
                                 }
-                                if (tas.hasNext())
-                                    template.append(", "); //NOI18N
-                            }
-                            template.append('>'); //NOI18N
-                        }
-                        template.append('.'); //NOI18N
-                        template.append(memberName);
-                        if (params != null) {
-                            boolean guessArgs = Utilities.guessMethodArguments();
-                            template.append("("); //NOI18N
-                            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                                ParamDesc paramDesc = it.next();
-                                template.append("${"); //NOI18N
-                                template.append(paramDesc.name);
-                                if (guessArgs) {
-                                    template.append(" named instanceof="); //NOI18N
-                                    template.append(paramDesc.fullTypeName);
+                                template.append('.'); //NOI18N
+                                template.append(memberName);
+                                if (params != null) {
+                                    boolean guessArgs = Utilities.guessMethodArguments();
+                                    template.append("("); //NOI18N
+                                    for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                                        ParamDesc paramDesc = it.next();
+                                        template.append("${"); //NOI18N
+                                        template.append(paramDesc.name);
+                                        if (guessArgs) {
+                                            template.append(" named instanceof="); //NOI18N
+                                            template.append(paramDesc.fullTypeName);
+                                        }
+                                        template.append("}"); //NOI18N
+                                        if (it.hasNext())
+                                            template.append(", "); //NOI18N
+                                    }
+                                    template.append(")");//NOI18N
                                 }
-                                template.append("}"); //NOI18N
-                                if (it.hasNext())
-                                    template.append(", "); //NOI18N
-                            }
-                            template.append(")");//NOI18N
-                        }
-                        template.append(text);
-                        doc.runAtomic (new Runnable () {
-                            public void run () {
-                                try {
-                                    Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
-                                    if (finalLen > 0)
-                                        doc.remove(offset, finalLen);
-                                    if (semiPosition != null)
-                                        doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
-                                } catch (BadLocationException e) {
-                                    // Can't update
-                                }
+                                template.append(text);
+                                doc.runAtomic (new Runnable () {
+                                    public void run () {
+                                        try {
+                                            Position semiPosition = semiPos > -1 ? doc.createPosition(semiPos) : null;
+                                            if (finalLen > 0)
+                                                doc.remove(offset, finalLen);
+                                            if (semiPosition != null)
+                                                doc.insertString(semiPosition.getOffset(), ";", null); //NOI18N
+                                        } catch (BadLocationException e) {
+                                            // Can't update
+                                        }
+                                    }
+                                });
                             }
                         });
+                    } catch (ParseException pe) {
                     }
-                });
-            } catch (ParseException pe) {
-            }
-            CodeTemplateManager ctm = template.length() > 0 ? CodeTemplateManager.get(doc) : null;
-            if (ctm != null) {
-                ctm.createTemporary(template.toString()).insert(c);
-            }
+                    CodeTemplateManager ctm = template.length() > 0 ? CodeTemplateManager.get(doc) : null;
+                    if (ctm != null) {
+                        ctm.createTemporary(template.toString()).insert(c);
+                    }
+                }
+            }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
         }
 
         public String toString() {
@@ -3530,54 +3590,63 @@ public abstract class JavaCompletionItem implements CompletionItem {
     private static int findPositionForSemicolon(JTextComponent c) {
         final int[] ret = new int[] {-2};
         final int offset = c.getSelectionEnd();
-        try {
-            Source s = Source.create(c.getDocument());
-            ParserManager.parse(Collections.singletonList(s), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                    controller.toPhase(Phase.PARSED);
-                    final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
-                    Tree t = null;
-                    TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
-                    while (t == null && tp != null) {
-                        switch(tp.getLeaf().getKind()) {
-                            case EXPRESSION_STATEMENT:
-                            case IMPORT:                                
-                                t = tp.getLeaf();
-                                break;
-                            case RETURN:
-                                t = ((ReturnTree)tp.getLeaf()).getExpression();
-                                break;
-                            case THROW:
-                                t = ((ThrowTree)tp.getLeaf()).getExpression();
-                                break;
-                        }
-                        tp = tp.getParentPath();
-                    }
-                    if (t != null) {
-                        SourcePositions sp = controller.getTrees().getSourcePositions();
-                        int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), t);
-                        TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, embeddedOffset, endPos);
-                        if (ts != null) {
-                            if (ts.token().id() == JavaTokenId.SEMICOLON) {
-                                ret[0] = -1;
-                            } else if (ts.moveNext()) {
-                                ret[0] = ts.token().id() == JavaTokenId.LINE_COMMENT || ts.token().id() == JavaTokenId.WHITESPACE && ts.token().text().toString().contains("\n") ? ts.offset() : offset;                                
+        final Source s = Source.create(c.getDocument());
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+            public void run() {
+                try {
+                    ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            if (cancel.get())
+                                return;
+                            final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                            controller.toPhase(Phase.PARSED);
+                            if (cancel.get())
+                                return;
+                            final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
+                            Tree t = null;
+                            TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
+                            while (t == null && tp != null) {
+                                switch(tp.getLeaf().getKind()) {
+                                    case EXPRESSION_STATEMENT:
+                                    case IMPORT:                                
+                                        t = tp.getLeaf();
+                                        break;
+                                    case RETURN:
+                                        t = ((ReturnTree)tp.getLeaf()).getExpression();
+                                        break;
+                                    case THROW:
+                                        t = ((ThrowTree)tp.getLeaf()).getExpression();
+                                        break;
+                                }
+                                tp = tp.getParentPath();
+                            }
+                            if (t != null) {
+                                SourcePositions sp = controller.getTrees().getSourcePositions();
+                                int endPos = (int)sp.getEndPosition(tp.getCompilationUnit(), t);
+                                TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, embeddedOffset, endPos);
+                                if (ts != null) {
+                                    if (ts.token().id() == JavaTokenId.SEMICOLON) {
+                                        ret[0] = -1;
+                                    } else if (ts.moveNext()) {
+                                        ret[0] = ts.token().id() == JavaTokenId.LINE_COMMENT || ts.token().id() == JavaTokenId.WHITESPACE && ts.token().text().toString().contains("\n") ? ts.offset() : offset;                                
+                                    } else {
+                                        ret[0] = ts.offset() + ts.token().length();
+                                    }
+                                }
                             } else {
-                                ret[0] = ts.offset() + ts.token().length();
+                                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                                ts.move(embeddedOffset);
+                                if (ts.moveNext() &&  ts.token().id() == JavaTokenId.SEMICOLON)
+                                    ret[0] = -1;
                             }
                         }
-                    } else {
-                        TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                        ts.move(embeddedOffset);
-                        if (ts.moveNext() &&  ts.token().id() == JavaTokenId.SEMICOLON)
-                            ret[0] = -1;
-                    }
+                    });
+                } catch (ParseException ex) {
                 }
-            });
-        } catch (ParseException ex) {
-        }
+            }
+        }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-find_semicolon_pos"), cancel, false); //NOI18N
         return ret[0];
     }
     

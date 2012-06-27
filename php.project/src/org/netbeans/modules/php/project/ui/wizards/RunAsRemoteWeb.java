@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.FileNotFoundException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
@@ -76,6 +77,7 @@ import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.RemoteConne
 import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb.RemoteUploadRenderer;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -474,7 +476,12 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }//GEN-LAST:event_manageRemoteConnectionButtonActionPerformed
 
     private void indexFileBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_indexFileBrowseButtonActionPerformed
-        Utils.browseFolderFile(PhpVisibilityQuery.getDefault(), sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
+        try {
+            Utils.browseFolderFile(PhpVisibilityQuery.getDefault(), sourcesFolderProvider.getSourcesFolder(), indexFileTextField);
+        } catch (FileNotFoundException ex) {
+            // cannot happen for sources
+            Exceptions.printStackTrace(ex);
+        }
     }//GEN-LAST:event_indexFileBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

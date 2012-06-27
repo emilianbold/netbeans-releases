@@ -1225,7 +1225,7 @@ public class TreeFactory {
     
     private ModifiersTree modifyModifiersAnnotation(ModifiersTree modifiers, int index, AnnotationTree annotation, Operation op) {
         ModifiersTree copy = Modifiers(
-            modifiers.getFlags(),
+            ((JCModifiers) modifiers).flags,
             c(modifiers.getAnnotations(), index, annotation, op)
         );
         return copy;

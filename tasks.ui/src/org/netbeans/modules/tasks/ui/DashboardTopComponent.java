@@ -63,9 +63,14 @@ import org.openide.awt.ActionReference;
 import org.openide.windows.WindowManager;
 import java.util.List;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
+import org.netbeans.modules.tasks.ui.treelist.TreeListModelListener;
+import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
 
 /**
  * Top component which displays something.
@@ -75,7 +80,7 @@ autostore = false)
 @TopComponent.Description(preferredID = "DashboardTopComponent",
 iconBase = "org/netbeans/modules/tasks/ui/resources/dashboard.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "explorer", openAtStartup = true)
+@TopComponent.Registration(mode = "explorer", openAtStartup = true, position = 350)
 @ActionID(category = "Window", id = "org.netbeans.modules.tasks.ui.DashboardTopComponent")
 @ActionReference(path = "Menu/Window", position = 501)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DashboardAction",
@@ -99,12 +104,18 @@ public final class DashboardTopComponent extends TopComponent {
     private DisplayTextTaskFilter displayTextTaskFilter = null;
     private CategoryNamePanel categoryNamePanel;
     private NotifyDescriptor categoryNameDialog;
+    private DashboardSelectionListener dashboardSelectionListener;
+    private Timer dashboardRefreshTime;
+    private final DashboardRefresher refresher;
 
     public DashboardTopComponent() {
         initComponents();
         setName(NbBundle.getMessage(DashboardTopComponent.class, "CTL_DashboardTopComponent")); //NOI18N
         filterTimer = new Timer(500, new FilterTimerListener());
         filterTimer.stop();
+        refresher = DashboardRefresher.getInstance();
+        dashboardRefreshTime = new Timer(10000, new RefreshTimerListener());
+        dashboardSelectionListener = new DashboardSelectionListener();
         activeTaskConstrains = new GridBagConstraints(0, 1, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 3, 0, 0), 0, 0);
         componentAdapter = new ComponentAdapter() {
             @Override
@@ -199,7 +210,11 @@ public final class DashboardTopComponent extends TopComponent {
         RepositoryManager.getInstance().addPropertChangeListener(dashboard);
 
         addComponentListener(componentAdapter);
-
+        DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
+        dashboard.addDashboardSelectionListener(dashboardSelectionListener);
+        dashboard.addModelListener(dashboardSelectionListener);
+        refresher.setRefreshEnabled(true);
+        dashboardRefreshTime.restart();
         //load data after the component is displayed
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -213,6 +228,11 @@ public final class DashboardTopComponent extends TopComponent {
     protected void componentClosed() {
         filterPanel.removeDocumentListener(filterListener);
         RepositoryManager.getInstance().removePropertChangeListener(DashboardViewer.getInstance());
+        DashboardSettings.getInstance().removePropertyChangedListener(DashboardViewer.getInstance());
+        DashboardViewer.getInstance().removeDashboardSelectionListener(dashboardSelectionListener);
+        DashboardViewer.getInstance().removeModelListener(dashboardSelectionListener);
+        refresher.setRefreshEnabled(false);
+        dashboardRefreshTime.stop();
         super.componentClosed();
     }
 
@@ -234,24 +254,6 @@ public final class DashboardTopComponent extends TopComponent {
         super.requestFocus();
         if (dashboardComponent != null) {
             dashboardComponent.requestFocus();
-        }
-    }
-
-    public void deleteCategory(CategoryNode... categoryNodes) {
-        String names = "";
-        for (CategoryNode categoryNode : categoryNodes) {
-            names += categoryNode.getCategory().getName() + " ";
-        }
-        NotifyDescriptor nd = new NotifyDescriptor(
-                NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatQuestion", names), //NOI18N
-                NbBundle.getMessage(DashboardTopComponent.class, "LBL_DeleteCatTitle"), //NOI18N
-                NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                null,
-                NotifyDescriptor.YES_OPTION);
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            //TODO fire event to category listeners
-            DashboardViewer.getInstance().deleteCategory(categoryNodes);
         }
     }
 
@@ -295,7 +297,7 @@ public final class DashboardTopComponent extends TopComponent {
     }
 
     public void addTask(TaskNode... taskNodes) {
-        List<Category> categories = DashboardViewer.getInstance().getCategories();
+        List<Category> categories = DashboardViewer.getInstance().getCategories(true);
         for (TaskNode taskNode : taskNodes) {
             if (taskNode.isCategorized()) {
                 categories.remove(taskNode.getCategory());
@@ -382,7 +384,6 @@ public final class DashboardTopComponent extends TopComponent {
 
     private class CategoryNameDocumentListener implements DocumentListener {
 
-
         public CategoryNameDocumentListener() {
         }
 
@@ -401,7 +402,7 @@ public final class DashboardTopComponent extends TopComponent {
             checkCategoryName();
         }
 
-        private void checkCategoryName(){
+        private void checkCategoryName() {
             if (categoryNamePanel.getCategoryName().isEmpty()) {
                 categoryNamePanel.setErrorText(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CatNameErrEmpty")); //NOI18N
                 categoryNameDialog.setValid(false);
@@ -411,6 +412,40 @@ public final class DashboardTopComponent extends TopComponent {
             } else {
                 categoryNamePanel.setErrorText("");
                 categoryNameDialog.setValid(true);
+            }
+        }
+    }
+
+    private class DashboardSelectionListener implements ListSelectionListener, TreeListModelListener {
+
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            dashboardBusy();
+        }
+
+        @Override
+        public void nodeExpanded(TreeListNode node) {
+            dashboardBusy();
+        }
+
+        private void dashboardBusy() {
+            // dashboard selection changed, user is using the dashboard
+            refresher.setDashboardBusy(true);
+            dashboardRefreshTime.restart();
+        }
+    }
+
+    private class RefreshTimerListener implements ActionListener {
+
+        public RefreshTimerListener() {
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // user didnt use the dasboard for some time, refresh could be performed
+            if (e.getSource() == dashboardRefreshTime) {
+                dashboardRefreshTime.stop();
+                refresher.setDashboardBusy(false);
             }
         }
     }

@@ -173,7 +173,7 @@ public class ActionProviderImpl implements ActionProvider {
 
     private boolean usingJUnit4() { // SUREFIRE-724
         for (Artifact a : proj.getLookup().lookup(NbMavenProject.class).getMavenProject().getArtifacts()) {
-            if ("junit".equals(a.getGroupId()) && "junit".equals(a.getArtifactId())) {
+            if ("junit".equals(a.getGroupId()) && ("junit".equals(a.getArtifactId()) || "junit-dep".equals(a.getArtifactId()))) { //junit-dep  see #214238
                 String version = a.getVersion();
                 if (version != null && new ComparableVersion(version).compareTo(new ComparableVersion("4.8")) >= 0) {
                     return true;
@@ -196,10 +196,11 @@ public class ActionProviderImpl implements ActionProvider {
         return RunUtils.hasTestCompileOnSaveEnabled(proj) || (usingSurefire28() && (usingJUnit4() || usingTestNG()));
     }
 
-    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4 needed to run a single test method without Compile on Save.")
+    @Messages("run_single_method_disabled=Surefire 2.8+ with JUnit 4.8+ or TestNG needed to run a single test method without Compile on Save.")
     @Override public void invokeAction(final String action, final Lookup lookup) {
         if (action.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD) || action.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
             if (!runSingleMethodEnabled()) {
+                //TODO show a popup dialog with X Show Next time?
                 StatusDisplayer.getDefault().setStatusText(run_single_method_disabled());
                 return;
             }

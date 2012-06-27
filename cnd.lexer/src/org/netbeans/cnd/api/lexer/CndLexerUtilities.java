@@ -437,7 +437,9 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_STD_CPP11;
     private static Filter<CppTokenId> FILTER_GCC_CPP;
     private static Filter<CppTokenId> FILTER_GCC_CPP11;
-    private static Filter<CppTokenId> FILTER_HEADER;
+    private static Filter<CppTokenId> FILTER_HEADER_C;
+    private static Filter<CppTokenId> FILTER_HEADER_CPP;
+    private static Filter<CppTokenId> FILTER_HEADER_CPP11;
     private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
     private static Filter<CppTokenId> FILTER_OMP;
     private static Filter<FortranTokenId> FILTER_FORTRAN;
@@ -524,17 +526,39 @@ public final class CndLexerUtilities {
         return FILTER_GCC_CPP11;
     }
     
-    public synchronized static Filter<CppTokenId> getHeaderFilter() {
-        if (FILTER_HEADER == null) {
-            FILTER_HEADER = new Filter<CppTokenId>();
-            addCommonCCKeywords(FILTER_HEADER);
-            addCppOnlyKeywords(FILTER_HEADER);
-            addGccOnlyCommonCCKeywords(FILTER_HEADER);
-            addGccOnlyCppOnlyKeywords(FILTER_HEADER);
-            // for header add all C keywords as well
-            addCOnlyKeywords(FILTER_HEADER);
+    public synchronized static Filter<CppTokenId> getHeaderCFilter() {
+        if (FILTER_HEADER_C == null) {
+            FILTER_HEADER_C = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_HEADER_C);
+            addGccOnlyCommonCCKeywords(FILTER_HEADER_C);
+            addCOnlyKeywords(FILTER_HEADER_C);
         }
-        return FILTER_HEADER;
+        return FILTER_HEADER_C;
+    }    
+    
+    public synchronized static Filter<CppTokenId> getHeaderCppFilter() {
+        if (FILTER_HEADER_CPP == null) {
+            FILTER_HEADER_CPP = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_HEADER_CPP);
+            addCppOnlyKeywords(FILTER_HEADER_CPP);
+            addGccOnlyCommonCCKeywords(FILTER_HEADER_CPP);
+            addGccOnlyCppOnlyKeywords(FILTER_HEADER_CPP);
+            // for header add all C keywords as well
+            addCOnlyKeywords(FILTER_HEADER_CPP);
+        }
+        return FILTER_HEADER_CPP;
+    }
+
+    public synchronized static Filter<CppTokenId> getHeaderCpp11Filter() {
+        if (FILTER_HEADER_CPP11 == null) {
+            FILTER_HEADER_CPP11 = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_HEADER_CPP11);
+            addCppOnlyKeywords(FILTER_HEADER_CPP11);
+            addGccOnlyCommonCCKeywords(FILTER_HEADER_CPP11);
+            addGccOnlyCppOnlyKeywords(FILTER_HEADER_CPP11);
+            addCpp11OnlyKeywords(FILTER_HEADER_CPP11);
+        }
+        return FILTER_HEADER_CPP11;
     }
     
     public synchronized static Filter<FortranTokenId> getFortranFilter() {

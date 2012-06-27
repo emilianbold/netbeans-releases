@@ -495,6 +495,7 @@ public final class AttachPanel extends TopComponent {
                     return;
                 }
                 checkValid();
+                chosenProcess();
             }
         });
 
@@ -544,12 +545,7 @@ public final class AttachPanel extends TopComponent {
                 }
                 controller.ok();
             }
-        } else {
-	    if (evt.getClickCount() == 1) {
-		// chosen process
-		chosenProcess();
-	    }
-	}
+        }
     }
 
     /*
@@ -599,7 +595,8 @@ public final class AttachPanel extends TopComponent {
 
             if (path != null) {
                 executable = path.toString();
-                executableProjectPanel.setExecutablePath(getHostName(), executable);
+                // convert to world
+                executable = psData.getFileMapper().engineToWorld(executable);
 //                executablePickList.addElement(executable);
 //                executableProjectPanel.setExecutablePaths(
 //                        executablePickList.getElementsDisplayName());

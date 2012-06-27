@@ -47,6 +47,6 @@ made subject to such option by the copyright holder.
     <toolchain name="OracleSolarisStudio_12.4_linuxCompatGNU" display="Oracle Solaris Studio 12.4 Compiler Collection in GNU compatibility mode" family="SunStudio"/>
     <platforms stringvalue="linux"/>
     <default_locations>
-        <platform os="linux" directory="/opt/oracle/solstudio12.4/bin"/>
+        <platform os="linux" directory="/opt/oracle/solarisstudio12.4/bin"/>
     </default_locations>
 </toolchaindefinition>

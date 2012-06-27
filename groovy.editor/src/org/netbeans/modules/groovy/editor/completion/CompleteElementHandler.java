@@ -43,11 +43,11 @@
 package org.netbeans.modules.groovy.editor.completion;
 
 import java.util.Collections;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
@@ -56,7 +56,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
+import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -93,7 +95,7 @@ public final class CompleteElementHandler {
 
     // FIXME ideally there should be something like nice CompletionRequest once public and stable
     // then this class could implement some common interface
-    public Map<MethodSignature, ? extends CompletionItem> getMethods(
+    public Map<MethodSignature, CompletionItem> getMethods(
             ClassNode source, ClassNode node, String prefix, int anchor, boolean nameOnly) {
 
         //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
@@ -105,7 +107,7 @@ public final class CompleteElementHandler {
         return result;
     }
 
-    public Map<FieldSignature, ? extends CompletionItem> getFields(
+    public Map<FieldSignature, CompletionItem> getFields(
             ClassNode source, ClassNode node, String prefix, int anchor) {
 
         //Map<MethodSignature, CompletionItem> meta = new HashMap<MethodSignature, CompletionItem>();
@@ -122,7 +124,35 @@ public final class CompleteElementHandler {
         boolean leaf = (level == 0);
         Set<AccessLevel> modifiedAccess = AccessLevel.update(access, source, node);
 
-        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        Map<MethodSignature, CompletionItem> result = new TreeMap<MethodSignature, CompletionItem>(new Comparator<MethodSignature>() {
+
+            @Override
+            public int compare(MethodSignature method1, MethodSignature method2) {
+                // Different method name --> just compare as normal Strings
+                if (!method1.getName().equals(method2.getName())) {
+                    return method1.getName().compareTo(method2.getName());
+                }
+                // Method with lower 'parameter count' should be always first
+                if (method1.getParameters().length < method2.getParameters().length) {
+                    return -1;
+                }
+                if (method1.getParameters().length > method2.getParameters().length) {
+                    return 1;
+                }
+                // Same number of parameters --> compare param by param as normal Strings
+                for (int i = 0; i < method1.getParameters().length; i++) {
+                    String param1 = method1.getParameters()[i];
+                    String param2 = method2.getParameters()[i];
+                    
+                    int comparedValue = param1.compareTo(param2);
+                    if (comparedValue != 0) {
+                        return comparedValue;
+                    }
+                }
+                // This should happened only if there are two absolutely identical methods
+                return 0;
+            }
+        });
         ClassDefinition definition = loadDefinition(node);
         ClassNode typeNode = definition.getNode();
 

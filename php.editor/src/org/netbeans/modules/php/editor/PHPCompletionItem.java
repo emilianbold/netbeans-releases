@@ -68,7 +68,9 @@ import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
 import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.codegen.CodegenUtils;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -848,7 +850,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         protected String getNameAndFunctionBodyForTemplate() {
             StringBuilder template = new StringBuilder();
-            template.append(getBaseFunctionElement().asString(PrintAs.NameAndParamsDeclaration));
+            TypeNameResolver typeNameResolver = getBaseFunctionElement().getParameters().isEmpty() || request == null ? TypeNameResolverImpl.forNull() : CodegenUtils.createSmarterTypeNameResolver(getBaseFunctionElement(), request.result.getModel(), request.anchor);
+            template.append(getBaseFunctionElement().asString(PrintAs.NameAndParamsDeclaration, typeNameResolver));
             template.append(" ").append("{\n");//NOI18N
             template.append(getFunctionBodyForTemplate());//NOI18N
             template.append("}");//NOI18N

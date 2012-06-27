@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -56,6 +57,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -68,7 +71,8 @@ import org.openide.util.NbBundle;
  */
 public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Customizer, DocumentListener {
     private JavaPlatform platform;
-    private File lastUsedFolder;
+    private File lastUsedRTFolder = null;
+    private File lastUsedSDKFolder = null;
 
     public JavaFXPlatformCustomizer() {
         initComponents();
@@ -247,7 +251,13 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Cust
                 clearErrorMessage();
                 saveProperties();
             } else {
-                setErrorMessage();
+                predictProperties();
+                if (isPlatformValid()) {
+                    clearErrorMessage();
+                    saveProperties();
+                } else {
+                    setErrorMessage();
+                }
             }
         } else {
             clearErrorMessage();
@@ -255,13 +265,60 @@ public class JavaFXPlatformCustomizer extends javax.swing.JPanel implements Cust
         }
     }//GEN-LAST:event_enableCheckBoxItemStateChanged
 
+    /**
+     * Pre-fills fields with FX SDK and RT locations if such are found
+     * based on the location of the current platform
+     */
+    private void predictProperties() {
+        String sdkPath = null;
+        String runtimePath = null;
+        String javadocPath = null;
+        String srcPath = null;
+        Set<String> locations = JavaFXPlatformUtils.getLocations(platform);
+        for (String path : locations.toArray(new String[0])) {
+            if (sdkPath == null) {
+                sdkPath = JavaFXPlatformUtils.predictSDKLocation(path);
+            }
+            if (runtimePath == null) {
+                runtimePath = JavaFXPlatformUtils.predictRuntimeLocation(path);
+            }
+            // SDK and RT location is enought for JFX platform definition
+            if (sdkPath != null && runtimePath != null) {
+                if (javadocPath == null) {
+                    javadocPath = JavaFXPlatformUtils.predictJavadocLocation(sdkPath);
+                }
+                if (srcPath == null) {
+                    srcPath = JavaFXPlatformUtils.predictSourcesLocation(sdkPath);
+                }
+                break;
+            }
+        }
+        sdkTextField.setText(sdkPath == null ? "" : sdkPath); // NOI18N
+        runtimeTextField.setText(runtimePath == null ? "" : runtimePath); // NOI18N
+        javadocTextField.setText(javadocPath == null ? "" : javadocPath); // NOI18N
+        srcTextField.setText(srcPath == null ? "" : srcPath); // NOI18N
+        
+        if(sdkPath != null) {
+            File sdkDir = new File(sdkPath);
+            if(sdkDir.exists()) {
+                lastUsedSDKFolder = sdkDir.getParentFile();
+            }
+        }
+        if(runtimePath != null) {
+            File runtimeDir = new File(runtimePath);
+            if(runtimeDir.exists()) {
+                lastUsedRTFolder = runtimeDir.getParentFile();
+            }
+        }
+    }
+    
 private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseSDKButtonActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(false);
         
-        if (lastUsedFolder != null) {
-            chooser.setCurrentDirectory(lastUsedFolder);
+        if (lastUsedSDKFolder != null) {
+            chooser.setCurrentDirectory(lastUsedSDKFolder);
         } else {
             String workDir = sdkTextField.getText();
             if (workDir.length() == 0) {
@@ -280,22 +337,43 @@ private void browseSDKButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         chooser.setDialogTitle(NbBundle.getMessage(JavaFXPlatformCustomizer.class, "Customizer_SDK_Folder_Browse_Title")); // NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            lastUsedFolder = file.getParentFile();
-            sdkTextField.setText(file.getAbsolutePath());
+            if(!file.exists() || !JavaFXPlatformUtils.isSdkPathCorrect(file)) {
+                NotifyDescriptor d =
+                    new NotifyDescriptor.Message(NbBundle.getMessage(JavaFXPlatformCustomizer.class,"WARN_InvalidSDKPath", // NOI18N
+                        file.getAbsolutePath()), NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return;
+            }
             
-            if (runtimeTextField.getText().length() == 0) {
-                String runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getPath());
-                runtimeTextField.setText(runtimeLocation == null ? JavaFXPlatformUtils.predictRuntimeLocation(file.getParent()) : runtimeLocation);
-            }
+            lastUsedSDKFolder = file.getParentFile();
+            sdkTextField.setText(file.getAbsolutePath());
 
-            if (javadocTextField.getText().length() == 0) {
-                String javadocLocation = JavaFXPlatformUtils.predictJavadocLocation(file.getPath());
-                javadocTextField.setText(javadocLocation == null ? JavaFXPlatformUtils.predictJavadocLocation(file.getParent()) : javadocLocation);
-            }
-        
-            if (srcTextField.getText().length() == 0) {
-                String srcLocation = JavaFXPlatformUtils.predictSourcesLocation(file.getPath());
-                srcTextField.setText(srcLocation == null ? JavaFXPlatformUtils.predictSourcesLocation(file.getParent()) : srcLocation);
+            // do not search for JavaDoc under parent dir or false positives may be found, e.g., in ME SDK
+            String javadocLocation = JavaFXPlatformUtils.predictJavadocLocation(file.getPath());
+            javadocTextField.setText(javadocLocation == null ? "" : javadocLocation); //NOI18N
+            String srcLocation = JavaFXPlatformUtils.predictSourcesLocation(file.getPath());
+            srcTextField.setText(srcLocation == null ? "" : srcLocation); // NOI18N
+
+            String runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getPath());
+            if(runtimeLocation == null) runtimeLocation = JavaFXPlatformUtils.predictRuntimeLocation(file.getParent());
+            if (!JavaFXPlatformUtils.isRuntimePathCorrect(runtimeTextField.getText())) {
+                runtimeTextField.setText(runtimeLocation);
+                File rtDir = new File(runtimeLocation);
+                if(rtDir.exists()) {
+                    lastUsedRTFolder = rtDir.getParentFile();
+                }
+            } else {
+                File rtDir = new File(runtimeLocation);
+                if(rtDir.exists() && FileUtil.isParentOf(FileUtil.toFileObject(file), FileUtil.toFileObject(rtDir))) {
+                    NotifyDescriptor d =
+                        new NotifyDescriptor(NbBundle.getMessage(JavaFXPlatformCustomizer.class,"MSG_RTfoundInSubDir"), // NOI18N
+                            NbBundle.getMessage(JavaFXPlatformCustomizer.class,"MSG_RTfoundInSubDirDialogTitle"), // NOI18N
+                            NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
+                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
+                        runtimeTextField.setText(runtimeLocation);
+                        lastUsedRTFolder = rtDir.getParentFile();
+                    }
+                }
             }
         }
 }//GEN-LAST:event_browseSDKButtonActionPerformed
@@ -305,8 +383,8 @@ private void browseRuntimeButtonActionPerformed(java.awt.event.ActionEvent evt) 
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(false);
         
-        if (lastUsedFolder != null) {
-            chooser.setCurrentDirectory(lastUsedFolder);
+        if (lastUsedRTFolder != null) {
+            chooser.setCurrentDirectory(lastUsedRTFolder);
         } else {
             String workDir = runtimeTextField.getText();
             if (workDir.length() == 0) {
@@ -325,7 +403,7 @@ private void browseRuntimeButtonActionPerformed(java.awt.event.ActionEvent evt) 
         chooser.setDialogTitle(NbBundle.getMessage(JavaFXPlatformCustomizer.class, "Customizer_Runtime_Folder_Browse_Title")); // NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            lastUsedFolder = file.getParentFile();
+            lastUsedRTFolder = file.getParentFile();
             runtimeTextField.setText(file.getAbsolutePath());
         }
 }//GEN-LAST:event_browseRuntimeButtonActionPerformed
@@ -335,8 +413,8 @@ private void browseJavadocButtonActionPerformed(java.awt.event.ActionEvent evt) 
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(false);
         
-        if (lastUsedFolder != null) {
-            chooser.setCurrentDirectory(lastUsedFolder);
+        if (lastUsedSDKFolder != null) {
+            chooser.setCurrentDirectory(lastUsedSDKFolder);
         } else {
             String workDir = javadocTextField.getText();
             if (workDir.length() == 0) {
@@ -365,7 +443,6 @@ private void browseJavadocButtonActionPerformed(java.awt.event.ActionEvent evt) 
         chooser.setDialogTitle(NbBundle.getMessage(JavaFXPlatformCustomizer.class, "Customizer_Javadoc_Folder_Browse_Title")); // NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            lastUsedFolder = file.getParentFile();
             javadocTextField.setText(file.getAbsolutePath());
         }
 }//GEN-LAST:event_browseJavadocButtonActionPerformed
@@ -375,8 +452,8 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(false);
         
-        if (lastUsedFolder != null) {
-            chooser.setCurrentDirectory(lastUsedFolder);
+        if (lastUsedSDKFolder != null) {
+            chooser.setCurrentDirectory(lastUsedSDKFolder);
         } else {
             String workDir = srcTextField.getText();
             if (workDir.length() == 0) {
@@ -404,7 +481,6 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
         chooser.setDialogTitle(NbBundle.getMessage(JavaFXPlatformCustomizer.class, "Customizer_Sources_Folder_Browse_Title")); // NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
-            lastUsedFolder = file.getParentFile();
             srcTextField.setText(file.getAbsolutePath());
         }
 }//GEN-LAST:event_browseSourcesButtonActionPerformed
@@ -448,6 +524,7 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
             readProperties();
         } else {
             enableCheckBox.setSelected(false);
+            clearPropertyFields();
         }
     }
 
@@ -488,20 +565,40 @@ private void browseSourcesButtonActionPerformed(java.awt.event.ActionEvent evt) 
         PlatformPropertiesHandler.clearGlobalPropertiesForPlatform(platform);
     }
 
+    private void clearPropertyFields() {
+        sdkTextField.setText(""); // NOI18N
+        runtimeTextField.setText(""); // NOI18N
+        javadocTextField.setText(""); // NOI18N
+        srcTextField.setText(""); // NOI18N        
+    }
+    
     private void readProperties() {
         EditableProperties properties = PlatformPropertiesHandler.getGlobalProperties();
-
+        
         String sdkPath = properties.get(Utils.getSDKPropertyKey(platform));
         String runtimePath = properties.get(Utils.getRuntimePropertyKey(platform));
         String javadocPath = properties.get(Utils.getJavadocPropertyKey(platform));
         String srcPath = properties.get(Utils.getSourcesPropertyKey(platform));
-
+        
         sdkTextField.setText(sdkPath);
         runtimeTextField.setText(runtimePath);
         javadocTextField.setText(javadocPath);
         srcTextField.setText(srcPath);
-
+        
         enableCheckBox.setSelected(true);
+        
+        if(sdkPath != null) {
+            File sdkDir = new File(sdkPath);
+            if(sdkDir.exists()) {
+                lastUsedSDKFolder = sdkDir.getParentFile();
+            }
+        }
+        if(runtimePath != null) {
+            File runtimeDir = new File(runtimePath);
+            if(runtimeDir.exists()) {
+                lastUsedRTFolder = runtimeDir.getParentFile();
+            }
+        }
     }
     
     private boolean isPlatformValid() {

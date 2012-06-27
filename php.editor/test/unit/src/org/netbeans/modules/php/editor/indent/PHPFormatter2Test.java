@@ -1418,4 +1418,9 @@ public class PHPFormatter2Test extends PHPCodeCompletionTestBase {
         reformatFileContents("testfiles/formatting/spaces/issue202940_05.php", options);
     }
 
+    public void testIssue187757() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue187757.php", options);
+    }
+
 }

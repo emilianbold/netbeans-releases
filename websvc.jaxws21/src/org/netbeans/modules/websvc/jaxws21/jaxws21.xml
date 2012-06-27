@@ -82,7 +82,7 @@ made subject to such option by the copyright holder.
     </volume>
     <volume>
         <type>maven-pom</type>
-        <resource>http://download.java.net/maven/1/javax.jws/poms/jsr181-api-1.0-MR1.pom</resource>
+        <resource>http://repo1.maven.org/maven2/javax/jws/jsr181-api/1.0-MR1/jsr181-api-1.0-MR1.pom</resource>
         <resource>http://repo1.maven.org/maven2/com/sun/xml/ws/jaxws-rt/2.2.6-1/jaxws-rt-2.2.6-1.pom</resource>
     </volume>
 </library>

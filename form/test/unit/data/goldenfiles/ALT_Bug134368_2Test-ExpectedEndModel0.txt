@@ -15,8 +15,8 @@
                               </Group>
                               <EmptySpace max="$pref" attributes="0"/>
                               <Group type="parallel" groupAlignment="leading" max="$pref" attributes="0">
-                                  <Component id="passwordField2" max="Short.MAX_VALUE" attributes="1"/>
                                   <Component id="passwordField1" pref="106" max="Short.MAX_VALUE" attributes="1"/>
+                                  <Component id="passwordField2" max="Short.MAX_VALUE" attributes="1"/>
                               </Group>
                           </Group>
                       </Group>

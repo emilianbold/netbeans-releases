@@ -60,6 +60,7 @@ import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -366,6 +367,9 @@ public class RemoteFileSystemUtils {
    /** Copy-paste from FileObject.copy */
     public static FileObject copy(FileObject source, FileObject target, String name, String ext) throws IOException {
         if (source.isFolder()) {
+            if (FileUtil.isParentOf(source, target)) {
+                throw new IOException(NbBundle.getMessage(RemoteFileSystemUtils.class, "EXC_OperateChild", source, target)); // NOI18N
+            }
             FileObject peer = target.createFolder(name);
             FileUtil.copyAttributes(source, peer);
             for (FileObject fo : source.getChildren()) {

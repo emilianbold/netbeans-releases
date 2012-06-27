@@ -158,6 +158,7 @@ public class WSUtils {
                 readResource(WsdlModel.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/sun-jaxws.xml")); //NOI18N
         FileSystem fs = targetDir.getFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
             public void run() throws IOException {
                 FileObject sunJaxwsFo = FileUtil.createData(targetDir, "sun-jaxws.xml");//NOI18N
                 FileLock lock = sunJaxwsFo.lock();
@@ -239,6 +240,7 @@ public class WSUtils {
                     try {
                         FileSystem fs = implClassFo.getFileSystem();
                         fs.runAtomicAction(new AtomicAction() {
+                            @Override
                             public void run() {
                                 deleteFile(implClassFo);
                             }

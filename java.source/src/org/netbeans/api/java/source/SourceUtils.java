@@ -113,6 +113,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -485,13 +486,13 @@ public class SourceUtils {
             boolean pkg = handle.getKind() == ElementKind.PACKAGE;
             String[] signature = handle.getSignature();
             assert signature.length >= 1;
-            ClassPath cp = ClassPathSupport.createProxyClassPath(
+            final ClassPath[] cps = 
                 new ClassPath[] {
                     cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE),
                     createClassPath(cpInfo,ClasspathInfo.PathKind.OUTPUT),
                     createClassPath(cpInfo,ClasspathInfo.PathKind.BOOT),                    
                     createClassPath(cpInfo,ClasspathInfo.PathKind.COMPILE),
-                });
+                };
            String pkgName, className = null;
             if (pkg) {
                 pkgName = FileObjects.convertPackage2Folder(signature[0]);
@@ -507,22 +508,21 @@ public class SourceUtils {
                     className = signature[0].substring(index+1);
                 }
             }
-            List<FileObject> fos = cp.findAllResources(pkgName);
-            for (FileObject fo : fos) {
-                FileObject root = cp.findOwnerRoot(fo);
+            final List<Pair<FileObject,ClassPath>> fos = findAllResources(pkgName, cps);
+            for (Pair<FileObject,ClassPath> pair : fos) {                
+                FileObject root = pair.second.findOwnerRoot(pair.first);
                 if (root == null)
                     continue;
-                FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.getURL()).getRoots();                        
+                FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.toURL()).getRoots();                        
                 ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
                 LinkedList<FileObject> folders = new LinkedList<FileObject>(sourcePath.findAllResources(pkgName));
                 if (pkg) {
-                    return folders.isEmpty() ? fo : folders.get(0);
-                }
-                else {               
+                    return folders.isEmpty() ? pair.first : folders.get(0);
+                } else {               
                     final boolean caseSensitive = isCaseSensitive ();
                     final String sourceFileName = getSourceFileName (className);
                     final Match matchSet = caseSensitive ? new CaseSensitiveMatch(sourceFileName) : new CaseInsensitiveMatch(sourceFileName);
-                    folders.addFirst(fo);
+                    folders.addFirst(pair.first);
                     for (FileObject folder : folders) {
                         for (FileObject child : folder.getChildren()) {
                             if (matchSet.apply(child)) {
@@ -546,6 +546,19 @@ public class SourceUtils {
             Exceptions.printStackTrace(e);
         }
         return null;        
+    }
+    
+    @NonNull
+    private static List<Pair<FileObject, ClassPath>> findAllResources(
+            @NonNull final String resourceName,
+            @NonNull final ClassPath[] cps) {
+        final List<Pair<FileObject,ClassPath>> result = new ArrayList<Pair<FileObject, ClassPath>>();
+        for (ClassPath cp : cps) {
+            for (FileObject fo : cp.findAllResources(resourceName)) {
+                result.add(Pair.<FileObject,ClassPath>of(fo, cp));
+            }            
+        }
+        return result;
     }
     
     private static FileObject findSource (final String binaryName, final FileObject... fos) throws IOException {
@@ -964,7 +977,7 @@ public class SourceUtils {
                         Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);                        
                         List<ElementHandle<TypeElement>> classes = new LinkedList<ElementHandle<TypeElement>>();
                         for (URL mainClass : mainClasses) {
-                            File mainFo = new File (URI.create(mainClass.toExternalForm()));
+                            File mainFo = Utilities.toFile(URI.create(mainClass.toExternalForm()));
                             if (mainFo.exists()) {
                                 classes.addAll(JavaCustomIndexer.getRelatedTypes(mainFo, rootFile));
                             }

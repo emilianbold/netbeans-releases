@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.jumpto.EntityComparator;
 import org.netbeans.modules.jumpto.type.TypeComparator;
@@ -54,101 +55,74 @@ import org.netbeans.modules.jumpto.type.TypeProviderAccessor;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
- * Copy/paste from GoToTypeAction
+ * xxx: Copy/paste from GoToTypeAction
  * @author  Jan Becicka
+ * @author  Tomas Zezula
  */
 public class GoToTypeWorker implements Runnable {
 
+    private static final Logger LOGGER = Logger.getLogger(GoToTypeWorker.class.getName());
+
     private volatile boolean isCanceled = false;
     private final String text;
-        private Logger LOGGER = Logger.getLogger(GoToTypeWorker.class.getName());
-
     private final long createTime;
+    private List<? extends TypeDescriptor> types = Collections.<TypeDescriptor>emptyList();;
 
     public GoToTypeWorker( String text ) {
         this.text = text;
         this.createTime = System.currentTimeMillis();
-            //LOGGER.fine( "Worker for " + text + " - created after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );
     }
-
-    private List<? extends TypeDescriptor> types;
 
     public List<? extends TypeDescriptor> getTypes() {
-        return types==null?Collections.<TypeDescriptor>emptyList():types;
+        return types;
     }
 
+    @Override
     public void run() {
-
-            LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-
+        LOGGER.log(
+                Level.FINE,
+                "Worker for {0} - started {1} ms.", //NOI18N
+                new Object[]{
+                    text,
+                    System.currentTimeMillis() - createTime
+                });
         types = getTypeNames( text );
-        if ( isCanceled ) {
-                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-            return;
-        }
-//            ListModel model = Models.fromList(types);
-//            if (typeFilter != null) {
-//                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");;
-//            }
-        if ( isCanceled ) {
-                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-            return;
-        }
-
-//            if ( !isCanceled && model != null ) {
-//                LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-//
-//                panel.setModel(model);
-//                if (okButton != null && !types.isEmpty()) {
-//                    okButton.setEnabled (true);
-//                }
-//            }
-
-
     }
 
     public void cancel() {
-//            if ( panel.time != -1 ) {
-//                LOGGER.fine( "Worker for text " + text + " canceled after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-//            }
-
         isCanceled = true;
     }
 
-    @SuppressWarnings("unchecked")
     private List<? extends TypeDescriptor> getTypeNames(String text) {
         // Multiple providers: merge results
         List<TypeDescriptor> items = new ArrayList<TypeDescriptor>(128);
         List<TypeDescriptor> ccItems = new ArrayList<TypeDescriptor>(128);
         String[] message = new String[1];
 
-        TypeProviderAccessor tpa = TypeProviderAccessor.DEFAULT;
+        final TypeProvider.Context context =
+              TypeProviderAccessor.DEFAULT.createContext(null, text, SearchType.CASE_INSENSITIVE_PREFIX);
+        final TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
+        final TypeProvider.Context ccContext =
+              TypeProviderAccessor.DEFAULT.createContext(null, text, SearchType.CAMEL_CASE);
+        final TypeProvider.Result ccResult = TypeProviderAccessor.DEFAULT.createResult(ccItems, message);
 
-        TypeProvider.Context context =
-              tpa.createContext(null, text, SearchType.CASE_INSENSITIVE_PREFIX);
-        TypeProvider.Result result = tpa.createResult(items, message);
-
-        TypeProvider.Context ccContext =
-              tpa.createContext(null, text, SearchType.CAMEL_CASE);
-        TypeProvider.Result ccResult = tpa.createResult(ccItems, message);
-
-        Collection<TypeProvider> providers = (Collection<TypeProvider>)
-                Lookup.getDefault().lookupAll(TypeProvider.class);
-
+        final Collection<? extends TypeProvider> providers = Lookup.getDefault().lookupAll(TypeProvider.class);
         try {
             computeTypeNames(providers, context, result);
             computeTypeNames(providers, ccContext, ccResult);
-            if (isCanceled) throw new IllegalStateException();
-        } catch(IllegalStateException ise) {
-            return null; // canceled
+            if (isCanceled) {
+                throw new InterruptedException();
+            }
+        } catch(InterruptedException ie) {
+            return Collections.<TypeDescriptor>emptyList();
+        } finally {
+            cleanUp(providers);
         }
 
-        //time = System.currentTimeMillis();
-
-        // TypeComparatorFO is used to avoid duplication of entries
         TreeSet<TypeDescriptor> ts =
                 new TreeSet<TypeDescriptor>(new TypeComparatorFO());
         ts.addAll(ccItems);
@@ -156,11 +130,6 @@ public class GoToTypeWorker implements Runnable {
         items.clear();
         items.addAll(ts); //eliminate duplicates
         Collections.sort(items, new TypeComparator());
-        //panel.setWarning(message[0]);
-        //sort += System.currentTimeMillis() - time;
-        //LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + 
-        //            cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add +
-        //            "  SORT: " + sort );
         return items;
     }
 
@@ -169,16 +138,31 @@ public class GoToTypeWorker implements Runnable {
      * @param providers the providers.
      * @param context the search context.
      * @param result the search result.
-     * @throws IllegalStateException if operation is canceled.
+     * @throws InterruptedException if operation is canceled.
      */
-    private void computeTypeNames(Collection<TypeProvider> providers,
-                                  TypeProvider.Context context,
-                                  TypeProvider.Result result)
-                                  throws IllegalStateException {
-
+    private void computeTypeNames(
+            final Collection<? extends TypeProvider> providers,
+            final TypeProvider.Context context,
+            final TypeProvider.Result result) throws InterruptedException {
         for (TypeProvider provider : providers) {
-            if (isCanceled) throw new IllegalStateException();
+            if (isCanceled) {
+                throw new InterruptedException();
+            }
             provider.computeTypeNames(context, result);
+        }
+    }
+
+    private void cleanUp (final Collection<? extends TypeProvider> providers) {
+        for (TypeProvider tp : providers) {
+            try {
+                tp.cleanup();
+            } catch (Throwable t) {
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath) t;
+                } else {
+                    Exceptions.printStackTrace(t);
+                }
+            }
         }
     }
 

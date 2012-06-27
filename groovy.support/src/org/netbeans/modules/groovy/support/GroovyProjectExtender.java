@@ -44,14 +44,10 @@
 
 package org.netbeans.modules.groovy.support;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -86,15 +82,12 @@ public class GroovyProjectExtender implements GroovyFeature {
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N
     private static final String GROOVY_EXTENSION_ID = "groovy"; // NOI18N
     private static final String GROOVY_BUILD_XSL = "org/netbeans/modules/groovy/support/resources/groovy-build.xsl"; // NOI18N
-    private static final String GROOVY_BUILD_65_XML = "org/netbeans/modules/groovy/support/resources/groovy-build-65.xml"; // NOI18N
-    private static final String GROOVY_BUILD_SAMPLE_65_XML = "org/netbeans/modules/groovy/support/resources/groovy-build-sample-65.xml"; // NOI18N
     private static final String J2SE_PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
     private static final String J2SE_EXCLUDE_PROPERTY = "build.classes.excludes"; // NOI18N
     private static final String J2SE_DISABLE_COMPILE_ON_SAVE = "compile.on.save.unsupported.groovy"; // NOI18N
     private static final String EXCLUSION_PATTERN = "**/*.groovy"; // NOI18N
 
     private final Project project;
-    //private org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath;
 
     public GroovyProjectExtender(Project project) {
         this.project = project;
@@ -108,47 +101,12 @@ public class GroovyProjectExtender implements GroovyFeature {
      */
     public boolean enableGroovy() {
         boolean result = addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
-//        if (result) {
-//            gsfClassPath = registerGsfClassPath(project);
-//        }
         return result;
     }
 
     public boolean disableGroovy() {
         boolean result = removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
-//        if (result) {
-//            unregisterGsfClassPath();
-//        }
         return result;
-    }
-
-    public void refreshBuildScript(boolean checkProjectXml) {
-        if (isGroovyEnabled()) {
-            GeneratedFilesHelper helper = new GeneratedFilesHelper(project.getProjectDirectory());
-            URL stylesheet = this.getClass().getClassLoader().getResource(GROOVY_BUILD_XSL);
-            try {
-                int flags = helper.getBuildScriptState("nbproject/groovy-build.xml", stylesheet);
-                // old 65 script looks like modified
-                if ((GeneratedFilesHelper.FLAG_MODIFIED & flags) != 0
-                        && (GeneratedFilesHelper.FLAG_OLD_PROJECT_XML & flags) != 0
-                        && (GeneratedFilesHelper.FLAG_OLD_STYLESHEET & flags) != 0
-                        && (hasBuildScriptFrom65(project, GROOVY_BUILD_65_XML) || hasBuildScriptFrom65(project, GROOVY_BUILD_SAMPLE_65_XML))) {
-                    FileObject buildScript = project.getProjectDirectory().getFileObject("nbproject/groovy-build.xml");
-                    if (buildScript != null) {
-                        buildScript.delete();
-
-                        helper.generateBuildScriptFromStylesheet("nbproject/groovy-build.xml", stylesheet);
-                        return;
-                    }
-                }
-
-                helper.refreshBuildScript("nbproject/groovy-build.xml", stylesheet, checkProjectXml);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IllegalStateException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
     }
 
     /**
@@ -156,43 +114,11 @@ public class GroovyProjectExtender implements GroovyFeature {
      * build script extension, not classpath, not excludes
      * @return true if build script is modified with groovy extendion
      */
+    @Override
     public boolean isGroovyEnabled() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         return extender != null && extender.getExtension(GROOVY_EXTENSION_ID) != null;
     }
-
-//    static org.netbeans.modules.gsfpath.api.classpath.ClassPath registerGsfClassPath(Project project) {
-//        Sources sources = ProjectUtils.getSources(project);
-//        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-//        if (groups.length > 0) {
-//            FileObject[] roots = new FileObject[groups.length];
-//            for (int i = 0; i < groups.length; i++) {
-//                roots[i] = groups[i].getRootFolder();
-//            }
-//            org.netbeans.modules.gsfpath.api.classpath.ClassPath gsfClassPath = ClassPathSupport.createClassPath(roots);
-//            GlobalPathRegistry.getDefault().register(
-//                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
-//                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
-//            return gsfClassPath;
-//        }
-//        return null;
-//    }
-
-//    private void unregisterGsfClassPath() {
-//        if (gsfClassPath != null) {
-//            GlobalPathRegistry.getDefault().unregister(
-//                    org.netbeans.modules.gsfpath.api.classpath.ClassPath.SOURCE,
-//                    new org.netbeans.modules.gsfpath.api.classpath.ClassPath[] { gsfClassPath });
-//            gsfClassPath = null;
-//        }
-//    }
-
-//    static void unregisterGsfClassPath(Project project) {
-//        GroovyProjectExtender extender = project.getLookup().lookup(GroovyProjectExtender.class);
-//        if (extender != null) {
-//            extender.unregisterGsfClassPath();
-//        }
-//    }
 
     /**
      * Add groovy-all.jar on classpath
@@ -367,6 +293,7 @@ public class GroovyProjectExtender implements GroovyFeature {
         try {
             return
             ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<EditableProperties>() {
+                @Override
                 public EditableProperties run() throws IOException {
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     EditableProperties ep = null;
@@ -392,6 +319,7 @@ public class GroovyProjectExtender implements GroovyFeature {
         throws IOException {
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     if (propertiesFo!=null) {
@@ -409,31 +337,4 @@ public class GroovyProjectExtender implements GroovyFeature {
         } catch (MutexException ex) {
         }
     }
-
-    private static boolean hasBuildScriptFrom65(Project project, String resource) throws IOException {
-        FileObject fo = project.getProjectDirectory().getFileObject("nbproject/groovy-build.xml");
-        if (fo == null) {
-            return false;
-        }
-
-        // FIXME is ther any better way ?
-        URL xml65 = GroovyProjectExtender.class.getClassLoader().getResource(resource);
-        URLConnection connection = xml65.openConnection();
-        connection.setUseCaches(false);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8")); // NOI18N
-        try {
-            List<String> lines65 = fo.asLines("UTF-8"); // NOI18N
-            for (String line65 : lines65) {
-                String line = reader.readLine();
-                if (line == null || !line.equals(line65)) {
-                    return false;
-                }
-            }
-
-            return reader.readLine() == null;
-        } finally {
-            reader.close();
-        }
-    }
-
 }

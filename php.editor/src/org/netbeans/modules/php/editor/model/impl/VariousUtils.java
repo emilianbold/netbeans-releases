@@ -50,7 +50,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
@@ -370,7 +370,7 @@ public class VariousUtils {
                                 newRecentTypes.addAll(meth.getReturnTypes(true));
                             }
                         }
-                        recentTypes = newRecentTypes;
+                        recentTypes = filterSuperTypes(newRecentTypes);
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.FUNCTION_TYPE_PREFIX)) {
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
@@ -503,6 +503,37 @@ public class VariousUtils {
         }
 
         return recentTypes;
+    }
+
+    private static Collection<TypeScope> filterSuperTypes(final Collection<? extends TypeScope> typeScopes) {
+        final Collection<TypeScope> result = new HashSet<TypeScope>();
+        if (typeScopes.size() > 1) {
+            result.addAll(filterPossibleSuperTypes(typeScopes));
+        } else {
+            result.addAll(typeScopes);
+        }
+        return result;
+    }
+
+    private static Collection<TypeScope> filterPossibleSuperTypes(final Collection<? extends TypeScope> typeScopes) {
+        final Collection<TypeScope> result = new HashSet<TypeScope>();
+        for (TypeScope typeScope : typeScopes) {
+            if (!isSuperTypeOf(typeScope, typeScopes)) {
+                result.add(typeScope);
+            }
+        }
+        return result;
+    }
+
+    private static boolean isSuperTypeOf(final TypeScope superType, final Collection<? extends TypeScope> typeScopes) {
+        boolean result = false;
+        for (TypeScope typeScope : typeScopes) {
+            if (superType.isSuperTypeOf(typeScope)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private static QualifiedName createQuery(String semiTypeName, final Scope scope) {
@@ -1377,7 +1408,7 @@ public class VariousUtils {
     }
 
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
-        return TypeNameResolver.forFullyQualifiedName(inScope, offset).resolve(qualifiedName);
+        return TypeNameResolverImpl.forFullyQualifiedName(inScope, offset).resolve(qualifiedName);
     }
 
     public static boolean isPrimitiveType(String typeName) {

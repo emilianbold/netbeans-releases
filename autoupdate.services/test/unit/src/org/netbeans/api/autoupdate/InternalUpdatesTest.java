@@ -66,6 +66,7 @@ import org.netbeans.modules.autoupdate.services.UpdateManagerImpl;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -134,7 +135,7 @@ public class InternalUpdatesTest extends NbTestCase {
         res += "</module_updates>\n";
         if (catalogFile == null) {
             catalogFile = File.createTempFile("catalog-", ".xml", tmpDirectory);
-            catalogURL = catalogFile.toURI().toURL();
+            catalogURL = Utilities.toURI(catalogFile).toURL();
         }
         PrintWriter pw = new PrintWriter(new OutputStreamWriter(new FileOutputStream(catalogFile), "UTF-8"));
         pw.write(res);
@@ -200,7 +201,7 @@ public class InternalUpdatesTest extends NbTestCase {
         jos = new JarOutputStream(new FileOutputStream(nbm), mf);
         jos.putNextEntry(new ZipEntry("Info/"));
         jos.putNextEntry(new ZipEntry("Info/info.xml"));
-        jos.write(createInfoXML(visible, codeName, moduleName, nbm.toURI().toURL().toString(), specVersion, dependency).getBytes("UTF-8"));
+        jos.write(createInfoXML(visible, codeName, moduleName, Utilities.toURI(nbm).toURL().toString(), specVersion, dependency).getBytes("UTF-8"));
 
         jos.putNextEntry(new ZipEntry("netbeans/"));
         jos.putNextEntry(new ZipEntry("netbeans/modules/"));

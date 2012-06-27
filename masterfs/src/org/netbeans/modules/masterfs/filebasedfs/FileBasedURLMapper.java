@@ -47,7 +47,6 @@ package org.netbeans.modules.masterfs.filebasedfs;
 import java.net.URISyntaxException;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
 import java.io.File;
@@ -58,38 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
-import org.openide.util.Exceptions;
-
-//TODO: JDK problems with URL, URI, File conversion for UNC
-/*
-There must be consistently called conversion from FileUtil and URLMapper.
-new File (URI.create (fo.getURL ().toExternalForm ())) is typical scenario that leads to this
-bug: java.lang.IllegalArgumentException: URI has an authority component
-        at java.io.File.<init>(File.java:326)
-
-
-Maybe there would be also possible to return a little special URL from FileBasedURLMapper that
-would get special subclass of URLStreamHandler in constructor. This subclass of URLStreamHandler
-would provided external form (method toExternalForm) that would be suitable for above mentioned 
-conversion from URL to File. 
-        
-Known problems :
-1/     at java.io.File.<init>(File.java:326)
-     at org.netbeans.modules.javacore.parser.ASTProvider.getClassPath(ASTProvider.java:477)
-     at org.netbeans.lib.gjast.ASParser$BridgeContext.getClassPath(ASParser.java:421)
-
-2/
-       at java.io.File.<init>(File.java:326)
-       at org.netbeans.modules.javacore.scanning.FileScanner.<init>(FileScanner.java:85)
-catch] at org.netbeans.modules.javacore.JMManager.scanFiles(JMManager.java:1112)
-
-3/ org.netbeans.modules.javacore.parser.ECRequestDescImpl.getFileName(FileObject fo,StringBuffer buf)
-    at java.io.File.<init>(File.java:326)
-     
-    
-    
-    
-*/
+import org.openide.util.Utilities;
 
 public final class FileBasedURLMapper extends URLMapper {
     private static final Logger LOG = Logger.getLogger(FileBasedURLMapper.class.getName());
@@ -126,7 +94,7 @@ public final class FileBasedURLMapper extends URLMapper {
         FileObject retVal = null;
         File file;
         try {
-            file = FileUtil.normalizeFile(url2F(url));
+            file = Utilities.toFile(url.toURI());
         } catch (URISyntaxException e) {
             LOG.log(Level.INFO, "URL=" + url, e); // NOI18N
             return null;
@@ -151,11 +119,12 @@ public final class FileBasedURLMapper extends URLMapper {
         }
         return retVal;
     }
-        // #171330 - used toURI() to eliminate disk touch in file.toURI()
-
-    /** #171330 - Method taken from java.io.File.toURI. We know whether given
-     * FileObject is a file or folder, so we can eliminate File.isDirectory
-     * disk touch which is needed in file.toURI().  */
+    /** {@link Utilities#toURI} replacement.
+     * #171330: we know whether given
+     * FileObject is a file or folder, so we can eliminate {@link File#isDirectory}
+     * disk touch which is needed otherwise.
+     * Might be useful as an API method.
+     */
     private static URI toURI(final File file, boolean isDirectory) {
         return toURI(file.getAbsolutePath(), isDirectory, File.separatorChar);
     }
@@ -180,15 +149,5 @@ public final class FileBasedURLMapper extends URLMapper {
             p = p + "/";  //NOI18N
         }
         return p;
-    }
-
-    static File url2F(final URL url) throws URISyntaxException {
-        File file;
-        if (url.getHost() == null || url.getHost().length() == 0) {
-            file = new File(url.toURI());
-        } else {
-            file = new File("\\\\" + url.getHost() + url.getPath().replace('/', '\\')); // NOI18N
-        }
-        return file;
     }
 }

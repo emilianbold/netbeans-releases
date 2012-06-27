@@ -238,6 +238,17 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     /** Keeps singleton instance of JWSProjectProperties for any WS project for which property customizer is opened at once */
     private static Map<String, JWSProjectProperties> propInstance = new TreeMap<String, JWSProjectProperties>();
 
+    /** Keeps set of category markers used to identify validity of JFXProjectProperties instance */
+    private Set<String> instanceMarkers = new TreeSet<String>();
+    
+    public void markInstance(String marker) {
+        instanceMarkers.add(marker);
+    }
+    
+    public boolean isInstanceMarked(String marker) {
+        return instanceMarkers.contains(marker);
+    }
+    
     /** Factory method */
     public static JWSProjectProperties getInstance(Lookup context) {
         Project proj = context.lookup(Project.class);
@@ -246,6 +257,38 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         if(prop == null) {
             prop = new JWSProjectProperties(context);
             propInstance.put(projDir, prop);
+        }
+        return prop;
+    }
+
+    /** Factory method 
+     * This is to prevent reuse of the same instance after the properties dialog
+     * has been cancelled. Called by each FX category provider at the time
+     * when properties dialog is opened, it checks/stores category-specific marker strings. 
+     * Previous existence of marker string indicates that properties dialog had been opened
+     * before and ended by Cancel, otherwise this instance would not exist (OK would
+     * cause properties to be saved and the instance deleted by a call to JFXProjectProperties.cleanup()).
+     * (Note that this is a workaround to avoid adding listener to properties dialog close event.)
+     * 
+     * @param category marker string to indicate which category provider is calling this
+     * @return instance of JFXProjectProperties shared among category panels in the current Project Properties dialog only
+     */
+    public static JWSProjectProperties getInstancePerSession(Lookup context, String category) {
+        Project proj = context.lookup(Project.class);
+        String projDir = proj.getProjectDirectory().getPath();
+        JWSProjectProperties prop = propInstance.get(projDir);
+        if(prop != null) {
+            if(prop.isInstanceMarked(category)) {
+                // category marked before - create new instance to avoid reuse after Cancel
+                prop = null;
+            } else {
+                prop.markInstance(category);
+            }
+        }
+        if(prop == null) {
+            prop = new JWSProjectProperties(context);
+            propInstance.put(projDir, prop);
+            prop.markInstance(category);
         }
         return prop;
     }
@@ -280,7 +323,7 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return lastIsWebStartEnabled || enabledModel.isSelected();
     }
 
-    private void resetWebStartChanged() {
+    void resetWebStartChanged() {
         lastIsWebStartEnabled = isWebStart(evaluator);
     }
     
@@ -339,6 +382,22 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     
     boolean isJWSEnabled() {
         return !jnlpImplOldOrModified && enabledModel.isSelected();
+    }
+
+    /**
+     * Checks if the JWS was just activated.
+     * @return true if the JWS was activated in current properties run.
+     */
+    boolean wasJWSActivated() {
+        return !lastIsWebStartEnabled && isJWSEnabled();
+    }
+
+    /**
+     * Checks if the JWS was just deactivated.
+     * @return true if the JWS was deactivated in current properties run.
+     */
+    boolean wasJWSDeactivated() {
+        return lastIsWebStartEnabled && !enabledModel.isSelected();
     }
     
     public DescType getDescTypeProp() {
@@ -580,7 +639,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         } 
-        resetWebStartChanged();
     }
 
     public static void updateOnOpen(final Project project, final PropertyEvaluator eval) throws IOException {

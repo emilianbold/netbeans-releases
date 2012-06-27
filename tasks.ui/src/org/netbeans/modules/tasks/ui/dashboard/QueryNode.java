@@ -45,14 +45,14 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.actions.OpenQueryAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenQueryAction;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 
@@ -83,6 +83,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     protected List<Issue> load() {
         if (isRefresh()) {
             query.refresh();
+            updateNodes();
             setRefresh(false);
         }
         return new ArrayList<Issue>(query.getIssues());
@@ -92,25 +93,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     protected void dispose() {
         super.dispose();
         query.removePropertyChangeListener(queryListener);
-    }
-
-    @Override
-    protected List<TreeListNode> createChildren() {
-        if (isRefresh()) {
-            removeTaskListeners();
-            query.refresh();
-            updateNodes();
-            setRefresh(false);
-        }
-        List<TaskNode> children = getFilteredTaskNodes();
-        Collections.sort(children);
-        return new ArrayList<TreeListNode>(children);
-    }
-
-    @Override
-    void updateContent() {
-        updateNodes();
-        refreshChildren();
     }
 
     @Override
@@ -147,7 +129,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
-        updateNodes();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
@@ -199,7 +180,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof QueryNode) {
-                queryNodes[i] = (QueryNode)treeListNode;
+                queryNodes[i] = (QueryNode) treeListNode;
             } else {
                 return null;
             }
@@ -242,12 +223,22 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         return this.query.getDisplayName();
     }
 
+    @Override
+    boolean isTaskLimited() {
+        return DashboardSettings.getInstance().isTasksLimitQuery();
+    }
+
     private class QueryListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
-                updateContent();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateContent();
+                    }
+                });
             }
         }
     }

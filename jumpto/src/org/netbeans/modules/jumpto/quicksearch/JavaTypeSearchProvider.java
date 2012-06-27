@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.jumpto.quicksearch;
 
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.quicksearch.SearchRequest;
@@ -52,28 +53,31 @@ import org.openide.filesystems.FileObject;
 /**
  *
  * @author  Jan Becicka
+ * @author Tomas Zezula
  */
 public class JavaTypeSearchProvider implements SearchProvider {
 
-    private GoToTypeWorker worker;
+    private final AtomicReference<GoToTypeWorker> workerRef = new AtomicReference<GoToTypeWorker>();
 
+    @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
         String text = removeNonJavaChars(request.getText());
         if(text.length() == 0) {
             return;
         }
-        
-        GoToTypeWorker local;
-        synchronized (this) {
-            if (worker != null) {
-                worker.cancel();
-            }
-            worker = new GoToTypeWorker(text);
-            local=worker;
+
+        final GoToTypeWorker newWorker = new GoToTypeWorker(text);
+        final GoToTypeWorker toCancel = workerRef.getAndSet(newWorker);
+        if (toCancel != null) {
+            toCancel.cancel();
         }
-        local.run();
+        try {
+            newWorker.run();
+        } finally {
+            workerRef.compareAndSet(newWorker, null);
+        }
         
-        for (TypeDescriptor td : local.getTypes()) {
+        for (TypeDescriptor td : newWorker.getTypes()) {
             FileObject fo = td.getFileObject();
             String displayHint = fo == null ? null : fo.getPath(); // #150654
             String htmlDisplayName = td.getSimpleName() + td.getContextName();

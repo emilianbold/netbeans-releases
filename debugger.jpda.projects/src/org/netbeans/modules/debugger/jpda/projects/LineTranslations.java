@@ -44,28 +44,42 @@
 
 package org.netbeans.modules.debugger.jpda.projects;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import javax.swing.JEditorPane;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.editor.BaseDocument;
 
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
@@ -161,6 +175,7 @@ class LineTranslations {
         synchronized (this) {
             bpLines.put(lb, line);
             lineNumberListener = new PropertyChangeListener() {
+                @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
                         final Map<LineBreakpoint, Integer> bpLines;
@@ -205,6 +220,9 @@ class LineTranslations {
             Line.Set lineSet = getLineSet (url, timeStamp);
             if (lineSet == null) return currentLineNumber;
             //System.err.println("  lineSet = "+lineSet+"date = "+lineSet.getDate());
+            try {
+                lineSet.getOriginal(0); // To assure, that the set is updated.
+            } catch (IndexOutOfBoundsException ioobex) {}
             try {
                 //Line line = lineSet.getCurrent(currentLineNumber);
                 //System.err.println("  current line = "+line);
@@ -260,7 +278,7 @@ class LineTranslations {
         }
         
         // get current
-        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
+        LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
         if (lineCookie == null) return null;
         return lineCookie.getLineSet ();
     }
@@ -268,11 +286,11 @@ class LineTranslations {
     Line getLine (String url, int lineNumber, Object timeStamp) {
         //System.err.println("LineTranslations.getLine("+lineNumber+", "+timeStamp+")");
         Line.Set ls = getLineSet (url, timeStamp);
-        //System.err.println("  Line.Set = "+ls+", date = "+ls.getDate());
-        //System.err.println("  current("+(lineNumber-1)+") = "+ls.getCurrent (lineNumber - 1));
-        //System.err.println("  originl("+(lineNumber-1)+") = "+ls.getOriginal (lineNumber - 1));
         if (ls == null) return null;
         try {
+            //System.err.println("  Line.Set = "+ls+", date = "+ls.getDate());
+            //System.err.println("  current("+(lineNumber-1)+") = "+ls.getCurrent (lineNumber - 1));
+            //System.err.println("  originl("+(lineNumber-1)+") = "+ls.getOriginal (lineNumber - 1));
             if (timeStamp == null)
                 return ls.getCurrent (lineNumber - 1);
             else
@@ -306,7 +324,7 @@ class LineTranslations {
             blu = lineUpdaters.remove(lb);
         }
         if (blu != null) {
-            blu.detach();
+            blu.destroy();
         }
         //if (timeStampToRegistry.isEmpty () && translatedBreakpoints.isEmpty()) {
         //    DataObject.getRegistry ().removeChangeListener (changedFilesListener);
@@ -338,7 +356,7 @@ class LineTranslations {
         private Map<DataObject, Line.Set> dataObjectToLineSet = new HashMap<DataObject, Line.Set>();
         
         synchronized void register (DataObject dataObject) {
-            LineCookie lc = dataObject.getCookie (LineCookie.class);
+            LineCookie lc = dataObject.getLookup().lookup (LineCookie.class);
             if (lc == null) return;
             dataObjectToLineSet.put (dataObject, lc.getLineSet ());
         }
@@ -356,6 +374,7 @@ class LineTranslations {
     }
     
     private class ChangedFilesListener implements ChangeListener {
+        @Override
         public void stateChanged (ChangeEvent e) {
             Set<DataObject> newDOs = new HashSet<DataObject>(
                 DataObject.getRegistry ().getModifiedSet()
@@ -372,25 +391,40 @@ class LineTranslations {
         }
     }
     
-    private class BreakpointLineUpdater implements PropertyChangeListener {
+    private class BreakpointLineUpdater implements PropertyChangeListener, DocumentListener, ActionListener {
         
         private final LineBreakpoint lb;
         private DataObject dataObject;
         private Line line;
+        private final List<Line> lineHasChanged = new ArrayList<Line>();
+        private final Timer lineChangePostProcess = new Timer(1000, this);
         private boolean updatingLine = false;
         
         public BreakpointLineUpdater(LineBreakpoint lb, DataObject dataObject) {
             this.lb = lb;
             this.dataObject = dataObject;
+            lineChangePostProcess.setRepeats(false);
+            DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
+            des.addPropertyChangeListener(this);
         }
         
         public synchronized void attach() throws IOException {
-            LineCookie lc = dataObject.getCookie (LineCookie.class);
+            LineCookie lc = dataObject.getLookup().lookup (LineCookie.class);
             if (lc == null) return ;
             lb.addPropertyChangeListener(this);
             try {
                 this.line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
                 line.addPropertyChangeListener(this);
+                StyledDocument document = NbDocument.getDocument(new Lookup.Provider() {
+                                              @Override
+                                              public Lookup getLookup() {
+                                                  return line.getLookup();
+                                              }
+                                          });
+                if (document instanceof BaseDocument) {
+                    BaseDocument bd = (BaseDocument) document;
+                    bd.addPostModificationDocumentListener(this);
+                }
             } catch (IndexOutOfBoundsException ioobex) {
                 // ignore document changes for BP with bad line number
             }
@@ -400,6 +434,14 @@ class LineTranslations {
             lb.removePropertyChangeListener(this);
             if (line != null) {
                 line.removePropertyChangeListener(this);
+            }
+        }
+        
+        public void destroy() {
+            detach();
+            DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
+            if (des != null) {
+                des.removePropertyChangeListener(this);
             }
         }
 
@@ -418,16 +460,41 @@ class LineTranslations {
             }
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
+            if (EditorCookie.Observable.PROP_OPENED_PANES.equals(propertyName)) {
+                DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
+                JEditorPane[] openedPanes = des.getOpenedPanes();
+                if (openedPanes == null) {
+                    synchronized (this) {
+                        if (line != null) {
+                            detach();
+                            line = null;
+                        }
+                    }
+                } else {
+                    synchronized (this) {
+                        if (line == null) {
+                            try {
+                                attach();
+                            } catch (IOException ioex) {}
+                        }
+                    }
+                }
+                return ;
+            }
             Line l;
             boolean ul;
             synchronized (this) {
                 l = this.line;
+                if (l == null) {
+                    return ;
+                }
                 ul = this.updatingLine;
             }
             if (Line.PROP_LINE_NUMBER.equals(propertyName) && l == evt.getSource()) {
-                update(l);
+                lineHasChanged(l);
                 return ;
             }
             if (Line.PROP_TEXT.equals(propertyName) && l == evt.getSource()) {
@@ -440,7 +507,7 @@ class LineTranslations {
                         if (dataObject == null) return ;
                         dobj = dataObject;
                     }
-                    LineCookie lc = dobj.getCookie (LineCookie.class);
+                    LineCookie lc = dobj.getLookup().lookup (LineCookie.class);
                     Line newLine;
                     try {
                         int lineNumber = l.getLineNumber();
@@ -472,7 +539,7 @@ class LineTranslations {
                 }
                 Line newLine;
                 try {
-                    LineCookie lc = dobj.getCookie (LineCookie.class);
+                    LineCookie lc = dobj.getLookup().lookup (LineCookie.class);
                     newLine = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
                     newLine.addPropertyChangeListener(this);
                 } catch (IndexOutOfBoundsException ioobex) {
@@ -483,10 +550,13 @@ class LineTranslations {
                 }
             }
             if (LineBreakpoint.PROP_URL.equals(propertyName)) {
+                DataEditorSupport des = dataObject.getLookup().lookup(DataEditorSupport.class);
+                des.removePropertyChangeListener(this);
+
                 DataObject newDO = getDataObject(lb.getURL());
                 Line newLine;
                 if (newDO != null) {
-                    LineCookie lc = newDO.getCookie (LineCookie.class);
+                    LineCookie lc = newDO.getLookup().lookup (LineCookie.class);
                     try {
                         newLine = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
                         newLine.addPropertyChangeListener(this);
@@ -509,7 +579,43 @@ class LineTranslations {
                     // attach
                     this.line = newLine;
                 }
+                des = newDO.getLookup().lookup(DataEditorSupport.class);
+                des.addPropertyChangeListener(this);
             }
+        }
+        
+        private void lineHasChanged(Line l) {
+            if (!lineHasChanged.contains(l)) {
+                lineHasChanged.add(l);
+            }
+            lineChangePostProcess.restart();
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            lineMightChange();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            lineMightChange();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            lineMightChange();
+        }
+        
+        private void lineMightChange() {
+            while (!lineHasChanged.isEmpty()) {
+                Line l = lineHasChanged.remove(0);
+                update(l);
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            lineMightChange();
         }
         
     }

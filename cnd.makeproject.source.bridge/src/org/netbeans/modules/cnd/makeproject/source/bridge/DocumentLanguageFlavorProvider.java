@@ -84,7 +84,7 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
         }
         // check if it should have C++11 flavor
         Language<?> language = (Language<?>) doc.getProperty(Language.class);
-        if (language != CppTokenId.languageCpp() && language != CppTokenId.languageC()) {
+        if (language != CppTokenId.languageCpp() && language != CppTokenId.languageC() && language != CppTokenId.languageHeader()) {
             return;
         }
         // fast check using NativeFileItemSet
@@ -125,6 +125,13 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
                 filter = CndLexerUtilities.getGccCFilter();
                 break;
             case C_HEADER:
+                language = CppTokenId.languageHeader();
+                if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {
+                    filter = CndLexerUtilities.getHeaderCpp11Filter();
+                } else {
+                    filter = CndLexerUtilities.getHeaderCppFilter();
+                }
+                break;
             case CPP:
                 language = CppTokenId.languageCpp();
                 if (nfi.getLanguageFlavor() == NativeFileItem.LanguageFlavor.CPP11) {

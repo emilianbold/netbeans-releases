@@ -73,19 +73,11 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
     }
 
     @Override public String getName() {
-        final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
-        if (SwingUtilities.isEventDispatchThread() && !nb.isMavenProjectLoaded()) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    //assuming this takes long and hangs in sync.
-                    nb.getMavenProject();
-                    pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
-                }
-            });
-            return project.getProjectDirectory().getNameExt();
-        }
-        return nb.getMavenProject().getId().replace(':', '_');
+        //always return the same value, never skip in AWT, used in quite some places relying on 
+        //consistency for some reason..
+        //For performance reasons, never dig into the MavenProject model here.
+        //used from nodes all over the place
+        return project.getProjectDirectory().toURL().toExternalForm();
     }
 
     @Messages({

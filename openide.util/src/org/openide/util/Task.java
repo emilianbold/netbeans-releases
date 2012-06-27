@@ -46,6 +46,7 @@ package org.openide.util;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /** A task that may be executed in a separate thread and permits examination of its status.
@@ -70,6 +71,7 @@ import java.util.logging.Level;
 public class Task extends Object implements Runnable {
     /** Dummy task which is already finished. */
     public static final Task EMPTY = new Task();
+    private static final Logger LOG = Logger.getLogger(Task.class.getName());
 
     static {
         EMPTY.finished = true;
@@ -158,23 +160,28 @@ public class Task extends Object implements Runnable {
                 long expectedEnd = System.currentTimeMillis() + milliseconds;
 
                 for (;;) {
+                    LOG.log(Level.FINE, "About to wait {0} ms", milliseconds);
                     wait(milliseconds);
 
                     if (finished) {
+                        LOG.log(Level.FINER, "finished, return"); // NOI18N
                         return true;
                     }
                     
                     if (milliseconds == 0) {
+                        LOG.log(Level.FINER, "infinite wait, again"); // NOI18N
                         continue;
                     }
                     
                     long now = System.currentTimeMillis();
-
-                    if (expectedEnd <= now) {
+                    long remains = expectedEnd - now;
+                    LOG.log(Level.FINER, "remains {0} ms", remains);
+                    if (remains <= 0) {
+                        LOG.log(Level.FINER, "exit, timetout");
                         return false;
                     }
 
-                    milliseconds = expectedEnd - now;
+                    milliseconds = remains;
                 }
             }
         }
@@ -185,11 +192,13 @@ public class Task extends Object implements Runnable {
         // for the result, by that we can guarantee the semantics
         // of the call
         class Run implements Runnable {
+            @Override
             public void run() {
                 Task.this.waitFinished();
             }
         }
 
+        LOG.fine("Using compatibility waiting");
         RequestProcessor.Task task = RP.post(new Run());
 
         return task.waitFinished(milliseconds);

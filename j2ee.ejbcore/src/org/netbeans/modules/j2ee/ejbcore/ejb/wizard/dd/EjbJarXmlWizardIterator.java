@@ -51,7 +51,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.WizardDescriptor;
@@ -112,8 +114,17 @@ public final class EjbJarXmlWizardIterator implements WizardDescriptor.Instantia
         Project project = ((EjbJarXmlWizardPanel1) panels[0]).getProject();
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
+        Profile j2eeProfile = EjbJar.getEjbJar(confRoot).getJ2eeProfile();
         if (confRoot != null) {
-            String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-" + j2eeModule.getModuleVersion() + ".xml";
+            String resource;
+            // see #213631 - caused by fact that EJB DD schemas have different numbering than WEB DD schemas
+            //   (so Java EE6 Web-DD is of the version 3.0, but Ejb-DD is of the version 3.1)
+            if (j2eeProfile == Profile.JAVA_EE_6_WEB) {
+                // ee6 web module is of the version 3.0 but the ee6 deployment descriptor schema should be of version 3.1
+                resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-3.1.xml";
+            } else {
+                resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-" + j2eeModule.getModuleVersion() + ".xml";
+            }
             FileObject source = FileUtil.getConfigFile(resource);
             if (source == null) {
                 throw new NullPointerException("Could not find source file: " + resource);

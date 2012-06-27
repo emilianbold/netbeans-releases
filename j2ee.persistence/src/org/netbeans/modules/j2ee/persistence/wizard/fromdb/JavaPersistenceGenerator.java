@@ -196,7 +196,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             FetchType fetchType, CollectionType collectionType,
             ProgressContributor progressContributor, ProgressPanel panel, Project prj) throws IOException {
 
-        int progressMax = entityClasses.length * 2;
+        int progressMax = entityClasses.length * 3;
         progressContributor.start(progressMax);
         if (prj != null) {
             ContainerClassPathModifier modifier = prj.getLookup().lookup(ContainerClassPathModifier.class);
@@ -476,6 +476,11 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             // and its primary key class
 
 
+            Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
+            Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
+            Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
+            JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
+            //1st just go through to refresh, in some rare cases entities can't be found/parsed, see #213736
             for (int i = 0; i < entityClasses.length; i++) {
                 final EntityClass entityClass = entityClasses[i];
                 String entityClassName = entityClass.getClassName();
@@ -503,13 +508,45 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 final FileObject entityClassFO = entityClassFO0;
                 final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
                 try {
+                    JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE)
+                            ? JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO)
+                            : JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
+                    javaSource.runModificationTask(new Task<WorkingCopy>() {
+                        @Override
+                        public void run(WorkingCopy copy) throws IOException {
+                        }
+                    }).commit();
+                } catch (IOException e) {
+                    String message = e.getMessage();
+                    String newMessage = ((message == null)
+                            ? NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass_NoExceptionMessage", entityClassName)
+                            : NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass", entityClassName, message));
+                    IOException wrappedException = new IOException(newMessage);
+                    wrappedException.initCause(e);
+                    throw wrappedException;
+                }
 
-                    Set<ClassPath> bootCPs = getAllClassPaths(generationPackageFOs, ClassPath.BOOT);
-                    Set<ClassPath> compileCPs = getAllClassPaths(generationPackageFOs, ClassPath.COMPILE);
-                    Set<ClassPath> sourceCPs = getAllClassPaths(generationPackageFOs, ClassPath.SOURCE);
+            }
+            //actual generation loop
+            for (int i = 0; i < entityClasses.length; i++) {
+                final EntityClass entityClass = entityClasses[i];
+                String entityClassName = entityClass.getClassName();
 
-                    JPAClassPathHelper cpHelper = new JPAClassPathHelper(bootCPs, compileCPs, sourceCPs);
-
+                if (!generatedEntityClasses.contains(entityClassName) && !UpdateType.UPDATE.equals(entityClass.getUpdateType())) {
+                    // this entity class already existed, we didn't create it, so we don't want to touch it except Update type
+                    progressContributor.progress(entityClasses.length + i);
+                    continue;
+                }
+                String progressMsg = NbBundle.getMessage(JavaPersistenceGenerator.class, "TXT_GeneratingClass", entityClassName);
+                progressContributor.progress(progressMsg, 2*entityClasses.length + i);
+                if (progressPanel != null) {
+                    progressPanel.setText(progressMsg);
+                }
+                FileObject entityClassPackageFO = entityClass.getPackageFileObject();
+                FileObject entityClassFO0 = entityClassPackageFO.getFileObject(entityClassName, "java"); // NOI18N
+                final FileObject entityClassFO = entityClassFO0;
+                final FileObject pkClassFO = entityClassPackageFO.getFileObject(createPKClassName(entityClassName), "java"); // NOI18N
+                try {
                     JavaSource javaSource = (pkClassFO != null && entityClass.getUpdateType() != UpdateType.UPDATE)
                             ? JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO, pkClassFO)
                             : JavaSource.create(cpHelper.createClasspathInfo(), entityClassFO);
@@ -1102,111 +1139,112 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     }
                     if (annotations != null) {
                         for (AnnotationTree annTree : annotations) {
-                            Name nm = ((IdentifierTree) annTree.getAnnotationType()).getName();
-                            if (nm.contentEquals("Column")) {//NOI18N
-                                for (ExpressionTree exTree : annTree.getArguments()) {
-                                    AssignmentTree aTree = (AssignmentTree) exTree;
-                                    if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                        existingColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), member);
-                                        break;
-                                    }
-                                }
-                            } else if (nm.contentEquals("EmbeddedId")) {//NOI18N
-                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
-                                existingEmbeddedId = tm.toString();
-                                if (pkProperty != null) {
-                                    //currently unsupported update
-                                    properties.remove(pkProperty);
-                                }
-                            } else if (nm.contentEquals("JoinTable")) {//NOI18N
-                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
-                                ArrayList<String> columns = new ArrayList<String>();
-                                String tableName = null;
-                                for (ExpressionTree exTree : annTree.getArguments()) {
-                                    AssignmentTree aTree = (AssignmentTree) exTree;
-                                    Name nm2 = ((IdentifierTree) (aTree).getVariable()).getName();
-                                    ExpressionTree value = aTree.getExpression();
-                                    if (nm2.contentEquals("joinColumns")) {//NOI18N
-                                        NewArrayTree columnsArrayTree = (NewArrayTree) value;
-                                        //---TODO: this code is duplicated in this class.
-                                        List<? extends ExpressionTree> inis = columnsArrayTree.getInitializers();
-                                        for (ExpressionTree eT : inis) {
-                                            if (eT instanceof AnnotationTree) {
-                                                AnnotationTree aT = (AnnotationTree) eT;
-                                                Name aN = ((IdentifierTree) aT.getAnnotationType()).getName();
-                                                if (aN.contentEquals("JoinColumn")) {//NOI18N
-                                                    for (ExpressionTree expTree : aT.getArguments()) {
-                                                        AssignmentTree asTree = (AssignmentTree) expTree;
-                                                        if (((IdentifierTree) (asTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                                            columns.add((String) ((LiteralTree) asTree.getExpression()).getValue());
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        Collections.sort(columns);
-                                        //--- END TODO.
-                                    } else if (nm2.contentEquals("name")) {//NOI18N
-                                        tableName = ((LiteralTree) value).getValue().toString();
-                                    }
-                                }
-                                existingJoinTables.put(tableName, columns);
-                            } else if (nm.contentEquals("JoinColumns")) {//NOI18N
-                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
-                                ArrayList<String> columns = new ArrayList<String>();
-                                for (ExpressionTree exTree : annTree.getArguments()) {
-                                    AssignmentTree aTree = (AssignmentTree) exTree;
-                                    ExpressionTree value = aTree.getExpression();
-                                    if (value instanceof NewArrayTree) {
-                                        NewArrayTree arrTree = (NewArrayTree) value;
-                                        List<? extends ExpressionTree> inis = arrTree.getInitializers();
-                                        for (ExpressionTree eT : inis) {
-                                            if (eT instanceof AnnotationTree) {
-                                                AnnotationTree aT = (AnnotationTree) eT;
-                                                Name aN = ((IdentifierTree) aT.getAnnotationType()).getName();
-                                                if (aN.contentEquals("JoinColumn")) {//NOI18N
-                                                    for (ExpressionTree expTree : aT.getArguments()) {
-                                                        AssignmentTree asTree = (AssignmentTree) expTree;
-                                                        if (((IdentifierTree) (asTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                                            columns.add((String) ((LiteralTree) asTree.getExpression()).getValue());
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        Collections.sort(columns);
-
-                                        break;
-                                    }
-                                }
-                                existingJoinColumnss.put(tm, columns);
-                            } else if (nm.contentEquals("JoinColumn")) {//NOI18N
-                                for (ExpressionTree exTree : annTree.getArguments()) {
-                                    AssignmentTree aTree = (AssignmentTree) exTree;
-                                    if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
-                                        existingJoinColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), annTree);
-                                        break;
-                                    }
-                                }
-                            } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany") || nm.contentEquals("ManyToMany")) {//NOI18
-                                //may be relation with mappedTo
-                                for (ExpressionTree expression : annTree.getArguments()) {
-                                    if (expression instanceof AssignmentTree) {
-                                        AssignmentTree aTree = (AssignmentTree) expression;
-                                        if (aTree.getVariable().toString().equals("mappedBy")) {//NOI18N
-                                            TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
-                                            existingMappings.put(tm.toString(), expression);
+                            if(annTree.getAnnotationType() instanceof IdentifierTree) {
+                                Name nm = ((IdentifierTree) annTree.getAnnotationType()).getName();
+                                if (nm.contentEquals("Column")) {//NOI18N
+                                    for (ExpressionTree exTree : annTree.getArguments()) {
+                                        AssignmentTree aTree = (AssignmentTree) exTree;
+                                        if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
+                                            existingColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), member);
                                             break;
                                         }
                                     }
-                                }
-                                continue;
-                            } else {//NOI18N
-                                continue;
-                            }
+                                } else if (nm.contentEquals("EmbeddedId")) {//NOI18N
+                                    TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                    existingEmbeddedId = tm.toString();
+                                    if (pkProperty != null) {
+                                        //currently unsupported update
+                                        properties.remove(pkProperty);
+                                    }
+                                } else if (nm.contentEquals("JoinTable")) {//NOI18N
+                                    TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                    ArrayList<String> columns = new ArrayList<String>();
+                                    String tableName = null;
+                                    for (ExpressionTree exTree : annTree.getArguments()) {
+                                        AssignmentTree aTree = (AssignmentTree) exTree;
+                                        Name nm2 = ((IdentifierTree) (aTree).getVariable()).getName();
+                                        ExpressionTree value = aTree.getExpression();
+                                        if (nm2.contentEquals("joinColumns")) {//NOI18N
+                                            NewArrayTree columnsArrayTree = (NewArrayTree) value;
+                                            //---TODO: this code is duplicated in this class.
+                                            List<? extends ExpressionTree> inis = columnsArrayTree.getInitializers();
+                                            for (ExpressionTree eT : inis) {
+                                                if (eT instanceof AnnotationTree) {
+                                                    AnnotationTree aT = (AnnotationTree) eT;
+                                                    Name aN = ((IdentifierTree) aT.getAnnotationType()).getName();
+                                                    if (aN.contentEquals("JoinColumn")) {//NOI18N
+                                                        for (ExpressionTree expTree : aT.getArguments()) {
+                                                            AssignmentTree asTree = (AssignmentTree) expTree;
+                                                            if (((IdentifierTree) (asTree).getVariable()).getName().contentEquals("name")) {//NOI18N
+                                                                columns.add((String) ((LiteralTree) asTree.getExpression()).getValue());
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Collections.sort(columns);
+                                            //--- END TODO.
+                                        } else if (nm2.contentEquals("name")) {//NOI18N
+                                            tableName = ((LiteralTree) value).getValue().toString();
+                                        }
+                                    }
+                                    existingJoinTables.put(tableName, columns);
+                                } else if (nm.contentEquals("JoinColumns")) {//NOI18N
+                                    TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                    ArrayList<String> columns = new ArrayList<String>();
+                                    for (ExpressionTree exTree : annTree.getArguments()) {
+                                        AssignmentTree aTree = (AssignmentTree) exTree;
+                                        ExpressionTree value = aTree.getExpression();
+                                        if (value instanceof NewArrayTree) {
+                                            NewArrayTree arrTree = (NewArrayTree) value;
+                                            List<? extends ExpressionTree> inis = arrTree.getInitializers();
+                                            for (ExpressionTree eT : inis) {
+                                                if (eT instanceof AnnotationTree) {
+                                                    AnnotationTree aT = (AnnotationTree) eT;
+                                                    Name aN = ((IdentifierTree) aT.getAnnotationType()).getName();
+                                                    if (aN.contentEquals("JoinColumn")) {//NOI18N
+                                                        for (ExpressionTree expTree : aT.getArguments()) {
+                                                            AssignmentTree asTree = (AssignmentTree) expTree;
+                                                            if (((IdentifierTree) (asTree).getVariable()).getName().contentEquals("name")) {//NOI18N
+                                                                columns.add((String) ((LiteralTree) asTree.getExpression()).getValue());
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Collections.sort(columns);
 
+                                            break;
+                                        }
+                                    }
+                                    existingJoinColumnss.put(tm, columns);
+                                } else if (nm.contentEquals("JoinColumn")) {//NOI18N
+                                    for (ExpressionTree exTree : annTree.getArguments()) {
+                                        AssignmentTree aTree = (AssignmentTree) exTree;
+                                        if (((IdentifierTree) (aTree).getVariable()).getName().contentEquals("name")) {//NOI18N
+                                            existingJoinColumns.put((String) ((LiteralTree) aTree.getExpression()).getValue(), annTree);
+                                            break;
+                                        }
+                                    }
+                                } else if (nm.contentEquals("OneToOne") || nm.contentEquals("OneToMany") || nm.contentEquals("ManyToMany")) {//NOI18
+                                    //may be relation with mappedTo
+                                    for (ExpressionTree expression : annTree.getArguments()) {
+                                        if (expression instanceof AssignmentTree) {
+                                            AssignmentTree aTree = (AssignmentTree) expression;
+                                            if (aTree.getVariable().toString().equals("mappedBy")) {//NOI18N
+                                                TypeMirror tm = this.copy.getTrees().getTypeMirror(TreePath.getPath(copy.getCompilationUnit(), memberType));
+                                                existingMappings.put(tm.toString(), expression);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    continue;
+                                } else {//NOI18N
+                                    continue;
+                                }
+                            }
                         }
                     }
                 }

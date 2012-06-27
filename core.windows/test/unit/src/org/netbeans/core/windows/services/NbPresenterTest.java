@@ -44,6 +44,7 @@
 
 package org.netbeans.core.windows.services;
 
+import java.awt.Dialog;
 import java.awt.GraphicsEnvironment;
 import java.util.Arrays;
 import javax.swing.JButton;
@@ -53,6 +54,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.openide.DialogDescriptor;
 import org.netbeans.junit.NbTestCase;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 
 /** Tests issue 56534.
@@ -184,6 +186,16 @@ public class NbPresenterTest extends NbTestCase {
         assertEquals ("Sorting of options is invariable also on reused dialog.", Arrays.asList (onceSorted2), Arrays.asList (twiceSorted2));
         assertEquals ("The options are sorted same on both dialogs.", Arrays.asList (onceSorted), Arrays.asList (twiceSorted2));
         
+    }
+
+    public void testIsDefaultOptionPane() {
+        NotifyDescriptor descriptor = new NotifyDescriptor( "string message", "test", NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.PLAIN_MESSAGE, null, null);
+        NbPresenter presenter = new NbPresenter( descriptor, (Dialog)null, true );
+        assertTrue( Boolean.TRUE.equals(presenter.getRootPane().getClientProperty( "nb.default.option.pane")) );
+
+        descriptor = new NotifyDescriptor( new JLabel("custom component message"), "test", NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.PLAIN_MESSAGE, null, null);
+        presenter = new NbPresenter( descriptor, (Dialog)null, true );
+        assertTrue( Boolean.FALSE.equals(presenter.getRootPane().getClientProperty( "nb.default.option.pane")) );
     }
     
     private void showButtonArray (Object [] array) {

@@ -91,6 +91,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     public ImportantFilesNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project p) {
         if (p.getLookup().lookup(NbModuleProvider.class) != null) {
             return new ImpFilesNL(p);
@@ -105,26 +106,32 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             project = p;
         }
     
+        @Override
         public List<String> keys() {
             return Collections.singletonList(IMPORTANT_FILES_NAME);
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
             //ignore, doesn't change
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
             //ignore, doesn't change
         }
 
+        @Override
         public Node node(String key) {
             assert key == IMPORTANT_FILES_NAME;
             return new ImportantFilesNode(project);
         }
 
+        @Override
         public void addNotify() {
         }
 
+        @Override
         public void removeNotify() {
         }
     }
@@ -219,6 +226,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             super.removeNotify();
         }
         
+        @Override
         protected Node[] createNodes(String key) {
             if (LAYER.equals(key)) {
                 Node nd = NodeFactoryUtils.createLayersNode(project);
@@ -250,6 +258,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             //#149566 prevent setting keys under project mutex.
             if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         refreshKeys();
                     }
@@ -283,6 +292,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 visibleFiles = newVisibleFiles;
 //                visibleFiles.add(project.getLookup().lookup(ServiceNodeHandler.class));
                 RP.post(new Runnable() { // #72471
+                    @Override
                     public void run() {
                         setKeys(visibleFiles);
                     }
