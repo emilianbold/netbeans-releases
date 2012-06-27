@@ -94,7 +94,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
 
-WhiteSpace = [ \t\f]+
+WhiteSpace = [ \t\f\u00A0\u000B]+
 
 OctDigit          = [0-7]
 

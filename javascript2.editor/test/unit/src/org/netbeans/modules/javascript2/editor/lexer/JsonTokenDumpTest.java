@@ -66,4 +66,9 @@ public class JsonTokenDumpTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.json",
                 JsTokenId.jsonLanguage());
     }
+    
+    public void testSpaces() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testSpaces.json",
+                JsTokenId.jsonLanguage());
+    }
 }
