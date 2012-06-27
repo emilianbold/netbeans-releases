@@ -85,7 +85,13 @@ made subject to such option by the copyright holder.
             <arg value="${antlr.apt.output.dir}"/>
             <arg value="${antlr.apt.grammar.dir}/aptexpr.g"/>
             <classpath path="${antlr.jar}"/>
-        </java>        
+        </java>
+        <java classname="org.netbeans.modules.cnd.antlr.Tool" fork="true">
+            <arg value="-o"/>
+            <arg value="${antlr.apt.output.dir}"/>
+            <arg value="${antlr.apt.grammar.dir}/aptBigIntegerExpr.g"/>
+            <classpath path="${antlr.jar}"/>
+        </java>
         <copy file="${antlr.apt.output.dir}/APTGeneratedTokenTypes.txt" 
                 tofile="${antlr.apt.output.dir}/APTTokenTypes.txt"
                 overwrite="true"/>
