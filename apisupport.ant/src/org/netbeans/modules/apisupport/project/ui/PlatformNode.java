@@ -101,6 +101,7 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
     private static final String ARCHIVE_ICON = "org/netbeans/modules/apisupport/project/ui/resources/jar.gif"; //NOI18N
     
     private final PlatformProvider pp;
+    private static final RequestProcessor RP = new RequestProcessor(PlatformNode.class);
     
     private PlatformNode(Project project, PlatformProvider pp) {
         super(new PlatformContentChildren(), Lookups.fixed(new JavadocProvider(pp), project));
@@ -162,7 +163,7 @@ final class PlatformNode extends AbstractNode implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         //The caller holds ProjectManager.mutex() read lock
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 PlatformNode.this.fireNameChange(null, null);
