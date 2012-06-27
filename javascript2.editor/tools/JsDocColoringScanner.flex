@@ -142,7 +142,7 @@ HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 Identifier=[[:letter:][:digit:]]+
 LineTerminator = \r|\n|\r\n
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
-WhiteSpace = [ \t\f]+
+WhiteSpace = [ \t\f\u00A0\u000B]+
 
 /* comment types */
 DocumentationComment = "/**"
