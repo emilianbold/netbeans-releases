@@ -864,7 +864,7 @@ public class CssCompletion implements CodeCompletionHandler {
         
         //1. css property name completion with prefix
         if (nodeType == NodeType.property && (prefix.length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
-            Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(), prefix);
+            Collection<Property> possibleProps = filterProperties(CssModuleSupport.getProperties(cc), prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
         }
 
@@ -890,12 +890,12 @@ public class CssCompletion implements CodeCompletionHandler {
                 if(bug204821) {
                     //get all "-" prefixed props
                     Collection<Property> possibleProps = 
-                            filterProperties(CssModuleSupport.getProperties(), "-");
+                            filterProperties(CssModuleSupport.getProperties(cc), "-");
                     //and add them to the result with the "-" prefix stripped
                     completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset(), 1));
                 } else {
                     Collection<Property> possibleProps = 
-                            filterProperties(CssModuleSupport.getProperties(), prefix);
+                            filterProperties(CssModuleSupport.getProperties(cc), prefix);
                     completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset()));
                 }
             }
@@ -911,7 +911,7 @@ public class CssCompletion implements CodeCompletionHandler {
         if (nodeType == NodeType.ruleSet
                 || nodeType == NodeType.moz_document
                 || nodeType == NodeType.declarations) {
-            completionProposals.addAll(Utilities.wrapProperties(CssModuleSupport.getProperties(), cc.getCaretOffset()));
+            completionProposals.addAll(Utilities.wrapProperties(CssModuleSupport.getProperties(cc), cc.getCaretOffset()));
         }
 
     }
@@ -985,7 +985,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 }
 
-                PropertyModel prop = CssModuleSupport.getPropertyModel(property.image().toString().trim());
+                PropertyModel prop = CssModuleSupport.getPropertyModel(property.image().toString().trim(), context.getSource().getFileObject());
                 if (prop != null) {
 
                     PropertyValue propVal = new PropertyValue(prop, expressionText);
@@ -1087,7 +1087,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 Node property = result[0];
 
                 String propertyName = property.image().toString();
-                PropertyModel propertyModel = CssModuleSupport.getPropertyModel(propertyName);
+                PropertyModel propertyModel = CssModuleSupport.getPropertyModel(propertyName, context.getSource().getFileObject());
                 if (propertyModel == null) {
                     return;
                 }
