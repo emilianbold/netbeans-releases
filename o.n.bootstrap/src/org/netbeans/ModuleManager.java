@@ -1979,7 +1979,7 @@ public final class ModuleManager extends Modules {
                 cnbs = new HashMap<String, String>();
                 cnt = dis.readInt();
                 for (;;) {
-                    String path = Stamps.readRelativePath(dis);
+                    String path = Stamps.readRelativePath(dis).replace('/', File.separatorChar);
                     if (path.isEmpty()) {
                         break;
                     }
