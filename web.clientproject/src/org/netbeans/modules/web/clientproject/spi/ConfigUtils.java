@@ -39,64 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.web.clientproject.spi;
 
-import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ClientSideProjectActionProvider implements ActionProvider {
-
-    private ClientSideProject p;
-
-    public ClientSideProjectActionProvider(ClientSideProject p) {
-        this.p = p;
-    }
+public final class ConfigUtils {
     
-    @Override
-    public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_RUN_SINGLE,
-                    COMMAND_BUILD,
-                    COMMAND_CLEAN,
-                    COMMAND_RUN
-                };
-    }
-
-    @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        ProxyLookup lkp = new ProxyLookup(Lookups.fixed(p), context);
-
-        ClientSideConfigurationProvider provider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
-        final ClientProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
-        //TODO: hack for default
-        String type = activeConfiguration == null ? "browser" : activeConfiguration.getType();
-
-        Lookup providers = Lookups.forPath("Projects/" + ClientSideProjectType.TYPE + "/ActionProviders/" + type);
-        ActionProvider action = providers.lookup(ActionProvider.class);
-        if (action != null) {
-            action.invokeAction(command, lkp);
-            return;
+    public static void createConfigFile(FileObject projectRoot, String name, EditableProperties props) throws IOException {
+        File f = new File(projectRoot.getPath() + "/nbproject/configs");
+        FileObject configs = FileUtil.createFolder(f);
+        FileObject config = configs.createData(name + ".properties");
+        final OutputStream outputStream = config.getOutputStream();
+        try {
+            props.store(outputStream);
+        } finally {
+            outputStream.close();
         }
-        NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration",
-                "Action not supported",
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
-                new Object[]{NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(desc);
-    }
-
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
     }
 }

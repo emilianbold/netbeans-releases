@@ -39,13 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject;
 
-// register listener for extension requests
-chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-    console.log('Got request "' + request.id + '"');
-    if (request.id == 'RELOAD_FRAME') {
-        reloadFrame();
-        return;
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ui.ClientSideProjectPanel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.util.Lookup;
+
+/**
+ *
+ * @author Jan Becicka
+ */
+public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+
+    @Override
+    public Category createCategory(Lookup context) {
+            return ProjectCustomizer.Category.create(
+                    "buildConfig",
+                    "Configurations",
+                    null);
     }
-    console.log('Unknown request "' + request.id + '"');
-});
+
+    @Override
+    public JComponent createComponent(Category category, Lookup context) {
+        return new ClientSideProjectPanel(context.lookup(Project.class));
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = ClientSideProjectType.TYPE,
+            position = 100)
+    public static ClientSideProjectPanelProvider createRunConfigs() {
+        return new ClientSideProjectPanelProvider();
+    }
+    
+}

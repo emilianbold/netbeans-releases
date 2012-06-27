@@ -41,9 +41,17 @@
  */
 {
   "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.7",
+  "version": "0.4.8",
 
   "background_page": "main.html",
+
+  "options_page": "options.html",
+
+  "page_action": {
+    "default_icon": "netbeans16.png",
+    "default_title": "Open NetBeans actions",
+    "default_popup": "popup.html"
+  },
 
   "permissions": [
     "tabs",

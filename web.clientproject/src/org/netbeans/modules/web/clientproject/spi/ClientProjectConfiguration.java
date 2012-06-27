@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,29 +39,18 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.clientproject.spi;
 
-// XXX detect running in frame
-if (TOP_FRAME == undefined) {
-    var TOP_FRAME = true;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
 
-    // Escape HTML entities
-    function nbHtmlEntities(str) {
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
-    // Reload the NetBeans iframe
-    function nbReloadFrame() {
-        console.log('Reloading iframe for "' + document.location.href + '"');
-        document.getElementById('nbframe').contentDocument.location.reload(true);
-    }
-
-    // get the current page and place it to the iframe
-    var origTitle = document.title;
-    var origUrl = document.location.href;
-    console.log('Placing "' + origUrl + '" to iframe');
-    var nbdoc = '__HTML_PAGE__';
-    nbdoc = nbdoc.replace('__TITLE__', nbHtmlEntities(origTitle));
-    nbdoc = nbdoc.replace('__SRC__', origUrl);
-    var encodedNbDoc = encodeURIComponent(nbdoc);
-    document.location.href = "javascript:(function(){document.open();document.write('" + encodedNbDoc + "');document.close();})();";
+/**
+ *
+ * @author Jan Becicka
+ */
+public interface ClientProjectConfiguration extends ProjectConfiguration {
+    
+    String getName();
+    String getType();
+    
 }

@@ -90,10 +90,10 @@ public class WebKitPageModel extends PageModel {
 
     /** Logger used by this class */
     //private java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(WebKitPageModel.class.getName());
-    
+
     /**
      * Creates a new {@code WebKitPageModel}.
-     * 
+     *
      * @param pageContext page context.
      */
     public WebKitPageModel(Lookup pageContext) {
@@ -102,7 +102,7 @@ public class WebKitPageModel extends PageModel {
         this.hasNativeToolbar = (pageContext.lookup(Resizable.class) != null)
                 && (pageContext.lookup(Zoomable.class) != null);
         addPropertyChangeListener(new WebPaneSynchronizer());
-        
+
         // Register DOM domain listener
         domListener = createDOMListener();
         DOM dom = webKit.getDOM();
@@ -130,13 +130,6 @@ public class WebKitPageModel extends PageModel {
                 // init
                 String initScript = Files.getScript("initialization"); // NOI18N
                 webKit.getRuntime().evaluate(initScript);
-            } else {
-                // frame
-                String pageScript = Files.getScript("page"); // NOI18N
-                webKit.getRuntime().evaluate(pageScript);
-                String pageHtml = toScriptString(Files.getHtml("page")); // NOI18N
-                String frameScript = Files.getScript("frame").replace("__HTML_PAGE__", pageHtml); // NOI18N
-                webKit.getRuntime().evaluate(frameScript);
             }
         }
     }
@@ -445,7 +438,7 @@ public class WebKitPageModel extends PageModel {
 
     /**
      * Invoke the specified script in all content documents.
-     * 
+     *
      * @param script script to invoke.
      */
     void invokeInAllDocuments(String script) {
@@ -470,7 +463,7 @@ public class WebKitPageModel extends PageModel {
      * Converts the WebKit node into a node that should be highlighted/selected.
      * Usually this method returns the passed node, but there are some exceptions
      * like document nodes.
-     * 
+     *
      * @param node node to convert.
      * @return node that should be highlighted/selected instead of the given node.
      */
@@ -530,10 +523,10 @@ public class WebKitPageModel extends PageModel {
                         webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextHighlight(this);}"); // NOI18N
                     }
                 }
-                
+
                 // Finalize the next highlight in all content documents
                 invokeInAllDocuments("NetBeans.finishNextHighlight();"); // NOI18N
-            }            
+            }
         }
 
         private void updateSelection() {
@@ -552,10 +545,10 @@ public class WebKitPageModel extends PageModel {
                         webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextSelection(this);}"); // NOI18N
                     }
                 }
-                
+
                 // Finalize the next selection in all content documents
                 invokeInAllDocuments("NetBeans.finishNextSelection();"); // NOI18N
-            } 
+            }
         }
 
         private synchronized void updateSelectionMode() {
@@ -563,7 +556,7 @@ public class WebKitPageModel extends PageModel {
             if (!hasNativeToolbar) {
                 // Update checkbox in Chrome toolbar
                 String code = "NetBeans_Page.setSelectionMode("+selectionMode+")"; // NOI18N
-                webKit.getRuntime().evaluate(code);                
+                webKit.getRuntime().evaluate(code);
             }
             // Activate/deactivate (observation of mouse events over) canvas
             invokeInAllDocuments("NetBeans.setSelectionMode("+selectionMode+")"); // NOI18N

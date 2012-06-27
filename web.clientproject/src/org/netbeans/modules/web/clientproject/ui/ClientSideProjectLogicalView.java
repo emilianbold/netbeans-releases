@@ -45,6 +45,7 @@ import java.awt.Image;
 import javax.swing.Action;
 import javax.swing.JSeparator;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.ui.action.CreateSiteTemplateAction;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -115,16 +116,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean arg0) {
-            Action[] nodeActions = new Action[8];
-            nodeActions[0] = CommonProjectActions.newFileAction();
-            nodeActions[1] = CommonProjectActions.copyProjectAction();
-            nodeActions[2] = CommonProjectActions.deleteProjectAction();
-            nodeActions[3] = CommonProjectActions.setAsMainProjectAction();
-            nodeActions[4] = null;
-            nodeActions[5] = new CreateSiteTemplateAction(project);
-            nodeActions[6] = null;
-            nodeActions[7] = CommonProjectActions.closeProjectAction();            
-            return nodeActions;
+            return CommonProjectActions.forType(ClientSideProjectType.TYPE);
         }
 
         @Override
@@ -153,6 +145,11 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         @Override
         protected Node[] createNodes(Node key) {
             if (key.getDisplayName().equals("nbproject")) {
+                return new Node[0];
+            }
+            // Hides build folder
+            // TODO: need an API?
+            if(key.getDisplayName().equals("build")) {
                 return new Node[0];
             }
             return super.createNodes(key);

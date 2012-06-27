@@ -47,7 +47,6 @@ NetBeans.cleanup();
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
     if (newUrl != undefined) {
         chrome.tabs.update(tabId, {url: newUrl});
-        NetBeans.executeScripts(tabId);
     } else {
         chrome.tabs.sendRequest(tabId, {'id': 'RELOAD_FRAME'});
     }
@@ -71,6 +70,15 @@ NetBeans.browserDetachDebugger = function(tabId) {
     chrome.debugger.detach({tabId : tabId});
 }
 
+// display NB icon in URL bar
+NetBeans.showPageIcon = function(tabId) {
+    chrome.pageAction.show(tabId);
+}
+// hide NB icon in URL bar
+NetBeans.hidePageIcon = function(tabId) {
+    chrome.pageAction.hide(tabId);
+}
+
 NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     if (NetBeans.DEBUG) {
         console.log('send ['+tabId+","+id+","+method+","+JSON.stringify(params));
@@ -86,20 +94,13 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
         });
 }
 
-NetBeans.executeScripts = function(tabId, callback) {
-    if (NetBeans.DEBUG) {
-        console.log('Executing external NB scripts for tab "' + tabId + '"');
-    }
-    chrome.tabs.executeScript(tabId, {'file': 'nbframe.js'}, function() {
-        if (callback) {
-            callback();
-        }
-    });
-}
-
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
-}); 
+});
+
+chrome.debugger.onDetach.addListener(function(source) {
+    NetBeans.hidePageIcon(source.tabId);
+});
 
 // Register tab listeners
 chrome.tabs.onCreated.addListener(function(tab) {
@@ -130,3 +131,29 @@ chrome.windows.getAll({populate: true}, function(windows) {
         }
     }    
 });
+
+
+/**
+ * Window presets manager - browser specific.
+ */
+// load presets from the central storage
+NetBeans_Presets._loadPresets = function() {
+    // XXX load presets from NB
+    if (this._presets != null) {
+        return this._presets.slice(0);
+    }
+    return [
+        new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'Widescreen', '1680', '1050', true, true),
+        new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'Desktop', '1280', '1024', true, true),
+        new NetBeans_Preset(NetBeans_Preset.NETBOOK, 'Netbook', '1024', '600', true, true),
+        new NetBeans_Preset(NetBeans_Preset.TABLET_LANDSCAPE, 'Tablet Landscape', '1024', '768', true, true),
+        new NetBeans_Preset(NetBeans_Preset.TABLET_PORTRAIT, 'Tablet Portrait', '768', '1024', true, true),
+        new NetBeans_Preset(NetBeans_Preset.SMARTPHONE_LANDSCAPE, 'Smartphone Landscape', '480', '320', true, true),
+        new NetBeans_Preset(NetBeans_Preset.SMARTPHONE_PORTRAIT, 'Smartphone Portrait', '320', '480', true, true)
+    ];
+}
+// save presets to the central storage
+NetBeans_Presets._savePresets = function() {
+    // XXX save presets back to NB
+    console.error('Saving presets not implemented');
+}

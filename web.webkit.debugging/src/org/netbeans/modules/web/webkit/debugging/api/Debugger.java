@@ -103,6 +103,8 @@ public final class Debugger {
     }
 
     public void enableDebuggerInLiveHTMLMode() {
+        inLiveHTMLMode = true;
+        
         enable();
         
         latestSnapshotTask = transport.getRequestProcessor().create(new Runnable() {
@@ -112,7 +114,6 @@ public final class Debugger {
             }
         });
         
-        inLiveHTMLMode = true;
         initDOMLister = true;
         addEventBreakpoint("DOMContentLoaded");
         addEventBreakpoint("load");

@@ -43,6 +43,7 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
@@ -66,6 +67,10 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel,
             component.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_JavaScriptLibrarySelectionStep")); // NOI18N
         }
         return component;
+    }
+    
+    public void updateDefaults(Collection<String> defaultLibs) {
+        component.updateDefaults(defaultLibs);
     }
 
     @Override
