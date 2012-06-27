@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor.parser;
 
 import javax.swing.text.Document;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.parser.JsParser.Context;
+import org.netbeans.modules.javascript2.editor.parser.SanitizingParser.Context;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
