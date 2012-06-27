@@ -45,9 +45,11 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
@@ -252,7 +254,13 @@ public class CssModuleSupport {
     }
     
     private static boolean isJavaFxProject(Project project) {
-        //Petr Somol, please add an proper implementation here!
+        //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
+        //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
+        Preferences prefs = ProjectUtils.getPreferences(project, Project.class, false);
+        String isFX = prefs.get("issue214819_fx_enabled", "false"); //NOI18N
+        if(isFX != null && isFX.equals("true")) {
+            return true;
+        }
         return false;
     }
     
@@ -280,7 +288,7 @@ public class CssModuleSupport {
     }
     
     public static Collection<Property> getProperties(FileObject file) {
-        return getProperties(isJavaFxCssFile(file));
+        return getProperties(!isJavaFxCssFile(file));
     }
     
     public static Collection<Property> getProperties(FeatureContext featureContext) {
