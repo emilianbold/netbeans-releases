@@ -189,7 +189,7 @@ public class C2CClientTest extends NbTestCase  {
         List<ProjectActivity> shortActivities = client.getRecentShortActivities(project);
         assertNotNull(shortActivities);
         assertTrue(shortActivities.size() > 0);
-        List<ProjectActivity> activities = client.getRecentActivities(project);
+        List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
         assertNotNull(activities);
         assertTrue(activities.size() > 0);
         // is it the same??

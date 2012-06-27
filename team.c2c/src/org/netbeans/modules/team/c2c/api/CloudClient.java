@@ -147,11 +147,11 @@ public final class CloudClient {
         }, profileClient, PROFILE_SERVICE);
     }
 
-    public List<ProjectActivity> getRecentActivities (final Project project) throws CloudException {
+    public List<ProjectActivity> getRecentActivities (final String projectId) throws CloudException {
         return run(new Callable<List<ProjectActivity>> () {
             @Override
             public List<ProjectActivity> call () throws Exception {
-                return activityClient.getRecentActivity(project.getIdentifier());
+                return activityClient.getRecentActivity(projectId);
             }
         }, activityClient, PROFILE_SERVICE);
     }
