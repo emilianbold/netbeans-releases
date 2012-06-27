@@ -45,9 +45,15 @@ package org.netbeans.modules.web.javascript.debugger.annotation;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -56,6 +62,7 @@ import org.netbeans.modules.web.javascript.debugger.watches.WatchesModel;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
+import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject.Type;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -63,6 +70,8 @@ import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -70,9 +79,28 @@ import org.openide.util.RequestProcessor;
  * @author ads
  *
  */
+@NbBundle.Messages({
+    "# {0} variable name",
+    "var.undefined={0} is not defined"
+})
 public class ToolTipAnnotation extends Annotation
     implements PropertyChangeListener
 {
+    
+    private static final Set<String> JAVASCRIPT_KEYWORDS = new HashSet<String>(Arrays.asList(new String[] {
+        "break",    "case",     "catch",    "continue", "debugger",
+        "default",  "delete",   "do",       "else",     "finally",
+        "for",      "function", "if",       "in",       "instanceof",
+        "new",      "return",   "switch",   /*"this",*/ "throw",
+        "try",      "typeof",   "var",      "void",     "while",
+        "with"
+    }));
+    
+    private static final Set<String> JAVASCRIPT_RESERVED = new HashSet<String>(Arrays.asList(new String[] {
+        "class",    "enum",     "export",   "extends",  "import",   "super",
+        "implements","interface","let",     "package",  "private",  "protected",
+        "public",   "static",   "yield"
+    }));
 
     private static final RequestProcessor RP = new RequestProcessor("Tool Tip Annotation"); //NOI18N
 
@@ -91,41 +119,60 @@ public class ToolTipAnnotation extends Annotation
     @Override
     public String getShortDescription()
     {
-        final Line.Part part = (Line.Part) getAttachedAnnotatable();
-        if (part != null) {
-            Runnable runnable = new Runnable() {
-
-                @Override
-                public void run() {
-                    evaluate(part);
-                }
-            };
-            if ( SwingUtilities.isEventDispatchThread()){
-                runnable.run();
-            }
-            else {
-                SwingUtilities.invokeLater( runnable );
-            }
+        Debugger d = getDebugger();
+        if (d == null || !d.isSuspended()) {
+            return null;
         }
 
+        final Line.Part lp = (Line.Part) getAttachedAnnotatable();
+        if (lp == null) return null;
+        Line line = lp.getLine ();
+        DataObject dob = DataEditorSupport.findDataObject (line);
+        if (dob == null) return null;
+        final EditorCookie ec = dob.getCookie(EditorCookie.class);
+        if (ec == null)
+            return null;
+            // Only for editable dataobjects
+
+        Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                evaluate(lp, ec);
+            }
+        };
+        RP.post(runnable);
         return null;
     }
 
-    private void evaluate( Line.Part part ){
-        Line line = part.getLine();
+    private void evaluate(Line.Part lp, EditorCookie ec) {
+        Line line = lp.getLine();
         if (line == null) {
             return;
         }
-        DataObject dataObject = DataEditorSupport.findDataObject(line);
-        EditorCookie editorCookie = dataObject.
-            getCookie(EditorCookie.class);
-        StyledDocument document = editorCookie.getDocument();
-        if (document == null) {return;}
-        final int offset = NbDocument.findLineOffset(document,
-                part.getLine().getLineNumber()) + part.getColumn();
-        JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();
-        String selectedText = getSelectedText( ep, offset);
-        if ( selectedText != null ){
+        StyledDocument document;
+        try {
+            document = ec.openDocument();
+        } catch (IOException ex) {
+            return;
+        }
+        if (document == null) {
+            return;
+        }
+        int lineNo = lp.getLine().getLineNumber();
+        int column = lp.getColumn();
+        final int offset = NbDocument.findLineOffset(document, lineNo) + column;
+        final JEditorPane ep = EditorContextDispatcher.getDefault().getMostRecentEditor();
+        final String expression = getIdentifier (
+            document,
+            ep,
+            lineNo,
+            column,
+            offset
+        );
+        if (expression == null) return;
+
+        if (expression != null) {
             Debugger d = getDebugger();
             if (d != null && d.isSuspended()) {
                 List<? extends CallFrame> l = d.getCurrentCallStack();
@@ -133,15 +180,73 @@ public class ToolTipAnnotation extends Annotation
                     return;
                 }
                 CallFrame frame = l.get(0);
-                VariablesModel.ScopedRemoteObject sv = WatchesModel.evaluateExpression(frame, selectedText);
+                VariablesModel.ScopedRemoteObject sv = WatchesModel.evaluateExpression(frame, expression);
                 if (sv != null) {
                     RemoteObject var = sv.getRemoteObject();
-                    firePropertyChange(PROP_SHORT_DESCRIPTION, null,
-                        var.getValueAsString());
+                    String value = var.getValueAsString();
+                    Type type = var.getType();
+                    switch (type) {
+                        case STRING:
+                            value = "\"" + value + "\"";
+                            break;
+                        case FUNCTION:
+                            return ; // No tooltip for functions
+                        case OBJECT:
+                            // TODO: add (class type) and obj ID
+                    }
+                    String tooltipText;
+                    if (type != Type.UNDEFINED) {
+                        tooltipText = expression + " = " + value;
+                    } else {
+                        tooltipText = var.getDescription();
+                        if (tooltipText == null) {
+                            tooltipText = Bundle.var_undefined(expression);
+                        }
+                    }
+                    firePropertyChange(PROP_SHORT_DESCRIPTION, null, tooltipText);
                 }
             }
         }
         //TODO: review, replace the code depending on lexer.model - part I
+    }
+    
+    private static String getIdentifier(final StyledDocument doc, final JEditorPane ep,
+                                        int line, int column, final int offset) {
+        
+        String t = null;
+        if ((ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {
+            t = ep.getSelectedText();
+        }
+        if (t != null) {
+            return t;
+        }
+        Element lineElem = NbDocument.findLineRootElement(doc).getElement(line);
+        if (lineElem == null) return null;
+        int lineStartOffset = lineElem.getStartOffset ();
+        int lineLen = lineElem.getEndOffset() - lineStartOffset;
+        try {
+            t = doc.getText (lineStartOffset, lineLen);
+        } catch (BadLocationException ble) {
+            return null;
+        }
+        int identStart = column;
+        while (identStart > 0 &&
+                (Character.isJavaIdentifierPart(t.charAt(identStart - 1)) ||
+                (t.charAt (identStart - 1) == '.'))) {
+            identStart--;
+        }
+        int identEnd = column;
+        while (identEnd < lineLen &&
+                Character.isJavaIdentifierPart(t.charAt(identEnd))) {
+            identEnd++;
+        }
+        if (identStart == identEnd) return null;
+        String ident = t.substring (identStart, identEnd).trim();
+        if (JAVASCRIPT_KEYWORDS.contains(ident) || JAVASCRIPT_RESERVED.contains(ident)) {
+            // JavaScript keyword => Do not show anything
+            return null;
+        }
+        return ident;
     }
 
 //    private static String getIdentifier(final StyledDocument doc, final JEditorPane ep, final int offset) {
