@@ -1155,8 +1155,13 @@ public class ActionFactory {
             super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
+                    EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
+                }
                 EditorFindSupport.getInstance().find(null, false);
             }
         }
@@ -1172,8 +1177,13 @@ public class ActionFactory {
             super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
+                    EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
+                }
                 EditorFindSupport.getInstance().find(null, true);
             }
         }
@@ -1192,6 +1202,7 @@ public class ActionFactory {
             super();
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 EditorFindSupport findSupport = EditorFindSupport.getInstance();
@@ -1241,7 +1252,9 @@ public class ActionFactory {
                     }
 
                     EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-                    findSupport.setFocusedTextComponent(eui.getComponent());
+                    if (eui.getComponent().getClientProperty("AsTextField") == null) { //NOI18N
+                        findSupport.setFocusedTextComponent(eui.getComponent());
+                    }
                     findSupport.putFindProperties(props);
                     findSupport.find(null, false);
                 }
