@@ -196,16 +196,19 @@ public final class CreatedModifiedFiles {
             return getProject().getLookup().lookup(NbModuleProvider.class);
         }
         
+        @Override
         public String[] getModifiedPaths() {
             String[] s = new String[getModifiedPathsSet().size()];
             return getModifiedPathsSet().toArray(s);
         }
         
+        @Override
         public String[] getCreatedPaths() {
             String[] s = new String[getCreatedPathsSet().size()];
             return getCreatedPathsSet().toArray(s);
         }
         
+        @Override
         public String[] getInvalidPaths() {
             String[] s = new String[getInvalidPathsSet().size()];
             return getInvalidPathsSet().toArray(s);
@@ -430,6 +433,7 @@ public final class CreatedModifiedFiles {
             addCreatedOrModifiedPath(path, false);
         }
         
+        @Override
         public void run() throws IOException {
             FileObject target = FileUtil.createData(getProject().getProjectDirectory(), path);
             if (tokens == null) {
@@ -491,6 +495,7 @@ public final class CreatedModifiedFiles {
             addCreatedOrModifiedPath(this.bundlePath, true);
         }
         
+        @Override
         public void run() throws IOException {
             FileObject prjDir = getProject().getProjectDirectory();
             FileObject bundleFO = FileUtil.createData(prjDir, bundlePath);
@@ -534,12 +539,13 @@ public final class CreatedModifiedFiles {
             addModifiedFileObject(mfFO);
         }
         
+        @Override
         public void run() throws IOException {
             //#65420 it can happen the manifest is currently being edited. save it
             // and cross fingers because it can be in inconsistent state
             try {
                 DataObject dobj = DataObject.find(mfFO);
-                SaveCookie safe = dobj.getCookie(SaveCookie.class);
+                SaveCookie safe = dobj.getLookup().lookup(SaveCookie.class);
                 if (safe != null) {
                     safe.save();
                 }
@@ -588,6 +594,7 @@ public final class CreatedModifiedFiles {
             addCreatedOrModifiedPath(interfaceClassPath, true);
         }
         
+        @Override
         public void run() throws IOException {
             FileObject service = FileUtil.createData(
                     getProject().getProjectDirectory(),interfaceClassPath);
@@ -667,6 +674,7 @@ public final class CreatedModifiedFiles {
             getModifiedPathsSet().add(getModuleInfo().getProjectFilePath()); // NOI18N
         }
         
+        @Override
         public void run() throws IOException {
             getModuleInfo().addDependency(codeNameBase, releaseVersion, specVersion, useInCompiler);
             // XXX consider this carefully
@@ -782,7 +790,7 @@ public final class CreatedModifiedFiles {
             // and cross fingers because it can be in inconsistent state
             try {
                 DataObject dobj = DataObject.find(manifestFile);
-                SaveCookie safe = dobj.getCookie(SaveCookie.class);
+                SaveCookie safe = dobj.getLookup().lookup(SaveCookie.class);
                 if (safe != null) {
                     safe.save();
                 }
@@ -820,6 +828,7 @@ public final class CreatedModifiedFiles {
             addCreatedOrModifiedPath(propertyPath,true);
         }
         
+        @Override
         public void run() throws IOException {
             EditableProperties p = getEditableProperties();
             p.putAll(getProperties());
@@ -896,6 +905,7 @@ public final class CreatedModifiedFiles {
             this.cmf = cmf;
         }
         
+        @Override
         public void run() throws IOException {
             op.run(cmf.getLayerHandle().layer(true));
         }
@@ -923,6 +933,7 @@ public final class CreatedModifiedFiles {
             return s.toArray(new String[s.size()]);
         }
         
+        @Override
         public String[] getInvalidPaths() {
             //TODO applicable here?
             return new String[0];
@@ -974,6 +985,7 @@ public final class CreatedModifiedFiles {
             final String locBundleKey = (localizedDisplayName != null ? LayerUtil.generateBundleKeyForFile(layerPath) : null);
 
             LayerOperation op = new LayerOperation() {
+                @Override
                 public void run(FileSystem layer) throws IOException {
                     FileObject targetFO = FileUtil.createData(layer.getRoot(), layerPath);
                     if (content != null) {
@@ -1013,15 +1025,19 @@ public final class CreatedModifiedFiles {
             FileSystem layer = cmf.getLayerHandle().layer(false);
             if (layer != null && layer.findResource(layerPath) != null) {
                 layerOp = new Operation() {
+                    @Override
                     public void run() throws IOException {
                         throw new IOException("cannot overwrite " + layerPath); // NOI18N
                     }
+                    @Override
                     public String[] getModifiedPaths() {
                         return new String[0];
                     }
+                    @Override
                     public String[] getCreatedPaths() {
                         return new String[0];
                     }
+                    @Override
                     public String[] getInvalidPaths() {
                         // #85138: make sure we do not overwrite an existing entry.
                         return new String[] {layerPath};
@@ -1039,6 +1055,7 @@ public final class CreatedModifiedFiles {
             }
         }
         
+        @Override
         public void run() throws IOException{
             layerOp.run();
             if (createBundleKey != null) {
@@ -1060,6 +1077,7 @@ public final class CreatedModifiedFiles {
     public Operation createLayerAttribute(final String parentPath,
             final String attrName, final Object attrValue) {
         return layerModifications(new LayerOperation() {
+            @Override
             public void run(FileSystem layer) throws IOException {
                 FileObject f = layer.findResource(parentPath);
                 if (f == null) {
@@ -1090,6 +1108,7 @@ public final class CreatedModifiedFiles {
     public Operation orderLayerEntry(final String layerPath, final String precedingItemName, final String newItemName,
             final String followingItemName) {
         return layerModifications(new LayerOperation() {
+            @Override
             public void run(FileSystem layer) throws IOException {
                 FileObject f = layer.findResource(layerPath);
                 if (f == null) {
