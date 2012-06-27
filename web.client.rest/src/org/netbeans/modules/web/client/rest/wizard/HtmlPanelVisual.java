@@ -112,6 +112,11 @@ public class HtmlPanelVisual extends javax.swing.JPanel {
                     NbBundle.getMessage(HtmlPanelVisual.class, "ERR_InvalidPath")); // NOI18N
             return false;
         }
+        if ( file.exists() ){
+            myPanel.getDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+                    NbBundle.getMessage(HtmlPanelVisual.class, "ERR_FileExists", file.getPath())); // NOI18N
+            return false;
+        }
         return true;
     }
     
