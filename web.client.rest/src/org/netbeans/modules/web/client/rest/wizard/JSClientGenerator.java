@@ -202,6 +202,9 @@ class JSClientGenerator {
             LOG.log(Level.INFO , null ,e );
         }
         
+        if ( !isModelGenerated ){
+            myContent.append("// No JSON media type is detected in GET RESTful methods\n");
+        }
         myContent.append("});");
         
 
@@ -452,6 +455,7 @@ class JSClientGenerator {
             Map<HttpRequests, Boolean> useIds,
             CompilationController controller ) throws IOException
     {
+        isModelGenerated = true;
         String fqn = entity.getQualifiedName().toString();
         String name = entity.getSimpleName().toString();
         String modelName = suggestModelName(name );
@@ -942,5 +946,6 @@ class JSClientGenerator {
     private RestServiceDescription myDescription;
     private StringBuilder myContent;
     private Set<String> myEntities  = new HashSet<String>();
+    private boolean isModelGenerated;
 
 }

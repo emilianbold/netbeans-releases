@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  */
 public class HtmlPanelVisual extends javax.swing.JPanel {
     
-    private static final String HTML = ".html";             // NOI18N
+    static final String HTML = ".html";             // NOI18N
     private static final String DEFAULT_HTML = "newHtml";   // NOI18N
 
     /**
@@ -98,6 +98,10 @@ public class HtmlPanelVisual extends javax.swing.JPanel {
         myFolder.getDocument().addDocumentListener(listener);
         
         myCreatedFile.setText(getCreatedFilePath().getPath());
+    }
+    
+    void store( WizardDescriptor descriptor ) {
+        descriptor.putProperty(HtmlPanel.HTML_FILE, getCreatedFilePath());
     }
     
     boolean valid() {
@@ -236,5 +240,5 @@ public class HtmlPanelVisual extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     private HtmlPanel myPanel;
-    
+
 }

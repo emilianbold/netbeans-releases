@@ -60,6 +60,8 @@ import org.openide.util.HelpCtx;
  */
 public class HtmlPanel implements Panel<WizardDescriptor> {
     
+    public static final String HTML_FILE = "html-file";     // NOI18N
+    
     HtmlPanel(WizardDescriptor descriptor){
         myDescriptor = descriptor;
     }
@@ -122,6 +124,7 @@ public class HtmlPanel implements Panel<WizardDescriptor> {
      */
     @Override
     public void storeSettings( WizardDescriptor descriptor ) {
+        myComponent.store( descriptor );
     }
     
     WizardDescriptor getDescriptor(){
