@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.clientproject.sites;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
@@ -81,6 +83,11 @@ public class SiteInitializr implements SiteTemplateImplementation {
         } catch (Throwable ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    @Override
+    public Collection<String> supportedLibraries() {
+        return Collections.emptyList();
     }
 
     private static class SiteTemplateCustomizerImpl implements SiteTemplateCustomizer {

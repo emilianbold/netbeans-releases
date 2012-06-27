@@ -46,6 +46,8 @@ import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -146,6 +148,11 @@ public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeList
             @Override
             public void apply(FileObject p, ProgressHandle handle) {
             }
+
+            @Override
+            public Collection<String> supportedLibraries() {
+                return Collections.emptyList();
+            }
         });
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -171,6 +178,11 @@ public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeList
 
             @Override
             public void apply(FileObject projectRoot, ProgressHandle handle) {
+            }
+
+            @Override
+            public Collection<String> supportedLibraries() {
+                return Collections.emptyList();
             }
         });
         sites.addAll(Lookup.getDefault().lookupAll(SiteTemplateImplementation.class));
@@ -226,5 +238,9 @@ public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeList
     @Override
     public void stateChanged(ChangeEvent e) {
         wizardPanel.fireChangeEvent();
+    }
+
+    Collection<String> getSupportedLibraries() {
+        return site.supportedLibraries();
     }
 }

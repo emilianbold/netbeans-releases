@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.spi;
 
+import java.util.Collection;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
 
@@ -54,4 +55,6 @@ public interface SiteTemplateImplementation {
     SiteTemplateCustomizer getCustomizer();
     
     void apply(FileObject projectRoot, ProgressHandle handle);
+    
+    Collection<String> supportedLibraries();
 }

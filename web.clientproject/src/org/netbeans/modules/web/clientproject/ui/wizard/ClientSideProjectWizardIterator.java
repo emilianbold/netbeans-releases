@@ -181,6 +181,9 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
+        if (current()==sitesPanel) {
+            librariesPanel.updateDefaults(sitesPanel.getSupportedLibraries());
+        }
         index++;
     }
 

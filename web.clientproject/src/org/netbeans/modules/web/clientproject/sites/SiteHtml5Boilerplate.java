@@ -43,6 +43,8 @@ package org.netbeans.modules.web.clientproject.sites;
 
 import java.awt.BorderLayout;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -113,6 +115,11 @@ public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
         } catch (Throwable ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    @Override
+    public Collection<String> supportedLibraries() {
+        return Collections.emptyList();
     }
     
 }

@@ -41,62 +41,37 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.ui.ClientSideProjectPanel;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ClientSideProjectActionProvider implements ActionProvider {
+public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
-    private ClientSideProject p;
+    @Override
+    public Category createCategory(Lookup context) {
+            return ProjectCustomizer.Category.create(
+                    "buildConfig",
+                    "Configurations",
+                    null);
+    }
 
-    public ClientSideProjectActionProvider(ClientSideProject p) {
-        this.p = p;
+    @Override
+    public JComponent createComponent(Category category, Lookup context) {
+        return new ClientSideProjectPanel(context.lookup(Project.class));
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = ClientSideProjectType.TYPE,
+            position = 100)
+    public static ClientSideProjectPanelProvider createRunConfigs() {
+        return new ClientSideProjectPanelProvider();
     }
     
-    @Override
-    public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_RUN_SINGLE,
-                    COMMAND_BUILD,
-                    COMMAND_CLEAN,
-                    COMMAND_RUN
-                };
-    }
-
-    @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        ProxyLookup lkp = new ProxyLookup(Lookups.fixed(p), context);
-
-        ClientSideConfigurationProvider provider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
-        final ClientProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
-        //TODO: hack for default
-        String type = activeConfiguration == null ? "browser" : activeConfiguration.getType();
-
-        Lookup providers = Lookups.forPath("Projects/" + ClientSideProjectType.TYPE + "/ActionProviders/" + type);
-        ActionProvider action = providers.lookup(ActionProvider.class);
-        if (action != null) {
-            action.invokeAction(command, lkp);
-            return;
-        }
-        NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration",
-                "Action not supported",
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
-                new Object[]{NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(desc);
-    }
-
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
-    }
 }

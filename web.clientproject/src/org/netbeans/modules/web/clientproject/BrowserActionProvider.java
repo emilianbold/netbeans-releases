@@ -41,62 +41,76 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
+import java.net.URISyntaxException;
+import java.net.URL;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * @david
  * @author Jan Becicka
  */
-public class ClientSideProjectActionProvider implements ActionProvider {
+@ServiceProvider(
+        service=ActionProvider.class,
+        path="Projects/" + ClientSideProjectType.TYPE + "/ActionProviders/browser")
 
-    private ClientSideProject p;
+public class BrowserActionProvider implements ActionProvider {
 
-    public ClientSideProjectActionProvider(ClientSideProject p) {
-        this.p = p;
-    }
-    
     @Override
     public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_RUN_SINGLE,
-                    COMMAND_BUILD,
-                    COMMAND_CLEAN,
-                    COMMAND_RUN
-                };
+        return new String[] {COMMAND_RUN};
     }
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        ProxyLookup lkp = new ProxyLookup(Lookups.fixed(p), context);
-
-        ClientSideConfigurationProvider provider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
-        final ClientProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
-        //TODO: hack for default
-        String type = activeConfiguration == null ? "browser" : activeConfiguration.getType();
-
-        Lookup providers = Lookups.forPath("Projects/" + ClientSideProjectType.TYPE + "/ActionProviders/" + type);
-        ActionProvider action = providers.lookup(ActionProvider.class);
-        if (action != null) {
-            action.invokeAction(command, lkp);
-            return;
+        ClientSideProject p = context.lookup(ClientSideProject.class);
+        FileObject fo = null;
+        if (COMMAND_RUN.equals(command)) {
+            fo = p.getProjectDirectory().getFileObject("index.html");
+        } else if (COMMAND_RUN_SINGLE.equals(command)) {
+            fo = getFile(context);
         }
-        NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration",
-                "Action not supported",
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.INFORMATION_MESSAGE,
-                new Object[]{NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(desc);
+        if (fo != null) {
+            browseFile(p.getBrowserSupport(), fo);
+        }
     }
 
+    
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
+        Project prj = context.lookup(Project.class);
+        ClientSideConfigurationProvider provider = prj.getLookup().lookup(ClientSideConfigurationProvider.class);
+        if (provider.getActiveConfiguration()==null || "browser".equals(provider.getActiveConfiguration().getType())) {
+            return true;
+        }
+        return false;
+    }
+    
+    private FileObject getFile(Lookup context) {
+        return context.lookup(FileObject.class);
+    }
+
+    private boolean isHTMLFile(FileObject fo) {
+        return (fo != null && "html".equals(fo.getExt()));
+    }
+    
+    private static void browseFile(BrowserSupport bs, FileObject fo) {
+        URL url;
+        String urlString;
+        try {
+            url = fo.toURL();
+            urlString = url.toURI().toString();
+            // XXXXX:
+            urlString = urlString.replaceAll("file:/", "file:///");
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
+        }
+        bs.load(url, fo);
     }
 }
