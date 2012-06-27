@@ -95,6 +95,7 @@ import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.ModuleDependency;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -330,6 +331,21 @@ public final class CreatedModifiedFiles {
             layerHandle.setAutosave(false);
         }
         try {
+            //aggregate all Add Dependency operations into a single operation..
+            AddModuleDependency depOp = null;
+            Iterator<Operation> it = operations.iterator();
+            while (it.hasNext()) {
+                Operation oper = it.next();
+                if (oper instanceof AddModuleDependency) {
+                    if (depOp == null) {
+                        depOp = (AddModuleDependency) oper;
+                    } else {
+                        depOp.addDependencies(((AddModuleDependency)oper).getDependencies());
+                        it.remove();
+                    }
+                }
+            }
+            //and now execute
             for (Operation op : operations) {
                 op.run();
             }
@@ -659,26 +675,40 @@ public final class CreatedModifiedFiles {
     }
     private static final class AddModuleDependency extends AbstractOperation {
         
-        private String codeNameBase;
-        private String releaseVersion;
-        private SpecificationVersion specVersion;
-        private boolean useInCompiler;
+        private List<NbModuleProvider.ModuleDependency> dependencies;
+        private Map<String, ModuleDependency> codenamebaseMap;
+
         
         public AddModuleDependency(Project project, String codeNameBase,
                 String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler) {
             super(project);
-            this.codeNameBase = codeNameBase;
-            this.releaseVersion = releaseVersion;
-            this.specVersion = specVersion;
-            this.useInCompiler = useInCompiler;
+            this.dependencies = new ArrayList<ModuleDependency>();
+            this.codenamebaseMap = new HashMap<String, ModuleDependency>();
+            addDependencies(Collections.singletonList(new ModuleDependency(codeNameBase, releaseVersion, specVersion, useInCompiler)));
             getModifiedPathsSet().add(getModuleInfo().getProjectFilePath()); // NOI18N
+        }
+        
+        public List<ModuleDependency> getDependencies() {
+            return dependencies;
         }
         
         @Override
         public void run() throws IOException {
-            getModuleInfo().addDependency(codeNameBase, releaseVersion, specVersion, useInCompiler);
+            getModuleInfo().addDependencies(dependencies.toArray(new NbModuleProvider.ModuleDependency[0]));
             // XXX consider this carefully
             ProjectManager.getDefault().saveProject(getProject());
+        }
+
+        private void addDependencies(List<ModuleDependency> list) {
+            for (ModuleDependency md : list) {
+                ModuleDependency res = codenamebaseMap.get(md.getCodeNameBase());
+                if (res != null) {
+                    //TODO update restrictions somehow?
+                } else {
+                    codenamebaseMap.put(md.getCodeNameBase(), md);
+                    dependencies.add(md);
+                }
+            }
         }
         
     }
