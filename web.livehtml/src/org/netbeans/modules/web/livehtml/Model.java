@@ -51,10 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,21 +132,24 @@ public class Model {
     }
     
     public void storeDocumentVersion(final long timestamp, final String content, final String stackTrace, final boolean realChange) {
-        assert (realChange ? true : !lastChangeWasNotReal) : "reject multiple consequent changes which are not realChange";
-        if (lastChangeWasNotReal && realChange) {
-            // forget about last change and replace it with the change coming:
-            timestamps.remove(timestamps.size()-1);
-            lastChangeWasNotReal = false;
-        }
-        final String data = dataToStore;
-        if (realChange) {
-            dataToStore = null;
-        } else {
-            lastChangeWasNotReal = true;
-        }
+        // this method can be called from multiple threads; we want to not block any thread
+        // yet synchronized access to instance variable - and that's achieved by posting this
+        // runnable into RequestProcessor with through output set to 1; not perfect but should work mostly:
         Runnable r = new Runnable() {
             @Override
             public void run() {
+                assert (realChange ? true : !lastChangeWasNotReal) : "reject multiple consequent changes which are not realChange";
+                if (lastChangeWasNotReal && realChange) {
+                    // forget about last change and replace it with the change coming:
+                    timestamps.remove(timestamps.size()-1);
+                    lastChangeWasNotReal = false;
+                }
+                String data = dataToStore;
+                if (realChange) {
+                    dataToStore = null;
+                } else {
+                    lastChangeWasNotReal = true;
+                }
                 store("content", timestamp, content);
                 if (realChange) {
                     store("stacktrace", timestamp, stackTrace);
@@ -159,7 +159,7 @@ public class Model {
                 }
                 int total = timestamps.size();
                 if (total > 0) {
-                    parse(content, timestamp, realChange);
+                    parse(content, timestamp, realChange, total-1, timestamps.get(timestamps.size()-1));
                 }
                 addTimeStamp(timestamp);
             }
@@ -221,9 +221,8 @@ public class Model {
         return rev;
     }
     
-    private void parse(String content, long timestamp, boolean realChange) {
-        int total = timestamps.size();
-        StringBuilder previousContent = read("content", timestamps.get(total-1));
+    private void parse(String content, long timestamp, boolean realChange, int previousChangeIndex, String previousTimestamp) {
+        StringBuilder previousContent = read("content", previousTimestamp);
         HtmlParser parser = HtmlParserFactory.findParser(HtmlVersion.getDefaultVersion());
         try {
             HtmlSource s1 = new HtmlSource(previousContent);
@@ -233,7 +232,7 @@ public class Model {
             Diff d = new Diff(s1, s2, 
                     (OpenTag)previousResult.root().children().iterator().next(), 
                     (OpenTag)currentResult.root().children().iterator().next());
-            List<Change> changes = d.compare(lastDiff, total-1);
+            List<Change> changes = d.compare(lastDiff, previousChangeIndex);
             store("diff", timestamp, Change.encodeToJSON(changes));
             
             List<Change> beautifiedChanges = Change.decodeFromJSON(Change.encodeToJSON(changes));
@@ -249,7 +248,7 @@ public class Model {
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         } catch (Throwable t) {
-            throw new RuntimeException("Cannot parse "+root.getAbsolutePath()+" ["+timestamp+","+timestamps.get(total-1)+"]", t);
+            throw new RuntimeException("Cannot parse "+root.getAbsolutePath()+" ["+timestamp+","+previousTimestamp+"]", t);
         }
     }
     
