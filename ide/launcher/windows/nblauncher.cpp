@@ -145,7 +145,7 @@ int NbLauncher::start(int argc, char *argv[]) {
         newArgs.add(ARG_DEFAULT_USER_DIR_ROOT);
         newArgs.add(defUserDirRoot.c_str());
     }
-    if (!userDir.empty() && !customUserDirFound) {
+    if (!cacheDir.empty() && !customUserDirFound) {
         newArgs.add(ARG_NAME_CACHE_DIR);
         newArgs.add(cacheDir.c_str());
     }
