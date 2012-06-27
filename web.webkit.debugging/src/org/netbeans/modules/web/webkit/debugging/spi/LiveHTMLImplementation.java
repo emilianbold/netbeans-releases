@@ -76,6 +76,6 @@ public interface LiveHTMLImplementation {
      * @param timeStamp a timestamp, eg. System.currentTimeMillis();
      * @param data data serialized into String; can be anything
      */
-    void storeDataEvent(URL connectionURL, long timeStamp, String data);
+    void storeDataEvent(URL connectionURL, long timeStamp, String data, String requestURL, String mime);
 
 }
