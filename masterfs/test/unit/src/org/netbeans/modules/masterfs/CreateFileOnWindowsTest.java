@@ -78,6 +78,11 @@ public class CreateFileOnWindowsTest extends NbTestCase {
         if (!root.exists()) {
             return;
         }
+        final File tmp = new File(root, "tmp");
+        if (!tmp.mkdirs()) {
+            System.err.println("Cannot create " + tmp);
+            return;
+        }
         if (masterfs == null) {
             final FileObject fo = FileUtil.toFileObject(root);
             if (fo == null) {
