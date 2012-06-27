@@ -97,10 +97,10 @@ public abstract class AbstractOutputHandler {
                 exitProtectedMode();
             }
         });
-        enterProtectedMode();
+        enterProtectedMode(false);
     }
 
-    private void enterProtectedMode() {
+    private void enterProtectedMode(boolean wait) {
         synchronized (protectedModeLock) {
             if (protectedMode == null) {
                 protectedMode = IndexingBridge.getDefault().protectedMode();
@@ -122,7 +122,7 @@ public abstract class AbstractOutputHandler {
         RequestProcessor.Task task = sleepTask;
         if (task != null) {
             task.schedule(SLEEP_DELAY);
-            enterProtectedMode();
+            enterProtectedMode(false);
         }
     }
 
