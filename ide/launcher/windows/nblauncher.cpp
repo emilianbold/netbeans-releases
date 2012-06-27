@@ -191,6 +191,11 @@ bool NbLauncher::initBaseNames() {
     }
     appName = bslash + 1;
     appName.erase(appName.find('.'));
+    
+    if (ARCHITECTURE == 64) {
+        appName = appName.erase(appName.length() - 2);
+    }
+    
     logMsg("Application name: %s", appName.c_str());
 
     *bslash = '\0';
