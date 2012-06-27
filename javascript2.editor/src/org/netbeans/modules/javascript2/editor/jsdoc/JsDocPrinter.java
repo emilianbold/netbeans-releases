@@ -56,7 +56,7 @@ import org.netbeans.modules.javascript2.editor.model.Type;
 public class JsDocPrinter {
 
 //    private static final String WRAPPER_ELEMENT = "b";
-    private static final String WRAPPER_HEADER = "h3";
+    private static final String WRAPPER_HEADER = "h3"; //NOI18N
 
     /**
      * Prints documentation of CC doc window.
@@ -82,62 +82,70 @@ public class JsDocPrinter {
     private static String printSyntax(JsDocBlock jsDocBlock) {
         List<? extends JsDocElement> syntax = jsDocBlock.getTagsForType(JsDocElement.Type.SYNTAX);
         if (!syntax.isEmpty()) {
-            StringBuilder sb = new StringBuilder("<p style=\"background-color: #E1FEFF; width: 100%; padding: 5px; margin: 5 5 0 5; border: 2px black dashed;\">");
+            StringBuilder sb = new StringBuilder("<p style=\"background-color: #C7C7C7; width: 100%; padding: 5px; margin: 10 5 5 5;\">"); //NOI18N
             for (JsDocElement jsDocElement : syntax) {
                 sb.append(((DescriptionElement) jsDocElement).getDescription());
             }
-            sb.append("</p>");
+            sb.append("</p>"); //NOI18N
             return sb.toString();
         }
-        return "";
+        return ""; //NOI18N
     }
 
     private static String printSummary(JsDocBlock jsDocBlock) {
         List<? extends JsDocElement> summary = jsDocBlock.getTagsForTypes(
                 new JsDocElement.Type[]{JsDocElement.Type.DESCRIPTION, JsDocElement.Type.CONTEXT_SENSITIVE});
         if (!summary.isEmpty()) {
-            StringBuilder sb = new StringBuilder("<p>");
+            StringBuilder sb = new StringBuilder("<p style=\"margin: 5 5 5 5\">"); //NOI18N
             for (JsDocElement jsDocElement : summary) {
                 sb.append(((DescriptionElement) jsDocElement).getDescription());
             }
-            sb.append("</p>");
+            sb.append("</p>"); //NOI18N
             return sb.toString();
         }
-        return "";
+        return ""; //NOI18N
     }
 
     private static String printParameters(JsDocBlock jsDocBlock) {
         List<? extends JsDocElement> parameters = jsDocBlock.getTagsForTypes(
                 new JsDocElement.Type[]{JsDocElement.Type.PARAM, JsDocElement.Type.ARGUMENT});
         if (!parameters.isEmpty()) {
-            StringBuilder sb = new StringBuilder("<" + WRAPPER_HEADER + ">Parameters:</" + WRAPPER_HEADER + ">");
-            sb.append("<table style=\"margin-left:10px;\">");
+            StringBuilder sb = new StringBuilder("<" + WRAPPER_HEADER + ">Parameters:</" + WRAPPER_HEADER + ">"); //NOI18N
+            sb.append("<table style=\"margin-left:10px;\">"); //NOI18N
             for (JsDocElement jsDocElement : parameters) {
                 NamedParameterElement namedParam = (NamedParameterElement) jsDocElement;
-                sb.append("<tr>");
-                sb.append("<td valign=\"top\"><i>").append(getStringFromTypes(namedParam.getParamTypes())).append("</i></td>");
-                sb.append("<td valign=\"top\"><b>").append(namedParam.getParamName().getName()).append("</b></td>");
-                sb.append("<td>").append(namedParam.getParamDescription()).append("</td>");
-                sb.append("</tr>");
+                sb.append("<tr>"); //NOI18N
+                sb.append("<td valign=\"top\" style=\"margin-right:5px;\">").append(getStringFromTypes(namedParam.getParamTypes())).append("</td>"); //NOI18N
+                sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>").append(namedParam.getParamName().getName()).append("</b></td>"); //NOI18N
+                sb.append("<td>").append(namedParam.getParamDescription()).append("</td>"); //NOI18N
+                sb.append("</tr>"); //NOI18N
             }
-            sb.append("</table>");
+            sb.append("</table>"); //NOI18N
             return sb.toString();
         }
-        return "";
+        return ""; //NOI18N
     }
 
     private static String printReturns(JsDocBlock jsDocBlock) {
-        List<? extends JsDocElement> parameters = jsDocBlock.getTagsForTypes(
+        List<? extends JsDocElement> returns = jsDocBlock.getTagsForTypes(
                 new JsDocElement.Type[]{JsDocElement.Type.RETURN, JsDocElement.Type.RETURNS});
-        if (!parameters.isEmpty()) {
-            StringBuilder sb = new StringBuilder("<" + WRAPPER_HEADER + ">Returns:</" + WRAPPER_HEADER + ">");
-            sb.append("<table style=\"margin-left:10px;\">");
-            for (JsDocElement jsDocElement : parameters) {
+        if (!returns.isEmpty()) {
+            StringBuilder sb = new StringBuilder("<" + WRAPPER_HEADER + ">Returns:</" + WRAPPER_HEADER + ">"); //NOI18N
+            sb.append("<table style=\"margin-left:10px;\">"); //NOI18N
+            for (JsDocElement jsDocElement : returns) {
                 ParameterElement param = (ParameterElement) jsDocElement;
-                sb.append("<tr>");
-                sb.append("<td valign=\"top\"><i>").append(getStringFromTypes(param.getParamTypes())).append("</i></td>");
-                sb.append("<td>").append(param.getParamDescription()).append("</td>");
-                sb.append("</tr>");
+                if (!param.getParamTypes().isEmpty()) {
+                    sb.append("<tr>"); //NOI18N
+                    sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>Type:</b></td>"); //NOI18N
+                    sb.append("<td valign=\"top\">").append(getStringFromTypes(param.getParamTypes())).append("</td>"); //NOI18N
+                    sb.append("</tr>"); //NOI18N
+                }
+                if (!param.getParamDescription().isEmpty()) {
+                    sb.append("<tr>"); //NOI18N
+                    sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>Description:</b></td>"); //NOI18N
+                    sb.append("<td valign=\"top\">").append(param.getParamDescription()).append("</td>"); //NOI18N
+                    sb.append("</tr>"); //NOI18N
+                }
             }
             sb.append("</table>");
             return sb.toString();
@@ -150,7 +158,7 @@ public class JsDocPrinter {
         String delimiter = ""; //NOI18N
         for (Type type : types) {
             sb.append(delimiter).append(type.getType());
-            delimiter = "|"; //NOI18N
+            delimiter = " | "; //NOI18N
         }
         return sb.toString();
     }
