@@ -61,7 +61,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardLocation;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -102,18 +104,21 @@ class WriteBackTransaction extends FileManagerTransaction {
     /**
      * Guard reference, when it is freed, the storage cache will be flushed
      */
-    private Reference<Map[]> cacheRef;
+    private Reference<Pair[]> cacheRef;
     /**
+     * Pair<CLASS_OUTPUT,SOURCE_OUTPUT>
      * Index of generated files, files are kept here until committed, although
      * the files might be already flushed to shadow storage
      */
-    private Map<String, Map<File, CachedFileObject>> contentCache = new HashMap<String, Map<File, CachedFileObject>>();
-
+    private Pair<Map<String, Map<File, CachedFileObject>>,Map<String, Map<File, CachedFileObject>>> contentCache =
+            Pair.<Map<String, Map<File, CachedFileObject>>,Map<String, Map<File, CachedFileObject>>>of(
+                    new HashMap<String, Map<File, CachedFileObject>>(),
+                    new HashMap<String, Map<File, CachedFileObject>>());
     /**
      * Flag to indicate that the memory storage should be flushed; the flag is set
      * from CacheRef, and reset by flush()
      */
-    volatile boolean memExhausted;
+    private volatile boolean memExhausted;
     
     /**
      * Set of work dirs. One workdir is expected in practice, 
@@ -122,23 +127,16 @@ class WriteBackTransaction extends FileManagerTransaction {
     private Collection<File> workDirs = new HashSet<File>();
 
     private void createCacheRef() {
-        cacheRef = new CacheRef(this, new Map[]{contentCache});
+        cacheRef = new CacheRef(this, new Pair[]{contentCache});
         memExhausted = false;
-    }
+    }    
 
-    void addFile(String packageName, CachedFileObject fo) {
-        LOG.log(Level.FINE, "File added to cache:{0}:{1}", new Object[] { fo.getFile(), root });
-        // check whether the softref has been freed:
-        Map<File, CachedFileObject> dirContent = contentCache.get(packageName);
-        if (dirContent == null) {
-            dirContent = new HashMap<File, CachedFileObject>();
-            contentCache.put(packageName, dirContent);
-        }
-        dirContent.put(toFile(fo), fo);
-    }
-
-    Collection<File> listDir(String dir) {
-        Map<File, CachedFileObject> content = contentCache.get(dir);
+    @NonNull
+    private Collection<File> listDir(
+            @NonNull final Location location,
+            @NonNull final String dir) {
+        final Map<String, Map<File, CachedFileObject>> cache = getCacheLine(location, true);
+        Map<File, CachedFileObject> content = cache.get(dir);
         return content == null ? Collections.<File>emptyList() : content.keySet();
     }
     
@@ -151,12 +149,16 @@ class WriteBackTransaction extends FileManagerTransaction {
      * @param dir
      * @return
      */
-    Collection<JavaFileObject> getFileObjects(String dir) {
-        Map<File, CachedFileObject> content = contentCache.get(dir);
+    @NonNull
+    private Collection<JavaFileObject> getFileObjects(
+            @NonNull final Location location,
+            @NonNull final String dir) {
+        final Map<String, Map<File, CachedFileObject>> cache = getCacheLine(location, true);
+        Map<File, CachedFileObject> content = cache.get(dir);
         return new ArrayList<JavaFileObject>(content.values());
     }
 
-    void maybeFlush() throws IOException {
+    private void maybeFlush() throws IOException {
         if (disableCache || memExhausted) {
             LOG.log(Level.FINE, "Memory exhausted:{0}", getRootDir());
             flushFiles(false);
@@ -167,8 +169,11 @@ class WriteBackTransaction extends FileManagerTransaction {
 
     @Override
     @NonNull
-    Iterable<JavaFileObject> filter(String packageName, Iterable<JavaFileObject> files) {
-        final Collection<File> added = listDir(packageName);
+    Iterable<JavaFileObject> filter(
+            @NonNull final Location location,
+            @NonNull final String packageName,
+            @NonNull final Iterable<JavaFileObject> files) {
+        final Collection<File> added = listDir(location, packageName);
         Iterable<JavaFileObject> res = files;
         if (deleted.isEmpty() && added.isEmpty()) {
             return res;
@@ -183,7 +188,7 @@ class WriteBackTransaction extends FileManagerTransaction {
                 }
             });
         }
-        Collection<JavaFileObject> toAdd = getFileObjects(packageName);
+        Collection<JavaFileObject> toAdd = getFileObjects(location, packageName);
         Collection<Iterable<JavaFileObject>> chain = new ArrayList<Iterable<JavaFileObject>>(2);
         chain.add(toAdd);
         
@@ -202,10 +207,16 @@ class WriteBackTransaction extends FileManagerTransaction {
     }
 
     @Override
-    JavaFileObject createFileObject(@NonNull final File file, @NonNull final File root, @NullAllowed final JavaFileFilterImplementation filter, @NullAllowed final Charset encoding) {
+    @NonNull
+    JavaFileObject createFileObject(
+            @NonNull final Location location,
+            @NonNull final File file,
+            @NonNull final File root,
+            @NullAllowed final JavaFileFilterImplementation filter,
+            @NullAllowed final Charset encoding) {        
         final String[] pkgNamePair = FileObjects.getFolderAndBaseName(FileObjects.getRelativePath(root, file), File.separatorChar);
         String pname = FileObjects.convertFolder2Package(pkgNamePair[0], File.separatorChar);
-        CachedFileObject cfo = getFileObject(pname, pkgNamePair[1]);
+        CachedFileObject cfo = getFileObject(location, pname, pkgNamePair[1], false);
         if (cfo != null) {
             return cfo;
         }
@@ -215,7 +226,7 @@ class WriteBackTransaction extends FileManagerTransaction {
         workDirs.add(shadowRoot);
         cfo = new CachedFileObject(this, file, pname, pkgNamePair[1], filter, encoding);
         cfo.setShadowFile(shadowFile);
-        addFile(pname, cfo);        
+        addFile(location, pname, cfo);
         if (!shadowRoot.mkdirs() && !shadowRoot.exists() && !shadowRoot.isDirectory()) {
             throw new IllegalStateException();
         }
@@ -223,8 +234,13 @@ class WriteBackTransaction extends FileManagerTransaction {
     }
 
     @CheckForNull
-    CachedFileObject getFileObject(@NonNull final String dir, @NonNull final String file) {
-        final Map<File, CachedFileObject> content = contentCache.get(dir);
+    private CachedFileObject getFileObject(
+            @NonNull final Location location,
+            @NonNull final String dir,
+            @NonNull final String file,
+            @NonNull final boolean readOnly) {
+        final Map<String, Map<File, CachedFileObject>> cache = getCacheLine(location, readOnly);
+        final Map<File, CachedFileObject> content = cache.get(dir);
         if (content != null) {
             for (Map.Entry<File, CachedFileObject> en : content.entrySet()) {
                 if (file.equals(en.getKey().getName())) {
@@ -234,6 +250,37 @@ class WriteBackTransaction extends FileManagerTransaction {
         }
         return null;
     }
+    
+    private void addFile(
+        @NonNull final Location location,
+        @NonNull final String packageName,
+        @NonNull final CachedFileObject fo) {
+        LOG.log(Level.FINE, "File added to cache:{0}:{1}", new Object[] { fo.getFile(), root });
+        // check whether the softref has been freed:
+        final Map<String, Map<File, CachedFileObject>> cache = getCacheLine(location, false);
+        Map<File, CachedFileObject> dirContent = cache.get(packageName);
+        if (dirContent == null) {
+            dirContent = new HashMap<File, CachedFileObject>();
+            cache.put(packageName, dirContent);
+        }
+        dirContent.put(toFile(fo), fo);
+    }
+
+    private Map<String, Map<File, CachedFileObject>> getCacheLine(
+            @NonNull final Location location,
+            final boolean readOnly) {
+        if (location == StandardLocation.CLASS_OUTPUT) {
+            return contentCache.first;
+        } else if (location == StandardLocation.SOURCE_OUTPUT) {
+            return contentCache.second;
+        } else if (readOnly && location == StandardLocation.CLASS_PATH) {
+            return contentCache.first;
+        } else {
+            throw new IllegalArgumentException("Unsupported Location: " + location);    //NOI18N
+        }
+    }
+
+
     private static final String WORK_SUFFIX = ".work";
 
     @Override
@@ -249,9 +296,16 @@ class WriteBackTransaction extends FileManagerTransaction {
         }
     }
 
-    void flushFiles(boolean inCommit) throws IOException {
+    private void flushFiles(boolean inCommit) throws IOException {
         LOG.log(Level.FINE, "Flushing:{0}", getRootDir());
-        for (Map<File, CachedFileObject> dirContent : contentCache.values()) {
+        doFlushFiles(contentCache.first, inCommit);
+        doFlushFiles(contentCache.second, inCommit);
+    }
+
+    private void doFlushFiles(
+        @NonNull final Map<String, Map<File, CachedFileObject>> cacheLine,
+        final boolean inCommit) throws IOException {
+        for (Map<File, CachedFileObject> dirContent : cacheLine.values()) {
             for (CachedFileObject cfo : dirContent.values()) {
                 cfo.flush(inCommit);
                 if (inCommit) {
@@ -272,12 +326,16 @@ class WriteBackTransaction extends FileManagerTransaction {
             FileObjects.deleteRecursively(d);
         }
         deleted.clear();
-        contentCache.clear();
+        contentCache.first.clear();
+        contentCache.second.clear();
     }
 
     @Override
-    JavaFileObject readFileObject(String dirName, String relativeName) {
-        return getFileObject(dirName, relativeName);
+    JavaFileObject readFileObject(
+        @NonNull final Location location,
+        @NonNull final String dirName,
+        @NonNull final String relativeName) {
+        return getFileObject(location, dirName, relativeName, true);
     }
     
     /**
