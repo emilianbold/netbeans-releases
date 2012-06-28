@@ -46,9 +46,6 @@ package org.netbeans.modules.java.source.parsing;
 
 import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -64,7 +61,6 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.util.Iterators;
 
 /**
