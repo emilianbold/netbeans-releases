@@ -424,15 +424,15 @@
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
-            prefix="glassfish-mod">
-            <!-- product version: ${glassfish-mod.release.number}.${glassfish-mod.milestone.number}.${glassfish-mod.build.number} -->
-            <echo message="Property glassfish-mod.release.number: ${glassfish-mod.release.number}"/>
-            <echo message="Property glassfish-mod.milestone.number: ${glassfish-mod.milestone.number}"/>
-            <echo message="Property glassfish-mod.build.number: ${glassfish-mod.build.number}"/>
-        </glassfish-buildnumber>
+            prefix="glassfish-mod"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="glassfish-mod-sun"/>
+        
+        <!-- product version: ${glassfish-mod.release.number}.${glassfish-mod.milestone.number}.${glassfish-mod.build.number} -->
+        <echo message="Property glassfish-mod.release.number: ${glassfish-mod.release.number}"/>
+        <echo message="Property glassfish-mod.milestone.number: ${glassfish-mod.milestone.number}"/>
+        <echo message="Property glassfish-mod.build.number: ${glassfish-mod.build.number}"/>
         
         <!--
 	<set property="glassfish-mod-sun.milestone.number"      value="74"/>
