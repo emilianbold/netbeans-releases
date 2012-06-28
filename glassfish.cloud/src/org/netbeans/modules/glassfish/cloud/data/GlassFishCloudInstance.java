@@ -47,7 +47,7 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
- * GlassFish Cloud instance.
+ * GlassFish Cloud instance extended to contain netbeans related attributes.
  * <p/>
  * GlassFish cloud instance represents CPAS interface. Based on Tooling SDK
  * entity object.
@@ -57,8 +57,16 @@ import static org.openide.util.NbBundle.getMessage;
 public class GlassFishCloudInstance extends GlassFishCloudEntity
         implements ServerInstanceImplementation {
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
     /** The display name of GlassFish cloud server type. */
     private final String serverDisplayName;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
      * Constructs GlassFish Cloud class instance with ALL values set.
@@ -73,9 +81,13 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented ServerInstanceImplementation Interface Methods             //
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      * Get GlassFish cloud name (display name in IDE).
-     *
+     * <p/>
      * @return GlassFish cloud name (display name in IDE).
      */
     @Override
@@ -84,35 +96,71 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     }
 
     /**
-     * Returns the display name of the server type to which this instance belongs.
-     *
-     * @return the display name of the server type to which this instance belongs
+     * Get the display name of GlassFish cloud server type
+     * <p/>
+     * @return The display name of GlassFish cloud server type.
      */
     @Override
     public String getServerDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return serverDisplayName;
     }
 
+    /**
+     * Returns node representing runtime instance.
+     * <p/>
+     * Node should display instance status and provide actions to manage
+     * the server.
+     * <p/>
+     * @return Node representing instance, may return <code>null</code>.
+     */
     @Override
     public org.openide.nodes.Node getFullNode() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns node representing instance while configuring it.
+     * <p/>
+     * Node should not display any status, actions or children.
+     * <p/>
+     * @return Node representing instance, may return <code>null</code>.
+     */
     @Override
     public org.openide.nodes.Node getBasicNode() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns component allowing customization of instance.
+     * <p/>
+     * May return <code>null</code>. Always called from Event Dispatch Thread.
+     * <p/>
+     * @return Component allowing customization of instance, may return
+     *         <code>null</code>
+     */
     @Override
     public JComponent getCustomizer() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Removes instance from provider(s).
+     * <p/>
+     * No {@link ServerInstanceProvider} should return this instance once
+     * it is removed.
+     */
     @Override
     public void remove() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * An information if instance can be removed by {@link #remove()} method.
+     * <p/>
+     * Otherwise returns <code>false</code>.
+     * @return <code>true</code> if the instance can be removed
+     *         or <code>false</code> otherwise.
+     */
     @Override
     public boolean isRemovable() {
         throw new UnsupportedOperationException("Not supported yet.");

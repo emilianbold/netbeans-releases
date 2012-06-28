@@ -49,6 +49,7 @@ package org.netbeans.modules.glassfish.cloud.data;
  * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudInstanceProvider {
+
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
