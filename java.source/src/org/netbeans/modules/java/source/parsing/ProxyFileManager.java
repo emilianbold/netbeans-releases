@@ -48,12 +48,14 @@ import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,12 +96,8 @@ public final class ProxyFileManager implements JavaFileManager {
         public boolean isOutputLocation() { return false;}
     };
 
-    private final JavaFileManager bootPath;
-    private final JavaFileManager classPath;
-    private final JavaFileManager sourcePath;
-    private final JavaFileManager aptSources;
-    private final MemoryFileManager memoryFileManager;
-    private final JavaFileManager outputhPath;
+    private final Map<Location,JavaFileManager[]> fileManagers;
+    
     private final ProcessorGenerated processorGeneratedFiles;
     private final SiblingSource siblings;
     private JavaFileObject lastInfered;
@@ -107,25 +105,64 @@ public final class ProxyFileManager implements JavaFileManager {
     
 
     /** Creates a new instance of ProxyFileManager */
-    public ProxyFileManager(final JavaFileManager bootPath,
-            final JavaFileManager classPath,
-            final JavaFileManager sourcePath,
-            final JavaFileManager aptSources,
-            final JavaFileManager outputhPath,
-            final MemoryFileManager memoryFileManager,
-            final ProcessorGenerated processorGeneratedFiles,
-            final SiblingSource siblings) {
+    public ProxyFileManager(
+            @NonNull final JavaFileManager bootPath,
+            @NonNull final JavaFileManager classPath,
+            @NullAllowed final JavaFileManager sourcePath,
+            @NullAllowed final JavaFileManager aptSources,
+            @NullAllowed final JavaFileManager outputhPath,
+            @NullAllowed final MemoryFileManager memoryFileManager,
+            @NonNull final ProcessorGenerated processorGeneratedFiles,
+            @NonNull final SiblingSource siblings) {
         assert bootPath != null;
         assert classPath != null;
         assert memoryFileManager == null || sourcePath != null;
         assert processorGeneratedFiles != null;
         assert siblings != null;
-        this.bootPath = bootPath;
-        this.classPath = classPath;
-        this.sourcePath = sourcePath;
-        this.aptSources = aptSources;
-        this.memoryFileManager = memoryFileManager;
-        this.outputhPath = outputhPath;
+        this.fileManagers = new HashMap<Location, JavaFileManager[]>();
+        this.fileManagers.put(
+            StandardLocation.CLASS_PATH,
+            outputhPath == null ?
+                new JavaFileManager[] {classPath}:
+                new JavaFileManager[] {classPath, outputhPath});
+        this.fileManagers.put(
+            StandardLocation.PLATFORM_CLASS_PATH,
+            new JavaFileManager[] {bootPath});
+        this.fileManagers.put(
+            StandardLocation.SOURCE_PATH,
+            sourcePath == null ?
+                new JavaFileManager[0]:
+                memoryFileManager == null ?
+                    new JavaFileManager[] {sourcePath}:
+                    new JavaFileManager[] {
+                        sourcePath,
+                        memoryFileManager});
+        this.fileManagers.put(
+            StandardLocation.CLASS_OUTPUT,
+            outputhPath == null ?
+                new JavaFileManager[0]:
+                new JavaFileManager[] {outputhPath});
+        this.fileManagers.put(
+            StandardLocation.SOURCE_OUTPUT,
+            aptSources == null ?
+                new JavaFileManager[0]:
+                new JavaFileManager[] {aptSources});
+        this.fileManagers.put(
+             SOURCE_PATH_WRITE,
+             sourcePath == null ?
+                new JavaFileManager[0]:
+                new JavaFileManager[] {sourcePath}
+             );
+
+        final Map<JavaFileManager,Void> all = new IdentityHashMap<JavaFileManager, Void>();
+        for (JavaFileManager[] jfmsForLoc : fileManagers.values()) {
+            for (JavaFileManager jfm : jfmsForLoc) {
+                all.put(jfm, null);
+            }
+        }        
+        this.fileManagers.put(
+             ALL,
+             all.keySet().toArray(new JavaFileManager[all.size()]));
         this.processorGeneratedFiles = processorGeneratedFiles;
         this.siblings = siblings;
     }
@@ -139,7 +176,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final Set<JavaFileObject.Kind> kinds,
             final boolean recurse) throws IOException {
         List<Iterable<JavaFileObject>> iterables = new LinkedList<Iterable<JavaFileObject>>();
-        JavaFileManager[] fms = getFileManager (l);
+        JavaFileManager[] fms = getFileManagers (l);
         for (JavaFileManager fm : fms) {
             iterables.add( fm.list(l, packageName, kinds, recurse));
         }
@@ -169,7 +206,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final Location l,
             @NonNull final String packageName,
             @NonNull final String relativeName) throws IOException {
-        JavaFileManager[] fms = getFileManager(l);
+        JavaFileManager[] fms = getFileManagers(l);
         for (JavaFileManager fm : fms) {
             FileObject result = fm.getFileForInput(l, packageName, relativeName);
             if (result != null) {
@@ -187,7 +224,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final String relativeName,
             @NullAllowed final FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        JavaFileManager[] fms = getFileManager(
+        JavaFileManager[] fms = getFileManagers(
                 l == StandardLocation.SOURCE_PATH ?
                     SOURCE_PATH_WRITE : l);
         assert fms.length <=1;
@@ -207,16 +244,14 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     public void flush() throws IOException {
-        JavaFileManager[] fms = getAllFileManagers ();
-        for (JavaFileManager fm : fms) {
+        for (JavaFileManager fm : getFileManagers(ALL)) {
             fm.flush();
         }
     }
 
     @Override
     public void close() throws IOException {
-        JavaFileManager[] fms = getAllFileManagers ();
-        for (JavaFileManager fm : fms) {
+        for (JavaFileManager fm : getFileManagers(ALL)) {
             fm.close();
         }
     }
@@ -274,7 +309,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 siblings.pop();
             }
         }
-        for (JavaFileManager m : getFileManager(ALL)) {
+        for (JavaFileManager m : getFileManagers(ALL)) {
             if (m.handleOption(current, defensiveCopy.iterator())) {
                 return true;
             }
@@ -284,10 +319,7 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     public boolean hasLocation(@NonNull final JavaFileManager.Location location) {
-        return location == StandardLocation.CLASS_PATH ||
-               location == StandardLocation.PLATFORM_CLASS_PATH ||
-               location == StandardLocation.SOURCE_PATH ||
-               location == StandardLocation.CLASS_OUTPUT;
+        return fileManagers.containsKey(location);
     }
 
     @Override
@@ -296,7 +328,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final Location l,
             @NonNull final String className,
             @NonNull final JavaFileObject.Kind kind) throws IOException {
-        JavaFileManager[] fms = getFileManager (l);
+        JavaFileManager[] fms = getFileManagers (l);
         for (JavaFileManager fm : fms) {
             JavaFileObject result = fm.getJavaFileForInput(l,className,kind);
             if (result != null) {
@@ -314,7 +346,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final JavaFileObject.Kind kind,
             @NonNull final FileObject sibling)
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        JavaFileManager[] fms = getFileManager (l);
+        JavaFileManager[] fms = getFileManagers (l);
         assert fms.length <=1;
         if (fms.length == 0) {
             return null;
@@ -347,7 +379,7 @@ public final class ProxyFileManager implements JavaFileManager {
             }
         }
         //Ask delegates to infer the binary name
-        JavaFileManager[] fms = getFileManager (location);
+        JavaFileManager[] fms = getFileManagers (location);
         for (JavaFileManager fm : fms) {
             result = fm.inferBinaryName (location, javaFileObject);
             if (result != null && result.length() > 0) {
@@ -361,7 +393,7 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     public boolean isSameFile(FileObject fileObject, FileObject fileObject0) {
-        final JavaFileManager[] fms = getFileManager(ALL);
+        final JavaFileManager[] fms = getFileManagers(ALL);
         for (JavaFileManager fm : fms) {
             if (fm.isSameFile(fileObject, fileObject0)) {
                 return true;
@@ -404,59 +436,10 @@ public final class ProxyFileManager implements JavaFileManager {
         return write ? result : (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
-    private JavaFileManager[] getFileManager (final Location location) {
-        if (location == StandardLocation.CLASS_PATH) {
-            return this.outputhPath == null ?
-                new JavaFileManager[] {this.classPath} :
-                new JavaFileManager[] {this.classPath, this.outputhPath};
-        }
-        else if (location == StandardLocation.PLATFORM_CLASS_PATH) {
-            return new JavaFileManager[] {this.bootPath};
-        }
-        else if (location == StandardLocation.SOURCE_PATH && this.sourcePath != null) {
-            if (this.memoryFileManager != null) {
-                return new JavaFileManager[] {
-                    this.sourcePath,
-                    this.memoryFileManager
-                };
-            }
-            else {
-                return new JavaFileManager[] {this.sourcePath};
-            }
-        }
-        else if (location == StandardLocation.CLASS_OUTPUT && this.outputhPath != null) {
-            return new JavaFileManager[] {this.outputhPath};
-        }
-        else if (location == StandardLocation.SOURCE_OUTPUT && this.aptSources != null) {
-            return new JavaFileManager[] {this.aptSources};
-        }
-        else if (location == SOURCE_PATH_WRITE) {
-            return new JavaFileManager[] {this.sourcePath};
-        }
-        else if (location == ALL) {
-            return getAllFileManagers();
-        }
-        return new JavaFileManager[0];
-    }
-
-    private JavaFileManager[] getAllFileManagers () {
-        List<JavaFileManager> result = new ArrayList<JavaFileManager> (4);
-        if (this.sourcePath!=null) {
-            result.add (this.sourcePath);
-        }
-        if (this.aptSources != null) {
-            result.add (this.aptSources);
-        }
-        if (this.memoryFileManager != null) {
-            result.add(this.memoryFileManager);
-        }
-        result.add(this.bootPath);
-        result.add (this.classPath);
-        if (this.outputhPath!=null) {
-            result.add (this.outputhPath);
-        }
-        return result.toArray(new JavaFileManager[result.size()]);
-    }
+    private JavaFileManager[] getFileManagers (final Location location) {
+        final JavaFileManager[] result = fileManagers.get(location);
+        return result != null ? result : new JavaFileManager[0];
+    }    
 
     private static URL asURL(final String url) throws IllegalArgumentException {
         try {
