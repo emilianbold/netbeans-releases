@@ -52,6 +52,8 @@ var NetBeans_PresetCustomizer = {};
 NetBeans_PresetCustomizer._container = null;
 // presets container
 NetBeans_PresetCustomizer._rowContainer = null;
+// add button
+NetBeans_PresetCustomizer._addPresetButton = null;
 // remove button
 NetBeans_PresetCustomizer._removePresetButton = null;
 // move up button
@@ -77,6 +79,7 @@ NetBeans_PresetCustomizer._init = function() {
         return;
     }
     this._rowContainer = document.getElementById('presetCustomizerTable').getElementsByTagName('tbody')[0];
+    this._addPresetButton = document.getElementById('addPreset');
     this._removePresetButton = document.getElementById('removePreset');
     this._moveUpPresetButton = document.getElementById('moveUpPreset');
     this._moveDownPresetButton = document.getElementById('moveDownPreset');
@@ -93,7 +96,7 @@ NetBeans_PresetCustomizer._registerEvents = function() {
     document.getElementById('closePresetCustomizer').addEventListener('click', function() {
         that._cancel();
     }, false);
-    document.getElementById('addPreset').addEventListener('click', function() {
+    this._addPresetButton.addEventListener('click', function() {
         that._addPreset();
     }, false);
     this._removePresetButton.addEventListener('click', function() {
@@ -115,8 +118,27 @@ NetBeans_PresetCustomizer._registerEvents = function() {
         alert('[not implemented]');
     }, false);
 }
-// put presets to the customizer
+// put presets to the customizer?
 NetBeans_PresetCustomizer._putPresets = function(presets) {
+    if (this._presets == null) {
+        this._putNoPresets();
+        this._enableButtons();
+    } else {
+        this._putPresetsInternal(presets);
+    }
+}
+// no presets available (netbeans not running)
+NetBeans_PresetCustomizer._putNoPresets = function() {
+    var row = document.createElement('tr');
+    var info = document.createElement('td');
+    info.setAttribute('colspan', '5');
+    info.setAttribute('class', 'info');
+    info.appendChild(document.createTextNode("Window settings not available (run any page from NetBeans to solve this problem)."));
+    row.appendChild(info);
+    this._rowContainer.appendChild(row);
+}
+// put presets to the table
+NetBeans_PresetCustomizer._putPresetsInternal = function(presets) {
     var that = this;
     var allPresetTypes = NetBeans_Preset.allTypes();
     for (p in presets) {
@@ -307,6 +329,10 @@ NetBeans_PresetCustomizer._enablePresetButtons = function() {
             this._moveDownPresetButton.setAttribute('disabled', 'disabled');
         }
     } else {
+        if (this._presets == null) {
+            // nb not running
+            this._addPresetButton.setAttribute('disabled', 'disabled');
+        }
         this._removePresetButton.setAttribute('disabled', 'disabled');
         this._moveUpPresetButton.setAttribute('disabled', 'disabled');
         this._moveDownPresetButton.setAttribute('disabled', 'disabled');
@@ -315,10 +341,14 @@ NetBeans_PresetCustomizer._enablePresetButtons = function() {
 // enable/disable customizer buttons
 NetBeans_PresetCustomizer._enableMainButtons = function() {
     var anyError = false;
-    for (i in this._presets) {
-        if (this._presets[i]['_errors'].length) {
-            anyError = true;
-            break;
+    if (this._presets == null) {
+        anyError = true;
+    } else {
+        for (i in this._presets) {
+            if (this._presets[i]['_errors'].length) {
+                anyError = true;
+                break;
+            }
         }
     }
     if (anyError) {
