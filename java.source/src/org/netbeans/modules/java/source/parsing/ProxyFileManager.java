@@ -61,6 +61,9 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.util.Iterators;
 
 /**
@@ -68,12 +71,15 @@ import org.netbeans.modules.java.source.util.Iterators;
  * @author Tomas Zezula
  */
 @Trusted
-public class ProxyFileManager implements JavaFileManager {
+public final class ProxyFileManager implements JavaFileManager {
 
+    private static final Logger LOG = Logger.getLogger(ProxyFileManager.class.getName());
 
     private static final Location ALL = new Location () {
+        @Override
         public String getName() { return "ALL";}   //NOI18N
 
+        @Override
         public boolean isOutputLocation() { return false; }
     };
 
@@ -100,9 +106,6 @@ public class ProxyFileManager implements JavaFileManager {
     private String lastInferedResult;
     
 
-    private static final Logger LOG = Logger.getLogger(ProxyFileManager.class.getName());
-
-
     /** Creates a new instance of ProxyFileManager */
     public ProxyFileManager(final JavaFileManager bootPath,
             final JavaFileManager classPath,
@@ -125,6 +128,280 @@ public class ProxyFileManager implements JavaFileManager {
         this.outputhPath = outputhPath;
         this.processorGeneratedFiles = processorGeneratedFiles;
         this.siblings = siblings;
+    }
+    
+
+    @Override
+    @NonNull
+    public Iterable<JavaFileObject> list(
+            @NonNull final Location l,
+            @NonNull final String packageName,
+            @NonNull final Set<JavaFileObject.Kind> kinds,
+            final boolean recurse) throws IOException {
+        List<Iterable<JavaFileObject>> iterables = new LinkedList<Iterable<JavaFileObject>>();
+        JavaFileManager[] fms = getFileManager (l);
+        for (JavaFileManager fm : fms) {
+            iterables.add( fm.list(l, packageName, kinds, recurse));
+        }
+        final Iterable<JavaFileObject> result = Iterators.chained(iterables);
+        if (LOG.isLoggable(Level.FINER)) {
+            final StringBuilder urls = new StringBuilder ();
+            for (JavaFileObject jfo : result ) {
+                urls.append(jfo.toUri().toString());
+                urls.append(", ");  //NOI18N
+            }
+            LOG.log(
+                Level.FINER,
+                "List {0} Package: {1} Kinds: {2} -> {3}", //NOI18N
+                new Object[] {
+                    l,
+                    packageName,
+                    kinds,
+                    urls
+                });
+        }
+        return result;
+    }
+
+    @Override
+    @CheckForNull
+    public FileObject getFileForInput(
+            @NonNull final Location l,
+            @NonNull final String packageName,
+            @NonNull final String relativeName) throws IOException {
+        JavaFileManager[] fms = getFileManager(l);
+        for (JavaFileManager fm : fms) {
+            FileObject result = fm.getFileForInput(l, packageName, relativeName);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    @CheckForNull
+    public FileObject getFileForOutput(
+            @NonNull final Location l,
+            @NonNull final String packageName,
+            @NonNull final String relativeName,
+            @NullAllowed final FileObject sibling)
+        throws IOException, UnsupportedOperationException, IllegalArgumentException {
+        JavaFileManager[] fms = getFileManager(
+                l == StandardLocation.SOURCE_PATH ?
+                    SOURCE_PATH_WRITE : l);
+        assert fms.length <=1;
+        if (fms.length == 0) {
+            return null;
+        }
+        else {
+            return mark(fms[0].getFileForOutput(l, packageName, relativeName, sibling), l);
+        }
+    }
+
+    @Override
+    @CheckForNull
+    public ClassLoader getClassLoader (@NonNull final Location l) {
+        return null;
+    }
+
+    @Override
+    public void flush() throws IOException {
+        JavaFileManager[] fms = getAllFileManagers ();
+        for (JavaFileManager fm : fms) {
+            fm.flush();
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        JavaFileManager[] fms = getAllFileManagers ();
+        for (JavaFileManager fm : fms) {
+            fm.close();
+        }
+    }
+
+    @Override
+    public int isSupportedOption(@NonNull final String string) {
+        return -1;
+    }
+
+    @Override
+    public boolean handleOption (
+            @NonNull final String current,
+            @NonNull final Iterator<String> remains) {
+        boolean isSourceElement;
+        final Collection<String> defensiveCopy = copy(remains);
+        if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
+            final Iterator<String> it = defensiveCopy.iterator();
+            if (!it.hasNext()) {
+                throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
+            }
+            final String sib = it.next();
+            if(sib.length() != 0) {                
+                siblings.push(asURL(sib));                
+            } else {
+                siblings.pop();
+            }
+        } else if ((isSourceElement=AptSourceFileManager.ORIGIN_SOURCE_ELEMENT_URL.equals(current)) || 
+                   AptSourceFileManager.ORIGIN_RESOURCE_ELEMENT_URL.equals(current)) {
+            if (!defensiveCopy.isEmpty()) {
+                URL bestSoFar = siblings.getProvider().getSibling();
+                for  (String surl : defensiveCopy) {
+                    if (FileObjects.JAVA.equals(FileObjects.getExtension(surl))) {
+                        bestSoFar = asURL(surl);
+                        break;
+                    }
+                }
+                if (LOG.isLoggable(Level.INFO) && isSourceElement && defensiveCopy.size() > 1) {
+                    final StringBuilder sb = new StringBuilder();
+                    for (String surl : defensiveCopy) {
+                        if (sb.length() > 0) {
+                            sb.append(", ");    //NOI18N
+                        }
+                        sb.append(surl);
+                    }
+                    LOG.log(
+                        Level.FINE,
+                        "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL: {0}; using: {1}",  //NOI18N
+                        new Object[]{
+                            sb,
+                            bestSoFar
+                        });
+                }
+                siblings.push(bestSoFar);
+            } else {
+                siblings.pop();
+            }
+        }
+        for (JavaFileManager m : getFileManager(ALL)) {
+            if (m.handleOption(current, defensiveCopy.iterator())) {
+                return true;
+            }
+        }
+        return false;
+    }    
+
+    @Override
+    public boolean hasLocation(@NonNull final JavaFileManager.Location location) {
+        return location == StandardLocation.CLASS_PATH ||
+               location == StandardLocation.PLATFORM_CLASS_PATH ||
+               location == StandardLocation.SOURCE_PATH ||
+               location == StandardLocation.CLASS_OUTPUT;
+    }
+
+    @Override
+    @CheckForNull
+    public JavaFileObject getJavaFileForInput (
+            @NonNull final Location l,
+            @NonNull final String className,
+            @NonNull final JavaFileObject.Kind kind) throws IOException {
+        JavaFileManager[] fms = getFileManager (l);
+        for (JavaFileManager fm : fms) {
+            JavaFileObject result = fm.getJavaFileForInput(l,className,kind);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    @CheckForNull
+    public JavaFileObject getJavaFileForOutput(
+            @NonNull final Location l,
+            @NonNull final String className,
+            @NonNull final JavaFileObject.Kind kind,
+            @NonNull final FileObject sibling)
+        throws IOException, UnsupportedOperationException, IllegalArgumentException {
+        JavaFileManager[] fms = getFileManager (l);
+        assert fms.length <=1;
+        if (fms.length == 0) {
+            return null;
+        } else {
+            final JavaFileObject result = fms[0].getJavaFileForOutput (l, className, kind, sibling);
+            return mark (result,l);
+        }
+    }
+
+
+    @Override
+    @CheckForNull
+    public String inferBinaryName(
+            @NonNull final JavaFileManager.Location location,
+            @NonNull final JavaFileObject javaFileObject) {
+        assert javaFileObject != null;
+        //If cached return it dirrectly
+        if (javaFileObject == lastInfered) {
+            return lastInferedResult;
+        }
+        String result;
+        //If instanceof FileObject.Base no need to delegate it
+        if (javaFileObject instanceof InferableJavaFileObject) {
+            final InferableJavaFileObject ifo = (InferableJavaFileObject) javaFileObject;
+            result = ifo.inferBinaryName();
+            if (result != null) {
+                this.lastInfered = javaFileObject;
+                this.lastInferedResult = result;
+                return result;
+            }
+        }
+        //Ask delegates to infer the binary name
+        JavaFileManager[] fms = getFileManager (location);
+        for (JavaFileManager fm : fms) {
+            result = fm.inferBinaryName (location, javaFileObject);
+            if (result != null && result.length() > 0) {
+                this.lastInfered = javaFileObject;
+                this.lastInferedResult = result;
+                return result;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isSameFile(FileObject fileObject, FileObject fileObject0) {
+        final JavaFileManager[] fms = getFileManager(ALL);
+        for (JavaFileManager fm : fms) {
+            if (fm.isSameFile(fileObject, fileObject0)) {
+                return true;
+            }
+        }
+        return fileObject.toUri().equals (fileObject0.toUri());
+    }
+
+    @SuppressWarnings("unchecked")
+    @NonNull
+    private <T extends javax.tools.FileObject> T mark(
+            @NonNull final T result,
+            @NonNull final JavaFileManager.Location l) throws MalformedURLException {
+        ProcessorGenerated.Type type = null;
+        if (l == StandardLocation.CLASS_OUTPUT) {
+            type = ProcessorGenerated.Type.RESOURCE;
+        } else if (l == StandardLocation.SOURCE_OUTPUT) {
+            type = ProcessorGenerated.Type.SOURCE;
+        }
+        final boolean hasSibling = siblings.getProvider().hasSibling();
+        final boolean write = processorGeneratedFiles.canWrite() || !hasSibling;
+        if (result != null && hasSibling) {
+            if (type == ProcessorGenerated.Type.SOURCE) {
+                processorGeneratedFiles.register(
+                    siblings.getProvider().getSibling(),
+                    result,
+                    type);
+            } else if (type == ProcessorGenerated.Type.RESOURCE) {
+                try {
+                    result.openInputStream().close();
+                } catch (IOException ioe) {
+                    //Marking only created files
+                    processorGeneratedFiles.register(
+                        siblings.getProvider().getSibling(),
+                        result,
+                        type);
+                }
+            }
+        }
+        return write ? result : (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
     private JavaFileManager[] getFileManager (final Location location) {
@@ -181,124 +458,11 @@ public class ProxyFileManager implements JavaFileManager {
         return result.toArray(new JavaFileManager[result.size()]);
     }
 
-    public Iterable<JavaFileObject> list(Location l, String packageName, Set<JavaFileObject.Kind> kinds, boolean recurse) throws IOException {
-        List<Iterable<JavaFileObject>> iterables = new LinkedList<Iterable<JavaFileObject>>();
-        JavaFileManager[] fms = getFileManager (l);
-        for (JavaFileManager fm : fms) {
-            iterables.add( fm.list(l, packageName, kinds, recurse));
-        }
-        final Iterable<JavaFileObject> result = Iterators.chained(iterables);
-        if (LOG.isLoggable(Level.FINER)) {
-            final StringBuilder urls = new StringBuilder ();
-            for (JavaFileObject jfo : result ) {
-                urls.append(jfo.toUri().toString());
-                urls.append(", ");  //NOI18N
-            }
-            LOG.finer(String.format("list %s package: %s type: %s found files: [%s]", l.toString(), packageName, kinds.toString(), urls.toString())); //NOI18N
-        }
-        return result;
-    }
-
-    public FileObject getFileForInput(Location l, String packageName, String relativeName) throws IOException {
-        JavaFileManager[] fms = getFileManager(l);
-        for (JavaFileManager fm : fms) {
-            FileObject result = fm.getFileForInput(l, packageName, relativeName);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
-
-    public FileObject getFileForOutput(Location l, String packageName, String relativeName, FileObject sibling) 
-        throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        JavaFileManager[] fms = getFileManager(
-                l == StandardLocation.SOURCE_PATH ?
-                    SOURCE_PATH_WRITE : l);
-        assert fms.length <=1;
-        if (fms.length == 0) {
-            return null;
-        }
-        else {
-            return mark(fms[0].getFileForOutput(l, packageName, relativeName, sibling), l);
-        }
-    }
-
-    public ClassLoader getClassLoader (Location l) {
-        return null;
-    }
-
-    public void flush() throws IOException {
-        JavaFileManager[] fms = getAllFileManagers ();
-        for (JavaFileManager fm : fms) {
-            fm.flush();
-        }
-    }
-
-    public void close() throws IOException {
-        JavaFileManager[] fms = getAllFileManagers ();
-        for (JavaFileManager fm : fms) {
-            fm.close();
-        }
-    }
-
-    public int isSupportedOption(String string) {
-        return -1;
-    }
-
-    public boolean handleOption (String current, Iterator<String> remains) {
-        boolean isSourceElement;
-        final Collection<String> defensiveCopy = copy(remains);
-        if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
-            final Iterator<String> it = defensiveCopy.iterator();
-            if (!it.hasNext()) {
-                throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
-            }
-            final String sib = it.next();
-            if(sib.length() != 0) {                
-                siblings.push(asURL(sib));                
-            } else {
-                siblings.pop();
-            }
-        } else if ((isSourceElement=AptSourceFileManager.ORIGIN_SOURCE_ELEMENT_URL.equals(current)) || 
-                   AptSourceFileManager.ORIGIN_RESOURCE_ELEMENT_URL.equals(current)) {
-            if (!defensiveCopy.isEmpty()) {
-                URL bestSoFar = siblings.getProvider().getSibling();
-                for  (String surl : defensiveCopy) {
-                    if (FileObjects.JAVA.equals(FileObjects.getExtension(surl))) {
-                        bestSoFar = asURL(surl);
-                        break;
-                    }
-                }
-                if (LOG.isLoggable(Level.INFO) && isSourceElement && defensiveCopy.size() > 1) {
-                    final StringBuilder sb = new StringBuilder();
-                    for (String surl : defensiveCopy) {
-                        if (sb.length() > 0) {
-                            sb.append(", ");    //NOI18N
-                        }
-                        sb.append(surl);
-                    }
-                    LOG.log(Level.FINE, "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL: {0}; using: {1}",  //NOI18N
-                            new Object[]{sb.toString(), bestSoFar});
-                }
-                siblings.push(bestSoFar);
-            } else {
-                siblings.pop();
-            }
-        }
-        for (JavaFileManager m : getFileManager(ALL)) {
-            if (m.handleOption(current, defensiveCopy.iterator())) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private static URL asURL(final String url) throws IllegalArgumentException {
         try {
             return new URL(url);
         } catch (MalformedURLException ex) {
-            throw new IllegalArgumentException("Invalid path argument: " + url);    //NOI18N
+            throw new IllegalArgumentException("Invalid path argument: " + url, ex);    //NOI18N
         }
     }
 
@@ -312,108 +476,5 @@ public class ProxyFileManager implements JavaFileManager {
             }
             return result;
         }
-    }
-
-    public boolean hasLocation(JavaFileManager.Location location) {
-        return location == StandardLocation.CLASS_PATH ||
-               location == StandardLocation.PLATFORM_CLASS_PATH ||
-               location == StandardLocation.SOURCE_PATH ||
-               location == StandardLocation.CLASS_OUTPUT;
-    }
-
-    public JavaFileObject getJavaFileForInput (Location l, String className, JavaFileObject.Kind kind) throws IOException {
-        JavaFileManager[] fms = getFileManager (l);
-        for (JavaFileManager fm : fms) {
-            JavaFileObject result = fm.getJavaFileForInput(l,className,kind);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
-
-    public JavaFileObject getJavaFileForOutput(Location l, String className, JavaFileObject.Kind kind, FileObject sibling) 
-        throws IOException, UnsupportedOperationException, IllegalArgumentException {
-        JavaFileManager[] fms = getFileManager (l);
-        assert fms.length <=1;
-        if (fms.length == 0) {
-            return null;
-        }
-        else {
-            final JavaFileObject result = fms[0].getJavaFileForOutput (l, className, kind, sibling);
-            return mark (result,l);
-        }
-    }
-
-
-    public String inferBinaryName(JavaFileManager.Location location, JavaFileObject javaFileObject) {
-        assert javaFileObject != null;
-        //If cached return it dirrectly
-        if (javaFileObject == lastInfered) {
-            return lastInferedResult;
-        }
-        String result;
-        //If instanceof FileObject.Base no need to delegate it
-        if (javaFileObject instanceof InferableJavaFileObject) {
-            final InferableJavaFileObject ifo = (InferableJavaFileObject) javaFileObject;
-            result = ifo.inferBinaryName();
-            if (result != null) {
-                this.lastInfered = javaFileObject;
-                this.lastInferedResult = result;
-                return result;
-            }
-        }
-        //Ask delegates to infer the binary name
-        JavaFileManager[] fms = getFileManager (location);
-        for (JavaFileManager fm : fms) {
-            result = fm.inferBinaryName (location, javaFileObject);
-            if (result != null && result.length() > 0) {
-                this.lastInfered = javaFileObject;
-                this.lastInferedResult = result;
-                return result;
-            }
-        }
-        return null;
-    }
-
-    public boolean isSameFile(FileObject fileObject, FileObject fileObject0) {
-        final JavaFileManager[] fms = getFileManager(ALL);
-        for (JavaFileManager fm : fms) {
-            if (fm.isSameFile(fileObject, fileObject0)) {
-                return true;
-            }
-        }
-        return fileObject.toUri().equals (fileObject0.toUri());
-    }
-
-    @SuppressWarnings("unchecked")
-    private <T extends javax.tools.FileObject> T mark(final T result, JavaFileManager.Location l) throws MalformedURLException {
-        ProcessorGenerated.Type type = null;
-        if (l == StandardLocation.CLASS_OUTPUT) {
-            type = ProcessorGenerated.Type.RESOURCE;
-        } else if (l == StandardLocation.SOURCE_OUTPUT) {
-            type = ProcessorGenerated.Type.SOURCE;
-        }
-        final boolean hasSibling = siblings.getProvider().hasSibling();
-        final boolean write = processorGeneratedFiles.canWrite() || !hasSibling;
-        if (result != null && hasSibling) {
-            if (type == ProcessorGenerated.Type.SOURCE) {
-                processorGeneratedFiles.register(
-                    siblings.getProvider().getSibling(),
-                    result,
-                    type);
-            } else if (type == ProcessorGenerated.Type.RESOURCE) {
-                try {
-                    result.openInputStream().close();
-                } catch (IOException ioe) {
-                    //Marking only created files
-                    processorGeneratedFiles.register(
-                        siblings.getProvider().getSibling(),
-                        result,
-                        type);
-                }
-            }
-        }
-        return write ? result : (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 }
