@@ -93,7 +93,7 @@ public class AptSourceFileManager extends SourceFileManager {
 
     @Override
     public Iterable<JavaFileObject> list(Location l, String packageName, Set<Kind> kinds, boolean recursive) {
-        return fileTx.filter(packageName, super.list(l, packageName, kinds, recursive));
+        return fileTx.filter(l, packageName, super.list(l, packageName, kinds, recursive));
     }
 
     @Override
@@ -111,7 +111,7 @@ public class AptSourceFileManager extends SourceFileManager {
             pkgName.replace('.', File.separatorChar) + File.separatorChar + relativeName;    //NOI18N
         //Always on master fs -> file is save.
         File rootFile = FileUtil.toFile(aptRoot);
-        return fileTx.createFileObject(new File(rootFile,nameStr), rootFile, null, null);
+        return fileTx.createFileObject(l, new File(rootFile,nameStr), rootFile, null, null);
     }
 
 
@@ -128,7 +128,7 @@ public class AptSourceFileManager extends SourceFileManager {
         final String nameStr = className.replace('.', File.separatorChar) + kind.extension;    //NOI18N
         //Always on master fs -> file is save.
         File rootFile = FileUtil.toFile(aptRoot);
-        final JavaFileObject result = fileTx.createFileObject(new File(rootFile,nameStr), rootFile, null, null);
+        final JavaFileObject result = fileTx.createFileObject(l, new File(rootFile,nameStr), rootFile, null, null);
         return result;
     }
 
