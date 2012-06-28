@@ -243,7 +243,7 @@ public class C2CRepository {
     }
 
     private Object[] getLookupObjects() {
-        return new Object[] { };
+        return new Object[] { getIssueCache() };
     }
 
     public void refreshConfiguration() {
