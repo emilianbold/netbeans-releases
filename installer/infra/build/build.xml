@@ -391,13 +391,6 @@
         <set property="weblogic.version"      value="12.1.1"/>
 	<set property="weblogic.full.version" value="${weblogic.version}.0.0"/>
 
-	<set property="glassfish.milestone.number" value="31"/>
-	<set property="glassfish.milestone.number.real" value="31g"/>
-	<set property="glassfish.build.type" value="fcs"/>
-       	<set property="glassfish.build.number" value="20091019"/>
-        <set property="glassfish.version" value="2.1.1"/>
-
-	
 	<set property="sjsas.milestone.number" value="31"/>
 	<set property="sjsas.milestone.number.real" value="31g"/>
 	<set property="sjsas.build.type" value="fcs"/>
@@ -431,7 +424,12 @@
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
-            prefix="glassfish-mod"/>
+            prefix="glassfish-mod">
+            <!-- product version: ${glassfish-mod.release.number}.${glassfish-mod.milestone.number}.${glassfish-mod.build.number} -->
+            <echo message="Property glassfish-mod.release.number: ${glassfish-mod.release.number}"/>
+            <echo message="Property glassfish-mod.milestone.number: ${glassfish-mod.milestone.number}"/>
+            <echo message="Property glassfish-mod.build.number: ${glassfish-mod.build.number}"/>
+        </glassfish-buildnumber>
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="glassfish-mod-sun"/>
