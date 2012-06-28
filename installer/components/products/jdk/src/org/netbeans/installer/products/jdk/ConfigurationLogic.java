@@ -406,8 +406,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             // new -noregister option to disable JDK registration.
             // Otherwise, a browser will be popped up during NB+JDK install. 
             final String registerOption = getProduct().getVersion().
-                    newerOrEquals(Version.getVersion("1.6.0_05")) ? 
-                        " " + NO_REGISTER_JDK_OPTION : 
+                    newerOrEquals(Version.getVersion("1.6.0_05")) 
+                    && getProduct().getVersion().olderThan(Version.getVersion("1.7.0_06")) // we build our own .bin since 1.7.0.6
+                    ? " " + NO_REGISTER_JDK_OPTION : 
                         StringUtils.EMPTY_STRING;
                 
             String [] commands = new String [] {
