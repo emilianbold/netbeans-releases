@@ -105,7 +105,6 @@ import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -113,6 +112,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.ComponentComparator;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.VersionComparator;
+import org.netbeans.modules.mylyn.BugtrackingCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -406,9 +406,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             Jira.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         try {
-            JiraCommand cmd = new JiraCommand() {
+            BugtrackingCommand cmd = new BugtrackingCommand() {
                 @Override
-                public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                public void execute() throws CoreException, IOException, MalformedURLException {
                     final JiraConfiguration jc = repository.getConfiguration();
                     if(jc == null) {
                         // XXX nice errro msg?

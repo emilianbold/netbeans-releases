@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn;
 
-package org.netbeans.modules.jira.commands;
-
-import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
-import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import java.util.logging.Logger;
 
 /**
- * Perfoms a repository query
- * 
+ *
  * @author Tomas Stupka
  */
-public class PerformQueryCommand extends JiraCommand {
-
-    private final JiraRepository repository;
-    private final JiraFilter jiraFilter;
-    private final TaskDataCollector collector;
-
-    public PerformQueryCommand(JiraRepository repository, JiraFilter jiraFilter, TaskDataCollector collector) {
-        this.repository = repository;
-        this.jiraFilter = jiraFilter;
-        this.collector = collector;
-    }
-
-    @Override
-    public void execute() throws CoreException, JiraException {
-        JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
-        RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "query"); // NOI18N
-        JiraUtil.setQuery(repository.getTaskRepository(), repositoryQuery, jiraFilter);
-        rc.performQuery(
-                repository.getTaskRepository(),
-                repositoryQuery,
-                collector,
-                null,
-                new NullProgressMonitor());
-    }
-
+public class Mylyn {
+    public static final Logger LOG = Logger.getLogger(Mylyn.class.getName());
 }

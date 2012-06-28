@@ -37,67 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.commands;
+package org.netbeans.modules.mylyn;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.tasks.core.RepositoryResponse;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class SubmitCommand extends BugzillaCommand {
+public abstract class BugtrackingCommand {
+    private boolean failed = false;
+    private String errorMessage;
 
-    private final BugzillaRepository repository;
-    private final TaskData data;
-    private RepositoryResponse rr;
-    private boolean wasNew;
-    private String stringValue;
+    public abstract void execute() throws CoreException, IOException, MalformedURLException;
 
-    public SubmitCommand(BugzillaRepository repository, TaskData data) {
-        this.repository = repository;
-        this.data = data;
-        wasNew = data.isNew();
+    public boolean hasFailed() {
+        return failed;
     }
 
-    @Override
-    public void execute() throws CoreException, IOException, MalformedURLException {
-        rr = Bugzilla.getInstance().getRepositoryConnector().getTaskDataHandler().postTaskData(repository.getTaskRepository(), data, null, new NullProgressMonitor());
-        // XXX evaluate rr
+    public void setFailed(boolean failed) {
+        this.failed = failed;
     }
 
-    public RepositoryResponse getRepositoryResponse() {
-        return rr;
+    public void setErrorMessage(String msg) {
+        this.errorMessage = msg;
     }
 
-    @Override
-    public String toString() {
-        if(stringValue == null) {
-            StringBuilder sb = new StringBuilder();
-            if(wasNew) {
-                sb.append("SubmitCommand new issue [repository=");              // NOI18N
-                sb.append(repository.getTaskRepository().getUrl());
-                sb.append("]");                                                 // NOI18N
-            } else {
-                sb.append("SubmitCommand [issue #");                            // NOI18N
-                sb.append(BugzillaIssue.getID(data));
-                sb.append(",repository=");                                      // NOI18N
-                sb.append(repository.getTaskRepository().getUrl());
-                sb.append("]");                                                 // NOI18N
-            }
-            stringValue = sb.toString();
-        }
-        return stringValue;
+    public String getErrorMessage() {
+        return errorMessage;
     }
+    
 }

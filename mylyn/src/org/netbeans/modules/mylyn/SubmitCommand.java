@@ -37,44 +37,67 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.commands;
+package org.netbeans.modules.mylyn;
 
-import java.util.Set;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.repository.JiraRepository;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.RepositoryResponse;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 /**
- * Retrieves the TaskData for all given issue ids
- * 
- * @author Tomas Stupka
  *
- * // XXX merge all possible commands with bugzilla
+ * @author Tomas Stupka
  */
-public class GetMultiTaskDataCommand extends JiraCommand {
+public class SubmitCommand extends BugtrackingCommand {
 
-    private final JiraRepository repository;
-    private final Set<String> ids;
-    private final TaskDataCollector collector;
+    private final AbstractRepositoryConnector repositoryConnector;
+    private final TaskRepository taskRepository;
+    private final TaskData data;
+    private RepositoryResponse rr;
+    private boolean wasNew;
+    private String stringValue;
 
-    public GetMultiTaskDataCommand(JiraRepository repository, Set<String> ids, TaskDataCollector collector) {
-        this.repository = repository;
-        this.ids = ids;
-        this.collector = collector;
+    public SubmitCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskData data) {
+        this.taskRepository = taskRepository;
+        this.repositoryConnector = repositoryConnector;
+        this.data = data;
+        wasNew = data.isNew();
     }
 
     @Override
-    public void execute() throws CoreException {
-        Jira.getInstance().getRepositoryConnector().getTaskDataHandler().getMultiTaskData(
-                repository.getTaskRepository(),
-                ids,
-                collector,
-                new NullProgressMonitor());
+    public void execute() throws CoreException, IOException, MalformedURLException {
+        rr = repositoryConnector.getTaskDataHandler().postTaskData(taskRepository, data, null, new NullProgressMonitor());
+        // XXX evaluate rr
     }
 
+    public RepositoryResponse getRepositoryResponse() {
+        return rr;
+    }
+
+    @Override
+    public String toString() {
+        if(stringValue == null) {
+            StringBuilder sb = new StringBuilder();
+            if(wasNew) {
+                sb.append("SubmitCommand new issue [repository=");              // NOI18N
+                sb.append(taskRepository.getUrl());
+                sb.append("]");                                                 // NOI18N
+            } else {
+                sb.append("SubmitCommand [issue #");                            // NOI18N
+                sb.append(data.getTaskId());
+                sb.append(",repository=");                                      // NOI18N
+                sb.append(taskRepository.getUrl());
+                sb.append("]");                                                 // NOI18N
+            }
+            stringValue = sb.toString();
+        }
+        return stringValue;
+    }
 }

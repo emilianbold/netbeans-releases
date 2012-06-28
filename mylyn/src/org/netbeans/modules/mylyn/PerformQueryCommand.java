@@ -40,37 +40,59 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jira.commands;
+package org.netbeans.modules.mylyn;
 
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.io.IOException;
-import java.net.MalformedURLException;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 
 /**
- *
+ * Perfoms a repository query
+ * 
  * @author Tomas Stupka
  */
-public abstract class JiraCommand {
-    private boolean failed = false;
-    private String errorMessage;
+public class PerformQueryCommand extends BugtrackingCommand {
 
-    public abstract void execute() throws JiraException, CoreException, IOException, MalformedURLException;
-
-    public boolean hasFailed() {
-        return failed;
+    private final AbstractRepositoryConnector repositoryConnector;
+    private final TaskRepository taskRepository;
+    private final IRepositoryQuery query;
+    private final TaskDataCollector collector;
+    private IStatus status;
+    
+    public PerformQueryCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskDataCollector collector, IRepositoryQuery query) {
+        this.taskRepository = taskRepository;
+        this.repositoryConnector = repositoryConnector;
+        this.query = query;
+        this.collector = collector;
     }
 
-    void setFailed(boolean failed) {
-        this.failed = failed;
+    @Override
+    public void execute() throws CoreException {
+        Mylyn.LOG.log(Level.FINE, "executing query {0} on repository {1} with parameters \n\t{2}", new Object[] {taskRepository.getUrl(), query.getSummary(), query.getUrl()});
+        status = repositoryConnector.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
     }
 
-    void setErrorMessage(String msg) {
-        this.errorMessage = msg;
+    public IStatus getStatus() {
+        return status;
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("PerformQueryCommand [repository=");
+        sb.append(taskRepository.getUrl());
+        sb.append(", summary=");
+        sb.append(query.getSummary()); 
+        sb.append(", url=");
+        sb.append(query.getUrl()); // XXX won't work for all queries
+        sb.append("]");
+        return super.toString();
     }
+
 
 }

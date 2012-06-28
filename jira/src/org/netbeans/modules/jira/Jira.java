@@ -118,7 +118,7 @@ public class Jira {
         return jrc;
     }
 
-    public JiraClient getClient(TaskRepository repo) throws JiraException {
+    public JiraClient getClient(TaskRepository repo) {
         // XXX init repo connenction?
         return JiraClientFactory.getDefault().getJiraClient(repo);
     }

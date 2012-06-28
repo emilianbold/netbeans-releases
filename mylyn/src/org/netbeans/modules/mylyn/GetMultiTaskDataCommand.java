@@ -37,53 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugzilla.commands;
+package org.netbeans.modules.mylyn;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
+import java.util.Set;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 
 /**
- *
+ * Retrieves the TaskData for all given issue ids
+ * 
  * @author Tomas Stupka
  */
-public class GetTaskDataCommand extends BugzillaCommand {
+public class GetMultiTaskDataCommand extends BugtrackingCommand {
 
-    private final String id;
-    private final BugzillaRepository repository;
-    private TaskData taskData;
+    private final AbstractRepositoryConnector repositoryConnector;
+    private final TaskRepository taskRepository;
+    private final Set<String> ids;
+    private final TaskDataCollector collector;
 
-    public GetTaskDataCommand(String id, BugzillaRepository repository) {
-        this.id = id;
-        this.repository = repository;
+    public GetMultiTaskDataCommand(AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository, TaskDataCollector collector, Set<String> ids) {
+        this.taskRepository = taskRepository;
+        this.repositoryConnector = repositoryConnector;
+        this.ids = ids;
+        this.collector = collector;
     }
 
     @Override
-    public void execute() throws CoreException, IOException, MalformedURLException {
-        taskData = Bugzilla.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
+    public void execute() throws CoreException {
+        if(Mylyn.LOG.isLoggable(Level.FINER)) {
+            Mylyn.LOG.log(Level.FINER, "will retrieve data for issues: {0}", print(ids));    // NOI18N
+        }
+        repositoryConnector.getTaskDataHandler().getMultiTaskData(
+                taskRepository,
+                ids,
+                collector,
+                new NullProgressMonitor());
     }
 
-    public TaskData getTaskData() {
-        return taskData;
+    private String print(Set<String> ids) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (String string : ids) {
+            sb.append(string);
+            if(++i < ids.size()) {
+                sb.append(",");                                                 // NOI18N
+            }
+        }
+        return sb.toString();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("GetTaskDataCommand [repository=");                       // NOI18N
-        sb.append(repository.getTaskRepository().getUrl());
-        sb.append(",id=");                                                  // NOI18N
-        sb.append(id);
-        sb.append("]");                                                     // NOI18N
-        return  sb.toString();
-        
+        sb.append("GetMultiTaskDataCommand [repository=");                      // NOI18N
+        sb.append(taskRepository.getUrl());
+        sb.append(",...]");                                                     // NOI18N
+        return sb.toString();
     }
 
 }
