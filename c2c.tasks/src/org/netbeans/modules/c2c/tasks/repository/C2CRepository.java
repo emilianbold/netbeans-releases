@@ -255,7 +255,7 @@ public class C2CRepository {
     }
 
     public String getID() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return info.getId();
     }
 
     public IssueCache<C2CIssue, TaskData> getIssueCache() {
