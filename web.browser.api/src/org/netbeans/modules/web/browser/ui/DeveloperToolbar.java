@@ -49,6 +49,7 @@ import java.util.List;
 import javax.swing.*;
 import org.netbeans.core.HtmlBrowserComponent;
 import org.netbeans.modules.web.browser.api.ResizeOption;
+import org.netbeans.modules.web.browser.api.ResizeOptions;
 import org.netbeans.modules.web.browser.spi.Resizable;
 import org.netbeans.modules.web.browser.spi.Zoomable;
 import org.openide.util.Lookup;
@@ -165,7 +166,7 @@ public class DeveloperToolbar {
         resizeButtons.clear();
 
         final boolean resizingEnabled = null != context.lookup( Resizable.class );
-        List<ResizeOption> options = ResizeOption.loadAll();
+        List<ResizeOption> options = ResizeOptions.getDefault().loadAll();
         options.add( ResizeOption.SIZE_TO_FIT );
         for( ResizeOption ro : options ) {
             if( !ro.isShowInToolbar() )
@@ -209,7 +210,7 @@ public class DeveloperToolbar {
     private JPopupMenu buildResizePopup() {
         JPopupMenu res = new JPopupMenu();
 
-        List<ResizeOption> options = ResizeOption.loadAll();
+        List<ResizeOption> options = ResizeOptions.getDefault().loadAll();
         options.add( ResizeOption.SIZE_TO_FIT );
         for( ResizeOption ro : options ) {
             final ResizeOption size = ro;
@@ -234,7 +235,7 @@ public class DeveloperToolbar {
                 ResizeOptionsCustomizer customizer = new ResizeOptionsCustomizer();
                 if( customizer.showCustomizer() ) {
                     List<ResizeOption> newOptions = customizer.getResizeOptions();
-                    ResizeOption.saveAll( newOptions );
+                    ResizeOptions.getDefault().saveAll( newOptions );
                     fillResizeBar();
                 }
             }

@@ -62,6 +62,7 @@ import org.netbeans.modules.netserver.websocket.WebSocketReadHandler;
 import org.netbeans.modules.netserver.websocket.WebSocketServer;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.api.ResizeOption;
+import org.netbeans.modules.web.browser.api.ResizeOptions;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -432,7 +433,7 @@ public final class ExternalBrowserPlugin {
 
         private void handleLoadResizeOptions(SelectionKey key) {
             Map<String, String> map = new HashMap<String, String>();
-            map.put("resizeOptions", createLoadResizeOptionsMessage(ResizeOption.loadAll())); // NOI18N
+            map.put("resizeOptions", createLoadResizeOptionsMessage(ResizeOptions.getDefault().loadAll())); // NOI18N
             Message msg = new Message(Message.MessageType.LOAD_RESIZE_OPTIONS, map);
             server.sendMessage(key, msg.toStringValue());
         }
@@ -471,7 +472,7 @@ public final class ExternalBrowserPlugin {
                         Boolean.valueOf(String.valueOf(option.get("showInToolbar"))), // NOI18N
                         Boolean.valueOf(String.valueOf(option.get("isDefault"))))); // NOI18N
             }
-            ResizeOption.saveAll(resizeOptions);
+            ResizeOptions.getDefault().saveAll(resizeOptions);
         }
 
         @Override
