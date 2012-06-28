@@ -59,6 +59,8 @@ NetBeans.STATUS_UNCONFIRMED = 1;
 NetBeans.STATUS_MANAGED = 2;
 NetBeans.STATUS_NOT_MANAGED = 3;
 
+NetBeans.selectionMode = false;
+
 NetBeans.tabStatus = function(tabId) {
     var tabInfo = this.managedTabs[tabId];
     var status;
@@ -167,6 +169,13 @@ NetBeans.sendSaveResizeOptionsMessage = function(presets) {
     this.sendMessage({
         message: 'save_resize_options',
         resizeOptions: ResizeOptions
+    });
+}
+
+NetBeans.sendSelectionModeMessage = function(selectionMode) {
+    this.sendMessage({
+        message: 'selection_mode',
+        selectionMode: selectionMode
     });
 }
 
@@ -352,6 +361,15 @@ NetBeans.tabRemoved = function(tabId) {
         // Remove the tab from the set of managed tabs (if it was there)
         delete this.managedTabs[tabId];
     }
+}
+
+NetBeans.setSelectionMode = function(selectionMode) {
+    this.selectionMode = selectionMode;
+    this.sendSelectionModeMessage(selectionMode);
+}
+
+NetBeans.getSelectionMode = function() {
+    return this.selectionMode;
 }
 
 /**
