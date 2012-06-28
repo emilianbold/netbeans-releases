@@ -5,7 +5,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
-export BUILD_DESC=7.2rc1
+export BUILD_DESC=7.2
 source init.sh
 
 ssh -p 222 $DIST_SERVER mkdir -p $DIST_SERVER_PATH/.$DATESTAMP
