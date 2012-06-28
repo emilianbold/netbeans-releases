@@ -80,7 +80,7 @@ public class DummyUtils {
         setup(repository);
     }
     
-    public static CfcClientData getClientData(TaskRepository taskRepository) {
+    public static synchronized CfcClientData getClientData(TaskRepository taskRepository) {
         ICfcClient client = rc.getClientManager().getClient(taskRepository);
         CfcClientData clientData = client.getCalmClientData();       
         
@@ -94,8 +94,12 @@ public class DummyUtils {
         }
         return client.getCalmClientData();
     }
+
+    public static TaskRepository getRepository() {
+        return repository;
+    }
     
-    public static void setup(TaskRepository repository) {
+    public static synchronized void setup(TaskRepository repository) {
         setupCredentials(repository);
     }
     

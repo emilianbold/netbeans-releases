@@ -106,17 +106,18 @@ public class C2CRepository {
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-        TaskRepository repository = MylynUtils.createTaskRepository(
-                C2C.getInstance().getRepositoryConnector().getConnectorKind(),
-                name,
-                url,
-                user, password,
-                httpUser, httpPassword);
-        
-        // XXX dummy setup
-        DummyUtils.setup(repository);
-        
-        return repository;
+//        TaskRepository repository = MylynUtils.createTaskRepository(
+//                C2C.getInstance().getRepositoryConnector().getConnectorKind(),
+//                name,
+//                url,
+//                user, password,
+//                httpUser, httpPassword);
+//        
+//        // XXX dummy setup
+//        DummyUtils.setup(repository);
+//        
+//        return repository;
+        return DummyUtils.getRepository();
     }
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
