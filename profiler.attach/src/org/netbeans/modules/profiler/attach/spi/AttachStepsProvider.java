@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,55 +34,23 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.attach.spi;
 
-package org.netbeans.modules.profiler.attach.impl;
-
-import java.awt.Dialog;
 import org.netbeans.lib.profiler.common.AttachSettings;
-import org.netbeans.modules.profiler.attach.AttachWizard;
-import org.netbeans.modules.profiler.attach.wizard.AttachWizardImpl;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.WizardDescriptor;
 
 /**
  *
- * @author Jaroslav Bachorik
+ * @author Jiri Sedlacek
  */
-//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.AttachWizard.class)
-public class DefaultAttachWizard extends AttachWizard {
-    private static AttachWizardImpl impl = null;
-
-    public DefaultAttachWizard() {
-        impl = new AttachWizardImpl();
-    }
+public abstract class AttachStepsProvider {
     
-    public AttachSettings configure(AttachSettings initialSettings) {
-        impl.init(initialSettings);
-        final WizardDescriptor wd = impl.getWizardDescriptor();
-        final Dialog d = createDialog(wd);
-        d.pack();
-        d.setVisible(true);
-
-        try {
-            if (wd.getValue() != WizardDescriptor.FINISH_OPTION) {
-                return null; // cancelled by the user
-            }
-            impl.finish(); // wizard correctly finished
-            return impl.getAttachSettings();
-        } finally {
-            impl.invalidate();
-        }
-    }
+    public String getSteps(AttachSettings settings) { return null; }
     
-    private static Dialog createDialog(final DialogDescriptor descriptor) {
-        descriptor.setLeaf(true);
-
-        return DialogDisplayer.getDefault().createDialog(descriptor);
-    }
+    public void handleAction(String action, AttachSettings settings) {}
+    
 }
