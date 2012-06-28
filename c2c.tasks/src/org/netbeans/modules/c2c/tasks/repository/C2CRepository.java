@@ -42,9 +42,12 @@
 package org.netbeans.modules.c2c.tasks.repository;
 
 import java.awt.Image;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
@@ -54,11 +57,11 @@ import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.C2CConnector;
+import org.netbeans.modules.c2c.tasks.C2CExecutor;
 import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
-import org.netbeans.modules.c2c.tasks.util.MylynUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -75,6 +78,7 @@ public class C2CRepository {
     private TaskRepository taskRepository;
     private Lookup lookup;
     private Cache cache;
+    private C2CExecutor executor;
     
     public C2CRepository() {
         
@@ -182,6 +186,24 @@ public class C2CRepository {
         resetRepository(true);
     }
 
+    public C2CIssue getIssue(final String id) {
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        TaskData taskData = C2CUtil.getTaskData(this, id);
+        if(taskData == null) {
+            return null;
+        }
+        try {
+            C2CIssue issue = (C2CIssue) getIssueCache().setIssueData(id, taskData);
+            // XXX ensureConfigurationUptodate(issue);
+            return issue;
+        } catch (IOException ex) {
+            C2C.LOG.log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+
+    
     public RepositoryController getControler() {
         if(controller == null) {
             controller = new C2CRepositoryController(this);
@@ -241,6 +263,13 @@ public class C2CRepository {
             cache = new Cache();
         }
         return cache;
+    }
+
+    public C2CExecutor getExecutor() {
+        if(executor == null) {
+            executor = new C2CExecutor();
+        }
+        return executor;
     }
 
     private class Cache extends IssueCache<C2CIssue, TaskData> {

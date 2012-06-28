@@ -50,6 +50,7 @@ import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
@@ -62,6 +63,7 @@ import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.C2CConnector;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+import org.netbeans.modules.mylyn.GetTaskDataCommand;
 
 /**
  *
@@ -155,7 +157,32 @@ public class C2CUtil {
         return  cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
     }     
 
-    public static void openIssue(C2CIssue sue) {
+    /**
+     * Returns TaskData for the given issue id or null if an error occured
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static TaskData getTaskData(final C2CRepository repository, final String id) {
+        return getTaskData(repository, id, true);
+    }
+
+    /**
+     * Returns TaskData for the given issue id or null if an error occured
+     * @param repository
+     * @param id
+     * @return
+     */
+    public static TaskData getTaskData(final C2CRepository repository, final String id, boolean handleExceptions) {
+        GetTaskDataCommand cmd = new GetTaskDataCommand(C2C.getInstance().getRepositoryConnector(), repository.getTaskRepository(), id);
+        repository.getExecutor().execute(cmd, handleExceptions);
+        if(cmd.hasFailed() && C2C.LOG.isLoggable(Level.FINE)) {
+            C2C.LOG.log(Level.FINE, cmd.getErrorMessage());
+        }
+        return cmd.getTaskData();
+    }
+    
+    public static void openIssue(C2CIssue issue) {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
