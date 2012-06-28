@@ -41,16 +41,16 @@
  */
 {
   "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.8",
+  "version": "0.4.9",
 
-  "background_page": "main.html",
+  "background_page": "html/main.html",
 
-  "options_page": "options.html",
+  "options_page": "html/options.html",
 
   "page_action": {
-    "default_icon": "netbeans16.png",
+    "default_icon": "img/netbeans16.png",
     "default_title": "Open NetBeans actions",
-    "default_popup": "popup.html"
+    "default_popup": "html/popup.html"
   },
 
   "permissions": [
@@ -60,8 +60,9 @@
   ],
 
   "icons": {
-    "16": "netbeans16.png",
-    "48": "netbeans48.png"
+    "16": "img/netbeans16.png",
+    "48": "img/netbeans48.png",
+    "128": "img/netbeans128.png"
   }
 
 }
