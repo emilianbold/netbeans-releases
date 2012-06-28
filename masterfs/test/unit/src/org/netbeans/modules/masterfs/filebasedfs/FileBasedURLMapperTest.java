@@ -91,4 +91,5 @@ public class FileBasedURLMapperTest extends NbTestCase {
         assertEquals("192.168.0.201", uri.getHost());
         assertEquals("/data/services/web/com_resource/", uri.getPath());
     }
+    
 }

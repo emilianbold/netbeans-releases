@@ -52,6 +52,7 @@ import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -102,13 +103,8 @@ public class SourcesTabs extends JTabbedPane {
         if (p == null) {
             setTitleAt(0, NbBundle.getMessage(SourcesTabs.class, "LBL_SourcesTabbs.Current"));
         } else {
-            ProjectInformation pi = (ProjectInformation) p.getLookup ().
-                lookup (ProjectInformation.class);
-            if (pi != null) {
-                setTitleAt(0, pi.getDisplayName());
-            } else {
-                setTitleAt(0, p.getProjectDirectory().getName());
-            }
+            ProjectInformation pi = ProjectUtils.getInformation(p);
+            setTitleAt(0, pi.getDisplayName());
         }
     }
 

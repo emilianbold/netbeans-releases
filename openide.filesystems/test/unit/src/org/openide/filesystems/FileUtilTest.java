@@ -98,6 +98,14 @@ public class FileUtilTest extends NbTestCase {
         assertTrue("Can create capital file", A.createNewFile());
         assertEquals("Normalizes to capital case", A.getAbsolutePath(), FileUtil.normalizeFile(A).getAbsolutePath());
     }
+    public void testNormalizationQuotations() throws IOException {
+        clearWorkDir();
+        
+        File f1 = FileUtil.normalizeFile(new File("\""));
+        File f2 = FileUtil.normalizeFile(f1);
+        
+        assertEquals(f1, f2);
+    }
 
     public void testWrongNormalization() throws Exception {
         CharSequence log = Log.enable("org.openide.filesystems", Level.WARNING);
@@ -188,12 +196,12 @@ public class FileUtilTest extends NbTestCase {
     }
     private void assertCorrectURL(String filename, String expectedURLPrefix, String expectedURLSuffix) throws Exception {
         File d = getWorkDir();
-        assertEquals(expectedURLSuffix == null ? null : new URL(expectedURLPrefix + d.toURI() + expectedURLSuffix),
+        assertEquals(expectedURLSuffix == null ? null : new URL(expectedURLPrefix + Utilities.toURI(d) + expectedURLSuffix),
                 FileUtil.urlForArchiveOrDir(new File(d, filename)));
     }
     private void assertCorrectFile(String expectedFilename, String urlPrefix, String urlSuffix) throws Exception {
         assertEquals(expectedFilename == null ? null : new File(getWorkDir(), expectedFilename),
-                FileUtil.archiveOrDirForURL(new URL(urlPrefix + getWorkDir().toURI() + urlSuffix)));
+                FileUtil.archiveOrDirForURL(new URL(urlPrefix + Utilities.toURI(getWorkDir()) + urlSuffix)));
     }
 
     /** Tests translation from jar resource url to jar archive url. */
@@ -262,7 +270,7 @@ public class FileUtilTest extends NbTestCase {
         };
         log.addHandler(handler);
         try {
-            final boolean result = FileUtil.isArchiveFile(testFile.toURI().toURL());
+            final boolean result = FileUtil.isArchiveFile(Utilities.toURI(testFile).toURL());
             assertTrue("The test.jar should be archive.",result);   //NOI18N
         } finally {
             log.removeHandler(handler);
@@ -285,12 +293,13 @@ public class FileUtilTest extends NbTestCase {
         File f = new File(getWorkDir(), "text.txt");
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
         File one = FileUtil.normalizeFile(f);
-        if (!log.toString().matches("(?s).*FileUtil.normalizeFile for .+text.txt.*")) {
+        String msg = "FileUtil.normalizeFile for " + f;
+        if (log.toString().indexOf(msg) == -1) {
             fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         File two = FileUtil.normalizeFile(f);
-        if (log2.toString().matches("(?s).*FileUtil.normalizeFile for .+text.txt.*")) {
+        if (log2.toString().contains(msg)) {
             fail("No second FileUtil.normalizeFile for in:\n" + log);
         }
         assertEquals("Files are equal", one, two);
@@ -377,12 +386,13 @@ public class FileUtilTest extends NbTestCase {
         String path = f.getPath();
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
         String one = FileUtil.normalizePath(path);
-        if (!log.toString().matches("(?s).*FileUtil.normalizeFile for .+textPath.txt.*")) {
+        String msg = "FileUtil.normalizeFile for " + f;
+        if (log.toString().indexOf(msg) == -1) {
             fail("One query for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
         String two = FileUtil.normalizePath(path);
-        if (log2.toString().matches("(?s).*FileUtil.normalizeFile for .+textPath.txt.*")) {
+        if (log2.toString().contains(msg)) {
             fail("No second FileUtil.normalizeFile for in:\n" + log);
         }
         assertEquals("Files are equal", one, two);

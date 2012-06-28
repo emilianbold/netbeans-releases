@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAs
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -168,7 +170,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
     }
 
     private File getWebRoot() {
-        return FileUtil.toFile(ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot()));
+        return ProjectPropertiesSupport.getSourceSubdirectory(project, properties.getWebRoot());
     }
 
     /**
@@ -194,7 +196,13 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
 
         Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.runAsLabel.text")); // NOI18N
         Mnemonics.setLocalizedText(hostnameLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.hostnameLabel.text")); // NOI18N
+
+        hostnameTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.portLabel.text")); // NOI18N
+
+        portTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(urlHintLabel, " "); // NOI18N
         Mnemonics.setLocalizedText(routerLabel, NbBundle.getMessage(RunAsInternalServer.class, "RunAsInternalServer.routerLabel.text")); // NOI18N
 
@@ -228,7 +236,7 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
                         .addComponent(urlHintLabel)
                         .addContainerGap())
                     .addComponent(runAsComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(hostnameTextField)
+                    .addComponent(hostnameTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(portTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE))))
@@ -270,7 +278,12 @@ public class RunAsInternalServer extends RunAsPanel.InsidePanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void routerBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_routerBrowseButtonActionPerformed
-        Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getSources(), routerTextField);
+        try {
+            Utils.browseFolderFile(PhpVisibilityQuery.forProject(project), getSources(), routerTextField);
+        } catch (FileNotFoundException ex) {
+            // cannot happen for sources
+            Exceptions.printStackTrace(ex);
+        }
     }//GEN-LAST:event_routerBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

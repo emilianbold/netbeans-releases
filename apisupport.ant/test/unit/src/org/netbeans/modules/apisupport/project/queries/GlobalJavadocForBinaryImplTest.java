@@ -54,6 +54,7 @@ import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Utilities;
 
 public class GlobalJavadocForBinaryImplTest extends TestBase {
 
@@ -65,7 +66,7 @@ public class GlobalJavadocForBinaryImplTest extends TestBase {
         File nbDocZip = generateNbDocZip();
         URL nbDocZipURL = FileUtil.urlForArchiveOrDir(nbDocZip);
         NbPlatform.getDefaultPlatform().addJavadocRoot(nbDocZipURL);
-        doTestFindJavadoc(file("openide.loaders/src").toURI().toURL(), nbDocZipURL);
+        doTestFindJavadoc(Utilities.toURI(file("openide.loaders/src")).toURL(), nbDocZipURL);
         doTestFindJavadoc(FileUtil.urlForArchiveOrDir(file("nbbuild/netbeans/platform/modules/org-openide-loaders.jar")), nbDocZipURL);
     }
     private void doTestFindJavadoc(URL binRoot, URL nbDocZipURL) throws Exception {

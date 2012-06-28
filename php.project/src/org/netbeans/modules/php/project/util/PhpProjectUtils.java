@@ -237,7 +237,7 @@ public final class PhpProjectUtils {
     public static void saveFile(DataObject dataObject) {
         assert dataObject != null;
 
-        SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
+        SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
         if (saveCookie != null) {
             try {
                 saveCookie.save();

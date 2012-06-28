@@ -51,6 +51,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
@@ -60,12 +61,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.Popup;
-import javax.swing.PopupFactory;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -76,7 +77,6 @@ import org.netbeans.modules.editor.bookmarks.BookmarkHistory;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.openide.util.Utilities;
-import org.openide.windows.WindowManager;
 
 /**
  * Popup switcher for bookmarks history.
@@ -94,7 +94,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         return INSTANCE;
     }
 
-    private Popup popup;
+    private JDialog popup;
     
     private JTable table;
     
@@ -106,6 +106,12 @@ public final class BookmarkHistoryPopup implements KeyListener {
     
     private Component lastFocusedComponent;
     
+    private int keepOpenedModifiers;
+    
+    private KeyStroke gotoNextKeyStroke;
+    
+    private KeyStroke gotoPreviousKeyStroke;
+    
     private BookmarkHistoryPopup() {
     }
     
@@ -114,6 +120,13 @@ public final class BookmarkHistoryPopup implements KeyListener {
             hide();
         }
         lastFocusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+        if ((gotoPreviousKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.previous")) != null) {
+            keepOpenedModifiers = modifiersBits(gotoPreviousKeyStroke.getModifiers());
+            gotoNextKeyStroke = BookmarkUtils.findKeyStroke("bookmark.history.popup.next");
+        } else {
+            keepOpenedModifiers = 0; // Keep opened until Escape pressed
+        }
+
         descriptionLabel = new JLabel();
         descriptionLabel.setBorder(new EmptyBorder(2, 2, 2, 2));
         Font font = descriptionLabel.getFont();
@@ -160,15 +173,25 @@ public final class BookmarkHistoryPopup implements KeyListener {
         Dimension prefSize = panel.getPreferredSize();
         int x = screenBounds.x + (screenBounds.width - prefSize.width) / 2;
         int y = screenBounds.y + (screenBounds.height - prefSize.height) / 2;
-        popup = PopupFactory.getSharedInstance().getPopup(WindowManager.getDefault().getMainWindow(), panel, x, y);
-        popup.show();
-        table.requestFocusInWindow();
+        popup = new JDialog();
+        popup.setModal(true);
+        popup.setAlwaysOnTop(true);
+        popup.setUndecorated(true);
+        popup.getContentPane().add(table);
+        popup.setLocation(x, y);
+        popup.pack();
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "BookmarkHistoryPopup.show: keepOpenedModifiers={0} bounds={1}\n", // NOI18N
+                    new Object[]{keepOpenedModifiers, popup.getBounds()});
+        }
+        popup.setVisible(true);
     }
     
     public void hide() {
         if (popup != null) {
             table.removeKeyListener(this);
-            popup.hide();
+            popup.setVisible(false);
+            popup.dispose();
             popup = null;
             table = null;
             tableModel = null;
@@ -286,47 +309,62 @@ public final class BookmarkHistoryPopup implements KeyListener {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("BookmarkHistoryPopup.keyPressed: e=" + e + '\n');
         }
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_ENTER:
-                BookmarkInfo selectedBookmark = getSelectedBookmark();
-                hide();
-                openBookmark(selectedBookmark);
-                e.consume();
-                break;
+        int keyCode = e.getKeyCode();
+        if (gotoPreviousKeyStroke != null && gotoPreviousKeyStroke.getKeyCode() == keyCode) {
+            e.consume();
+            selectNext();
+        } else if (gotoNextKeyStroke != null && gotoNextKeyStroke.getKeyCode() == keyCode) {
+            e.consume();
+            selectPrevious();
+        } else {
+            switch (keyCode) {
+                case KeyEvent.VK_ENTER:
+                    BookmarkInfo selectedBookmark = getSelectedBookmark();
+                    hide();
+                    openBookmark(selectedBookmark);
+                    e.consume();
+                    break;
 
-            case KeyEvent.VK_ESCAPE:
-                e.consume();
-                hide();
-                returnFocus();
-                break;
-                
-            case KeyEvent.VK_COMMA:
-            case KeyEvent.VK_DOWN:
-                e.consume();
-                selectNext();
-                break;
-                
-            case KeyEvent.VK_PERIOD:
-            case KeyEvent.VK_UP:
-                e.consume();
-                selectPrevious();
-                break;
+                case KeyEvent.VK_ESCAPE:
+                    e.consume();
+                    hide();
+                    returnFocus();
+                    break;
+
+                case KeyEvent.VK_DOWN:
+                    e.consume();
+                    selectNext();
+                    break;
+
+                case KeyEvent.VK_UP:
+                    e.consume();
+                    selectPrevious();
+                    break;
+            }
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
+        int modBits = modifiersBits(e.getModifiersEx());
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("BookmarkHistoryPopup.keyReleased: e=" + e + '\n');
+            LOG.fine("BookmarkHistoryPopup.keyReleased: e=" + e + ", modBits=" + modBits + '\n'); // NOI18N
         }
-        // Check if Ctrl and Shift are still pressed
-        int pressedMods = (KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-        if ((e.getModifiersEx() & pressedMods) != pressedMods) {
+        if (keepOpenedModifiers != 0 && (modBits & keepOpenedModifiers) != keepOpenedModifiers) {
             e.consume();
             BookmarkInfo selectedBookmark = getSelectedBookmark();
             hide();
             openBookmark(selectedBookmark);
         }
     }
-    
+
+    private static int modifiersBits(int modifiers) {
+        return modifiers & (
+                InputEvent.SHIFT_DOWN_MASK |
+                InputEvent.CTRL_DOWN_MASK |
+                InputEvent.ALT_DOWN_MASK |
+                InputEvent.META_DOWN_MASK
+                );
+    }
+
 }

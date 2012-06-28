@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -154,8 +155,8 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", new File[] {srcRoot}, new File[] {testRoot}, "manifest.mf", null, null);
         final Project expected = FileOwnerQuery.getOwner(helper.getProjectDirectory());
         assertNotNull(expected);
-        assertEquals(expected, FileOwnerQuery.getOwner(srcRoot.toURI()));
-        assertEquals(expected, FileOwnerQuery.getOwner(testRoot.toURI()));
+        assertEquals(expected, FileOwnerQuery.getOwner(Utilities.toURI(srcRoot)));
+        assertEquals(expected, FileOwnerQuery.getOwner(Utilities.toURI(testRoot)));
     }
     
     public void testProjectBuilder() throws Exception {

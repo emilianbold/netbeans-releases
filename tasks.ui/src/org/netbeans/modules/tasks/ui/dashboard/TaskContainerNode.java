@@ -42,11 +42,11 @@
 package org.netbeans.modules.tasks.ui.dashboard;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -54,9 +54,11 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.filter.AppliedFilters;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -73,6 +75,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     private Collection<Issue> toSelect;
     protected List<TreeLabel> labels;
     protected List<LinkButton> buttons;
+    private int pageSize;
+    private int pageCountShown;
 
     public TaskContainerNode(boolean expandable, TreeListNode parent, String title) {
         this(false, expandable, parent, title);
@@ -83,6 +87,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         this.refresh = refresh;
         labels = new ArrayList<TreeLabel>();
         buttons = new ArrayList<LinkButton>();
+        initPaging();
     }
 
     abstract List<Issue> getTasks();
@@ -90,6 +95,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     abstract void adjustTaskNode(TaskNode taskNode);
 
     abstract void updateCounts();
+
+    abstract boolean isTaskLimited();
 
     @Override
     protected void childrenLoadingFinished() {
@@ -143,8 +150,8 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     public final void refreshContent() {
         refresh = true;
+        initPaging();
         refresh();
-        refreshChildren();
     }
 
     public final List<TaskNode> getFilteredTaskNodes() {
@@ -180,12 +187,13 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
             return filteredTaskNodes.size();
         }
     }
-
+    
     final void updateNodes() {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
             List<Issue> issues = getTasks();
+            disposeTaskNodes();
             removeTaskListeners();
             if (taskListener == null) {
                 taskListener = new TaskListener();
@@ -217,7 +225,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     final void removeTaskListeners() {
         synchronized (LOCK) {
             if (taskListener != null) {
-                for (TaskNode taskNode : filteredTaskNodes) {
+                for (TaskNode taskNode : taskNodes) {
                     taskNode.getTask().removePropertyChangeListener(taskListener);
                 }
             }
@@ -235,13 +243,62 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         }
     }
 
+    final void showAdditionalPage(){
+        pageCountShown++;
+        updateContent();
+    }
+
+    @Override
+    protected List<TreeListNode> createChildren() {
+        List<TaskNode> filteredNodes = getFilteredTaskNodes();
+        Collections.sort(filteredNodes);
+        List<TaskNode> taskNodesToShow;
+        boolean addShowNext = false;
+        int taskCountToShow = getTaskCountToShow();
+        if (!isTaskLimited() || filteredNodes.size() <= taskCountToShow) {
+            taskNodesToShow = filteredNodes;
+        } else {
+            taskNodesToShow = new ArrayList<TaskNode>(filteredNodes.subList(0, taskCountToShow));
+            addShowNext = true;
+        }
+        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>(taskNodesToShow);
+        if (addShowNext) {
+            children.add(new ShowNextNode(this, Math.min(filteredNodes.size() - children.size(), pageSize)));
+        }
+        return children;
+    }
+
+    private int getTaskCountToShow(){
+        return pageSize * pageCountShown;
+    }
+
+    final void initPaging() {
+        pageSize = DashboardSettings.getInstance().getTasksLimitValue();
+        pageCountShown = 1;
+    }
+
+    private void disposeTaskNodes() {
+        synchronized(LOCK) {
+            if (taskNodes != null) {
+                for (TaskNode taskNode : taskNodes) {
+                    taskNode.dispose();
+                }
+            }
+        }
+    }
+
     private class TaskListener implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
-                updateNodes();
-                updateCounts();
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateNodes();
+                        updateCounts();
+                    }
+                });
             }
         }
     }

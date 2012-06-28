@@ -43,9 +43,12 @@
  */
 package org.netbeans.swing.etable;
 
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import java.util.Properties;
+import javax.swing.table.TableColumn;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -95,8 +98,9 @@ public class ETableColumnModelTest extends NbTestCase {
         ETableColumnModel etcm = new ETableColumnModel();
         assertTrue(etcm.getComparator() instanceof ETable.OriginalRowComparator);
         TableModel tm = new DefaultTableModel(new Object[][] {{"b"},{"a"}}, new Object[] {"a", "b"}); 
-        ETable.RowMapping rm1 = new ETable.RowMapping(0, tm);
-        ETable.RowMapping rm2 = new ETable.RowMapping(1, tm);
+        ETable table = new ETable(tm);
+        ETable.RowMapping rm1 = new ETable.RowMapping(0, tm, table);
+        ETable.RowMapping rm2 = new ETable.RowMapping(1, tm, table);
         assertTrue("Without sort use index of rows, ", etcm.getComparator().compare(rm1, rm2) < 0);
         
         ETableColumn etc = new ETableColumn(0, new ETable());
@@ -148,7 +152,110 @@ public class ETableColumnModelTest extends NbTestCase {
         assertTrue(etcm.getColumnCount() == 1);
         assertFalse(etcm.isColumnHidden(etc));
     }
+    
+    public void testHiddenColumnOrder() {
+        ETableColumnModel etcm = new ETableColumnModel();
+        ETableColumn etca = new ETableColumn(0, null);
+        etca.setHeaderValue("a");
+        etcm.addColumn(etca);
+        ETableColumn etcb = new ETableColumn(1, null);
+        etcb.setHeaderValue("b");
+        etcm.addColumn(etcb);
+        ETableColumn etcc = new ETableColumn(2, null);
+        etcc.setHeaderValue("c");
+        etcm.addColumn(etcc);
+        ETableColumn etcd = new ETableColumn(3, null);
+        etcd.setHeaderValue("d");
+        etcm.addColumn(etcd);
+        ETableColumn etce = new ETableColumn(4, null);
+        etce.setHeaderValue("e");
+        etcm.addColumn(etce);
+        
+        checkColumnOrder(etcm, "abcde");
+        checkHiddenColumns(etcm, "", new int[] {});
+        
+        // Make b, c, d hidden:
+        etcm.setColumnHidden(etcb, true);
+        checkColumnOrder(etcm, "abcde");
+        etcm.setColumnHidden(etcc, true);
+        checkColumnOrder(etcm, "abcde");
+        etcm.setColumnHidden(etcd, true);
+        checkColumnOrder(etcm, "abcde");
+        checkHiddenColumns(etcm, "bcd", new int[] {1, 2, 3});
+        // Unhide d:
+        etcm.setColumnHidden(etcd, false);
+        checkColumnOrder(etcm, "abcde");
+        checkHiddenColumns(etcm, "bc", new int[] {1, 2});
+        // Move a after e:
+        etcm.moveColumn(0, 2);
+        checkColumnOrder(etcm, "bcdea");
+        checkHiddenColumns(etcm, "bc", new int[] {0, 1});
+        // Unhide b:
+        etcm.setColumnHidden(etcb, false);
+        checkColumnOrder(etcm, "bcdea");
+        checkHiddenColumns(etcm, "c", new int[] {1});
+        // Hide a:
+        etcm.setColumnHidden(etca, true);
+        checkColumnOrder(etcm, "bcdea");
+        checkHiddenColumns(etcm, "ca", new int[] {1, 4});
+        // Move d before b:
+        etcm.moveColumn(1, 0);
+        checkColumnOrder(etcm, "dbcea");
+        checkHiddenColumns(etcm, "ca", new int[] {2, 4});
+        
+        // Reduce the number of columns:
+        etcm.removeColumn(etce);
+        checkColumnOrder(etcm, "dbca");
+        checkHiddenColumns(etcm, "ca", new int[] {2, 3});
+        etcm.removeColumn(etcd);
+        checkColumnOrder(etcm, "bca");
+        checkHiddenColumns(etcm, "ca", new int[] {1, 2});
+        // Unhide a:
+        etcm.setColumnHidden(etca, false);
+        checkColumnOrder(etcm, "bca");
+        checkHiddenColumns(etcm, "c", new int[] {1});
+        // Move a before b:
+        etcm.moveColumn(1, 0);
+        checkColumnOrder(etcm, "abc");
+        checkHiddenColumns(etcm, "c", new int[] {2});
+        // Hide b instead of c:
+        etcm.setColumnHidden(etcb, true);
+        checkColumnOrder(etcm, "abc");
+        checkHiddenColumns(etcm, "cb", new int[] {2, 1});
+        etcm.setColumnHidden(etcc, false);
+        checkColumnOrder(etcm, "abc");
+        checkHiddenColumns(etcm, "b", new int[] {1});
+        // Move a after c:
+        etcm.moveColumn(0, 1);
+        checkColumnOrder(etcm, "bca");
+        checkHiddenColumns(etcm, "b", new int[] {0});
+    }
 
+    private static void checkColumnOrder(ETableColumnModel etcm, String names) {
+        List<TableColumn> allColumns = etcm.getAllColumns();
+        StringBuilder sb = new StringBuilder();
+        for (TableColumn c : allColumns) {
+            sb.append(c.getHeaderValue().toString());
+        }
+        assertEquals("All column names:", names, sb.toString());
+    }
+    
+    private void checkHiddenColumns(ETableColumnModel etcm, String names, int[] indexes) {
+        int n = indexes.length;
+        assertEquals("Hidden columns size: ", n, etcm.hiddenColumns.size());
+        assertEquals("Hidden columns positions size: ", n, etcm.hiddenColumnsPosition.size());
+        StringBuilder sb = new StringBuilder();
+        for (TableColumn c : etcm.hiddenColumns) {
+            sb.append(c.getHeaderValue().toString());
+        }
+        assertEquals("Hidden column names:", names, sb.toString());
+        int[] positions = new int[n];
+        for (int i = 0; i < n; i++) {
+            positions[i] = etcm.hiddenColumnsPosition.get(i);
+        }
+        assertEquals("Hidden columns indexes are wrong:", Arrays.toString(indexes), Arrays.toString(positions));
+    }
+    
     /**
      * Test of clearSortedColumns method, of class org.netbeans.swing.etable.ETableColumnModel.
      */

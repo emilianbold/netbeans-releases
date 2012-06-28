@@ -50,6 +50,8 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
+import static org.netbeans.modules.maven.api.customizer.support.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
 /**
@@ -64,6 +66,7 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
     private boolean inherited = false;
     
     /** Creates a new instance of TextComponentUpdater */
+    @SuppressWarnings("LeakingThisInConstructor")
     public ComboBoxUpdater(JComboBox comp, JLabel label) {
         component = comp;
         component.addAncestorListener(this);
@@ -87,6 +90,7 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
         setValue(val == getDefaultValue() ? null : val);
         if (val == getDefaultValue()) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     component.removeActionListener(ComboBoxUpdater.this);
                     setComboValue(getValue(), getDefaultValue(), component);
@@ -96,22 +100,27 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
         }
     }
     
+    @Override
     public void actionPerformed(ActionEvent event) {
         setModelValue();
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         setComboValue(getValue(), getDefaultValue(), component);
         component.addActionListener(this);
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
         component.removeActionListener(this);
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
     
+    @Messages("HINT_inherited=Value is inherited from parent POM.")
     private void setComboValue(T value, T projectValue, JComboBox field) {
         if (!Utilities.compareObjects(value, projectValue)) {
             field.setSelectedItem(value != null ? value : field.getModel().getElementAt(0));
@@ -122,7 +131,7 @@ public abstract class ComboBoxUpdater<T> implements ActionListener, AncestorList
             field.setSelectedItem(projectValue != null ? projectValue : field.getModel().getElementAt(0));
 //            field.setBackground(INHERITED);
             label.setFont(label.getFont().deriveFont(Font.PLAIN));
-            component.setToolTipText(org.openide.util.NbBundle.getMessage(ComboBoxUpdater.class, "HINT_inherited"));
+            component.setToolTipText(HINT_inherited());
             inherited = true;
       }
     }

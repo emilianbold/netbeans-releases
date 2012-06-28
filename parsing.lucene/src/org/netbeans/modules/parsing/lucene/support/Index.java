@@ -210,4 +210,65 @@ public interface Index {
          */
         void rollback() throws IOException;
     }
+    
+    /**
+     * Index providing term frequencies.
+     * @since 2.13
+     */
+    public interface WithTermFrequencies extends Index {
+
+        /**
+         * Term and frequency pair.
+         * @since 2.13
+         */
+        public final class TermFreq {
+            private int freq;
+            private Term term;
+            
+            TermFreq() {}
+                        
+            void setTerm(@NonNull final Term term) {
+                this.term = term;
+            }
+            
+            void setFreq(final int freq) {
+                this.freq = freq;
+            }
+            
+            /**
+             * Returns the {@link Term}.
+             * @return the term.
+             */
+            @NonNull
+            public Term getTerm() {
+                return term;
+            }
+            
+            /*
+             * Returns the {@link Term} frequency estimate.
+             * @return the term frequency estimate.
+             */
+            public int getFreq() {
+                return freq;
+            }
+        }
+        
+        
+        /**
+         * Queries the {@link Index}'s b-tree for terms and frequencies estimate starting by the start term and accepted by the filter.
+         * @param result the {@link Collection} to store results into
+         * @param start the first term to start the b-tree iteration with, if null the iteration start on the first term.
+         * @param filter converting the terms into the user objects which are added into the result or null to skeep them.
+         * The filter can stop the iteration by throwing the {@link StoppableConvertor.Stop}.
+         * @param cancel the {@link AtomicBoolean} used to cancel the index iteration by the caller. When set to true the iteration
+         * is stopped.
+         * @throws IOException in case of IO problem
+         * @throws InterruptedException when query was canceled
+         */
+        <T> void queryTermFrequencies(
+                @NonNull Collection<? super T> result,
+                @NullAllowed Term start,
+                @NonNull StoppableConvertor<TermFreq,T> filter,
+                @NullAllowed AtomicBoolean cancel) throws  IOException, InterruptedException;
+    }
 }

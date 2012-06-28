@@ -80,6 +80,7 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -104,7 +105,6 @@ import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -112,6 +112,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.ComponentComparator;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.VersionComparator;
+import org.netbeans.modules.mylyn.BugtrackingCommand;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
@@ -149,7 +150,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     private static final String[] LBL_LOADING = new String[]{ NbBundle.getMessage(QueryController.class, "LBL_Loading") };
 
     private final Object REFRESH_LOCK = new Object();
-        
+    private final Semaphore querySemaphore = new Semaphore(1);
+    private boolean populated = false;
+    
     public QueryController(JiraRepository repository, JiraQuery query, FilterDefinition fd) {
         this(repository, query, fd, true);
     }
@@ -197,7 +200,12 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         if(query.isSaved()) {
             setAsSaved();
         }
+        
         if(modifiable) {
+            
+            querySemaphore.acquireUninterruptibly();
+            Jira.LOG.log(Level.FINE, "lock aquired because populating {0}", query.getDisplayName()); // NOI18N
+            
             if(jiraFilter != null) {
                  assert jiraFilter instanceof FilterDefinition;
             }
@@ -398,9 +406,9 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             Jira.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
         try {
-            JiraCommand cmd = new JiraCommand() {
+            BugtrackingCommand cmd = new BugtrackingCommand() {
                 @Override
-                public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
+                public void execute() throws CoreException, IOException, MalformedURLException {
                     final JiraConfiguration jc = repository.getConfiguration();
                     if(jc == null) {
                         // XXX nice errro msg?
@@ -410,30 +418,42 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            populateList(panel.projectList, jc.getProjects());                            
-                            if (jc.getProjects().length == 1) {
-                                panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
-                            } else if (filterDefinition != null) {
-                                ProjectFilter pf = filterDefinition.getProjectFilter();
-                                if (pf != null && pf.getProjects().length == 1) {
-                                    panel.setIssuePrefixText(pf.getProjects()[0].getKey() + "-"); //NOI18N
+                            try {
+                                populateList(panel.projectList, jc.getProjects());                            
+                                if (jc.getProjects().length == 1) {
+                                    panel.setIssuePrefixText(jc.getProjects()[0].getKey() + "-"); //NOI18N
+                                } else if (filterDefinition != null) {
+                                    ProjectFilter pf = filterDefinition.getProjectFilter();
+                                    if (pf != null && pf.getProjects().length == 1) {
+                                        panel.setIssuePrefixText(pf.getProjects()[0].getKey() + "-"); //NOI18N
+                                    }
+                                }
+                                populateList(panel.typeList, jc.getIssueTypes());
+                                populateList(panel.statusList, jc.getStatuses());
+                                populateList(panel.resolutionList, jc.getResolutions());
+                                populateList(panel.priorityList, jc.getPriorities());
+                                populateList(panel.fixForList, new Object[]{});
+                                populateList(panel.affectsVersionList, new Object[]{});
+                                populateList(panel.componentsList, new Object[]{});
+
+                                reporterUserSearch = new UserSearch(panel.reporterComboBox, panel.reporterTextField, "No Reporter");
+                                assigneeUserSearch = new UserSearch(panel.assigneeComboBox, panel.assigneeTextField, "Unassigned");
+
+                                if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
+                                    setFilterDefinition(filterDefinition);
+                                }
+                                setListVisibility();
+
+                                populated = true;
+                                Jira.LOG.log(Level.FINE, "populated query {0}", query.getDisplayName()); // NOI18N
+                            } finally {
+                                querySemaphore.release();
+                                Jira.LOG.log(Level.FINE, "released lock on query {0}", query.getDisplayName()); // NOI18N
+
+                                if(Jira.LOG.isLoggable(Level.FINE)) {
+                                    Jira.LOG.log(Level.FINE, "Finnished populate query controller {0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
                                 }
                             }
-                            populateList(panel.typeList, jc.getIssueTypes());
-                            populateList(panel.statusList, jc.getStatuses());
-                            populateList(panel.resolutionList, jc.getResolutions());
-                            populateList(panel.priorityList, jc.getPriorities());
-                            populateList(panel.fixForList, new Object[]{});
-                            populateList(panel.affectsVersionList, new Object[]{});
-                            populateList(panel.componentsList, new Object[]{});
-
-                            reporterUserSearch = new UserSearch(panel.reporterComboBox, panel.reporterTextField, "No Reporter");
-                            assigneeUserSearch = new UserSearch(panel.assigneeComboBox, panel.assigneeTextField, "Unassigned");
-
-                            if(filterDefinition != null && filterDefinition instanceof FilterDefinition) {
-                                setFilterDefinition(filterDefinition);
-                            }
-                            setListVisibility();
                         }
                     });
                 }
@@ -863,7 +883,13 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
      * @return
      */
     protected String getIdTextField () {
-        return panel.getIssuePrefixText() + panel.idTextField.getText().trim();
+        String id = null;
+        try {
+            id = panel.getIssuePrefixText() + panel.idTextField.getText().trim();
+            return id;
+        } finally {
+            Jira.LOG.log(Level.FINE, "getIdTextField returns {0}", id); // NOI18N
+        }
     }
 
     private void setAsSaved() {
@@ -983,6 +1009,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             public void run() {
                 handle.start();
                 try {
+                    Jira.LOG.log(Level.FINE, "open issue {0}", key);
                     openIssue((NbJiraIssue) repository.getIssue(key.toUpperCase()));
                 } finally {
                     handle.finish();
@@ -1325,7 +1352,24 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         @Override
         public void run() {
             startQuery();
+                
             try {
+                Jira.LOG.log(Level.FINE, "waiting until lock releases in query {0}", query.getDisplayName()); // NOI18N
+                long t = System.currentTimeMillis();
+                try {
+                    querySemaphore.acquire();
+                } catch (InterruptedException ex) {
+                    Jira.LOG.log(Level.INFO, "interuped while trying to lock query", ex); // NOI18N
+                    return;
+                } 
+                querySemaphore.release();
+                Jira.LOG.log(Level.FINE, "lock aquired for query {0} after {1}", new Object[]{query.getDisplayName(), System.currentTimeMillis() - t}); // NOI18N
+                if(modifiable && !populated) {
+                    Jira.LOG.log(Level.WARNING, "Skipping refresh of query {0} because isn''t populated.", query.getDisplayName()); // NOI18N
+                    // something went wrong during populate - skip execute
+                    return;
+                }
+                
                 executeQuery();
             } finally {
                 finnishQuery();

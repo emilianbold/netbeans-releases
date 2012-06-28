@@ -14,19 +14,22 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 
 <p>You can pass startup parameters to the IDE launcher using the <i>IDE-HOME</i><tt>/etc/netbeans.conf</tt> 
-  file. The launcher reads this file prior to parsing the command-line
-    options, including any parameters you have added.</p>  
-<p>The following table defines the switches you can use with the IDE. </p>
+  file or on the command line. 
+  The launcher reads the <tt>netbeans.conf</tt> file prior to parsing the command-line
+    options, including any parameters you have added.
+    The <tt>netbeans.conf</tt> file contains details on some of the available startup switches, 
+    including switches to modify the heap size.</p>  
+<p>The following table defines some of the switches that you can use with the IDE. </p>
 
 <table border="1" cellpadding="5" cellspacing="0">
   <tr valign="top"> 
     <td><tt>--help</tt> (or<tt> -h</tt>)    
-    <p><blockquote>Prints descriptions of common startup parameters.</blockquote></td>
+    <blockquote>Prints descriptions of common startup parameters.</blockquote></td>
   </tr>
 	
   <tr valign="top"> 
     <td><tt>--jdkhome</tt> <i>jdk-home-dir</i>
-    <p><blockquote>Uses the specified version of the Java<sup><small>TM</small></sup> 2
+    <blockquote>Uses the specified version of the 
       JDK instead of the default JDK. By default on Microsoft Windows systems,
       the IDE's launcher looks into the registry and uses the latest JDK available.
       <p>You should back up your user directory before you upgrade the JDK that
@@ -59,12 +62,13 @@
   
   <tr valign="top"> 
     <td><tt>--laf</tt> <i>UI-class-name</i>
-    <p><blockquote>Selects the given class as the IDE's look and feel. The following
-        are two examples of look and feel classes:
+    <blockquote>Selects the given class as the IDE's look and feel. The following
+        are two examples of look and feel classes.
     <ul>
       <li><tt>com.sun.java.swing.plaf.motif.MotifLookAndFeel</tt></li>
       <li><tt>javax.swing.plaf.metal.MetalLookAndFeel</tt></li>
-    </ul></blockquote></td>
+    </ul>
+    </blockquote></td>
   </tr>
     
   <tr valign="top"> 
@@ -81,17 +85,20 @@
 
   <tr valign="top"> 
     <td><tt>--userdir</tt> <i>userdir</i>
-    <p><blockquote>Explicitly specifies the user directory, which is the location
+    <blockquote>Explicitly specifies the user directory, which is the location
         where user settings are stored.
     <p>If this option is not used in UNIX<sup>&reg;</sup> environments,
             the user directory is set in the <i>HOME</i> directory by default.
             If this option is not set on Microsoft Windows systems, the user
             directory is the one you specified when you first launched the IDE.</p>
-    <p>You can determine the current user directory in the About dialog
-            box. Choose Help  &gt; About.
-      Then click the Detail Tab and look at the User Dir field.</p></blockquote></td>
+    <p>You can determine the current user directory in the About dialog box. </p></blockquote>
+    </td>
   </tr>
-	  
+  
+  <tr valign="top"> 
+    <td><tt>--cachedir</tt><i>path</i>
+    <blockquote>Specifies the directory to store the user cache.</blockquote></td>
+  </tr>
   <tr valign="top"> 
     <td><tt>-J</tt><i>jvm-flags</i>
     <blockquote>Passes the specified flags directly to the JVM software.</blockquote></td>
@@ -107,9 +114,17 @@
 </table>
 
 <ul class="note">
-<li>When adding startup switches, you can break
-      options into multiple lines.</li>
+    <li>When adding startup switches, you can break options into multiple lines.</li>
 </ul>
+
+<p>For information about your userdir and cachedir,
+        see the following document.</p>
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://wiki.netbeans.org/FaqWhatIsUserdir">
+    <param name="text" value="<html><u>What is a userdir?</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+    </object>
 
 <p>For information about performance-related startup switches,
         see the following document.</p>

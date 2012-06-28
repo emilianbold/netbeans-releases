@@ -57,6 +57,7 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
+import org.openide.util.Utilities;
 
 /** Test NbClassLoader.
  * @author Jesse Glick
@@ -73,7 +74,7 @@ public class NbClassLoaderTest extends NbTestCase {
      */
     public void testUsingNbfsProtocol() throws Exception {
         System.setProperty("org.netbeans.core.Plain.CULPRIT", "true");
-        File here = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+        File here = Utilities.toFile(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
         assertTrue("Classpath really contains " + here,
                 new File(new File(new File(new File(here, "org"), "openide"), "execution"), "NbClassLoaderTest.class").canRead());
         
@@ -112,7 +113,7 @@ public class NbClassLoaderTest extends NbTestCase {
     public void testFastIsUsedForFileUrl() throws Exception {
         CharSequence log = Log.enable(NbClassLoader.class.getName(), Level.FINE);
         LocalFileSystem lfs = new LocalFileSystem();
-        File here = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+        File here = Utilities.toFile(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
         lfs.setRootDirectory(here);
         lfs.setReadOnly(true);
         ClassLoader cl = new NbClassLoader(new FileObject[]{lfs.getRoot()}, ClassLoader.getSystemClassLoader().getParent(), null);

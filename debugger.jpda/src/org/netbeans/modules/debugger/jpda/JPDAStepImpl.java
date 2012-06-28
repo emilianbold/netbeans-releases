@@ -477,6 +477,11 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             if (vm == null) {
                 return false; // The session has finished
             }
+            Variable returnValue = null;
+            MethodExitBreakpointListener mebl = lastMethodExitBreakpointListener;
+            if (mebl != null) {
+                returnValue = mebl.getReturnValue();
+            }
             EventRequest eventRequest = null;
             try {
                 EventRequestManager erm = VirtualMachineWrapper.eventRequestManager(vm);
@@ -494,9 +499,10 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                 return false;
             }
             if (lastMethodExitBreakpointListener != null) {
-                Variable returnValue = lastMethodExitBreakpointListener.getReturnValue();
                 lastMethodExitBreakpointListener.destroy();
                 lastMethodExitBreakpointListener = null;
+            }
+            if (mebl != null) {
                 lastOperation.setReturnValue(returnValue);
             } else if (vm.canGetMethodReturnValues() &&
                        lastOperation != null && INIT.equals(lastOperation.getMethodName())) {

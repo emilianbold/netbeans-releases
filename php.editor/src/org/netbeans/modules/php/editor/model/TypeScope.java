@@ -75,4 +75,6 @@ public interface TypeScope extends Scope, FullyQualifiedElement, TypeElement {
     Collection<? extends ClassConstantElement> getInheritedConstants();
     Collection<? extends InterfaceScope> getSuperInterfaceScopes();
     Collection<? extends String> getSuperInterfaceNames();
+    boolean isSuperTypeOf(TypeScope subType);
+    boolean isSubTypeOf(TypeScope subType);
 }

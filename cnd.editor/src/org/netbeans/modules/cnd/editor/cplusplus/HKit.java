@@ -69,6 +69,6 @@ public class HKit extends CCKit {
 
     @Override
     protected Filter<?> getFilter(Language<?> language, BaseDocument doc) {
-        return CndLexerUtilities.getHeaderFilter();
+        return CndLexerUtilities.getHeaderCppFilter();
     }
 }

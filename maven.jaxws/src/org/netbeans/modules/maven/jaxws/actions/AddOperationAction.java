@@ -63,20 +63,24 @@ import org.openide.util.actions.NodeAction;
 
 public class AddOperationAction extends NodeAction  {
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(AddOperationAction.class, "LBL_OperationAction");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) return false;
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);
         return implClassFo != null && !isFromWsdl(implClassFo);
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
 
         FileObject implClassFo = activatedNodes[0].getLookup().lookup(FileObject.class);

@@ -49,9 +49,10 @@ import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.tasks.ui.LinkButton;
 import org.netbeans.modules.tasks.ui.actions.Actions;
-import org.netbeans.modules.tasks.ui.actions.CloseCategoryNodeAction;
-import org.netbeans.modules.tasks.ui.actions.OpenCategoryNodeAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.CloseCategoryNodeAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.OpenCategoryNodeAction;
 import org.netbeans.modules.tasks.ui.model.Category;
+import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
@@ -89,23 +90,10 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     protected List<Issue> load() {
         if (isRefresh()) {
             category.refresh();
+            updateNodes();
             setRefresh(false);
         }
         return new ArrayList<Issue>(category.getTasks());
-    }
-
-    @Override
-    protected List<TreeListNode> createChildren() {
-        if (!category.isLoaded()) {
-            DashboardViewer.getInstance().loadCategory(category);
-        } else if (isRefresh()) {
-            category.refresh();
-            setRefresh(false);
-        }
-        updateNodes();
-        List<TaskNode> children = getFilteredTaskNodes();
-        Collections.sort(children);
-        return new ArrayList<TreeListNode>(children);
     }
 
     @Override
@@ -144,14 +132,13 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
-        updateNodes();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
             labels.clear();
             buttons.clear();
 
-            final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true)); //NOI18N
+            final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
             panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
             lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
@@ -302,5 +289,14 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             }
         }
         return -1;
+    }
+
+    ImageIcon getIcon() {
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/category.png", true);
+    }
+
+    @Override
+    boolean isTaskLimited() {
+        return DashboardSettings.getInstance().isTasksLimitCategory();
     }
 }

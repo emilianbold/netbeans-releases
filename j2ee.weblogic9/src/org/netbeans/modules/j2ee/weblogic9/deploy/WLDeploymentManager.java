@@ -551,7 +551,18 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
                     @Override
                     public Target[] execute(DeploymentManager manager) throws ExecutionException {
-                        return manager.getTargets();
+                        Target[] targets = manager.getTargets();
+                        if (targets != null) {
+                            List<Target> ret = new ArrayList<Target>(targets.length);
+                            for (Target t : targets) {
+                                // this is ugly hack to filter out things like JMS
+                                if ("server".equals(t.getDescription())) { // NOI18N
+                                    ret.add(t);
+                                }
+                            }
+                            return ret.toArray(new Target[ret.size()]);
+                        }
+                        return targets;
                     }
                 });
             } catch (Exception fex) {

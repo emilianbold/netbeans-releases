@@ -81,7 +81,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -226,7 +225,7 @@ public class IndexerTransactionTest extends NbTestCase {
             GlobalPathRegistry.getDefault().unregister(id, classpaths.toArray(new ClassPath[classpaths.size()]));
         }
         registeredClasspaths.clear();
-        RepositoryUpdater.getDefault().waitUntilFinished(1000);
+        RepositoryUpdater.getDefault().waitUntilFinished(-1);
         parserBlocker.drainPermits();
     }
     
@@ -237,21 +236,9 @@ public class IndexerTransactionTest extends NbTestCase {
      * @return
      * @throws IOException 
      */
-    private File findSegmentDir(String dirName) throws IOException {
-        // check that files do not exist in the classes dir:
-        File cache = new File(getWorkDir(), "cache");
-        File segments = new File(cache, "segments");
-        Properties p = new Properties();
-        p.load(new FileInputStream(segments));
-        for (Object o : p.keySet()) {
-            String v = p.getProperty(o.toString());
-            if (v.endsWith(dirName + "/")) {
-                String dir = o.toString();
-                return new File(cache, dir + "/java/" + 
-                        JavaIndex.VERSION + "/classes".replaceAll("/", File.separator));
-            }
-        }
-        throw new IOException("Could not found segment for: " + dirName);
+    private File findSegmentDir(final FileObject dirName) throws IOException {
+        final File root = JavaIndex.getClassFolder(dirName.toURL());
+        return root;
     }
     
     /**
@@ -435,7 +422,7 @@ public class IndexerTransactionTest extends NbTestCase {
         // copy over some files
         TestUtil.copyFiles(
                 new File(getDataDir(), "indexing/files"),
-                new File(FileUtil.toFile(srcRoot), "org/netbeans/parsing/source1".replaceAll("/", File.separator)), 
+                new File(FileUtil.toFile(srcRoot), "org/netbeans/parsing/source1".replace('/', File.separatorChar)),
                         "ConstructorTest.java", "EmptyClass.java");
 
         // must force rescan, indexer does not notice the file-copy ?
@@ -453,8 +440,8 @@ public class IndexerTransactionTest extends NbTestCase {
         assertEquals(0, handles.size());    
         
         // check that files STILL do not exist
-        File dir = findSegmentDir("src");
-        File targetDir = new File(dir, "org/netbeans/parsing/source1".replaceAll("/", File.separator));
+        File dir = findSegmentDir(srcRoot);
+        File targetDir = new File(dir, "org/netbeans/parsing/source1".replace('/', File.separatorChar));
         
         assertFalse(new File(targetDir, "ConstructorTest.sig").exists());
         assertFalse(new File(targetDir, "EmptyClass.sig").exists());
@@ -520,7 +507,7 @@ public class IndexerTransactionTest extends NbTestCase {
         
         assertEquals(1, handles.size());
         
-        File sourceDir = new File(FileUtil.toFile(srcRoot), "org/netbeans/parsing/source1".replaceAll("/", File.separator));
+        File sourceDir = new File(FileUtil.toFile(srcRoot), "org/netbeans/parsing/source1".replace('/', File.separatorChar));
         new File(sourceDir, "ClassWithInnerClass.java").delete();
         
         // must force rescan, indexer does not notice the file-copy ?
@@ -538,8 +525,8 @@ public class IndexerTransactionTest extends NbTestCase {
         assertEquals(1, handles.size());    
         
         // check that files STILL do not exist
-        File dir = findSegmentDir("src");
-        File targetDir = new File(dir, "org/netbeans/parsing/source1".replaceAll("/", File.separator));
+        File dir = findSegmentDir(srcRoot);
+        File targetDir = new File(dir, "org/netbeans/parsing/source1".replace('/', File.separatorChar));
         
         assertTrue(new File(targetDir, "ClassWithInnerClass.sig").exists());
         

@@ -57,6 +57,7 @@ import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Representation of jarfile with tests 
@@ -130,7 +131,7 @@ public final class TestEntry {
     public URL getSrcDir() throws IOException {
         String nborgPath = getNetBeansOrgPath();
         if (nborgPath != null) {
-            return new File(getNBRoot(),nborgPath).toURI().toURL(); 
+            return Utilities.toURI(new File(getNBRoot(),nborgPath)).toURL();
         }
         File prjDir = getTestDistRoot();
         if (prjDir == null)

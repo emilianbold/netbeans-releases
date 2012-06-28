@@ -42,19 +42,21 @@
 
 package org.netbeans.modules.jira.query;
 
+import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
@@ -62,12 +64,11 @@ import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
-import org.openide.nodes.Node;
+import org.netbeans.modules.mylyn.PerformQueryCommand;
 import org.openide.util.NbBundle;
 
 /**
@@ -202,7 +203,16 @@ public class JiraQuery {
 
                     // run query to know what matches the criteria
                     // IssuesIdCollector will populate the issues set
-                    PerformQueryCommand queryCmd = new PerformQueryCommand(repository, jiraFilter, new IssuesCollector());
+                    JiraRepositoryConnector rc = Jira.getInstance().getRepositoryConnector();
+                    RepositoryQuery repositoryQuery = new RepositoryQuery(rc.getConnectorKind(), "jira query"); // NOI18N
+                    JiraUtil.setQuery(repository.getTaskRepository(), repositoryQuery, jiraFilter);
+        
+                    PerformQueryCommand queryCmd = 
+                        new PerformQueryCommand(
+                            Jira.getInstance().getRepositoryConnector(),
+                            repository.getTaskRepository(), 
+                            new IssuesCollector(),
+                            repositoryQuery);
                     repository.getExecutor().execute(queryCmd, !autoRefresh);
                     ret[0] = !queryCmd.hasFailed();
                     if(!ret[0]) {
@@ -272,6 +282,7 @@ public class JiraQuery {
 
     public void setSaved(boolean saved) {
         this.saved = saved;
+        fireQuerySaved();
     }
 
     public boolean isSaved() {

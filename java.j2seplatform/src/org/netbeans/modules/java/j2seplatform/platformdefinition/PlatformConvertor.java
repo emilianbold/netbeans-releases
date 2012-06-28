@@ -343,7 +343,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 if ("jar".equals(url.getProtocol())) {              //NOI18N
                     url = FileUtil.getArchiveFile(url);
                 }
-                File root = new File (URI.create(url.toExternalForm()));
+                File root = Utilities.toFile(URI.create(url.toExternalForm()));
                 if (sbootcp.length()>0) {
                     sbootcp.append(File.pathSeparator);
                 }
@@ -413,7 +413,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private static File getToolPath (FileObject tool) throws IOException {
         assert tool != null;
-        return new File (URI.create(tool.getURL().toExternalForm()));
+        return Utilities.toFile(URI.create(tool.getURL().toExternalForm()));
     }
 
     private static String normalizePath (File path,  File jdkHome, String propName) {

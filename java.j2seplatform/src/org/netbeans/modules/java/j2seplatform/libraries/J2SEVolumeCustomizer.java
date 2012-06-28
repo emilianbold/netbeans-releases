@@ -85,6 +85,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDescriptor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -195,7 +196,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                         baseFolder, f.getPath()));
             }
             String jarPath = checkFile(realFile, volume);
-            if (FileUtil.isArchiveFile(realFile.toURI().toURL())) {
+            if (FileUtil.isArchiveFile(Utilities.toURI(realFile).toURL())) {
                 uri = LibrariesSupport.getArchiveRoot(uri);
                 if (jarPath != null) {
                     assert uri.toString().endsWith("!/") : uri.toString(); //NOI18N
@@ -213,7 +214,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             assert f.isAbsolute() : f.getPath();
             f = FileUtil.normalizeFile (f);
             String jarPath = checkFile(f, volume);
-            uri = f.toURI();
+            uri = Utilities.toURI(f);
             if (FileUtil.isArchiveFile(uri.toURL())) {
                 uri = LibrariesSupport.getArchiveRoot(uri);
                 if (jarPath != null) {
@@ -459,7 +460,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
         final boolean arp = allowRelativePaths != null && allowRelativePaths.booleanValue();
         final File baseFolder = arp ?
-            FileUtil.normalizeFile(new File(URI.create(area.getLocation().toExternalForm())).getParentFile()):
+            FileUtil.normalizeFile(Utilities.toFile(URI.create(area.getLocation().toExternalForm())).getParentFile()):
             null;
         final File[] cwd = new File[]{lastFolder};
         final String[] paths = select(volumeType, impl.getName(), cwd, this, baseFolder);
@@ -635,7 +636,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 return false;
             }
             try {
-                return FileUtil.isArchiveFile (f.toURI().toURL());
+                return FileUtil.isArchiveFile (Utilities.toURI(f).toURL());
             } catch (MalformedURLException e) {
                 Exceptions.printStackTrace(e);
                 return false;

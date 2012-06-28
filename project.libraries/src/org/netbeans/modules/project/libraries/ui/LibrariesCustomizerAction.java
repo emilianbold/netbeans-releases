@@ -44,19 +44,21 @@ package org.netbeans.modules.project.libraries.ui;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import static org.netbeans.modules.project.libraries.ui.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 @ActionID(id = "org.netbeans.modules.project.libraries.ui.LibrariesCustomizerAction", category = "Tools")
 @ActionRegistration(iconInMenu = false, displayName = "#CTL_LibrariesManager")
 @ActionReference(position = 500, name = "LibrariesCustomizerAction", path = "Menu/Tools")
+@Messages("CTL_LibrariesManager=Ant &Libraries")
 public final class LibrariesCustomizerAction implements ActionListener {
 
-    public void actionPerformed(ActionEvent e) {
+    @Override public void actionPerformed(ActionEvent e) {
         showCustomizer();
     }
 
@@ -64,11 +66,11 @@ public final class LibrariesCustomizerAction implements ActionListener {
      * Shows libraries customizer displaying all currently open library managers.
      * @return true if user pressed OK and libraries were sucessfully modified
      */
+    @Messages("TXT_LibrariesManager=Ant Library Manager")
     private static boolean showCustomizer () {
         AllLibrariesCustomizer  customizer =
                 new AllLibrariesCustomizer();
-        DialogDescriptor descriptor = new DialogDescriptor (customizer,
-                NbBundle.getMessage(LibrariesCustomizerAction.class, "TXT_LibrariesManager"));
+        DialogDescriptor descriptor = new DialogDescriptor(customizer, TXT_LibrariesManager());
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
             dlg.setVisible(true);

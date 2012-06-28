@@ -175,6 +175,7 @@ public final class ReferencesCount {
     private void init() throws InterruptedException {
         synchronized (lck) {
             if (typeFreqs == null) {
+                long st = System.currentTimeMillis();
                 final ClassIndexManager cim = ClassIndexManager.getDefault();
                 final Map<String,Integer> typef = new HashMap<String, Integer>();
                 final Map<String,Integer> pkgf = new HashMap<String, Integer>();
@@ -199,6 +200,11 @@ public final class ReferencesCount {
                     typeFreqs = Collections.<String,Integer>emptyMap();
                     pkgFreqs = Collections.<String,Integer>emptyMap();
                 }
+                long et = System.currentTimeMillis();
+                LOG.log(
+                    Level.FINE,
+                    "Frequencies calculation time: {0}ms.", //NOI18N
+                    (et-st));
             }
         }
         assert typeFreqs != null;

@@ -27,6 +27,32 @@
             <tocitem target="php_renaming" text="Rename Refactoring and Instant Rename"/>
             <tocitem target="php_codegen" text="Code Generators"/>
             <tocitem target="def_var_in_comment" text="Defining Variables in Comments"/>
+            <tocitem target="php54" text="PHP 5.4 Support"/>
+        </tocitem>
+        <tocitem text="Debugging PHP Applications" expand="false">
+            <tocitem text="About Debugging PHP Applications" target="php_debug_about"/>
+            <tocitem target="php_debug_process" text="Working with Debugging in PHP Applications"/>
+            <tocitem target="xdebug_setup" text="Setting Up XDebug In NetBeans IDE"/>
+            <tocitem target="php_breakpoints" text="PHP Breakpoints in the IDE"/>
+            <tocitem target="php_debug_context" text="Current Context in the Debugger"/>
+            <tocitem text="PHP Debugging Sessions" expand="false">
+                <tocitem target="php_debug_start" text="Starting a Debugging Session"/>
+                <tocitem target="php_debug_remote" text="Remote Debugging and Path Mapping"/>
+                <tocitem target="php_stepthrough" text="Stepping Through Your Program"/>
+                <tocitem target="php_debug_finish" text="Finishing a Debugging Session"/>
+            </tocitem>
+            <tocitem text="Debugger Windows for PHP" expand="false">
+                <tocitem target="php_debug_windows" text="Debugger Windows"/>
+                <tocitem target="php_breakpoint_window" text="Breakpoints Window"/>
+                <tocitem target="php_callstack_window" text="Callstack Window"/>
+                <tocitem target="php_threads_window" text="Threads Window"/>
+                <tocitem target="php_variables_window" text="Variables Window"/>
+                <tocitem target="php_watches_window" text="Watches Window"/>
+            </tocitem>
+            <tocitem text="Viewing Program Information" expand="false">
+                <tocitem target="php_debug_variables" text="Viewing Variables While Debugging"/>
+                <tocitem target="php_debug_watches" text="Enabling and Creating Watches"/>
+            </tocitem>
         </tocitem>
         <tocitem text="Using a Continuous Build Server With PHP" target="php_hudson"/>
     </tocitem>

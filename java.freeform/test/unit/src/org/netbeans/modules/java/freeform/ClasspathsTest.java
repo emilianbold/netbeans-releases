@@ -85,6 +85,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -455,10 +456,10 @@ public class ClasspathsTest extends TestBase {
     
     // Copied from org.netbeans.modules.apisupport.project.ClassPathProviderImplTest:
     private String urlForJar(String path) throws Exception {
-        return FileUtil.getArchiveRoot(simple.helper().resolveFile(path).toURI().toURL()).toExternalForm();
+        return FileUtil.getArchiveRoot(Utilities.toURI(simple.helper().resolveFile(path)).toURL()).toExternalForm();
     }
     private String urlForFolder(String path) throws Exception {
-        String s = simple.helper().resolveFile(path).toURI().toURL().toExternalForm();
+        String s = Utilities.toURI(simple.helper().resolveFile(path)).toURL().toExternalForm();
         if (s.endsWith("/")) {
             return s;
         } else {

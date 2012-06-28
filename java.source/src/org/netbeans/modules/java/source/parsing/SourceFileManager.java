@@ -62,6 +62,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -80,7 +81,7 @@ public class SourceFileManager implements JavaFileManager {
     }
 
     @Override
-    public List<JavaFileObject> list(final Location l, final String packageName, final Set<JavaFileObject.Kind> kinds, final boolean recursive) {
+    public Iterable<JavaFileObject> list(final Location l, final String packageName, final Set<JavaFileObject.Kind> kinds, final boolean recursive) {
         //Todo: Caching of results, needs listening on FS
         List<JavaFileObject> result = new ArrayList<JavaFileObject> ();
         String _name = packageName.replace('.','/');    //NOI18N
@@ -158,7 +159,7 @@ public class SourceFileManager implements JavaFileManager {
             if (rootFile == null) {
                 return null;
             }
-            return FileObjects.nbFileObject(new File(rootFile,FileObjects.convertFolder2Package(rp, File.separatorChar)).toURI().toURL(), roots[0]); //Todo: wrap to protect from write
+            return FileObjects.nbFileObject(Utilities.toURI(new File(rootFile,FileObjects.convertFolder2Package(rp, File.separatorChar))).toURL(), roots[0]); //Todo: wrap to protect from write
         }
         else {
             return SourceFileObject.create (fileRootPair[0], fileRootPair[1]); //Todo: wrap to protect from write

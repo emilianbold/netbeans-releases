@@ -94,6 +94,7 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 
 /**
@@ -263,13 +264,13 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         final ClassPathProvider cpp = new DefaultClassPathProvider ();
         final ClassPath defaultCompile = cpp.findClassPath(FileUtil.toFileObject(wd), ClassPath.COMPILE);
         assertNotNull(defaultCompile);
-        assertFalse(contains(defaultCompile, root1.toURI().toURL()));
-        assertFalse(contains(defaultCompile, root2.toURI().toURL()));
+        assertFalse(contains(defaultCompile, Utilities.toURI(root1).toURL()));
+        assertFalse(contains(defaultCompile, Utilities.toURI(root2).toURL()));
         final Listener listener = new Listener();
         defaultCompile.addPropertyChangeListener(listener);
         final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
-        final ClassPath compileCpProject1 = ClassPathSupport.createClassPath(root1.toURI().toURL());
-        final ClassPath compileCpProject2 = ClassPathSupport.createClassPath(root2.toURI().toURL());
+        final ClassPath compileCpProject1 = ClassPathSupport.createClassPath(Utilities.toURI(root1).toURL());
+        final ClassPath compileCpProject2 = ClassPathSupport.createClassPath(Utilities.toURI(root2).toURL());
         
         //Simulate projects open
         RunnableFuture<Project[]> barrier = new FutureTask<Project[]>(new Callable<Project[]>() {
@@ -281,18 +282,18 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         OpenProject.future = barrier;
 
         regs.register(ClassPath.COMPILE, new ClassPath[]{compileCpProject1});
-        assertFalse(contains(defaultCompile, root1.toURI().toURL()));
+        assertFalse(contains(defaultCompile, Utilities.toURI(root1).toURL()));
         assertFalse(listener.awaitEvent());
         assertEquals(0, listener.get());
         regs.register(ClassPath.COMPILE, new ClassPath[]{compileCpProject2});
-        assertFalse(contains(defaultCompile, root2.toURI().toURL()));
+        assertFalse(contains(defaultCompile, Utilities.toURI(root2).toURL()));
         assertFalse(listener.awaitEvent());
         assertEquals(0, listener.get());
         barrier.run();
         assertTrue(listener.awaitEvent());
         assertEquals(1, listener.get());
-        assertTrue(contains(defaultCompile, root1.toURI().toURL()));
-        assertTrue(contains(defaultCompile, root2.toURI().toURL()));
+        assertTrue(contains(defaultCompile, Utilities.toURI(root1).toURL()));
+        assertTrue(contains(defaultCompile, Utilities.toURI(root2).toURL()));
 
         //Simulate projects close
         barrier = new FutureTask<Project[]>(new Callable<Project[]>() {
@@ -304,18 +305,18 @@ public class DefaultClassPathProviderTest extends NbTestCase {
         OpenProject.future = barrier;
         listener.reset();
         regs.unregister(ClassPath.COMPILE, new ClassPath[]{compileCpProject1});
-        assertTrue(contains(defaultCompile, root1.toURI().toURL()));
+        assertTrue(contains(defaultCompile, Utilities.toURI(root1).toURL()));
         assertFalse(listener.awaitEvent());
         assertEquals(0, listener.get());
         regs.unregister(ClassPath.COMPILE, new ClassPath[]{compileCpProject2});
-        assertTrue(contains(defaultCompile, root2.toURI().toURL()));
+        assertTrue(contains(defaultCompile, Utilities.toURI(root2).toURL()));
         assertFalse(listener.awaitEvent());
         assertEquals(0, listener.get());
         barrier.run();
         assertTrue(listener.awaitEvent());
         assertEquals(1, listener.get());
-        assertFalse(contains(defaultCompile, root1.toURI().toURL()));
-        assertFalse(contains(defaultCompile, root2.toURI().toURL()));
+        assertFalse(contains(defaultCompile, Utilities.toURI(root1).toURL()));
+        assertFalse(contains(defaultCompile, Utilities.toURI(root2).toURL()));
     }
 
     private static boolean contains (final ClassPath cp, final URL url) {

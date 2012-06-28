@@ -90,7 +90,8 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
     }
 
     @Override
-    public org.openide.WizardDescriptor.Panel current() {
+    @SuppressWarnings("unchecked")
+    public org.openide.WizardDescriptor.Panel<WizardDescriptor> current() {
         return basicPanel;
     }
 
@@ -126,7 +127,7 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
     }
 
     @Override
-    public java.util.Set instantiate(org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
+    public java.util.Set<DataObject> instantiate(org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
         File projectLocation = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         if(projectLocation == null) {
             warnIssue204880("Wizard property " + WizardProperties.PROJECT_DIR + " is null."); // NOI18N
@@ -145,7 +146,7 @@ public class JavaFXSampleProjectIterator implements TemplateWizard.Iterator {
         FileObject templateFO = templateWizard.getTemplate().getPrimaryFile();
         FileObject prjLoc = JavaFXSampleProjectGenerator.createProjectFromTemplate(
                 templateFO, projectLocation, name, platformName);
-        java.util.Set set = new java.util.HashSet();
+        java.util.Set<DataObject> set = new java.util.HashSet<DataObject>();
         set.add(DataObject.find(prjLoc));
 
         // open file from the project specified in the "defaultFileToOpen" attribute

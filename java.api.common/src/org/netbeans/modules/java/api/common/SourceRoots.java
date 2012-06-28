@@ -79,6 +79,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -277,7 +278,7 @@ public final class SourceRoots extends Roots {
                             if (prop != null) {
                                 File f = helper.getAntProjectHelper().resolveFile(prop);
                                 try {
-                                    URL url = f.toURI().toURL();
+                                    URL url = Utilities.toURI(f).toURL();
                                     if (!f.exists()) {
                                         url = new URL(url.toExternalForm() + "/"); // NOI18N
                                     } else if (f.isFile()) {
@@ -312,7 +313,7 @@ public final class SourceRoots extends Roots {
                     if (prop != null) {
                         File f = helper.getAntProjectHelper().resolveFile(prop);
                         try {
-                            URL url = f.toURI().toURL();
+                            URL url = Utilities.toURI(f).toURL();
                             if (!f.exists()) {
                                 url = new URL(url.toExternalForm() + "/"); // NOI18N
                             } else if (f.isFile()) {
@@ -383,7 +384,7 @@ public final class SourceRoots extends Roots {
                                     rootName = MessageFormat.format(
                                             newRootNameTemplate, new Object[] {names[names.length - 1], rootIndex});
                                 }
-                                File f = FileUtil.normalizeFile(new File(URI.create(newRoot.toExternalForm())));
+                                File f = FileUtil.normalizeFile(Utilities.toFile(URI.create(newRoot.toExternalForm())));
                                 File projDir = FileUtil.toFile(helper.getAntProjectHelper().getProjectDirectory());
                                 String path = f.getAbsolutePath();
                                 String prjPath = projDir.getAbsolutePath() + File.separatorChar;

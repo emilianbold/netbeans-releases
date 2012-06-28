@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider.class)
 public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvider {
+    @Override
 	public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource) {
         JAXWSLightSupport support = JAXWSLightSupport.getJAXWSLightSupport(targetSource);
         if (support != null) {

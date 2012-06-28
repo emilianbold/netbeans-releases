@@ -41,19 +41,21 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
-import javax.swing.text.Document;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.web.beans.api.model.support.WebBeansModelSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.beans.api.model.ModelUnit;
+import org.netbeans.modules.web.beans.MetaModelSupport;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
-import org.netbeans.modules.web.beans.api.model.WebBeansModelFactory;
 import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
@@ -90,18 +92,48 @@ public class JsfSupportImpl implements JsfSupport {
     }
 
     static JsfSupportImpl findForProject(Project project) {
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        if (wm == null) {
+        if(!isJavaSourcesProject(project)) {
+            //such project can hardly have anything to do with JSF
             return null;
         }
-	ClassPath classPath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        FileObject classpathBase = wm != null ? wm.getDocumentBase() : project.getProjectDirectory();
+	ClassPath classPath = ClassPath.getClassPath(classpathBase, ClassPath.COMPILE);
 	if(classPath == null) {
 	    return null;
 	}
-
         return new JsfSupportImpl(project, wm, classPath);
 
     }
+    
+    private static final Map<Project, Boolean> JSPR_MAP = //java source project resolution map
+            new WeakHashMap<Project, Boolean>();
+    
+    private static boolean isJavaSourcesProject(Project project) {
+        synchronized (JSPR_MAP) {
+            //speed up the resolving a bit since the method is called quite often
+            //and the speed of sources.getSourceGroups() is questionable
+            Boolean val = JSPR_MAP.get(project);
+            if(val != null) {
+                return val.booleanValue();
+            }
+            
+            Sources sources = ProjectUtils.getSources(project);
+            if ( sources == null ){
+                return false;
+            }
+            SourceGroup[] javaSourceGroup = sources.getSourceGroups( 
+                    JavaProjectConstants.SOURCES_TYPE_JAVA );
+
+            boolean result = javaSourceGroup != null && javaSourceGroup.length > 0;
+            
+            //cache
+            JSPR_MAP.put(project, Boolean.valueOf(result));
+            
+            return result;
+        }
+    }
+    
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private Project project;
     private WebModule wm;
@@ -130,8 +162,7 @@ public class JsfSupportImpl implements JsfSupport {
         //TODO this should be done declaratively via layer
         JsfHtmlExtension.activate();
 
-        ModelUnit modelUnit = WebBeansModelSupport.getModelUnit(wm);
-        webBeansModel = WebBeansModelFactory.getMetaModel(modelUnit);
+        webBeansModel = new MetaModelSupport(project).getMetaModel();
 
         //init lookup
         //TODO do it lazy so it creates the web beans model lazily once looked up
@@ -151,6 +182,9 @@ public class JsfSupportImpl implements JsfSupport {
         return classpath;
     }
 
+    /**
+     * @return can return null if this supports wraps a project of non-web type.
+     */
     @Override
     public WebModule getWebModule() {
         return wm;
@@ -178,7 +212,7 @@ public class JsfSupportImpl implements JsfSupport {
     //garbage methods below, needs cleanup!
     public synchronized JsfIndex getIndex() {
         if(index == null) {
-	    this.index = JsfIndex.create(wm);
+	    this.index = JsfIndex.create(getBaseFile());
         }
         return this.index;
     }
@@ -193,7 +227,11 @@ public class JsfSupportImpl implements JsfSupport {
 
     @Override
     public String toString() {
-        return String.format("JsfSupportImpl[%s]", wm.getDocumentBase().toString()); //NOI18N
+        return String.format("JsfSupportImpl[%s]", getBaseFile().getPath()); //NOI18N
     }
-    
+
+    private FileObject getBaseFile() {
+        return wm != null ? wm.getDocumentBase() : project.getProjectDirectory();
+    }
+
 }

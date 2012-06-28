@@ -49,6 +49,7 @@ import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -86,7 +87,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
         if (project != null) {
             nativeProject = project.getLookup().lookup(NativeProject.class);
             if (nativeProject != null) {
-                nativeFileSearch = nativeProject.getNativeFileSearch();
+                nativeFileSearch = NativeProjectSupport.getNativeFileSearch(nativeProject);
             }
         }
     }

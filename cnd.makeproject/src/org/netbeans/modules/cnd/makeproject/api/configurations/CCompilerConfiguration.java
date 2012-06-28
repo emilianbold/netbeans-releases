@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.beans.PropertyEditor;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -292,7 +293,29 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         AbstractCompiler cCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
         
-        IntNodeProp standardProp = new IntNodeProp(getCStandard(), true, "CStandard", getString("CStandardTxt"), getString("CStandardHint"));  // NOI18N
+        IntNodeProp standardProp = new IntNodeProp(getCStandard(), true, "CStandard", getString("CStandardTxt"), getString("CStandardHint")) {  // NOI18N
+
+                @Override
+                public PropertyEditor getPropertyEditor() {
+                    if (intEditor == null) {
+                        intEditor = new NewIntEditor();
+                    }
+                    return intEditor;
+                }
+
+                class NewIntEditor extends IntNodeProp.IntEditor {
+
+                    @Override
+                    public String getAsText() {
+                        if (CCompilerConfiguration.this.getCStandard().getValue() == STANDARD_INHERITED) {
+                             return NbBundle.getMessage(CCompilerConfiguration.class, "STANDARD_INHERITED_WITH_VALUE", STANDARD_NAMES[CCompilerConfiguration.this.getInheritedCStandard()]); //NOI18N
+                        }
+                        return super.getAsText();
+                    }
+                                       
+                }
+         
+        };        
         Sheet.Set set0 = getSet();
         sheet.put(set0);
         if (conf.isCompileConfiguration() && folder == null) {

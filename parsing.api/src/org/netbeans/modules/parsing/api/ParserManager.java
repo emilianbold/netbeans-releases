@@ -179,7 +179,7 @@ public final class ParserManager {
                         parser = parserFactory.createParser (snapShots);
                     }
                 }
-                final SourceCache uncachedSourceCache = new SourceCache(source, null);
+                final SourceCache uncachedSourceCache = new SourceCache(source, null, parser);
                 SourceCache origCache = SourceAccessor.getINSTANCE().getAndSetCache(source, uncachedSourceCache);
                 final ResultIterator resultIterator = new ResultIterator (uncachedSourceCache, parser, userTask);
                 try {

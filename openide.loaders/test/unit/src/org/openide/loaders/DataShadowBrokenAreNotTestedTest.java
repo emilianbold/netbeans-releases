@@ -44,7 +44,9 @@
 
 package org.openide.loaders;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
+import junit.framework.AssertionFailedError;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
@@ -73,20 +75,10 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
         for (int i = 0; i < delete.length; i++) {
             delete[i].delete();
         }
-        
+        DataShadow.waitUpdatesProcessed();
         UM.init();
     }
     
-    public void testNoURLMapperQueried() throws Exception {
-        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), getName() + "/folder/original.txt");
-        assertNotNull(fo);
-        
-        UM.assertAccess("No queries to UM yet", 0, 0);
-        DataObject original = DataObject.find(fo);
-        
-        UM.assertAccess("No queries to UM after creation of data object", 0, 0);
-    }
-
     @RandomlyFails // NB-Core-Build #2009
     public void testQueriedWhenBrokenShadowsExists() throws Exception {
         
@@ -118,30 +110,38 @@ public class DataShadowBrokenAreNotTestedTest extends NbTestCase {
     private static final class UM extends URLMapper {
         private static int toURLCnt;
         private static int toFOCnt;
+        private static RuntimeException lastAccess;
 
         static void init() {
             toFOCnt = 0;
             toURLCnt = 0;
+            lastAccess = null;
         }
         
         @Override
         public URL getURL(FileObject fo, int type) {
             toURLCnt++;
+            lastAccess = new RuntimeException("getURL " + toURLCnt);
             return null;
         }
         
         @Override
         public FileObject[] getFileObjects(URL url) {
             toFOCnt++;
+            lastAccess = new RuntimeException("getFileObjects " + toFOCnt);
             return null;
         }
-        
         public static void assertAccess(String msg, int expectURL, int expectFO) {
-            DataShadow.waitUpdatesProcessed();
-            assertEquals(msg + " file object check", expectFO, toFOCnt);
-            assertEquals(msg + " to url check", expectURL, toURLCnt);
-            toFOCnt = 0;
-            toURLCnt = 0;
+            try {
+                DataShadow.waitUpdatesProcessed();
+                assertEquals(msg + " file object check", expectFO, toFOCnt);
+                assertEquals(msg + " to url check", expectURL, toURLCnt);
+                toFOCnt = 0;
+                toURLCnt = 0;
+            } catch (AssertionFailedError ex) {
+                if (lastAccess != null) ex.initCause(lastAccess);
+                throw ex;
+            }
         }
     }
     

@@ -54,17 +54,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.ui.SwingBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.Mutex;
+import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -74,27 +71,48 @@ import org.openide.windows.TopComponent;
 @ServiceProvider(service=URLDisplayer.class)
 public final class NbURLDisplayer extends URLDisplayer {
 
+    private static final RequestProcessor RP = new RequestProcessor( "URLDisplayer" ); //NOI18N
+
     private NbBrowser htmlViewer;
 
+    @Override
     public void showURL(final URL u) {
-        Mutex.EVENT.readAccess(new Runnable() {
+        RP.post( new Runnable() {
+            @Override
             public void run() {
-                if (htmlViewer == null) {
-                    htmlViewer = new NbBrowser();
-                }
-                htmlViewer.showUrl(u);
+                //warm the browser up to avoid waiting for Lookups
+                IDESettings.getWWWBrowser();
+                IDESettings.getExternalWWWBrowser();
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        if (htmlViewer == null) {
+                            htmlViewer = new NbBrowser();
+                        }
+                        htmlViewer.showUrl(u);
+                    }
+                });
             }
         });
     }
 
     @Override
     public void showURLExternal(final URL u) {
-        Mutex.EVENT.readAccess(new Runnable() {
+        RP.post( new Runnable() {
+            @Override
             public void run() {
-                if (htmlViewer == null) {
-                    htmlViewer = new NbBrowser();
-                }
-                htmlViewer.showUrlExternal(u);
+                //warm the browser up to avoid waiting for Lookups
+                IDESettings.getWWWBrowser();
+                IDESettings.getExternalWWWBrowser();
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        if (htmlViewer == null) {
+                            htmlViewer = new NbBrowser();
+                        }
+                        htmlViewer.showUrlExternal(u);
+                    }
+                });
             }
         });
     }

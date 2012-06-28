@@ -279,6 +279,9 @@ public final class DefaultPlugin extends JUnitPlugin {
         }
         
         String baseResName = srcCp.getResourceName(fileObj, '/', false);
+        if (baseResName == null) {
+            return null;     //if the selectedFO is not within the classpath
+        }
         String srcResName = getSrcResName(baseResName, fileObj.getExt());
         if (srcResName == null) {
             return null;     //if the selectedFO is not a test class (by name)
@@ -2082,11 +2085,8 @@ public final class DefaultPlugin extends JUnitPlugin {
         String rootFolderName = ""; //NOI18N
         if (cp.getRoots().length > 1) {
             int indexFirst = testClassName.indexOf('/');
-            int indexLast = testClassName.lastIndexOf('/');
-            assert indexFirst != indexLast :  // this should not happen
-                    "ClassPath=" + cp + "\n" + "testClassName=" + testClassName;                //NOI18N
             rootFolderName = testClassName.substring(0, indexFirst);
-            testClassName = testClassName.substring(indexLast + 1);
+            testClassName = testClassName.substring(indexFirst + 1);
             for (int i = 0; i < cp.getRoots().length; i++) {
                 FileObject rootFO = cp.getRoots()[i];
                 if (rootFO.getPath().endsWith(rootFolderName)) {

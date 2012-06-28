@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.MakeProjectHelperImpl;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -81,6 +82,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -147,6 +149,31 @@ public class MakeSampleProjectGenerator {
         }
     }
 
+    private static void addEmptyNode(Document doc, String nodeName) {
+        Element data = null;
+        NodeList list = doc.getElementsByTagName(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAME);
+        if (list != null && list.getLength() > 0) {
+            for (int i = 0; i < list.getLength(); i++) {
+                Node node = list.item(i);
+                if (node instanceof Element) {
+                    data = (Element) node;
+                    break;
+                }
+
+            }
+        }
+        if (data == null) {
+            return;
+        }
+        NodeList nodeList = data.getElementsByTagName(nodeName);
+        if (nodeList == null) {
+            return;
+        }
+        // Create new source root node
+        Element element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, nodeName);
+        data.appendChild(element);
+    }
+    
     private static void postProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         // update project.xml
         try {
@@ -157,6 +184,7 @@ public class MakeSampleProjectGenerator {
                 //changeXmlFileByNameNS(doc, PROJECT_CONFIGURATION_NAMESPACE, "name", name, null); // NOI18N
                 changeXmlFileByTagName(doc, "name", name, null); // NOI18N
             }
+            addEmptyNode(doc, MakeProjectTypeImpl.SOURCE_ROOT_LIST_ELEMENT);
             saveXml(doc, prjLoc, MakeProjectHelper.PROJECT_XML_PATH);
 
             // Change working dir and default conf in 'projectDescriptor.xml'
@@ -178,7 +206,13 @@ public class MakeSampleProjectGenerator {
                 env = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
                 String prjHostUID = ExecutionEnvironmentFactory.toUniqueID(env);
                 CompilerSetManager compilerSetManager = CompilerSetManager.get(env);
-                int platform = compilerSetManager.getPlatform();
+                ExecutionEnvironment projectEE = FileSystemProvider.getExecutionEnvironment(prjLoc);
+                int platform;
+                if (projectEE.isLocal()) {
+                    platform = compilerSetManager.getPlatform();
+                } else {
+                    platform = CompilerSetManager.get(projectEE).getPlatform();
+                }
                 CompilerSet compilerSet = prjParams.getToolchain();
                 compilerSet = (compilerSet != null) ? compilerSet : compilerSetManager.getDefaultCompilerSet();
                 String variant = null;

@@ -1,7 +1,7 @@
 #!/bin/sh
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -58,6 +58,10 @@ while [ -h "$PRG" ]; do
 done
 
 progdir=`dirname "$PRG"`
+old=`pwd`
+cd "$progdir"/..
+basedir=`pwd`
+cd "$old"
 
 case "`uname`" in
     Darwin*)
@@ -112,17 +116,17 @@ if [ -f "${userdir}"/etc/netbeans.conf ] ; then
 fi
 
 
-if [ ! -f "$progdir"/../etc/netbeans.clusters ]; then
-    echo Cannot read cluster file: "$progdir"/../etc/netbeans.clusters 1>&2
+if [ ! -f "$basedir"/etc/netbeans.clusters ]; then
+    echo Cannot read cluster file: "$basedir"/etc/netbeans.clusters 1>&2
     exit 1
 fi
 
 readClusters() {
-    grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep -v platform | while read X; do
+    grep -v "^#" "$basedir"/etc/netbeans.clusters | grep -v "^$" | grep -v platform | while read X; do
         if expr "$X" : "/.*" >/dev/null; then
             echo "$X"
         else
-            echo "$progdir/../$X"
+            echo "$basedir/$X"
         fi
     done
 }
@@ -188,7 +192,7 @@ EOF
 fi
 
 launchNbexec() {
-    nbexec=`grep -v "^#" "$progdir"/../etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
+    nbexec=`grep -v "^#" "$basedir"/etc/netbeans.clusters | grep -v "^$" | grep platform | while read X; do
         if expr "$X" : "/.*" >/dev/null; then
            echo $X/lib/nbexec
         elif [ -f "$progdir"/../$X/lib/nbexec ]; then

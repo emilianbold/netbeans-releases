@@ -327,14 +327,18 @@ public class DBReadWriteHelper {
                     ps.setDouble(index, numberObj.doubleValue());
                     break;
 
-                case Types.DECIMAL:
-                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : new BigDecimal(valueObj.toString());
-                    ps.setDouble(index, numberObj.doubleValue());
+                case Types.BIGINT:
+                    numberObj = (valueObj instanceof Number)
+                            ? (Number) valueObj
+                            : new Long(valueObj.toString());
+                    ps.setLong(index, numberObj.longValue());
                     break;
 
-                case Types.BIGINT:
                 case Types.NUMERIC:
-                    BigDecimal bigDec = new BigDecimal(valueObj.toString());
+                case Types.DECIMAL:
+                    BigDecimal bigDec = (valueObj instanceof BigDecimal)
+                            ? (BigDecimal) valueObj
+                            : new BigDecimal(valueObj.toString());
                     ps.setBigDecimal(index, bigDec);
                     break;
 
@@ -391,7 +395,7 @@ public class DBReadWriteHelper {
                 case Types.VARBINARY:
                 case Types.LONGVARBINARY:
                 case Types.BLOB:
-                    ps.setBinaryStream(index, ((Blob) valueObj).getBinaryStream());
+                    ps.setBinaryStream(index, ((Blob) valueObj).getBinaryStream(), (int) ((Blob) valueObj).length());
                     break;
 
                 case Types.CHAR:
@@ -406,7 +410,7 @@ public class DBReadWriteHelper {
                 case -16:
                 case Types.CLOB:
                 case 2011: /*NCLOB */
-                    ps.setCharacterStream(index, ((Clob) valueObj).getCharacterStream());
+                    ps.setCharacterStream(index, ((Clob) valueObj).getCharacterStream(), (int) ((Clob) valueObj).length());
                     break;
 
                 default:

@@ -76,6 +76,7 @@ import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 public class ClassPathTest extends NbTestCase {
 
@@ -228,12 +229,12 @@ public class ClassPathTest extends NbTestCase {
         assertNotNull("Cannot find file",FileUtil.toFileObject(root_3));
         TestClassPathImplementation impl = new TestClassPathImplementation();
 	ClassPath cp = ClassPathFactory.createClassPath (impl);
-        impl.addResource(root_1.toURI().toURL());
+        impl.addResource(Utilities.toURI(root_1).toURL());
         cp.addPropertyChangeListener (impl);
-        impl.addResource (root_2.toURI().toURL());
+        impl.addResource (Utilities.toURI(root_2).toURL());
         impl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertTrue (cp.getRoots().length==2);
-        impl.removeResource (root_2.toURI().toURL());
+        impl.removeResource (Utilities.toURI(root_2).toURL());
         impl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertTrue (cp.getRoots().length==1);
         FileObject fo = cp.getRoots()[0];
@@ -296,7 +297,7 @@ public class ClassPathTest extends NbTestCase {
         cp.addPropertyChangeListener(impl);
         File d = new File(getBaseDir(), "d");
         d.mkdir();
-        pri.changeRoots(new URL[] {d.toURI().toURL()});
+        pri.changeRoots(new URL[] {Utilities.toURI(d).toURL()});
         impl.assertEvents(ClassPath.PROP_ENTRIES, ClassPath.PROP_ROOTS);
         assertEquals(Collections.singletonList(FileUtil.toFileObject(d)), Arrays.asList(cp.getRoots()));
     }
@@ -609,7 +610,7 @@ public class ClassPathTest extends NbTestCase {
             final String path = tk.nextToken();
             final File f = FileUtil.normalizeFile(new File (path));
             if (f.canRead()) {
-                roots.add(f.toURI().toURL());
+                roots.add(Utilities.toURI(f).toURL());
             }
         }
         final ClassLoader bootLoader = new URLClassLoader(roots.toArray(new URL[roots.size()]), null);
@@ -624,7 +625,7 @@ public class ClassPathTest extends NbTestCase {
             if (!f.canRead()) {
                 continue;
             }
-            URL url = f.toURI().toURL();
+            URL url = Utilities.toURI(f).toURL();
             roots2.add(url);
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot(url);
@@ -739,7 +740,7 @@ public class ClassPathTest extends NbTestCase {
     }
 
     public void testJVMPathConversion() throws Exception {
-        String root = getWorkDir().toURI().toString();
+        String root = Utilities.toURI(getWorkDir()).toString();
         ClassPath cp = ClassPathSupport.createClassPath(
                 new URL(root + "folder/"),
                 new URL("jar:" + root + "file.zip!/"),

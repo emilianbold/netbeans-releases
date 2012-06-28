@@ -44,10 +44,7 @@
 
 package org.netbeans.api.java.platform;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,12 +52,11 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.platform.JavaPlatformProvider;
+import org.netbeans.modules.java.platform.FallbackDefaultJavaPlatform;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -109,7 +105,8 @@ public class JavaPlatformManagerTest extends NbTestCase {
         assertNotNull (provider);
         JavaPlatform[] platforms = manager.getInstalledPlatforms();
         assertNotNull (platforms);
-        assertTrue (platforms.length == 0);
+        assertEquals (1,platforms.length);
+        assertEquals(FallbackDefaultJavaPlatform.getInstance(), platforms[0]);
         JavaPlatform platform = new TestJavaPlatform ("Testing Platform",
             new Specification("j2se", new SpecificationVersion ("1.5")));
         provider.addPlatform (platform);
@@ -120,7 +117,8 @@ public class JavaPlatformManagerTest extends NbTestCase {
         provider.removePlatform(platform);
         platforms = manager.getInstalledPlatforms();
         assertNotNull (platforms);
-        assertTrue (platforms.length == 0);
+        assertEquals (1,platforms.length);
+        assertEquals(FallbackDefaultJavaPlatform.getInstance(), platforms[0]);
     }
 
     public void testGetPlatforms() {
@@ -237,7 +235,8 @@ public class JavaPlatformManagerTest extends NbTestCase {
         provider.removePlatform (p6);
         provider.removePlatform (p7);
         provider.removePlatform (p8);
-        assertTrue (manager.getInstalledPlatforms().length == 0);
+        assertEquals (1,manager.getInstalledPlatforms().length);
+        assertEquals (FallbackDefaultJavaPlatform.getInstance(),manager.getInstalledPlatforms()[0]);
     }
 
 
@@ -300,54 +299,5 @@ public class JavaPlatformManagerTest extends NbTestCase {
         public FileObject findTool(String name) {
             return null;
         }
-
     }
-
-    public static class TestJavaPlatformProvider implements JavaPlatformProvider {
-
-        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        private List<JavaPlatform> platforms = new ArrayList<JavaPlatform>();
-
-
-        static TestJavaPlatformProvider getDefault () {
-            return Lookup.getDefault().lookup(TestJavaPlatformProvider.class);
-        }
-
-        public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-            assertNotNull (listener);
-            pcs.addPropertyChangeListener(listener);
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            assertNotNull (listener);
-            pcs.removePropertyChangeListener(listener);
-        }
-
-        public JavaPlatform[] getInstalledPlatforms() {
-            return this.platforms.toArray(new JavaPlatform[platforms.size()]);
-        }
-
-        void addPlatform (JavaPlatform platform) {
-            this.platforms.add (platform);
-            this.firePropertyChange ();
-        }
-
-        void removePlatform (JavaPlatform platform) {
-            this.platforms.remove (platform);
-            this.firePropertyChange ();
-        }
-
-        private void firePropertyChange () {
-            pcs.firePropertyChange(PROP_INSTALLED_PLATFORMS, null, null);
-        }
-
-        public JavaPlatform getDefaultPlatform() {
-            if (platforms.size()>0)
-                return platforms.get(0);
-            else
-                return null;
-        }
-
-    }
-
 }

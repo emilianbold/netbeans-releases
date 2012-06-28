@@ -309,7 +309,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private javax.swing.JScrollBar treeScrollBar;
     // End of variables declaration//GEN-END:variables
 
-    public void setRootContext(Models.CompoundModel model, final DebuggerEngine engine) {
+    public void setRootContext(final Models.CompoundModel model, final DebuggerEngine engine) {
         {   // Destroy the old node
             Node root = manager.getRootContext();
             if (root != null) {
@@ -361,24 +361,25 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 threadsListener.changeDebugger(null);
             }
         }
-        Node root;
-        if (model == null) {
-            root = Node.EMPTY;
-            releaseTreeView();
-        } else {
-            synchronized(lock) {
-                if (treeView == null) {
-                    createTreeView();
-                }
-                root = Models.createNodes(model, treeView);
-                treeView.setExpansionModel(model);
-            }
-        }
-        manager.setRootContext(root);
-        refreshView();
-        updateSessionsComboBox();
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
+                Node root;
+                if (model == null) {
+                    root = Node.EMPTY;
+                    releaseTreeView();
+                } else {
+                    synchronized(lock) {
+                        if (treeView == null) {
+                            createTreeView();
+                        }
+                        root = Models.createNodes(model, treeView);
+                        treeView.setExpansionModel(model);
+                    }
+                }
+                manager.setRootContext(root);
+                refreshView();
+                updateSessionsComboBox();
                 adjustTreeScrollBar(-1);
                 if (engine == null) {
                     // Clean up the UI from memory leaks:
@@ -523,12 +524,16 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             refreshView();
         } else if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
             final Node[] nodes = (Node[]) evt.getNewValue();
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    setActivatedNodes (nodes);
-                }
-            });
+            if (SwingUtilities.isEventDispatchThread()) {
+                setActivatedNodes (nodes);
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        setActivatedNodes (nodes);
+                    }
+                });
+            }
         }
     }
 

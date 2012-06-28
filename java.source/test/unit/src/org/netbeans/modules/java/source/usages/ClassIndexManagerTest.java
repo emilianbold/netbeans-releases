@@ -50,6 +50,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.*;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -82,7 +83,7 @@ public class ClassIndexManagerTest extends NbTestCase {
                     holdsLock.countDown();
                     try {
                         inListener.await();
-                        ClassIndexManager.getDefault().getUsagesQuery(root.toURI().toURL(), true);
+                        ClassIndexManager.getDefault().getUsagesQuery(Utilities.toURI(root).toURL(), true);
                     } catch (InterruptedException ie) {
                         Exceptions.printStackTrace(ie);
                     } catch (MalformedURLException ex) {
@@ -94,7 +95,7 @@ public class ClassIndexManagerTest extends NbTestCase {
             };
             worker.start();
             holdsLock.await();
-            ClassIndexManager.getDefault().getUsagesQuery(root.toURI().toURL(), true);
+            ClassIndexManager.getDefault().getUsagesQuery(Utilities.toURI(root).toURL(), true);
         } finally {
             FileUtil.removeRecursiveListener(dl, cache);
         }

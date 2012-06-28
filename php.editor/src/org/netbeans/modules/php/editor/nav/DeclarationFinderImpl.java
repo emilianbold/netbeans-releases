@@ -49,6 +49,7 @@ import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -60,6 +61,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -103,8 +105,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         try {
             ReferenceSpanCrate crate = crateFuture.get(RESOLVING_TIMEOUT, TimeUnit.MILLISECONDS);
             if (crate != null) {
-                TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(crate.getTokenHierarchy(), caretOffset);
-                offsetRange = getReferenceSpan(ts, caretOffset, crate.getModel());
+                Model model = crate.getModel();
+                TokenHierarchy<?> tokenHierarchy = crate.getTokenHierarchy();
+                if (model != null && tokenHierarchy != null) {
+                    TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(tokenHierarchy, caretOffset);
+                    offsetRange = getReferenceSpan(ts, caretOffset, model);
+                }
             }
         } catch (InterruptedException ex) {
             LOGGER.log(Level.FINE, "Resolving of reference span offset range has been interrupted.");
@@ -177,21 +183,29 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         private Model model;
         private TokenHierarchy<?> tokenHierarchy;
 
+        /**
+         *
+         * @return model, or null.
+         */
+        @CheckForNull
         public Model getModel() {
             return model;
         }
 
+        /**
+         *
+         * @return token hierarchy, or null.
+         */
+        @CheckForNull
         public TokenHierarchy<?> getTokenHierarchy() {
             return tokenHierarchy;
         }
 
         public void setModel(Model model) {
-            Parameters.notNull("model", model);
             this.model = model;
         }
 
         public void setTokenHierarchy(TokenHierarchy<?> tokenHierarchy) {
-            Parameters.notNull("tokenHierarchy", tokenHierarchy);
             this.tokenHierarchy = tokenHierarchy;
         }
 
@@ -211,9 +225,12 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
-                    crate.setModel(parserResult.getModel());
-                    crate.setTokenHierarchy(resultIterator.getSnapshot().getTokenHierarchy());
+                    Result parserResult = resultIterator.getParserResult();
+                    if (parserResult instanceof PHPParseResult) {
+                        PHPParseResult phpParserResult = (PHPParseResult) parserResult;
+                        crate.setModel(phpParserResult.getModel());
+                        crate.setTokenHierarchy(resultIterator.getSnapshot().getTokenHierarchy());
+                    }
                 }
             });
             return crate;

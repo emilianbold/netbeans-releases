@@ -53,6 +53,8 @@ import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -107,15 +109,15 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
             
             NonRecursiveFolder nonRecursivefolder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
             treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-            WebModule webModule;
+            Project project;
             
             if (nonRecursivefolder != null){
                 // non recursive package
                 FileObject folder = nonRecursivefolder.getFolder();
-                webModule = WebModule.getWebModule(folder);
-                if (webModule != null){
+                project = FileOwnerQuery.getOwner(folder);
+                if (project != null){
                     String packageName = JSFRefactoringUtils.getPackageName(folder);
-                    List <Occurrences.OccurrenceItem> items = Occurrences.getPackageOccurrences(webModule, packageName, packageName, false);
+                    List <Occurrences.OccurrenceItem> items = Occurrences.getPackageOccurrences(project, packageName, packageName, false);
                     for (Occurrences.OccurrenceItem item : items) {
                         refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
                     }
@@ -123,14 +125,14 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
             }
 
             if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())){
-                webModule = WebModule.getWebModule(treePathHandle.getFileObject());
-                if (webModule != null){
+                project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
+                if (project != null){
                     CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());
                     if (info != null) {
                         Element resElement = treePathHandle.resolveElement(info);
                         TypeElement type = (TypeElement) resElement;
                         String fqcn = type.getQualifiedName().toString();
-                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(webModule, fqcn, null);
+                        List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, fqcn, null);
                         for (Occurrences.OccurrenceItem item : items) {
                             refactoringElements.add(refactoring, new JSFSafeDeleteClassElement(item));
                         }

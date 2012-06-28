@@ -98,12 +98,14 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
 
     @Override public void addNotify() {
         super.addNotify();
-        outlineView = new OutlineView(Bundle.CTL_FoundModes());
-        outlineView.getOutline().setRootVisible(false);
-        tree.add(outlineView);
-        outlineView.setDefaultActionAllowed(false);
-        outlineView.setVisible(false);
-        tree.setMinimumSize(outlineView.getPreferredSize());
+        if (outlineView == null) {
+            outlineView = new OutlineView(Bundle.CTL_FoundModes());
+            outlineView.getOutline().setRootVisible(false);
+            tree.add(outlineView);
+            outlineView.setDefaultActionAllowed(false);
+            outlineView.setVisible(false);
+            tree.setMinimumSize(outlineView.getPreferredSize());
+        }
     }
     
     @Override
@@ -144,8 +146,8 @@ implements TaskListener, Runnable, ExplorerManager.Provider {
                 Exceptions.printStackTrace(ex);
             }
             */
+            task.addTaskListener(this);
         }
-        task.addTaskListener(this);
     }
     
     @Override

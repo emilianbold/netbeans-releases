@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.tasks.ui.actions;
 
-import java.util.Arrays;
-import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 
@@ -52,14 +50,14 @@ import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
  */
 public abstract class TaskAction extends AbstractAction {
 
-        private List<TaskNode> taskNodes;
+    private TaskNode[] taskNodes;
 
-        public TaskAction(String name, TaskNode... taskNodes) {
-            super(name);
-            this.taskNodes = Arrays.asList(taskNodes);
-        }
-
-        public List<TaskNode> getTaskNodes() {
-            return taskNodes;
-        }
+    public TaskAction(String name, TaskNode... taskNodes) {
+        super(name);
+        this.taskNodes = taskNodes;
     }
+
+    public TaskNode[] getTaskNodes() {
+        return taskNodes;
+    }
+}

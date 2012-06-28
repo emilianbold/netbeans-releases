@@ -44,12 +44,13 @@ package org.netbeans.modules.netbinox;
 import java.io.File;
 import java.io.IOException;
 import junit.framework.Test;
+import org.openide.util.Utilities;
 
 public class CachingAndExternalURLTest {
     public static Test suite() throws IOException {
         return CachingAndExternalPathsTest.create(new CachingAndExternalPathsTest.SetExtDirProperty() {
             public void setExtDirProperty(File value) {
-                System.setProperty("ext.dir", value.toURI().toString());
+                System.setProperty("ext.dir", Utilities.toURI(value).toString());
             }
         });
     }

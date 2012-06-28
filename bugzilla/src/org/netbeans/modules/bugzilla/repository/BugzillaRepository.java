@@ -62,6 +62,8 @@ import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
@@ -75,14 +77,14 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
-import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
-import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
+import org.netbeans.modules.mylyn.GetMultiTaskDataCommand;
+import org.netbeans.modules.mylyn.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.bugzilla.util.MylynUtils;
+import org.netbeans.modules.mylyn.MylynUtils;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -277,7 +279,12 @@ public class BugzillaRepository {
                 }
             }
         };
-        GetMultiTaskDataCommand dataCmd = new GetMultiTaskDataCommand(this, new HashSet<String>(Arrays.asList(ids)), collector);
+        GetMultiTaskDataCommand dataCmd = 
+                new GetMultiTaskDataCommand(
+                    Bugzilla.getInstance().getRepositoryConnector(), 
+                    getTaskRepository(), 
+                    collector,
+                    new HashSet<String>(Arrays.asList(ids)));
         getExecutor().execute(dataCmd, true);
         return ret.toArray(new BugzillaIssue[ret.size()]);
     }
@@ -352,7 +359,15 @@ public class BugzillaRepository {
         for (QueryParameter qp : additionalParams) {
             url.append(qp.get(true));
         }
-        PerformQueryCommand queryCmd = new PerformQueryCommand(this, url.toString(), collector);
+        
+        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "bugzilla simple search query");            // NOI18N
+        iquery.setUrl(url.toString());
+        PerformQueryCommand queryCmd = 
+            new PerformQueryCommand(
+                Bugzilla.getInstance().getRepositoryConnector(),
+                getTaskRepository(), 
+                collector,
+                iquery);
         getExecutor().execute(queryCmd);
         if(queryCmd.hasFailed()) {
             return Collections.emptyList();
@@ -544,7 +559,12 @@ public class BugzillaRepository {
                         return;
                     }
                     Bugzilla.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {getDisplayName(), ids}); // NOI18N
-                    GetMultiTaskDataCommand cmd = new GetMultiTaskDataCommand(BugzillaRepository.this, ids, new IssuesCollector());
+                    GetMultiTaskDataCommand cmd = 
+                        new GetMultiTaskDataCommand(
+                            Bugzilla.getInstance().getRepositoryConnector(),
+                            getTaskRepository(), 
+                            new IssuesCollector(), 
+                            ids);
                     getExecutor().execute(cmd, false);
                     scheduleIssueRefresh();
                 }

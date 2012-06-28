@@ -668,12 +668,12 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                             }
                         }
                         if (platform != null) {
-                            String platformType = platform.getSpecification().getName();
+                            final String platformType = platform.getSpecification().getName();
                             if (platformType != null) {
-                                platformType = platformType.toUpperCase(Locale.ENGLISH);
+                                final String platformTypeDisplayName = platform.getSpecification().getDisplayName();
                                 PlatformCategoriesDescriptor platforms = categories.get(platformType);
                                 if (platforms == null ) {
-                                    platforms = new PlatformCategoriesDescriptor (platformType);
+                                    platforms = new PlatformCategoriesDescriptor (platformTypeDisplayName);
                                     categories.put (platformType, platforms);
                                 }
                                 platforms.add (node);

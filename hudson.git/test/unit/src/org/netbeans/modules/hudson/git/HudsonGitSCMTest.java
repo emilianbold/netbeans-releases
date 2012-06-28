@@ -43,6 +43,7 @@ import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -76,7 +77,7 @@ public class HudsonGitSCMTest extends NbTestCase {
                 + "\tremote = origin\n"
                 + "\tmerge = refs/heads/master\n");
         // ref: http://www.kernel.org/pub/software/scm/git/docs/git-clone.html#_git_urls_a_id_urls_a
-        assertEquals("ssh://git@github.com/x/y.git", String.valueOf(HudsonGitSCM.getRemoteOrigin(getWorkDir().toURI(), null)));
+        assertEquals("ssh://git@github.com/x/y.git", String.valueOf(HudsonGitSCM.getRemoteOrigin(Utilities.toURI(getWorkDir()), null)));
         HudsonSCM.Configuration cfg = new HudsonGitSCM().forFolder(getWorkDir());
         assertNotNull(cfg);
         Document doc = XMLUtil.createDocument("whatever", null, null, null);
@@ -91,7 +92,7 @@ public class HudsonGitSCMTest extends NbTestCase {
         TestFileUtils.writeFile(new File(getWorkDir(), ".git/config"),
                   "[core]\n"
                 + "\trepositoryformatversion = 0\n");
-        assertEquals(null, HudsonGitSCM.getRemoteOrigin(getWorkDir().toURI(), null));
+        assertEquals(null, HudsonGitSCM.getRemoteOrigin(Utilities.toURI(getWorkDir()), null));
         HudsonSCM.Configuration cfg = new HudsonGitSCM().forFolder(getWorkDir());
         assertNotNull(cfg);
         Document doc = XMLUtil.createDocument("whatever", null, null, null);

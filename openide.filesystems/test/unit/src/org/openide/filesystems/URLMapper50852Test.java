@@ -50,6 +50,7 @@ import org.openide.util.Lookup;
 
 import java.net.URL;
 import java.io.File;
+import org.openide.util.Utilities;
 
 /**
  * Simulates issue 50852.
@@ -76,7 +77,7 @@ public class URLMapper50852Test extends NbTestCase {
      */
     protected void setUp() throws Exception {
         File workdir = getWorkDir();
-        testURL = workdir.toURI().toURL();                
+        testURL = Utilities.toURI(workdir).toURL();
         System.setProperty("org.openide.util.Lookup", "org.openide.filesystems.URLMapper50852Test$Lkp");
         MAPPER_INSTANCE = new MyURLMapper ();
         Lkp lkp = (Lkp)org.openide.util.Lookup.getDefault();

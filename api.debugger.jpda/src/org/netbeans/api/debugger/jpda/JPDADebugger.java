@@ -50,6 +50,7 @@ import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.request.EventRequest;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -62,6 +63,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.java.classpath.ClassPath;
 
 import org.netbeans.modules.debugger.jpda.apiregistry.DebuggerProcessor;
 import org.netbeans.spi.debugger.ContextAwareService;
@@ -172,7 +174,15 @@ public abstract class JPDADebugger {
      *
      * @param connector The listening connector
      * @param args The arguments
-     * @param services The additional services
+     * @param services The additional services, which are added to the debugger session lookup.<br/>
+     * It is expected, that one element in the services array is a {@link Map} with following setup properties:<br/>
+     * <lu>
+     * <li><code>name</code> with the value being the session name as String,</li>
+     * <li><code>sourcepath</code> with the {@link ClassPath} value containing class path of sources used by debugger,</li>
+     * <li><code>jdksources</code> with the {@link ClassPath} value containing class path of platform sources,</li>
+     * <li><code>listeningCP</code> optional String representation of source class path which is in compile-on-save mode, which we listen on for artifacts changes,</li>
+     * <li><code>baseDir</code> with the debugging project's base directory as {@link File}.</li>
+     * </lu>
      */
     public static JPDADebugger listen (
         ListeningConnector        connector,
@@ -210,7 +220,8 @@ public abstract class JPDADebugger {
      *
      * @param connector The listening connector
      * @param args The arguments
-     * @param services The additional services
+     * @param services The additional services, which are added to the debugger session lookup.<br/>
+     * See {@link #listen(com.sun.jdi.connect.ListeningConnector, java.util.Map, java.lang.Object[])} for a more detailed description of this argument.
      * @throws DebuggerStartException when {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}
      * returns an empty array
      */
@@ -231,7 +242,8 @@ public abstract class JPDADebugger {
      *
      * @param connector The listening connector
      * @param args The arguments
-     * @param services The additional services
+     * @param services The additional services, which are added to the debugger session lookup.<br/>
+     * See {@link #listen(com.sun.jdi.connect.ListeningConnector, java.util.Map, java.lang.Object[])} for a more detailed description of this argument.
      * @return A non-empty array of started engines (since 2.26)
      * @throws DebuggerStartException when {@link org.netbeans.api.debugger.DebuggerManager#startDebugging}
      * returns an empty array
@@ -269,6 +281,15 @@ public abstract class JPDADebugger {
      *
      * @param hostName a name of computer to attach to
      * @param portNumber a port number
+     * @param services The additional services, which are added to the debugger session lookup.<br/>
+     * It is expected, that one element in the services array is a {@link Map} with following setup properties:<br/>
+     * <lu>
+     * <li><code>name</code> with the value being the session name as String,</li>
+     * <li><code>sourcepath</code> with the {@link ClassPath} value containing class path of sources used by debugger,</li>
+     * <li><code>jdksources</code> with the {@link ClassPath} value containing class path of platform sources,</li>
+     * <li><code>listeningCP</code> optional String representation of source class path which is in compile-on-save mode, which we listen on for artifacts changes,</li>
+     * <li><code>baseDir</code> with the debugging project's base directory as {@link File}.</li>
+     * </lu>
      */
     public static JPDADebugger attach (
         String          hostName,
@@ -305,6 +326,8 @@ public abstract class JPDADebugger {
      * {@link org.netbeans.api.debugger.DebuggerManager#getDebuggerManager}.
      *
      * @param name a name of shared memory block
+     * @param services The additional services, which are added to the debugger session lookup.<br/>
+     * See {@link #attach(java.lang.String, int, java.lang.Object[])} for a more detailed description of this argument.
      */
     public static JPDADebugger attach (
         String          name,

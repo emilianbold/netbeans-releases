@@ -416,49 +416,55 @@ public class GoToSupport {
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = EnumSet.of(JavaTokenId.IDENTIFIER, JavaTokenId.THIS, JavaTokenId.SUPER);
     
-    public static int[] getIdentifierSpan(Document doc, int offset, Token<JavaTokenId>[] token) {
+    public static int[] getIdentifierSpan(final Document doc, final int offset, final Token<JavaTokenId>[] token) {
         if (getFileObject(doc) == null) {
             //do nothing if FO is not attached to the document - the goto would not work anyway:
             return null;
         }
-        
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
-        
-        if (ts == null)
-            return null;
-        
-        ts.move(offset);
-        if (!ts.moveNext())
-            return null;
-        
-        Token<JavaTokenId> t = ts.token();
-        
-        if (JavaTokenId.JAVADOC_COMMENT == t.id()) {
-            // javadoc hyperlinking (references + param names)
-            TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
-            if (JavadocImports.isInsideReference(jdts, offset) || JavadocImports.isInsideParamName(jdts, offset)) {
-                jdts.move(offset);
-                jdts.moveNext();
-                if (token != null) {
-                    token[0] = t;
+        final int[][] ret = new int[][] {null}; 
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
+
+                if (ts == null)
+                    return;
+
+                ts.move(offset);
+                if (!ts.moveNext())
+                    return;
+
+                Token<JavaTokenId> t = ts.token();
+
+                if (JavaTokenId.JAVADOC_COMMENT == t.id()) {
+                    // javadoc hyperlinking (references + param names)
+                    TokenSequence<JavadocTokenId> jdts = ts.embedded(JavadocTokenId.language());
+                    if (JavadocImports.isInsideReference(jdts, offset) || JavadocImports.isInsideParamName(jdts, offset)) {
+                        jdts.move(offset);
+                        jdts.moveNext();
+                        if (token != null) {
+                            token[0] = t;
+                        }
+                        ret[0] = new int [] {jdts.offset(), jdts.offset() + jdts.token().length()};
+                    }
+                    return;
+                } else if (!USABLE_TOKEN_IDS.contains(t.id())) {
+                    ts.move(offset - 1);
+                    if (!ts.moveNext())
+                        return;
+                    t = ts.token();
+                    if (!USABLE_TOKEN_IDS.contains(t.id()))
+                        return;
                 }
-                return new int [] {jdts.offset(), jdts.offset() + jdts.token().length()};
+
+                if (token != null)
+                    token[0] = t;
+
+                ret[0] = new int [] {ts.offset(), ts.offset() + t.length()};
             }
-            return null;
-        } else if (!USABLE_TOKEN_IDS.contains(t.id())) {
-            ts.move(offset - 1);
-            if (!ts.moveNext())
-                return null;
-            t = ts.token();
-            if (!USABLE_TOKEN_IDS.contains(t.id()))
-                return null;
-        }
-        
-        if (token != null)
-            token[0] = t;
-        
-        return new int [] {ts.offset(), ts.offset() + t.length()};
+        });
+        return ret[0];
     }
     
     private static Element handlePossibleAnonymousInnerClass(CompilationInfo info, final Element el) {

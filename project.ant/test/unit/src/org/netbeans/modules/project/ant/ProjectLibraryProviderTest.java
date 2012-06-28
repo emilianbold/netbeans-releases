@@ -70,6 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.NbCollections;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockChangeListener;
 import org.openide.util.test.MockLookup;
@@ -95,14 +96,14 @@ public class ProjectLibraryProviderTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         libraryProvider = new TestLibraryProvider();
-        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir().toURI()), libraryProvider),
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(Utilities.toURI(getWorkDir())), libraryProvider),
                 // Filter out standard CQIs since they are bogus.
                 Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
         projdir = TestUtil.makeScratchDir(this).createFolder("prj");
         helper = ProjectGenerator.createProject(projdir, "test");
         project = ProjectManager.getDefault().findProject(projdir);
         close(OpenProjects.getDefault().getOpenProjects());
-        base = getWorkDir().toURI().toURL();
+        base = Utilities.toURI(getWorkDir()).toURL();
         ProjectLibraryProvider.FIRE_CHANGES_SYNCH = true;
         registerTestLibraryTypeProvider();
     }
@@ -396,7 +397,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         } else {
             FileUtil.createData(f);
         }
-        assertEquals(mode, SharabilityQuery.getSharability(f.toURI()));
+        assertEquals(mode, SharabilityQuery.getSharability(Utilities.toURI(f)));
     }
 
     private void writeProperties(String path, String... properties) throws IOException {
@@ -481,13 +482,13 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         FileUtil.toFileObject(getWorkDir()).getFileSystem().refresh(false);
         LibraryImplementation l1 = LibrariesSupport.createLibraryImplementation("j2test", new String[]{"jars", "sources"});
         l1.setName("vino");
-        l1.setContent("jars", Arrays.asList(new URL[]{f.toURI().toURL(), f1.toURI().toURL()}));
-        l1.setContent("sources", Arrays.asList(new URL[]{new URL("jar:" + f2.toURI().toURL() + "!/docs/api/")}));
+        l1.setContent("jars", Arrays.asList(new URL[]{Utilities.toURI(f).toURL(), Utilities.toURI(f1).toURL()}));
+        l1.setContent("sources", Arrays.asList(new URL[]{new URL("jar:" + Utilities.toURI(f2).toURL() + "!/docs/api/")}));
         libraryProvider.set(l1);
         Library l = LibraryManager.getDefault().getLibrary("vino");
         assertNotNull(l);
         assertEquals(LibraryManager.getDefault(), l.getManager());
-        URL u = f3.toURI().toURL();
+        URL u = Utilities.toURI(f3).toURL();
         Library result = ProjectLibraryProvider.copyLibrary(l, u, false);
         assertNotNull(result);
         assertEquals(u, result.getManager().getLocation());
@@ -497,20 +498,20 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals("vino", result.getName());
         assertEquals("j2test", result.getType());
         //assertNotNull(LibrariesSupport.resolveLibraryEntryFileObject(u, result.getURIContent("jars").get(0)));
-        assertEquals("jar:"+(new File(this.getWorkDir(), "libraries/vino/bertie.jar").toURI().toString())+"!/", 
+        assertEquals("jar:"+(Utilities.toURI(new File(this.getWorkDir(), "libraries/vino/bertie.jar")).toString())+"!/",
                 LibrariesSupport.resolveLibraryEntryURI(u, result.getURIContent("jars").get(0)).toString());
-        assertEquals("jar:"+(new File(this.getWorkDir(), "libraries/vino/bertie.jar").toURI().toString())+"!/", 
+        assertEquals("jar:"+(Utilities.toURI(new File(this.getWorkDir(), "libraries/vino/bertie.jar")).toString())+"!/",
                 result.getContent("jars").get(0).toExternalForm());
         //assertNotNull(LibrariesSupport.resolveLibraryEntryFileObject(u, result.getContent("sources").get(0)));
-        assertEquals("jar:"+(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar").toURI())+"!/docs/api/", 
+        assertEquals("jar:"+(Utilities.toURI(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar")))+"!/docs/api/",
                 LibrariesSupport.resolveLibraryEntryURI(u, result.getURIContent("sources").get(0)).toString());
-        assertEquals("jar:"+(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar").toURI())+"!/docs/api/", 
+        assertEquals("jar:"+(Utilities.toURI(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar")))+"!/docs/api/",
                 result.getContent("sources").get(0).toExternalForm());
         // enable test collocation query:
-        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir().toURI()), libraryProvider),
+        MockLookup.setLookup(Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(Utilities.toURI(getWorkDir())), libraryProvider),
                 // Filter out standard CQIs since they are bogus.
                 Lookups.exclude(Lookups.metaInfServices(ProjectLibraryProviderTest.class.getClassLoader()), CollocationQueryImplementation.class));
-        u = f4.toURI().toURL();
+        u = Utilities.toURI(f4).toURL();
         result = ProjectLibraryProvider.copyLibrary(l, u, false);
         assertNotNull(result);
         assertEquals(u, result.getManager().getLocation());

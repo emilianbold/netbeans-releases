@@ -693,6 +693,18 @@ public final class GeneratorUtilities {
         
         // check for possible name clashes originating from adding the package imports
         Set<Element> explicitNamedImports = new HashSet<Element>();
+        for (Element element : elementsToImport) {
+            if (element.getKind().isClass() || element.getKind().isInterface()) {
+                for (Entry e = importScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName()); e.scope != null; e = e.next()) {
+                    if (e.sym.getKind().isClass() || e.sym.getKind().isInterface()) {
+                        if (e.sym != element) {
+                            explicitNamedImports.add(element);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         Map<Name, TypeElement> usedTypes = null;
         for (Map.Entry<PackageElement, Integer> entry : pkgCounts.entrySet()) {
             if (entry.getValue() == -1) {
@@ -807,8 +819,7 @@ public final class GeneratorUtilities {
      *         them will be added during task commit.
      */
     public <T extends Tree> T importFQNs(T original) {
-        TranslateIdentifier translator = new TranslateIdentifier(copy);
-        return (T) translator.translate(original);
+        return TranslateIdentifier.importFQNs(copy, original);
     }
 
     public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {

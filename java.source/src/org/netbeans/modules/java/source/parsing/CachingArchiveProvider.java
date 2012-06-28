@@ -56,6 +56,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Utilities;
 
 
 /** Global cache for Archives (zip files and folders).
@@ -153,7 +154,7 @@ public class CachingArchiveProvider {
     private static Archive create( URL root, boolean cacheFile ) {
         String protocol = root.getProtocol();
         if ("file".equals(protocol)) {
-            File f = new File (URI.create(root.toExternalForm()));
+            File f = Utilities.toFile(URI.create(root.toExternalForm()));
             if (f.isDirectory()) {
                 return new FolderArchive (f);
             }
@@ -165,7 +166,7 @@ public class CachingArchiveProvider {
             URL inner = FileUtil.getArchiveFile(root);
             protocol = inner.getProtocol();
             if ("file".equals(protocol)) {
-                File f = new File (URI.create(inner.toExternalForm()));
+                File f = Utilities.toFile(URI.create(inner.toExternalForm()));
                 if (f.isFile()) {
                     return new CachingArchive( f, cacheFile );
                 }

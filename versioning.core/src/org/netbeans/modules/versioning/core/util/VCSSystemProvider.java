@@ -118,5 +118,7 @@ public abstract class VCSSystemProvider {
         
         public boolean accept(VCSContext ctx);
         
+        public boolean isMetadataFile(VCSFileProxy file);
+        
     }
 }

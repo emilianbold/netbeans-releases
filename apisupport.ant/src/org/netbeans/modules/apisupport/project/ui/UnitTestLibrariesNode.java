@@ -103,7 +103,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -125,7 +124,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         "LBL_unit_test_libraries=Unit Test Libraries",
         "LBL_qa-functional_test_libraries=Functional Test Libraries"
     })
-    public UnitTestLibrariesNode(String testType, final NbModuleProject project) {
+    UnitTestLibrariesNode(String testType, final NbModuleProject project) {
         super(new LibrariesChildren(testType, project), org.openide.util.lookup.Lookups.fixed(project));
         this.testType = testType;
         this.project = project;
@@ -256,13 +255,13 @@ final class UnitTestLibrariesNode extends AbstractNode {
         }
         
         protected @Override Node[] createNodes(TestModuleDependency dep) {
-            Node node = null;
-            File srcF = dep.getModule().getSourceLocation();
+            Node node;
+            ModuleEntry me = dep.getModule();
+            File srcF = me.getSourceLocation();
             if (srcF == null) {
-                File jarF = dep.getModule().getJarLocation();
+                File jarF = me.getJarLocation();
                 URL jarRootURL = FileUtil.urlForArchiveOrDir(jarF);
                 assert jarRootURL != null;
-                ModuleEntry me = dep.getModule();
                 String name = me.getLocalizedName() + " - " + me.getCodeNameBase(); // NOI18N
                 Icon icon = getLibrariesIcon();
                 FileObject root = URLMapper.findFileObject(jarRootURL);
@@ -273,10 +272,8 @@ final class UnitTestLibrariesNode extends AbstractNode {
                 Node pvNode = ActionFilterNode.create(
                         PackageView.createPackageView(new LibrariesSourceGroup(root, name, icon, icon)));
                 node = new LibraryDependencyNode(dep, testType, project, pvNode);
-                node.setName(me.getLocalizedName());
             } else {
                 node = new ProjectDependencyNode(dep, testType, project);
-                node.setName(dep.getModule().getLocalizedName());
             }
             assert node != null;
             return new Node[] { node };
@@ -333,6 +330,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             this.project = project;
             ModuleEntry me = dep.getModule();
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
+            setName(me.getCodeNameBase());
             setDisplayName(me.getLocalizedName());
             setShortDescription(UnitTestLibrariesNode.createHtmlDescription(dep));
         }
@@ -375,7 +373,18 @@ final class UnitTestLibrariesNode extends AbstractNode {
             this.dep = dep;
             this.testType = testType;
             this.project = project;
-            setShortDescription(UnitTestLibrariesNode.createHtmlDescription(dep));
+        }
+
+        @Override public String getName() {
+            return dep.getModule().getCodeNameBase();
+        }
+
+        @Override public String getDisplayName() {
+            return dep.getModule().getLocalizedName();
+        }
+
+        @Override public String getShortDescription() {
+            return createHtmlDescription(dep);
         }
         
         public @Override Action[] getActions(boolean context) {
@@ -461,7 +470,6 @@ final class UnitTestLibrariesNode extends AbstractNode {
     }
 
     private static class AddJUnit4Action extends AbstractAction {
-        private static final RequestProcessor RP = new RequestProcessor(AddJUnit4Action.class);
         private final String testType;
         private final NbModuleProject project;
         @Messages("LBL_resolve_missing_junit4=Add Missing Dependencies")
@@ -540,7 +548,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
     private static final class Pair<F, S> {
         public F first;
         public S second;
-        public Pair(F first, S second) {
+        Pair(F first, S second) {
             this.first = first;
             this.second = second;
         }
@@ -622,7 +630,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         }
         
         
-        @Messages("CTL_EditModuleDependencyTitle=Edit \"{0}\" Dependency")
+        @Messages({"# {0} - module display name", "CTL_EditModuleDependencyTitle=Edit \"{0}\" Dependency"})
         public @Override void actionPerformed(ActionEvent ev) {
             final EditTestDependencyPanel editTestPanel = new EditTestDependencyPanel(testDep);
             DialogDescriptor descriptor = new DialogDescriptor(editTestPanel,

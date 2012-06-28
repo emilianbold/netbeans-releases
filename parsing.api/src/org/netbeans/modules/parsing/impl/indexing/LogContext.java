@@ -37,6 +37,10 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
@@ -45,11 +49,11 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -134,11 +138,17 @@ import org.openide.util.RequestProcessor;
         return sb.toString();
     }
     
+    private synchronized void freeze() {
+        this.frozen = true;
+        this.timeCutOff = System.currentTimeMillis();
+    }
+    
     void log() {
         log(true);
     }
 
     void log(boolean cancel) {
+        freeze();
         final LogRecord r = new LogRecord(Level.INFO, 
                 cancel ? LOG_MESSAGE : LOG_EXCEEDS_RATE); //NOI18N
         r.setParameters(new Object[]{this});
@@ -200,56 +210,85 @@ import org.openide.util.RequestProcessor;
     
     // various path/root informaation, which was the reason for indexing.
     private Set<String>  filePathsChanged = Collections.emptySet();
-    private Set<ClassPath>  classPathsChanged = Collections.emptySet();
+    private Set<String>  classPathsChanged = Collections.emptySet();
     private Set<URL>        rootsChanged = Collections.emptySet();
     private Set<URL> filesChanged = Collections.emptySet();
-    private Set<FileObject> fileObjsChanged = Collections.emptySet();
+    private Set<URI> fileObjsChanged = Collections.emptySet();
     
     /**
      * Source roots, which have been scanned so far in this LogContext
      */
-    private List<URL>   scannedSourceRoots = new LinkedList<URL>();
+    private Map<URL, Long>   scannedSourceRoots = new LinkedHashMap<URL, Long>();
     
     /**
      * Time spent in scanning source roots listed in {@link #scannedSourceRoots}
      */
     private long        totalScanningTime;
     
+    private long        timeCutOff;
+    
     /**
      * The current source root being scanned
      */
-    private URL         currentSourceRoot;
-    
-    /**
-     * System.currentTimeMillis of the current root's scanning start
-     */
-    private long        currentRootStartTime;
+    private Map<Thread, RootInfo>    allCurrentRoots = new HashMap<Thread, RootInfo>();
     
     /**
      * The scanned root, possibly null.
      */
     private URL root;
     
+    /**
+     * If frozen becomes true, LogContext stops updating data.
+     */
+    private boolean frozen;
+    
     private Map<String, Long>   totalIndexerTime = new HashMap<String, Long>();
     
+    private class RootInfo {
+        private URL     url;
+        private long    startTime;
+
+        public RootInfo(URL url, long startTime) {
+            this.url = url;
+            this.startTime = startTime;
+        }
+        
+        public String toString() {
+            return "< root = " + url.toString() + ", spent = " + (timeCutOff - startTime) + " >";
+        }
+    }
+    
     public synchronized void noteRootScanning(URL currentRoot) {
-        assert currentSourceRoot == null;
-        currentRootStartTime = System.currentTimeMillis();
-        currentSourceRoot = currentRoot;
+        if (frozen) {
+            return;
+        }
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        assert ri == null;
+        allCurrentRoots.put(Thread.currentThread(), new RootInfo(
+                    currentRoot,
+                    System.currentTimeMillis()
+        ));
     }
     
     public synchronized void finishScannedRoot(URL scannedRoot) {
-        if (!scannedRoot.equals(currentSourceRoot)) {
+        if (frozen) {
+            return;
+        }
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        if (ri == null || !scannedRoot.equals(ri.url)) {
             return;
         }
         long time = System.currentTimeMillis();
-        totalScanningTime += time - currentRootStartTime;
-        scannedSourceRoots.add(scannedRoot);
-        
-        currentSourceRoot = null;
+        long diff = time - ri.startTime;
+        totalScanningTime += diff;
+        scannedSourceRoots.put(scannedRoot, diff);
+        allCurrentRoots.remove(Thread.currentThread());
     }
     
     public synchronized void addIndexerTime(String fName, long addTime) {
+        if (frozen) {
+            return;
+        }
         Long t = totalIndexerTime.get(fName);
         if (t == null) {
             t = Long.valueOf(0);
@@ -267,9 +306,11 @@ import org.openide.util.RequestProcessor;
             return this;
         }
         if (classPathsChanged.isEmpty()) {
-            classPathsChanged = new HashSet<ClassPath>(paths.size());
+            classPathsChanged = new HashSet<String>(paths.size());
         }
-        classPathsChanged.addAll(paths);
+        for (ClassPath cp : paths) {
+            classPathsChanged.add(cp.toString());
+        }
         return this;
     }
     
@@ -306,9 +347,11 @@ import org.openide.util.RequestProcessor;
             return this;
         }
         if (fileObjsChanged.isEmpty()) {
-            fileObjsChanged = new HashSet<FileObject>(files.size());
+            fileObjsChanged = new HashSet<URI>(files.size());
         }
-        fileObjsChanged.addAll(files);
+        for (FileObject file : files) {
+            fileObjsChanged.add(file.toURI());
+        }
         return this;
     }
 
@@ -349,11 +392,9 @@ import org.openide.util.RequestProcessor;
             sb.append("\nNOT executed");
         }
         sb.append("\nScanned roots: ").append(scannedSourceRoots).
-                append(", time: ").append(totalScanningTime);
+                append("\n, total time: ").append(totalScanningTime);
         
-        long t = System.currentTimeMillis();
-        sb.append("\nCurrent root: ").append(currentSourceRoot).
-                append(", time spent so far: ").append(t - currentRootStartTime);
+        sb.append("\nCurrent root(s): ").append(allCurrentRoots.values());
         
         sb.append("\nTime spent in indexers:");
         List<String> iNames = new ArrayList<String>(totalIndexerTime.keySet());
@@ -379,8 +420,20 @@ import org.openide.util.RequestProcessor;
         if (!this.filesChanged.isEmpty()) {
             sb.append("Changed files(URL): ").append(filesChanged.toString().replace(",", "\n\t")).append("\n");
         }
-        if (!this.fileObjsChanged.isEmpty()) {
-            sb.append("Changed files(FO): ").append(fileObjsChanged.toString().replace(",", "\n\t")).append("\n");
+        
+        if (!this.fileObjsChanged.isEmpty()) {            
+            sb.append("Changed files(FO): ");
+            for (URI uri : this.fileObjsChanged) {
+                String name;
+                try {
+                    final File f = Utilities.toFile(uri);
+                    name = f.getAbsolutePath();
+                } catch (IllegalArgumentException iae) {
+                    name = uri.toString();
+                }
+                sb.append(name).append("\n\t");
+            }
+            sb.append("\n");
         }
         if (!this.filePathsChanged.isEmpty()) {
             sb.append("Changed files(Str): ").append(filePathsChanged.toString().replace(",", "\n\t")).append("\n");

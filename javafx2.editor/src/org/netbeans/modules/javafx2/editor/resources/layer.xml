@@ -95,6 +95,17 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+            </folder>
+    </folder>
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-javafx2-editor-codegen-AddJavaFXPropertyCodeGenerator$Factory.instance">
+                        <attr name="position" intvalue="650"/>
+                    </file>
+                </folder>
+            </folder>
         </folder>
     </folder>
     <folder name="Navigator">

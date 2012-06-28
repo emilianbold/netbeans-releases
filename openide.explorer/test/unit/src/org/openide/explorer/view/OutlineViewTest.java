@@ -46,11 +46,14 @@ package org.openide.explorer.view;
 import java.awt.BorderLayout;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
+import java.util.Properties;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.swing.etable.ETableColumn;
 import org.netbeans.swing.etable.ETableColumnModel;
+import org.netbeans.swing.outline.Outline;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.OutlineView.OutlineViewOutline.OutlineViewOutlineColumn;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -158,6 +161,19 @@ public final class OutlineViewTest extends NbTestCase {
         assertEquals ("[298]", view.getOutline ().getValueAt (3, 0).toString ());
     }
 
+    public void testDescendingSortingTreeWithNaturallyStringOrderingViaETable () throws InterruptedException, IllegalAccessException, InvocationTargetException {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
+        ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
+        etc.setNestedComparator (testComarator);
+        view.getOutline ().setColumnSorted (0, false, 1); // descending order
+        view.expandNode (toExpand200_299);
+
+        assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (1, 0).toString ());
+        assertEquals ("[10-index from 100 to 199]", view.getOutline ().getValueAt (0, 0).toString ());
+        assertEquals ("[299]", view.getOutline ().getValueAt (2, 0).toString ());
+        assertEquals ("[298]", view.getOutline ().getValueAt (3, 0).toString ());
+    }
+
     public void testAscendingSortingTreeWithNaturallyStringOrdering () throws InterruptedException, IllegalAccessException, InvocationTargetException {
         ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
         ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
@@ -184,6 +200,19 @@ public final class OutlineViewTest extends NbTestCase {
         assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (102, 0).toString ());
     }
 
+    public void testAscendingSortingTreeWithNaturallyStringOrderingViaETable () throws InterruptedException, IllegalAccessException, InvocationTargetException {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
+        view.getOutline ().setColumnSorted (0, true, 1); // ascending order
+        view.expandNode (toExpand0_99);
+
+        assertEquals ("[1-index from 0 to 99]", view.getOutline ().getValueAt (0, 0).toString ());
+        assertEquals ("[0]", view.getOutline ().getValueAt (1, 0).toString ());
+        assertEquals ("[10]", view.getOutline ().getValueAt (2, 0).toString ());
+        assertEquals ("[11]", view.getOutline ().getValueAt (3, 0).toString ());
+        assertEquals ("[10-index from 100 to 199]", view.getOutline ().getValueAt (101, 0).toString ());
+        assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (102, 0).toString ());
+    }
+
     public void testDescendingSortingTreeWithCustomComparator () throws InterruptedException, IllegalAccessException, InvocationTargetException {
         ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
         ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
@@ -202,6 +231,19 @@ public final class OutlineViewTest extends NbTestCase {
         //   [298]
         //   ....
         // + [1-index from 0 to 99]
+        assertEquals ("[10-index from 100 to 199]", view.getOutline ().getValueAt (0, 0).toString ());
+        assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (1, 0).toString ());
+        assertEquals ("[299]", view.getOutline ().getValueAt (2, 0).toString ());
+        assertEquals ("[298]", view.getOutline ().getValueAt (3, 0).toString ());
+    }
+
+    public void testDescendingSortingTreeWithCustomComparatorViaETable() throws InterruptedException, IllegalAccessException, InvocationTargetException {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
+        ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
+        etc.setNestedComparator (testComarator);
+        view.getOutline().setColumnSorted (0, false, 1); // descending order
+        view.expandNode (toExpand200_299);
+
         assertEquals ("[10-index from 100 to 199]", view.getOutline ().getValueAt (0, 0).toString ());
         assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (1, 0).toString ());
         assertEquals ("[299]", view.getOutline ().getValueAt (2, 0).toString ());
@@ -235,6 +277,20 @@ public final class OutlineViewTest extends NbTestCase {
         assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (101, 0).toString ());
     }
     
+    public void testAscendingSortingTreeWithCustomComparatorViaETable() throws InterruptedException, IllegalAccessException, InvocationTargetException {
+        ETableColumnModel etcm = (ETableColumnModel) view.getOutline ().getColumnModel ();
+        ETableColumn etc = (ETableColumn) etcm.getColumn (0); // tree column
+        etc.setNestedComparator (testComarator);
+        view.getOutline().setColumnSorted (0, true, 1); // ascending order
+        view.expandNode (toExpand0_99);
+
+        assertEquals ("[1-index from 0 to 99]", view.getOutline ().getValueAt (0, 0).toString ());
+        assertEquals ("[0]", view.getOutline ().getValueAt (1, 0).toString ());
+        assertEquals ("[1]", view.getOutline ().getValueAt (2, 0).toString ());
+        assertEquals ("[2]", view.getOutline ().getValueAt (3, 0).toString ());
+        assertEquals ("[2-index from 200 to 299]", view.getOutline ().getValueAt (101, 0).toString ());
+    }
+    
     public void testColumnSortability() throws Exception {
         ETableColumnModel etcm = (ETableColumnModel) view.getOutline().getColumnModel();
         ETableColumn etc = (ETableColumn) etcm.getColumn(1);
@@ -246,6 +302,33 @@ public final class OutlineViewTest extends NbTestCase {
         view.setPropertyColumnAttribute("unitTestPropName", "SortableColumn", Boolean.TRUE);
         sortable = etc.isSortingAllowed();
         assertEquals("Sortable, again.", true, sortable);
+    }
+    
+    public void testPropertiesPersistence() throws Exception {
+        OutlineView ov = new OutlineView ("test-outline-view-component");
+        Outline outline = ov.getOutline();
+        ov.addPropertyColumn("c1", "Column 1", "Description 1");
+        ov.addPropertyColumn("c2", "Column 2", "Description 2");
+        Properties p = new Properties();
+        outline.writeSettings(p, "test");
+        
+        OutlineView ov2 = new OutlineView ("test-outline-view-component");
+        Outline outline2 = ov2.getOutline();
+        outline2.readSettings(p, "test");
+        
+        int cc = outline.getColumnCount();
+        int cc2 = outline2.getColumnCount();
+        assertEquals("Column count", cc, cc2);
+        for (int c = 0; c < cc; c++) {
+            String cn = outline.getColumnName(c);
+            String cn2 = outline2.getColumnName(c);
+            assertEquals("Column "+c+" name", cn, cn2);
+            OutlineViewOutlineColumn oc = (OutlineViewOutlineColumn) outline.getColumnModel().getColumn(c);
+            OutlineViewOutlineColumn oc2 = (OutlineViewOutlineColumn) outline2.getColumnModel().getColumn(c);
+            String shortDescription = oc.getShortDescription(null);
+            String shortDescription2 = oc2.getShortDescription(null);
+            assertEquals("Column "+c+" short description", shortDescription, shortDescription2);
+        }
     }
 
     private class OutlineViewComponent extends JPanel implements ExplorerManager.Provider {

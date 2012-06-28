@@ -1522,6 +1522,7 @@ public class Utilities {
             "HighlightsLayerExcludes", //NOI18N
             ".*(?<!TextSelectionHighlighting)$" //NOI18N
         );
+        editorPane.putClientProperty("AsTextField", Boolean.TRUE);
         editorPane.setEditorKit(kit);
         
         getEditorUI(editorPane).textLimitLineVisible = false;

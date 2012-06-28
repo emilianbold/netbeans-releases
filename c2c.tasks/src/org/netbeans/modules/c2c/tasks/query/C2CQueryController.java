@@ -47,11 +47,7 @@ import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
-import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
-import com.tasktop.c2c.server.tasks.domain.TaskResolution;
-import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
-import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -160,7 +156,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
-        panel.refreshCheckBox.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
@@ -483,8 +478,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
             onSave(true); // refresh
         } else if (e.getSource() == panel.cancelChangesButton) {
             onCancelChanges();
-        } else if (e.getSource() == panel.gotoIssueButton) {
-            onGotoIssue();
         } else if (e.getSource() == panel.webButton) {
             onWeb();
         } else if (e.getSource() == panel.saveButton) {
@@ -497,8 +490,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
             onMarkSeen();
         } else if (e.getSource() == panel.removeButton) {
             onRemove();
-        } else if (e.getSource() == panel.refreshCheckBox) {
-            onAutoRefresh();
         } else if (e.getSource() == panel.refreshConfigurationButton) {
             onRefreshConfiguration();
         } else if (e.getSource() == panel.findIssuesButton) {
@@ -654,7 +645,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
-        panel.refreshCheckBox.setVisible(true);
     }
 
     private String getLastRefresh() throws MissingResourceException {
@@ -665,37 +655,36 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
     }
 
     private void onGotoIssue() {
-        // XXX
-//        String idText = panel.idTextField.getText().trim();
-//        if(idText == null || idText.trim().equals("") ) {                       // NOI18N
-//            return;
-//        }
-//
-//        final String id = idText.replaceAll("\\s", "");                         // NOI18N
-//        
-//        final Task[] t = new Task[1];
-//        Cancellable c = new Cancellable() {
-//            @Override
-//            public boolean cancel() {
-//                if(t[0] != null) {
-//                    return t[0].cancel();
-//                }
-//                return true;
-//            }
-//        };
-//        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
-//        t[0] = C2C.getInstance().getRequestProcessor().create(new Runnable() {
-//            @Override
-//            public void run() {
-//                handle.start();
-//                try {
-//                    openIssue( (C2CIssue) repository.getIssue(id));
-//                } finally {
-//                    handle.finish();
-//                }
-//            }
-//        });
-//        t[0].schedule(0);
+        String idText = panel.idTextField.getText().trim();
+        if(idText == null || idText.trim().equals("") ) {                       // NOI18N
+            return;
+        }
+
+        final String id = idText.replaceAll("\\s", "");                         // NOI18N
+        
+        final Task[] t = new Task[1];
+        Cancellable c = new Cancellable() {
+            @Override
+            public boolean cancel() {
+                if(t[0] != null) {
+                    return t[0].cancel();
+                }
+                return true;
+            }
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(C2CQueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
+        t[0] = C2C.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
+            public void run() {
+                handle.start();
+                try {
+                    openIssue( (C2CIssue) repository.getIssue(id));
+                } finally {
+                    handle.finish();
+                }
+            }
+        });
+        t[0].schedule(0);
     }
 
     protected void openIssue(C2CIssue issue) {
@@ -817,17 +806,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
 //        C2CUtil.openQuery(q);
     }
 
-    private void onAutoRefresh() {
-//        final boolean autoRefresh = panel.refreshCheckBox.isSelected();
-//        C2CConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
-//        logAutoRefreshEvent(autoRefresh);
-//        if(autoRefresh) {
-//            scheduleForRefresh();
-//        } else {
-//            repository.stopRefreshing(query);
-//        }
-    }
-
     protected void logAutoRefreshEvent(boolean autoRefresh) {
 //        LogUtils.logAutoRefreshEvent(
 //            C2CConnector.getConnectorName(),
@@ -836,7 +814,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
 //            autoRefresh
 //        );
     }
-
 
     private void onRefreshConfiguration() {
         postPopulate(getUrlParameters(false), true);

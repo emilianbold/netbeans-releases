@@ -88,7 +88,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
 
     MethodScopeImpl(Scope inScope, MagicMethodDeclarationInfo nodeInfo) {
         super(inScope, nodeInfo);
-        assert inScope instanceof TypeScope;
+        assert inScope instanceof TypeScope : inScope.getClass().toString();
         classNormName = inScope.getNormalizedName();
         scanned = true;
     }

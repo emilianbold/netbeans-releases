@@ -205,12 +205,23 @@ final class OutputUtils {
             if (locator == null){
                 return;
             }
+            FileObject testfo = methodNode.getTestcaseFileObject();
             final int[] lineNumStorage = new int[1];
             FileObject file = getFile(frameInfo, lineNumStorage, locator);
-            if ((file == null) && (methodNode.getTestcase().getTrouble() != null)){
+            //lineNumStorage -1 means no regexp for stacktrace was matched.
+            if ((file == null) && (methodNode.getTestcase().getTrouble() != null) && lineNumStorage[0] == -1) {
+                //213935 we could not recognize the stack trace line and map it to known file
+                //if it's a failure text, grab the testcase's own line from the stack.
                 String[] st = methodNode.getTestcase().getTrouble().getStackTrace();
-                if ((st != null) && (st.length > 0))
-                file = getFile(st[st.length - 1], lineNumStorage, locator);
+                if ((st != null) && (st.length > 0)) {
+                    int index = st.length - 1;
+                    //213935 we need to find the testcase linenumber to jump to.
+                    // and ignore the infrastructure stack lines in the process
+                    while (!testfo.equals(file) && index != -1) {
+                        file = getFile(st[index], lineNumStorage, locator);
+                        index = index - 1;
+                    }
+                }
             }
             openFile(file, lineNumStorage[0]);
     }
@@ -342,9 +353,6 @@ final class OutputUtils {
         }
 
         /* Return the file (or null if no matching file was found): */
-        if (file == null) {
-            lineNum = -1;
-        }
         lineNumStorage[0] = lineNum;
         return file;
     }

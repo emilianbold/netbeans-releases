@@ -46,6 +46,8 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
@@ -522,11 +524,13 @@ public final class SourceAnalyzerFactory {
                         if (owner.getKind().isClass() || owner.getKind().isInterface()) {
                             addUsage (owner, activeClass.peek(),p,ClassIndexImpl.UsageType.FIELD_REFERENCE);
                         }
+                        recordTypeUsage(sym.asType(), p);
                     } else if (sym.getKind() == ElementKind.CONSTRUCTOR || sym.getKind() == ElementKind.METHOD) {
                         final Symbol owner = sym.getEnclosingElement();
                         if (owner.getKind().isClass() || owner.getKind().isInterface()) {
                             addUsage (owner, activeClass.peek(), p, ClassIndexImpl.UsageType.METHOD_REFERENCE);
                         }
+                        recordTypeUsage(((MethodSymbol) sym).getReturnType(), p);
                     }
                 }
             } else {
@@ -602,46 +606,59 @@ public final class SourceAnalyzerFactory {
                     } else {
                         topLevel = true;
                         className = getResourceName (this.cu);
-                        if (className != null) {
+                        if (className != null && !className.isEmpty()) {
                             final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                             name = Pair.<String,String>of(classNameType, null);
                             simpleName = className.substring(className.lastIndexOf('.') + 1);
                         } else {
                             LOG.log(
                                 Level.WARNING,
-                                "Cannot resolve {0}, ignoring whole subtree.",  //NOI18N
-                                sym);
+                                "Cannot resolve {0} (class name: {1}), ignoring whole subtree.",  //NOI18N
+                                new Object[]{
+                                    sym,
+                                    className
+                                });
                         }
                     }
                 } else {
                     final StringBuilder classNameBuilder = new StringBuilder ();
                     ClassFileUtil.encodeClassName(sym, classNameBuilder, '.');  //NOI18N
                     className = classNameBuilder.toString();
-                    ElementKind kind = sym.getKind();
-                    classNameBuilder.append(DocumentUtil.encodeKind(kind));
-                    final String classNameType = classNameBuilder.toString();
-                    String resourceName = null;
-                    topLevel = activeClass.isEmpty();
-                    if (topLevel) {
-                        if (virtual || !className.equals(sourceName)) {
-                            if (signatureFiles && rsList == null) {
-                                rsList = new HashSet<String>();
-                                if (crossedTopLevel) {
-                                    rsList.add(sourceName);
+                    if (!className.isEmpty()) {
+                        ElementKind kind = sym.getKind();
+                        classNameBuilder.append(DocumentUtil.encodeKind(kind));
+                        final String classNameType = classNameBuilder.toString();
+                        String resourceName = null;
+                        topLevel = activeClass.isEmpty();
+                        if (topLevel) {
+                            if (virtual || !className.equals(sourceName)) {
+                                if (signatureFiles && rsList == null) {
+                                    rsList = new HashSet<String>();
+                                    if (crossedTopLevel) {
+                                        rsList.add(sourceName);
+                                    }
                                 }
+                                final StringBuilder rnBuilder = new StringBuilder(FileObjects.convertPackage2Folder(sourceName));
+                                rnBuilder.append('.');  //NOI18N
+                                rnBuilder.append(FileObjects.getExtension(siblingUrl.getPath()));
+                                resourceName =  rnBuilder.toString();
+                            } else {
+                                crossedTopLevel = true;
                             }
-                            final StringBuilder rnBuilder = new StringBuilder(FileObjects.convertPackage2Folder(sourceName));
-                            rnBuilder.append('.');  //NOI18N
-                            rnBuilder.append(FileObjects.getExtension(siblingUrl.getPath()));
-                            resourceName =  rnBuilder.toString();
                         } else {
-                            crossedTopLevel = true;
+                            resourceName = activeClass.peek().second;
                         }
+                        name = Pair.<String,String>of(classNameType, resourceName);
+                        simpleName = sym.getSimpleName().toString();
                     } else {
-                        resourceName = activeClass.peek().second;
+                        LOG.log(
+                            Level.WARNING,
+                            "Invalid symbol {0} (source: {1}), ignoring whole subtree.",  //NOI18N
+                            new Object[] {
+                                sym,
+                                siblingUrl
+                        });
                     }
-                    name = Pair.<String,String>of(classNameType, resourceName);
-                    simpleName = sym.getSimpleName().toString();
                 }
             }
             if (name != null) {
@@ -936,6 +953,28 @@ public final class SourceAnalyzerFactory {
             }
             return null;
         }
+        
+        private void recordTypeUsage(final TypeMirror type, final Map<Pair<String, String>, Data> p) {
+            List<TypeMirror> types = new LinkedList<TypeMirror>();
+            types.add(type);
+            while (!types.isEmpty()) {
+                TypeMirror currentType = types.remove(0);
+                if (currentType == null) continue;
+                switch (currentType.getKind()) {
+                    case DECLARED:
+                        final Symbol typeSym = ((Type) currentType).tsym;
+                        if (typeSym != null && (typeSym.getKind().isClass() || typeSym.getKind().isInterface())) {
+                            addUsage (typeSym, activeClass.peek(), p, ClassIndexImpl.UsageType.TYPE_REFERENCE);
+                        }
+                        types.addAll(((DeclaredType) currentType).getTypeArguments());
+                        break;
+                    case ARRAY:
+                        types.add(((ArrayType) currentType).getComponentType());
+                        break;
+                }
+            }
+        }
+
     }
     
 }

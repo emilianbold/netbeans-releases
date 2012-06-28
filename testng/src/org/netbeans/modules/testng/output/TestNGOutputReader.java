@@ -263,6 +263,10 @@ final class TestNGOutputReader {
                 suiteFinished(suiteStat);
                 suiteStat = null;
             }
+            if(txt.size() > 0) {
+                addStackTrace(txt);
+                txt.clear();
+            }
             return;
         } else if (suiteSummary) {
             if (suiteStat.name != null) {

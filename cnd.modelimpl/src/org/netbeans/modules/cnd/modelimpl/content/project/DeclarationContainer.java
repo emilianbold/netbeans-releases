@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardEnum;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -163,7 +164,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
             Object o = declarations.get(name);
             // there could be at max only one forward class and
             // we don't want forward class to overwrite anything
-            if (o != null && ForwardClass.isForwardClass(decl)) {
+            if (o != null && (ForwardClass.isForwardClass(decl) || ForwardEnum.isForwardEnum(decl))) {
                 return;
             }
             if (o instanceof CsmUID<?>[]) {

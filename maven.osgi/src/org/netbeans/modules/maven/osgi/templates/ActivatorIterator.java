@@ -108,6 +108,7 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
             );
     }
 
+    @Override
     public Set<DataObject> instantiate () throws IOException/*, IllegalStateException*/ {
         // Here is the default plain behavior. Simply takes the selected
         // template (you need to have included the standard second panel
@@ -136,6 +137,7 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
             Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
                     Collections.<ModelOperation<POMModel>>singletonList(
                         new ModelOperation<POMModel>() {
+                @Override
                            public void performOperation(POMModel model) {
                                addActivator(prj, model, path);
                            }
@@ -216,6 +218,7 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
     // provide various kinds of useful information such as
     // the currently selected target name.
     // Also the panels will receive wiz as their "settings" object.
+    @Override
     public void initialize (WizardDescriptor wiz) {
         this.wiz = (TemplateWizard) wiz;
         index = 0;
@@ -247,6 +250,7 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
             }
         }
     }
+    @Override
     public void uninitialize (WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
@@ -258,30 +262,38 @@ public class ActivatorIterator implements TemplateWizard.AsynchronousInstantiati
     // or disappear dynamically, go ahead.
 
     @Messages("TITLE_x_of_y={0} of {1}")
+    @Override
     public String name () {
         return TITLE_x_of_y(index + 1, panels.size());
     }
     
+    @Override
     public boolean hasNext () {
         return index < panels.size() - 1;
     }
+    @Override
     public boolean hasPrevious () {
         return index > 0;
     }
+    @Override
     public void nextPanel () {
         if (! hasNext ()) throw new NoSuchElementException ();
         index++;
     }
+    @Override
     public void previousPanel () {
         if (! hasPrevious ()) throw new NoSuchElementException ();
         index--;
     }
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current () {
         return panels.get(index);
     }
     
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener (ChangeListener l) {}
+    @Override
     public final void removeChangeListener (ChangeListener l) {}
     // If something changes dynamically (besides moving between panels),
     // e.g. the number of panels changes in response to user input, then

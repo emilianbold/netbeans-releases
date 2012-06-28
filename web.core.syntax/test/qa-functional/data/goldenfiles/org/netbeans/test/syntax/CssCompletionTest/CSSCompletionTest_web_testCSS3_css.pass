@@ -28,6 +28,7 @@ lang
 last-child
 last-of-type
 link
+not
 nth-child
 nth-last-child
 nth-last-of-type
@@ -767,6 +768,7 @@ lang
 last-child
 last-of-type
 link
+not
 nth-child
 nth-last-child
 nth-last-of-type

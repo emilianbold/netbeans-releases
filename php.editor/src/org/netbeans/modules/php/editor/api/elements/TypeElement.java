@@ -66,4 +66,5 @@ public interface TypeElement extends FullyQualifiedElement {
     boolean isClass();
     boolean isInterface();
     boolean isTrait();
+    boolean isTraited();
 }

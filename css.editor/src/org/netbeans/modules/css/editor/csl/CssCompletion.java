@@ -968,6 +968,14 @@ public class CssCompletion implements CodeCompletionHandler {
                         expressionText = propertyImage.substring(colonIndex + 1);
                     }
 
+                    //remove semicolon if it happens to appear in the image
+                    //completion in place like: background: | ;
+                    //or in html code <div style="backgroung:|"/> (virtual source generator adds the semi)
+                    int semiIndex = expressionText.lastIndexOf(';');
+                    if(semiIndex > 0) {
+                        expressionText = expressionText.substring(0, semiIndex);
+                    }
+                    
                     //use just the current line, if the expression spans to multiple
                     //lines it is likely because of parsing error
                     int eolIndex = expressionText.indexOf('\n');
@@ -1056,6 +1064,11 @@ public class CssCompletion implements CodeCompletionHandler {
                 };
                 declarationSearch.visitAncestors(node);
                 Node declaratioNode = result[0];
+                
+                if(declaratioNode == null) {
+                    //not in property declaration, give up
+                    break;
+                }
 
                 //2.find the property node
                 result[0] = null;

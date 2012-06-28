@@ -52,6 +52,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Utilities;
 
 public class ProjectOpenedHookImplTest extends NbTestCase {
 
@@ -178,11 +179,11 @@ public class ProjectOpenedHookImplTest extends NbTestCase {
             File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
             File mArt = new File(repo, "g/m/0/m-0.jar");
             // XXX verify that p2 has not yet been loaded
-            Project m = FileOwnerQuery.getOwner(mArt.toURI());
+            Project m = FileOwnerQuery.getOwner(Utilities.toURI(mArt));
             assertNotNull(m);
             assertEquals(d.getFileObject("p2/m"), m.getProjectDirectory());
             File p2Art = new File(repo, "g/p2/0/p2-0.pom");
-            Project p2 = FileOwnerQuery.getOwner(p2Art.toURI());
+            Project p2 = FileOwnerQuery.getOwner(Utilities.toURI(p2Art));
             assertNotNull(p2);
             assertEquals(d.getFileObject("p2"), p2.getProjectDirectory());
         } finally {

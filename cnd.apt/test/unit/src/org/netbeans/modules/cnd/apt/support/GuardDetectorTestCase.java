@@ -221,12 +221,12 @@ public class GuardDetectorTestCase extends NbTestCase {
     }
 
     private String getAPTGuardMacro(String content) throws Exception {
-        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(this.getName(), content.toCharArray(), APTLanguageSupport.UNKNOWN);
+        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(this.getName(), content.toCharArray(), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
         APTFile apt = APTBuilder.buildAPT(new FileSystemImpl(), this.getName(), ts);
         assertNotNull("failed to build APT Light", apt);
         CharSequence guardMacro = apt.getGuardMacro();
         assertNotNull("macro can not be null", guardMacro);
-        ts = APTTokenStreamBuilder.buildTokenStream(this.getName(), content.toCharArray(), APTLanguageSupport.UNKNOWN);
+        ts = APTTokenStreamBuilder.buildTokenStream(this.getName(), content.toCharArray(), APTLanguageSupport.UNKNOWN, APTLanguageSupport.FLAVOR_UNKNOWN);
         apt = APTBuilder.buildAPT(new FileSystemImpl(), this.getName(), ts);
         assertNotNull("failed to build APT", apt);
         assertEquals("different guards in APT Light and full APT", guardMacro, apt.getGuardMacro());

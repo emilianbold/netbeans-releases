@@ -41,12 +41,7 @@
  */
 package org.netbeans.modules.php.editor.codegen;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -58,12 +53,7 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.ClassElement;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TreeElement;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -93,6 +83,7 @@ public class CGSInfo {
      */
     private CGSGenerator.GenWay howToGenerate;
     private boolean generateDoc;
+    private boolean fluentSetter;
 
     private CGSInfo(JTextComponent textComp) {
         properties = new ArrayList<Property>();
@@ -104,6 +95,7 @@ public class CGSInfo {
         this.textComp = textComp;
         hasConstructor = false;
         this.generateDoc = true;
+        fluentSetter = false;
         this.howToGenerate = CGSGenerator.GenWay.AS_JAVA;
     }
 
@@ -157,6 +149,13 @@ public class CGSInfo {
         this.generateDoc = generateDoc;
     }
 
+    public boolean isFluentSetter() {
+        return fluentSetter;
+    }
+
+    public void setFluentSetter(final boolean fluentSetter) {
+        this.fluentSetter = fluentSetter;
+    }
 
     /**
      * Extract attributes and methods from caret enclosing class and initialize list of properties.

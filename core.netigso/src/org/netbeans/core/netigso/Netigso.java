@@ -51,19 +51,24 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.ArchiveResources;
 import org.netbeans.Module;
+import org.netbeans.Module.PackageExport;
 import org.netbeans.NetigsoFramework;
 import org.netbeans.ProxyClassLoader;
 import org.netbeans.Stamps;
@@ -565,7 +570,7 @@ implements Cloneable, Stamps.Updater {
      * @return the stream to read the definition from or null, if it does not
      *   make sense to represent this module as bundle
      */
-    private static InputStream fakeBundle(ModuleInfo m) throws IOException {
+    private static InputStream fakeBundle(Module m) throws IOException {
         String netigsoExp = (String) m.getAttribute("Netigso-Export-Package"); // NOI18N
         String exp = (String) m.getAttribute("OpenIDE-Module-Public-Packages"); // NOI18N
         if (netigsoExp == null) {
@@ -586,10 +591,10 @@ implements Cloneable, Stamps.Updater {
         if (netigsoExp != null) {
             man.getMainAttributes().putValue("Export-Package", netigsoExp); // NOI18N
         } else if (exp != null) {
-            man.getMainAttributes().putValue("Export-Package", exp.replaceAll("\\.\\*", "")); // NOI18N
+            man.getMainAttributes().putValue("Export-Package", substitutePkg(m)); // NOI18N
         } else {
             man.getMainAttributes().putValue("Export-Package", m.getCodeNameBase()); // NOI18N
-        }
+        }        
         JarOutputStream jos = new JarOutputStream(os, man);
         jos.close();
         return new ByteArrayInputStream(os.toByteArray());
@@ -682,7 +687,7 @@ implements Cloneable, Stamps.Updater {
                 return this;
             }
         }
-        return new VFile().toURI().toString();
+        return Utilities.toURI(new VFile()).toString();
     }
 
     @Messages({"#NOI18N", "FIND_COVERED_PKGS=findEntries"})
@@ -699,5 +704,68 @@ implements Cloneable, Stamps.Updater {
     private boolean isEnabled(String cnd) {
         Module m = findModule(cnd);
         return m != null && m.isEnabled();
+    }
+    private static String substitutePkg(Module m) {
+        StringBuilder exported = new StringBuilder();
+        String sep = "";
+        PackageExport[] pblk = m.getPublicPackages();
+        if (pblk == null) {
+            pblk = new PackageExport[1];
+            pblk[0] = new PackageExport("", true);
+        }
+        
+        for (Module.PackageExport packageExport : pblk) {
+            Set<String> pkgs;
+            if (packageExport.recursive) {
+                pkgs = findRecursivePkgs(m, packageExport);
+            } else {
+                pkgs = Collections.singleton(packageExport.pkg);
+            }
+            for (String p : pkgs) {
+                if (p.endsWith("/")) { // NOI18N
+                    p = p.substring(0, p.length() - 1);
+                }
+                exported.append(sep).append(p.replace('/', '.'));
+                sep = ",";
+            }
+        }
+        if (exported.length() == 0) {
+            exported.append(m.getCodeNameBase());
+        }
+        return exported.toString();
+    }
+    private static Set<String> findRecursivePkgs(Module m, PackageExport packageExport)  {
+        Set<String> pkgs = new HashSet<String>();
+        for (File f : m.getAllJars()) {
+            JarFile jf = null;
+            try {
+                jf = new JarFile(f);
+                Enumeration<JarEntry> en = jf.entries();
+                while (en.hasMoreElements()) {
+                    JarEntry e = en.nextElement();
+                    if (e.isDirectory()) {
+                        continue;
+                    }
+                    final String entryName = e.getName();
+                    int lastSlash = entryName.lastIndexOf('/');
+                    if (lastSlash == -1) {
+                        continue;
+                    }
+                    String pkg = entryName.substring(0, lastSlash + 1);
+                    if (pkg.startsWith(packageExport.pkg)) {
+                        pkgs.add(pkg);
+                    }
+                }
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "Can't process " + f, ex);
+            } finally {
+                try {
+                    jf.close();
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Can't close " + f, ex);
+                }
+            }
+        }
+        return pkgs;
     }
 }

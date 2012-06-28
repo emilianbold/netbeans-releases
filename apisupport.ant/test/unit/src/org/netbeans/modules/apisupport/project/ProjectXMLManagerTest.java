@@ -83,6 +83,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import static org.netbeans.modules.apisupport.project.universe.TestModuleDependency.UNIT;
 import static org.netbeans.modules.apisupport.project.universe.TestModuleDependency.QA_FUNCTIONAL;
+import org.openide.util.Utilities;
 
 /**
  * Tests ProjectXMLManager class.
@@ -308,7 +309,7 @@ public class ProjectXMLManagerTest extends TestBase {
             public Element run() {
                 Element data = null;
                 try {
-                    Document doc = XMLUtil.parse(new InputSource(projectXML.toURI().toString()),
+                    Document doc = XMLUtil.parse(new InputSource(Utilities.toURI(projectXML).toString()),
                             false, true, null, null);
                     Element project = doc.getDocumentElement();
                     Element config = XMLUtil.findElement(project, "configuration", null); // NOI18N

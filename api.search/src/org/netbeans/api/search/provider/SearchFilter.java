@@ -41,6 +41,7 @@
  */
 package org.netbeans.api.search.provider;
 
+import java.net.URI;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
@@ -88,6 +89,20 @@ public abstract class SearchFilter {
             throws IllegalArgumentException;
 
     /**
+     * Answers a question whether a given URI should be searched. The URI must
+     * stand for a plain file (not folder).
+     *
+     * @return
+     * <code>true</code> if the given file should be searched;
+     * <code>false</code> if not
+     * @exception java.lang.IllegalArgumentException if the passed
+     * <code>URI</code> is a folder
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    public abstract boolean searchFile(@NonNull URI fileUri);
+
+    /**
      * Answers a questions whether a given folder should be traversed (its
      * contents searched). The passed argument must be a folder.
      *
@@ -100,4 +115,20 @@ public abstract class SearchFilter {
      */
     public abstract @NonNull FolderResult traverseFolder(
             @NonNull FileObject folder) throws IllegalArgumentException;
+
+    /**
+     * Answers a questions whether a given URI should be traversed (its
+     * contents searched). The passed URI must stand for a folder.
+     *
+     * @return One of constants of {@link FolderResult}. If
+     * <code>TRAVERSE_ALL_SUBFOLDERS</code> is returned, this filter will not be
+     * applied on the folder's children (both direct and indirect, both files
+     * and folders)
+     * @exception java.lang.IllegalArgumentException if the passed
+     * <code>URI</code> is not a folder
+     *
+     * @since org.netbeans.api.search/1.4
+     */
+    public abstract @NonNull FolderResult traverseFolder(
+            @NonNull URI folderUri) throws IllegalArgumentException;
 }

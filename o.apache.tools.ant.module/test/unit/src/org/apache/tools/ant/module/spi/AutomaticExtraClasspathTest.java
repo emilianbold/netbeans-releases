@@ -52,6 +52,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -87,7 +88,7 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
     }
     
     public void testReadWorkDir() throws Exception {
-        URL u = getWorkDir().toURI().toURL();
+        URL u = Utilities.toURI(getWorkDir()).toURL();
         wd = u;
         
         Object value = fo.getAttribute("instanceCreate");
@@ -111,7 +112,7 @@ public class AutomaticExtraClasspathTest extends NbTestCase {
     }
 
     public void testFailIfTheFileDoesNotExists() throws Exception {
-        URL u = new File(getWorkDir(), "does-not-exists.txt").toURI().toURL();
+        URL u = Utilities.toURI(new File(getWorkDir(), "does-not-exists.txt")).toURL();
         wd = u;
         
         CharSequence log = Log.enable("", Level.INFO);

@@ -43,6 +43,8 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
+import java.beans.PropertyEditor;
+import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -290,14 +292,35 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         AbstractCompiler ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
 
-        IntNodeProp standardProp = new IntNodeProp(getCppStandard(), true, "CPPStandard", getString("CPPStandardTxt"), getString("CPPStandardHint"));  // NOI18N
+        IntNodeProp standardProp = new IntNodeProp(getCppStandard(), true, "CPPStandard", getString("CPPStandardTxt"), getString("CPPStandardHint")) {  // NOI18N
+
+                @Override
+                public PropertyEditor getPropertyEditor() {
+                    if (intEditor == null) {
+                        intEditor = new NewIntEditor();
+                    }
+                    return intEditor;
+                }
+
+                class NewIntEditor extends IntEditor {
+
+                    @Override
+                    public String getAsText() {
+                        if (CCCompilerConfiguration.this.getCppStandard().getValue() == STANDARD_INHERITED) {
+                             return NbBundle.getMessage(CCCompilerConfiguration.class, "STANDARD_INHERITED_WITH_VALUE", STANDARD_NAMES[CCCompilerConfiguration.this.getInheritedCppStandard()]); //NOI18N
+                        }
+                        return super.getAsText();
+                    }
+                                       
+                }
+         
+        };
         Sheet.Set set0 = getSet();
         sheet.put(set0);
         if (conf.isCompileConfiguration() && folder == null) {
             Sheet.Set bset = getBasicSet();
-            sheet.put(bset);
-            bset.put(standardProp);
-            if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
+            sheet.put(bset);            
+            if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler                
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
                 set2.setDisplayName(getString("OtherOptionsTxt"));
@@ -307,6 +330,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
                 set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
                 set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                 sheet.put(set2);
+            } else {
+                bset.put(standardProp);
             }
             if (getMaster() != null) {
                 sheet.put(getInputSet());
@@ -347,7 +372,9 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             }
         }  
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            set0.put(standardProp);
+            if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+                set0.put(standardProp);
+            }
         }
         
         return sheet;

@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
@@ -76,6 +78,10 @@ public class JsfCompletionItem {
 
         private static final String BOLD_OPEN_TAG = "<b>"; //NOI18N
         private static final String BOLD_END_TAG = "</b>"; //NOI18N
+        
+        private static final String AND_HTML_ENTITY = "&amp;"; //NOI18N
+        private static final String AND_HTML = "&"; //NOI18N
+        
         private AbstractFaceletsLibrary.NamedComponent component;
         private boolean autoimport; //autoimport (declare) the tag namespace if set to true
 
@@ -170,6 +176,20 @@ public class JsfCompletionItem {
                 }
                 sb.append("</table>"); //NOI18N
             }
+            
+            // Bug 208982 - Problem was found in JSF API source metadata file ui.taglib.xml. 
+            // This fix is temporary and must be removed after JSF will solve bug http://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-1106
+            if (sb.indexOf(AND_HTML_ENTITY) >= 0) {
+                Pattern pattern = Pattern.compile(AND_HTML_ENTITY);
+                Matcher matcher = pattern.matcher(sb);
+                
+                while (matcher.find()) {
+                    sb.replace(matcher.start(), matcher.end(), AND_HTML);
+                    matcher.reset();
+                }
+            } 
+            // Bug 208982 <--
+
             return sb.toString();
         }
 

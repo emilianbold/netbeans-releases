@@ -59,6 +59,7 @@ import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -79,7 +80,7 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
     public void testVirtualSourceProvider () throws Exception {
         final File root = new File (getWorkDir(),"src");    //NOI18N
         root.mkdir();
-        final Indexable[] data = prepareData(root.toURI().toURL());
+        final Indexable[] data = prepareData(Utilities.toURI(root).toURL());
         final Iterable<? extends CompileTuple> res = VirtualSourceProviderQuery.translate(Arrays.asList(data), root);
         assertEquals(new String[] {"a","b","c","d"}, res);      //NOI18N
     }

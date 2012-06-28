@@ -148,12 +148,12 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                 private CollocationQueryImplementation cqi = getDelegate().getCollocationQueryImplementation();
                 @Override
                 public boolean areCollocated(URI uri1, URI uri2) {
-                    return cqi != null && cqi.areCollocated(new File(uri1), new File(uri2));
+                    return cqi != null && cqi.areCollocated(Utilities.toFile(uri1), Utilities.toFile(uri2));
                 }
                 @Override
                 public URI findRoot(URI uri) {
-                    File file = cqi != null ? cqi.findRoot(new File(uri)) : null;
-                    return file != null ? file.toURI() : null;
+                    File file = cqi != null ? cqi.findRoot(Utilities.toFile(uri)) : null;
+                    return file != null ? Utilities.toURI(file) : null;
                 }
             };
         } 
@@ -405,8 +405,11 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         return root.toFile() != null;
     }   
     
-    // package private due unit tests
-    boolean isMetadataFile(VCSFileProxy file) {
+    @Override
+    public boolean isMetadataFile(VCSFileProxy file) {
+        if(map == null) {
+            return false;
+        }
         return getMetadataFolderNames().contains(file.getName());
     }
 

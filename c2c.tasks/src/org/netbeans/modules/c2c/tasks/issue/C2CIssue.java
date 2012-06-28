@@ -86,6 +86,7 @@ public class C2CIssue {
             
     private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
     private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
+    private C2CIssueController controller;
     
     public C2CIssue(TaskData data, C2CRepository repo) {
         this.data = data;
@@ -171,7 +172,11 @@ public class C2CIssue {
         String value = getFieldValue(IssueField.MODIFIED);
         if(value != null && !value.trim().equals("")) {
             try {
-                return MODIFIED_DATE_FORMAT.parse(value);
+                try {
+                    return new Date(Long.parseLong(value));
+                } catch (NumberFormatException nfe) {
+                    return MODIFIED_DATE_FORMAT.parse(value);
+                }
             } catch (ParseException ex) {
                 C2C.LOG.log(Level.WARNING, value, ex);
             }
@@ -210,7 +215,7 @@ public class C2CIssue {
     }
 
     public Map<String, String> getAttributes() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return Collections.emptyMap();
     }
 
     public String getSummary() {
@@ -239,7 +244,10 @@ public class C2CIssue {
     }
 
     public BugtrackingController getController() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        if(controller == null) {
+            controller = new C2CIssueController(this);
+        }
+        return controller;
     }
 
     public String[] getSubtasks() {
@@ -254,7 +262,7 @@ public class C2CIssue {
         support.removePropertyChangeListener(listener);
     }
 
-    C2CRepository getRepository() {
+    public C2CRepository getRepository() {
         return repository;
     }
         

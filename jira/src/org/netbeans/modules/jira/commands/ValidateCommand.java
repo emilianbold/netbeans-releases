@@ -44,6 +44,7 @@ package org.netbeans.modules.jira.commands;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.eclipse.core.runtime.CoreException;
@@ -51,12 +52,13 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AbstractWebLocation;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
+import org.netbeans.modules.mylyn.BugtrackingCommand;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ValidateCommand extends JiraCommand {
+public class ValidateCommand extends BugtrackingCommand {
 
     private final TaskRepository taskRepository;
 
@@ -65,10 +67,14 @@ public class ValidateCommand extends JiraCommand {
     }
 
     @Override
-    public void execute() throws CoreException, MalformedURLException, JiraException {
+    public void execute() throws CoreException, MalformedURLException, IOException {
         new URL(taskRepository.getRepositoryUrl());
         AbstractWebLocation location = new TaskRepositoryLocationFactory().createWebLocation(taskRepository);
-        JiraClientFactory.getDefault().validateConnection(location, new NullProgressMonitor());
+        try {
+            JiraClientFactory.getDefault().validateConnection(location, new NullProgressMonitor());
+        } catch (JiraException ex) {
+            throw new IOException(ex);
+        }
     }
 
 }

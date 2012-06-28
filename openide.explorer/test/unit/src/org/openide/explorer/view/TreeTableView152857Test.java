@@ -72,6 +72,7 @@ import org.openide.util.Exceptions;
  *
  * @author  Jiri Rechtacek
  */
+@RandomlyFails // Thread.sleep (1000) is used.
 public class TreeTableView152857Test extends NbTestCase {
 
     public static Test suite() {

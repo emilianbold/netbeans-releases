@@ -47,10 +47,14 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
@@ -58,11 +62,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
 import org.netbeans.core.startup.layers.ArchiveURLMapper;
-import org.netbeans.junit.RandomlyFails;
+import org.netbeans.junit.MockServices;
 import org.netbeans.modules.masterfs.MasterURLMapper;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Lookup;
 
 // XXX needs to test listening as well
-import org.openide.util.test.MockLookup;
 
 /**
  * JavadocForBinaryQueryPlatformImpl test
@@ -73,10 +79,11 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
     
     public JavadocForBinaryQueryPlatformImplTest(java.lang.String testName) {
         super(testName);
-        MockLookup.setInstances(
-                new ArchiveURLMapper(),
-                new JavadocForBinaryQueryPlatformImpl(),
-                new MasterURLMapper());
+        MockServices.setServices(
+                ArchiveURLMapper.class,
+                JavadocForBinaryQueryPlatformImpl.class,
+                MasterURLMapper.class,
+                JavaPlatformProviderImpl.class);
     }
     
     protected @Override void setUp() throws Exception {
@@ -109,12 +116,12 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
         File index = new File (api,"index-files");
         FileUtil.toFileObject(index);
         index.mkdirs();
-        l.add(javadocFile.toURI().toURL());
+        l.add(Utilities.toURI(javadocFile).toURL());
         J2SEPlatformImpl platformImpl = (J2SEPlatformImpl)platform;
         platformImpl.setJavadocFolders(l);
         urls = JavadocForBinaryQuery.findJavadoc(u).getRoots();
         assertEquals(1, urls.length);
-        assertEquals(api.toURI().toURL(), urls[0]);
+        assertEquals(Utilities.toURI(api).toURL(), urls[0]);
     }
     
     public void testJavadocFolders () throws Exception {
@@ -123,20 +130,123 @@ public class JavadocForBinaryQueryPlatformImplTest extends NbTestCase {
         final FileObject golden1 = FileUtil.createFolder(wdfo,"test1/docs/api/index-files").getParent();        //NOI18N
         final FileObject golden2 = FileUtil.createFolder(wdfo,"test2/docs/ja/api/index-files").getParent();     //NOI18N
         FileObject testFo = wdfo.getFileObject("test1");                                                        //NOI18N
-        FileObject res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        FileObject res = JavadocForBinaryQueryPlatformImpl.R.findIndexFolder(testFo);
         assertEquals(res, golden1);
         testFo = wdfo.getFileObject("test1/docs");                                                              //NOI18N
-        res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        res = JavadocForBinaryQueryPlatformImpl.R.findIndexFolder(testFo);
         assertEquals(res, golden1);
         testFo = wdfo.getFileObject("test2");                                                                   //NOI18N
-        res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        res = JavadocForBinaryQueryPlatformImpl.R.findIndexFolder(testFo);
         assertEquals(res, golden2);
         testFo = wdfo.getFileObject("test2/docs");                                                              //NOI18N
-        res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        res = JavadocForBinaryQueryPlatformImpl.R.findIndexFolder(testFo);
         assertEquals(res, golden2);
         testFo = wdfo.getFileObject("test2/docs/ja");                                                           //NOI18N
-        res = JavadocForBinaryQueryPlatformImpl.findIndexFolder(testFo);
+        res = JavadocForBinaryQueryPlatformImpl.R.findIndexFolder(testFo);
         assertEquals(res, golden2);        
+    }
+
+    public void testTwoPlatformsoverSameSDK() throws Exception {
+        final File binDir = new File(getWorkDir(),"boot");  //NOI18N
+        binDir.mkdir();
+        final File jdocFile1 = new File(getWorkDir(),"jdoc1");   //NOI18N
+        jdocFile1.mkdir();
+        final File jdocFile2 = new File(getWorkDir(),"jdoc2");  //NOI18N
+        jdocFile2.mkdir();
+        JavaPlatformProviderImpl provider = Lookup.getDefault().lookup(JavaPlatformProviderImpl.class);
+        final URL binRoot = Utilities.toURI(binDir).toURL();
+        final ClassPath bootCp = ClassPathSupport.createClassPath(binRoot);
+        final List<URL> javadoc1 = Collections.singletonList(Utilities.toURI(jdocFile1).toURL());
+        final List<URL> javadoc2 = Collections.singletonList(Utilities.toURI(jdocFile2).toURL());
+        final TestJavaPlatform platform1 = new TestJavaPlatform("platform1", bootCp);   //NOI18N
+        final TestJavaPlatform platform2 = new TestJavaPlatform("platform2", bootCp);   //NOI18N
+        platform2.setJavadoc(javadoc2);
+        provider.addPlatform(platform1);
+        provider.addPlatform(platform2);
+
+        final JavadocForBinaryQuery.Result result1 = JavadocForBinaryQuery.findJavadoc(binRoot);
+        assertEquals(javadoc2, Arrays.asList(result1.getRoots()));
+
+        platform1.setJavadoc(javadoc1);
+        assertEquals(javadoc1, Arrays.asList(result1.getRoots()));
+
+        final JavadocForBinaryQuery.Result result2 = JavadocForBinaryQuery.findJavadoc(binRoot);
+        assertEquals(javadoc1, Arrays.asList(result2.getRoots()));
+
+        platform1.setJavadoc(Collections.<URL>emptyList());
+        assertEquals(javadoc2, Arrays.asList(result1.getRoots()));
+        assertEquals(javadoc2, Arrays.asList(result2.getRoots()));
+    }
+
+    private static final class TestJavaPlatform extends JavaPlatform {
+
+        private final String name;
+        private final ClassPath bootCp;
+        private List<URL> javadoc;
+
+        TestJavaPlatform(
+                final String name,
+                final ClassPath bootCp) {
+            this.name = name;
+            this.bootCp = bootCp;
+            this.javadoc = Collections.<URL>emptyList();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return name;
+        }
+
+        @Override
+        public Map<String, String> getProperties() {
+            return Collections.<String,String>emptyMap();
+        }
+
+        @Override
+        public ClassPath getBootstrapLibraries() {
+            return bootCp;
+        }
+
+        @Override
+        public ClassPath getStandardLibraries() {
+            return ClassPath.EMPTY;
+        }
+
+        @Override
+        public String getVendor() {
+            return "Oracle";    //NOI18N
+        }
+
+        @Override
+        public Specification getSpecification() {
+            return new Specification("j2se", new SpecificationVersion("1.5"));  //NOI18N
+        }
+
+        @Override
+        public Collection<FileObject> getInstallFolders() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public FileObject findTool(String toolName) {
+            return null;
+        }
+
+        @Override
+        public ClassPath getSourceFolders() {
+            return ClassPath.EMPTY;
+        }
+
+        @Override
+        public List<URL> getJavadocFolders() {
+            return javadoc;
+        }
+
+        void setJavadoc(final List<URL> javadoc) {
+            this.javadoc = javadoc;
+            firePropertyChange(PROP_JAVADOC_FOLDER, null, null);
+        }
+
     }
     
 }

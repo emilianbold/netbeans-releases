@@ -173,6 +173,7 @@ public class ForkedJavaOverride extends Java {
             private Thread outTask;
             private Thread errTask;
             private Thread inTask;
+            private Copier outCopier, errCopier; // #212526
 
             NbOutputStreamHandler() {}
 
@@ -198,6 +199,12 @@ public class ForkedJavaOverride extends Java {
                     } catch (InterruptedException ex) {
                     }
                 }
+                if (outCopier != null) {
+                    outCopier.maybeFlush();
+                }
+                if (errCopier != null) {
+                    errCopier.maybeFlush();
+                }
             }
 
             public void setProcessOutputStream(InputStream inputStream) throws IOException {
@@ -207,7 +214,7 @@ public class ForkedJavaOverride extends Java {
                     os = AntBridge.delegateOutputStream(false);
                     logLevel = Project.MSG_INFO;
                 }
-                outTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, outEncoding), 
+                outTask = new Thread(Thread.currentThread().getThreadGroup(), outCopier = new Copier(inputStream, os, logLevel, outEncoding),
                         "Out Thread for " + getProject().getName()); // NOI18N
                 outTask.setDaemon(true);
                 outTask.start();
@@ -220,7 +227,7 @@ public class ForkedJavaOverride extends Java {
                     os = AntBridge.delegateOutputStream(true);
                     logLevel = Project.MSG_WARN;
                 }
-                errTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(inputStream, os, logLevel, errEncoding), 
+                errTask = new Thread(Thread.currentThread().getThreadGroup(), errCopier = new Copier(inputStream, os, logLevel, errEncoding),
                         "Err Thread for " + getProject().getName()); // NOI18N
                 errTask.setDaemon(true);
                 errTask.start();

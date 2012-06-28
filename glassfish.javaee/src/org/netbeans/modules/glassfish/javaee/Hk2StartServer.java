@@ -47,6 +47,9 @@ package org.netbeans.modules.glassfish.javaee;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.ActionType;
@@ -71,6 +74,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.netbeans.modules.glassfish.spi.GlassfishModule3;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.openide.DialogDescriptor;
@@ -437,7 +441,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
             return this; //we failed to start the server.
         }
 
-        GlassfishModule commonSupport = getCommonServerSupport();
+        final GlassfishModule commonSupport = getCommonServerSupport();
         if (commonSupport != null) {
             if (isClusterOrInstance(commonSupport)) {
                 fireHandleProgressEvent(null, new Hk2DeploymentStatus(
@@ -478,6 +482,23 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                     fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                         CommandType.START, translateState(newState), ActionType.EXECUTE,
                         message));
+
+                    // FIXME this is pretty ugly workaround and if this is still
+                    // needed once GF plugin is rewritten we should introduce
+                    // some API to notify about external changes of server state
+                    final ScheduledExecutorService statusUpdater = Executors.newSingleThreadScheduledExecutor();
+                    statusUpdater.scheduleAtFixedRate(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            if (ProfilerSupport.getState() == ProfilerSupport.STATE_INACTIVE) {
+                                statusUpdater.shutdownNow();
+                                if (commonSupport instanceof GlassfishModule3) {
+                                    ((GlassfishModule3) commonSupport).refresh();
+                                }
+                            }
+                        }
+                    }, 50, 100, TimeUnit.MILLISECONDS);
                 }
             }, GlassfishModule.ServerState.STOPPED_JVM_PROFILER);
         }

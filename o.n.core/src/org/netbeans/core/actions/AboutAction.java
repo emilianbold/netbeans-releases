@@ -46,7 +46,9 @@ package org.netbeans.core.actions;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
-import javax.swing.JButton;
+import java.awt.event.KeyEvent;
+import java.security.KeyStore;
+import javax.swing.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -54,6 +56,7 @@ import org.openide.util.actions.Presenter;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Utilities;
 
 /** The action that shows the AboutBox.
 *
@@ -78,6 +81,11 @@ public class AboutAction extends CallableSystemAction {
         Dialog dlg = null;
         try {
             dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            if( Utilities.isMac() && dlg instanceof JDialog ) {
+                JDialog d = (JDialog) dlg;
+                InputMap map = d.getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                map.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.META_MASK), "Escape"); //NOI18N
+            }
             dlg.setResizable(false);
             dlg.setVisible(true);
         } finally {

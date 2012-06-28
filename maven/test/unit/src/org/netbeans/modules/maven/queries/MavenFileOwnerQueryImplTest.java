@@ -43,12 +43,14 @@
 package org.netbeans.modules.maven.queries;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Arrays;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.test.TestFileUtils;
 
 public class MavenFileOwnerQueryImplTest extends NbTestCase {
@@ -84,16 +86,24 @@ public class MavenFileOwnerQueryImplTest extends NbTestCase {
         File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
         File art10 = new File(repo, "test/prj/1.0/prj-1.0.jar");
         File art11 = new File(repo, "test/prj/1.1/prj-1.1.jar");
-        assertEquals(null, foq.getOwner(art10.toURI()));
-        assertEquals(null, foq.getOwner(art11.toURI()));
+        assertEquals(null, foq.getOwner(Utilities.toURI(art10)));
+        assertEquals(null, foq.getOwner(Utilities.toURI(art11)));
         foq.registerProject(p10);
-        assertEquals(p10, foq.getOwner(art10.toURI()));
-        assertEquals(null, foq.getOwner(art11.toURI()));
+        assertEquals(p10, foq.getOwner(Utilities.toURI(art10)));
+        assertEquals(null, foq.getOwner(Utilities.toURI(art11)));
         foq.registerProject(p11);
-        // TBD whether it is desirable to forget whether 1.0 was. Could remember where all encountered versions were,
-        // but then the cache would fill up with *-SNAPSHOT information, and these entries would almost never be expired.
-        assertEquals(null, foq.getOwner(art10.toURI()));
-        assertEquals(p11, foq.getOwner(art11.toURI()));
+        assertEquals(p10, foq.getOwner(Utilities.toURI(art10)));
+        assertEquals(p11, foq.getOwner(Utilities.toURI(art11)));
+    }
+    
+    public void testOldEntriesGetRemoved() throws Exception {
+        URL url = new URL("file:///users/mkleint/aaa/bbb");
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("a", "b", "0", url);
+        assertNotNull(MavenFileOwnerQueryImpl.prefs().get("a:b:0", null));
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("a", "b", "1", url);
+        assertNotNull(MavenFileOwnerQueryImpl.prefs().get("a:b:1", null));
+        assertNull(MavenFileOwnerQueryImpl.prefs().get("a:b:0", null));
+        
     }
 
 }

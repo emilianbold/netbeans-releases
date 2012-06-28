@@ -56,6 +56,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 
 /**
  * Do we correctly call the BundleActivators?
@@ -79,7 +80,7 @@ public class NetigsoActivationWithLookupTest extends SetupHid {
         jars.mkdirs();
         File activate = createTestJAR("activate", null);
 
-        File lkp = new File(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        File lkp = Utilities.toFile(Lookup.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         File register = createTestJAR("register", null, lkp);
 
         registerModule(ud, activate, "org.activate");

@@ -267,17 +267,19 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     private static AST getLastNode(AST first) {
         AST last = first;
-        for( AST token = last; token != null; token = token.getNextSibling() ) {
-            switch( token.getType() ) {
-                case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
-                case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
-                case CPPTokenTypes.CSM_QUALIFIED_ID:
-                case CPPTokenTypes.CSM_ARRAY_DECLARATION:
-                    return AstUtil.getLastChildRecursively(last);
-                default:
-                    last = token;
+        if(last != null) {
+            for( AST token = last.getNextSibling(); token != null; token = token.getNextSibling() ) {
+                switch( token.getType() ) {
+                    case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
+                    case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
+                    case CPPTokenTypes.CSM_QUALIFIED_ID:
+                    case CPPTokenTypes.CSM_ARRAY_DECLARATION:
+                        return AstUtil.getLastChildRecursively(last);
+                    default:
+                        last = token;
+                }
             }
-        }        
+        }
         return null;
     }
 
@@ -427,12 +429,22 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             if( decorator.isReference() ) {
                 sb.append('&');
             }
-            for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
-                sb.append(canonical ? "*" : "[]"); // NOI18N
-            }
-            if( variableNameToInsert != null ) {
-                sb.append(' ');
-                sb.append(variableNameToInsert);
+            if(canonical) {
+                for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
+                    sb.append("*"); // NOI18N
+                }
+                if (variableNameToInsert != null && !(variableNameToInsert.length() == 0)) {
+                    sb.append(' ');
+                    sb.append(variableNameToInsert);
+                }
+            } else {
+                if (variableNameToInsert != null && !(variableNameToInsert.length() == 0)) {
+                    sb.append(' ');
+                    sb.append(variableNameToInsert);
+                }              
+                for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
+                    sb.append("[]"); // NOI18N
+                }
             }
             return sb;
         }

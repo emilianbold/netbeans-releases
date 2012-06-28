@@ -108,7 +108,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         super(icon, lookup, new Class<?>[] {Project.class, DataObject.class});
         this.command = command;
         if ( command != null ) {
-            ActionsUtil.SHORCUTS_MANAGER.registerAction( command, this );
+            ShortcutManager.INSTANCE.registerAction(command, this);
         }
         this.performer = performer;
         this.namePattern = namePattern;
@@ -122,7 +122,7 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
         super.putValue( key, value );
         
         if (Action.ACCELERATOR_KEY.equals(key)) {
-            ActionsUtil.SHORCUTS_MANAGER.registerShortcut( command, value );
+            ShortcutManager.INSTANCE.registerShortcut(command, value);
         }
         
     }

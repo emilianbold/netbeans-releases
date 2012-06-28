@@ -87,7 +87,7 @@ public class FetchCommand extends TransportCommand {
     }
 
     @Override
-    protected void run () throws GitException.AuthorizationException, GitException {
+    protected void runTransportCommand () throws GitException.AuthorizationException, GitException {
         Repository repository = getRepository();
         List<RefSpec> specs = new ArrayList<RefSpec>(refSpecs.size());
         for (String refSpec : refSpecs) {

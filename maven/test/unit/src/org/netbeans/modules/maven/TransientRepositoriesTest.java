@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.apache.maven.repository.RepositorySystem;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -95,8 +96,41 @@ public class TransientRepositoriesTest extends NbTestCase {
         assertRepos(CENTRAL_ANON);
     }
 
-    // XXX #201463: test listening
-    // XXX test mirrors
+    public void testListening() throws Exception {
+        FileObject d = FileUtil.toFileObject(getWorkDir());
+        TestFileUtils.writeFile(d, "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>grp</groupId>\n"
+                + "    <artifactId>art</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "</project>\n");
+        Project p = ProjectManager.getDefault().findProject(d);
+        TransientRepositories tr = new TransientRepositories(p.getLookup().lookup(NbMavenProject.class));
+        assertRepos(CENTRAL_ANON);
+        tr.register();
+        assertRepos(CENTRAL_NAMED);
+        TestFileUtils.writeFile(d, "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>\n"
+                + "    <modelVersion>4.0.0</modelVersion>\n"
+                + "    <groupId>grp</groupId>\n"
+                + "    <artifactId>art</artifactId>\n"
+                + "    <version>1.0</version>\n"
+                + "    <repositories>\n"
+                + "        <repository>\n"
+                + "            <id>stuff</id>\n"
+                + "            <name>Stuff</name>\n"
+                + "            <url>http://nowhere.net/stuff</url>\n"
+                + "        </repository>\n"
+                + "    </repositories>\n"
+                + "</project>\n");
+        NbMavenProject.fireMavenProjectReload(p);
+        assertRepos("stuff:Stuff:http://nowhere.net/stuff/", CENTRAL_NAMED);
+        tr.unregister();
+        assertRepos(CENTRAL_ANON);
+    }
+
+    // XXX test mirrors; current code mistakenly suppresses <name> of a mirrored repo when mirrored 1-1
 
     private void assertRepos(String... expected) {
         List<String> actual = new ArrayList<String>();

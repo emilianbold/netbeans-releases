@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions.MakeOptionNamedEntity;
 import org.netbeans.modules.cnd.makeproject.ui.options.DependencyChecking;
 import org.netbeans.modules.cnd.makeproject.ui.options.FixUnresolvedInclude;
 import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
@@ -56,6 +55,7 @@ import org.netbeans.modules.cnd.makeproject.ui.options.ReuseOutputTab;
 import org.netbeans.modules.cnd.makeproject.ui.options.SaveModifiedBeforBuild;
 import org.netbeans.modules.cnd.makeproject.ui.options.ShowConfigurationWarning;
 import org.netbeans.modules.cnd.makeproject.ui.options.ViewBinaryFiles;
+import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
@@ -150,36 +150,36 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
 
     // Dependency Checking
     public boolean getDepencyChecking() {
-        return getBooleanProperty(findEntity(DependencyChecking.DEPENDENCY_CHECKING));
+        return NamedOption.getAccessor().getBoolean(DependencyChecking.DEPENDENCY_CHECKING);
     }
 
     // Dependency Checking
     public boolean getRebuildPropChanged() {
-        return getBooleanProperty(findEntity(RebuildPropsChanged.REBUILD_PROP_CHANGED));
+        return NamedOption.getAccessor().getBoolean(RebuildPropsChanged.REBUILD_PROP_CHANGED);
     }
 
     // Display binary files
     public boolean getViewBinaryFiles() {
-        return getBooleanProperty(findEntity(ViewBinaryFiles.VIEW_BINARY_FILES));
+        return NamedOption.getAccessor().getBoolean(ViewBinaryFiles.VIEW_BINARY_FILES);
     }
 
     // Save
     public boolean getSave() {
-        return getBooleanProperty(findEntity(SaveModifiedBeforBuild.SAVE));
+        return NamedOption.getAccessor().getBoolean(SaveModifiedBeforBuild.SAVE);
     }
 
     // Reuse
     public boolean getReuse() {
-        return getBooleanProperty(findEntity(ReuseOutputTab.REUSE));
+        return NamedOption.getAccessor().getBoolean(ReuseOutputTab.REUSE);
     }
 
     // Show Configuration warning
     public boolean getShowConfigurationWarning() {
-        return getBooleanProperty(findEntity(ShowConfigurationWarning.SHOW_CONFIGURATION_WARNING));
+        return NamedOption.getAccessor().getBoolean(ShowConfigurationWarning.SHOW_CONFIGURATION_WARNING);
     }
 
     public void setShowConfigurationWarning(boolean val) {
-        setBooleanProperty(findEntity(ShowConfigurationWarning.SHOW_CONFIGURATION_WARNING), val);
+        NamedOption.getAccessor().setBoolean(ShowConfigurationWarning.SHOW_CONFIGURATION_WARNING, val);
     }
 
     // Def Exe Perm
@@ -249,44 +249,18 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
 
     // Is full file indexer available
     public boolean isFullFileIndexer() {
-        return getBooleanProperty(findEntity(FullFileIndexer.FULL_FILE_INDEXER));
+        return NamedOption.getAccessor().getBoolean(FullFileIndexer.FULL_FILE_INDEXER);
     }
 
     // Fix unresolved include directive by file indexer
     public boolean isFixUnresolvedInclude() {
-        return getBooleanProperty(findEntity(FixUnresolvedInclude.FIX_UNRESOLVED_INCLUDE));
+        return NamedOption.getAccessor().getBoolean(FixUnresolvedInclude.FIX_UNRESOLVED_INCLUDE);
     }
 
     public void setFixUnresolvedInclude(boolean value) {
-        setBooleanProperty(findEntity(FixUnresolvedInclude.FIX_UNRESOLVED_INCLUDE), value);
+        NamedOption.getAccessor().setBoolean(FixUnresolvedInclude.FIX_UNRESOLVED_INCLUDE, value);
     }
 
-    public boolean getBooleanProperty(MakeOptionNamedEntity entry) {
-        if (entry != null) {
-            return getPreferences().getBoolean(entry.getName(), entry.isEnabledByDefault());
-        }
-        return false;
-    }
-
-    public void setBooleanProperty(MakeOptionNamedEntity entry, boolean value) {
-        if (entry != null) {
-            boolean oldValue = getPreferences().getBoolean(entry.getName(), entry.isEnabledByDefault());
-            getPreferences().putBoolean(entry.getName(), value);
-            if (oldValue != value) {
-                firePropertyChange(entry.getName(), oldValue, value);
-            }
-        }
-    }
-    
-    public MakeOptionNamedEntity findEntity(String name) {
-        for(MakeOptionNamedEntity entry : Lookup.getDefault().lookupResult(MakeOptionNamedEntity.class).allInstances()) {
-            if (entry.getName().equals(name)) {
-                return entry;
-            }
-        }
-        return null;
-    }
-    
     @Override
     public void propertyChange(PropertyChangeEvent pce) {
     }
