@@ -42,6 +42,7 @@
 
 // references from bg page
 var NetBeans_Presets = chrome.extension.getBackgroundPage().NetBeans_Presets;
+var NetBeans_Preset = chrome.extension.getBackgroundPage().NetBeans_Preset;
 
 /**
  * Window presets menu.
@@ -109,22 +110,22 @@ NetBeans_PresetMenu._putPresets = function() {
     this._putPresetsInternal(false);
 }
 // put presets to the menu (internal)
-NetBeans_PresetMenu._putPresetsInternal = function(toolbar) {
+NetBeans_PresetMenu._putPresetsInternal = function(showInToolbar) {
     var menu = document.getElementById('menuPresets');
     for (p in this._presets) {
         var preset = this._presets[p];
-        if (preset.toolbar != toolbar) {
+        if (preset.showInToolbar != showInToolbar) {
             continue;
         }
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');
-        item.setAttribute('title', preset.title + ' (' + preset.width + ' x ' + preset.height + ')');
+        item.setAttribute('title', preset.displayName + ' (' + preset.width + ' x ' + preset.height + ')');
         item.setAttribute('onclick', 'NetBeans_PresetMenu.resizePage(' + p + ');');
         // type
         var typeDiv = document.createElement('div');
         typeDiv.setAttribute('class', 'type');
-        typeDiv.appendChild(document.createTextNode(preset.type.title));
+        typeDiv.appendChild(document.createTextNode(NetBeans_Preset.typeForIdent(preset.type).title));
         item.appendChild(typeDiv);
         // label
         var labelDiv = document.createElement('div');
@@ -137,7 +138,7 @@ NetBeans_PresetMenu._putPresetsInternal = function(toolbar) {
         // label - title
         var titleDiv = document.createElement('div');
         titleDiv.setAttribute('class', 'title');
-        titleDiv.appendChild(document.createTextNode(preset.title));
+        titleDiv.appendChild(document.createTextNode(preset.displayName));
         labelDiv.appendChild(titleDiv);
         item.appendChild(labelDiv);
         // append item

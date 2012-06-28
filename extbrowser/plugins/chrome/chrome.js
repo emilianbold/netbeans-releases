@@ -131,29 +131,3 @@ chrome.windows.getAll({populate: true}, function(windows) {
         }
     }    
 });
-
-
-/**
- * Window presets manager - browser specific.
- */
-// load presets from the central storage
-NetBeans_Presets._loadPresets = function() {
-    // XXX load presets from NB
-    if (this._presets != null) {
-        return this._presets.slice(0);
-    }
-    return [
-        new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'Widescreen', '1680', '1050', true, true),
-        new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'Desktop', '1280', '1024', true, true),
-        new NetBeans_Preset(NetBeans_Preset.NETBOOK, 'Netbook', '1024', '600', true, true),
-        new NetBeans_Preset(NetBeans_Preset.TABLET_LANDSCAPE, 'Tablet Landscape', '1024', '768', true, true),
-        new NetBeans_Preset(NetBeans_Preset.TABLET_PORTRAIT, 'Tablet Portrait', '768', '1024', true, true),
-        new NetBeans_Preset(NetBeans_Preset.SMARTPHONE_LANDSCAPE, 'Smartphone Landscape', '480', '320', true, true),
-        new NetBeans_Preset(NetBeans_Preset.SMARTPHONE_PORTRAIT, 'Smartphone Portrait', '320', '480', true, true)
-    ];
-}
-// save presets to the central storage
-NetBeans_Presets._savePresets = function() {
-    // XXX save presets back to NB
-    console.error('Saving presets not implemented');
-}

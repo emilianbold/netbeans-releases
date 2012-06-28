@@ -133,10 +133,10 @@ NetBeans_PresetCustomizer._putPresets = function(presets) {
             var presetType = allPresetTypes[i];
             var option = document.createElement('option');
             option.setAttribute('value', presetType.ident);
-            if (preset.type === presetType) {
+            if (preset.type === presetType.ident) {
                 option.setAttribute('selected', 'selected');
             }
-            option.appendChild(document.createTextNode(presetType.title));
+            option.appendChild(document.createTextNode(presetType.displayName));
             typeSelect.appendChild(option);
         }
         typeSelect.addEventListener('change', function() {
@@ -147,7 +147,7 @@ NetBeans_PresetCustomizer._putPresets = function(presets) {
         // name
         var title = document.createElement('td');
         var titleInput = document.createElement('input');
-        titleInput.setAttribute('value', preset.title);
+        titleInput.setAttribute('value', preset.displayName);
         titleInput.addEventListener('keyup', function() {
             that._titleChanged(this);
         }, false);
@@ -178,7 +178,7 @@ NetBeans_PresetCustomizer._putPresets = function(presets) {
         toolbar.setAttribute('class', 'toolbar');
         var toolbarCheckbox = document.createElement('input');
         toolbarCheckbox.setAttribute('type', 'checkbox');
-        if (preset.toolbar) {
+        if (preset.showInToolbar) {
             toolbarCheckbox.setAttribute('checked', 'checked');
         }
         toolbarCheckbox.addEventListener('click', function() {
@@ -203,7 +203,7 @@ NetBeans_PresetCustomizer._cleanUp = function() {
 }
 // add a new preset
 NetBeans_PresetCustomizer._addPreset = function() {
-    var preset = new NetBeans_Preset(NetBeans_Preset.DESKTOP, 'New...', '800', '600', true, false);
+    var preset = new NetBeans_Preset(NetBeans_Preset.DESKTOP.ident, 'New...', '800', '600', true, false);
     this._presets.push(preset);
     this._putPresets([preset]);
     this._enableButtons();
@@ -291,7 +291,7 @@ NetBeans_PresetCustomizer._enableButtons = function() {
 NetBeans_PresetCustomizer._enablePresetButtons = function() {
     if (this._activePreset != null) {
         // any preset selected
-        if (this._activePreset.internal) {
+        if (this._activePreset.isDefault) {
             this._removePresetButton.setAttribute('disabled', 'disabled');
         } else {
             this._removePresetButton.removeAttribute('disabled');
@@ -340,12 +340,12 @@ NetBeans_PresetCustomizer._typeChanged = function(input) {
         }
         this._rowSelected(row);
     }
-    this._activePreset.type = NetBeans_Preset.typeForIdent(input.value);
+    this._activePreset.type = NetBeans_Preset.typeForIdent(input.value).ident;
 }
 // callback when preset title changes
 NetBeans_PresetCustomizer._titleChanged = function(input) {
     var that = this;
-    this._checkField(input, 'title', function(value) {
+    this._checkField(input, 'displayName', function(value) {
         return that._validateNotEmpty(value);
     });
 }
@@ -365,7 +365,7 @@ NetBeans_PresetCustomizer._heightChanged = function(input) {
 }
 // callback when preset toolbar changes
 NetBeans_PresetCustomizer._toolbarChanged = function(input) {
-    this._activePreset.toolbar = input.checked;
+    this._activePreset.showInToolbar = input.checked;
 }
 // check whether the value is not empty
 NetBeans_PresetCustomizer._validateNotEmpty = function(value) {

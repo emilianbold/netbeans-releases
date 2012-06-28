@@ -68,6 +68,8 @@ class Message {
         DETACH_DEBUGGER,
         DEBUGGER_COMMAND,
         DEBUGGER_COMMAND_RESPONSE,
+        LOAD_RESIZE_OPTIONS,
+        SAVE_RESIZE_OPTIONS,
         ;
         
         @Override
@@ -129,7 +131,7 @@ class Message {
     
     
     private final MessageType type;
-    private JSONObject data;
+    private final JSONObject data;
     static final String TAB_ID = "tabId";       // NOI18N    
     
 }

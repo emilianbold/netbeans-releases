@@ -152,6 +152,24 @@ NetBeans.sendUrlChangeMessage = function(tabId, url) {
     });
 }
 
+NetBeans.sendLoadResizeOptionsMessage = function() {
+    // XXX message sent more than once
+    if (ResizeOptions != null) {
+        return;
+    }
+    this.sendMessage({
+        message: 'load_resize_options'
+    });
+}
+
+NetBeans.sendSaveResizeOptionsMessage = function(presets) {
+    ResizeOptions = presets;
+    this.sendMessage({
+        message: 'save_resize_options',
+        resizeOptions: ResizeOptions
+    });
+}
+
 NetBeans.sendPendingMessages = function() {
     for (var i=0; i<this.pendingMessages.length; i++) {
         this.sendMessage(this.pendingMessages[i]);
@@ -171,6 +189,10 @@ NetBeans.processMessage = function(message) {
         this.processDetachDebuggerMessage(message);
     } else if (type === 'debugger_command') {
         this.processDebuggerCommandMessage(message);
+    } else if (type === 'load_resize_options') {
+        this.processLoadResizeOptionsMessage(message);
+    } else if (type === 'save_resize_options') {
+        this.processSaveResizeOptionsMessage(message);
     } else {
         console.log('Unsupported message!');
         console.log(message);
@@ -267,6 +289,17 @@ NetBeans.processDebuggerCommandMessage = function(message) {
     }
 }
 
+NetBeans.processLoadResizeOptionsMessage = function(message) {
+    ResizeOptions = JSON.parse(message.resizeOptions);
+}
+
+NetBeans.processSaveResizeOptionsMessage = function(message) {
+    this.sendMessage({
+        message: 'save_resize_options',
+        resizeOptions: message.resizeOptions
+    });
+}
+
 NetBeans.sendDebuggingResponse = function(tabId, response) {
     this.sendMessage({
         message: 'debugger_command_response',
@@ -288,6 +321,7 @@ NetBeans.tabUpdated = function(tab) {
         tabInfo.url = tab.url;
         // Send URL to IDE - ask if the tab is managed
         this.sendInitMessage(tab);
+        this.sendLoadResizeOptionsMessage();
     } else if ((tabInfo !== undefined) && (tabInfo.url !== tab.url)) {
         // URL change should not mean that tab was closed; it may notify
         // IDE that different page is opened in the browser pane if such knowledge
@@ -325,19 +359,19 @@ NetBeans.tabRemoved = function(tabId) {
  *
  * Internal presets cannot be removed.
  */
-function NetBeans_Preset(type, title, width, height, toolbar, internal) {
-    // type
+function NetBeans_Preset(type, displayName, width, height, showInToolbar, isDefault) {
+    // type (its ident)
     this.type = type;
-    // title
-    this.title = title;
+    // display name
+    this.displayName = displayName;
     // width (in px)
     this.width = width;
     // height (in px)
     this.height = height;
     // show in toolbar
-    this.toolbar = toolbar;
-    // internal or not?
-    this.internal = internal;
+    this.showInToolbar = showInToolbar;
+    // default or not?
+    this.isDefault = isDefault;
 }
 // preset type for Desktops
 NetBeans_Preset.DESKTOP = {
@@ -425,3 +459,34 @@ NetBeans_Presets.setPresets = function(presets) {
     this._presets = presets;
     this._savePresets();
 }
+// load presets from the central storage
+NetBeans_Presets._loadPresets = function() {
+    if (ResizeOptions == null) {
+        // netbeans not running?
+        return null;
+    }
+    console.log('Mapping window presets from NetBeans');
+    var presets = [];
+    for (var i in ResizeOptions) {
+        var option = ResizeOptions[i];
+        presets.push(new NetBeans_Preset(
+            option.type,
+            option.displayName,
+            option.width,
+            option.height,
+            option.showInToolbar,
+            option.isDefault
+        ));
+    }
+    return presets;
+}
+// save presets to the central storage
+NetBeans_Presets._savePresets = function() {
+    console.log('Saving window presets back to NetBeans');
+    NetBeans.sendSaveResizeOptionsMessage(this._presets);
+}
+
+/**
+ * Resize options (a.k.a. Windows Presets from NetBeans).
+ */
+var ResizeOptions = null;
