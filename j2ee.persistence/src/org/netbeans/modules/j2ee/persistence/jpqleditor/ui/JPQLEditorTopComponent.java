@@ -282,11 +282,6 @@ public final class JPQLEditorTopComponent extends TopComponent {
                 }
             }
         }
-
-        // Future..
-//        private class JPQLTransferHandler extends TransferHandler {
-//
-//        }
     }
 
     public void setFocusToEditor() {
@@ -452,7 +447,6 @@ public final class JPQLEditorTopComponent extends TopComponent {
                 }
             });
             
-            Project enclosingProject = FileOwnerQuery.getOwner(dO.getPrimaryFile());
             Persistence persistence = puObject.getPersistence();
             if (persistence == null) {
                 logger.warning("corrupted persistence.xml in enclosing project.");

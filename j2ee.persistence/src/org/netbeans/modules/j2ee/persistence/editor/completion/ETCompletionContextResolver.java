@@ -142,7 +142,7 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
             helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
             int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
             ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
-
+            
             if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
                 for (String var : buildContentAssistProposals.identificationVariables()) {
                     results.add(new JPACompletionItem.JPQLElementItem(var, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
