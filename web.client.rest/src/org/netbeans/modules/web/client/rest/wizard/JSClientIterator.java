@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -245,21 +246,34 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         myPanels = null;
     }
     
-    private void createHtml( File htmlFile, FileObject existedBackbone ) 
+    private void createHtml( File htmlFile, FileObject backbone ) 
         throws IOException 
     {
         File parentFile = htmlFile.getParentFile();
         parentFile.mkdirs();
         FileObject folder = FileUtil.toFileObject(FileUtil.normalizeFile(parentFile));
-        FileObject templateFO = FileUtil.getConfigFile("Templates/ClientSide/new.html");  //NOI18N
+        FileObject templateFO = FileUtil.getConfigFile("Templates/ClientSide/js.html");  //NOI18N
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(folder);
         String name = htmlFile.getName();
         if ( name.endsWith( HtmlPanelVisual.HTML)){
             name = name.substring(0 , name.length()-HtmlPanelVisual.HTML.length());
         }
+        
+        Map<String,String> map = new HashMap<String, String>();
+        if ( backbone == null ){
+            map.put("script", "<script src='http://documentcloud.github.com/underscore/underscore-min.js'>" +
+            		"</script>\n<script src='http://backbonejs.org/backbone-min.js'></script>");    // NOI18N
+        }
+        else {
+            String relativePath = FileUtil.getRelativePath(folder, backbone);
+            map.put("script","<script src='http://documentcloud.github.com/underscore/underscore-min.js'></script>\n" +
+            		"<script src='"+relativePath+"'></script>");
+            // TODO : rewrite underscore url to relative local path when it will be created along with backbone.
+        }
+        
         DataObject createdFile = templateDO.createFromTemplate(dataFolder, 
-                name);
+                name, map);
     }
     
     private void setSteps() {
