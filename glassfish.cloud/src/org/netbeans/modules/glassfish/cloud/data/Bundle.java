@@ -39,69 +39,33 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.glassfish.cloud.wizards;
-
-import java.io.IOException;
-import java.util.Set;
-import org.openide.WizardDescriptor;
-import static org.openide.util.NbBundle.getMessage;
+package org.netbeans.modules.glassfish.cloud.data;
 
 /**
- * GlassFish User Account Wizard.
+ * GlassFish Cloud Bundle Keys.
  * <p>
- * Adds GlassFish User Account item into Add Server wizard.
+ * Constants to access bundle values.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
-
+public class Bundle {
     
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
-
-    /** Total panels count. */
-    private static final int PANELS_COUNT = 1;
+    
+    /** Display name of GlassFish cloud server type. */
+    static final String GLASSFISH_CLOUD_SERVER_TYPE
+            = "GlassFish.cloud.type.displayName";
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
-    public GlassFishAccountWizardIterator() {
-        super(PANELS_COUNT);
-        panel[0] = new GlassFishAcocuntWizardUserPanel();
-        for (int i = 0; i < PANELS_COUNT; i++) {
-            this.name[i] = getMessage(GlassFishCloudWizardProvider.class,
-                Bundle.addCloudWizardName(i), new Object[]{});
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
     /**
-     * Returns set of instantiated objects.
-     * <p/>
-     * If instantiation fails then wizard remains open to enable correct values.
-     * <p/>
-     * @throws IOException
-     * @return A set of objects created (the exact type is at the discretion
-     *         of the caller).
+     * Disable instantiating of this class.
      */
-    @Override
-    public Set<String> instantiate() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /** Cleans up this iterator, called when the wizard is being closed,
-     * no matter what closing option invoked.
-     * <p/>
-     * @param wizard Wizard's descriptor.
-     */
-    @Override
-    public void uninitialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    private Bundle() {
     }
 
 }

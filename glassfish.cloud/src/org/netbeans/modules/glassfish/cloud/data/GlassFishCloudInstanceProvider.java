@@ -39,69 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.glassfish.cloud.wizards;
-
-import java.io.IOException;
-import java.util.Set;
-import org.openide.WizardDescriptor;
-import static org.openide.util.NbBundle.getMessage;
+package org.netbeans.modules.glassfish.cloud.data;
 
 /**
- * GlassFish User Account Wizard.
+ * GlassFish Cloud Instances Provider.
  * <p>
- * Adds GlassFish User Account item into Add Server wizard.
+ * Handles all registered glassFish cloud instances. Implemented as singleton.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
-
-    
+public class GlassFishCloudInstanceProvider {
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
-    /** Total panels count. */
-    private static final int PANELS_COUNT = 1;
+    /** Singleton object instance. */
+    private static volatile GlassFishCloudInstanceProvider instance;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Return existing singleton instance of this class or create a new one
+     * when no instance exists.
+     * <p>
+     * @return <code>AdminFactoryHttp</code> singleton instance.
+     */
+    static GlassFishCloudInstanceProvider getInstance() {
+        if (instance != null) {
+            return instance;
+        }
+        synchronized (GlassFishCloudInstanceProvider.class) {
+            if (instance == null) {
+                instance = new GlassFishCloudInstanceProvider();
+            }
+        }
+        return instance;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
-    public GlassFishAccountWizardIterator() {
-        super(PANELS_COUNT);
-        panel[0] = new GlassFishAcocuntWizardUserPanel();
-        for (int i = 0; i < PANELS_COUNT; i++) {
-            this.name[i] = getMessage(GlassFishCloudWizardProvider.class,
-                Bundle.addCloudWizardName(i), new Object[]{});
-        }
-    }
-
     ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
+    // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Returns set of instantiated objects.
-     * <p/>
-     * If instantiation fails then wizard remains open to enable correct values.
-     * <p/>
-     * @throws IOException
-     * @return A set of objects created (the exact type is at the discretion
-     *         of the caller).
-     */
-    @Override
-    public Set<String> instantiate() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /** Cleans up this iterator, called when the wizard is being closed,
-     * no matter what closing option invoked.
-     * <p/>
-     * @param wizard Wizard's descriptor.
-     */
-    @Override
-    public void uninitialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    
 
 }

@@ -11,6 +11,14 @@
                     <compile-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.toolingSDK</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.server</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -25,6 +33,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.26</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

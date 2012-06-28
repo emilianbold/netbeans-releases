@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.glassfish.cloud.wizards;
 
-import org.openide.util.NbBundle;
-
 /**
  * GlassFish Cloud Bundle Keys.
  * <p>
@@ -50,7 +48,7 @@ import org.openide.util.NbBundle;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class Bundle extends NbBundle {
+public class Bundle {
     
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -92,6 +90,16 @@ public class Bundle extends NbBundle {
         sb.append(index);
         sb.append(ADD_CLOUD_WIZARD_PANEL_NAME_SUFFIX);
         return sb.toString();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Disable instantiating of this class.
+     */
+    private Bundle() {
     }
 
 }

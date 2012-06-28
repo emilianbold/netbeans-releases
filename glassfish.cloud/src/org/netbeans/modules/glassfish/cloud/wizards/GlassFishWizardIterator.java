@@ -61,11 +61,19 @@ public abstract class GlassFishWizardIterator
         WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
     
     ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Wizard display name. */
+    static final String PROPERTY_WIZARD_DISPLAY_NAME
+            = "ServInstWizard_displayName";
+    
+    ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
     /** Wizard's descriptor. */
-    private WizardDescriptor wizard;
+    WizardDescriptor wizard;
 
     /** Total panels count. */
     private final int panelsCount;
@@ -97,6 +105,7 @@ public abstract class GlassFishWizardIterator
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public GlassFishWizardIterator(final int panelsCount) {
         this.panelsCount = panelsCount;
         this.panel = new WizardDescriptor.Panel[panelsCount];

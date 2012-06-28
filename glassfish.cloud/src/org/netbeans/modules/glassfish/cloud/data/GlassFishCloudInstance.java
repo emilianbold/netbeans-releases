@@ -39,69 +39,83 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.glassfish.cloud.wizards;
+package org.netbeans.modules.glassfish.cloud.data;
 
-import java.io.IOException;
-import java.util.Set;
-import org.openide.WizardDescriptor;
+import javax.swing.JComponent;
+import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
+import org.netbeans.spi.server.ServerInstanceImplementation;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
- * GlassFish User Account Wizard.
- * <p>
- * Adds GlassFish User Account item into Add Server wizard.
+ * GlassFish Cloud instance.
+ * <p/>
+ * GlassFish cloud instance represents CPAS interface. Based on Tooling SDK
+ * entity object.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
+public class GlassFishCloudInstance extends GlassFishCloudEntity
+        implements ServerInstanceImplementation {
 
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /** Total panels count. */
-    private static final int PANELS_COUNT = 1;
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Constructors                                                           //
-    ////////////////////////////////////////////////////////////////////////////
-
-    public GlassFishAccountWizardIterator() {
-        super(PANELS_COUNT);
-        panel[0] = new GlassFishAcocuntWizardUserPanel();
-        for (int i = 0; i < PANELS_COUNT; i++) {
-            this.name[i] = getMessage(GlassFishCloudWizardProvider.class,
-                Bundle.addCloudWizardName(i), new Object[]{});
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
-    ////////////////////////////////////////////////////////////////////////////
+    /** The display name of GlassFish cloud server type. */
+    private final String serverDisplayName;
 
     /**
-     * Returns set of instantiated objects.
+     * Constructs GlassFish Cloud class instance with ALL values set.
      * <p/>
-     * If instantiation fails then wizard remains open to enable correct values.
-     * <p/>
-     * @throws IOException
-     * @return A set of objects created (the exact type is at the discretion
-     *         of the caller).
+     * @param name GlassFish cloud name to set.
+     * @param host GlassFish cloud host to set.
+     * @param port GlassFish server port to set.
+     */
+    public GlassFishCloudInstance(String name, String host, int port) {
+        super(name, host, port);
+        this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
+                Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
+    }
+
+    /**
+     * Get GlassFish cloud name (display name in IDE).
+     *
+     * @return GlassFish cloud name (display name in IDE).
      */
     @Override
-    public Set<String> instantiate() throws IOException {
+    public String getDisplayName() {
+        return this.name;
+    }
+
+    /**
+     * Returns the display name of the server type to which this instance belongs.
+     *
+     * @return the display name of the server type to which this instance belongs
+     */
+    @Override
+    public String getServerDisplayName() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /** Cleans up this iterator, called when the wizard is being closed,
-     * no matter what closing option invoked.
-     * <p/>
-     * @param wizard Wizard's descriptor.
-     */
     @Override
-    public void uninitialize(WizardDescriptor wizard) {
+    public org.openide.nodes.Node getFullNode() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public org.openide.nodes.Node getBasicNode() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public JComponent getCustomizer() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void remove() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean isRemovable() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
 }

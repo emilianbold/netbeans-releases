@@ -43,7 +43,9 @@ package org.netbeans.modules.glassfish.cloud.wizards;
 
 import java.io.IOException;
 import java.util.Set;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.openide.WizardDescriptor;
+import static org.openide.util.NbBundle.getMessage;
 
 /**
  * GlassFish Cloud Wizard.
@@ -69,7 +71,7 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
         super(PANELS_COUNT);
         panel[0] = new GlassFishCloudWizardCpasPanel();
         for (int i = 0; i < PANELS_COUNT; i++) {
-            this.name[i] = Bundle.getMessage(GlassFishCloudWizardProvider.class,
+            this.name[i] = getMessage(GlassFishCloudWizardProvider.class,
                 Bundle.addCloudWizardName(i), new Object[]{});
         }
     }
@@ -87,9 +89,17 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
      * @return A set of objects created (the exact type is at the discretion
      *         of the caller).
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable") // String name
     @Override
-    public Set instantiate() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Set<GlassFishCloudInstance> instantiate() throws IOException {
+        String name = (String)wizard.getProperty(
+                GlassFishWizardIterator.PROPERTY_WIZARD_DISPLAY_NAME);
+        String host = (String)wizard.getProperty(
+                GlassFishCloudWizardCpasPanel.PROPERTY_CPAS_HOST);
+        String portStr = (String)wizard.getProperty(
+                GlassFishCloudWizardCpasPanel.PROPERTY_CPAS_PORT);
+        // TODO: Instantiate GlassFishCloudInstance
+        return null;
     }
 
     /** Cleans up this iterator, called when the wizard is being closed,

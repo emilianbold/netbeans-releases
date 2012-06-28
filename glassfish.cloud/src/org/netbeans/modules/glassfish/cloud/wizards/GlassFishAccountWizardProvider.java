@@ -42,6 +42,8 @@
 package org.netbeans.modules.glassfish.cloud.wizards;
 
 import org.netbeans.spi.server.ServerWizardProvider;
+import org.openide.WizardDescriptor;
+import static org.openide.util.NbBundle.getMessage;
 
 /**
  * GlassFish User Account Wizard.
@@ -76,7 +78,7 @@ public class GlassFishAccountWizardProvider implements ServerWizardProvider {
      * using string from message bundle.
      */
     public GlassFishAccountWizardProvider() {
-        this.displayName = Bundle.getMessage(GlassFishCloudWizardProvider.class,
+        this.displayName = getMessage(GlassFishCloudWizardProvider.class,
                 Bundle.ADD_ACCOUNT_WIZARD_DISPLAY_NAME, new Object[]{});
     }
 
@@ -112,7 +114,7 @@ public class GlassFishAccountWizardProvider implements ServerWizardProvider {
      * @return Iterator for adding the server instance
      */
     @Override
-    public org.openide.WizardDescriptor.InstantiatingIterator
+    public org.openide.WizardDescriptor.InstantiatingIterator<WizardDescriptor>
             getInstantiatingIterator() {
         return new GlassFishAccountWizardIterator();
     }

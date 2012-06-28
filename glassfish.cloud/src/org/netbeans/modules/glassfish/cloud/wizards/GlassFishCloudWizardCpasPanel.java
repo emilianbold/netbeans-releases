@@ -60,10 +60,10 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
     ////////////////////////////////////////////////////////////////////////////
 
     /** CPAS host property name. */
-    private static final String PROPERTY_CPAS_HOST = "host";
+    static final String PROPERTY_CPAS_HOST = "host";
 
     /** CPAS port property name. */
-    private static final String PROPERTY_CPAS_PORT = "port";
+    static final String PROPERTY_CPAS_PORT = "port";
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
