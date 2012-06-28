@@ -92,7 +92,7 @@ function checkChoiceUpgradeAction() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice> 
-    <pkg-ref id="com.oracle.jdk" installKBytes="254604" version="1.0" auth="Root">file:./Contents/Packages/JDK%207%20Update%2006.pkg#j2sdkbundle.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk" installKBytes="234104" version="1.0" auth="Root">file:./Contents/Packages/JDK%207%20Update%2006.pkg#jdk17006.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
 </installer-gui-script>
