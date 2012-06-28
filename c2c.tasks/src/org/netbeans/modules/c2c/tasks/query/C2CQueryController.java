@@ -160,7 +160,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
         panel.searchButton.addActionListener(this);
-        panel.refreshCheckBox.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
         panel.gotoIssueButton.addActionListener(this);
@@ -497,8 +496,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
             onMarkSeen();
         } else if (e.getSource() == panel.removeButton) {
             onRemove();
-        } else if (e.getSource() == panel.refreshCheckBox) {
-            onAutoRefresh();
         } else if (e.getSource() == panel.refreshConfigurationButton) {
             onRefreshConfiguration();
         } else if (e.getSource() == panel.findIssuesButton) {
@@ -654,7 +651,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
     private void setAsSaved() {
         panel.setSaved(query.getDisplayName(), getLastRefresh());
         panel.setModifyVisible(false);
-        panel.refreshCheckBox.setVisible(true);
     }
 
     private String getLastRefresh() throws MissingResourceException {
@@ -817,17 +813,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
 //        C2CUtil.openQuery(q);
     }
 
-    private void onAutoRefresh() {
-//        final boolean autoRefresh = panel.refreshCheckBox.isSelected();
-//        C2CConfig.getInstance().setQueryAutoRefresh(query.getDisplayName(), autoRefresh);
-//        logAutoRefreshEvent(autoRefresh);
-//        if(autoRefresh) {
-//            scheduleForRefresh();
-//        } else {
-//            repository.stopRefreshing(query);
-//        }
-    }
-
     protected void logAutoRefreshEvent(boolean autoRefresh) {
 //        LogUtils.logAutoRefreshEvent(
 //            C2CConnector.getConnectorName(),
@@ -836,7 +821,6 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
 //            autoRefresh
 //        );
     }
-
 
     private void onRefreshConfiguration() {
         postPopulate(getUrlParameters(false), true);
