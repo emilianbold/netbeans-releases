@@ -49,8 +49,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.web.browser.spi.Resizable;
-import org.netbeans.modules.web.browser.spi.Zoomable;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
@@ -85,8 +83,6 @@ public class WebKitPageModel extends PageModel {
     private boolean selectionMode;
 
     private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
-    /** Determines whether the page has a native toolbar or whether we should inject one. */
-    private boolean hasNativeToolbar;
 
     /** Logger used by this class */
     //private java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(WebKitPageModel.class.getName());
@@ -98,9 +94,6 @@ public class WebKitPageModel extends PageModel {
      */
     public WebKitPageModel(Lookup pageContext) {
         this.webKit = pageContext.lookup(WebKitDebugging.class);
-        // Indirect way how to distinguish WebView from Chrome
-        this.hasNativeToolbar = (pageContext.lookup(Resizable.class) != null)
-                && (pageContext.lookup(Zoomable.class) != null);
         addPropertyChangeListener(new WebPaneSynchronizer());
 
         // Register DOM domain listener
@@ -126,19 +119,10 @@ public class WebKitPageModel extends PageModel {
         webKitNode = convertNode(webKitNode);
         Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
         if (attr == null) {
-            if (hasNativeToolbar) {
-                // init
-                String initScript = Files.getScript("initialization"); // NOI18N
-                webKit.getRuntime().evaluate(initScript);
-            }
+            // init
+            String initScript = Files.getScript("initialization"); // NOI18N
+            webKit.getRuntime().evaluate(initScript);
         }
-    }
-
-    /**
-     * Escapes the given string so it can be used in JS as a string.
-     */
-    private String toScriptString(String input) {
-        return input.replace("\n", "\\\n").replace("\r", "").replace("'", "&quot;"); // NOI18N
     }
 
     @Override
@@ -246,23 +230,6 @@ public class WebKitPageModel extends PageModel {
                                 }
                             }
                         });
-                        return;
-                    }
-
-                    // Notifications via attribute modification of injected nodes
-                    if (node.isInjectedByNetBeans()) {
-                        Node.Attribute attr = node.getAttribute("id"); // NOI18N
-                        // Attribute modifications that represent selection mode switching
-                        if (attr != null && "selectionModeCheckbox".equals(attr.getValue()) && "selection_mode".equals(attrName)) { // NOI18N
-                            attr = node.getAttribute(attrName);
-                            final boolean mode = "true".equals(attr.getValue()); // NOI18N
-                            RP.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    setSelectionMode(mode);
-                                }
-                            });
-                        }
                         return;
                     }
 
@@ -442,10 +409,8 @@ public class WebKitPageModel extends PageModel {
      * @param script script to invoke.
      */
     void invokeInAllDocuments(String script) {
-        if (hasNativeToolbar) {
-            // Main document
-            webKit.getRuntime().evaluate(script);
-        }
+        // Main document
+        webKit.getRuntime().evaluate(script);
 
         // Content documents
         script = "function() {\n" + script + "\n}"; // NOI18N
@@ -553,11 +518,9 @@ public class WebKitPageModel extends PageModel {
 
         private synchronized void updateSelectionMode() {
             boolean selectionMode = isSelectionMode();
-            if (!hasNativeToolbar) {
-                // Update checkbox in Chrome toolbar
-                String code = "NetBeans_Page.setSelectionMode("+selectionMode+")"; // NOI18N
-                webKit.getRuntime().evaluate(code);
-            }
+            
+            // PENDING notify Chrome extension that the selection mode has changed
+
             // Activate/deactivate (observation of mouse events over) canvas
             invokeInAllDocuments("NetBeans.setSelectionMode("+selectionMode+")"); // NOI18N
         }

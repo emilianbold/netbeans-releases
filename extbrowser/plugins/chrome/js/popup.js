@@ -41,6 +41,7 @@
  */
 
 // references from bg page
+var NetBeans = chrome.extension.getBackgroundPage().NetBeans;
 var NetBeans_Presets = chrome.extension.getBackgroundPage().NetBeans_Presets;
 var NetBeans_Preset = chrome.extension.getBackgroundPage().NetBeans_Preset;
 
@@ -55,6 +56,7 @@ NetBeans_PresetMenu._presets = null;
 // show the menu
 NetBeans_PresetMenu.show = function(presets) {
     this._init();
+    this._initSelectionMode();
     this._presets = presets;
     this._putPresets(this._presets);
 }
@@ -91,6 +93,11 @@ NetBeans_PresetMenu._init = function() {
     this._container = document.getElementById('presetMenu');
     this._registerEvents();
 }
+// selection mode init
+NetBeans_PresetMenu._initSelectionMode = function() {
+    var selectionMode = document.getElementById('selectionModeCheckBox');
+    selectionMode.checked = NetBeans.getSelectionMode();
+}
 // register events
 NetBeans_PresetMenu._registerEvents = function() {
     var that = this;
@@ -99,6 +106,12 @@ NetBeans_PresetMenu._registerEvents = function() {
     }, false);
     document.getElementById('customizePresetsMenu').addEventListener('click', function() {
         that._showPresetCustomizer();
+    }, false);
+    document.getElementById('selectionModeCheckBox').addEventListener('click', function() {
+        that._updateSelectionMode(false);
+    }, false);
+    document.getElementById('selectionModeMenu').addEventListener('click', function() {
+        that._updateSelectionMode(true);
     }, false);
 }
 // clean and put presets to the menu (first, presets from toolbar)
@@ -161,6 +174,16 @@ NetBeans_PresetMenu._resizePage = function(width, height) {
 // show preset customizer
 NetBeans_PresetMenu._showPresetCustomizer = function() {
     chrome.tabs.create({'url': 'html/options.html'});
+    this.hide();
+}
+
+NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
+    var checkbox = document.getElementById('selectionModeCheckBox');
+    if (switchCheckBoxValue) {
+        checkbox.checked = !checkbox.checked;
+    }
+    var selectionMode = checkbox.checked;
+    NetBeans.setSelectionMode(selectionMode);
     this.hide();
 }
 
