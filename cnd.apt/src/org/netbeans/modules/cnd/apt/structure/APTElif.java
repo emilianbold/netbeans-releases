@@ -44,12 +44,9 @@
 
 package org.netbeans.modules.cnd.apt.structure;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
-
 /**
  * #elif directive
  * @author Vladimir Voskresensky
  */
-public interface APTElif extends APT {
-    TokenStream getCondition();    
+public interface APTElif extends APTIfCondition {
 }

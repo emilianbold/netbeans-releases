@@ -699,7 +699,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
      * In that case is needed also to provide a drop. */
     static boolean isNearEditorEdge(Point location, ViewAccessor viewAccessor, int kind) {
         Component editor = WindowManagerImpl.getInstance().getEditorAreaComponent();
-        if(editor == null) {
+        if(editor == null || editor.getParent() == null) {
             return false;
         }
         Point p = new Point(location);

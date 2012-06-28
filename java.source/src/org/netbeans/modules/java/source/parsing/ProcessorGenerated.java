@@ -57,6 +57,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -74,6 +76,8 @@ import org.openide.util.Utilities;
  */
 //@NotThreadSafe
 public final class ProcessorGenerated extends TransactionContext.Service {
+
+    private static final Logger LOG = Logger.getLogger(ProcessorGenerated.class.getName());
     
     public enum Type {
         SOURCE,
@@ -139,6 +143,14 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         if (!writeable) {
             return;
         }
+        LOG.log(
+            Level.FINE,
+            "Generated: {0} from: {1} type: {2}",   //NOI18N
+            new Object[]{
+                file.toUri(),
+                forSource,
+                type
+        });
         Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>> insertInto =
                 generated.get(forSource);
         if (insertInto == null) {

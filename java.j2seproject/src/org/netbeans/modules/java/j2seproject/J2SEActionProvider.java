@@ -160,9 +160,7 @@ public class J2SEActionProvider extends BaseActionProvider implements AntTargets
             COMMAND_RUN_SINGLE,
             COMMAND_DEBUG,
             COMMAND_DEBUG_SINGLE,
-            COMMAND_DEBUG_STEP_INTO,
-            COMMAND_PROFILE,
-            COMMAND_PROFILE_SINGLE
+            COMMAND_DEBUG_STEP_INTO
         ));
 
         this.needJavaModelActions = new HashSet<String>(Arrays.asList(

@@ -352,32 +352,43 @@ public class Repository implements Serializable {
                 return repository;
             }
         }
-
-        Repository newRepo = lkp.lookup(Repository.class);
-        if (newRepo == null) {
-            // if not provided use default one
-            newRepo = new Repository(new MainFS());
-        }
-        synchronized (newRepo) {
-            FileSystem fs = (FileSystem) ADD_FS.getAndSet(null);
-            if (fs != null) {
-                newRepo.addFileSystemImpl(fs);
+        FileSystem[] previous = ADD_FS.get();
+        try {
+            FileSystem[] addLater = new FileSystem[1];
+            ADD_FS.set(addLater);
+            Repository newRepo = lkp.lookup(Repository.class);
+            if (newRepo == null) {
+                // if not provided use default one
+                newRepo = new Repository(new MainFS());
             }
-        }
-
-        synchronized (Repository.class) {
-            if (repository == null) {
-                repository = newRepo;
+            synchronized (newRepo) {
+                if (addLater[0] instanceof FileSystem) {
+                    newRepo.addFileSystemImpl(addLater[0]);
+                }
             }
-            return repository;
+            synchronized (Repository.class) {
+                if (repository == null) {
+                    repository = newRepo;
+                }
+                return repository;
+            }
+        } finally {
+            ADD_FS.set(previous);
         }
     }
     static synchronized void reset() {
         repository = null;
     }
-    private static final AtomicReference<Object> ADD_FS = new AtomicReference<Object>(Repository.class);
+    private static final ThreadLocal<FileSystem[]> ADD_FS = new ThreadLocal<FileSystem[]>();
     private static boolean addFileSystemDelayed(FileSystem fs) {
-        return !ADD_FS.compareAndSet(Repository.class, fs);
+        FileSystem[] store = ADD_FS.get();
+        if (store != null) {
+            assert store[0] == null;
+            store[0] = fs;
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private boolean addFileSystemImpl(FileSystem fs) {

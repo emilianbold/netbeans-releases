@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  *
@@ -405,7 +406,7 @@ public class CsmDisplayUtilities {
             buf.insert(0, "<s>"); // NOI18N
             buf.append("</s>"); // NOI18N
         }
-        buf.insert(0, "<font color=" + getHTMLColor(StyleConstants.getForeground(set)) + ">"); //NOI18N
+        buf.insert(0, "<font color=" + getHTMLColor(LFCustoms.getForeground(set)) + ">"); //NOI18N
         buf.append("</font>"); //NOI18N
         return buf.toString();
     }

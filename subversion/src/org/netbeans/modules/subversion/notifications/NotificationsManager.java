@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.notifications;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Collections;
@@ -287,7 +288,20 @@ public class NotificationsManager {
                             ISVNInfo info = null;
                             boolean removed = false;
                             try {
-                                info = client.getInfo(status.getUrl(), SVNRevision.HEAD, rev);
+                                SVNUrl url = status.getUrl();
+                                if (url == null) {
+                                    String canonicalPath;
+                                    try {
+                                        // i suspect the file to be under a symlink folder
+                                        canonicalPath = status.getFile().getCanonicalPath();
+                                    } catch (IOException ex) {
+                                        canonicalPath = null;
+                                    }
+                                    LOG.log(Level.WARNING, "scanFiles: though versioned it has no svn url: {0}, {1}, {2}, {3}, {4}", //NOI18N
+                                            new Object[] { file, status.getFile(), status.getTextStatus(), status.getUrlString(), canonicalPath });
+                                } else {
+                                    info = client.getInfo(url, SVNRevision.HEAD, rev);
+                                }
                             } catch (SVNClientException ex) {
                                 LOG.log(Level.FINE, null, ex);
                                 // XXX or should we run remote status to determine if the file was deleted?

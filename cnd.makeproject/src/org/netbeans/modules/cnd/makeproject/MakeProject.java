@@ -413,7 +413,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private void checkNeededExtensions() {
-        if (UNIT_TEST_MODE) {
+        if (UNIT_TEST_MODE || CndUtils.isStandalone()) {
             return;
         }
         Set<String> unknownC = getUnknownExtensions(MakeProject.getCSuffixes(), cExtensions);
@@ -521,7 +521,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private boolean addNewExtensionDialog(Set<String> usedExtension, String type) {
-        if (UNIT_TEST_MODE) {
+        if (UNIT_TEST_MODE || CndUtils.isStandalone()) {
             return true;
         }
         String message = getString("ADD_EXTENSION_QUESTION" + type + (usedExtension.size() == 1 ? "" : "S")); // NOI18N

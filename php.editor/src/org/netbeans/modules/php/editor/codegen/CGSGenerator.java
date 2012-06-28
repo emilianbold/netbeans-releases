@@ -89,7 +89,7 @@ public class CGSGenerator implements CodeGenerator {
     private static final String FLUENT_SETTER = "${FluentSetter}"; //NOI18N
 
     public enum GenType {
-        CONSTRUCTOR {
+        CONSTRUCTOR(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.INVISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -137,7 +137,7 @@ public class CGSGenerator implements CodeGenerator {
             }
 
         },
-        GETTER {
+        GETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.INVISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -180,7 +180,7 @@ public class CGSGenerator implements CodeGenerator {
             }
 
         },
-        SETTER {
+        SETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.VISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -224,13 +224,8 @@ public class CGSGenerator implements CodeGenerator {
                 return setters.toString();
             }
 
-            @Override
-            public boolean isFluentSetterComboVisible() {
-                return true;
-            }
-
         },
-        GETTER_AND_SETTER {
+        GETTER_AND_SETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.VISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -276,13 +271,8 @@ public class CGSGenerator implements CodeGenerator {
                 return gettersAndSetters.toString();
             }
 
-            @Override
-            public boolean isFluentSetterComboVisible() {
-                return true;
-            }
-
         },
-        METHODS {
+        METHODS(PanelStrategy.METHOD, FluentSetterStrategy.INVISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -302,11 +292,6 @@ public class CGSGenerator implements CodeGenerator {
             @Override
             public String getDialogTitle() {
                 return NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_METHODS"); //NOI18N
-            }
-
-            @Override
-            public JPanel createPanel(final CGSInfo cgsInfo) {
-                return new MethodPanel(cgsInfo);
             }
 
             @Override
@@ -330,18 +315,26 @@ public class CGSGenerator implements CodeGenerator {
 
         };
 
+        private final PanelStrategy panelStrategy;
+        private final FluentSetterStrategy fluentSetterStrategy;
+
         public abstract String getPanelTitle();
         public abstract ComboBoxModel getModel(final String propertyName);
         public abstract String getDisplayName();
         public abstract String getDialogTitle();
         public abstract String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent);
 
-        public JPanel createPanel(final CGSInfo cgsInfo) {
-            return new ConstructorPanel(this, cgsInfo);
+        private GenType(final PanelStrategy panelStrategy, final FluentSetterStrategy fluentSetterStrategy) {
+            this.panelStrategy = panelStrategy;
+            this.fluentSetterStrategy = fluentSetterStrategy;
         }
 
-        public boolean isFluentSetterComboVisible() {
-            return false;
+        public JPanel createPanel(final CGSInfo cgsInfo) {
+            return panelStrategy.createPanel(this, cgsInfo);
+        }
+
+        public boolean isFluentSetterVisible() {
+            return fluentSetterStrategy.isFluentSetterVisible();
         }
 
         String getGetterTemplate(final CGSInfo cgsInfo) {
@@ -351,6 +344,40 @@ public class CGSGenerator implements CodeGenerator {
         String getSetterTemplate(final CGSInfo cgsInfo) {
             final String preparedSetterTemplate = SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate());
             return cgsInfo.isFluentSetter() ? preparedSetterTemplate.replace(FLUENT_SETTER, "return $this;" + NEW_LINE) : preparedSetterTemplate.replace(FLUENT_SETTER, ""); //NOI18N
+        }
+
+        private enum PanelStrategy {
+            CONSTRUCTOR {
+                @Override
+                JPanel createPanel(final GenType genType, final CGSInfo cgsInfo) {
+                    return new ConstructorPanel(genType, cgsInfo);
+                }
+            },
+            METHOD {
+                @Override
+                JPanel createPanel(final GenType genType, final CGSInfo cgsInfo) {
+                    return new MethodPanel(cgsInfo);
+                }
+            };
+
+            abstract JPanel createPanel(final GenType genType, final CGSInfo cgsInfo);
+        }
+
+        private enum FluentSetterStrategy {
+            VISIBLE {
+                @Override
+                boolean isFluentSetterVisible() {
+                    return true;
+                }
+            },
+            INVISIBLE {
+                @Override
+                boolean isFluentSetterVisible() {
+                    return false;
+                }
+            };
+
+            abstract boolean isFluentSetterVisible();
         }
 
     }
