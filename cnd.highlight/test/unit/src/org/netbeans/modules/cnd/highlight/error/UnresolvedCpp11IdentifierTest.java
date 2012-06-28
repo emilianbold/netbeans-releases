@@ -68,6 +68,11 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 214184 - C++11 override keyword not supported by Code Assistance
         performStaticTest("bug214184.cpp");
     }   
+
+    public void testBug214864() throws Exception {
+        // Bug 214864 - C++11 parser error on constexpr 
+        performStaticTest("bug214864.cpp");
+    }   
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

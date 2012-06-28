@@ -1847,7 +1847,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         ts = type_specifier[ds, noTypeId]
         // support for "A const*";
         // need to catch postfix_cv_qualifier
-        (postfix_cv_qualifier)? 
+        (postfix_cv_qualifier | LITERAL_constexpr)? 
         (
             (literal_inline {ds = dsINLINE;})
         |
