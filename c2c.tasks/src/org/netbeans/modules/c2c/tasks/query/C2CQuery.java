@@ -72,6 +72,9 @@ public class C2CQuery {
         this.repository = repository;
     }
     
+    public C2CRepository getRepository() {
+        return repository;
+    }
     
     public boolean isSaved() {
         return false; // XXX

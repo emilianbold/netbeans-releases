@@ -62,6 +62,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.C2CConnector;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
+import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
 import org.netbeans.modules.mylyn.GetTaskDataCommand;
 
@@ -182,8 +183,12 @@ public class C2CUtil {
         return cmd.getTaskData();
     }
     
-    public static void openIssue(C2CIssue issue) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public static void openIssue(C2CIssue c2cIssue) {
+        C2C.getInstance().getBugtrackingFactory().openIssue(getRepository(c2cIssue.getRepository()), c2cIssue);
+    }
+    
+    public static void openQuery(C2CQuery c2cQuery) {
+        C2C.getInstance().getBugtrackingFactory().openQuery(getRepository(c2cQuery.getRepository()), c2cQuery);
     }
 
     public static Repository getRepository(C2CRepository c2cRepository) {
