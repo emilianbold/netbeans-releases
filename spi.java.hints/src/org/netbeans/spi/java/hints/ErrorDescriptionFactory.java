@@ -42,23 +42,18 @@
 
 package org.netbeans.spi.java.hints;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -66,11 +61,9 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -81,7 +74,11 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.analysis.api.CodeAnalysis;
+import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.spiimpl.Hacks.InspectAndTransformOpener;
 import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.SyntheticFix;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
@@ -91,7 +88,9 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 
 /**
@@ -211,6 +210,13 @@ public class ErrorDescriptionFactory {
             auxiliaryFixes.add(new DisableConfigure(hm, true));
             auxiliaryFixes.add(new DisableConfigure(hm, false));
 
+            if (hm.kind == Hint.Kind.INSPECTION) {
+                auxiliaryFixes.add(new InspectFix(hm, false));
+                if (!hm.options.contains(Options.QUERY)) {
+                    auxiliaryFixes.add(new InspectFix(hm, true));
+                }
+            }
+            
             if (!suppressWarningsKeys.isEmpty()) {
                 auxiliaryFixes.addAll(createSuppressWarnings(ctx.getInfo(), ctx.getPath(), suppressWarningsKeys.toArray(new String[0])));
             }
@@ -314,6 +320,75 @@ public class ErrorDescriptionFactory {
         
     }
 
+    private static class InspectFix implements Fix, SyntheticFix {
+        private final @NonNull HintMetadata metadata;
+        private final boolean transform;
+
+        InspectFix(@NonNull HintMetadata metadata, boolean transform) {
+            this.metadata = metadata;
+            this.transform = transform;
+        }
+
+        @Override
+        @Messages({
+            "DN_InspectAndTransform=Run Inspect&Transform on...",
+            "DN_Inspect=Run Inspect on..."
+        })
+        public String getText() {
+            return transform ? Bundle.DN_InspectAndTransform() : Bundle.DN_Inspect();
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (transform) {
+                        final InspectAndTransformOpener o = Lookup.getDefault().lookup(InspectAndTransformOpener.class);
+
+                        if (o != null) {
+                            o.openIAT(metadata);
+                        } else {
+                            //warn
+                        }
+                    } else {
+                        CodeAnalysis.open(WarningDescription.create("text/x-java:" + metadata.id, null, null, null));
+                    }
+                }
+            });
+            
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (this.getClass() != obj.getClass()) {
+                return false;
+            }
+            final InspectFix other = (InspectFix) obj;
+            if (this.metadata != other.metadata && (this.metadata == null || !this.metadata.equals(other.metadata))) {
+                return false;
+            }
+            if (this.transform != other.transform) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 43 * hash + (this.metadata != null ? this.metadata.hashCode() : 0);
+            hash = 43 * hash + (this.transform ? 1 : 0);
+            return hash;
+        }
+
+
+    }
+    
     /** Creates a fix, which when invoked adds @SuppresWarnings(keys) to
      * nearest declaration.
      * @param compilationInfo CompilationInfo to work on

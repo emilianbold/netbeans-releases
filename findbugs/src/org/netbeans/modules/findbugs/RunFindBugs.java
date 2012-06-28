@@ -87,6 +87,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -104,6 +105,8 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.analysis.api.CodeAnalysis;
+import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -119,6 +122,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 
@@ -432,6 +436,7 @@ public class RunFindBugs {
             Fix topLevelFix = new TopLevelConfigureFix(bugId, bugDN);
             ErrorDescriptionFactory.attachSubfixes(topLevelFix, Arrays.asList(new DisableConfigure(bugId, bugDN, true),
                                                                               new DisableConfigure(bugId, bugDN, false),
+                                                                              new InspectFix(WarningDescription.create(RunFindBugs.PREFIX_FINDBUGS + bugId, bugDN, null, null)),
                                                                               new SuppressWarningsFix(sourceFile, bugId, line, span != null ? span[0] : -1)));
             fixes = Collections.singletonList(topLevelFix);
         } else {
@@ -764,6 +769,58 @@ public class RunFindBugs {
 
             return null;
         }
+
+    }
+    
+    private static class InspectFix implements Fix {
+        private final @NonNull WarningDescription wd;
+
+        InspectFix(WarningDescription wd) {
+            this.wd = wd;
+        }
+
+        @Override
+        @Messages({
+            "DN_Inspect=Run Inspect on..."
+        })
+        public String getText() {
+            return Bundle.DN_Inspect();
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    CodeAnalysis.open(wd);
+                }
+            });
+            
+            return null;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (this.getClass() != obj.getClass()) {
+                return false;
+            }
+            final InspectFix other = (InspectFix) obj;
+            if (this.wd != other.wd && (this.wd == null || !this.wd.equals(other.wd))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 43 * hash + (this.wd != null ? this.wd.hashCode() : 0);
+            return hash;
+        }
+
 
     }
 }
