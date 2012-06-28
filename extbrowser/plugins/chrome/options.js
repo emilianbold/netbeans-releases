@@ -133,7 +133,7 @@ NetBeans_PresetCustomizer._putNoPresets = function() {
     var info = document.createElement('td');
     info.setAttribute('colspan', '5');
     info.setAttribute('class', 'info');
-    info.appendChild(document.createTextNode("Window settings not available (run any page from NetBeans to solve this problem)."));
+    info.appendChild(document.createTextNode("Window settings not available (NetBeans IDE is not running?)."));
     row.appendChild(info);
     this._rowContainer.appendChild(row);
 }
