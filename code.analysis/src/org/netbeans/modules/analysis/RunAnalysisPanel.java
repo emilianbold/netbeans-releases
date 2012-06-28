@@ -901,5 +901,9 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                                    prefs.get("selectedConfiguration", null),
                                    prefs.get("selectedInspection", null));
         }
+        
+        public static DialogState from(WarningDescription wd) {
+            return new DialogState(false, null, null, SPIAccessor.ACCESSOR.getWarningId(wd));
+        }
     }
 }
