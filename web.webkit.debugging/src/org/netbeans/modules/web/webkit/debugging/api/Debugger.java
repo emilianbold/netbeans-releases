@@ -132,26 +132,26 @@ public final class Debugger {
     }
 
     public void stepOver() {
-        doStep("Debugger.stepOver");
+        doCommand("Debugger.stepOver");
     }
     
     public void stepInto() {
-        doStep("Debugger.stepInto");
+        doCommand("Debugger.stepInto");
     }
     
     public void stepOut() {
-        doStep("Debugger.stepOut");
+        doCommand("Debugger.stepOut");
     }
     
     public void resume() {
-        doStep("Debugger.resume");
+        doCommand("Debugger.resume");
     }
     
     public void pause() {
-        doStep("Debugger.pause");
+        doCommand("Debugger.pause");
     }
     
-    private void doStep(String name) {
+    private void doCommand(String name) {
         transport.sendCommand(new Command(name));
     }
     
