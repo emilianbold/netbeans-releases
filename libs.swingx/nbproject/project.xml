@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.db.dataview</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.tasks.ui</friend>
+                <friend>org.netbeans.modules.team.ui</friend>
                 <package>org.jdesktop.beans</package>
                 <package>org.jdesktop.swingx</package>
                 <package>org.jdesktop.swingx.action</package>

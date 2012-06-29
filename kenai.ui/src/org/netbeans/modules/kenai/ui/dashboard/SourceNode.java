@@ -51,11 +51,13 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.treelist.LeafNode;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.ui.common.LinkButton;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;
-import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
 /**

@@ -42,15 +42,23 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.kenai.api.*;
-import org.netbeans.modules.kenai.ui.spi.*;
-import org.netbeans.modules.kenai.ui.treelist.LeafNode;
-import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.common.InterestingNode;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
+import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
+import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
+import org.netbeans.modules.kenai.ui.spi.QueryHandle;
+import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
@@ -62,7 +70,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Becicka
  */
-public class MyProjectNode extends LeafNode {
+public class MyProjectNode extends LeafNode implements InterestingNode {
 
     private Notification bugNotification;
     private final ProjectHandle project;

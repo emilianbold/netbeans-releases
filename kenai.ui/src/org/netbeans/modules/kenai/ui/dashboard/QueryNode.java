@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -54,12 +55,12 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.kenai.ui.treelist.AsynchronousLeafNode;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
-import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 
 /**
  * Node query results.

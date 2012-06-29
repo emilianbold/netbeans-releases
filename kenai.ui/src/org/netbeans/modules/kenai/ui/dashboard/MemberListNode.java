@@ -47,7 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
 import org.netbeans.modules.kenai.ui.spi.MemberHandle;
 import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;

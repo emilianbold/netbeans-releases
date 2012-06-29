@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import org.netbeans.modules.team.ui.common.LinkButton;
+import org.netbeans.modules.team.ui.common.ColorManager;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -52,10 +54,10 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.kenai.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.kenai.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;

@@ -6,10 +6,9 @@
 package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.Color;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
+import org.netbeans.modules.team.ui.common.ColorManager;
 
 /**
  * Abstraction of a single build process (a line in Builds section)

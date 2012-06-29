@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.kenai.ui.project;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -56,7 +55,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -67,7 +65,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.dashboard.ColorManager;
+import org.netbeans.modules.team.ui.common.ColorManager;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;

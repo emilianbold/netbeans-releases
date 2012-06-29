@@ -44,8 +44,9 @@ package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.treelist.TreeListNode;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
 import org.netbeans.modules.kenai.ui.spi.SourceHandle;

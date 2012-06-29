@@ -42,13 +42,15 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import org.netbeans.modules.team.ui.common.CategoryNode;
+import org.netbeans.modules.team.ui.common.ErrorNode;
+import org.netbeans.modules.team.ui.common.EmptyNode;
+import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.net.MalformedURLException;
 import javax.accessibility.AccessibleContext;
-import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.kenai.ui.spi.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -59,11 +61,28 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.ui.*;
-import org.netbeans.modules.kenai.ui.treelist.*;
+import org.netbeans.modules.kenai.ui.LoginHandleImpl;
+import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.treelist.TreeList;
+import org.netbeans.modules.team.ui.treelist.TreeListModel;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.netbeans.modules.kenai.ui.spi.LoginHandle;
+import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
+import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.util.*;
+import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -108,17 +127,13 @@ public final class DashboardImpl extends Dashboard {
 
     private final CategoryNode openProjectsNode;
     private final CategoryNode myProjectsNode;
-    private final EmptyNode noOpenProjects = new EmptyNode(this, NbBundle.getMessage(DashboardImpl.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningProjects"));
-    private final EmptyNode noMyProjects = new EmptyNode(this, NbBundle.getMessage(DashboardImpl.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningMyProjects"));
+    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DashboardImpl.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningProjects"));
+    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DashboardImpl.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningMyProjects"));
 
     private final Object LOCK = new Object();
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private Kenai kenai;
-    {
-     Kenai k = Utilities.getLastKenai();
-     kenai = k==null?Utilities.getPreferredKenai():k;
-    }
 
     private PropertyChangeListener kenaiListener;
 
@@ -152,11 +167,11 @@ public final class DashboardImpl extends Dashboard {
 
         userNode = new UserNode(this);
         model.addRoot(-1, userNode);
-        openProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_OpenProjects"), null); // NOI18N
+        openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
         model.addRoot(-1, noOpenProjects);
 
-        myProjectsNode = new CategoryNode(this, org.openide.util.NbBundle.getMessage(CategoryNode.class, "LBL_MyProjects"), // NOI18N
+        myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_MyProjects"), // NOI18N
                 ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
         if (login!=null) {
             if (!model.getRootNodes().contains(myProjectsNode)) {
@@ -223,7 +238,6 @@ public final class DashboardImpl extends Dashboard {
     }
 
     public void setKenai(Kenai kenai) {
-        Utilities.setLastKenai(kenai);
         this.kenai = kenai;
         final PasswordAuthentication newValue = kenai!=null?kenai.getPasswordAuthentication():null;
         if (newValue == null) {
@@ -358,8 +372,7 @@ public final class DashboardImpl extends Dashboard {
      */
     @Override
     public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {
-        if (project.getKenaiProject().getKenai()!=this.kenai)
-            KenaiTopComponent.findInstance().setSelectedKenai(project.getKenaiProject().getKenai());
+        UIUtils.setSelectedServer(KenaiServer.forKenai((project.getKenaiProject()).getKenai()));
         requestProcessor.post(new Runnable() {
 
             public void run() {
@@ -420,7 +433,7 @@ public final class DashboardImpl extends Dashboard {
     Action createLoginAction() {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                UIUtils.showLogin(kenai);
+                org.netbeans.modules.kenai.ui.spi.UIUtils.showLogin(kenai);
             }
         };
     }
@@ -495,21 +508,23 @@ public final class DashboardImpl extends Dashboard {
 
     public JComponent getComponent() {
         synchronized( LOCK ) {
-            opened = true;
-            requestProcessor.post(new Runnable() {
-                public void run() {
-                    UIUtils.waitStartupFinished();
-                    myProjectLoadingStarted();
-                    projectLoadingStarted();
-                    if (null != login && !memberProjectsLoaded) {
-                        startLoadingMemberProjects(false);
+            if (!opened) {
+                requestProcessor.post(new Runnable() {
+                    public void run() {
+                        UIUtils.waitStartupFinished();
+                        myProjectLoadingStarted();
+                        projectLoadingStarted();
+                        if (null != login && !memberProjectsLoaded) {
+                            startLoadingMemberProjects(false);
+                        }
+                        if (!otherProjectsLoaded) {
+                            startLoadingAllProjects(false);
+                        }
                     }
-                    if (!otherProjectsLoaded) {
-                        startLoadingAllProjects(false);
-                    }
-                }
-            });
-            switchContent();
+                });
+                switchContent();
+                opened = true;
+            }
         }
         return dashboardComponent;
     }
@@ -673,7 +688,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     public void bookmarkingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Bookmarking"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardImpl.class, "LBL_Bookmarking"));
     }
 
     public void bookmarkingFinished() {
@@ -681,7 +696,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     public void deletingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Deleting"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardImpl.class, "LBL_Deleting"));
     }
 
     public void deletingFinished() {
@@ -690,7 +705,7 @@ public final class DashboardImpl extends Dashboard {
 
 
     private void loggingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_Authenticating"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardImpl.class, "LBL_Authenticating"));
     }
 
     private void loggingFinished() {
@@ -698,7 +713,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     private void xmppStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_ConnectingXMPP"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardImpl.class, "LBL_ConnectingXMPP"));
     }
 
     private void xmppFinsihed() {
@@ -723,7 +738,7 @@ public final class DashboardImpl extends Dashboard {
     }
 
     void myProjectsProgressStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(UserNode.class, "LBL_LoadingIssues"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardImpl.class, "LBL_LoadingIssues"));
     }
 
     void myProjectsProgressFinished() {

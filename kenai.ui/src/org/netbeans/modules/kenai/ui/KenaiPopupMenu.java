@@ -63,9 +63,9 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
+import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
-import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -395,8 +395,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            KenaiTopComponent.findInstance().open();
-                            KenaiTopComponent.findInstance().requestActive();
+                            org.netbeans.modules.team.ui.spi.UIUtils.activateTeamDashboard();
                         }
                     });
                     RequestProcessor.getDefault().post(new Runnable() {

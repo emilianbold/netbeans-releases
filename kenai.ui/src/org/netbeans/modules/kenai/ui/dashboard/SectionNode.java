@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import org.netbeans.modules.kenai.ui.treelist.*;
+import org.netbeans.modules.team.ui.treelist.*;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -55,9 +55,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.openide.awt.HtmlRenderer;
+import org.netbeans.modules.team.ui.common.ColorManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
