@@ -82,7 +82,7 @@ public final class TeamServerManager {
             @Override
             public void propertyChange (PropertyChangeEvent evt) {
                 if (TeamServerProvider.PROP_INSTANCES.equals(evt.getPropertyName())) {
-                    propertyChangeSupport.firePropertyChange(PROP_INSTANCES, null, null);
+                    propertyChangeSupport.firePropertyChange(PROP_INSTANCES, evt.getOldValue(), evt.getNewValue());
                 }
             }
         };

@@ -92,7 +92,14 @@ public class TeamServerProviderImpl implements TeamServerProvider {
                     final Preferences preferences = NbPreferences.forModule(TeamServerProviderImpl.class);
                     preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), LoginUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
                 } else if (KenaiManager.PROP_INSTANCES.equals(pce.getPropertyName())) {
-                    propertyChangeSupport.firePropertyChange(TeamServerProvider.PROP_INSTANCES, null, null);
+                    KenaiServer oldValue = null, newValue = null;
+                    if (pce.getOldValue() instanceof Kenai) {
+                        oldValue = KenaiServer.forKenai(((Kenai) pce.getOldValue()));
+                    }
+                    if (pce.getNewValue() instanceof Kenai) {
+                        newValue = KenaiServer.forKenai(((Kenai) pce.getNewValue()));
+                    }
+                    propertyChangeSupport.firePropertyChange(TeamServerProvider.PROP_INSTANCES, oldValue, newValue);
                 }
             }
         });
