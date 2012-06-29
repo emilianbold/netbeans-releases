@@ -57,6 +57,7 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.web.javascript.debugger.eval.Evaluator;
 import org.netbeans.modules.web.javascript.debugger.locals.VariablesModel;
 import org.netbeans.modules.web.javascript.debugger.watches.WatchesModel;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
@@ -180,7 +181,7 @@ public class ToolTipAnnotation extends Annotation
                     return;
                 }
                 CallFrame frame = l.get(0);
-                VariablesModel.ScopedRemoteObject sv = WatchesModel.evaluateExpression(frame, expression);
+                VariablesModel.ScopedRemoteObject sv = Evaluator.evaluateExpression(frame, expression, true);
                 if (sv != null) {
                     RemoteObject var = sv.getRemoteObject();
                     String value = var.getValueAsString();

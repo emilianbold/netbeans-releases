@@ -51,7 +51,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
-import org.netbeans.modules.web.javascript.debugger.watches.WatchesModel;
+import org.netbeans.modules.web.javascript.debugger.eval.EvaluatorService;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
@@ -70,11 +70,12 @@ import org.openide.util.datatransfer.PasteType;
 public class VariablesModel extends ViewModelSupport implements TreeModel, ExtendedNodeModel,
 		TableModel, Debugger.Listener {
 	
-	public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
-	public static final String GLOBAL = "org/netbeans/modules/web/javascript/debugger/resources/global_variable_16.png"; // NOI18N
-	public static final String PROTO = "org/netbeans/modules/web/javascript/debugger/resources/proto_variable_16.png"; // NOI18N
+    public static final String LOCAL = "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png"; // NOI18N
+    public static final String GLOBAL = "org/netbeans/modules/web/javascript/debugger/resources/global_variable_16.png"; // NOI18N
+    public static final String PROTO = "org/netbeans/modules/web/javascript/debugger/resources/proto_variable_16.png"; // NOI18N
 
-	protected final Debugger debugger;
+    protected final Debugger debugger;
+    protected final EvaluatorService evaluator;
     
     protected final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
 
@@ -84,8 +85,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     
     private RequestProcessor RP = new RequestProcessor();
 
-	public VariablesModel(ContextProvider contextProvider) {
+    public VariablesModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
+        evaluator = contextProvider.lookupFirst(null, EvaluatorService.class);
         debugger.addListener(this);
         // update now:
         if (debugger.isSuspended()) {
@@ -323,7 +325,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             throws UnknownTypeException {
         if (LOCALS_VALUE_COLUMN_ID.equals(columnID) && node instanceof ScopedRemoteObject) {
             ScopedRemoteObject sro = (ScopedRemoteObject) node;
-            WatchesModel.evaluateExpression(getCurrentStack(), sro.getObjectName() + "=" + value+";");
+            evaluator.evaluateExpression(getCurrentStack(), sro.getObjectName() + "=" + value+";", false);
             refresh();
         }
         throw new UnknownTypeException(node);
