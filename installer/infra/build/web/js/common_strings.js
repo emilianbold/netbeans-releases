@@ -83,6 +83,6 @@ var LEGAL_INFO_HEADER = "Important Legal Information:";
 var CDDL_GPLV2_LINK = "http://netbeans.org/cddl-gplv2.html";
 var LICENSE_FILES_LINK = "http://netbeans.org/about/legal/product-licences.html";
 
-var LEGAL_INFO_MESSAGE = "NetBeans Community Distributions are available under a Dual License consisting of the <a href=\"{0}\">Common Development and Distribution License (CDDL) v1.0 and GNU General Public License (GPL) v2</a>. Such distributions include additional components under separate licenses identified in the <a href=\"{1}\">License file</a>. See the <a href=\"{1}\">Third Party License file</a> for external components included in NetBeans and their associated licenses.";
+var LEGAL_INFO_MESSAGE = "NetBeans Community Distributions are available under a Dual License consisting of the <a href=\"{0}\">Common Development and Distribution License (CDDL) v1.0 and GNU General Public License (GPL) v2</a>. Such distributions include additional components under separate licenses identified in the <a href=\"{1}\">License file</a>. See the <a href=\"{2}\">Third Party License file</a> for external components included in NetBeans and their associated licenses.";
 
 var LEGAL_WARNING_MESSAGE = "<b>WARNING:</b> These builds are still under development and could contain defects that lead to data loss. They are meant for evaluation of new features. As always, be sure to back up your changes if you use these builds on your production code.";
