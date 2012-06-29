@@ -441,12 +441,13 @@
 	<set property="glassfish-mod-sun.milestone.number.real" value="74b"/>
 	<set property="glassfish-mod-sun.build.type"            value=""/>
 	<set property="glassfish-mod-sun.build.number"          value="2"/>
-
-	<set property="glassfish-mod.milestone.number"      value="74"/>
-	<set property="glassfish-mod.milestone.number.real" value="74b"/>
-	<set property="glassfish-mod.build.type"            value=""/>
+-->
+	<set property="glassfish-mod.release.number"      value="3.1.2"/>
+	<set property="glassfish-mod.milestone.number" value="23"/>
+	<set property="glassfish-mod.milestone.number.real" value="23"/>
 	<set property="glassfish-mod.build.number"          value="2"/>
-	-->
+<!--	<set property="glassfish-mod.build.type"            value=""/>-->
+	
 
         <!--
         <set property="openesb.build.number" value="2008012302"/>                       
