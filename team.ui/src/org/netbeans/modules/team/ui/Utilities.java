@@ -42,14 +42,9 @@
 
 package org.netbeans.modules.team.ui;
 
-import java.io.File;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.prefs.Preferences;
-import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -57,18 +52,6 @@ import org.openide.util.NbPreferences;
  * @author Milan Kubec
  */
 public class Utilities {
-
-    public static File getDefaultRepoFolder() {
-        File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
-        if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
-            String nbPrjDirName = NbBundle.getMessage(Utilities.class, "DIR_NetBeansProjects");
-            File nbPrjDir = new File(defaultDir, nbPrjDirName);
-            if (nbPrjDir.exists() && nbPrjDir.canWrite()) {
-                return nbPrjDir;
-            }
-        }
-        return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
-    }
 
     public static void assertJid(String name) {
         assert name!=null;
