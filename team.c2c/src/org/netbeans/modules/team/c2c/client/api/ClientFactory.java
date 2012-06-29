@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.api;
+package org.netbeans.modules.team.c2c.client.api;
 
 import com.tasktop.c2c.client.commons.client.CredentialsInjector;
 import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
@@ -82,10 +82,14 @@ public final class ClientFactory {
     }
     
     public CloudClient createClient (String url, PasswordAuthentication auth) {
+        if (!url.endsWith("/")) { //NOI18N
+            url = url + '/';
+        }
         WebLocation location = new WebLocation(url, 
                 auth.getUserName(), 
                 auth.getPassword() == null ? "" : new String(auth.getPassword()), 
                 new ClientFactory.ProxyProvider());
+        // maybe proxy credentials weel need to be provided somehow
         ClassPathXmlApplicationContext context = getContext();
         ProfileWebServiceClient profileClient = context.getBean(ProfileWebServiceClient.class);
         ActivityServiceClient activityClient = context.getBean(ActivityServiceClient.class);

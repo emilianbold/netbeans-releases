@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.api;
+package org.netbeans.modules.team.c2c.client.api;
 
 import com.tasktop.c2c.server.common.service.domain.QueryRequest;
 import com.tasktop.c2c.server.common.service.domain.QueryResult;
@@ -72,8 +72,8 @@ import org.springframework.security.core.userdetails.User;
  */
 public final class CloudClient {
     private final ProfileWebServiceClient profileClient;
-    private static final String PROFILE_SERVICE = "alm/api"; //NOI18N
-    private static final String HUDSON_SERVICE = "alm/s/%s/hudson"; //NOI18N
+    private static final String PROFILE_SERVICE = "/alm/api"; //NOI18N
+    private static final String HUDSON_SERVICE = "/alm/s/%s/hudson"; //NOI18N
     private final AbstractWebLocation location;
     private final ActivityServiceClient activityClient;
     private final HudsonServiceClient hudsonClient;

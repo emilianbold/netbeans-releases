@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.api;
+package org.netbeans.modules.team.c2c.client.api;
 
 /**
  *

@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.team.c2c;
 
-import org.netbeans.modules.team.c2c.api.CloudClient;
-import org.netbeans.modules.team.c2c.api.ClientFactory;
+import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.c2c.client.api.ClientFactory;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
@@ -233,12 +233,13 @@ public class C2CClientTest extends NbTestCase  {
         HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
         assertNotNull(status);
         assertTrue(status.getJobs().size() > 0);
-        BuildDetails details = client.getBuildDetails("c2c", "Code2Cloud Server - Nightly", 168);
+        JobDetails jobDetails = client.getJobDetails("c2c", "Code2Cloud Server - Nightly");
+        BuildDetails details = client.getBuildDetails("c2c", jobDetails.getName(), jobDetails.getBuilds().get(0).getNumber());
         assertNotNull(details);
     }
 
     private CloudClient getClient () {
-        return ClientFactory.getInstance().createClient("https://q.tasktop.com/",
+        return ClientFactory.getInstance().createClient("https://q.tasktop.com",
                 new PasswordAuthentication(uname, passw.toCharArray()));
     }
 

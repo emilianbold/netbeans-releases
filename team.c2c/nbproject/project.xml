@@ -96,8 +96,9 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.team.c2c.ui</friend>
+                <friend>org.netbeans.modules.team.ods.ui</friend>
                 <package>org.netbeans.modules.team.c2c.api</package>
+                <package>org.netbeans.modules.team.c2c.client.api</package>
             </friend-packages>
         </data>
     </configuration>
