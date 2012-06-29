@@ -82,9 +82,9 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
      */
     private boolean disableCache = Boolean.getBoolean("test." + DocumentIndexImpl.class.getName() + ".cacheDisable");
     
-    private static final Convertor<IndexDocumentImpl,Document> ADD_CONVERTOR = new AddConvertor();
-    private static final Convertor<String,Query> REMOVE_CONVERTOR = new RemoveConvertor();
-    private static final Convertor<Document,IndexDocumentImpl> QUERY_CONVERTOR = new QueryConvertor();
+    private static final Convertor<IndexDocumentImpl,Document> ADD_CONVERTOR = Convertors.newIndexDocumentToDocumentConvertor();
+    private static final Convertor<String,Query> REMOVE_CONVERTOR = Convertors.newSourceNameToQueryConvertor();
+    private static final Convertor<Document,IndexDocumentImpl> QUERY_CONVERTOR = Convertors.newDocumentToIndexDocumentConvertor();
     private static final Logger LOGGER = Logger.getLogger(DocumentIndexImpl.class.getName());
     
     //@GuardedBy (this)
@@ -297,12 +297,7 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
         return "DocumentIndex["+luceneIndex.toString()+"]";  //NOI18N
     }    
     
-    private static final class AddConvertor implements Convertor<IndexDocumentImpl, Document> {
-        @Override
-        public Document convert(IndexDocumentImpl p) {
-            return p.doc;
-        }
-    }
+    
     
     private Reference<List[]> getDataRef() {
         assert Thread.holdsLock(this);
@@ -312,18 +307,5 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
         }
         return dataRef;
     }
-    
-    private static final class RemoveConvertor implements Convertor<String,Query> {
-        @Override
-        public Query convert(String p) {
-            return IndexDocumentImpl.sourceNameQuery(p);
-        }        
-    }
-    
-    private static final class QueryConvertor implements Convertor<Document,IndexDocumentImpl> {
-        @Override
-        public IndexDocumentImpl convert(Document p) {
-            return new IndexDocumentImpl(p);
-        }
-    }    
+                    
 }
