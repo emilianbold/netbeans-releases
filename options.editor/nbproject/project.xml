@@ -361,6 +361,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.java.hints.ui</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.javafx.editor</friend>
+                <friend>org.netbeans.modules.javascript2.editor</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.project</friend>

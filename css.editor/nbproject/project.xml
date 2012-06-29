@@ -348,6 +348,7 @@
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.javafx2.editor</friend>
+                <friend>org.netbeans.modules.javascript2.editor</friend>
                 <package>org.netbeans.modules.css.editor.api</package>
                 <package>org.netbeans.modules.css.editor.module.spi</package>
                 <package>org.netbeans.modules.css.indexing.api</package>
