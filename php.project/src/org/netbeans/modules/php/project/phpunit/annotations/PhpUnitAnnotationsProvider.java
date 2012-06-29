@@ -82,6 +82,7 @@ public class PhpUnitAnnotationsProvider extends PhpAnnotationsProvider {
                 new BackupGlobalsTag(),
                 new BackupStaticAttributesTag(),
                 new CodeCoverageIgnoreTag(),
+                new CoversTag(),
                 new OutputBufferingTag(),
                 new RunTestsInSeparateProcessesTag(),
                 new TestdoxTag());
