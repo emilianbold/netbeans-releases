@@ -67,6 +67,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.hibernate.catalog.HibernateCatalog;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
 //import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
@@ -92,7 +93,7 @@ public class JPQLEditorController {
     };
 
     public void executeJPQLQuery(final String jpql,
-            final FileObject configFileObject,
+            final PersistenceUnit pu,
             final int maxRowCount,
             final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();

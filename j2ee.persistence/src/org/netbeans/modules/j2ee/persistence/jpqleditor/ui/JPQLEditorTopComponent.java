@@ -61,7 +61,6 @@ import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -85,8 +84,6 @@ import javax.swing.table.DefaultTableModel;
 //import org.hibernate.impl.SessionFactoryImpl;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
@@ -95,10 +92,8 @@ import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
 //import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -125,7 +120,6 @@ public final class JPQLEditorTopComponent extends TopComponent {
     private static List<Integer> windowCounts = new ArrayList<Integer>();
     private Integer thisWindowCount = new Integer(0);
     private JPQLEditorController controller = null;
-//    private HibernateEnvironment env = null;
     private ProgressHandle ph = null;
     private RequestProcessor requestProcessor;
     private RequestProcessor.Task hqlParserTask;
@@ -307,12 +301,6 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     return;    // Cancel the task
                 }
                 if (selectedConfigObject != null) {
-                    //Project enclosingProject = FileOwnerQuery.getOwner(selectedConfigObject);
-//                    env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
-//                    if (env == null) {
-                        logger.warning("HiberEnv is not found in enclosing project.");
-//                        return;
-//                    }
                     if (Thread.interrupted() || isSqlTranslationProcessDone) {
                         return;    // Cancel the task
                     }
@@ -916,10 +904,10 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     try {
         ph = ProgressHandleFactory.createHandle(//GEN-HEADEREND:event_runJPQLButtonActionPerformed
                 NbBundle.getMessage(JPQLEditorTopComponent.class, "progressTaskname"));//GEN-LAST:event_runJPQLButtonActionPerformed
-            FileObject selectedConfigFile = (FileObject) puConfigMap.get(puComboBox.getSelectedItem());
+            PersistenceUnit pu = (PersistenceUnit) puConfigMap.get(puComboBox.getSelectedItem());
             ph.start(100);
             controller.executeJPQLQuery(jpqlEditor.getText(),
-                    selectedConfigFile,
+                    pu,
                     getMaxRowCount(),
                     ph);
         } catch (Exception ex) {
