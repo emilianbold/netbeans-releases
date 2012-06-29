@@ -90,12 +90,12 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
     private final CopyFilesVisual copyFilesVisual;
     private final boolean originalCopySrcFiles;
+    private final String originalCopySrcTarget;
     final Category category;
     final PhpProjectProperties properties;
     String originalEncoding;
     boolean notified;
     boolean visible;
-    private String originalCopySrcTarget;
 
     public CustomizerSources(final Category category, final PhpProjectProperties properties) {
         initComponents();
@@ -328,9 +328,13 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
                 return;
             }
             // #214888
-            if (targetFolderChanged(copyTargetDir.getAbsolutePath()) && copyTargetDir.isDirectory()) {
-                // just warning
-                category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_TargetFolderNotEmpty"));
+            if (copyTargetDir.isDirectory()) {
+                // target folder already exists - changed or copying not checked before?
+                if (targetFolderChanged(copyTargetDir.getAbsolutePath())
+                        || !originalCopySrcFiles) {
+                    // just warning
+                    category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_TargetFolderNotEmpty"));
+                }
             }
         }
 
@@ -402,7 +406,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
     }
 
     private boolean targetFolderChanged(String copyTargetDir) {
-        return originalCopySrcFiles && !originalCopySrcTarget.equals(copyTargetDir); // #133109
+        return !originalCopySrcTarget.equals(copyTargetDir); // #133109
     }
 
     /** This method is called from within the constructor to
