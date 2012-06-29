@@ -49,6 +49,7 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jellytools.modules.editor.SearchBarOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
 
 /**
  *
@@ -66,7 +67,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("testSearchForward.java");
         editor.setCaretPosition(4, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();        
         t.clearText();
         new EventTool().waitNoEvent(100);
         t.typeText("p");
@@ -105,7 +106,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("testSearchForward");
         editor.setCaretPosition(11, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         t.clearText();
         new EventTool().waitNoEvent(100);
         t.typeText("pub");
@@ -132,7 +133,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
         JCheckBoxOperator jcbo = barOperator.matchCaseCheckBox();
         jcbo.setSelected(true);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         t.clearText();
         new EventTool().waitNoEvent(100);
         t.typeText("Abc");
@@ -157,14 +158,16 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(1, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         t.clearText();
-        new EventTool().waitNoEvent(100);
+        new EventTool().waitNoEvent(200);
         t.typeText("abc");
         JButtonOperator b = barOperator.nextButton();
         b.push();
+        new EventTool().waitNoEvent(200);
         assertSelection(editor, 0, 3);
         b.push();
+        new EventTool().waitNoEvent(200);
         assertSelection(editor, 4, 7);
         t.pushKey(KeyEvent.VK_ESCAPE);
         new EventTool().waitNoEvent(100);
@@ -178,7 +181,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(3, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         t.clearText();
         new EventTool().waitNoEvent(100);
         t.typeText("abc");
@@ -199,7 +202,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(3, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         JButtonOperator b = barOperator.closeButton();
         b.push();
         new EventTool().waitNoEvent(250);        
@@ -213,19 +216,22 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(3, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
-        t.clearText();
-        new EventTool().waitNoEvent(100);
-        t.requestFocus();
-        t.typeText("XYZ");
-        new EventTool().waitNoEvent(300);        
-        JTextField filed = barOperator.findCombo().findJTextField();
-        assertEquals(new Color(178, 0, 0), filed.getForeground());
-        t.pushKey(KeyEvent.VK_ENTER);
-        MainWindowOperator mwo =  MainWindowOperator.getDefault();
-        assertEquals("'XYZ' not found",mwo.getStatusText());
-        t.pushKey(KeyEvent.VK_ESCAPE);
-        new EventTool().waitNoEvent(100);
+        JTextComponentOperator t = barOperator.findCombo();
+        try {            
+            t.clearText();
+            new EventTool().waitNoEvent(100);
+            t.requestFocus();
+            t.typeText("XYZ");        
+            t.pushKey(KeyEvent.VK_ENTER);                        
+            new EventTool().waitNoEvent(100);            
+            MainWindowOperator mwo =  MainWindowOperator.getDefault();
+            assertEquals("'XYZ' not found",mwo.getStatusText());                        
+            JTextComponentOperator filed = barOperator.findCombo();
+            assertEquals(new Color(178, 0, 0), filed.getForeground());                
+        } finally {
+            barOperator.closeButton().doClick();                              
+        }
+        new EventTool().waitNoEvent(200);
         assertFalse("ToolBar not closed",barOperator.isVisible());
         editor.closeDiscard();
     }
@@ -236,15 +242,15 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(3, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         JCheckBoxOperator ch2 = barOperator.reqularExpressionCheckBox();        
         ch2.setSelected(true);
         t.clearText();
         new EventTool().waitNoEvent(100);
         t.requestFocus();
         t.typeText("(");
-        new EventTool().waitNoEvent(300);        
-        JTextField filed = barOperator.findCombo().findJTextField();
+        new EventTool().waitNoEvent(1000);        
+        JTextComponentOperator filed = barOperator.findCombo();
         assertEquals(new Color(255, 0, 0), filed.getForeground());        
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         assertEquals("Invalid regular expression: 'Unclosed group'",mwo.getStatusText());
@@ -261,7 +267,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("match.txt");
         editor.setCaretPosition(2, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         t.clearText();
         new EventTool().waitNoEvent(100);
         t.typeText("abc");
@@ -281,7 +287,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("match2.txt");        
         editor.setCaretPosition(1, 1);
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         JCheckBoxOperator ch1 = barOperator.wholeWordsCheckBox();
         ch1.setSelected(true);
         t.clearText();        
@@ -300,7 +306,7 @@ public class IncrementalSearchTest extends EditorTestCase{
         EditorOperator editor = new EditorOperator("match2.txt");        
         editor.setCaretPosition(1, 1);
         SearchBarOperator barOperator =SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         JCheckBoxOperator ch1 = barOperator.matchCaseCheckBox();
         JCheckBoxOperator ch2 = barOperator.reqularExpressionCheckBox();
         ch1.setSelected(false);        
@@ -320,22 +326,21 @@ public class IncrementalSearchTest extends EditorTestCase{
     public void testFindNext() {
         openDefaultProject();        
         openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match2.txt");
-        EditorOperator editor = new EditorOperator("match2.txt");        
-        editor.setCaretPosition(1, 1);
+        EditorOperator editor = new EditorOperator("match2.txt");                
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
         t.clearText();        
         barOperator.matchCaseCheckBox().setSelected(false);
         barOperator.reqularExpressionCheckBox().setSelected(false);
         barOperator.wholeWordsCheckBox().setSelected(false);        
         t.pushKey(KeyEvent.VK_ESCAPE);
+        editor.setCaretPosition(1, 1);
         barOperator = SearchBarOperator.invoke(editor);        
         new EventTool().waitNoEvent(100);
-        t.typeText("ab");
-        new EventTool().waitNoEvent(1000);
+        t.typeText("ab");        
         t.pushKey(KeyEvent.VK_ENTER);
-        new EventTool().waitNoEvent(1000);
-        assertSelection(editor, 19, 21);        
+        new EventTool().waitNoEvent(100);
+        assertSelection(editor, 19,21);        
         t.pushKey(KeyEvent.VK_ESCAPE);
         new EventTool().waitNoEvent(100);
         assertFalse("ToolBar not closed",barOperator.isVisible());
@@ -350,29 +355,27 @@ public class IncrementalSearchTest extends EditorTestCase{
         openFile("Source Packages|org.netbeans.test.editor.search.IncrementalSearchTest", "match2.txt");
         EditorOperator editor = new EditorOperator("match2.txt");        
         SearchBarOperator barOperator = SearchBarOperator.invoke(editor);
-        JTextFieldOperator t = barOperator.findCombo().getTextField();
+        JTextComponentOperator t = barOperator.findCombo();
+        t.clearText();        
         barOperator.matchCaseCheckBox().setSelected(false);
         barOperator.reqularExpressionCheckBox().setSelected(false);
         barOperator.wholeWordsCheckBox().setSelected(false);        
         t.pushKey(KeyEvent.VK_ESCAPE);
-        editor.setCaretPosition(6, 1);
-        barOperator = SearchBarOperator.invoke(editor);
-        t.clearText();        
-        new EventTool().waitNoEvent(2000);
-        t.typeText("ab");
-        new EventTool().waitNoEvent(2000);
+        editor.setCaretPosition(1, 1);
+        barOperator = SearchBarOperator.invoke(editor);                
+        t.typeText("ab");  
         t.pushKey(KeyEvent.VK_ENTER);
         new EventTool().waitNoEvent(100);
-        assertSelection(editor, 36, 38); 
+        assertSelection(editor, 19,21); // 19,21
         t.pushKey(KeyEvent.VK_ESCAPE);
         new EventTool().waitNoEvent(100);
         assertFalse("ToolBar not closed",barOperator.isVisible());
         t.pushKey(KeyEvent.VK_F3, KeyEvent.SHIFT_DOWN_MASK);
         new EventTool().waitNoEvent(100);
-        assertSelection(editor, 24, 26);                
+        assertSelection(editor, 36, 38); // 36, 38
         t.pushKey(KeyEvent.VK_F3, KeyEvent.SHIFT_DOWN_MASK);
         new EventTool().waitNoEvent(100);
-        assertSelection(editor, 19, 21);                
+        assertSelection(editor, 24, 26);  // 24, 26
         closeFileWithDiscard();           
     }
 

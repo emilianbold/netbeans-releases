@@ -49,6 +49,7 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.modules.editor.search.SearchBar;
 
 /**
@@ -57,7 +58,7 @@ import org.netbeans.modules.editor.search.SearchBar;
  */
 public class SearchBarOperator extends EditorPanelOperator {
 
-    private JComboBoxOperator findOp;
+    private JTextComponentOperator findOp;
     private JButtonOperator nextButtonOp;
     private JButtonOperator prevButtonOp;
     private JButtonOperator closeButtonOp;
@@ -97,9 +98,9 @@ public class SearchBarOperator extends EditorPanelOperator {
         return sbo;
     }
     
-    public JComboBoxOperator findCombo() {
+    public JTextComponentOperator findCombo() {
         if (findOp == null) {
-            findOp = new JComboBoxOperator(getContainerOperator());
+            findOp = new JTextComponentOperator(getContainerOperator());
         }
         return findOp;
     }

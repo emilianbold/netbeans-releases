@@ -48,6 +48,7 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.modules.editor.search.ReplaceBar;
 
 /**
@@ -56,7 +57,7 @@ import org.netbeans.modules.editor.search.ReplaceBar;
  */
 public class ReplaceBarOperator extends EditorPanelOperator {
 
-    private JComboBoxOperator replaseWithOp;
+    private JTextComponentOperator replaseWithOp;
     private JButtonOperator replaceOp;
     private JButtonOperator replaceAllOp;    
     
@@ -86,9 +87,9 @@ public class ReplaceBarOperator extends EditorPanelOperator {
         super(ReplaceBar.class);
     }
 
-    public JComboBoxOperator replaceCombo() {
+    public JTextComponentOperator replaceCombo() {
         if (replaseWithOp == null) {
-            replaseWithOp = new JComboBoxOperator(getContainerOperator());
+            replaseWithOp = new JTextComponentOperator(getContainerOperator());
         }
         return replaseWithOp;
     }
