@@ -50,8 +50,9 @@ import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -119,13 +120,14 @@ public class LoginUtils {
         return newPassword;
     }
 
+    @Messages({"# {0} - kenai server name", "Utilities.password_keyring_description=Password for {0}"})
     static void savePassword (Kenai kenai, String username, char[] password) {
         String passwordPref = UIUtils.getPrefName(kenai, KENAI_PASSWORD_PREF);
         Preferences preferences = NbPreferences.forModule(LoginUtils.class);
         if (password != null) {
             preferences.put(UIUtils.getPrefName(kenai, KENAI_USERNAME_PREF), username); //NOI18N
             Keyring.save(passwordPref, password,
-                    NbBundle.getMessage(UIUtils.class, "UIUtils.password_keyring_description", kenai.getUrl().getHost()));
+                    Utilities_password_keyring_description(kenai.getUrl().getHost()));
         } else {
             preferences.remove(UIUtils.getPrefName(kenai, KENAI_USERNAME_PREF)); //NOI18N
             Keyring.delete(passwordPref);

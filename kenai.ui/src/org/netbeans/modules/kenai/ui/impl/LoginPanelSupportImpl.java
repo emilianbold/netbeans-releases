@@ -87,7 +87,9 @@ class LoginPanelSupportImpl implements LoginPanelSupport {
                         kenai.logout();
                     }
                     kenai.login(loginPanel.getUsername(), loginPanel.getPassword(), loginPanel.isOnline());
-                    LoginUtils.savePassword(kenai, loginPanel.getUsername(), loginPanel.getPassword());
+                    LoginUtils.savePassword(kenai, loginPanel.getUsername(), loginPanel.isStorePassword() 
+                            ? loginPanel.getPassword()
+                            : null);
                     loginPanelCallback.successful();
                 } catch (final KenaiException ex) {
                     SwingUtilities.invokeLater(new Runnable() {
