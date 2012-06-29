@@ -103,8 +103,8 @@
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1.2.2"/>
-    <property name="glassfish_v3_location"     value="file:///space/glassfish/glassfish-3.1.2.2-b03.zip"/>
-    <property name="glassfish_v3_location_ml"  value="file:///space/glassfish/glassfish-3.1.2.2-b03-ml.zip"/>
+    <property name="glassfish_v3_location"     value="http://milestone.in.oracle.com/java/re/glassfish/v3.1.2/promoted/p02/b03/bundles/glassfish-3.1.2.2-b03.zip"/>
+    <property name="glassfish_v3_location_ml"  value="http://milestone.in.oracle.com/java/re/glassfish/v3.1.2/promoted/p02/b03/bundles/glassfish-3.1.2.2-b03-ml.zip"/>
     <!--
     <property name="glassfish_v3_location"     value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}-ml.zip"/>
