@@ -41,14 +41,7 @@
  */
 package org.netbeans.modules.web.browser.api;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.Parameters;
 
 /**
@@ -58,8 +51,6 @@ import org.openide.util.Parameters;
  */
 public final class ResizeOption {
 
-    private static final Logger LOG = Logger.getLogger( ResizeOption.class.getName() );
-    
     private final Type type;
     private final String displayName;
     private final int width;
@@ -111,88 +102,6 @@ public final class ResizeOption {
     public static final ResizeOption SIZE_TO_FIT = new ResizeOption( Type.CUSTOM, 
             NbBundle.getMessage(ResizeOption.class, "Lbl_AUTO"), -1, -1, true, true );
 
-    /**
-     * Loads all instances from persistent storage.
-     * @return
-     */
-    public static List<ResizeOption> loadAll() {
-        synchronized( ResizeOption.class ) {
-            Preferences prefs = getPreferences();
-            int count = prefs.getInt( "count", 0 ); //NOI18N
-            ArrayList<ResizeOption> res = new ArrayList<ResizeOption>(count);
-            if( 0 == count ) {
-                res.add( create( Type.DESKTOP, NbBundle.getMessage(ResizeOption.class, "Lbl_DESKTOP"),
-                                        1280, 1024, true, true) );
-                res.add( create( Type.TABLET_LANDSCAPE, NbBundle.getMessage(ResizeOption.class, "Lbl_TABLET_LANDSCAPE"),
-                                        1024, 768, true, true) );
-                res.add( create( Type.TABLET_PORTRAIT, NbBundle.getMessage(ResizeOption.class, "Lbl_TABLET_PORTRAIT"),
-                                        768, 1024, true, true) );
-                res.add( create( Type.SMARTPHONE_LANDSCAPE, NbBundle.getMessage(ResizeOption.class, "Lbl_SMARTPHONE_LANDSCAPE"),
-                                        480, 320, true, true) );
-                res.add( create( Type.SMARTPHONE_PORTRAIT, NbBundle.getMessage(ResizeOption.class, "Lbl_SMARTPHONE_PORTRAIT"),
-                                        320, 480, true, true) );
-                res.add( create( Type.WIDESCREEN, NbBundle.getMessage(ResizeOption.class, "Lbl_WIDESCREEN"),
-                                        1680, 1050, false, true) );
-                res.add( create( Type.NETBOOK, NbBundle.getMessage(ResizeOption.class, "Lbl_NETBOOK"),
-                                        1024, 600, false, true) );
-            } else {
-                for( int i=0; i<count; i++ ) {
-                    Preferences node = prefs.node( "option"+i ); //NOI18N
-                    ResizeOption option = load( node );
-                    if( null != option )
-                        res.add( option );
-                }
-            }
-            return res;
-        }
-    }
-
-    /**
-     * Persists the given options.
-     * @param options
-     */
-    public static void saveAll( List<ResizeOption> options ) {
-        synchronized( ResizeOption.class ) {
-            Preferences prefs = getPreferences();
-            int count = prefs.getInt( "count", 0 ); //NOI18N
-            try {
-            for( int i=0; i<count; i++ ) {
-                prefs.node( "option"+i ).removeNode(); //NOI18N
-            }
-            } catch( BackingStoreException e ) {
-                LOG.log( Level.FINE, null, e );
-            }
-            prefs.putInt( "count", options.size() ); //NOI18N
-            for( int i=0; i<options.size(); i++ ) {
-                Preferences node = prefs.node( "option"+i ); //NOI18N
-                save( node, options.get( i ) );
-            }
-        }
-    }
-
-    private static void save( Preferences prefs, ResizeOption option ) {
-        prefs.put( "displayName", option.displayName ); //NOI18N
-        prefs.putInt( "width", option.width ); //NOI18N
-        prefs.putInt( "height", option.height ); //NOI18N
-        prefs.putBoolean( "toolbar", option.showInToolbar ); //NOI18N
-        prefs.putBoolean( "default", option.isDefault ); //NOI18N
-        prefs.put( "type", option.type.name() ); //NOI18N
-    }
-
-    private static ResizeOption load( Preferences prefs ) {
-        String name = prefs.get( "displayName", null ); //NOI18N
-        int width = prefs.getInt( "width", -1 ); //NOI18N
-        int height  = prefs.getInt( "height", -1 ); //NOI18N
-        boolean toolbar = prefs.getBoolean( "toolbar", false ); //NOI18N
-        boolean isDefault = prefs.getBoolean( "default", false ); //NOI18N
-        Type type = Type.valueOf( prefs.get( "type", null ) ); //NOI18N
-        try {
-            return create( type, name, width, height, toolbar, isDefault );
-        } catch( IllegalArgumentException e ) {
-            LOG.log( Level.INFO, "Error while loading resize options.", e ); //NOI18N
-        }
-        return null;
-    }
 
     public String getDisplayName() {
         return displayName;
@@ -234,10 +143,6 @@ public final class ResizeOption {
         sb.append( displayName );
         sb.append( ')' ); //NOI18N
         return sb.toString();
-    }
-
-    private static Preferences getPreferences() {
-        return NbPreferences.forModule( ResizeOption.class ).node( "resize_options" ); //NOI18N
     }
 
     @Override

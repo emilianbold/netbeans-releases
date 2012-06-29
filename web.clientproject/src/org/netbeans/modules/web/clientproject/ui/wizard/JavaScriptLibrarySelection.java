@@ -58,10 +58,14 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.common.api.Version;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -270,6 +274,11 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
         return true;
     }
 
+    void updateDefaults(Collection<String> defaultLibs) {
+        model.setSelected(defaultLibs);
+        model.fireTableDataChanged();
+    }
+
     private static class LibrariesModel extends AbstractTableModel {
 
         private List<ModelItem> l = new ArrayList<ModelItem>();
@@ -299,6 +308,15 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
                             o2.getSimpleDisplayName().toLowerCase());
                 }
             });
+        }
+        
+        void setSelected(Collection<String> preSelected) {
+            for (ModelItem mi : l) {
+                if (preSelected.contains(mi.getLibrary().getName())) {
+                    mi.selected = true;
+                }
+            }
+            
         }
         
         @Override

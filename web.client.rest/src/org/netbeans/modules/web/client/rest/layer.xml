@@ -56,6 +56,10 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.rest.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/client/rest/resources/restservice.png"/>
             </file>
+            <file name="js.html" url="/org/netbeans/modules/web/client/rest/resources/js.html">
+                <attr name="position" intvalue="0"/>
+		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
 	</folder>
     </folder>
 </filesystem>

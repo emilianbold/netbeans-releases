@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,29 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.webkit.debugging.api.css;
 
-// XXX detect running in frame
-if (TOP_FRAME == undefined) {
-    var TOP_FRAME = true;
+import org.json.simple.JSONObject;
 
-    // Escape HTML entities
-    function nbHtmlEntities(str) {
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+/**
+ * Inline styles of a DOM node.
+ *
+ * @author Jan Stola
+ */
+public class InlineStyles {
+    /** Style defined by {@code style} attribute of the node. */
+    private Style inlineStyle;
+    /** Style defined by DOM attributes (other than {@code style}). */
+    private Style attributesStyle;
+
+    /**
+     * Creates a new {@code InlineStyles} that corresponds to the given JSONObject.
+     *
+     * @param styles JSONObject describing the property.
+     */
+    InlineStyles(JSONObject styles) {
+        if (styles.containsKey("inlineStyle")) { // NOI18N
+            inlineStyle = new Style((JSONObject)styles.get("inlineStyle")); // NOI18N
+        }
+        if (styles.containsKey("attributesStyle")) { // NOI18N
+            attributesStyle = new Style((JSONObject)styles.get("attributesStyle")); // NOI18N
+        }
     }
 
-    // Reload the NetBeans iframe
-    function nbReloadFrame() {
-        console.log('Reloading iframe for "' + document.location.href + '"');
-        document.getElementById('nbframe').contentDocument.location.reload(true);
+    /**
+     * Returns the style defined by {@code style} attribute of the node.
+     *
+     * @return style defined by {@code style} attribute of the node.
+     */
+    public Style getInlineStyle() {
+        return inlineStyle;
     }
 
-    // get the current page and place it to the iframe
-    var origTitle = document.title;
-    var origUrl = document.location.href;
-    console.log('Placing "' + origUrl + '" to iframe');
-    var nbdoc = '__HTML_PAGE__';
-    nbdoc = nbdoc.replace('__TITLE__', nbHtmlEntities(origTitle));
-    nbdoc = nbdoc.replace('__SRC__', origUrl);
-    var encodedNbDoc = encodeURIComponent(nbdoc);
-    document.location.href = "javascript:(function(){document.open();document.write('" + encodedNbDoc + "');document.close();})();";
+    /**
+     * Returns the style defined by DOM attributes (other than {@code style}).
+     *
+     * @return style defined by DOM attributes (other than {@code style}).
+     */
+    public Style getAttributesStyle() {
+        return attributesStyle;
+    }
+
 }

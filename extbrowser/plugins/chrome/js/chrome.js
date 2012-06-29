@@ -47,7 +47,6 @@ NetBeans.cleanup();
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
     if (newUrl != undefined) {
         chrome.tabs.update(tabId, {url: newUrl});
-        NetBeans.executeScripts(tabId);
     } else {
         chrome.tabs.sendRequest(tabId, {'id': 'RELOAD_FRAME'});
     }
@@ -71,6 +70,15 @@ NetBeans.browserDetachDebugger = function(tabId) {
     chrome.debugger.detach({tabId : tabId});
 }
 
+// display NB icon in URL bar
+NetBeans.showPageIcon = function(tabId) {
+    chrome.pageAction.show(tabId);
+}
+// hide NB icon in URL bar
+NetBeans.hidePageIcon = function(tabId) {
+    chrome.pageAction.hide(tabId);
+}
+
 NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     if (NetBeans.DEBUG) {
         console.log('send ['+tabId+","+id+","+method+","+JSON.stringify(params));
@@ -86,20 +94,13 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
         });
 }
 
-NetBeans.executeScripts = function(tabId, callback) {
-    if (NetBeans.DEBUG) {
-        console.log('Executing external NB scripts for tab "' + tabId + '"');
-    }
-    chrome.tabs.executeScript(tabId, {'file': 'nbframe.js'}, function() {
-        if (callback) {
-            callback();
-        }
-    });
-}
-
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
-}); 
+});
+
+chrome.debugger.onDetach.addListener(function(source) {
+    NetBeans.hidePageIcon(source.tabId);
+});
 
 // Register tab listeners
 chrome.tabs.onCreated.addListener(function(tab) {

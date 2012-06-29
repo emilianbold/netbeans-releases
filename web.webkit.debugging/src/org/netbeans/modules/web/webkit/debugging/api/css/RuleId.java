@@ -39,13 +39,46 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.webkit.debugging.api.css;
 
-// register listener for extension requests
-chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
-    console.log('Got request "' + request.id + '"');
-    if (request.id == 'RELOAD_FRAME') {
-        reloadFrame();
-        return;
+import org.json.simple.JSONObject;
+
+/**
+ * Identifier of a CSS rule.
+ *
+ * @author Jan Stola
+ */
+public class RuleId {
+    /** Identifier of the enclosing styleheet. */
+    private String styleSheetId;
+    /** Rule ordinal within the stylesheet. */
+    private int ordinal;
+
+    /**
+     * Creates a new {@code RuleId} that corresponds to the given JSONObject.
+     *
+     * @param id JSONObject describing the rule ID.
+     */
+    RuleId(JSONObject id) {
+        styleSheetId = (String)id.get("styleSheetId"); // NOI18N
+        ordinal = ((Number)id.get("ordinal")).intValue(); // NOI18N
     }
-    console.log('Unknown request "' + request.id + '"');
-});
+
+    /**
+     * Returns the identifier of the enclosing stylesheet.
+     *
+     * @return identifier of the enclosing stylesheet.
+     */
+    public String getStyleSheetId() {
+        return styleSheetId;
+    }
+
+    /**
+     * Returns the rule ordinal within the stylesheet.
+     *
+     * @return rule ordinal within the stylesheet.
+     */
+    public int getOrdinal() {
+        return ordinal;
+    }
+}

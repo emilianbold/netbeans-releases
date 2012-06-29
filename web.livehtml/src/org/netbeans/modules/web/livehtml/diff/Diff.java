@@ -338,7 +338,8 @@ public class Diff {
         List<DiffElement> v2 = getChildrenRightSide(currentDiff);
         
         if (!sameLists2(v1, v2)) {
-            throw new RuntimeException("lists should be the same:\n "+currentDiff+"\n "+v1+"\n "+v2);
+            throw new RuntimeException("lists should be the same:\n "+currentDiff+"\n "+v1+"\n "+v2+"\n\n"+
+                    dumpSomeDiagnostics(previousDiff, currentDiff));
         }
 
         List<DiffAttribute> a1 = getAttributeLeftSide(previousDiff);
@@ -469,6 +470,41 @@ public class Diff {
             attrs.add(childDiff);
         }
         parentDiff.setAttribute(attrs);
+    }
+
+    private String dumpSomeDiagnostics(DiffElement previousDiff, DiffElement currentDiff) {
+        StringBuilder sb = new StringBuilder();
+        if (previousDiff.getCurrentElement() != null) {
+            dumpElement("previous parent: ", previousDiff.getCurrentElement(), sb);
+        }
+        if (currentDiff.getPreviousElement() != null) {
+            dumpElement("current parent: ", currentDiff.getPreviousElement(), sb);
+        }
+        for (Element e : previousDiff.getCurrentElement().children()) {
+            dumpElement("  left node: ", e, sb);
+        }
+        for (DiffElement de : previousDiff.getChildren()) {
+            dumpElement("  left diff: ", de, de.getCurrentElement(), sb);
+        }
+        for (Element e : currentDiff.getCurrentElement().children()) {
+            dumpElement(" right node: ", e, sb);
+        }
+        for (DiffElement de : currentDiff.getChildren()) {
+            dumpElement(" right diff: ", de, de.getPreviousElement(), sb);
+        }
+        return sb.toString();
+    }
+
+    private void dumpElement(CharSequence prefix, Element e, StringBuilder sb) {
+        sb.append(prefix).append(""+e.from()+" ").append(e.image()).append("\n");
+    }
+    
+    private void dumpElement(CharSequence prefix, DiffElement de, Element e, StringBuilder sb) {
+        if (de == null) {
+            sb.append(""+de+" - "+e);
+        } else {
+            sb.append(prefix).append(""+e.from()+" ").append(e.image()).append(" "+de.getChange()).append("\n");
+        }
     }
     
     private static class WhiteSpaceFilter implements ElementFilter {

@@ -59,6 +59,8 @@ NetBeans.STATUS_UNCONFIRMED = 1;
 NetBeans.STATUS_MANAGED = 2;
 NetBeans.STATUS_NOT_MANAGED = 3;
 
+NetBeans.selectionMode = false;
+
 NetBeans.tabStatus = function(tabId) {
     var tabInfo = this.managedTabs[tabId];
     var status;
@@ -152,6 +154,31 @@ NetBeans.sendUrlChangeMessage = function(tabId, url) {
     });
 }
 
+NetBeans.sendLoadResizeOptionsMessage = function() {
+    // XXX message sent more than once
+    if (ResizeOptions != null) {
+        return;
+    }
+    this.sendMessage({
+        message: 'load_resize_options'
+    });
+}
+
+NetBeans.sendSaveResizeOptionsMessage = function(presets) {
+    ResizeOptions = presets;
+    this.sendMessage({
+        message: 'save_resize_options',
+        resizeOptions: ResizeOptions
+    });
+}
+
+NetBeans.sendSelectionModeMessage = function(selectionMode) {
+    this.sendMessage({
+        message: 'selection_mode',
+        selectionMode: selectionMode
+    });
+}
+
 NetBeans.sendPendingMessages = function() {
     for (var i=0; i<this.pendingMessages.length; i++) {
         this.sendMessage(this.pendingMessages[i]);
@@ -171,6 +198,10 @@ NetBeans.processMessage = function(message) {
         this.processDetachDebuggerMessage(message);
     } else if (type === 'debugger_command') {
         this.processDebuggerCommandMessage(message);
+    } else if (type === 'load_resize_options') {
+        this.processLoadResizeOptionsMessage(message);
+    } else if (type === 'save_resize_options') {
+        this.processSaveResizeOptionsMessage(message);
     } else {
         console.log('Unsupported message!');
         console.log(message);
@@ -267,6 +298,17 @@ NetBeans.processDebuggerCommandMessage = function(message) {
     }
 }
 
+NetBeans.processLoadResizeOptionsMessage = function(message) {
+    ResizeOptions = JSON.parse(message.resizeOptions);
+}
+
+NetBeans.processSaveResizeOptionsMessage = function(message) {
+    this.sendMessage({
+        message: 'save_resize_options',
+        resizeOptions: message.resizeOptions
+    });
+}
+
 NetBeans.sendDebuggingResponse = function(tabId, response) {
     this.sendMessage({
         message: 'debugger_command_response',
@@ -288,6 +330,7 @@ NetBeans.tabUpdated = function(tab) {
         tabInfo.url = tab.url;
         // Send URL to IDE - ask if the tab is managed
         this.sendInitMessage(tab);
+        this.sendLoadResizeOptionsMessage();
     } else if ((tabInfo !== undefined) && (tabInfo.url !== tab.url)) {
         // URL change should not mean that tab was closed; it may notify
         // IDE that different page is opened in the browser pane if such knowledge
@@ -298,6 +341,7 @@ NetBeans.tabUpdated = function(tab) {
         } else if (status === this.STATUS_MANAGED) {
             // Navigation in a managed tab => send "urlchange" message
             this.sendUrlChangeMessage(tab.id, tab.url);
+            this.showPageIcon(tab.id);
         }
     }
 }
@@ -318,3 +362,149 @@ NetBeans.tabRemoved = function(tabId) {
         delete this.managedTabs[tabId];
     }
 }
+
+NetBeans.setSelectionMode = function(selectionMode) {
+    this.selectionMode = selectionMode;
+    this.sendSelectionModeMessage(selectionMode);
+}
+
+NetBeans.getSelectionMode = function() {
+    return this.selectionMode;
+}
+
+/**
+ * Class representing window preset.
+ *
+ * Internal presets cannot be removed.
+ */
+function NetBeans_Preset(type, displayName, width, height, showInToolbar, isDefault) {
+    // type (its ident)
+    this.type = type;
+    // display name
+    this.displayName = displayName;
+    // width (in px)
+    this.width = width;
+    // height (in px)
+    this.height = height;
+    // show in toolbar
+    this.showInToolbar = showInToolbar;
+    // default or not?
+    this.isDefault = isDefault;
+}
+// preset type for Desktops
+NetBeans_Preset.DESKTOP = {
+    ident: 'DESKTOP',
+    title: 'Desktop' // XXX i18n
+};
+// preset type for Netbooks
+NetBeans_Preset.NETBOOK = {
+    ident: 'NETBOOK',
+    title: 'Netbook'
+};
+// preset type for Tablets (Landscape)
+NetBeans_Preset.TABLET_LANDSCAPE = {
+    ident: 'TABLET_LANDSCAPE',
+    title: 'Tablet Landscape'
+};
+// preset type for Tablets (Portrait)
+NetBeans_Preset.TABLET_PORTRAIT = {
+    ident: 'TABLET_PORTRAIT',
+    title: 'Tablet Portrait'
+};
+// preset type for Smartphones  (Landscape)
+NetBeans_Preset.SMARTPHONE_LANDSCAPE = {
+    ident: 'SMARTPHONE_LANDSCAPE',
+    title: 'Smartphone Landscape'
+};
+// preset type for Smartphones  (Portrait)
+NetBeans_Preset.SMARTPHONE_PORTRAIT = {
+    ident: 'SMARTPHONE_PORTRAIT',
+    title: 'Smartphone Portrait'
+};
+// get a list of all preset types
+NetBeans_Preset.allTypes = function() {
+    return [
+        NetBeans_Preset.DESKTOP,
+        NetBeans_Preset.NETBOOK,
+        NetBeans_Preset.TABLET_LANDSCAPE,
+        NetBeans_Preset.TABLET_PORTRAIT,
+        NetBeans_Preset.SMARTPHONE_LANDSCAPE,
+        NetBeans_Preset.SMARTPHONE_PORTRAIT
+    ];
+}
+// get preset type for the given ident, or null if not found
+NetBeans_Preset.typeForIdent = function(ident) {
+    var allTypes = NetBeans_Preset.allTypes();
+    for (i in allTypes) {
+        if (allTypes[i].ident == ident) {
+            return allTypes[i];
+        }
+    }
+    return null;
+}
+
+/**
+ * Window presets manager.
+ */
+var NetBeans_Presets = {};
+// all presets
+NetBeans_Presets._presets = null;
+// active/current preset
+NetBeans_Presets._preset = null;
+NetBeans_Presets.getPreset = function(preset) {
+    if (preset == undefined) {
+        return this._preset;
+    }
+    var tmp = this.getPresets()[preset];
+    if (tmp == undefined) {
+        return null;
+    }
+    this._preset = tmp;
+    return this._preset;
+}
+// get all presets
+NetBeans_Presets.getPresets = function(copy) {
+    if (copy) {
+        return this._loadPresets();
+    }
+    if (this._presets == null) {
+        this._presets = this._loadPresets();
+    }
+    return this._presets;
+}
+// set (and save) new presets
+NetBeans_Presets.setPresets = function(presets) {
+    this._presets = presets;
+    this._savePresets();
+}
+// load presets from the central storage
+NetBeans_Presets._loadPresets = function() {
+    if (ResizeOptions == null) {
+        // netbeans not running?
+        return null;
+    }
+    console.log('Mapping window presets from NetBeans');
+    var presets = [];
+    for (var i in ResizeOptions) {
+        var option = ResizeOptions[i];
+        presets.push(new NetBeans_Preset(
+            option.type,
+            option.displayName,
+            option.width,
+            option.height,
+            option.showInToolbar,
+            option.isDefault
+        ));
+    }
+    return presets;
+}
+// save presets to the central storage
+NetBeans_Presets._savePresets = function() {
+    console.log('Saving window presets back to NetBeans');
+    NetBeans.sendSaveResizeOptionsMessage(this._presets);
+}
+
+/**
+ * Resize options (a.k.a. Windows Presets from NetBeans).
+ */
+var ResizeOptions = null;

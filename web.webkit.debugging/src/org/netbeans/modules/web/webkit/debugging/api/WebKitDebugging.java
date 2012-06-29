@@ -43,6 +43,7 @@ package org.netbeans.modules.web.webkit.debugging.api;
 
 import org.netbeans.modules.web.webkit.debugging.APIFactory;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
+import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.netbeans.modules.web.webkit.debugging.api.page.Page;
@@ -68,6 +69,7 @@ public class WebKitDebugging {
     private Debugger debugger;
     private Runtime runtime;
     private DOM dom;
+    private CSS css;
     private Page page;
     private Network network;
 
@@ -110,7 +112,19 @@ public class WebKitDebugging {
         }
         return dom;
     }
-    
+
+    /**
+     * Returns CSS part of Remote WebKit Debugging.
+     *
+     * @return CSS part of Remote WebKit Debugging.
+     */
+    public synchronized CSS getCSS() {
+        if (css == null) {
+            css = new CSS(transport);
+        }
+        return css;
+    }
+
     /**
      * Get Page part of Remote WebKit Debugging.
      */

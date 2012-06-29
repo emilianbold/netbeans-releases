@@ -124,19 +124,21 @@ public class ClientSideProject implements Project {
     }
     
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
-        return Lookups.fixed(new Object[] {
-                this,
-                configuration,
-                helper.createCacheDirectoryProvider(),
-                helper.createAuxiliaryProperties(),
-                getEvaluator(),
-                new ClientSideProjectLogicalView(this),
-                new RecommendedAndPrivilegedTemplatesImpl(),
-                new ClientSideProjectActionProvider(this),
-                new OpenHookImpl(this),
-                getBrowserSupport(),
-        });
-    }
+       return Lookups.fixed(new Object[] {
+               this,
+               configuration,
+               helper.createCacheDirectoryProvider(),
+               helper.createAuxiliaryProperties(),
+               getEvaluator(),
+               new ClientSideProjectLogicalView(this),
+               new RecommendedAndPrivilegedTemplatesImpl(),
+               new ClientSideProjectActionProvider(this),
+               new OpenHookImpl(this),
+               new CustomizerProviderImpl(this),        
+               new ClientSideConfigurationProvider(this),
+               getBrowserSupport(),
+       });
+   }
 
     private final class Info implements ProjectInformation {
 

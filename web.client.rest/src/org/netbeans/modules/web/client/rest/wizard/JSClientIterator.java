@@ -42,11 +42,14 @@
  */
 package org.netbeans.modules.web.client.rest.wizard;
 
+import java.awt.Component;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -54,6 +57,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.progress.ProgressHandle;
@@ -73,6 +77,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 
 
@@ -105,7 +110,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
      * @see org.openide.WizardDescriptor.Iterator#current()
      */
     @Override
-    public Panel current() {
+    public Panel<WizardDescriptor> current() {
         return myPanels[myIndex];
     }
 
@@ -114,7 +119,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
      */
     @Override
     public boolean hasNext() {
-        return false;
+        return myIndex<myPanels.length-1;
     }
 
     /* (non-Javadoc)
@@ -171,9 +176,13 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         myRestPanel = new RestPanel( descriptor );
         Project project = Templates.getProject( descriptor );
         Sources sources = ProjectUtils.getSources(project);
+        
         myPanels = new WizardDescriptor.Panel[]{
                 Templates.buildSimpleTargetChooser(project, 
-                sources.getSourceGroups(Sources.TYPE_GENERIC)).bottomPanel(myRestPanel).create() };
+                sources.getSourceGroups(Sources.TYPE_GENERIC)).
+                    bottomPanel(myRestPanel).create(), new HtmlPanel( descriptor )
+                    };
+        setSteps();
     }
     
     /* (non-Javadoc)
@@ -206,12 +215,18 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
         DataObject createdFile = templateDO.createFromTemplate(dataFolder, targetName);
-        createdFile.rename(targetName);
         
         FileObject jsFile = createdFile.getPrimaryFile();
         
         JSClientGenerator generator = JSClientGenerator.create( description );
         generator.generate( jsFile);
+        
+        File htmlFile = (File)myWizard.getProperty(
+                HtmlPanel.HTML_FILE);
+        if ( htmlFile != null ){
+            createHtml( htmlFile , existedBackbone );
+        }
+
         return null;
     }
 
@@ -229,6 +244,55 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
     @Override
     public void uninitialize( WizardDescriptor descriptor ) {
         myPanels = null;
+    }
+    
+    private void createHtml( File htmlFile, FileObject backbone ) 
+        throws IOException 
+    {
+        File parentFile = htmlFile.getParentFile();
+        parentFile.mkdirs();
+        FileObject folder = FileUtil.toFileObject(FileUtil.normalizeFile(parentFile));
+        FileObject templateFO = FileUtil.getConfigFile("Templates/ClientSide/js.html");  //NOI18N
+        DataObject templateDO = DataObject.find(templateFO);
+        DataFolder dataFolder = DataFolder.findFolder(folder);
+        String name = htmlFile.getName();
+        if ( name.endsWith( HtmlPanelVisual.HTML)){
+            name = name.substring(0 , name.length()-HtmlPanelVisual.HTML.length());
+        }
+        
+        Map<String,String> map = new HashMap<String, String>();
+        if ( backbone == null ){
+            map.put("script", "<script src='http://documentcloud.github.com/underscore/underscore-min.js'>" +
+            		"</script>\n<script src='http://backbonejs.org/backbone-min.js'></script>");    // NOI18N
+        }
+        else {
+            String relativePath = FileUtil.getRelativePath(folder, backbone);
+            map.put("script","<script src='http://documentcloud.github.com/underscore/underscore-min.js'></script>\n" +
+            		"<script src='"+relativePath+"'></script>");
+            // TODO : rewrite underscore url to relative local path when it will be created along with backbone.
+        }
+        
+        DataObject createdFile = templateDO.createFromTemplate(dataFolder, 
+                name, map);
+    }
+    
+    private void setSteps() {
+        Object contentData = myWizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);  
+        if ( contentData instanceof String[] ){
+            String steps[] = (String[])contentData;
+            String newSteps[] = new String[ steps.length +1];
+            System.arraycopy(steps, 0, newSteps, 0, 1);
+            newSteps[newSteps.length-2]=NbBundle.getMessage(JSClientIterator.class, 
+                "TXT_JsFile");        // NOI18N
+            newSteps[newSteps.length-1]=NbBundle.getMessage(JSClientIterator.class, 
+                    "TXT_HtmlFile");        // NOI18N
+            for( int i=0; i<myPanels.length; i++ ){
+                Panel panel = myPanels[i];
+                JComponent component = (JComponent)panel.getComponent();
+                component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, newSteps);
+                component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+            }
+        }
     }
     
     private FileObject addLibrary(FileObject libs) {

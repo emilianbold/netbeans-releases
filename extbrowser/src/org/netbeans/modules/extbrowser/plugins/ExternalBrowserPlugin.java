@@ -52,7 +52,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
@@ -61,6 +61,8 @@ import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
 import org.netbeans.modules.netserver.websocket.WebSocketReadHandler;
 import org.netbeans.modules.netserver.websocket.WebSocketServer;
 import org.netbeans.modules.web.browser.api.PageInspector;
+import org.netbeans.modules.web.browser.api.ResizeOption;
+import org.netbeans.modules.web.browser.api.ResizeOptions;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -76,22 +78,22 @@ import org.openide.util.RequestProcessor;
 public final class ExternalBrowserPlugin {
     /** ID of 'reload of save' feature. */
     private static final String FEATURE_ROS = "RoS"; // NOI18N
-    
+
     private static final int PORT = 8008;
-    
-    private static final Logger LOG = Logger.getLogger( 
+
+    private static final Logger LOG = Logger.getLogger(
             ExternalBrowserPlugin.class.getCanonicalName());
 
     public static ExternalBrowserPlugin getInstance(){
         return INSTANCE;
     }
-    
+
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
-    
+
     private ExternalBrowserPlugin() {
         try {
             server = new WebSocketServer(new InetSocketAddress(PORT)){
-              
+
                 @Override
                 public void close(SelectionKey key) throws IOException {
                     removeKey( key );
@@ -100,7 +102,7 @@ public final class ExternalBrowserPlugin {
             };
             server.setWebSocketReadHandler( new BrowserPluginHandler() );
             new Thread( server ).start();
-            
+
             Thread shutdown = new Thread(){
                 @Override
                 public void run() {
@@ -113,17 +115,17 @@ public final class ExternalBrowserPlugin {
             LOG.log( Level.INFO , null , e);
         }
     }
-    
+
     /**
      * Register that given URL was opened in external browser and browser
      * should confirm it by sending a message back to IDE. This handshake
-     * will store ID if the browser tab and use it for all consequent external 
+     * will store ID if the browser tab and use it for all consequent external
      * browser requests.
      */
     public void register(URL tempURL, URL realUrl, ExtBrowserImpl browserImpl) {
         awaitingBrowserResponse.put(urlToString(tempURL), new Pair(browserImpl, realUrl));
     }
-    
+
     private String urlToString(URL url) {
         try {
             // try to 'normalize' the URL
@@ -144,15 +146,15 @@ public final class ExternalBrowserPlugin {
     public void attachWebKitDebugger(BrowserTabDescriptor tab) {
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createAttachDebuggerMessage(tab.tabID));
     }
-    
+
     public void detachWebKitDebugger(BrowserTabDescriptor tab) {
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDetachDebuggerMessage(tab.tabID));
     }
-    
+
     public void sendWebKitDebuggerCommand(BrowserTabDescriptor tab, JSONObject command) {
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDebuggerCommandMessage(tab.tabID, command));
     }
-    
+
     private void removeKey( SelectionKey key ) {
         for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
             BrowserTabDescriptor browserTab = iterator.next();
@@ -172,7 +174,7 @@ public final class ExternalBrowserPlugin {
     /**
      * Notifies {@code MessageDispatcher}(s) that correspond to the given
      * {@code SelectionKey} about a new message.
-     * 
+     *
      * @param message message to dispatch.
      * @param key origin of the message.
      */
@@ -191,7 +193,7 @@ public final class ExternalBrowserPlugin {
 
     /**
      * Sends a message to the specified feature of the specified web-browser pane.
-     * 
+     *
      * @param message message to deliver.
      * @param impl web-pane where the message should be sent.
      * @param featureId ID of the feature the message is related to.
@@ -246,12 +248,18 @@ public final class ExternalBrowserPlugin {
                 case DEBUGGER_COMMAND_RESPONSE:
                     handleDebuggerResponse( msg , key );
                     break;
+                case LOAD_RESIZE_OPTIONS:
+                    handleLoadResizeOptions(key);
+                    break;
+                case SAVE_RESIZE_OPTIONS:
+                    handleSaveResizeOptions(msg.getValue());
+                    break;
                 default:
-                    assert false;
+                    assert false : "Unknown message type: " + type;
             }
-            
+
         }
-        
+
         private void handleInit( Message message , SelectionKey key ){
             String url = (String)message.getValue().get(URL);
             int tabId = message.getTabId();
@@ -287,7 +295,7 @@ public final class ExternalBrowserPlugin {
                 });
             }
         }
-        
+
         private Pair getAwaitingPair(String url) {
             URL u = null;
             try {
@@ -303,7 +311,7 @@ public final class ExternalBrowserPlugin {
             }
             Pair pair = (u == null) ? null : awaitingBrowserResponse.remove(urlToString(u));
             ExtBrowserImpl browserImpl = pair != null ? pair.impl : null;
-            
+
             // XXX: workaround: when Web Project is run it is started as "http:/localhost/aa" but browser URL is
             // "http:/localhost/aa/"
             if (browserImpl == null && url.endsWith("/")) { // NOI18N
@@ -329,7 +337,7 @@ public final class ExternalBrowserPlugin {
             }
             return pair;
         }
-        
+
         private void handleClose( Message message, SelectionKey key  ){
             int tabId = message.getTabId();
             if ( tabId == -1 ){
@@ -377,7 +385,7 @@ public final class ExternalBrowserPlugin {
 
         /**
          * Handles a request for web-page inspection.
-         * 
+         *
          * @param message initial message of the inspection.
          * @param key origin of the message.
          */
@@ -387,7 +395,7 @@ public final class ExternalBrowserPlugin {
                 LOG.log(Level.INFO, "No PageInspector found: ignoring the request for page inspection!"); // NOI18N
             } else {
                 int tabId = message.getTabId();
-                
+
                 // Find if the tab is known to RoS already
                 BrowserTabDescriptor browserTab = null;
                 for (BrowserTabDescriptor descriptor : knownBrowserTabs) {
@@ -423,6 +431,50 @@ public final class ExternalBrowserPlugin {
             }
         }
 
+        private void handleLoadResizeOptions(SelectionKey key) {
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("resizeOptions", createLoadResizeOptionsMessage(ResizeOptions.getDefault().loadAll())); // NOI18N
+            Message msg = new Message(Message.MessageType.LOAD_RESIZE_OPTIONS, map);
+            server.sendMessage(key, msg.toStringValue());
+        }
+
+        @SuppressWarnings("unchecked")
+        private String createLoadResizeOptionsMessage(List<ResizeOption> resizeOptions) {
+            JSONArray result = new JSONArray();
+            for (ResizeOption resizeOption : resizeOptions) {
+                result.add(mapResizeOption(resizeOption));
+            }
+            return result.toJSONString();
+        }
+
+        @SuppressWarnings("unchecked")
+        private JSONObject mapResizeOption(ResizeOption resizeOption) {
+            JSONObject mapped = new JSONObject();
+            mapped.put("type", JSONObject.escape(resizeOption.getType().name())); // NOI18N
+            mapped.put("displayName", JSONObject.escape(resizeOption.getDisplayName())); // NOI18N
+            mapped.put("width", resizeOption.getWidth()); // NOI18N
+            mapped.put("height", resizeOption.getHeight()); // NOI18N
+            mapped.put("showInToolbar", resizeOption.isShowInToolbar()); // NOI18N
+            mapped.put("isDefault", resizeOption.isDefault()); // NOI18N
+            return mapped;
+        }
+
+        private void handleSaveResizeOptions(JSONObject value) {
+            JSONArray options = (JSONArray) value.get("resizeOptions"); // NOI18N
+            List<ResizeOption> resizeOptions = new ArrayList<ResizeOption>(options.size());
+            for (Object item : options) {
+                JSONObject option = (JSONObject) item;
+                resizeOptions.add(ResizeOption.create(
+                        ResizeOption.Type.valueOf(String.valueOf(option.get("type"))), // NOI18N
+                        String.valueOf(option.get("displayName")), // NOI18N
+                        Integer.valueOf(String.valueOf(option.get("width"))), // NOI18N
+                        Integer.valueOf(String.valueOf(option.get("height"))), // NOI18N
+                        Boolean.valueOf(String.valueOf(option.get("showInToolbar"))), // NOI18N
+                        Boolean.valueOf(String.valueOf(option.get("isDefault"))))); // NOI18N
+            }
+            ResizeOptions.getDefault().saveAll(resizeOptions);
+        }
+
         @Override
         public void accepted(SelectionKey key) {
         }
@@ -430,9 +482,9 @@ public final class ExternalBrowserPlugin {
         @Override
         public void closed(SelectionKey key) {
         }
-        
+
     }
-    
+
     private String createReloadMessage(int tabId, URL newURL) {
         Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );
@@ -446,21 +498,21 @@ public final class ExternalBrowserPlugin {
         Message msg = new Message( Message.MessageType.RELOAD, params);
         return msg.toStringValue();
     }
-    
+
     private String createAttachDebuggerMessage(int tabId) {
         Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );
         Message msg = new Message( Message.MessageType.ATTACH_DEBUGGER, params);
         return msg.toStringValue();
     }
-    
+
     private String createDetachDebuggerMessage(int tabId) {
         Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );
         Message msg = new Message( Message.MessageType.DETACH_DEBUGGER, params);
         return msg.toStringValue();
     }
-    
+
     private String createDebuggerCommandMessage(int tabId, JSONObject params2) {
         JSONObject data = new JSONObject();
         data.put(Message.TAB_ID, tabId );
@@ -468,11 +520,11 @@ public final class ExternalBrowserPlugin {
         Message msg = new Message( Message.MessageType.DEBUGGER_COMMAND, data);
         return msg.toStringValue();
     }
-    
+
     private WebSocketServer server;
 
     private Map<String,Pair> awaitingBrowserResponse = new HashMap<String,Pair>();
-    
+
     private static class Pair {
         ExtBrowserImpl impl;
         URL realURL;
@@ -481,11 +533,11 @@ public final class ExternalBrowserPlugin {
             this.impl = impl;
             this.realURL = realURL;
         }
-        
+
     }
-    
+
     private List<BrowserTabDescriptor> knownBrowserTabs = new ArrayList<BrowserTabDescriptor>();
-    
+
     /**
      * Descriptor of tab opened in the external browser.
      */
@@ -505,7 +557,7 @@ public final class ExternalBrowserPlugin {
 
         /**
          * Registers the given selection key for the specified feature.
-         * 
+         *
          * @param featureId ID of the feature.
          * @param key selection key for the feature.
          */
@@ -515,7 +567,7 @@ public final class ExternalBrowserPlugin {
 
         /**
          * Returns selection key registered for the specified feature.
-         * 
+         *
          * @param featureId ID of the feature.
          * @return selection key registered for the specified feature
          * or {@code null} if there is no such feature.
@@ -526,7 +578,7 @@ public final class ExternalBrowserPlugin {
 
         /**
          * Unregisters the specified key.
-         * 
+         *
          * @param key selection key to unregister.
          */
         synchronized void unregisterKey(SelectionKey key) {
@@ -535,7 +587,7 @@ public final class ExternalBrowserPlugin {
 
         /**
          * Determines whether any key/feature is registerd for this tab.
-         * 
+         *
          * @return {@code true} if any key/feature is registered for this tab,
          * returns {@code false} otherwise.
          */
@@ -546,7 +598,7 @@ public final class ExternalBrowserPlugin {
         /**
          * Returns ID of the feature for which the specified selection key
          * is registered.
-         * 
+         *
          * @param key selection key of the feature we are interested in.
          * @return ID of the feature for which the specified selection key
          * is registered or {@code null} when there is no such feature.
@@ -587,7 +639,7 @@ public final class ExternalBrowserPlugin {
                 webkitDebugger.getDebugger().enable();
             }
             session = factory.createDebuggingSession(webkitDebugger);
-            
+
             PageInspector inspector = PageInspector.getDefault();
             if (inspector != null && !browserImpl.isDisablePageInspector()) {
                 inspector.inspectPage(browserImpl.getLookup());
@@ -619,7 +671,7 @@ public final class ExternalBrowserPlugin {
                 dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
             }
         }
-        
+
     }
-    
+
 }

@@ -47,8 +47,13 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
@@ -210,8 +215,10 @@ public class PageInspectorImpl extends PageInspector {
     private class InspectionMessageListener implements MessageListener {
         /** Name of the message type attribute. */
         private static final String MESSAGE_TYPE = "message"; // NOI18N
-        /** Value of the message type attribute for the selection message. */
-        private static final String MESSAGE_SELECTION = "selection"; // NOI18N
+        /** Value of the message type attribute for the selection mode message. */
+        private static final String MESSAGE_SELECTION_MODE = "selection_mode"; // NOI18N
+        /** Name of the attribute holding the new value of the selection mode. */
+        private static final String MESSAGE_SELECTION_MODE_ATTR = "selectionMode"; // NOI18N
         /** Request processor for this class. */
         private RequestProcessor RP = new RequestProcessor(InspectionMessageListener.class.getName(), 5);
         /** Page model this message listener is related to. */
@@ -228,7 +235,7 @@ public class PageInspectorImpl extends PageInspector {
         
         @Override
         public void messageReceived(String featureId, final String messageTxt) {
-            if (!PageInspector.MESSAGE_DISPATCHER_FEATURE_ID.equals(featureId)) {
+            if ((messageTxt == null) && !PageInspector.MESSAGE_DISPATCHER_FEATURE_ID.equals(featureId)) {
                 return;
             }
             // When the message comes from the external browser then
@@ -256,18 +263,18 @@ public class PageInspectorImpl extends PageInspector {
                     }
                 }
             } else {
-//                try {
-//                    JSONObject message = (JSONObject)JSONValue.parseWithException(messageTxt);
-//                    Object type = message.get(MESSAGE_TYPE);
-//                    if (MESSAGE_SELECTION.equals(type)) {
-//                        JSONObject jsonHandle = (JSONObject)message.get(MESSAGE_SELECTION);
-//                        ElementHandle handle = ElementHandle.forJSONObject(jsonHandle);
-//                        pageModel.setSelectedElements(Collections.singleton(handle));
-//                    }
-//                } catch (ParseException ex) {
-//                    Logger.getLogger(PageInspectorImpl.class.getName())
-//                            .log(Level.INFO, "Ignoring message that is not in JSON format: {0}", messageTxt); // NOI18N
-//                }
+                try {
+                    JSONObject message = (JSONObject)JSONValue.parseWithException(messageTxt);
+                    Object type = message.get(MESSAGE_TYPE);
+                    // Message about selection mode modification
+                    if (MESSAGE_SELECTION_MODE.equals(type)) {
+                        boolean selectionMode = (Boolean)message.get(MESSAGE_SELECTION_MODE_ATTR);
+                        pageModel.setSelectionMode(selectionMode);
+                    }
+                } catch (ParseException ex) {
+                    Logger.getLogger(PageInspectorImpl.class.getName())
+                            .log(Level.INFO, "Ignoring message that is not in JSON format: {0}", messageTxt); // NOI18N
+                }
             }
         }
 

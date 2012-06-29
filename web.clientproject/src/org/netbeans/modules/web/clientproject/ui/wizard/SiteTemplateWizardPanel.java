@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.Component;
+import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
@@ -89,6 +90,10 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
         if (wizardDescriptor != null) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
         }
+    }
+    
+    public Collection<String> getSupportedLibraries() {
+        return component.getSupportedLibraries();
     }
     
     @Override

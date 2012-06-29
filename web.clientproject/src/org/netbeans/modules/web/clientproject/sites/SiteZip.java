@@ -44,6 +44,8 @@ package org.netbeans.modules.web.clientproject.sites;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -97,6 +99,11 @@ public class SiteZip implements SiteTemplateImplementation {
         } catch (Throwable ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    @Override
+    public Collection<String> supportedLibraries() {
+        return Collections.emptyList();
     }
     
     static class Customizer implements SiteTemplateCustomizer {

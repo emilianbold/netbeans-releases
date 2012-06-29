@@ -51,6 +51,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.web.browser.api.ResizeOption;
+import org.netbeans.modules.web.browser.api.ResizeOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -69,7 +70,7 @@ class ResizeOptionsCustomizer extends javax.swing.JPanel {
      * Creates new form ResizeOptionsCustomizer
      */
     public ResizeOptionsCustomizer() {
-        options = new ArrayList<ResizeOption>( ResizeOption.loadAll() );
+        options = new ArrayList<ResizeOption>( ResizeOptions.getDefault().loadAll() );
         initComponents();
         model = new TableModel();
         tblOptions.setModel( model );

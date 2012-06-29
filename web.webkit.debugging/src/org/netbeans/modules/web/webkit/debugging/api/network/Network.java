@@ -98,11 +98,11 @@ public class Network {
         return data;
     }
     
-    private void recordDataEvent(long timeStamp, String id) {
+    private void recordDataEvent(long timeStamp, String id, String request, String mime) {
         assert inLiveHTMLMode;
         // TODO: fetch request here as well
         String response = getReponseBody(id);
-        LiveHTML.getDefault().storeDataEvent(transport.getConnectionURL(), timeStamp, response);
+        LiveHTML.getDefault().storeDataEvent(transport.getConnectionURL(), timeStamp, response, request, mime);
     }
 
     private class Callback implements ResponseCallback {
@@ -114,10 +114,12 @@ public class Network {
                         "XHR".equals(response.getParams().get("type"))) {
                     final long timeStamp = System.currentTimeMillis();
                     final String id = (String)response.getParams().get("requestId");
+                    final String request = (String)((JSONObject)response.getParams().get("response")).get("url");
+                    final String mime = (String)((JSONObject)response.getParams().get("response")).get("mimeType");
                     transport.getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            recordDataEvent(timeStamp, id);
+                            recordDataEvent(timeStamp, id, request, mime);
                         }
                     });
                 }

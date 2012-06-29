@@ -41,18 +41,17 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import java.net.URISyntaxException;
-import java.net.URL;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
- * @author david
+ * @author Jan Becicka
  */
 public class ClientSideProjectActionProvider implements ActionProvider {
 
@@ -65,47 +64,39 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     @Override
     public String[] getSupportedActions() {
         return new String[]{
-                    COMMAND_RUN_SINGLE
+                    COMMAND_RUN_SINGLE,
+                    COMMAND_BUILD,
+                    COMMAND_CLEAN,
+                    COMMAND_RUN
                 };
     }
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        FileObject fo = getFile(context);
-        if (fo == null) {
+        ProxyLookup lkp = new ProxyLookup(Lookups.fixed(p), context);
+
+        ClientSideConfigurationProvider provider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
+        final ClientProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
+        //TODO: hack for default
+        String type = activeConfiguration == null ? "browser" : activeConfiguration.getType();
+
+        Lookup providers = Lookups.forPath("Projects/" + ClientSideProjectType.TYPE + "/ActionProviders/" + type);
+        ActionProvider action = providers.lookup(ActionProvider.class);
+        if (action != null) {
+            action.invokeAction(command, lkp);
             return;
         }
-        browseFile(p.getBrowserSupport(), fo);
-    }
-    
-    private static void browseFile(BrowserSupport bs, FileObject fo) {
-        URL url;
-        String urlString;
-        try {
-            url = fo.toURL();
-            urlString = url.toURI().toString();
-            // XXXXX:
-            urlString = urlString.replaceAll("file:/", "file:///");
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
-        bs.load(url, fo);
+        NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration",
+                "Action not supported",
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.INFORMATION_MESSAGE,
+                new Object[]{NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(desc);
     }
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        if (COMMAND_RUN_SINGLE.equals(command) && isHTMLFile(getFile(context))) {
-            return true;
-        }
-        return false;
-    }
-    
-    private FileObject getFile(Lookup context) {
-        return context.lookup(FileObject.class);
-    }
-    
-    private boolean isHTMLFile(FileObject fo) {
-        return (fo != null && "html".equals(fo.getExt()));
+        return true;
     }
 }

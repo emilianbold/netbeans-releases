@@ -41,17 +41,16 @@
  */
 package org.netbeans.modules.web.clientproject.spi;
 
-import org.netbeans.api.progress.ProgressHandle;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
 
 /**
  *
+ * @author Jan Becicka
  */
-public interface SiteTemplateImplementation {
-
+public interface ClientProjectConfiguration extends ProjectConfiguration {
+    
     String getName();
+    String getType();
     
-    SiteTemplateCustomizer getCustomizer();
-    
-    void apply(FileObject projectRoot, ProgressHandle handle);
 }
