@@ -235,7 +235,7 @@ public final class TeamServerTopComponent extends TopComponent {
     public void componentActivated() {
         super.componentActivated();
         TeamServer pref = Utilities.getPreferredServer();
-        if (pref!=null && pref.getPasswordAuthentication() != null) {
+        if (pref != null) {
             UIUtils.logTeamUsage("DASHBOARD"); //NOI18N
         }
     }

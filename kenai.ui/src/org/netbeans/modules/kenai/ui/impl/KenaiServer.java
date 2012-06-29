@@ -43,7 +43,6 @@ package org.netbeans.modules.kenai.ui.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -93,11 +92,6 @@ public class KenaiServer implements TeamServer {
     @Override
     public URL getUrl () {
         return kenai.getUrl();
-    }
-
-    @Override
-    public PasswordAuthentication getPasswordAuthentication () {
-        return kenai.getPasswordAuthentication();
     }
 
     @Override
