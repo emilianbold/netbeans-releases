@@ -314,8 +314,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
                 category.setValid(false);
                 return;
             }
-            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", // NOI18N
-                    allowNonEmptyDirectory(copyTargetDir.getAbsolutePath(), srcDir.getAbsolutePath()), true);
+            err = LocalServerController.validateLocalServer(copyFilesVisual.getLocalServer(), "Folder", true, true); // NOI18N
             if (err != null) {
                 category.setErrorMessage(err);
                 category.setValid(false);
@@ -327,6 +326,11 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
                 category.setErrorMessage(err);
                 category.setValid(false);
                 return;
+            }
+            // #214888
+            if (targetFolderChanged(copyTargetDir.getAbsolutePath()) && copyTargetDir.isDirectory()) {
+                // just warning
+                category.setErrorMessage(NbBundle.getMessage(CustomizerSources.class, "MSG_TargetFolderNotEmpty"));
             }
         }
 
@@ -397,8 +401,8 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         return FileUtil.normalizeFile(new File(srcRoot));
     }
 
-    private boolean allowNonEmptyDirectory(String copyTargetDir, String srcDir) {
-        return originalCopySrcFiles && originalCopySrcTarget.equals(copyTargetDir); // #133109
+    private boolean targetFolderChanged(String copyTargetDir) {
+        return originalCopySrcFiles && !originalCopySrcTarget.equals(copyTargetDir); // #133109
     }
 
     /** This method is called from within the constructor to
