@@ -151,6 +151,23 @@ public class NPECheck {
         return result;
     } 
     
+    @TriggerPatterns({
+        @TriggerPattern("$variable != null"),
+        @TriggerPattern("null != $variable")
+    })
+    public static ErrorDescription notNullWouldBeNPE(HintContext ctx) {
+        TreePath variable = ctx.getVariables().get("$variable");
+        State r = computeExpressionsState(ctx.getInfo()).get(variable.getLeaf());
+        
+        if (r == State.NOT_NULL_BE_NPE) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_NotNullWouldBeNPE");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+        
+        return null;
+    }
+    
     private static final Object KEY_EXPRESSION_STATE = new Object();
     //Cancelling:
     private static Map<Tree, State> computeExpressionsState(CompilationInfo info) {
@@ -252,11 +269,7 @@ public class NPECheck {
             State expr = scan(node.getExpression(), p);
             boolean wasNPE = false;
             
-            if (expr == State.NULL) {
-                wasNPE = true;
-            }
-
-            if (expr == State.POSSIBLE_NULL_REPORT) {
+            if (expr == State.NULL || expr == State.POSSIBLE_NULL || expr == State.POSSIBLE_NULL_REPORT) {
                 wasNPE = true;
             }
             
@@ -460,7 +473,7 @@ public class NPECheck {
                 if (right == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getLeftOperand()));
                     
-                    if (isVariableElement(e)) {
+                    if (isVariableElement(e) && variable2State.get(e) != State.NOT_NULL_BE_NPE) {
                         testedTo.put((VariableElement) e, State.NOT_NULL);
                         
                         return null;
@@ -469,7 +482,7 @@ public class NPECheck {
                 if (left == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getRightOperand()));
                     
-                    if (isVariableElement(e)) {
+                    if (isVariableElement(e) && variable2State.get(e) != State.NOT_NULL_BE_NPE) {
                         testedTo.put((VariableElement) e, State.NOT_NULL);
                         
                         return null;

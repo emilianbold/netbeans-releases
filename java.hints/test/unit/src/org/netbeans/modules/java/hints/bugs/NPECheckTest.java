@@ -311,6 +311,22 @@ public class NPECheckTest extends NbTestCase {
                             "}", "3:22-3:28:verifier:Possibly Dereferencing null");
     }
     
+    public void testWouldAlreadyBeNPE() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void t(String str) {\n" +
+                       "        int i = str.length();\n" +
+                       "        if (str != null) {\n" +
+                       "            System.err.println(\"A\");\n" +
+                       "        }\n" +
+                       "        boolean e = str.equals(\"\");\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("4:12-4:23:verifier:ERR_NotNullWouldBeNPE");
+    }
+    
     public void testCCE() throws Exception {
         HintTest.create()
                 .input("package test;\n" +
