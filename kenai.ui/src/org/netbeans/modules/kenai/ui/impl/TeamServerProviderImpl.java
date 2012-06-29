@@ -43,6 +43,7 @@ package org.netbeans.modules.kenai.ui.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,6 +79,7 @@ import org.openide.util.lookup.ServiceProviders;
 public class TeamServerProviderImpl implements TeamServerProvider {
     private static TeamServerProviderImpl instance;
     private boolean initialized;
+    private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     public TeamServerProviderImpl () {
         KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
@@ -89,6 +91,8 @@ public class TeamServerProviderImpl implements TeamServerProvider {
                 } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
                     final Preferences preferences = NbPreferences.forModule(TeamServerProviderImpl.class);
                     preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), LoginUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                } else if (KenaiManager.PROP_INSTANCES.equals(pce.getPropertyName())) {
+                    propertyChangeSupport.firePropertyChange(TeamServerProvider.PROP_INSTANCES, null, null);
                 }
             }
         });
@@ -175,6 +179,16 @@ public class TeamServerProviderImpl implements TeamServerProvider {
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    @Override
+    public void addPropertyListener (PropertyChangeListener list) {
+        propertyChangeSupport.addPropertyChangeListener(list);
+    }
+
+    @Override
+    public void removePropertyListener (PropertyChangeListener list) {
+        propertyChangeSupport.removePropertyChangeListener(list);
     }
     
 }

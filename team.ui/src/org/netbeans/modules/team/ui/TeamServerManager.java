@@ -60,9 +60,10 @@ import org.openide.util.Lookup;
 public final class TeamServerManager {
 
     private static TeamServerManager instance;
-    PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     public static final String PROP_INSTANCES = "prop_instances"; // NOI18N
     private final Collection<TeamServerProvider> providers;
+    private final PropertyChangeListener list;
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
      * singleton instance
@@ -77,12 +78,17 @@ public final class TeamServerManager {
 
     private TeamServerManager() {
         providers = new ArrayList<TeamServerProvider>(Lookup.getDefault().lookupAll(TeamServerProvider.class));
+        list = new PropertyChangeListener() {
+            @Override
+            public void propertyChange (PropertyChangeEvent evt) {
+                if (TeamServerProvider.PROP_INSTANCES.equals(evt.getPropertyName())) {
+                    propertyChangeSupport.firePropertyChange(PROP_INSTANCES, null, null);
+                }
+            }
+        };
+        reattachListeners();
     }
     
-    void fireInstanceChanged (Object oldValue, Object newValue) {
-        propertyChangeSupport.firePropertyChange(PROP_INSTANCES, oldValue, newValue);
-    }
-
     public Collection<TeamServerProvider> getProviders() {
         return new ArrayList(providers);
     }
@@ -148,6 +154,13 @@ public final class TeamServerManager {
 
     void firePropertyChange (PropertyChangeEvent event) {
         propertyChangeSupport.firePropertyChange(event);
+    }
+
+    private void reattachListeners () {
+        for (TeamServerProvider p : providers) {
+            p.removePropertyListener(list);
+            p.addPropertyListener(list);
+        }
     }
 
 }

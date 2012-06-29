@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.ui.spi;
 
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.util.Collection;
 
@@ -49,6 +50,8 @@ import java.util.Collection;
  * @author Ondrej Vrabec
  */
 public interface TeamServerProvider {
+    
+    public static final String PROP_INSTANCES = "prop_instances"; //NOI18N
 
     public Collection<? extends TeamServer> getTeamServers ();
 
@@ -61,5 +64,9 @@ public interface TeamServerProvider {
     public TeamServer createTeamServer (String displayName, String url) throws MalformedURLException;
 
     public void initialize ();
+
+    public void addPropertyListener (PropertyChangeListener list);
     
+    public void removePropertyListener (PropertyChangeListener list);
+
 }
