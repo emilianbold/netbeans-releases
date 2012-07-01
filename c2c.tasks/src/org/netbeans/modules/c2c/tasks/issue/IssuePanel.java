@@ -41,12 +41,110 @@
  */
 package org.netbeans.modules.c2c.tasks.issue;
 
+import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
+import com.tasktop.c2c.server.tasks.domain.Priority;
+import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.domain.TaskResolution;
+import com.tasktop.c2c.server.tasks.domain.TaskStatus;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.text.DateFormat;
+import java.text.MessageFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import javax.print.attribute.standard.Severity;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.ListModel;
+import javax.swing.Scrollable;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicTextFieldUI;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
+import javax.swing.text.JTextComponent;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.c2c.tasks.C2C;
+import org.netbeans.modules.c2c.tasks.DummyUtils;
+import org.netbeans.modules.c2c.tasks.issue.C2CIssue.Attachment;
+import org.netbeans.modules.c2c.tasks.util.C2CUtil;
+import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author tomas
  */
-public class IssuePanel extends javax.swing.JPanel {
+public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
+    private C2CIssue issue;
+    
+    private boolean reloading;
+    private boolean skipReload;
+    
+    private CommentsPanel commentsPanel;
+    private AttachmentsPanel attachmentsPanel;
+    
+    private Map<String,String> initialValues = new HashMap<String,String>();
+    
+    // message panel 
+    private boolean cyclicDependency = false;
+    private boolean noSummary = false;
+    private boolean invalidKeyword = false;
+    private boolean noComponent = false;
+    private boolean noVersion = false;
+    private boolean noTargetMilestione = false;
+    private boolean noDuplicateId = false;
+    private List<String> fieldErrors = new LinkedList<String>();
+    private List<String> fieldWarnings = new LinkedList<String>();
+    private int resolvedIndex;
+    
+    
     /**
      * Creates new form IssuePanel
      */
@@ -55,8 +153,836 @@ public class IssuePanel extends javax.swing.JPanel {
         
         separatorLabel.setVisible(false);
         separatorLabel3.setVisible(false);
+        
+        updateReadOnlyField(reportedField);
+        updateReadOnlyField(modifiedField);
+        updateReadOnlyField(headerField);
+        
+        messagePanel.setBackground(getBackground());
+        
+//        customFieldsPanelLeft.setBackground(getBackground());
+//        customFieldsPanelRight.setBackground(getBackground());
+        Font font = reportedLabel.getFont();
+        headerField.setFont(font.deriveFont((float)(font.getSize()*1.7)));
+        duplicateField.setVisible(false);
+        duplicateButton.setVisible(false);
+        attachDocumentListeners();
+        addCommentArea.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                makeCaretVisible(addCommentArea);
+            }
+        });
+
+        // A11Y - Issues 163597 and 163598
+        UIUtils.fixFocusTraversalKeys(addCommentArea);
+
+        // Comments panel
+        commentsPanel = new CommentsPanel();
+        commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
+            @Override
+            public void append(String text) {
+                addCommentArea.append(text);
+                addCommentArea.requestFocus();
+                scrollRectToVisible(scrollPane1.getBounds());
+            }
+        });
+        attachmentsPanel = new AttachmentsPanel();
+        GroupLayout layout = (GroupLayout)getLayout();
+        layout.replace(dummyCommentsPanel, commentsPanel);
+        layout.replace(dummyAttachmentsPanel, attachmentsPanel);
+        attachmentsLabel.setLabelFor(attachmentsPanel);
+        initSpellChecker();
+        initDefaultButton();
+
+        UIUtils.issue163946Hack(scrollPane1);
     }
 
+    private void initSpellChecker () {
+        Spellchecker.register(summaryField);
+        Spellchecker.register(addCommentArea);
+    }
+
+    private void initDefaultButton() {
+        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "submit"); // NOI18N
+        ActionMap actionMap = getActionMap();
+        Action submitAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (submitButton.isEnabled()) {
+                    submitButtonActionPerformed(null);
+                }
+            }
+        };
+        actionMap.put("submit", submitAction); // NOI18N
+    }
+
+    C2CIssue getIssue() {
+        return issue;
+    }
+
+    public void setIssue(C2CIssue issue) {
+        assert SwingUtilities.isEventDispatchThread() : "Accessing Swing components. Do not call outside event-dispatch thread!"; // NOI18N
+        if (this.issue == null) {
+            IssueCache<C2CIssue, TaskData> cache = issue.getRepository().getIssueCache();
+            cache.removePropertyChangeListener(issue, cacheListener);
+            cache.addPropertyChangeListener(issue, cacheListener);
+
+            summaryField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    updateNoSummary();
+                }
+            });
+            tagsField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                @Override
+                public void removeUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+                @Override
+                public void changedUpdate(DocumentEvent e) {
+                    updateInvalidKeyword();
+                }
+            });
+        }
+        this.issue = issue;
+        initCombos();
+//        initCustomFields(); XXX
+        // XXX
+//        List<String> kws = issue.getRepository().getConfiguration().getKeywords();
+//        keywords.clear();
+//        for (String keyword : kws) {
+//            keywords.add(keyword.toUpperCase());
+//        }
+                
+        reloadForm(true);
+
+        if (issue.isNew()) {
+            selectProduct();
+        }
+
+        // Hack to "link" the width of both columns
+//        Dimension dim = ccField.getPreferredSize();
+//        int width1 = Math.max(osCombo.getPreferredSize().width, platformCombo.getPreferredSize().width);
+//        int width2 = Math.max(priorityCombo.getPreferredSize().width, showIssueType ? issueTypeCombo.getPreferredSize().width : severityCombo.getPreferredSize().width);
+//        int gap = LayoutStyle.getInstance().getPreferredGap(osCombo, platformCombo, LayoutStyle.ComponentPlacement.RELATED, SwingConstants.EAST, this);
+//        ccField.setPreferredSize(new Dimension(2*Math.max(width1,width2)+gap,dim.height));
+    }
+    
+    private void selectProduct() {
+        // XXX
+//        if (ownerInfo != null) {
+//            String owner = findInModel(productCombo, ownerInfo.getOwner());
+//            selectInCombo(productCombo, owner, true);
+//            List<String> data = ownerInfo.getExtraData();
+//            if (data != null && data.size() > 0) {
+//                String component = findInModel(componentCombo, data.get(0));
+//                selectInCombo(componentCombo, component, true);
+//            }
+//        } else {
+//            BugzillaRepository repository = issue.getRepository();
+//            if (repository instanceof KenaiRepository) {
+//                String productName = ((KenaiRepository)repository).getProductName();
+//                selectInCombo(productCombo, productName, true);
+//            } else if (BugzillaUtil.isNbRepository(repository)) {
+//                // IssueProvider 181224
+//                String defaultProduct = "ide"; // NOI18N
+//                String defaultComponent = "Code"; // NOI18N
+//                productCombo.setSelectedItem(defaultProduct);
+//                componentCombo.setSelectedItem(defaultComponent);
+//            } else {
+//                productCombo.setSelectedIndex(0);
+//            }
+//        }
+        
+        productCombo.setSelectedIndex(0);
+    }    
+    
+    private void initCombos() {
+        CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
+        // XXX check if valid
+        
+        productCombo.setModel(toComboModel(cd.getProducts()));
+        productCombo.setRenderer(new ClientDataRenderer());
+        
+        // componentCombo, versionCombo, targetMilestoneCombo are filled
+        // automatically when productCombo is set/changed
+        // Do not support MOVED resolution (yet?)
+
+        // List<String> resolutions = new LinkedList<String>(cd.getResolutions());
+        // resolutions.remove("MOVED"); // NOI18N XXX
+        resolutionComboBox.setModel(toComboModel(cd.getResolutions()));
+        resolutionComboBox.setRenderer(new ClientDataRenderer());
+        
+        priorityCombo.setModel(toComboModel(cd.getPriorities()));
+        priorityCombo.setRenderer(new ClientDataRenderer());
+        
+        severityCombo.setModel(toComboModel(cd.getSeverities()));
+        severityCombo.setRenderer(new ClientDataRenderer());
+
+        // statusCombo and resolution fields are filled in reloadForm
+    }
+
+    private ComboBoxModel toComboModel(List items) {
+        return new DefaultComboBoxModel(items.toArray());
+    }
+
+    private int oldCommentCount;
+    void reloadForm(boolean force) {
+        if (skipReload) { // XXX when set?
+            return;
+        }
+        int noWarnings = fieldWarnings.size();
+        int noErrors = fieldErrors.size();
+        if (force) {
+            fieldWarnings.clear();
+            fieldErrors.clear();
+        }
+        reloading = true;
+        boolean isNew = issue.isNew();
+        javax.swing.GroupLayout layout = (javax.swing.GroupLayout)getLayout();
+        headerField.setVisible(!isNew);
+        statusCombo.setEnabled(!isNew);
+        org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
+        reportedLabel.setVisible(!isNew);
+        reportedField.setVisible(!isNew);
+        modifiedLabel.setVisible(!isNew);
+        modifiedField.setVisible(!isNew);
+        statusLabel.setVisible(!isNew);
+        statusCombo.setVisible(!isNew);
+        separator.setVisible(!isNew);
+        commentsPanel.setVisible(!isNew);
+        attachmentsLabel.setVisible(!isNew);
+        attachmentsPanel.setVisible(!isNew);
+        refreshButton.setVisible(!isNew);
+        separatorLabel.setVisible(!isNew);
+        cancelButton.setVisible(!isNew);
+        separatorLabel3.setVisible(!isNew);
+        showInBrowserButton.setVisible(!isNew);
+        ownerField.setEditable(issue.isNew());
+        ownerCombo.setEnabled(ownerField.isEditable());
+        org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
+        if (isNew && force) {
+            // Preselect the first product
+            selectProduct();
+            initStatusCombo("NEW"); // NOI18N
+        } else {
+            String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
+            String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
+            headerField.setText(headerTxt);
+            Dimension dim = headerField.getPreferredSize();
+            headerField.setMinimumSize(new Dimension(0, dim.height));
+            headerField.setPreferredSize(new Dimension(0, dim.height));
+            reloadField(force, issueTypeCombo, IssueField.TASK_TYPE, issueTypeWarning, issueTypeLabel);
+            reloadField(force, summaryField, IssueField.SUMMARY, summaryWarning, summaryLabel);
+            reloadField(force, productCombo, IssueField.PRODUCT, productWarning, productLabel);
+            reloadField(force, componentCombo, IssueField.COMPONENT, componentWarning, componentLabel);
+            reloadField(force, versionCombo, IssueField.VERSION, versionWarning, versionLabel);
+            reloadField(force, resolutionComboBox, IssueField.RESOLUTION, resolutionWarning, "resolution"); // NOI18N
+            String status = reloadField(force, statusCombo, IssueField.STATUS, resolutionWarning, statusLabel);
+            initStatusCombo(status);
+            String initialResolution = initialValues.get(IssueField.RESOLUTION.getKey());
+            if ("DUPLICATE".equals(initialResolution)) { // NOI18N // XXX no string gvalues
+                duplicateField.setEditable(false);
+                duplicateField.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
+                duplicateField.setBackground(getBackground());
+            } else {
+                JTextField field = new JTextField();
+                duplicateField.setEditable(true);
+                duplicateField.setBorder(field.getBorder());
+                duplicateField.setBackground(field.getBackground());
+            }
+            reloadField(force, priorityCombo, IssueField.PRIORITY, priorityWarning, priorityLabel);
+            reloadField(force, severityCombo, IssueField.SEVERITY, severityWarning, priorityLabel);
+            reloadField(force, targetMilestoneCombo, IssueField.MILESTONE, milestoneWarning, targetMilestoneLabel);
+            reloadField(force, tagsField, IssueField.TAGS, tagsWarning, tagsLabel);
+
+            if (!isNew) {
+                // reported field
+                format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
+                Date creation = issue.getCreatedDate();
+                String creationTxt = creation != null ? DateFormat.getDateInstance(DateFormat.DEFAULT).format(creation) : ""; // NOI18N
+//                String reporterName = issue.getFieldValue(IssueField.REPORTER_NAME); XXX name vs. real name
+                String reporter = issue.getFieldValue(IssueField.REPORTER);
+//              XXX  String reporterTxt = ((reporterName == null) || (reporterName.trim().length() == 0)) ? reporter : reporterName;
+//                String reportedTxt = MessageFormat.format(format, creationTxt, reporterTxt);
+//                reportedField.setText(reportedTxt);
+                
+                reportedField.setText(reporter);
+                
+                fixPrefSize(reportedField);
+
+                // modified field
+                Date modification = issue.getCreatedDate();
+                String modifiedTxt = modification != null ? DateFormat.getDateTimeInstance().format(modification) : ""; // NOI18N
+                modifiedField.setText(modifiedTxt);
+                fixPrefSize(modifiedField);
+            }
+
+            String assignee = issue.getFieldValue(IssueField.OWNER);
+//          XXX  String selectedAssignee = (assignedField.getParent() == null) ? ownerCombo.getSelectedItem().toString() : assignedField.getText();
+//            if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
+//                int index = assignee.indexOf('@');
+//                String userName = (index == -1) ? assignee : assignee.substring(0,index);
+//                String host = ((KenaiRepository) issue.getRepository()).getHost();
+//                JLabel label = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
+//                label.setText(null);
+//                ((javax.swing.GroupLayout)getLayout()).replace(assignedToStatusLabel, label);
+//                label.setVisible(assignedToStatusLabel.isVisible());
+//                assignedToStatusLabel = label;
+//            }
+//            if (force) {
+//                assignedToStatusLabel.setVisible(assignee.trim().length() > 0);
+//            }
+//            if (assignedField.getParent() == null) {
+//                reloadField(force, ownerCombo, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+//            } else {
+//                reloadField(force, assignedField, IssueField.ASSIGNED_TO, assignedToWarning, assignedLabel);
+//            }
+                
+            reloadField(force, ownerField, IssueField.OWNER, ownerWarning, ownerLabel);
+            
+            reloadField(force, ccField, IssueField.CC, ccWarning, ccLabel);
+            reloadField(force, subtaskField, IssueField.SUBTASK, parentWarning, subtaskLabel);
+            reloadField(force, parentField, IssueField.PARENT, parentWarning, parentLabel);
+//            reloadCustomFields(force); XXX
+        }
+        int newCommentCount = issue.getComments().length;
+        if (!force && oldCommentCount != newCommentCount) {
+            String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.commentAddedWarning"); // NOI18N
+            if (!fieldWarnings.contains(message)) {
+                fieldWarnings.add(0, message);
+            }
+        }
+        oldCommentCount = newCommentCount;
+        List<Attachment> attachments = issue.getAttachments();
+        if (!isNew) {
+            commentsPanel.setIssue(issue, attachments);
+        }
+        attachmentsPanel.setAttachments(attachments);
+        UIUtils.keepFocusedComponentVisible(commentsPanel);
+        UIUtils.keepFocusedComponentVisible(attachmentsPanel);
+        if (force && !isNew) {
+            addCommentArea.setText(""); // NOI18N
+        }
+        updateFieldStatuses();
+        updateNoSummary();
+        if ((fieldWarnings.size() != noWarnings) || (fieldErrors.size() != noErrors)) {
+            updateMessagePanel();
+        }
+        reloading = false;
+    }
+    
+    private static void fixPrefSize(JTextField textField) {
+        // The preferred size of JTextField on (Classic) Windows look and feel
+        // is one pixel shorter. The following code is a workaround.
+        textField.setPreferredSize(null);
+        Dimension dim = textField.getPreferredSize();
+        Dimension fixedDim = new Dimension(dim.width+1, dim.height);
+        textField.setPreferredSize(fixedDim);
+    }
+
+    private String reloadField(boolean force, JComponent component, IssueField field, JLabel warningLabel, JLabel fieldLabel) {
+        return reloadField(force, component, field, warningLabel, fieldName(fieldLabel));
+    }
+    
+    private String reloadField(boolean force, JComponent component, IssueField field, JLabel warningLabel, String fieldName) {
+        String currentValue = null;
+        boolean isNew = issue.isNew();
+        if (!force) {
+            if (component instanceof JComboBox) {
+                Object value = ((JComboBox)component).getSelectedItem();
+                currentValue  = (value == null) ? "" : value.toString(); // NOI18N
+            } else if (component instanceof JTextComponent) {
+                currentValue = ((JTextComponent)component).getText();
+            } else if (component instanceof JList) {
+                JList list = (JList)component;
+                StringBuilder sb = new StringBuilder();
+                for (Object value : list.getSelectedValues()) {
+                    if (sb.length()!=0) {
+                        sb.append(',');
+                    }
+                    sb.append(value);
+                }
+                currentValue = sb.toString();
+            }
+        }
+        String initialValue = initialValues.get(field.getKey());
+        String newValue;
+        if (component instanceof JList) {
+            StringBuilder sb = new StringBuilder();
+            for (String value : issue.getFieldValues(field)) {
+                if (sb.length()!=0) {
+                    sb.append(',');
+                }
+                sb.append(value);
+            }
+            newValue = sb.toString();
+        } else {
+            newValue = issue.getFieldValue(field);
+        }
+        boolean valueModifiedByUser = (currentValue != null) && (initialValue != null) && !currentValue.equals(initialValue);
+        boolean valueModifiedByServer = (initialValue != null) && (newValue != null) && !initialValue.equals(newValue);
+        if (force || !valueModifiedByUser) {
+            if (component instanceof JComboBox) {
+                JComboBox combo = (JComboBox)component;
+                selectInCombo(combo, newValue, true);
+            } else if (component instanceof JTextComponent) {
+                ((JTextComponent)component).setText(newValue);
+            } else if (component instanceof JList) {
+                JList list = (JList)component;
+                list.clearSelection();
+                ListModel model = list.getModel();
+                for (String value : issue.getFieldValues(field)) {
+                    for (int i=0; i<model.getSize(); i++) {
+                        if (value.equals(model.getElementAt(i))) {
+                            list.addSelectionInterval(i, i);
+                        }
+                    }
+                }
+            }
+            if (force) {
+                if (warningLabel != null) {
+                    warningLabel.setIcon(null);
+                }
+            } else {
+                if (!isNew && valueModifiedByServer && (warningLabel != null)) {
+                    warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
+                    String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedWarning"); // NOI18N
+                    String message = MessageFormat.format(messageFormat, fieldName, currentValue, newValue);
+                    fieldWarnings.add(message);
+                    warningLabel.setToolTipText(message);
+                }
+            }
+            currentValue = newValue;
+        } else {
+            if (!isNew && valueModifiedByServer && (warningLabel != null)) {
+                warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/error.gif", true)); // NOI18N
+                String messageFormat = NbBundle.getMessage(IssuePanel.class, "IssuePanel.fieldModifiedError"); // NOI18N
+                String message = MessageFormat.format(messageFormat, fieldName, newValue);
+                fieldErrors.add(message);
+                warningLabel.setToolTipText(message);
+            }
+        }
+        if ((IssueField.SUMMARY == field) || (IssueField.PRIORITY == field) /* XXX || (field instanceof CustomIssueField)*/) {
+            warningLabel.setVisible(warningLabel.getIcon() != null);
+        }
+        initialValues.put(field.getKey(), newValue);
+        return currentValue;
+    }
+    
+    private String fieldName(JComponent fieldLabel) {
+        assert fieldLabel instanceof JLabel || fieldLabel instanceof JButton;
+        String txt = "";
+        if(fieldLabel instanceof JLabel) {
+            txt = ((JLabel) fieldLabel).getText().trim();
+            
+        } else if(fieldLabel instanceof JButton) {
+            txt = ((JButton) fieldLabel).getText().trim();
+        } else {
+            return null;
+        }
+        if (txt.endsWith(":")) { // NOI18N
+            txt = txt.substring(0, txt.length()-1);
+        }
+        return txt;
+    }
+    
+    private boolean selectInCombo(JComboBox combo, Object value, boolean forceInModel) {
+        if (value == null) {
+            return false;
+        }
+        combo.setSelectedItem(value);
+        if (forceInModel && !value.equals("") && !value.equals(combo.getSelectedItem())) { // NOI18N
+            // Reload of server attributes is needed - workarounding it
+            ComboBoxModel model = combo.getModel();
+            if (model instanceof DefaultComboBoxModel) {
+                ((DefaultComboBoxModel)model).insertElementAt(value, 0);
+                combo.setSelectedIndex(0);
+            }
+        }
+        return value.equals(combo.getSelectedItem());
+    }    
+
+    private void initStatusCombo(String status) {
+        // Init statusCombo - allowed transitions (heuristics):
+        // Open -> Open-Unconfirmed-Reopened+Resolved
+        // Resolved -> Reopened+Close
+        // Close-Resolved -> Reopened+Resolved+(Close with higher index)
+        CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
+        
+        List<TaskStatus> statuses = cd.getStatuses();
+        
+        // XXX evaluate statuses for open and active
+        for (int i = 0; i < statuses.size(); i++) {
+            TaskStatus s = statuses.get(i);
+            if(s.getValue().equals("RESOLVED")) {
+                resolvedIndex = i;
+                break;
+            }
+        }
+        
+        statusCombo.setModel(toComboModel(statuses));
+        statusCombo.setRenderer(new ClientDataRenderer());
+        statusCombo.setSelectedItem(status);
+    }    
+    
+    private void updateReadOnlyField(JTextField field) {
+        if ("GTK".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+            field.setUI(new BasicTextFieldUI());
+        }
+        field.setBackground(getBackground());
+        Caret caret = field.getCaret();
+        if (caret instanceof DefaultCaret) {
+            ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
+        }
+    }
+
+    private void updateNoSummary() {
+        if (summaryField.getText().trim().length() == 0) {
+            if (!noSummary) {
+                noSummary = true;
+                updateMessagePanel();
+            }
+        } else {
+            if (noSummary) {
+                noSummary = false;
+                updateMessagePanel();
+            }
+        }
+    }
+
+    private void updateInvalidKeyword() {
+        boolean invalidFound = false;
+        StringTokenizer st = new StringTokenizer(tagsField.getText(), ", \t\n\r\f"); // NOI18N
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken();
+            // XXX
+//            if (!keywords.contains(token.toUpperCase())) {
+//                invalidFound = true;
+//                break;
+//            }
+        }
+        if (invalidFound != invalidKeyword) {
+            invalidKeyword = invalidFound;
+            updateMessagePanel();
+        }
+    }
+
+    private void updateNoComponent() {
+        boolean newNoComponent = (componentCombo.getSelectedItem() == null);
+        if (noComponent != newNoComponent) {
+            noComponent = newNoComponent;
+            updateMessagePanel();
+        }
+    }
+
+    private void updateNoVersion() {
+        boolean newNoVersion = (versionCombo.getSelectedItem() == null);
+        if (noVersion != newNoVersion) {
+            noVersion = newNoVersion;
+            updateMessagePanel();
+        }
+    }
+
+    private void updateNoTargetMilestone() {
+        boolean newNoTargetMilestone = (targetMilestoneCombo.getSelectedItem() == null);
+        if (noTargetMilestione != newNoTargetMilestone) {
+            noTargetMilestione = newNoTargetMilestone;
+            updateMessagePanel();
+        }
+    }
+    
+    private void attachDocumentListeners() {
+        // XXX test, add missing fields
+        ownerField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(ownerLabel));
+        ccField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(ccLabel));        
+        parentField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(parentLabel));
+        subtaskField.getDocument().addDocumentListener(new CancelHighlightDocumentListener(parentLabel));
+        CyclicDependencyDocumentListener cyclicDependencyListener = new CyclicDependencyDocumentListener();
+        parentField.getDocument().addDocumentListener(cyclicDependencyListener);
+        subtaskField.getDocument().addDocumentListener(cyclicDependencyListener);
+        addCommentArea.getDocument().addDocumentListener(new RevalidatingListener());
+        duplicateField.getDocument().addDocumentListener(new DuplicateListener());
+    }
+
+    private void updateFieldStatuses() {
+        // XXX
+//        updateFieldStatus(IssueField.SUMMARY, summaryLabel);
+//        updateFieldStatus(IssueField.PRODUCT, productLabel);
+//        updateFieldStatus(IssueField.COMPONENT, componentLabel);
+//        updateFieldStatus(IssueField.VERSION, versionLabel);
+//        updateFieldStatus(IssueField.PLATFORM, platformLabel);
+//        updateFieldStatus(IssueField.OS, platformLabel);
+//        updateFieldStatus(IssueField.STATUS, statusLabel);
+//        updateFieldStatus(IssueField.RESOLUTION, resolutionLabel);
+//        updateFieldStatus(IssueField.PRIORITY, priorityLabel);
+//        updateFieldStatus(IssueField.SEVERITY, priorityLabel);
+//        updateFieldStatus(IssueField.MILESTONE, targetMilestoneLabel);
+//        updateFieldStatus(IssueField.URL, urlLabel);
+//        updateFieldStatus(IssueField.WHITEBOARD, statusWhiteboardLabel);
+//        updateFieldStatus(IssueField.KEYWORDS, keywordsLabel);
+//        updateFieldStatus(IssueField.ASSIGNED_TO, assignedLabel);
+//        updateFieldStatus(IssueField.QA_CONTACT, qaContactLabel);
+//        updateFieldStatus(IssueField.CC, ccLabel);
+//        updateFieldStatus(IssueField.DEPENDS_ON, dependsLabel);
+//        updateFieldStatus(IssueField.BLOCKS, blocksLabel);
+//        updateFieldStatus(IssueField.ESTIMATED_TIME, estimatedLabel);
+//        updateFieldStatus(IssueField.REMAINING_TIME, remainingLabel);
+//        updateFieldStatus(IssueField.WORK_TIME, timetrackingLabel);
+//        updateFieldStatus(IssueField.DEADLINE, deadlineLabel);
+//        if (BugzillaUtil.isNbRepository(issue.getRepository())) {
+//            updateFieldStatus(IssueField.ISSUE_TYPE, issueTypeLabel);
+//        }
+//        for (CustomFieldInfo field : customFields) {
+//            updateFieldStatus(field.field, field.label);
+//        }
+    }
+
+    private void updateFieldStatus(IssueField field, JComponent label) {
+//        assert label instanceof JButton || label instanceof JLabel;
+//        boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != BugzillaIssue.FIELD_STATUS_UPTODATE);
+//        label.setOpaque(highlight);
+//        if (highlight) {
+//            label.setBackground(HIGHLIGHT_COLOR);
+//        }
+    }
+
+    PropertyChangeListener cacheListener = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.getSource() != IssuePanel.this.issue) {
+                return;
+            }
+            if (IssueCache.EVENT_ISSUE_SEEN_CHANGED.equals(evt.getPropertyName())) {
+                updateFieldStatuses();
+            }
+        }
+    };
+
+    private static class ClientDataRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if(value instanceof Priority) {
+                value = ((Priority) value).getValue();
+            } else if(value instanceof Severity) {
+                value = ((Severity) value).getValue();
+            } else if(value instanceof TaskResolution) {
+                value = ((TaskResolution) value).getValue();
+            } else if(value instanceof Product) {
+                value = ((Product) value).getName();
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
+
+    class CancelHighlightDocumentListener implements DocumentListener {
+        private JComponent label;
+        
+        CancelHighlightDocumentListener(JComponent label) {
+            this.label = label;
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            cancelHighlight(label);
+        }
+    }
+    
+    private void cancelHighlight(JComponent label) {
+        if (!reloading) {
+            label.setOpaque(false);
+            label.getParent().repaint();
+        }
+    }    
+
+    class CyclicDependencyDocumentListener implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            Set<Integer> bugs1 = bugs(parentField.getText());
+            Set<Integer> bugs2 = bugs(subtaskField.getText());
+            bugs1.retainAll(bugs2);
+            if (bugs1.isEmpty()) {
+                if (cyclicDependency) {
+                    cyclicDependency = false;
+                    updateMessagePanel();
+                }
+            } else {
+                if (!cyclicDependency) {
+                    cyclicDependency = true;
+                    updateMessagePanel();
+                }
+            }
+        }
+
+        private Set<Integer> bugs(String values) {
+            Set<Integer> bugs = new HashSet<Integer>();
+            StringTokenizer st = new StringTokenizer(values, ", \t\n\r\f"); // NOI18N
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
+                try {
+                    bugs.add(Integer.parseInt(token));
+                } catch (NumberFormatException nfex) {}
+            }
+            return bugs;
+        }
+    }
+
+    class RevalidatingListener implements DocumentListener, Runnable {
+        private boolean ignoreUpdate;
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            if (ignoreUpdate) return;
+            ignoreUpdate = true;
+            EventQueue.invokeLater(this);
+        }
+
+        @Override
+        public void run() {
+            revalidate();
+            repaint();
+            ignoreUpdate = false;
+        }
+
+    }
+
+    private class DuplicateListener implements DocumentListener {
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changedUpdate(e);
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            updateNoDuplicateId();
+        }
+    }
+    
+    private void updateNoDuplicateId() {
+        boolean newNoDuplicateId = "DUPLICATE".equals(resolutionComboBox.getSelectedItem()) && "".equals(duplicateField.getText().trim());
+        if(newNoDuplicateId != noDuplicateId) {
+            noDuplicateId = newNoDuplicateId;
+            updateMessagePanel();
+        }
+    }    
+    
+    private void updateMessagePanel() {
+        messagePanel.removeAll();
+        if (noComponent) {
+            addMessage("IssuePanel.noComponent"); // NOI18N
+        }
+        if (noVersion) {
+            addMessage("IssuePanel.noVersion"); // NOI18N
+        }
+        if (noTargetMilestione) {
+            addMessage("IssuePanel.noTargetMilestone"); // NOI18N
+        }
+        if (noSummary) {
+            JLabel noSummaryLabel = new JLabel();
+            noSummaryLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noSummary")); // NOI18N
+            String icon = issue.isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+            noSummaryLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
+            messagePanel.add(noSummaryLabel);
+        }
+        if (cyclicDependency) {
+            JLabel cyclicDependencyLabel = new JLabel();
+            cyclicDependencyLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.cyclicDependency")); // NOI18N
+            cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(cyclicDependencyLabel);
+        }
+        if (invalidKeyword) {
+            JLabel invalidKeywordLabel = new JLabel();
+            invalidKeywordLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidKeyword")); // NOI18N
+            invalidKeywordLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(invalidKeywordLabel);
+        }
+        if (noDuplicateId) {
+            JLabel noDuplicateLabel = new JLabel();
+            noDuplicateLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.noDuplicateId")); // NOI18N
+            noDuplicateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
+            messagePanel.add(noDuplicateLabel);
+        }
+        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId) {
+            submitButton.setEnabled(false);
+        } else {
+            submitButton.setEnabled(true);
+        }
+        for (String fieldError : fieldErrors) {
+            JLabel errorLabel = new JLabel(fieldError);
+            errorLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/error.gif", true)); // NOI18N
+            messagePanel.add(errorLabel);
+        }
+        for (String fieldWarning : fieldWarnings) {
+            JLabel warningLabel = new JLabel(fieldWarning);
+            warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
+            messagePanel.add(warningLabel);
+        }
+        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)) {
+            messagePanel.setVisible(true);
+            messagePanel.revalidate();
+        } else {
+            messagePanel.setVisible(false);
+        }
+    }    
+    
+    void addMessage(String messageKey) {
+        JLabel messageLabel = new JLabel();
+        messageLabel.setText(NbBundle.getMessage(IssuePanel.class, messageKey));
+        String icon = issue.isNew() ? "org/netbeans/modules/bugzilla/resources/info.png" : "org/netbeans/modules/bugzilla/resources/error.gif"; // NOI18N
+        messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(icon)));
+        messagePanel.add(messageLabel);
+    }    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -66,84 +992,91 @@ public class IssuePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        reloadButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        separatorLabel3 = new javax.swing.JLabel();
+        resolutionCombo = new javax.swing.JComboBox();
+        ownerCombo = new javax.swing.JComboBox();
         separatorLabel = new javax.swing.JLabel();
+        separatorLabel3 = new javax.swing.JLabel();
         issueTypeLabel = new javax.swing.JLabel();
-        reportedLabel = new javax.swing.JLabel();
-        modifiedLabel = new javax.swing.JLabel();
         summaryLabel = new javax.swing.JLabel();
-        summaryField = new javax.swing.JTextField();
         summaryWarning = new javax.swing.JLabel();
         statusLabel = new javax.swing.JLabel();
-        statusCombo = new javax.swing.JComboBox();
         statusWarning = new javax.swing.JLabel();
-        resolutionLabel = new javax.swing.JLabel();
-        resolutionField = new javax.swing.JTextField();
         resolutionWarning = new javax.swing.JLabel();
-        duplicateField = new javax.swing.JTextField();
-        duplicateButton = new javax.swing.JButton();
+        duplicateWarning = new javax.swing.JLabel();
         priorityLabel = new javax.swing.JLabel();
-        priorityCombo = new javax.swing.JComboBox();
         priorityWarning = new javax.swing.JLabel();
-        severityCombo = new javax.swing.JComboBox();
         severityWarning = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        productCombo = new javax.swing.JComboBox();
+        tagsLabel = new javax.swing.JLabel();
         productLabel = new javax.swing.JLabel();
         productWarning = new javax.swing.JLabel();
         componentLabel = new javax.swing.JLabel();
-        componentCombo = new javax.swing.JComboBox();
         componentWarning = new javax.swing.JLabel();
         versionLabel = new javax.swing.JLabel();
-        versionCombo = new javax.swing.JComboBox();
         versionWarning = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
+        foundInLabel = new javax.swing.JLabel();
         targetMilestoneLabel = new javax.swing.JLabel();
-        targetMilestoneCombo = new javax.swing.JComboBox();
         milestoneWarning = new javax.swing.JLabel();
-        productWarning1 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox();
+        estimateWarning = new javax.swing.JLabel();
+        dueDateLabel = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jComboBox3 = new javax.swing.JComboBox();
-        productWarning2 = new javax.swing.JLabel();
-        refreshButton1 = new org.netbeans.modules.bugtracking.util.LinkButton();
-        dependsLabel = new javax.swing.JLabel();
-        dependsField = new javax.swing.JTextField();
-        dependsOnButton = new javax.swing.JButton();
-        dependsOnWarning = new javax.swing.JLabel();
-        dependsLabel1 = new javax.swing.JLabel();
-        dependsField1 = new javax.swing.JTextField();
-        dependsOnButton1 = new javax.swing.JButton();
-        dependsOnWarning1 = new javax.swing.JLabel();
-        dependsLabel2 = new javax.swing.JLabel();
-        dependsField2 = new javax.swing.JTextField();
-        dependsOnButton2 = new javax.swing.JButton();
-        dependsOnWarning2 = new javax.swing.JLabel();
-        assignedToWarning = new javax.swing.JLabel();
-        assignedField = new javax.swing.JTextField();
-        assignedLabel = new javax.swing.JLabel();
-        assignedLabel1 = new javax.swing.JLabel();
-        assignedField1 = new javax.swing.JTextField();
-        assignedToWarning1 = new javax.swing.JLabel();
+        foundInWarning = new javax.swing.JLabel();
+        parentLabel = new javax.swing.JLabel();
+        parentWarning = new javax.swing.JLabel();
+        subtaskLabel = new javax.swing.JLabel();
+        subtaskWarning = new javax.swing.JLabel();
+        externalLabel = new javax.swing.JLabel();
+        externalWarning = new javax.swing.JLabel();
+        ownerWarning = new javax.swing.JLabel();
+        ownerLabel = new javax.swing.JLabel();
+        ccLabel = new javax.swing.JLabel();
+        ccWarning = new javax.swing.JLabel();
         attachmentsLabel = new javax.swing.JLabel();
         dummyAttachmentsPanel = new javax.swing.JPanel();
         jLabel15 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
         summaryWarning1 = new javax.swing.JLabel();
         attachmentsLabel1 = new javax.swing.JLabel();
         dummyAttachmentsPanel1 = new javax.swing.JPanel();
-        refreshButton2 = new org.netbeans.modules.bugtracking.util.LinkButton();
         separator = new javax.swing.JSeparator();
         dummyCommentsPanel = new javax.swing.JPanel();
-        submitButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
+        messagePanel = new javax.swing.JPanel();
+        addCommentLabel = new javax.swing.JLabel();
+        scrollPane1 = new javax.swing.JScrollPane();
+        addCommentArea = new javax.swing.JTextArea() {
+            @Override
+            public Dimension getPreferredScrollableViewportSize() {
+                Dimension dim = super.getPreferredScrollableViewportSize();
+                JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+                int delta = 0;
+                if (scrollPane != null) {
+                    Component comp = scrollPane.getHorizontalScrollBar();
+                    delta = comp.isVisible() ? comp.getHeight() : 0;
+                }
+                Insets insets = getInsets();
+                int prefHeight = 5 * getRowHeight() + insets.top + insets.bottom;
+                dim = new Dimension(dim.width, delta + ((dim.height < prefHeight) ? prefHeight : dim.height));
+                return dim;
+            }
+        };
+        tagsWarning = new javax.swing.JLabel();
+        resolutionComboBox = new javax.swing.JComboBox();
+        foundInField = new javax.swing.JTextField();
+        dueDateField = new javax.swing.JTextField();
+        estimateField = new javax.swing.JTextField();
+
+        resolutionCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resolutionComboActionPerformed(evt);
+            }
+        });
+
+        ownerCombo.setEditable(true);
+        ownerCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ownerComboActionPerformed(evt);
+            }
+        });
 
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
@@ -154,6 +1087,8 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
+        separatorLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+
         org.openide.awt.Mnemonics.setLocalizedText(reloadButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reloadButton.text_1")); // NOI18N
         reloadButton.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reloadButton.toolTipText_1")); // NOI18N
         reloadButton.addActionListener(new java.awt.event.ActionListener() {
@@ -161,6 +1096,8 @@ public class IssuePanel extends javax.swing.JPanel {
                 reloadButtonActionPerformed(evt);
             }
         });
+
+        separatorLabel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.text_1")); // NOI18N
         refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton.toolTipText_1")); // NOI18N
@@ -173,10 +1110,6 @@ public class IssuePanel extends javax.swing.JPanel {
         headerField.setEditable(false);
         headerField.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
-        separatorLabel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        separatorLabel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
         org.openide.awt.Mnemonics.setLocalizedText(issueTypeLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.issueTypeLabel.text_1")); // NOI18N
 
         issueTypeCombo.addActionListener(new java.awt.event.ActionListener() {
@@ -187,7 +1120,23 @@ public class IssuePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(reportedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.text_1")); // NOI18N
 
+        reportedField.setEditable(false);
+        reportedField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        reportedField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reportedFieldActionPerformed(evt);
+            }
+        });
+
         org.openide.awt.Mnemonics.setLocalizedText(modifiedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.modifiedLabel.text_1")); // NOI18N
+
+        modifiedField.setEditable(false);
+        modifiedField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        modifiedField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                modifiedFieldActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(summaryLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.summaryLabel.text_1")); // NOI18N
 
@@ -199,18 +1148,12 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(resolutionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text_1")); // NOI18N
-
-        resolutionField.setEditable(false);
-        resolutionField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionField.text")); // NOI18N
-        resolutionField.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        resolutionField.addActionListener(new java.awt.event.ActionListener() {
+        duplicateField.setColumns(15);
+        duplicateField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resolutionFieldActionPerformed(evt);
+                duplicateFieldActionPerformed(evt);
             }
         });
-
-        duplicateField.setColumns(15);
 
         org.openide.awt.Mnemonics.setLocalizedText(duplicateButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.text_1")); // NOI18N
         duplicateButton.setFocusPainted(false);
@@ -237,7 +1180,7 @@ public class IssuePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel1.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(tagsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tagsLabel.text")); // NOI18N
 
         productCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -263,7 +1206,7 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel3.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(foundInLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.foundInLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(targetMilestoneLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.targetMilestoneLabel.text_1")); // NOI18N
 
@@ -273,7 +1216,7 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel4.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dueDateLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueDateLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel5.text")); // NOI18N
 
@@ -285,9 +1228,9 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(dependsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(parentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.parentLabel.text_1")); // NOI18N
 
-        dependsField.setColumns(15);
+        parentField.setColumns(15);
 
         org.openide.awt.Mnemonics.setLocalizedText(dependsOnButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.text_1")); // NOI18N
         dependsOnButton.setFocusPainted(false);
@@ -298,9 +1241,9 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(dependsLabel1, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(subtaskLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.subtaskLabel.text")); // NOI18N
 
-        dependsField1.setColumns(15);
+        subtaskField.setColumns(15);
 
         org.openide.awt.Mnemonics.setLocalizedText(dependsOnButton1, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton1.text")); // NOI18N
         dependsOnButton1.setFocusPainted(false);
@@ -311,12 +1254,12 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(dependsLabel2, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(externalLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.externalLabel.text")); // NOI18N
 
-        dependsField2.setColumns(15);
-        dependsField2.addActionListener(new java.awt.event.ActionListener() {
+        externalField.setColumns(15);
+        externalField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dependsField2ActionPerformed(evt);
+                externalFieldActionPerformed(evt);
             }
         });
 
@@ -329,9 +1272,9 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(assignedLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assignedLabel.text_1")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ownerLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.ownerLabel.text_1")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(assignedLabel1, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.assignedLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ccLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.ccLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(attachmentsLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel.text_1")); // NOI18N
 
@@ -365,339 +1308,412 @@ public class IssuePanel extends javax.swing.JPanel {
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        tagsField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tagsField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(duplicateButton1, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton1.text")); // NOI18N
+        duplicateButton1.setFocusPainted(false);
+        duplicateButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        duplicateButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                duplicateButton1ActionPerformed(evt);
+            }
+        });
+
+        messagePanel.setLayout(new javax.swing.BoxLayout(messagePanel, javax.swing.BoxLayout.PAGE_AXIS));
+
+        org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.addCommentLabel.text_1")); // NOI18N
+
+        scrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        addCommentArea.setLineWrap(true);
+        addCommentArea.setWrapStyleWord(true);
+        scrollPane1.setViewportView(addCommentArea);
+
+        foundInField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.foundInField.text")); // NOI18N
+
+        dueDateField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.dueDateField.text")); // NOI18N
+
+        estimateField.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.estimateField.text")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, separator)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, dummyCommentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(separator)
+            .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(headerField)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(separatorLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(reloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(separatorLabel3)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(showInBrowserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel15)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, summaryLabel)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, attachmentsLabel1)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, attachmentsLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(dummyAttachmentsPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                        .add(dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .add(3, 3, 3)))
-                                .add(28, 28, 28))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(jScrollPane1)
-                                    .add(summaryField))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, summaryWarning1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, summaryWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(16, 16, 16))
-                            .add(refreshButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(refreshButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createSequentialGroup()
-                                .add(submitButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(cancelButton))))
-                    .add(layout.createSequentialGroup()
-                        .add(221, 221, 221)
-                        .add(dependsOnButton2)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(dependsOnWarning2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(7, 7, 7)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, issueTypeLabel)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, statusLabel)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, priorityLabel)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel2)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, productLabel)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel3)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel4)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, dependsLabel)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, dependsLabel1)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, dependsLabel2))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(issueTypeWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(layout.createSequentialGroup()
-                                        .add(productCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 116, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(productWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(layout.createSequentialGroup()
-                                        .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(priorityWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(tagsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 126, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, resolutionLabel)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, componentLabel)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, targetMilestoneLabel)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel5)
-                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, reportedLabel))
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(layout.createSequentialGroup()
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(layout.createSequentialGroup()
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                                                    .add(componentCombo, 0, 135, Short.MAX_VALUE)
-                                                    .add(targetMilestoneCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                                .add(6, 6, 6)
-                                                .add(jComboBox3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(layout.createSequentialGroup()
-                                                .add(componentWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(versionLabel)
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(versionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                            .add(milestoneWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                            .add(productWarning2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(versionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(layout.createSequentialGroup()
-                                        .add(18, 18, 18)
-                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                            .add(layout.createSequentialGroup()
-                                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                                                    .add(resolutionField)
-                                                    .add(severityCombo, 0, 126, Short.MAX_VALUE))
-                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                                    .add(severityWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                                        .add(statusWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                        .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 119, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                        .add(duplicateButton)
-                                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                        .add(resolutionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                                            .add(modifiedLabel)))))
-                            .add(layout.createSequentialGroup()
-                                .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(dependsOnButton)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(dependsOnWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(assignedLabel)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(assignedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(assignedToWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createSequentialGroup()
-                                .add(dependsField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(dependsOnButton1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(dependsOnWarning1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createSequentialGroup()
-                                .add(267, 267, 267)
-                                .add(assignedLabel1)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(assignedField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(assignedToWarning1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(dependsField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 114, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(layout.createSequentialGroup()
-                        .add(84, 84, 84)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jComboBox2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 135, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(productWarning1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addComponent(headerField)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(reloadButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(separatorLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(22, 22, 22))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(104, 104, 104)
+                .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(6, 6, 6))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(14, 14, 14)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(parentLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(summaryLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(issueTypeLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(attachmentsLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(dueDateLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel15, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(foundInLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(tagsLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(productLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(externalLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(priorityLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(statusLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(attachmentsLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(subtaskLabel, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(addCommentLabel)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(foundInField, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(foundInWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(targetMilestoneLabel))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(productCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(productWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(componentLabel)))
+                            .addComponent(dueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(componentCombo, 0, 135, Short.MAX_VALUE)
+                            .addComponent(targetMilestoneCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(estimateField, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(componentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(milestoneWarning, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(versionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(versionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(versionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(estimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(submitButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(cancelButton)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jScrollPane1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(summaryWarning1, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(scrollPane1)
+                                .addGap(28, 28, 28))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(summaryField)
+                                .addGap(0, 0, 0)
+                                .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap())
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(refreshButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(dummyAttachmentsPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
+                                    .addComponent(refreshButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(externalField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(dependsOnButton2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(externalWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(subtaskField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(dependsOnButton1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(subtaskWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(parentField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(dependsOnButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(parentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(188, 188, 188)
+                                .addComponent(jLabel5))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(statusCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(resolutionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(duplicateField, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(duplicateButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(duplicateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(tagsField, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(duplicateButton1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(tagsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(severityCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(severityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(priorityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap())))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(293, 293, 293)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(reportedLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(reportedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(modifiedLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(modifiedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(103, 103, 103)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ownerLabel)
+                            .addComponent(ccLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ownerField, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ownerWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(ccField, javax.swing.GroupLayout.PREFERRED_SIZE, 136, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(ccWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {componentCombo, issueTypeCombo, priorityCombo, productCombo, severityCombo, statusCombo, tagsComboBox, versionCombo}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {componentCombo, issueTypeCombo, priorityCombo, productCombo, resolutionComboBox, severityCombo, statusCombo, versionCombo});
 
-        layout.linkSize(new java.awt.Component[] {assignedField, dependsField, dependsField1, dependsField2}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {externalField, ownerField, parentField, subtaskField});
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {dummyAttachmentsPanel, dummyAttachmentsPanel1});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap(7, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(separatorLabel)
-                    .add(reloadButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(refreshButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(headerField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(separatorLabel3)
-                    .add(showInBrowserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(issueTypeLabel)
-                        .add(issueTypeCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(reportedLabel)
-                        .add(modifiedLabel))
-                    .add(issueTypeWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(statusWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(statusLabel)
-                        .add(statusCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(resolutionLabel)
-                        .add(resolutionField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(duplicateField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(duplicateButton))
-                    .add(resolutionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(priorityLabel)
-                        .add(priorityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(priorityWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(severityWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(severityCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(jLabel1)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(tagsComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel2))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(componentLabel)
-                                .add(componentCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(componentWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(versionCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(versionLabel))
-                            .add(versionWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(milestoneWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(productWarning2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                    .add(targetMilestoneLabel)
-                                    .add(targetMilestoneCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel5)
-                                    .add(jComboBox3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(productWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(productCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(productLabel)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(jLabel3)
-                            .add(jComboBox1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(productWarning1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(jLabel4)
-                                .add(jComboBox2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dependsOnWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(assignedToWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(assignedLabel)
-                        .add(assignedField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(dependsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(dependsOnButton)
-                        .add(dependsLabel)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(dependsOnWarning1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(dependsField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(dependsOnButton1)
-                        .add(dependsLabel1))
-                    .add(assignedToWarning1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(assignedLabel1)
-                        .add(assignedField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(dependsField2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(dependsLabel2)
-                            .add(dependsOnButton2))
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(attachmentsLabel)
-                            .add(dummyAttachmentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(7, 7, 7)
-                        .add(refreshButton2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(attachmentsLabel1)
-                            .add(dummyAttachmentsPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(refreshButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 18, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                                .add(summaryLabel)
-                                .add(summaryField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(summaryWarning1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel15)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(summaryWarning, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(submitButton)
-                            .add(cancelButton))
-                        .add(1, 1, 1)
-                        .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(dummyCommentsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 46, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(dependsOnWarning2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(separatorLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(separatorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(showInBrowserButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(refreshButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(headerField))
+                    .addComponent(reloadButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(issueTypeLabel)
+                        .addComponent(issueTypeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(reportedLabel)
+                        .addComponent(reportedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(modifiedLabel)
+                        .addComponent(modifiedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(issueTypeWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(statusLabel)
+                        .addComponent(statusCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(duplicateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(duplicateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(resolutionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(duplicateButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(priorityLabel)
+                        .addComponent(priorityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(priorityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(severityCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel1))
+                    .addComponent(severityWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(tagsLabel)
+                        .addComponent(tagsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(duplicateButton1))
+                    .addComponent(tagsWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(17, 17, 17)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(productLabel)
+                                .addComponent(productCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(productWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(foundInWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(foundInLabel)
+                                .addComponent(foundInField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(componentLabel)
+                                .addComponent(componentCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(componentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(versionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(versionLabel))
+                            .addComponent(versionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(targetMilestoneCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(targetMilestoneLabel))
+                            .addComponent(milestoneWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(estimateWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(dueDateLabel)
+                        .addComponent(dueDateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel5)
+                        .addComponent(estimateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(parentLabel)
+                            .addComponent(parentField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dependsOnButton))
+                        .addGap(10, 10, 10)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(subtaskWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(subtaskField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(dependsOnButton1)
+                                .addComponent(subtaskLabel))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(ownerField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(ownerLabel))
+                            .addComponent(ownerWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(ccWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(ccLabel)
+                                .addComponent(ccField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(parentWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(externalField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(externalLabel)
+                            .addComponent(dependsOnButton2))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(attachmentsLabel)
+                            .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(7, 7, 7)
+                        .addComponent(refreshButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(attachmentsLabel1)
+                            .addComponent(dummyAttachmentsPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(refreshButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(externalWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(summaryLabel)
+                    .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(summaryField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel15)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(summaryWarning1, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(scrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addCommentLabel))
+                .addGap(10, 10, 10)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(submitButton)
+                    .addComponent(cancelButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(messagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(1, 1, 1)
+                .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 35, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    
+    
     private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
 //        try {
 //            URL url = new URL(issue.getRepository().getUrl() + BugzillaConstants.URL_SHOW_BUG + issue.getID());
@@ -788,50 +1804,47 @@ public class IssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_issueTypeComboActionPerformed
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
-//        cancelHighlight(statusLabel);
-//        cancelHighlight(resolutionLabel);
-//        // Hide/show resolution combo
-//        String initialStatus = initialValues.get(IssueField.STATUS.getKey());
-//        boolean resolvedInitial = "RESOLVED".equals(initialStatus); // NOI18N
-//        if (!resolvedInitial) {
-//            if ("RESOLVED".equals(statusCombo.getSelectedItem())) { // NOI18N
-//                if (resolutionCombo.getParent() == null) {
-//                    ((GroupLayout)getLayout()).replace(resolutionField, resolutionCombo);
-//                }
-//                resolutionCombo.setSelectedItem("FIXED"); // NOI18N
-//                resolutionCombo.setVisible(true);
-//            } else {
-//                resolutionCombo.setVisible(false);
-//                duplicateLabel.setVisible(false);
-//                duplicateField.setVisible(false);
-//                duplicateButton.setVisible(false);
-//            }
-//        }
-//        if (!resolutionField.getText().trim().equals("")) { // NOI18N
-//            if (statusCombo.getSelectedIndex() >= resolvedIndex) {
-//                if (resolutionField.getParent() == null) {
-//                    ((GroupLayout)getLayout()).replace(resolutionCombo, resolutionField);
-//                }
-//                resolutionField.setVisible(true);
-//            } else {
-//                resolutionField.setVisible(false);
-//            }
-//            duplicateLabel.setVisible(false);
-//            duplicateField.setVisible(false);
-//            duplicateButton.setVisible(false);
-//        }
-//        resolutionLabel.setLabelFor(resolutionCombo.isVisible() ? resolutionCombo : resolutionField);
+        cancelHighlight(statusLabel);
+        resolutionComboBox.setVisible(false);
+        // Hide/show resolution combo
+        CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
+        String initialStatus = initialValues.get(IssueField.STATUS.getKey());
+        boolean resolvedInitial = "RESOLVED".equals(initialStatus); // NOI18N
+        if (!resolvedInitial) {
+            Object item = statusCombo.getSelectedItem();
+            if(!(item instanceof TaskStatus)) {
+                return;
+            }
+            TaskStatus status = (TaskStatus) statusCombo.getSelectedItem();
+            TaskStatus resolvedStatus = cd.getStatusByValue("RESOLVED");
+            if (resolvedStatus.equals(status)) { // NOI18N
+                TaskResolution fixedResolution = C2CUtil.getResolutionByValue(cd, "FIXED");
+                resolutionComboBox.setSelectedItem(fixedResolution); 
+                resolutionComboBox.setVisible(true);
+            } else {
+                resolutionComboBox.setVisible(false);
+                duplicateField.setVisible(false);
+                duplicateButton.setVisible(false);
+            }
+        }
+        if (statusCombo.getSelectedIndex() >= resolvedIndex) {
+            resolutionComboBox.setVisible(true);
+        } else {
+            resolutionComboBox.setVisible(false);
+        }
+        duplicateField.setVisible(false);
+        duplicateButton.setVisible(false);
     }//GEN-LAST:event_statusComboActionPerformed
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-//        String newIssueID = BugtrackingUtil.selectIssue(
-//            NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
-//            BugzillaUtil.getRepository(issue.getRepository()),
-//            this,
-//            new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
-//        if (newIssueID != null) {
-//            duplicateField.setText(newIssueID);
-//        }
+        String newIssueID = BugtrackingUtil.selectIssue(
+            NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
+            C2CUtil.getRepository(issue.getRepository()),
+            this,
+            new HelpCtx("org.netbeans.modules.c2c.duplicateChooser")); // NOI18N
+        if (newIssueID != null) {
+            duplicateField.setText(newIssueID);
+        }
     }//GEN-LAST:event_duplicateButtonActionPerformed
 
     private void priorityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priorityComboActionPerformed
@@ -950,17 +1963,13 @@ public class IssuePanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_dependsOnButton2ActionPerformed
 
-    private void dependsField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsField2ActionPerformed
+    private void externalFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externalFieldActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_dependsField2ActionPerformed
+    }//GEN-LAST:event_externalFieldActionPerformed
 
     private void refreshButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButton2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_refreshButton2ActionPerformed
-
-    private void resolutionFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_resolutionFieldActionPerformed
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
 //        final boolean isNew = issue.getTaskData().isNew();
@@ -1099,88 +2108,198 @@ public class IssuePanel extends javax.swing.JPanel {
 //        reloadForm(true);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    private void duplicateButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_duplicateButton1ActionPerformed
+
+    private void ownerComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ownerComboActionPerformed
+        cancelHighlight(ownerLabel);
+        Object value = ownerCombo.getSelectedItem();
+    }//GEN-LAST:event_ownerComboActionPerformed
+
+    private void reportedFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportedFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_reportedFieldActionPerformed
+
+    private void modifiedFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modifiedFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_modifiedFieldActionPerformed
+
+    private void resolutionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionComboActionPerformed
+
+    }//GEN-LAST:event_resolutionComboActionPerformed
+
+    private void duplicateFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_duplicateFieldActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField assignedField;
-    private javax.swing.JTextField assignedField1;
-    private javax.swing.JLabel assignedLabel;
-    private javax.swing.JLabel assignedLabel1;
-    private javax.swing.JLabel assignedToWarning;
-    private javax.swing.JLabel assignedToWarning1;
+    private javax.swing.JTextArea addCommentArea;
+    private javax.swing.JLabel addCommentLabel;
     private javax.swing.JLabel attachmentsLabel;
     private javax.swing.JLabel attachmentsLabel1;
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JComboBox componentCombo;
+    final javax.swing.JButton cancelButton = new javax.swing.JButton();
+    final javax.swing.JTextField ccField = new javax.swing.JTextField();
+    private javax.swing.JLabel ccLabel;
+    private javax.swing.JLabel ccWarning;
+    final javax.swing.JComboBox componentCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel componentLabel;
     private javax.swing.JLabel componentWarning;
-    private javax.swing.JTextField dependsField;
-    private javax.swing.JTextField dependsField1;
-    private javax.swing.JTextField dependsField2;
-    private javax.swing.JLabel dependsLabel;
-    private javax.swing.JLabel dependsLabel1;
-    private javax.swing.JLabel dependsLabel2;
-    private javax.swing.JButton dependsOnButton;
-    private javax.swing.JButton dependsOnButton1;
-    private javax.swing.JButton dependsOnButton2;
-    private javax.swing.JLabel dependsOnWarning;
-    private javax.swing.JLabel dependsOnWarning1;
-    private javax.swing.JLabel dependsOnWarning2;
+    final javax.swing.JButton dependsOnButton = new javax.swing.JButton();
+    final javax.swing.JButton dependsOnButton1 = new javax.swing.JButton();
+    final javax.swing.JButton dependsOnButton2 = new javax.swing.JButton();
+    private javax.swing.JTextField dueDateField;
+    private javax.swing.JLabel dueDateLabel;
     private javax.swing.JPanel dummyAttachmentsPanel;
     private javax.swing.JPanel dummyAttachmentsPanel1;
     private javax.swing.JPanel dummyCommentsPanel;
-    private javax.swing.JButton duplicateButton;
-    private javax.swing.JTextField duplicateField;
+    final javax.swing.JButton duplicateButton = new javax.swing.JButton();
+    final javax.swing.JButton duplicateButton1 = new javax.swing.JButton();
+    final javax.swing.JTextField duplicateField = new javax.swing.JTextField();
+    private javax.swing.JLabel duplicateWarning;
+    private javax.swing.JTextField estimateField;
+    private javax.swing.JLabel estimateWarning;
+    final javax.swing.JTextField externalField = new javax.swing.JTextField();
+    private javax.swing.JLabel externalLabel;
+    private javax.swing.JLabel externalWarning;
+    private javax.swing.JTextField foundInField;
+    private javax.swing.JLabel foundInLabel;
+    private javax.swing.JLabel foundInWarning;
     final javax.swing.JTextField headerField = new javax.swing.JTextField();
     final javax.swing.JComboBox issueTypeCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel issueTypeLabel;
     final javax.swing.JLabel issueTypeWarning = new javax.swing.JLabel();
-    private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JComboBox jComboBox2;
-    private javax.swing.JComboBox jComboBox3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
+    final javax.swing.JTextArea jTextArea1 = new javax.swing.JTextArea();
+    private javax.swing.JPanel messagePanel;
     private javax.swing.JLabel milestoneWarning;
-    private javax.swing.JLabel modifiedLabel;
-    private javax.swing.JComboBox priorityCombo;
+    final javax.swing.JTextField modifiedField = new javax.swing.JTextField();
+    final javax.swing.JLabel modifiedLabel = new javax.swing.JLabel();
+    private javax.swing.JComboBox ownerCombo;
+    final javax.swing.JTextField ownerField = new javax.swing.JTextField();
+    private javax.swing.JLabel ownerLabel;
+    private javax.swing.JLabel ownerWarning;
+    final javax.swing.JTextField parentField = new javax.swing.JTextField();
+    private javax.swing.JLabel parentLabel;
+    private javax.swing.JLabel parentWarning;
+    final javax.swing.JComboBox priorityCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel priorityLabel;
     private javax.swing.JLabel priorityWarning;
-    private javax.swing.JComboBox productCombo;
+    final javax.swing.JComboBox productCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel productLabel;
     private javax.swing.JLabel productWarning;
-    private javax.swing.JLabel productWarning1;
-    private javax.swing.JLabel productWarning2;
-    private org.netbeans.modules.bugtracking.util.LinkButton refreshButton;
-    private org.netbeans.modules.bugtracking.util.LinkButton refreshButton1;
-    private org.netbeans.modules.bugtracking.util.LinkButton refreshButton2;
-    private org.netbeans.modules.bugtracking.util.LinkButton reloadButton;
-    private javax.swing.JLabel reportedLabel;
-    private javax.swing.JTextField resolutionField;
-    private javax.swing.JLabel resolutionLabel;
+    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton1 = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton2 = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final org.netbeans.modules.bugtracking.util.LinkButton reloadButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final javax.swing.JTextField reportedField = new javax.swing.JTextField();
+    final javax.swing.JLabel reportedLabel = new javax.swing.JLabel();
+    private javax.swing.JComboBox resolutionCombo;
+    private javax.swing.JComboBox resolutionComboBox;
     private javax.swing.JLabel resolutionWarning;
+    private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JSeparator separator;
     private javax.swing.JLabel separatorLabel;
     private javax.swing.JLabel separatorLabel3;
-    private javax.swing.JComboBox severityCombo;
+    final javax.swing.JComboBox severityCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel severityWarning;
-    private org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton;
-    private javax.swing.JComboBox statusCombo;
+    final org.netbeans.modules.bugtracking.util.LinkButton showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+    final javax.swing.JComboBox statusCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel statusLabel;
     private javax.swing.JLabel statusWarning;
-    private javax.swing.JButton submitButton;
-    private javax.swing.JTextField summaryField;
+    final javax.swing.JButton submitButton = new javax.swing.JButton();
+    final javax.swing.JTextField subtaskField = new javax.swing.JTextField();
+    private javax.swing.JLabel subtaskLabel;
+    private javax.swing.JLabel subtaskWarning;
+    final javax.swing.JTextField summaryField = new javax.swing.JTextField();
     private javax.swing.JLabel summaryLabel;
     private javax.swing.JLabel summaryWarning;
     private javax.swing.JLabel summaryWarning1;
-    final javax.swing.JComboBox tagsComboBox = new javax.swing.JComboBox();
-    private javax.swing.JComboBox targetMilestoneCombo;
+    final javax.swing.JTextField tagsField = new javax.swing.JTextField();
+    private javax.swing.JLabel tagsLabel;
+    private javax.swing.JLabel tagsWarning;
+    final javax.swing.JComboBox targetMilestoneCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel targetMilestoneLabel;
-    private javax.swing.JComboBox versionCombo;
+    final javax.swing.JComboBox versionCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel versionLabel;
     private javax.swing.JLabel versionWarning;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public Dimension getPreferredSize() {
+        return getMinimumSize(); // IssueProvider 176085
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+        return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return getUnitIncrement();
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+        return (orientation==SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+        JScrollPane scrollPane = (JScrollPane)SwingUtilities.getAncestorOfClass(JScrollPane.class, this);
+        if (scrollPane!=null) {
+             // IssueProvider 176085
+            int minWidth = getMinimumSize().width;
+            int width = scrollPane.getSize().width;
+            Insets insets = scrollPane.getInsets();
+            width -= insets.left+insets.right;
+            Border border = scrollPane.getViewportBorder();
+            if (border != null) {
+                insets = border.getBorderInsets(scrollPane);
+                width -= insets.left+insets.right;
+            }
+            JComponent vsb = scrollPane.getVerticalScrollBar();
+            if (vsb!=null && vsb.isVisible()) {
+                width -= vsb.getSize().width;
+            }
+            if (minWidth>width) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    void makeCaretVisible(JTextArea textArea) {
+        int pos = textArea.getCaretPosition();
+        try {
+            Rectangle rec = textArea.getUI().modelToView(textArea, pos);
+            if (rec != null) {
+                Point p = SwingUtilities.convertPoint(textArea, rec.x, rec.y, this);
+                scrollRectToVisible(new Rectangle(p.x, p.y, rec.width, rec.height));
+            }
+        } catch (BadLocationException blex) {
+            C2C.LOG.log(Level.INFO, blex.getMessage(), blex);
+        }
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+        return false;
+    }
+
+    private int unitIncrement;
+    private int getUnitIncrement() {
+        if (unitIncrement == 0) {
+            Font font = UIManager.getFont("Label.font"); // NOI18N
+            if (font != null) {
+                unitIncrement = (int)(font.getSize()*1.5);
+            }
+        }
+        return unitIncrement;
+    }
+
 }

@@ -41,10 +41,15 @@
  */
 package org.netbeans.modules.c2c.tasks.issue;
 
+import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,14 +58,24 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
+import javax.tools.FileObject;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.api.diff.PatchUtils;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.c2c.tasks.C2C;
+import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+import org.openide.awt.HtmlBrowser;
+import org.openide.cookies.OpenCookie;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -84,9 +99,12 @@ public class C2CIssue {
     static final String LABEL_NAME_MILESTONE    = "c2c.issue.milestone";        // NOI18N
     static final String LABEL_NAME_MODIFIED     = "c2c.issue.modified";         // NOI18N 
             
+    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
     private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
     private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
     private C2CIssueController controller;
+    
+    private static final RequestProcessor parallelRP = new RequestProcessor("C2CIssue", 5); //NOI18N
     
     public C2CIssue(TaskData data, C2CRepository repo) {
         this.data = data;
@@ -142,6 +160,32 @@ public class C2CIssue {
         }
         return getFieldValue(IssueField.SUMMARY, taskData);
     }    
+    
+    // XXX merge with bugzilla
+    Comment[] getComments() {
+        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_COMMENT);
+        if (attrs == null) {
+            return new Comment[0];
+        }
+        List<Comment> comments = new ArrayList<Comment>();
+        for (TaskAttribute taskAttribute : attrs) {
+            comments.add(new Comment(taskAttribute));
+        }
+        return comments.toArray(new Comment[comments.size()]);
+    }    
+    
+    // XXX merge with bugzilla
+    List<Attachment> getAttachments() {
+        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
+        if (attrs == null) {
+            return Collections.emptyList();
+        }
+        List<Attachment> attachments = new ArrayList<Attachment>(attrs.size());
+        for (TaskAttribute taskAttribute : attrs) {
+            attachments.add(new Attachment(taskAttribute));
+        }
+        return attachments;
+    }
 
     public void setSeen(boolean b) throws IOException {
         throw new UnsupportedOperationException("Not yet implemented");
@@ -172,13 +216,13 @@ public class C2CIssue {
         String value = getFieldValue(IssueField.MODIFIED);
         if(value != null && !value.trim().equals("")) {
             try {
+                return new Date(Long.parseLong(value));
+            } catch (NumberFormatException nfe) {
                 try {
-                    return new Date(Long.parseLong(value));
-                } catch (NumberFormatException nfe) {
                     return MODIFIED_DATE_FORMAT.parse(value);
+                } catch (ParseException ex) {
+                    C2C.LOG.log(Level.WARNING, value, ex);
                 }
-            } catch (ParseException ex) {
-                C2C.LOG.log(Level.WARNING, value, ex);
             }
         }
         return null;
@@ -197,10 +241,15 @@ public class C2CIssue {
         String value = getFieldValue(IssueField.CREATED);
         if(value != null && !value.trim().equals("")) {
             try {
-                return CREATED_DATE_FORMAT.parse(value);
-            } catch (ParseException ex) {
-                C2C.LOG.log(Level.WARNING, value, ex);
+                return new Date(Long.parseLong(value));
+            } catch (NumberFormatException nfe) {
+                try {
+                    return CREATED_DATE_FORMAT.parse(value);
+                } catch (ParseException ex) {
+                    C2C.LOG.log(Level.WARNING, value, ex);
+                }
             }
+            
         }
         return null;
     }
@@ -356,6 +405,14 @@ public class C2CIssue {
         }
     }
 
+    private String getMappedValue(TaskAttribute a, String key) {
+        TaskAttribute ma = a.getMappedAttribute(key);
+        if(ma != null) {
+            return ma.getValue();
+        }
+        return null;
+    }
+
     /**
      * Notify listeners on this issue that its data were changed
      */
@@ -382,4 +439,311 @@ public class C2CIssue {
         return true;
     }
 
+    class Comment {
+        private final Date when;
+        private final String author;
+        private final String authorName;
+        private final Long number;
+        private final String text;
+
+        public Comment(TaskAttribute a) {
+            Date d = null;
+            String s = "";
+            try {
+                s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
+                if(s != null && !s.trim().equals("")) {                         // NOI18N
+                    try {
+                        d = new Date(Long.parseLong(s));
+                    } catch (NumberFormatException nfe) {
+                        d = CC_DATE_FORMAT.parse(s);
+                    }
+                }
+            } catch (ParseException ex) {
+                C2C.LOG.log(Level.SEVERE, s, ex);
+            }
+            when = d;
+            TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
+            if (authorAttr != null) {
+                author = authorAttr.getValue();
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                authorName = nameAttr != null ? nameAttr.getValue() : null;
+            } else {
+                author = authorName = null;
+            }
+            String n = getMappedValue(a, TaskAttribute.COMMENT_NUMBER);
+            number = n != null ? Long.parseLong(n) : null;
+            text = getMappedValue(a, TaskAttribute.COMMENT_TEXT);
+        }
+
+        public Long getNumber() {
+            return number;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public Date getWhen() {
+            return when;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public String getAuthorName() {
+            return authorName;
+        }
+    }
+
+    class Attachment {
+        private final String desc;
+        private final String filename;
+        private final String author;
+        private final String authorName;
+        private final Date date;
+        private final String id;
+        private String contentType;
+        private String isDeprected;
+        private String size;
+        private String isPatch;
+        private String url;
+
+
+        public Attachment(TaskAttribute ta) {
+            id = ta.getValue();
+            Date d = null;
+            String s = "";
+            try {
+                s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
+                if(s != null && !s.trim().equals("")) {                         // NOI18N
+                    d = CC_DATE_FORMAT.parse(s);
+                }
+            } catch (ParseException ex) {
+                C2C.LOG.log(Level.SEVERE, s, ex);
+            }
+            date = d;
+            filename = getMappedValue(ta, TaskAttribute.ATTACHMENT_FILENAME);
+            desc = getMappedValue(ta, TaskAttribute.ATTACHMENT_DESCRIPTION);
+
+            TaskAttribute authorAttr = ta.getMappedAttribute(TaskAttribute.ATTACHMENT_AUTHOR);
+            if(authorAttr != null) {
+                author = authorAttr.getValue();
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                authorName = nameAttr != null ? nameAttr.getValue() : null;
+            } else {
+                authorAttr = data.getRoot().getMappedAttribute(IssueField.REPORTER.getKey()); 
+                if(authorAttr != null) {
+                    author = authorAttr.getValue();
+                    TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                    authorName = nameAttr != null ? nameAttr.getValue() : null;
+                } else {
+                    author = authorName = null;
+                }
+            }
+            contentType = getMappedValue(ta, TaskAttribute.ATTACHMENT_CONTENT_TYPE);
+            isDeprected = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_DEPRECATED);
+            isPatch = getMappedValue(ta, TaskAttribute.ATTACHMENT_IS_PATCH);
+            size = getMappedValue(ta, TaskAttribute.ATTACHMENT_SIZE);
+            url = getMappedValue(ta, TaskAttribute.ATTACHMENT_URL);
+        }
+
+        public String getAuthorName() {
+            return authorName;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public Date getDate() {
+            return date;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public String getContentType() {
+            return contentType;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getIsDeprected() {
+            return isDeprected;
+        }
+
+        public String getIsPatch() {
+            return isPatch;
+        }
+
+        public String getSize() {
+            return size;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void getAttachementData(final OutputStream os) {
+            // XXX
+//            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
+//            repository.getExecutor().execute(new GetAttachmentCommand(repository, id, os));
+        }
+
+        void open() {
+            // XXX
+//            String progressFormat = NbBundle.getMessage(
+//                                        DefaultAttachmentAction.class,
+//                                        "Attachment.open.progress");    //NOI18N
+//            String progressMessage = MessageFormat.format(progressFormat, getFilename());
+//            final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+//            handle.start();
+//            handle.switchToIndeterminate();
+//            parallelRP.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        File file = saveToTempFile();
+//                        String contentType = getContentType();
+//                        if ("image/png".equals(contentType)             //NOI18N
+//                                || "image/gif".equals(contentType)      //NOI18N
+//                                || "image/jpeg".equals(contentType)) {  //NOI18N
+//                            HtmlBrowser.URLDisplayer.getDefault().showURL(file.toURI().toURL());
+//                        } else {
+//                            file = FileUtil.normalizeFile(file);
+//                            FileObject fob = FileUtil.toFileObject(file);
+//                            DataObject dob = DataObject.find(fob);
+//                            OpenCookie open = dob.getCookie(OpenCookie.class);
+//                            if (open != null) {
+//                                open.open();
+//                            } else {
+//                                // PENDING
+//                            }
+//                        }
+//                    } catch (DataObjectNotFoundException dnfex) {
+//                        Bugzilla.LOG.log(Level.INFO, dnfex.getMessage(), dnfex);
+//                    } catch (IOException ioex) {
+//                        Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+//                    } finally {
+//                        handle.finish();
+//                    }
+//                }
+//            });
+        }
+
+        void saveToFile() {
+//            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+//                    .setFilesOnly(true).showSaveDialog();
+//            if (file != null) {
+//                String progressFormat = NbBundle.getMessage(
+//                                            SaveAttachmentAction.class,
+//                                            "Attachment.saveToFile.progress"); //NOI18N
+//                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+//                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+//                handle.start();
+//                handle.switchToIndeterminate();
+//                parallelRP.post(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            getAttachementData(new FileOutputStream(file));
+//                        } catch (IOException ioex) {
+//                            Bugzilla.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+//                        } finally {
+//                            handle.finish();
+//                        }
+//                    }
+//                });
+//            }
+        }
+
+        void applyPatch() {
+            final File context = BugtrackingUtil.selectPatchContext();
+            if (context != null) {
+                String progressFormat = NbBundle.getMessage(
+                                            ApplyPatchAction.class,
+                                            "Attachment.applyPatch.progress"); //NOI18N
+                String progressMessage = MessageFormat.format(progressFormat, getFilename());
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
+                handle.start();
+                handle.switchToIndeterminate();
+                parallelRP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            File file = saveToTempFile();
+                            PatchUtils.applyPatch(file, context);
+                        } catch (IOException ioex) {
+                            C2C.LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                        } finally {
+                            handle.finish();
+                        }
+                    }
+                });
+            }
+        }
+
+        private File saveToTempFile() throws IOException {
+            int index = filename.lastIndexOf('.'); // NOI18N
+            String prefix = (index == -1) ? filename : filename.substring(0, index);
+            String suffix = (index == -1) ? null : filename.substring(index);
+            if (prefix.length()<3) {
+                prefix = prefix + "tmp";                                //NOI18N
+            }
+            File file = File.createTempFile(prefix, suffix);
+            getAttachementData(new FileOutputStream(file));
+            return file;
+        }
+
+        class DefaultAttachmentAction extends AbstractAction {
+
+            public DefaultAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   DefaultAttachmentAction.class,
+                                   "Attachment.DefaultAction.name"));   //NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.open();
+            }
+        }
+
+        class SaveAttachmentAction extends AbstractAction {
+
+            public SaveAttachmentAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   SaveAttachmentAction.class,
+                                   "Attachment.SaveAction.name"));      //NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.saveToFile();
+            }
+        }
+
+        class ApplyPatchAction extends AbstractAction {
+
+            public ApplyPatchAction() {
+                putValue(NAME, NbBundle.getMessage(
+                                   ApplyPatchAction.class,
+                                   "Attachment.ApplyPatchAction.name"));//NOI18N
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Attachment.this.applyPatch();
+            }
+        }
+
+    }    
 }
