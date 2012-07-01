@@ -66,6 +66,11 @@ public class IssueField {
     public static final IssueField SEVERITY = new IssueField(CfcTaskAttribute.SEVERITY, "LBL_SEVERITY"); // NOI18N
     public static final IssueField VERSION = new IssueField(CfcTaskAttribute.VERSION, "LBL_VERSION"); // NOI18N
     public static final IssueField TASK_TYPE = new IssueField(CfcTaskAttribute.TASK_TYPE, "LBL_TASK_TYPE"); // NOI18N
+    public static final IssueField REPORTER = new IssueField(CfcTaskAttribute.REPORTER, "LBL_REPORTER"); // NOI18N
+    public static final IssueField OWNER = new IssueField(CfcTaskAttribute.OWNER, "LBL_OWNER"); // NOI18N
+    public static final IssueField TAGS = new IssueField(CfcTaskAttribute.TAGS, "LBL_TAGS"); // NOI18N
+    public static final IssueField PARENT = new IssueField(CfcTaskAttribute.PARENT, "LBL_PARENT"); // NOI18N
+    public static final IssueField SUBTASK = new IssueField(CfcTaskAttribute.SUBTASK, "LBL_SUBTASK"); // NOI18N
     
     public static final IssueField CREATED = new IssueField(CfcTaskAttribute.MODIFIED, "LBL_CREATED"); // NOI18N
     

@@ -46,9 +46,11 @@ import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
 import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
@@ -201,5 +203,15 @@ public class C2CUtil {
                     C2C.getInstance().getIssueProvider());
         }
         return repository;
+    }
+
+    public static TaskResolution getResolutionByValue(CfcClientData cd, String value) {
+        List<TaskResolution> resolutions = cd.getResolutions();
+        for (TaskResolution r : resolutions) {
+            if(r.getValue().equals(value)) {
+                return r;
+            }
+        }
+        return null;
     }
 }
