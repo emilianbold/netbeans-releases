@@ -53,12 +53,13 @@ import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
 import org.netbeans.spi.java.hints.*;
+import org.netbeans.spi.java.hints.Hint.Options;
 
 /**XXX: null initializer to a non-null variable!
  *
  * @author lahvac
  */
-@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs")
+@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY)
 public class NPECheck {
 
     @TriggerPattern("$var = $expr")
