@@ -125,7 +125,7 @@ public class LiveHTMLComponent extends javax.swing.JPanel {
             public void run() {
                 try {
                     File f = File.createTempFile("livehtml", "dummy");
-                    FileObject fo = FileUtil.toFileObject(f);
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
                     getPrivateBrowserSupport().load(url, fo);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
