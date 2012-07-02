@@ -134,6 +134,8 @@ function classpath() {
     CP=${CP}${path_sep}${platform}/modules/org-openide-windows.jar
     CP=${CP}${path_sep}${platform}/modules/org-netbeans-modules-editor-mimelookup.jar
     CP=${CP}${path_sep}${platform}/modules/org-openide-awt.jar
+    CP=${CP}${path_sep}${platform}/modules/org-openide-loaders.jar
+    CP=${CP}${path_sep}${platform}/modules/org-netbeans-api-search.jar
 
     CP=${CP}${path_sep}${dlightdist}/modules/org-netbeans-modules-dlight-libs-common.jar
     CP=${CP}${path_sep}${dlightdist}/modules/org-netbeans-modules-dlight-remote.jar
@@ -177,6 +179,9 @@ function classpath() {
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-windows.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-text.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-netbeans-modules-settings.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-netbeans-api-search.jar
+        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-loaders.jar
+
         XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-mimelookup.jar
         XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-settings.jar
         XREF_CP=${XREF_CP}${path_sep}${ide}/modules/org-netbeans-modules-editor-lib.jar
