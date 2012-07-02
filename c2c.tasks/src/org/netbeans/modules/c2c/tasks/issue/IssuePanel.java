@@ -706,7 +706,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void updateNoTargetMilestone() {
+    private void updateNoIteration() {
         boolean newNoTargetMilestone = (iterationCombo.getSelectedItem() == null);
         if (noTargetMilestione != newNoTargetMilestone) {
             noTargetMilestione = newNoTargetMilestone;
@@ -1903,13 +1903,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_componentComboActionPerformed
 
     private void releaseComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_releaseComboActionPerformed
-//        cancelHighlight(versionLabel);
-//        updateNoVersion();
+        cancelHighlight(releaseLabel);
+        updateNoRelease();
     }//GEN-LAST:event_releaseComboActionPerformed
 
     private void iterationComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iterationComboActionPerformed
-//        cancelHighlight(targetMilestoneLabel);
-//        updateNoTargetMilestone();
+        cancelHighlight(iterationLabel);
+        updateNoIteration();
     }//GEN-LAST:event_iterationComboActionPerformed
 
     private void parentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parentButtonActionPerformed
