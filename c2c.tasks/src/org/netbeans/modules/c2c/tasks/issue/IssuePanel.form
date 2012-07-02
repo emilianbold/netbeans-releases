@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <NonVisualComponents>
-    <Component class="javax.swing.JComboBox" name="resolutionCombo">
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolutionComboActionPerformed"/>
-      </Events>
-    </Component>
-  </NonVisualComponents>
   <Properties>
     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
       <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
@@ -99,7 +92,7 @@
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="statusWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="resolutionComboBox" linkSize="3" max="32767" attributes="0"/>
+                                              <Component id="resolutionCombo" linkSize="3" max="32767" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="resolutionWarning" min="-2" pref="16" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
@@ -278,7 +271,7 @@
                   <Component id="statusWarning" min="-2" pref="16" max="-2" attributes="0"/>
                   <Component id="duplicateField" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="resolutionComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="resolutionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="duplicateButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -557,12 +550,15 @@
     </Component>
     <Component class="javax.swing.JLabel" name="statusWarning">
     </Component>
-    <Component class="javax.swing.JComboBox" name="resolutionComboBox">
+    <Component class="javax.swing.JComboBox" name="resolutionCombo">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resolutionComboActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="resolutionWarning">
     </Component>

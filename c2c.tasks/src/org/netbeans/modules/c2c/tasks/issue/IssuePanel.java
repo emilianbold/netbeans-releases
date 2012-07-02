@@ -122,6 +122,10 @@ import org.openide.util.NbBundle;
  * @author tomas
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
+    
+    private static final String RESOLUTION_RESOLVED = "RESOLVED";               // NOI18N    
+    private static final String STATUS_FIXED = "FIXED";                         // NOI18N
+    private static final String RESOLUTION_DUPLICATE = "DUPLICATE";             // NOI18N
 
     private C2CIssue issue;
     
@@ -325,8 +329,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         // List<String> resolutions = new LinkedList<String>(cd.getResolutions());
         // resolutions.remove("MOVED"); // NOI18N XXX
-        resolutionComboBox.setModel(toComboModel(cd.getResolutions()));
-        resolutionComboBox.setRenderer(new ClientDataRenderer());
+        resolutionCombo.setModel(toComboModel(cd.getResolutions()));
+        resolutionCombo.setRenderer(new ClientDataRenderer());
         
         priorityCombo.setModel(toComboModel(cd.getPriorities()));
         priorityCombo.setRenderer(new ClientDataRenderer());
@@ -394,12 +398,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(force, productCombo, IssueField.PRODUCT, productWarning, productLabel);
             reloadField(force, componentCombo, IssueField.COMPONENT, componentWarning, componentLabel);
             reloadField(force, releaseCombo, IssueField.MILESTONE, releaseWarning, releaseLabel);
-            reloadField(force, resolutionComboBox, IssueField.RESOLUTION, resolutionWarning, "resolution"); // NOI18N
+            reloadField(force, resolutionCombo, IssueField.RESOLUTION, resolutionWarning, "resolution"); // NOI18N
             reloadField(force, descriptionTextArea, IssueField.DESCRIPTION, descriptionWarning, descriptionLabel); // NOI18N
             String status = reloadField(force, statusCombo, IssueField.STATUS, resolutionWarning, statusLabel);
             initStatusCombo(status);
             String initialResolution = initialValues.get(IssueField.RESOLUTION.getKey());
-            if ("DUPLICATE".equals(initialResolution)) { // NOI18N // XXX no string gvalues
+            if (RESOLUTION_DUPLICATE.equals(initialResolution)) { // NOI18N // XXX no string gvalues
                 duplicateField.setEditable(false);
                 duplicateField.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
                 duplicateField.setBackground(getBackground());
@@ -913,7 +917,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
     
     private void updateNoDuplicateId() {
-        boolean newNoDuplicateId = "DUPLICATE".equals(resolutionComboBox.getSelectedItem()) && "".equals(duplicateField.getText().trim());
+        boolean newNoDuplicateId = "DUPLICATE".equals(resolutionCombo.getSelectedItem()) && "".equals(duplicateField.getText().trim());
         if(newNoDuplicateId != noDuplicateId) {
             noDuplicateId = newNoDuplicateId;
             updateMessagePanel();
@@ -996,11 +1000,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        resolutionCombo = new javax.swing.JComboBox();
         issueTypeLabel = new javax.swing.JLabel();
         statusLabel = new javax.swing.JLabel();
         statusWarning = new javax.swing.JLabel();
-        resolutionComboBox = new javax.swing.JComboBox();
+        resolutionCombo = new javax.swing.JComboBox();
         resolutionWarning = new javax.swing.JLabel();
         duplicateWarning = new javax.swing.JLabel();
         priorityLabel = new javax.swing.JLabel();
@@ -1068,12 +1071,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         separatorLabel = new javax.swing.JLabel();
         separatorLabel3 = new javax.swing.JLabel();
 
-        resolutionCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resolutionComboActionPerformed(evt);
-            }
-        });
-
         setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
 
         org.openide.awt.Mnemonics.setLocalizedText(issueTypeLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.issueTypeLabel.text_1")); // NOI18N
@@ -1109,6 +1106,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         statusCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 statusComboActionPerformed(evt);
+            }
+        });
+
+        resolutionCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resolutionComboActionPerformed(evt);
             }
         });
 
@@ -1386,7 +1389,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                             .addGroup(layout.createSequentialGroup()
                                                 .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(resolutionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(resolutionCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(resolutionWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1495,7 +1498,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {componentCombo, issueTypeCombo, priorityCombo, productCombo, releaseCombo, resolutionComboBox, severityCombo, statusCombo});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {componentCombo, issueTypeCombo, priorityCombo, productCombo, releaseCombo, resolutionCombo, severityCombo, statusCombo});
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {ccField, externalField, parentField, subtaskField});
 
@@ -1531,7 +1534,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(statusWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(duplicateField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(resolutionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(resolutionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(duplicateButton)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1764,32 +1767,32 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void statusComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_statusComboActionPerformed
         cancelHighlight(statusLabel);
-        resolutionComboBox.setVisible(false);
+        resolutionCombo.setVisible(false);
         // Hide/show resolution combo
         CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
         String initialStatus = initialValues.get(IssueField.STATUS.getKey());
-        boolean resolvedInitial = "RESOLVED".equals(initialStatus); // NOI18N
+        boolean resolvedInitial = RESOLUTION_RESOLVED.equals(initialStatus); // NOI18N
         if (!resolvedInitial) {
             Object item = statusCombo.getSelectedItem();
             if(!(item instanceof TaskStatus)) {
                 return;
             }
             TaskStatus status = (TaskStatus) statusCombo.getSelectedItem();
-            TaskStatus resolvedStatus = cd.getStatusByValue("RESOLVED");
+            TaskStatus resolvedStatus = cd.getStatusByValue(RESOLUTION_RESOLVED);
             if (resolvedStatus.equals(status)) { // NOI18N
-                TaskResolution fixedResolution = C2CUtil.getResolutionByValue(cd, "FIXED");
-                resolutionComboBox.setSelectedItem(fixedResolution); 
-                resolutionComboBox.setVisible(true);
+                TaskResolution fixedResolution = C2CUtil.getResolutionByValue(cd, STATUS_FIXED);
+                resolutionCombo.setSelectedItem(fixedResolution); 
+                resolutionCombo.setVisible(true);
             } else {
-                resolutionComboBox.setVisible(false);
+                resolutionCombo.setVisible(false);
                 duplicateField.setVisible(false);
                 duplicateButton.setVisible(false);
             }
         }
         if (statusCombo.getSelectedIndex() >= resolvedIndex) {
-            resolutionComboBox.setVisible(true);
+            resolutionCombo.setVisible(true);
         } else {
-            resolutionComboBox.setVisible(false);
+            resolutionCombo.setVisible(false);
         }
         duplicateField.setVisible(false);
         duplicateButton.setVisible(false);
@@ -2072,10 +2075,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // TODO add your handling code here:
     }//GEN-LAST:event_modifiedFieldActionPerformed
 
-    private void resolutionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionComboActionPerformed
-
-    }//GEN-LAST:event_resolutionComboActionPerformed
-
     private void duplicateFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_duplicateFieldActionPerformed
@@ -2083,6 +2082,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private void ownerComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ownerComboActionPerformed
         cancelHighlight(ownerLabel);
     }//GEN-LAST:event_ownerComboActionPerformed
+
+    private void resolutionComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resolutionComboActionPerformed
+//        cancelHighlight(resolutionCombo); XXX
+//        if (resolutionCombo.getParent() == null) {
+//            return;
+//        }
+        TaskResolution duplicate = C2CUtil.getResolutionByValue(DummyUtils.getClientData(issue.getRepository().getTaskRepository()), RESOLUTION_DUPLICATE);
+        boolean shown = duplicate.equals(resolutionCombo.getSelectedItem()); // NOI18N
+        duplicateField.setVisible(shown);
+        duplicateButton.setVisible(shown && duplicateField.isEditable());
+        updateNoDuplicateId();
+    }//GEN-LAST:event_resolutionComboActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea addCommentArea;
@@ -2148,7 +2159,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     final javax.swing.JTextField reportedField = new javax.swing.JTextField();
     final javax.swing.JLabel reportedLabel = new javax.swing.JLabel();
     private javax.swing.JComboBox resolutionCombo;
-    private javax.swing.JComboBox resolutionComboBox;
     private javax.swing.JLabel resolutionWarning;
     private javax.swing.JScrollPane scrollPane1;
     private javax.swing.JSeparator separator;
