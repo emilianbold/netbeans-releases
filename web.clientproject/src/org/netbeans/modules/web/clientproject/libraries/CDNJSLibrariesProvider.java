@@ -55,6 +55,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -159,13 +160,13 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
     private LibraryImplementation createLibrary(String name, String version, String file, 
             String homepage, String description) {
         LibraryImplementation3 l1 = (LibraryImplementation3) LibrariesSupport.createLibraryImplementation(
-                JavaScriptLibraryTypeProvider.TYPE, JavaScriptLibraryTypeProvider.VOLUMES);
+                WebClientLibraryManager.TYPE, JavaScriptLibraryTypeProvider.VOLUMES);
         NamedLibraryImplementation named = (NamedLibraryImplementation) l1;
         l1.setName("cdnjs-"+name+"-"+version); // NOI18N
         named.setDisplayName("[CDNJS] "+name+" "+version); // NOI18N
         Map<String, String> p = new HashMap<String, String>();
-        p.put(JavaScriptLibraryTypeProvider.PROPERTY_VERSION, version);
-        p.put(JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME, name);
+        p.put(WebClientLibraryManager.PROPERTY_VERSION, version);
+        p.put(WebClientLibraryManager.PROPERTY_REAL_NAME, name);
         p.put(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, name);
         p.put(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "CDNJS"); // NOI18N
         p.put(JavaScriptLibraryTypeProvider.PROPERTY_SITE, homepage);
@@ -173,7 +174,7 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         l1.setDescription(description);
         try {
             String path = "http://cdnjs.cloudflare.com/ajax/libs/"+name+"/"+version+"/"+file; // NOI18N
-            l1.setContent(JavaScriptLibraryTypeProvider.VOL_MINIFIED, 
+            l1.setContent(WebClientLibraryManager.VOL_MINIFIED, 
                     Collections.singletonList(new URL(path)));
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);

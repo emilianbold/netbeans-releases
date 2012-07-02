@@ -49,6 +49,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -115,22 +116,22 @@ public class GoogleLibrariesProvider implements LibraryProvider<LibraryImplement
                 latestVersion = version;
             }
             LibraryImplementation3 l1 = (LibraryImplementation3) LibrariesSupport.createLibraryImplementation(
-                    JavaScriptLibraryTypeProvider.TYPE, JavaScriptLibraryTypeProvider.VOLUMES);
+                    WebClientLibraryManager.TYPE, JavaScriptLibraryTypeProvider.VOLUMES);
             NamedLibraryImplementation named = (NamedLibraryImplementation) l1;
             l1.setName("google-"+name+"-"+version); // NOI18N
             named.setDisplayName("[Google] "+dispName+" "+version); // NOI18N
             Map<String, String> p = new HashMap<String, String>();
-            p.put(JavaScriptLibraryTypeProvider.PROPERTY_VERSION, version);
-            p.put(JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME, name);
+            p.put(WebClientLibraryManager.PROPERTY_VERSION, version);
+            p.put(WebClientLibraryManager.PROPERTY_REAL_NAME, name);
             p.put(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, dispName);
             p.put(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "Google"); // NOI18N
             p.put(JavaScriptLibraryTypeProvider.PROPERTY_SITE, site);
             l1.setProperties(p);
         try {
-                l1.setContent(JavaScriptLibraryTypeProvider.VOL_MINIFIED, 
+                l1.setContent(WebClientLibraryManager.VOL_MINIFIED, 
                         Collections.singletonList(new URL(path.replace(latestVersion, version))));
                 if (pathu.length() != 0) {
-                    l1.setContent(JavaScriptLibraryTypeProvider.VOL_REGULAR, 
+                    l1.setContent(WebClientLibraryManager.VOL_REGULAR, 
                             Collections.singletonList(new URL(pathu.replace(latestVersion, version))));
                 }
             } catch (MalformedURLException ex) {

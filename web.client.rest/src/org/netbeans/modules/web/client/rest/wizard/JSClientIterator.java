@@ -42,19 +42,13 @@
  */
 package org.netbeans.modules.web.client.rest.wizard;
 
-import java.awt.Component;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JComponent;
@@ -65,7 +59,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -75,7 +70,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -86,16 +80,6 @@ import org.openide.util.NbBundle;
  *
  */
 public class JSClientIterator implements ProgressInstantiatingIterator<WizardDescriptor>{
-    
-    private static final String PROPERTY_VERSION = "version"; // NOI18N
-    
-    private static final String PROPERTY_REAL_NAME = "name"; // NOI18N
-    
-    private static String VOL_REGULAR = "regular"; // NOI18N
-    
-    private static String VOL_MINIFIED = "minified"; // NOI18N
-    
-    private static String VOL_DOCUMENTED = "documented"; // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(JSClientIterator.class.getName());
 
@@ -200,11 +184,11 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
                 RestPanel.EXISTED_BACKBONE);
         
         FileObject libs = FileUtil.createFolder(project.
-                getProjectDirectory(),"js/libs");  // NOI18N
+                getProjectDirectory(),WebClientLibraryManager.LIBS);
         
         if ( existedBackbone == null ){
             if ( addBackbone!=null && addBackbone ){
-                existedBackbone = addLibrary( libs );
+                existedBackbone = addBackboneLibrary( libs );
             }
         }
         
@@ -295,93 +279,32 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         }
     }
     
-    private FileObject addLibrary(FileObject libs) {
-        // TODO : Client side project should give API for library addition
-        Library[] libraries = LibraryManager.getDefault().getLibraries();
-        Library backbone = null;
-        SpecificationVersion lastVersion=null;
-        for (Library library : libraries) {
-            String libName = library.getName();
-            if ( libName.startsWith("cdnjs-backbone.js")){
-                Map<String, String> properties = library.getProperties();
-                String version = properties.get(PROPERTY_VERSION);
-                int index = version.indexOf(' ');
-                if ( index !=-1) {
-                    version = version.substring( 0, index);
-                }
-                try {
-                    SpecificationVersion specVersion = new SpecificationVersion(version);
-                    if ( lastVersion == null || specVersion.compareTo(lastVersion)>0){
-                        lastVersion = specVersion;
-                        backbone = library;
-                    }
-                }
-                catch( NumberFormatException e ){
-                    continue;
-                }
-            }
-        }
+    private FileObject addBackboneLibrary(FileObject libs) {
+        Library backbone = WebClientLibraryManager.findLibrary("backbone.js", 
+                null);    // NOI18N
         if ( backbone == null ){
             return null;
         }
         try {
-            FileObject result = null;
-            FileObject libFolder = libs.createFolder(
-                    backbone.getProperties().get(PROPERTY_REAL_NAME).
-                        replace(' ', '-')+"-"+ // NOI18N
-                    backbone.getProperties().get(PROPERTY_VERSION));
-            List<URL> urls = backbone.getContent(VOL_MINIFIED);
-            if ( urls.isEmpty() ){
-                urls = backbone.getContent(VOL_REGULAR);
+            List<FileObject> files = WebClientLibraryManager.addLibraries(new Library[]{backbone}, 
+                    libs, null);
+            if ( !files.isEmpty() ){
+                return files.get(0);
             }
-            if ( urls.isEmpty() ){
-                urls = backbone.getContent(VOL_DOCUMENTED);
-            }
-            for (URL url : urls) {
-                String name = url.getPath();
-                name = name.substring(name.lastIndexOf("/")+1); // NOI18N
-                if ( result == null ){ 
-                    /*
-                     *  all this algorithm along with main lib file choose 
-                     *  is not bullet-proof and should be rewritten via 
-                     *  JS project lib API when it will be available.
-                     *  At the moment it works with backbone.js in its current state.
-                     */
-                    result = copyFile(url, name, libFolder);
-                }
-            }
-            return result;
+            return null;
         }
         catch(IOException e ){
             return null;
         }
+        catch(MissingLibResourceException e ){
+            List<FileObject> files = e.getResources();
+            if ( !files.isEmpty() ){
+                return files.get(0);
+            }
+            return null;
+        }
     }
     
-    private FileObject copyFile(URL u, String name, FileObject libTarget) throws IOException {
-        FileObject fo = libTarget.createData(name);
-        InputStream is;
-        try {
-            is = u.openStream();
-        } catch (FileNotFoundException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for "+u, ex); // NOI18N
-            return null;
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for "+u, ex); // NOI18N
-            return null;
-        }
-        OutputStream os = null;
-        try {
-            os = fo.getOutputStream();
-            FileUtil.copy(is, os);
-        } finally {
-            is.close();
-            if (os != null) {
-                os.close();
-            }
-        }
-        return fo;
-    }
-
     private WizardDescriptor myWizard;
     private RestPanel myRestPanel;
     private WizardDescriptor.Panel[] myPanels;
