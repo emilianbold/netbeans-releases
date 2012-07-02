@@ -1,8 +1,8 @@
 Name: Jemmy
 Description: Jemmy UI testing tool
-Version: 2.3.0.0
+Version: 2.3.1.1
 License: CDDL-1.0
-Origin: https://jemmy.dev.java.net/
+Origin: https://jemmy.java.net/
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 
