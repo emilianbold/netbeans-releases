@@ -670,6 +670,11 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="productCombo">
+      <Properties>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+          <StringArray count="0"/>
+        </Property>
+      </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="productComboActionPerformed"/>
       </Events>

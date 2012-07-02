@@ -46,6 +46,7 @@ import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
+import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.awt.Component;
@@ -72,7 +73,6 @@ import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
-import javax.print.attribute.standard.Severity;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -616,8 +616,30 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (value == null) {
             return false;
         }
-        combo.setSelectedItem(value);
-        if (forceInModel && !value.equals("") && !value.equals(combo.getSelectedItem())) { // NOI18N
+        
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            Object item = combo.getItemAt(i);
+            
+            String itemValue = null;
+            if(item instanceof Priority) {
+                itemValue = ((Priority) item).getValue();
+            } else if(item instanceof TaskSeverity) {
+                itemValue = ((TaskSeverity) item).getValue();
+            } else if(item instanceof TaskResolution) {
+                itemValue = ((TaskResolution) item).getValue();
+            } else if(item instanceof Product) {
+                itemValue = ((Product) item).getName();
+            } else if(item instanceof TaskUserProfile) {
+                itemValue = ((TaskUserProfile) item).getRealname();
+            }
+            
+            if(value.equals(itemValue)) {
+                combo.setSelectedItem(item);
+                break;
+            }
+        }
+        
+        if (forceInModel && !value.equals("") && !value.equals(getSelectetdValue(combo))) { // NOI18N
             // Reload of server attributes is needed - workarounding it
             ComboBoxModel model = combo.getModel();
             if (model instanceof DefaultComboBoxModel) {
@@ -625,9 +647,28 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 combo.setSelectedIndex(0);
             }
         }
-        return value.equals(combo.getSelectedItem());
+        return value.equals(getSelectetdValue(combo));
     }    
 
+    private String getSelectetdValue(JComboBox combo) {
+        Object item = combo.getSelectedItem();
+        if(item == null) {
+            return null;
+        }
+        if(item instanceof Priority) {
+            return ((Priority) item).getValue();
+        } else if(item instanceof TaskSeverity) {
+            return ((TaskSeverity) item).getValue();
+        } else if(item instanceof TaskResolution) {
+            return ((TaskResolution) item).getValue();
+        } else if(item instanceof Product) {
+            return ((Product) item).getName();
+        } else if(item instanceof TaskUserProfile) {
+            return ((TaskUserProfile) item).getRealname();
+        }
+        return null;
+    }
+    
     private void initStatusCombo(String status) {
         // Init statusCombo - allowed transitions (heuristics):
         // Open -> Open-Unconfirmed-Reopened+Resolved
@@ -807,8 +848,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof Priority) {
                 value = ((Priority) value).getValue();
-            } else if(value instanceof Severity) {
-                value = ((Severity) value).getValue();
+            } else if(value instanceof TaskSeverity) {
+                value = ((TaskSeverity) value).getValue();
             } else if(value instanceof TaskResolution) {
                 value = ((TaskResolution) value).getValue();
             } else if(value instanceof Product) {
