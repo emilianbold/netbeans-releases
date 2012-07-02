@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.c2c.tasks.issue;
 
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,7 +59,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
-import javax.tools.FileObject;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.diff.PatchUtils;
@@ -70,10 +68,7 @@ import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.c2c.tasks.C2C;
-import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
-import org.openide.awt.HtmlBrowser;
-import org.openide.cookies.OpenCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -104,6 +99,8 @@ public class C2CIssue {
     private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
     private C2CIssueController controller;
     
+    private String initialProduct = null;
+    
     private static final RequestProcessor parallelRP = new RequestProcessor("C2CIssue", 5); //NOI18N
     
     public C2CIssue(TaskData data, C2CRepository repo) {
@@ -112,6 +109,10 @@ public class C2CIssue {
         support = new PropertyChangeSupport(this);
     }
 
+    TaskData getTaskData() {
+        return data;
+    }
+    
     public String getDisplayName() {
         return getDisplayName(data);
     }
@@ -444,6 +445,36 @@ public class C2CIssue {
 //        }
         return true;
     }
+
+    void setFieldValue(IssueField f, String value) {
+//        if(f.isReadOnly()) { XXX
+//            assert false : "can't set value into IssueField " + f.getKey();       // NOI18N
+//            return;
+//        }
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
+        if(a == null) {
+            a = new TaskAttribute(data.getRoot(), f.getKey());
+        }
+        if(f == IssueField.PRODUCT) {
+            handleProductChange(a);
+        }
+        C2C.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
+        a.setValue(value);
+    }
+
+    void setFieldValues(IssueField f, List<String> ccs) {
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
+        if(a == null) {
+            a = new TaskAttribute(data.getRoot(), f.getKey());
+        }
+        a.setValues(ccs);
+    }
+    
+    private void handleProductChange(TaskAttribute a) {
+        if(!data.isNew() && initialProduct == null) {
+            initialProduct = a.getValue();
+        }
+    }    
 
     class Comment {
         private final Date when;

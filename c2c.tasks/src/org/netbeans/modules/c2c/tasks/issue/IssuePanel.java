@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.c2c.tasks.issue;
 
+import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
 import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Priority;
@@ -69,7 +70,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -107,6 +107,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -116,6 +118,7 @@ import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue.Attachment;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -856,6 +859,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 value = ((Product) value).getName();
             } else if(value instanceof TaskUserProfile) {
                 value = ((TaskUserProfile) value).getRealname();
+            } else if(value instanceof TaskStatus) {
+                value = ((TaskStatus) value).getValue();
+            } else {
+                assert value instanceof String : "Wrong value";                 // NOI18N
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
@@ -1875,69 +1882,45 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_severityComboActionPerformed
 
     private void productComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_productComboActionPerformed
-//        cancelHighlight(productLabel);
-//        // Reload componentCombo, versionCombo and targetMilestoneCombo
-//        BugzillaRepository repository = issue.getRepository();
-//        BugzillaConfiguration bc = repository.getConfiguration();
-//        if(bc == null || !bc.isValid()) {
-//            // XXX nice error msg?
-//            return;
-//        }
-//        String product = productCombo.getSelectedItem().toString();
-//        Object component = componentCombo.getSelectedItem();
-//        Object version = versionCombo.getSelectedItem();
-//        Object targetMilestone = targetMilestoneCombo.getSelectedItem();
-//        componentCombo.setModel(toComboModel(bc.getComponents(product)));
-//        versionCombo.setModel(toComboModel(bc.getVersions(product)));
-//        List<String> targetMilestones = bc.getTargetMilestones(product);
-//        usingTargetMilestones = !targetMilestones.isEmpty();
-//        targetMilestoneCombo.setModel(toComboModel(targetMilestones));
-//        // Attempt to keep selection
-//        boolean isNew = issue.getTaskData().isNew();
-//        if (!isNew && !selectInCombo(componentCombo, component, false) && (componentCombo.getModel().getSize()>1)) {
-//            componentCombo.setSelectedItem(null);
-//        }
-//        if (!isNew && !selectInCombo(versionCombo, version, false) && (versionCombo.getModel().getSize()>1)) {
-//            versionCombo.setSelectedItem(null);
-//        }
-//        if (usingTargetMilestones) {
-//            if (!isNew && !selectInCombo(targetMilestoneCombo, targetMilestone, false) && (targetMilestoneCombo.getModel().getSize()>1)) {
-//                targetMilestoneCombo.setSelectedItem(null);
-//            }
-//        }
-//        targetMilestoneLabel.setVisible(usingTargetMilestones);
-//        targetMilestoneCombo.setVisible(usingTargetMilestones);
-//        milestoneWarning.setVisible(usingTargetMilestones);
-//        TaskData data = issue.getTaskData();
-//        if (data.isNew()) {
-//            issue.setFieldValue(IssueField.PRODUCT, product);
-//            BugzillaRepositoryConnector connector = Bugzilla.getInstance().getRepositoryConnector();
-//            try {
-//                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
-//                if (BugzillaUtil.isNbRepository(repository)) { // IssueProvider 180467, 184412
-//                    // Default target milestone
-//                    List<String> milestones = repository.getConfiguration().getTargetMilestones(product);
-//                    String defaultMilestone = "TBD"; // NOI18N
-//                    if (milestones.contains(defaultMilestone)) {
-//                        issue.setFieldValue(IssueField.MILESTONE, defaultMilestone);
-//                    }
-//                    // Default version
-//                    List<String> versions = repository.getConfiguration().getVersions(product);
-//                    String defaultVersion = getCurrentNetBeansVersion();
-//                    for (String v : versions) {
-//                        if (v.trim().toLowerCase().equals(defaultVersion.toLowerCase())) {
-//                            issue.setFieldValue(IssueField.VERSION, v);
-//                        }
-//                    }
-//                }
-//                initialValues.remove(IssueField.COMPONENT.getKey());
-//                initialValues.remove(IssueField.VERSION.getKey());
-//                initialValues.remove(IssueField.MILESTONE.getKey());
-//                reloadForm(false);
-//            } catch (CoreException cex) {
-//                Bugzilla.LOG.log(Level.INFO, cex.getMessage(), cex);
-//            }
-//        }
+        cancelHighlight(productLabel);
+        
+        Object o = productCombo.getSelectedItem();
+        if(o == null || !(o instanceof Product)) {
+            return;
+        }
+        Product product = (Product) o;
+        
+        // Reload componentCombo, versionCombo and targetMilestoneCombo
+        CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
+        
+        Object component = componentCombo.getSelectedItem();
+        Object version = releaseCombo.getSelectedItem();
+        componentCombo.setModel(toComboModel(product.getComponents()));
+        releaseCombo.setModel(toComboModel(product.getReleaseTags()));
+        
+        // Attempt to keep selection
+        boolean isNew = issue.isNew();
+        if (!isNew && !selectInCombo(componentCombo, component, false) && (componentCombo.getModel().getSize()>1)) {
+            componentCombo.setSelectedItem(null);
+        }
+        if (!isNew && !selectInCombo(releaseCombo, version, false) && (releaseCombo.getModel().getSize() > 1)) {
+            releaseCombo.setSelectedItem(null);
+        }
+        if (issue.isNew()) {
+            issue.setFieldValue(IssueField.PRODUCT, product.getName());
+            CfcRepositoryConnector connector = C2C.getInstance().getRepositoryConnector();
+            
+            TaskData data = issue.getTaskData();
+            try {
+                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
+                initialValues.remove(IssueField.COMPONENT.getKey());
+                initialValues.remove(IssueField.VERSION.getKey());
+                initialValues.remove(IssueField.MILESTONE.getKey());
+                reloadForm(false);
+            } catch (CoreException cex) {
+                C2C.LOG.log(Level.INFO, cex.getMessage(), cex);
+            }
+        }
     }//GEN-LAST:event_productComboActionPerformed
 
     private void componentComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_componentComboActionPerformed
