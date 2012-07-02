@@ -45,9 +45,11 @@ import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
 import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
 import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
+import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -61,12 +63,15 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.C2CConnector;
+import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
 import org.netbeans.modules.mylyn.GetTaskDataCommand;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -213,5 +218,33 @@ public class C2CUtil {
             }
         }
         return null;
+    }
+
+    public static String getTags(String message, String tagsString, C2CRepository repository) {
+        String[] tags = tagsString.split(","); // NOI18N
+        if(tags == null || tags.length == 0) {
+            return null;
+        }
+
+        try {
+            CfcClientData cd = DummyUtils.getClientData(repository.getTaskRepository());
+            if(cd == null /* XXX */) {
+                return tagsString;
+            }
+            Collection<Keyword> keywords = cd.getKeywords(); 
+            List<String> keywordsList = new ArrayList<String>(keywords.size());
+            for (Keyword keyword : keywords) {
+                keywordsList.add(keyword.getName());
+            }
+            return ListValuePicker.getValues(
+                    NbBundle.getMessage(C2CUtil.class, "CTL_TagsTitle"), 
+                    NbBundle.getMessage(C2CUtil.class, "LBL_Tags"), 
+                    message, 
+                    tagsString, 
+                    keywordsList);
+        } catch (Exception ex) {
+            C2C.LOG.log(Level.SEVERE, null, ex);
+            return tagsString;
+        }       
     }
 }

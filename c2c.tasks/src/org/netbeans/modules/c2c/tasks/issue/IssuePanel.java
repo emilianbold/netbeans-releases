@@ -42,6 +42,7 @@
 package org.netbeans.modules.c2c.tasks.issue;
 
 import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
+import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
@@ -60,6 +61,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,11 +139,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private AttachmentsPanel attachmentsPanel;
     
     private Map<String,String> initialValues = new HashMap<String,String>();
+    private List<String> tags = new LinkedList<String>();
     
     // message panel 
     private boolean cyclicDependency = false;
     private boolean noSummary = false;
-    private boolean invalidKeyword = false;
+    private boolean invalidTag = false;
     private boolean noComponent = false;
     private boolean noVersion = false;
     private boolean noTargetMilestione = false;
@@ -260,19 +263,19 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 }
                 @Override
                 public void changedUpdate(DocumentEvent e) {
-                    updateInvalidKeyword();
+                    updateInvalidTag();
                 }
             });
         }
         this.issue = issue;
         initCombos();
 //        initCustomFields(); XXX
-        // XXX
-//        List<String> kws = issue.getRepository().getConfiguration().getKeywords();
-//        keywords.clear();
-//        for (String keyword : kws) {
-//            keywords.add(keyword.toUpperCase());
-//        }
+        
+        Collection<Keyword> kws = DummyUtils.getClientData(issue.getRepository().getTaskRepository()).getKeywords();
+        tags.clear();
+        for (Keyword keyword : kws) {
+            tags.add(keyword.getName());
+        }
                 
         reloadForm(true);
 
@@ -673,19 +676,18 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void updateInvalidKeyword() {
+    private void updateInvalidTag() {
         boolean invalidFound = false;
         StringTokenizer st = new StringTokenizer(tagsField.getText(), ", \t\n\r\f"); // NOI18N
         while (st.hasMoreTokens()) {
             String token = st.nextToken();
-            // XXX
-//            if (!keywords.contains(token.toUpperCase())) {
-//                invalidFound = true;
-//                break;
-//            }
+            if (!tags.contains(token.toUpperCase())) {
+                invalidFound = true;
+                break;
+            }
         }
-        if (invalidFound != invalidKeyword) {
-            invalidKeyword = invalidFound;
+        if (invalidFound != invalidTag) {
+            invalidTag = invalidFound;
             updateMessagePanel();
         }
     }
@@ -969,9 +971,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             cyclicDependencyLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(cyclicDependencyLabel);
         }
-        if (invalidKeyword) {
+        if (invalidTag) {
             JLabel invalidKeywordLabel = new JLabel();
-            invalidKeywordLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidKeyword")); // NOI18N
+            invalidKeywordLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidTag")); // NOI18N
             invalidKeywordLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(invalidKeywordLabel);
         }
@@ -981,7 +983,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             noDuplicateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
             messagePanel.add(noDuplicateLabel);
         }
-        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId) {
+        if (noSummary || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId) {
             submitButton.setEnabled(false);
         } else {
             submitButton.setEnabled(true);
@@ -996,7 +998,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             warningLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/warning.gif", true)); // NOI18N
             messagePanel.add(warningLabel);
         }
-        if (noSummary || cyclicDependency || invalidKeyword || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)) {
+        if (noSummary || cyclicDependency || invalidTag || noComponent || noVersion || noTargetMilestione || noDuplicateId || (fieldErrors.size() + fieldWarnings.size() > 0)) {
             messagePanel.setVisible(true);
             messagePanel.revalidate();
         } else {
@@ -1526,7 +1528,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(6, 6, 6)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(headerField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -1687,7 +1689,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(submitButton)
                     .addComponent(cancelButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(messagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(1, 1, 1)
                 .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2066,7 +2068,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_cancelButtonActionPerformed
 
     private void tagsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tagsButtonActionPerformed
-        // TODO add your handling code here:
+        String message = NbBundle.getMessage(IssuePanel.class, "IssuePanel.tagsButton.message"); // NOI18N
+        String tags = C2CUtil.getTags(message, tagsField.getText(), issue.getRepository());
+        tagsField.setText(tags);
     }//GEN-LAST:event_tagsButtonActionPerformed
 
     private void reportedFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reportedFieldActionPerformed
