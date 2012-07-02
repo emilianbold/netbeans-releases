@@ -237,8 +237,19 @@ public final class TimeStamps {
                                     int idx = line.indexOf('='); //NOI18N
                                     if (idx != -1) {
                                         try {
-                                            long ts = Long.parseLong(line.substring(idx + 1));
-                                            timestamps.put(line.substring(0, idx), ts);
+                                            final String path = line.substring(0, idx);
+                                            if (!path.isEmpty() && path.charAt(0) != '/') {
+                                                final long ts = Long.parseLong(line.substring(idx + 1));
+                                                timestamps.put(path, ts);
+                                            } else {
+                                                LOG.log(
+                                                    Level.WARNING,
+                                                    "Invalid timestamp entry {0} in {1}",   //NOI18N
+                                                    new Object[]{
+                                                        path,
+                                                        f.getAbsolutePath()
+                                                    });
+                                            }
                                         } catch (NumberFormatException nfe) {
                                             LOG.log(Level.FINE, "Invalid timestamp: line={0}, timestamps={1}, exception={2}", new Object[] { line, f.getPath(), nfe }); //NOI18N
                                         }
