@@ -636,6 +636,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 itemValue = ((TaskUserProfile) item).getRealname();
             } else if(value instanceof TaskStatus) {
                 itemValue = ((TaskStatus) value).getValue();
+            } else if(value instanceof com.tasktop.c2c.server.tasks.domain.Component) {
+                itemValue = ((com.tasktop.c2c.server.tasks.domain.Component) value).getName();
             } else {
                 assert value instanceof String : "Wrong value";                 // NOI18N
             }
@@ -646,7 +648,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         
-        if (forceInModel && !value.equals("") && !value.equals(getSelectetdValue(combo))) { // NOI18N
+        if (forceInModel && !value.equals("") && !value.equals(getSelectedValue(combo))) { // NOI18N
             // Reload of server attributes is needed - workarounding it
             ComboBoxModel model = combo.getModel();
             if (model instanceof DefaultComboBoxModel) {
@@ -654,10 +656,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 combo.setSelectedIndex(0);
             }
         }
-        return value.equals(getSelectetdValue(combo));
+        return value.equals(getSelectedValue(combo));
     }    
 
-    private String getSelectetdValue(JComboBox combo) {
+    private String getSelectedValue(JComboBox combo) {
         Object item = combo.getSelectedItem();
         if(item == null) {
             return null;
@@ -674,6 +676,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             return ((TaskUserProfile) item).getRealname();
         } else if(item instanceof TaskStatus) {
             return ((TaskStatus) item).getValue();
+        } else if(item instanceof com.tasktop.c2c.server.tasks.domain.Component) {
+            return ((com.tasktop.c2c.server.tasks.domain.Component) item).getName();
         } else {
             assert item instanceof String : "Wrong value";                 // NOI18N
         }
