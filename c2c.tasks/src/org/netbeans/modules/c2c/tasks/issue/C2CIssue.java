@@ -343,6 +343,12 @@ public class C2CIssue {
         }
     }
 
+    public String getPersonName(IssueField f) {
+        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
+        a = a!= null ? a.getMappedAttribute(TaskAttribute.PERSON_NAME) : null;
+        return a != null ? a.getValue() : null; 
+    }
+    
     /**
      * Returns a comma separated list created
      * from the values returned by TaskAttribute.getValues()
