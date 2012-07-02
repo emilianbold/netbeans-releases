@@ -357,7 +357,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         reloading = true;
         boolean isNew = issue.isNew();
-        javax.swing.GroupLayout layout = (javax.swing.GroupLayout)getLayout();
+        
         headerField.setVisible(!isNew);
         statusCombo.setEnabled(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
@@ -1039,8 +1039,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         jLabel15 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         summaryWarning1 = new javax.swing.JLabel();
-        attachmentsLabel1 = new javax.swing.JLabel();
-        dummyAttachmentsPanel1 = new javax.swing.JPanel();
         separator = new javax.swing.JSeparator();
         dummyCommentsPanel = new javax.swing.JPanel();
         messagePanel = new javax.swing.JPanel();
@@ -1219,14 +1217,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel5.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(refreshButton1, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton1.text")); // NOI18N
-        refreshButton1.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.refreshButton1.toolTipText")); // NOI18N
-        refreshButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButton1ActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(parentLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.parentLabel.text_1")); // NOI18N
 
         parentField.setColumns(15);
@@ -1279,11 +1269,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel15, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jLabel15.text")); // NOI18N
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
-
-        org.openide.awt.Mnemonics.setLocalizedText(attachmentsLabel1, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel1.text")); // NOI18N
+        descriptionTextArea.setColumns(20);
+        descriptionTextArea.setRows(5);
+        jScrollPane1.setViewportView(descriptionTextArea);
 
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitButton.text_1")); // NOI18N
         submitButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1363,10 +1351,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .addComponent(summaryWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(refreshButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dummyAttachmentsPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
-                            .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1387,7 +1372,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                     .addComponent(externalLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(priorityLabel, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(statusLabel, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(attachmentsLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(subtaskLabel, javax.swing.GroupLayout.Alignment.TRAILING)))
                             .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
@@ -1520,8 +1504,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {ccField, externalField, parentField, subtaskField});
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {dummyAttachmentsPanel, dummyAttachmentsPanel1});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -1529,11 +1511,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(separatorLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(separatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(refreshButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(headerField)
                         .addComponent(reloadButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(showInBrowserButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(headerField)
+                            .addComponent(showInBrowserButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1655,13 +1638,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                 .addGap(24, 24, 24)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(dummyAttachmentsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(attachmentsLabel))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(attachmentsLabel1)
-                                    .addComponent(dummyAttachmentsPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(refreshButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(attachmentsLabel)))
                             .addComponent(externalWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1686,7 +1663,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                         .addGap(1, 1, 1)
                         .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE))
+                        .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 52, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(ownerLabel)
                         .addGap(0, 0, Short.MAX_VALUE))))
@@ -1920,9 +1897,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 //        updateNoTargetMilestone();
     }//GEN-LAST:event_targetMilestoneComboActionPerformed
 
-    private void refreshButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButton1ActionPerformed
-    }//GEN-LAST:event_refreshButton1ActionPerformed
-
     private void dependsOnButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dependsOnButtonActionPerformed
 //        String newIssueID = BugtrackingUtil.selectIssue(
 //            NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), // NOI18N
@@ -2116,7 +2090,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
     private javax.swing.JLabel attachmentsLabel;
-    private javax.swing.JLabel attachmentsLabel1;
     final javax.swing.JButton cancelButton = new javax.swing.JButton();
     final javax.swing.JTextField ccField = new javax.swing.JTextField();
     private javax.swing.JLabel ccLabel;
@@ -2127,11 +2100,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     final javax.swing.JButton dependsOnButton = new javax.swing.JButton();
     final javax.swing.JButton dependsOnButton1 = new javax.swing.JButton();
     final javax.swing.JButton dependsOnButton2 = new javax.swing.JButton();
+    final javax.swing.JTextArea descriptionTextArea = new javax.swing.JTextArea();
     private javax.swing.JTextField dueDateField;
     private javax.swing.JLabel dueDateLabel;
     private javax.swing.JLabel dueDateWarning;
     private javax.swing.JPanel dummyAttachmentsPanel;
-    private javax.swing.JPanel dummyAttachmentsPanel1;
     private javax.swing.JPanel dummyCommentsPanel;
     final javax.swing.JButton duplicateButton = new javax.swing.JButton();
     final javax.swing.JButton duplicateButton1 = new javax.swing.JButton();
@@ -2153,7 +2126,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
-    final javax.swing.JTextArea jTextArea1 = new javax.swing.JTextArea();
     private javax.swing.JPanel messagePanel;
     private javax.swing.JLabel milestoneWarning;
     final javax.swing.JTextField modifiedField = new javax.swing.JTextField();
@@ -2171,7 +2143,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel productLabel;
     private javax.swing.JLabel productWarning;
     final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final org.netbeans.modules.bugtracking.util.LinkButton refreshButton1 = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JComboBox releaseCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel releaseLabel;
     private javax.swing.JLabel releaseWarning;

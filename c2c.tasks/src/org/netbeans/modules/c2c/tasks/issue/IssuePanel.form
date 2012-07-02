@@ -62,11 +62,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="refreshButton1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="dummyAttachmentsPanel1" linkSize="8" alignment="0" pref="623" max="32767" attributes="0"/>
-                          <Component id="dummyAttachmentsPanel" linkSize="8" alignment="0" max="32767" attributes="0"/>
-                      </Group>
+                      <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
                       <EmptySpace min="28" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -90,7 +86,6 @@
                                   <Component id="externalLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="priorityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="attachmentsLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="subtaskLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -258,11 +253,13 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="separatorLabel3" linkSize="9" min="-2" pref="21" max="-2" attributes="0"/>
                   <Component id="separatorLabel" linkSize="9" min="-2" pref="15" max="-2" attributes="0"/>
-                  <Group type="103" alignment="0" groupAlignment="3" attributes="0">
+                  <Group type="103" alignment="0" groupAlignment="0" attributes="0">
                       <Component id="refreshButton" alignment="0" max="32767" attributes="0"/>
-                      <Component id="headerField" alignment="3" max="32767" attributes="0"/>
                       <Component id="reloadButton" alignment="0" max="32767" attributes="0"/>
-                      <Component id="showInBrowserButton" alignment="3" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="headerField" alignment="3" max="32767" attributes="0"/>
+                          <Component id="showInBrowserButton" alignment="3" max="32767" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
@@ -426,13 +423,6 @@
                                   <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
                                   <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="attachmentsLabel1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="dummyAttachmentsPanel1" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="refreshButton1" min="-2" pref="18" max="-2" attributes="0"/>
                           </Group>
                           <Component id="externalWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
                       </Group>
@@ -463,7 +453,7 @@
                       <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
                       <Component id="separator" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="dummyCommentsPanel" pref="22" max="32767" attributes="0"/>
+                      <Component id="dummyCommentsPanel" pref="52" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Component id="ownerLabel" min="-2" max="-2" attributes="0"/>
@@ -827,22 +817,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="foundInWarning">
     </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="refreshButton1">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/c2c/tasks/issue/Bundle.properties" key="IssuePanel.refreshButton1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/c2c/tasks/issue/Bundle.properties" key="IssuePanel.refreshButton1.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButton1ActionPerformed"/>
-      </Events>
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="16"/>
-      </AuxValues>
-    </Component>
     <Component class="javax.swing.JLabel" name="parentLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -996,7 +970,7 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTextArea" name="jTextArea1">
+        <Component class="javax.swing.JTextArea" name="descriptionTextArea">
           <Properties>
             <Property name="columns" type="int" value="20"/>
             <Property name="rows" type="int" value="5"/>
@@ -1009,17 +983,6 @@
     </Container>
     <Component class="javax.swing.JLabel" name="summaryWarning1">
     </Component>
-    <Component class="javax.swing.JLabel" name="attachmentsLabel1">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/c2c/tasks/issue/Bundle.properties" key="IssuePanel.attachmentsLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JPanel" name="dummyAttachmentsPanel1">
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
-    </Container>
     <Component class="javax.swing.JSeparator" name="separator">
     </Component>
     <Container class="javax.swing.JPanel" name="dummyCommentsPanel">
