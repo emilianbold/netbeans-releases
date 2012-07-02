@@ -634,6 +634,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 itemValue = ((Product) item).getName();
             } else if(item instanceof TaskUserProfile) {
                 itemValue = ((TaskUserProfile) item).getRealname();
+            } else if(value instanceof TaskStatus) {
+                itemValue = ((TaskStatus) value).getValue();
+            } else {
+                assert value instanceof String : "Wrong value";                 // NOI18N
             }
             
             if(value.equals(itemValue)) {
@@ -668,6 +672,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             return ((Product) item).getName();
         } else if(item instanceof TaskUserProfile) {
             return ((TaskUserProfile) item).getRealname();
+        } else if(item instanceof TaskStatus) {
+            return ((TaskStatus) item).getValue();
+        } else {
+            assert item instanceof String : "Wrong value";                 // NOI18N
         }
         return null;
     }
