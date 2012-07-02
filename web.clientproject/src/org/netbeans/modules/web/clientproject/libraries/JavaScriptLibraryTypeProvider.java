@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.clientproject.libraries;
 
 import java.beans.Customizer;
+
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -53,31 +55,16 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({"JavaScriptLibraryType_Name=JavaScript Libraries"})
 public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
+    
+    /**
+     * Name of CDN this library is comming from.
+     */
+    public static final String PROPERTY_CDN = "cdn"; // NOI18N
 
     /**
-     * Library TYPE.
+     * Homepage of the library.
      */
-    public static String TYPE = "javascript"; // NOI18N
-    
-    /**
-     * Volume for regular JS files.
-     */
-    public static String VOL_REGULAR = "regular"; // NOI18N
-    
-    /**
-     * Volume for minified JS files.
-     */
-    public static String VOL_MINIFIED = "minified"; // NOI18N
-    
-    /**
-     * Volume for documented JS files.
-     */
-    public static String VOL_DOCUMENTED = "documented"; // NOI18N
-    
-    /**
-     * Supported volumes.
-     */
-    static String[] VOLUMES = new String[]{VOL_REGULAR, VOL_MINIFIED, VOL_DOCUMENTED};
+    public static final String PROPERTY_SITE = "site"; // NOI18N
 
     /**
      * Real display name of the library, that is without CND source prefix and without version in the name.
@@ -85,26 +72,11 @@ public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
     public static final String PROPERTY_REAL_DISPLAY_NAME = "displayname"; // NOI18N
     
     /**
-     * Real name of the library, that is without CND source prefix .
+     * Supported volumes.
      */
-    public static final String PROPERTY_REAL_NAME = "name"; // NOI18N
-    
-    /**
-     * Name of CDN this library is comming from.
-     */
-    public static final String PROPERTY_CDN = "cdn"; // NOI18N
-    
-    /**
-     * Homepage of the library.
-     */
-    public static final String PROPERTY_SITE = "site"; // NOI18N
-    
-    /**
-     * Library version.
-     */
-    public static final String PROPERTY_VERSION = "version"; // NOI18N
-    
-    
+    static String[] VOLUMES = new String[]{WebClientLibraryManager.VOL_REGULAR, 
+        WebClientLibraryManager.VOL_MINIFIED, WebClientLibraryManager.VOL_DOCUMENTED};
+
     @Override
     public String getDisplayName() {
         return Bundle.JavaScriptLibraryType_Name();
@@ -112,7 +84,7 @@ public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
 
     @Override
     public String getLibraryType() {
-        return TYPE;
+        return WebClientLibraryManager.TYPE;
     }
 
     @Override
@@ -122,7 +94,8 @@ public class JavaScriptLibraryTypeProvider implements LibraryTypeProvider {
 
     @Override
     public LibraryImplementation createLibrary() {
-        return LibrariesSupport.createLibraryImplementation(TYPE, VOLUMES);
+        return LibrariesSupport.createLibraryImplementation(
+                WebClientLibraryManager.TYPE, VOLUMES);
     }
 
     @Override

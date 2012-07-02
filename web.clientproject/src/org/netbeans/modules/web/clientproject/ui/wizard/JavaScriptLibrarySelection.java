@@ -62,6 +62,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -230,48 +232,17 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             Library l = mi.getChosenLibrary();
             handle.progress(Bundle.MSG_DownloadingLibraries(
                     l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
-            FileObject libRoot = librariesRoot.createFolder(
-                    l.getProperties().get(
-                    JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME).replace(' ', '-')+"-"+ // NOI18N
-                    l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
-            List<URL> urls = l.getContent(mi.getChosenLibraryVolume());
-            assert !urls.isEmpty() : l + " "+mi.getChosenLibraryVolume(); // NOI18N
-            for (URL u : urls) {
-                String name = u.getPath();
-                name = name.substring(name.lastIndexOf("/")+1); // NOI18N
-                if (!copySingleFile(u, name, libRoot)) {
-                    someFilesAreMissing = true;
-                }
+            try {
+                WebClientLibraryManager.addLibraries(new Library[]{l}, librariesRoot, 
+                        mi.getChosenLibraryVolume());
+            }
+            catch(MissingLibResourceException e ) {
+                someFilesAreMissing = true;
             }
         }
         if (someFilesAreMissing) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_SomeErrorDuringCopying()));
         }
-    }
-
-    private boolean copySingleFile(URL u, String name, FileObject libRoot) throws IOException {
-        FileObject fo = libRoot.createData(name);
-        InputStream is;
-        try {
-            is = u.openStream();
-        } catch (FileNotFoundException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for "+u, ex); // NOI18N
-            return false;
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for "+u, ex); // NOI18N
-            return false;
-        }
-        OutputStream os = null;
-        try {
-            os = fo.getOutputStream();
-            FileUtil.copy(is, os);
-        } finally {
-            is.close();
-            if (os != null) {
-                os.close();
-            }
-        }
-        return true;
     }
 
     void updateDefaults(Collection<String> defaultLibs) {
@@ -286,9 +257,9 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
         public LibrariesModel() {
             Map<String,List<Library>> map = new HashMap<String, List<Library>>();
             for (Library lib : LibraryManager.getDefault().getLibraries()) {
-                if (JavaScriptLibraryTypeProvider.TYPE.equals(lib.getType())) {
+                if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
-                            JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME);
+                            WebClientLibraryManager.PROPERTY_REAL_NAME);
                     List<Library> libs = map.get(name);
                     if (libs == null) {
                         libs = new ArrayList<Library>();
@@ -393,19 +364,19 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             Collections.sort(libraries, new Comparator<Library>() {
                 @Override
                 public int compare(Library o1, Library o2) {
-                    Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
-                    Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
+                    Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
+                    Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
                     if (ver1.equals(ver2)) {
-                        if (!o1.getContent(JavaScriptLibraryTypeProvider.VOL_DOCUMENTED).isEmpty()) {
+                        if (!o1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
                             return -1;
                         }
-                        if (!o2.getContent(JavaScriptLibraryTypeProvider.VOL_DOCUMENTED).isEmpty()) {
+                        if (!o2.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
                             return 1;
                         }
-                        if (!o1.getContent(JavaScriptLibraryTypeProvider.VOL_REGULAR).isEmpty()) {
+                        if (!o1.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
                             return -1;
                         }
-                        if (!o2.getContent(JavaScriptLibraryTypeProvider.VOL_REGULAR).isEmpty()) {
+                        if (!o2.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
                             return 1;
                         }
                         return 0;
@@ -416,11 +387,11 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             });
             this.libraries = libraries;
             this.selected = false;
-            this.selectedVersion = getLibrary().getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION);
-            if (!getLibrary().getContent(JavaScriptLibraryTypeProvider.VOL_DOCUMENTED).isEmpty()) {
+            this.selectedVersion = getLibrary().getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
+            if (!getLibrary().getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
                 this.selectedVersion += VER_DOCUMENTED;
-            } else if (!getLibrary().getContent(JavaScriptLibraryTypeProvider.VOL_REGULAR).isEmpty()) {
-            } else if (!getLibrary().getContent(JavaScriptLibraryTypeProvider.VOL_MINIFIED).isEmpty()) {
+            } else if (!getLibrary().getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+            } else if (!getLibrary().getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
                 this.selectedVersion += VER_MINIFIED;
             }
         }
@@ -445,7 +416,7 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
                 selVersion = selVersion.substring(0, selVersion.length()-VER_MINIFIED.length());
             }
             for (Library l : libraries) {
-                if (selVersion.equals(l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION))) {
+                if (selVersion.equals(l.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION))) {
                     return l;
                 }
             }
@@ -455,29 +426,29 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
         
         private String getChosenLibraryVolume() {
             if (selectedVersion.endsWith(VER_DOCUMENTED)) {
-                return JavaScriptLibraryTypeProvider.VOL_DOCUMENTED;
+                return WebClientLibraryManager.VOL_DOCUMENTED;
             } else if (selectedVersion.endsWith(VER_MINIFIED)) {
-                return JavaScriptLibraryTypeProvider.VOL_MINIFIED;
+                return WebClientLibraryManager.VOL_MINIFIED;
             } else {
-                return JavaScriptLibraryTypeProvider.VOL_REGULAR;
+                return WebClientLibraryManager.VOL_REGULAR;
             }
         }
         
         public String[] getVersions() {
             List<String> vers = new ArrayList<String>();
             for (Library l : libraries) {
-                String version = l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION);
-                if (!l.getContent(JavaScriptLibraryTypeProvider.VOL_DOCUMENTED).isEmpty()) {
+                String version = l.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
+                if (!l.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
                     if (!vers.contains(version + VER_DOCUMENTED)) {
                         vers.add(version + VER_DOCUMENTED);
                     }
                 }
-                if (!l.getContent(JavaScriptLibraryTypeProvider.VOL_REGULAR).isEmpty()) {
+                if (!l.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
                     if (!vers.contains(version)) {
                         vers.add(version);
                     }
                 }
-                if (!l.getContent(JavaScriptLibraryTypeProvider.VOL_MINIFIED).isEmpty()) {
+                if (!l.getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
                     if (!vers.contains(version + VER_MINIFIED)) {
                         vers.add(version + VER_MINIFIED);
                     }

@@ -45,6 +45,7 @@ import java.beans.Customizer;
 import java.net.URISyntaxException;
 import java.net.URL;
 import javax.swing.DefaultListModel;
+import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -63,11 +64,11 @@ public class JavaScriptLibraryCustomizer extends javax.swing.JPanel implements C
     public JavaScriptLibraryCustomizer(String volume) {
         this.volume = volume;
         initComponents();
-        if (JavaScriptLibraryTypeProvider.VOL_REGULAR.equals(volume)) {
+        if (WebClientLibraryManager.VOL_REGULAR.equals(volume)) {
             this.setName (Bundle.TXT_regular());
-        } else if (JavaScriptLibraryTypeProvider.VOL_MINIFIED.equals(volume)) {
+        } else if (WebClientLibraryManager.VOL_MINIFIED.equals(volume)) {
             this.setName (Bundle.TXT_minified());
-        } else if (JavaScriptLibraryTypeProvider.VOL_DOCUMENTED.equals(volume)) {
+        } else if (WebClientLibraryManager.VOL_DOCUMENTED.equals(volume)) {
             this.setName (Bundle.TXT_documented());
         }
     }
