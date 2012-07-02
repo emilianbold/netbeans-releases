@@ -41,17 +41,26 @@
  */
 package org.netbeans.modules.c2c.tasks.repository;
 
+import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import java.awt.Image;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -62,6 +71,7 @@ import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
+import org.netbeans.modules.mylyn.PerformQueryCommand;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -212,8 +222,72 @@ public class C2CRepository {
     }
 
     public Collection<C2CIssue> simpleSearch(String criteria) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        assert taskRepository != null;
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+
+        String[] keywords = criteria.split(" ");                                // NOI18N
+
+        final List<C2CIssue> issues = new ArrayList<C2CIssue>();
+        TaskDataCollector collector = new TaskDataCollector() {
+            @Override
+            public void accept(TaskData taskData) {
+                C2CIssue issue = new C2CIssue(taskData, C2CRepository.this);
+                issues.add(issue); // we don't cache this issues
+                                   // - the retured taskdata are partial
+                                   // - and we need an as fast return as possible at this place
+
+            }
+        };
+
+        if(keywords.length == 1 && isInteger(keywords[0])) {
+            // only one search criteria -> might be we are looking for the bug with id=keywords[0]
+            TaskData taskData = C2CUtil.getTaskData(this, keywords[0], false);
+            if(taskData != null) {
+                C2CIssue issue = new C2CIssue(taskData, C2CRepository.this);
+                issues.add(issue); // we don't cache this issues
+                                   // - the retured taskdata are partial
+                                   // - and we need an as fast return as possible at this place
+            }
+        }
+
+        try {
+            criteria = URLEncoder.encode(criteria, getTaskRepository().getCharacterEncoding());
+        } catch (UnsupportedEncodingException ueex) {
+            C2C.LOG.log(Level.INFO, null, ueex);
+            try {
+                criteria = URLEncoder.encode(criteria, "UTF-8"); // NOI18N
+            } catch (UnsupportedEncodingException ex) {
+                // should not happen
+            }
+        }
+
+        // XXX shouldn't be only a perfect match 
+        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "bugzilla simple search query");            // NOI18N
+        iquery.setAttribute(TaskAttribute.SUMMARY, criteria);
+        
+        PerformQueryCommand queryCmd = 
+            new PerformQueryCommand(
+                C2C.getInstance().getRepositoryConnector(),
+                getTaskRepository(), 
+                collector,
+                iquery);
+        getExecutor().execute(queryCmd);
+        if(queryCmd.hasFailed()) {
+            return Collections.emptyList();
+        }
+        return issues;
+        
+        
     }
+    
+    private boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+        }
+        return false;
+    }    
 
     public Lookup getLookup() {
         if(lookup == null) {

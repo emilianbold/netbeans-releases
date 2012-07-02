@@ -52,6 +52,11 @@ import org.openide.util.Exceptions;
  * @author Tomas Stupka
  */
 public class C2CExecutor {
+    
+    public void execute(BugtrackingCommand cmd) {
+        execute(cmd, true);
+    }
+    
     public void execute(BugtrackingCommand cmd, boolean handleExceptions) {
         try {
             cmd.execute();
