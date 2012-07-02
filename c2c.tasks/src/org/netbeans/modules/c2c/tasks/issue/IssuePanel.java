@@ -1951,11 +1951,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_iterationComboActionPerformed
 
     private void parentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parentButtonActionPerformed
-        findIssue(duplicateField, "IssuePanel.parentButton.message", "org.netbeans.modules.c2c.parentChooser", true); // NOI18N
+        findIssue(parentField, "IssuePanel.parentButton.message", "org.netbeans.modules.c2c.parentChooser", true); // NOI18N
     }//GEN-LAST:event_parentButtonActionPerformed
 
     private void subtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subtaskButtonActionPerformed
-        findIssue(duplicateField, "IssuePanel.subtaskButton.message", "org.netbeans.modules.c2c.subtaskChooser", true); // NOI18N
+        findIssue(subtaskField, "IssuePanel.subtaskButton.message", "org.netbeans.modules.c2c.subtaskChooser", true); // NOI18N
     }//GEN-LAST:event_subtaskButtonActionPerformed
 
     private void externalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externalButtonActionPerformed
