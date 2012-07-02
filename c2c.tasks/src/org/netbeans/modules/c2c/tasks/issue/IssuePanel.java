@@ -66,6 +66,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -778,6 +779,26 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
     };
+
+    private void findIssue(JTextField fld, String msg, String helpCtx, boolean append) {
+        String newIssueID = BugtrackingUtil.selectIssue(
+            NbBundle.getMessage(IssuePanel.class, msg), 
+            C2CUtil.getRepository(issue.getRepository()),
+            this,
+            new HelpCtx(helpCtx));
+        if (newIssueID != null) {
+            if(append) {
+                StringBuilder sb = new StringBuilder();
+                if (!fld.getText().trim().equals("")) {                         // NOI18N
+                    sb.append(fld.getText()).append(',').append(' ');           // NOI18N
+                }
+                sb.append(newIssueID);
+                fld.setText(sb.toString());                
+            } else {
+                fld.setText(newIssueID);
+            }
+        }
+    }
 
     private static class ClientDataRenderer extends DefaultListCellRenderer {
         @Override
@@ -1799,14 +1820,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_statusComboActionPerformed
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        String newIssueID = BugtrackingUtil.selectIssue(
-            NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
-            C2CUtil.getRepository(issue.getRepository()),
-            this,
-            new HelpCtx("org.netbeans.modules.c2c.duplicateChooser")); // NOI18N
-        if (newIssueID != null) {
-            duplicateField.setText(newIssueID);
-        }
+        findIssue(duplicateField, "IssuePanel.duplicateButton.message", "org.netbeans.modules.c2c.duplicateChooser", false);
     }//GEN-LAST:event_duplicateButtonActionPerformed
 
     private void priorityComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_priorityComboActionPerformed
@@ -1899,23 +1913,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_iterationComboActionPerformed
 
     private void parentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_parentButtonActionPerformed
-//        String newIssueID = BugtrackingUtil.selectIssue(
-//            NbBundle.getMessage(IssuePanel.class, "IssuePanel.dependsOnButton.message"), // NOI18N
-//            BugzillaUtil.getRepository(issue.getRepository()),
-//            this,
-//            new HelpCtx("org.netbeans.modules.bugzilla.dependsOnChooser")); // NOI18N
-//        if (newIssueID != null) {
-//            StringBuilder sb = new StringBuilder();
-//            if (!dependsField.getText().trim().equals("")) { // NOI18N
-//                sb.append(dependsField.getText()).append(',').append(' ');
-//            }
-//            sb.append(newIssueID);
-//            dependsField.setText(sb.toString());
-//        }
+        findIssue(duplicateField, "IssuePanel.parentButton.message", "org.netbeans.modules.c2c.parentChooser", true); // NOI18N
     }//GEN-LAST:event_parentButtonActionPerformed
 
     private void subtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_subtaskButtonActionPerformed
-        // TODO add your handling code here:
+        findIssue(duplicateField, "IssuePanel.subtaskButton.message", "org.netbeans.modules.c2c.subtaskChooser", true); // NOI18N
     }//GEN-LAST:event_subtaskButtonActionPerformed
 
     private void externalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_externalButtonActionPerformed
