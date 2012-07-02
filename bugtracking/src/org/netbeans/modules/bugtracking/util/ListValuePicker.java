@@ -39,26 +39,50 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugzilla.util;
+package org.netbeans.modules.bugtracking.util;
 
 import java.util.List;
 import javax.swing.DefaultListModel;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class KeywordsPanel extends javax.swing.JPanel {
+public class ListValuePicker extends javax.swing.JPanel {
 
-    public KeywordsPanel(String label, List<String> knownKeywords, String[] toSelect) {
+    public static String getValues(String title, String label, String message, String valuesString, List<String> knownValues) {
+        String[] values = valuesString.split(","); // NOI18N
+        if(values == null || values.length == 0) {
+            return null;
+        }
+
+        ListValuePicker kp = new ListValuePicker(label, message, knownValues, values);
+        if (BugtrackingUtil.show(kp, title, NbBundle.getMessage(ListValuePicker.class, "LBL_Ok"))) { // NOI18N
+            values = kp.getSelectedValues();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < values.length; i++) {
+                String s = values[i];
+                sb.append(s);
+                if(i < values.length - 1) {
+                    sb.append(", "); // NOI18N    
+                }
+            }
+            return sb.toString();
+        }
+        return valuesString;
+    }
+    
+    private ListValuePicker(String label, String message, List<String> knownKeywords, String[] toSelect) {
         initComponents();
-        this.messageLabel.setText(label);
+        this.messageLabel.setText(message);
+        org.openide.awt.Mnemonics.setLocalizedText(valuesLabel, label); 
         
         DefaultListModel model = new DefaultListModel();
         for (String keyword : knownKeywords) {
             model.addElement(keyword);
         }
-        keywordsList.setModel(model);
+        valuesList.setModel(model);
         int[] selection = new int[toSelect.length];
         for (int i = 0; i < toSelect.length; i++) {
             String keyword = toSelect[i];
@@ -73,9 +97,9 @@ public class KeywordsPanel extends javax.swing.JPanel {
             selection[i] = idx;
         }
 
-        keywordsList.setSelectedIndices(selection);
+        valuesList.setSelectedIndices(selection);
         int idx = selection.length > 0 ? selection[0] : -1;
-        if(idx > -1) keywordsList.scrollRectToVisible(keywordsList.getCellBounds(idx, idx));
+        if(idx > -1) valuesList.scrollRectToVisible(valuesList.getCellBounds(idx, idx));
     }
 
     /** This method is called from within the constructor to
@@ -88,15 +112,15 @@ public class KeywordsPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         scrollPane = new javax.swing.JScrollPane();
-        keywordsList = new javax.swing.JList();
+        valuesList = new javax.swing.JList();
         messageLabel = new javax.swing.JLabel();
-        keywordsLabel = new javax.swing.JLabel();
+        valuesLabel = new javax.swing.JLabel();
 
-        scrollPane.setViewportView(keywordsList);
-        keywordsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.keywordsList.AccessibleContext.accessibleDescription")); // NOI18N
+        scrollPane.setViewportView(valuesList);
+        valuesList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListValuePicker.class, "ListValuePicker.valuesList.AccessibleContext.accessibleDescription")); // NOI18N
 
-        keywordsLabel.setLabelFor(keywordsList);
-        org.openide.awt.Mnemonics.setLocalizedText(keywordsLabel, org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.keywordsLabel.text")); // NOI18N
+        valuesLabel.setLabelFor(valuesList);
+        valuesLabel.setText(org.openide.util.NbBundle.getMessage(ListValuePicker.class, "ListValuePicker.valuesLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -105,11 +129,11 @@ public class KeywordsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
+                    .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(keywordsLabel)
+                        .addComponent(valuesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(scrollPane)))
+                        .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -120,14 +144,16 @@ public class KeywordsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(scrollPane)
-                    .addComponent(keywordsLabel)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(valuesLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KeywordsPanel.class, "KeywordsPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListValuePicker.class, "ListValuePicker.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    public String[] getSelectedKeywords() {
-        Object[] values = keywordsList.getSelectedValues();
+    private String[] getSelectedValues() {
+        Object[] values = valuesList.getSelectedValues();
         String[] keywords = new String[values.length];
         for (int i=0; i<values.length; i++) {
             keywords[i] = values[i].toString();
@@ -136,10 +162,10 @@ public class KeywordsPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel keywordsLabel;
-    private javax.swing.JList keywordsList;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JLabel valuesLabel;
+    private javax.swing.JList valuesList;
     // End of variables declaration//GEN-END:variables
 
 }

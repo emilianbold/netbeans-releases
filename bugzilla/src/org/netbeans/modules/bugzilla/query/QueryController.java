@@ -95,6 +95,7 @@ import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValue;
 import org.netbeans.modules.bugzilla.query.QueryParameter.TextFieldParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
