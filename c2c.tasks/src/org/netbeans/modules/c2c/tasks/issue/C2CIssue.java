@@ -517,7 +517,11 @@ public class C2CIssue {
             try {
                 s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
                 if(s != null && !s.trim().equals("")) {                         // NOI18N
-                    d = CC_DATE_FORMAT.parse(s);
+                    try {
+                        d = new Date(Long.parseLong(s));
+                    } catch (NumberFormatException nfe) {
+                        d = CC_DATE_FORMAT.parse(s);
+                    }
                 }
             } catch (ParseException ex) {
                 C2C.LOG.log(Level.SEVERE, s, ex);
