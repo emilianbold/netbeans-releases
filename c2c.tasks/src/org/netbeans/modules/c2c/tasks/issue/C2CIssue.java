@@ -502,6 +502,63 @@ public class C2CIssue {
         }
     }
 
+    class Time {
+        private final Date when;
+        private final String author;
+        private final String authorName;
+        private final Long number;
+        private final String text;
+
+        public Time(TaskAttribute a) {
+            Date d = null;
+            String s = "";
+            try {
+                s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
+                if(s != null && !s.trim().equals("")) {                         // NOI18N
+                    try {
+                        d = new Date(Long.parseLong(s));
+                    } catch (NumberFormatException nfe) {
+                        d = CC_DATE_FORMAT.parse(s);
+                    }
+                }
+            } catch (ParseException ex) {
+                C2C.LOG.log(Level.SEVERE, s, ex);
+            }
+            when = d;
+            TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
+            if (authorAttr != null) {
+                author = authorAttr.getValue();
+                TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
+                authorName = nameAttr != null ? nameAttr.getValue() : null;
+            } else {
+                author = authorName = null;
+            }
+            String n = getMappedValue(a, TaskAttribute.COMMENT_NUMBER);
+            number = n != null ? Long.parseLong(n) : null;
+            text = getMappedValue(a, TaskAttribute.COMMENT_TEXT);
+        }
+
+        public Long getNumber() {
+            return number;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public Date getWhen() {
+            return when;
+        }
+
+        public String getAuthor() {
+            return author;
+        }
+
+        public String getAuthorName() {
+            return authorName;
+        }
+    }
+
     class Attachment {
         private final String desc;
         private final String filename;

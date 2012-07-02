@@ -161,12 +161,6 @@ public class CommentsPanel extends JPanel {
         } catch (ParseException pex) {
             C2C.LOG.log(Level.INFO, null, pex);
         }
-        addSection(layout,
-            new Long(0),    
-            issue.getFieldValue(IssueField.DESCRIPTION),
-            issue.getFieldValue(IssueField.REPORTER),
-            issue.getFieldValue(IssueField.REPORTER), // XXX name vs. real name
-            creationTxt, horizontalGroup, verticalGroup, true);
         for (C2CIssue.Comment comment : issue.getComments()) {
             String when = format.format(comment.getWhen());
             addSection(layout, comment.getNumber(), comment.getText(), comment.getAuthor(), comment.getAuthorName(), when, horizontalGroup, verticalGroup, false);

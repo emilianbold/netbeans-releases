@@ -48,7 +48,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="jScrollPane1" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="summaryWarning1" min="-2" pref="16" max="-2" attributes="0"/>
+                      <Component id="descriptionWarning" min="-2" pref="16" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -78,7 +78,7 @@
                                   <Component id="summaryLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="issueTypeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="dueDateLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel15" alignment="1" min="-2" max="-2" attributes="0"/>
+                                  <Component id="descriptionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="foundInLabel" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="jLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
                                   <Component id="tagsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -253,13 +253,11 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="separatorLabel3" linkSize="9" min="-2" pref="21" max="-2" attributes="0"/>
                   <Component id="separatorLabel" linkSize="9" min="-2" pref="15" max="-2" attributes="0"/>
-                  <Group type="103" alignment="0" groupAlignment="0" attributes="0">
-                      <Component id="refreshButton" alignment="0" max="32767" attributes="0"/>
-                      <Component id="reloadButton" alignment="0" max="32767" attributes="0"/>
-                      <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="headerField" alignment="3" max="32767" attributes="0"/>
-                          <Component id="showInBrowserButton" alignment="3" max="32767" attributes="0"/>
-                      </Group>
+                  <Component id="refreshButton" alignment="0" max="32767" attributes="0"/>
+                  <Component id="reloadButton" alignment="0" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="headerField" alignment="3" max="32767" attributes="0"/>
+                      <Component id="showInBrowserButton" alignment="3" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
@@ -434,9 +432,9 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabel15" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="descriptionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jScrollPane1" min="-2" max="-2" attributes="0"/>
-                          <Component id="summaryWarning1" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="descriptionWarning" min="-2" pref="16" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -956,10 +954,10 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignFlowLayout"/>
     </Container>
-    <Component class="javax.swing.JLabel" name="jLabel15">
+    <Component class="javax.swing.JLabel" name="descriptionLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/c2c/tasks/issue/Bundle.properties" key="IssuePanel.jLabel15.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/c2c/tasks/issue/Bundle.properties" key="IssuePanel.descriptionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -981,7 +979,7 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JLabel" name="summaryWarning1">
+    <Component class="javax.swing.JLabel" name="descriptionWarning">
     </Component>
     <Component class="javax.swing.JSeparator" name="separator">
     </Component>
