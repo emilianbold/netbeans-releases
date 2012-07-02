@@ -176,6 +176,7 @@ public final class RestPanelVisual extends JPanel  {
     void store(WizardDescriptor descriptor) {
         descriptor.putProperty(RestPanel.ADD_BACKBONE, backboneCheckBox.isSelected());
         descriptor.putProperty(RestPanel.EXISTED_BACKBONE, myBackbone);
+        descriptor.putProperty(RestPanel.EXISTED_UNDERSCORE, myUnderscore);
     }
     
     void read(WizardDescriptor wizardDescriptor) {
@@ -191,7 +192,9 @@ public final class RestPanelVisual extends JPanel  {
                 if ( name.startsWith( "backbone.js-")){
                     backboneExists = true;
                     myBackbone = child;
-                    break;
+                }
+                else if ( name.startsWith("underscore.js-")){
+                    myUnderscore = child;
                 }
             }
         }
@@ -263,4 +266,5 @@ public final class RestPanelVisual extends JPanel  {
     private RestPanel myPanel;
     private Node myRestNode;
     private FileObject myBackbone;
+    private FileObject myUnderscore;
 }

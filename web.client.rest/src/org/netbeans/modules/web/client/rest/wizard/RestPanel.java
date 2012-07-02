@@ -61,9 +61,10 @@ import org.openide.util.HelpCtx;
 public class RestPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> 
 {
     
-    public static String FILE_NAME = "js-file-name";            // NOI18N
-    public static String ADD_BACKBONE = "backbone";             // NOI18N
-    public static String EXISTED_BACKBONE ="existed-backbone";  // NOI18N
+    public static String FILE_NAME = "js-file-name";                // NOI18N
+    public static String ADD_BACKBONE = "backbone";                 // NOI18N
+    public static String EXISTED_BACKBONE ="existed-backbone";      // NOI18N
+    public static String EXISTED_UNDERSCORE ="existed-underscore";  // NOI18N
     
     
     RestPanel(WizardDescriptor descriptor) {
