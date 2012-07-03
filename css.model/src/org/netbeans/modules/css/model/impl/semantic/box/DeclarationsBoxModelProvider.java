@@ -41,21 +41,21 @@
  */
 package org.netbeans.modules.css.model.impl.semantic.box;
 
-import org.netbeans.modules.css.model.impl.semantic.ModelBuilderNodeVisitor;
-import org.netbeans.modules.css.model.impl.semantic.NodeModel;
-import org.netbeans.modules.css.model.api.semantic.SemanticModel;
-import org.netbeans.modules.css.model.impl.semantic.PropertyModelId;
-import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.api.semantic.box.Box;
-import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.semantic.PModel;
+import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.box.BoxType;
+import org.netbeans.modules.css.model.api.semantic.Edge;
+import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
+import org.netbeans.modules.css.model.impl.semantic.ModelBuilderNodeVisitor;
+import org.netbeans.modules.css.model.impl.semantic.NodeModel;
+import org.netbeans.modules.css.model.impl.semantic.PropertyModelId;
 
 /**
  *
@@ -148,7 +148,7 @@ public class DeclarationsBoxModelProvider implements EditableBoxProvider {
         }
     }
 
-    private static class EBI implements EditableBox, SemanticModel {
+    private static class EBI implements EditableBox, PModel {
 
         private BoxElement[] elements;
         private BoxType type;

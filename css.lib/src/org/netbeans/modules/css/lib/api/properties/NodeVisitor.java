@@ -52,4 +52,18 @@ public interface NodeVisitor {
     
     public void unvisit(Node node);
     
+    public static abstract class Adapter implements NodeVisitor {
+
+        @Override
+        public boolean visit(Node node) {
+            return true;
+        }
+
+        @Override
+        public void unvisit(Node node) {
+        }
+        
+        
+    }
+    
 }

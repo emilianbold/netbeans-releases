@@ -44,6 +44,7 @@ package org.netbeans.modules.css.editor.module.main;
 import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
+import org.netbeans.modules.css.lib.api.properties.NodeUtil;
 import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
@@ -106,6 +107,31 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
         assertTrue(new ResolvedProperty(prop, "url(image.png) , url(image2.png)").isResolved());
 
+    }
+    
+    public void testBackgroundPosition() {
+        PropertyModel prop = Properties.getPropertyModel("background-position");
+        assertTrue(new ResolvedProperty(prop, "center").isResolved());
+        assertTrue(new ResolvedProperty(prop, "center center").isResolved());
+        assertTrue(new ResolvedProperty(prop, "center right 20px").isResolved());
+        assertTrue(new ResolvedProperty(prop, "center top 20%").isResolved());
+        assertTrue(new ResolvedProperty(prop, "top 20% center").isResolved());
+        assertTrue(new ResolvedProperty(prop, "left 20px center").isResolved());
+        assertTrue(new ResolvedProperty(prop, "left 20px top 10px").isResolved());
+        assertTrue(new ResolvedProperty(prop, "left 20px").isResolved());
+        assertTrue(new ResolvedProperty(prop, "left").isResolved());
+        
+//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+        //fail
+        assertFalse(new ResolvedProperty(prop, "left 20px right 10px").isResolved());
+        
+//        ResolvedProperty resolvedProperty = new ResolvedProperty(prop, "left 20px top 10px");
+//        NodeUtil.dumpTree(resolvedProperty.getParseTree());
+//        ResolvedProperty resolvedProperty = new ResolvedProperty(prop, "left 20px");
+//        NodeUtil.dumpTree(resolvedProperty.getParseTree());
+        ResolvedProperty resolvedProperty = new ResolvedProperty(prop, "left");
+        NodeUtil.dumpTree(resolvedProperty.getParseTree());
     }
     
     public void testVariousProperties() {

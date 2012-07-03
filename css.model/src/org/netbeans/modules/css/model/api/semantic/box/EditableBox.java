@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.api.semantic.box;
 
+import org.netbeans.modules.css.model.api.semantic.Edge;
+
 /**
  *
  * @author marekfukala

@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.model.impl.semantic.Color;
+import org.netbeans.modules.css.model.impl.semantic.ColorNodeModel;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -60,15 +60,15 @@ public class BorderColor extends BorderEachEdgeBase implements BoxProvider {
     @Override
     public  Class getModelClassForSubNode(String nodeName) {
         if (LexerUtils.equals("color", nodeName, true, true)) { //NOI18N
-            return Color.class;
+            return ColorNodeModel.class;
         }
         return null;
     }
 
     @Override
     public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
+        if (model instanceof ColorNodeModel) {
+            models.add((ColorNodeModel) model);
         }
     }
 

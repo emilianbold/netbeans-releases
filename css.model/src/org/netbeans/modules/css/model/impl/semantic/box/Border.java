@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.model.impl.semantic.box;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.model.impl.semantic.Color;
+import org.netbeans.modules.css.model.impl.semantic.ColorNodeModel;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
@@ -58,7 +58,7 @@ public class Border extends NodeModel implements BoxProvider {
 
     public BorderWidthItem borderWidthItem;
     public BorderStyleItem borderStyleItem;
-    public Color color;
+    public ColorNodeModel color;
 
     public Border(Node node) {
         super(node);

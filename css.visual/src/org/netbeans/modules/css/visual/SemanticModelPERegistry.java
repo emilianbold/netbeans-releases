@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
-import org.netbeans.modules.css.model.api.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.openide.nodes.Node.Property;
 
 /**
@@ -52,7 +52,7 @@ import org.openide.nodes.Node.Property;
 public class SemanticModelPERegistry {
     
     //XXX use lookup
-    public static Property getProperty(RuleNode ruleNode, SemanticModel model) {
+    public static Property getProperty(RuleNode ruleNode, PModel model) {
         String catName = model.getCategoryName();
         if(catName.equals("Box")) {
             return new EditableBoxModelProperty(ruleNode, model);

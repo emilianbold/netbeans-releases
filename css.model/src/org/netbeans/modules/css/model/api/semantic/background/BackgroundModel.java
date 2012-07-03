@@ -39,20 +39,23 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic;
+package org.netbeans.modules.css.model.api.semantic.background;
+
+import java.util.Collection;
+import org.netbeans.modules.css.model.api.semantic.PModel;
 
 /**
  *
+ * http://www.w3.org/TR/css3-background/
+ * 
  * @author marekfukala
  */
-public interface SemanticModel {
+public interface BackgroundModel extends PModel {
     
-    public String getName();
+    public Collection<Background> getBackgrounds();
     
-    public String getDisplayName();
+    public void addBackground(Background background);
     
-    public String getDescription();
+    public void removeBackground(Background background);
     
-    public String getCategoryName();
-   
 }

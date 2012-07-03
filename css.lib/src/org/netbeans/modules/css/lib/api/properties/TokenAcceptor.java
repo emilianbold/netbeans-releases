@@ -46,6 +46,9 @@ import java.text.ParseException;
 import java.util.*;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -53,10 +56,11 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public abstract class TokenAcceptor {
 
-    private static final Collection<TokenAcceptor> ACCEPTORS = 
+    public static final Collection<TokenAcceptor> ACCEPTORS = 
             new ArrayList<TokenAcceptor>();
-    private static final Map<String, TokenAcceptor> ACCEPTORS_MAP = 
+    public static final Map<String, TokenAcceptor> ACCEPTORS_MAP = 
             new LinkedHashMap<String, TokenAcceptor> ();
+    private static Lookup INSTANCES;
 
     static {
         ACCEPTORS.add(new Resolution("resolution"));
@@ -78,12 +82,19 @@ public abstract class TokenAcceptor {
         ACCEPTORS.add(new Uri("uri"));
         ACCEPTORS.add(new Anything("anything")); 
         
+        InstanceContent content = new InstanceContent();
         for(TokenAcceptor ta : ACCEPTORS) {
             ACCEPTORS_MAP.put(ta.id(), ta);
+            content.add(ta);
         }
+        INSTANCES = new AbstractLookup(content);
         
     } //NOI18N
-
+    
+    public static <T extends TokenAcceptor> T getAcceptor(Class<T> acceptorType) {
+        return INSTANCES.lookup(acceptorType);
+    }
+    
     public static TokenAcceptor getAcceptor(String name) {
         return ACCEPTORS_MAP.get(name.toLowerCase());
     }
@@ -100,7 +111,7 @@ public abstract class TokenAcceptor {
     
     public abstract boolean accepts(Token token);
     
-    private static class Resolution extends NumberPostfixAcceptor {
+    public static class Resolution extends NumberPostfixAcceptor {
 
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{"dpi", "dppx", "dpcm"}); //NOI18N
 
@@ -109,12 +120,12 @@ public abstract class TokenAcceptor {
         }
 
         @Override
-        public List<String> postfixes() {
+        protected List<String> postfixes() {
             return POSTFIXES;
         }
     }
 
-    private static class Angle extends NumberPostfixAcceptor {
+    public static class Angle extends NumberPostfixAcceptor {
 
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{"deg", "rad", "grad", "turn"}); //NOI18N
 
@@ -123,12 +134,12 @@ public abstract class TokenAcceptor {
         }
 
         @Override
-        public List<String> postfixes() {
+        protected List<String> postfixes() {
             return POSTFIXES;
         }
     }
 
-    private static class Anything extends TokenAcceptor {
+    public static class Anything extends TokenAcceptor {
 
         public Anything(String id) {
             super(id);
@@ -140,7 +151,7 @@ public abstract class TokenAcceptor {
         }
     }
 
-    private static class Date extends TokenImageAcceptor {
+    public static class Date extends TokenImageAcceptor {
 
         public Date(String id) {
             super(id);
@@ -157,7 +168,7 @@ public abstract class TokenAcceptor {
         }
     }
 
-    private static class Decibel extends NumberPostfixAcceptor {
+    public static class Decibel extends NumberPostfixAcceptor {
 
         public Decibel(String id) {
             super(id);
@@ -171,30 +182,22 @@ public abstract class TokenAcceptor {
         }
     }
 
-    private static class Frequency extends TokenImageAcceptor {
+    public static class Frequency extends NumberPostfixAcceptor {
 
         public Frequency(String id) {
             super(id);
         }
 
+        private static final List<String> POSTFIXES = Arrays.asList("khz", "hz"); //NOI18N
+
         @Override
-        public boolean accepts(String token) {
-            token = token.toLowerCase();
-            String numberPart = token.endsWith("hz") ? token.substring(0, token.length() - 3) : token.endsWith("khz") ? token.substring(0, token.length() - 4) : null;
-            if (numberPart != null) {
-                try {
-                    java.lang.Integer.parseInt(numberPart);
-                    return true;
-                } catch (NumberFormatException nfe) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+        protected List<String> postfixes() {
+            return POSTFIXES;
         }
+
     }
 
-    private static class HashColor extends TokenAcceptor {
+    public static class HashColor extends TokenAcceptor {
 
         public HashColor(String id) {
             super(id);
@@ -207,7 +210,7 @@ public abstract class TokenAcceptor {
         }
     }
 
-    private static class Identifier extends TokenAcceptor {
+    public static class Identifier extends TokenAcceptor {
 
         public Identifier(String id) {
             super(id);
@@ -220,7 +223,7 @@ public abstract class TokenAcceptor {
         }
     }
 
-    private static class Integer extends TokenImageAcceptor {
+    public static class Integer extends TokenImageAcceptor {
 
         public Integer(String id) {
             super(id);
@@ -228,16 +231,19 @@ public abstract class TokenAcceptor {
 
         @Override
         public boolean accepts(String token) {
+            return getNumberValue(token) != java.lang.Integer.MIN_VALUE;
+        }
+        
+        public int getNumberValue(String token) {
             try {
-                java.lang.Integer.parseInt(token);
-                return true;
+                return java.lang.Integer.parseInt(token);
             } catch (NumberFormatException nfe) {
-                return false;
             }
+            return java.lang.Integer.MIN_VALUE;
         }
     }
 
-    private static class Length extends NumberPostfixAcceptor {
+    public static class Length extends NumberPostfixAcceptor {
 
         /*
          *
@@ -257,14 +263,16 @@ public abstract class TokenAcceptor {
          * mm: millimeters pt: points -- the points used by CSS2 are equal to
          * 1/72th of an inch. pc: picas -- 1 pica is equal to 12 points.
          */
-        private static final List<String> POSTFIXES = Arrays.asList(new String[]{"px", "ex", "em", "in", "gd", "rem", "vw", "vh", "vm", "ch", "cm", "mm", "pt", "pc"}); //NOI18N
+        private static final List<String> POSTFIXES = Arrays.asList(new String[]{
+            "px", "ex", "em", "in", "gd", "rem", 
+            "vw", "vh", "vm", "ch", "cm", "mm", "pt", "pc"}); //NOI18N
 
         public Length(String id) {
             super(id);
         }
 
         @Override
-        public List<String> postfixes() {
+        protected List<String> postfixes() {
             return POSTFIXES;
         }
 
@@ -279,7 +287,7 @@ public abstract class TokenAcceptor {
         }
     }
 
-    private static class NonNegativeInteger extends TokenImageAcceptor {
+    public static class NonNegativeInteger extends TokenImageAcceptor {
 
         public NonNegativeInteger(String id) {
             super(id);
@@ -287,16 +295,24 @@ public abstract class TokenAcceptor {
 
         @Override
         public boolean accepts(String token) {
+            return getNumberValue(token) != -1;
+        }
+        
+        public int getNumberValue(String token) {
             try {
                 int i = java.lang.Integer.parseInt(token);
-                return i >= 0;
+                if(i >= 0) {
+                    return i;
+                }
             } catch (NumberFormatException nfe) {
-                return false;
             }
+            return -1;
         }
+        
+        
     }
 
-    private static class Number extends TokenImageAcceptor {
+    public static class Number extends TokenImageAcceptor {
 
         public Number(String id) {
             super(id);
@@ -304,11 +320,14 @@ public abstract class TokenAcceptor {
 
         @Override
         public boolean accepts(String token) {
+            return getNumberValue(token) != null;
+        }
+        
+        public Float getNumberValue(String token) {
             try {
-                Float.parseFloat(token);
-                return true;
+                return Float.parseFloat(token);
             } catch (NumberFormatException nfe) {
-                return false;
+                return null;
             }
         }
     }
@@ -319,26 +338,44 @@ public abstract class TokenAcceptor {
             super(id);
         }
 
+        /**
+         * Please be aware that if there are prefixes that ends with another prefix image
+         * the order must be: the longer prefix sooner! (khz, hz)
+         */
         protected abstract List<String> postfixes();
 
         @Override
         public boolean accepts(String image) {
+            return getNumberValue(image) != null;
+        }
+        
+        public CharSequence getPostfix(CharSequence image) {
             for (String postfix : postfixes()) {
-                if (image.toLowerCase().endsWith(postfix.toLowerCase())) {
-                    String numberImage = image.substring(0, image.length() - postfix.length());
-                    try {
-                        Float.parseFloat(numberImage);
-                        return true;
-                    } catch (NumberFormatException nfe) {
-                        return false;
-                    }
+                if(LexerUtils.endsWith(image, postfix, true, false)) {
+                    return postfix;
                 }
             }
-            return false;
+            return null;
         }
+        
+        public Float getNumberValue(CharSequence image) {
+            CharSequence postfix = getPostfix(image);
+            if(postfix == null) {
+                return null;
+            }
+            
+            CharSequence numberImage = image.subSequence(0, image.length() - postfix.length());
+            try {
+                return Float.parseFloat(numberImage.toString());
+            } catch (NumberFormatException nfe) {
+                return null;
+            }
+
+        }
+
     }
 
-    private static class Percentage extends NumberPostfixAcceptor {
+    public static class Percentage extends NumberPostfixAcceptor {
         
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{"%"}); //NOI18N
 
@@ -347,12 +384,12 @@ public abstract class TokenAcceptor {
         }
 
         @Override
-        public List<String> postfixes() {
+        protected List<String> postfixes() {
             return POSTFIXES;
         }
     }
 
-    private static class RelativeLength extends NumberPostfixAcceptor {
+    public static class RelativeLength extends NumberPostfixAcceptor {
 
         private static final List<String> POSTFIXES = Collections.singletonList("*"); //NOI18N
 
@@ -366,7 +403,7 @@ public abstract class TokenAcceptor {
         }
     }
 
-    private static class Semitones extends NumberPostfixAcceptor {
+    public static class Semitones extends NumberPostfixAcceptor {
 
         private static final List<String> POSTFIXES = Collections.singletonList("st"); //NOI18N
 
@@ -380,7 +417,7 @@ public abstract class TokenAcceptor {
         }
     }
 
-    private static class StringAcceptor extends TokenImageAcceptor {
+    public static class StringAcceptor extends TokenImageAcceptor {
 
         public StringAcceptor(String id) {
             super(id);
@@ -388,41 +425,40 @@ public abstract class TokenAcceptor {
 
         @Override
         public boolean accepts(String token) {
+            return getUnquotedValue(token) != null;
+        }
+        
+        public String getUnquotedValue(String token) {
             if (token.length() < 2) {
-                return false;
+                return null;
             }
             char first = token.charAt(0);
             char last = token.charAt(token.length() - 1);
 
-            return (first == '\'' && last == '\'') || (first == '"' && last == '"');
+            if((first == '\'' && last == '\'') || (first == '"' && last == '"')) { //NOI18N
+                return token.substring(1, token.length() - 1);
+            }
 
+            return null;
         }
     }
 
-    private static class Time extends TokenImageAcceptor {
+    public static class Time extends NumberPostfixAcceptor {
 
         public Time(String id) {
             super(id);
         }
 
+        private static final List<String> POSTFIXES = Arrays.asList("ms", "s"); //NOI18N
+
         @Override
-        public boolean accepts(String token) {
-            token = token.toLowerCase();
-            String numberPart = token.endsWith("ms") ? token.substring(0, token.length() - 2) : token.endsWith("s") ? token.substring(0, token.length() - 1) : null;
-            if (numberPart != null) {
-                try {
-                    java.lang.Float.parseFloat(numberPart);
-                    return true;
-                } catch (NumberFormatException nfe) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+        protected List<String> postfixes() {
+            return POSTFIXES;
         }
+        
     }
 
-    private static abstract class TokenImageAcceptor extends TokenAcceptor {
+    public static abstract class TokenImageAcceptor extends TokenAcceptor {
 
         public TokenImageAcceptor(String id) {
             super(id);
@@ -435,9 +471,10 @@ public abstract class TokenAcceptor {
             String tokenImage = token.image().toString();
             return accepts(tokenImage);
         }
+
     }
 
-    private static class Uri extends TokenAcceptor {
+    public static class Uri extends TokenAcceptor {
 
         public Uri(String id) {
             super(id);

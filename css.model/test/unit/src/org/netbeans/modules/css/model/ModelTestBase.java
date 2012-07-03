@@ -45,7 +45,7 @@ import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
 import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.model.api.semantic.Edge;
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.junit.MockServices;
