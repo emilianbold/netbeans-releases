@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;

@@ -36,7 +36,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.editor.jsdoc;
+package org.netbeans.modules.javascript2.editor.sdoc;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -45,8 +45,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %public
 %final
-%class JsDocColoringLexer
-%type JsDocTokenId
+%class SDocColoringLexer
+%type SDocTokenId
 %unicode
 %caseless
 %char
@@ -54,7 +54,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %{
     private LexerInput input;
 
-    public JsDocColoringLexer(LexerRestartInfo info) {
+    public SDocColoringLexer(LexerRestartInfo info) {
         this.input = info.input();
 
         if(info.state() != null) {
@@ -78,8 +78,8 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
         this.zzLexicalState = state.zzLexicalState;
     }
 
-    public JsDocTokenId nextToken() throws java.io.IOException {
-        JsDocTokenId token = yylex();
+    public SDocTokenId nextToken() throws java.io.IOException {
+        SDocTokenId token = yylex();
         return token;
     }
 
@@ -114,9 +114,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
         @Override
         public int hashCode() {
-            int hash = 7;
-            hash = 31 * hash + this.zzState;
-            hash = 31 * hash + this.zzLexicalState;
+            int hash = 5;
+            hash = 29 * hash + this.zzState;
+            hash = 29 * hash + this.zzLexicalState;
             return hash;
         }
 
@@ -131,7 +131,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %}
 
 /* states */
-%state JSDOC
+%state SDOC
 %state AT
 %state STRING
 %state STRINGEND
@@ -153,46 +153,38 @@ CommentEnd = ["*"]+ + "/"
 
 <YYINITIAL> {
 
-    /* No code comments */
-    "/**#nocode+*/"                 { return JsDocTokenId.COMMENT_NOCODE_BEGIN; }
-    "/**#nocode-*/"                 { return JsDocTokenId.COMMENT_NOCODE_END; }
-
-    /* Shared tag comments */
-    "/**#@+"                        { yybegin(JSDOC); return JsDocTokenId.COMMENT_SHARED_BEGIN; }
-    "/**#@-*/"                      { return JsDocTokenId.COMMENT_SHARED_END; }
-
-    {DocumentationComment}          { yybegin(JSDOC); return JsDocTokenId.COMMENT_START; }
-    {CommentEnd}                    { return JsDocTokenId.COMMENT_END; }
+    {DocumentationComment}          { yybegin(SDOC); return SDocTokenId.COMMENT_START; }
+    {CommentEnd}                    { return SDocTokenId.COMMENT_END; }
     {AnyChar}                       { }
 }
 
-<JSDOC> {
-    {CommentEnd}                    { return JsDocTokenId.COMMENT_END; }
-    {WhiteSpace}                    { return JsDocTokenId.WHITESPACE; }
-    {LineTerminator}                { return JsDocTokenId.EOL; }
-    {HtmlString}                    { return JsDocTokenId.HTML; }
+<SDOC> {
+    {CommentEnd}                    { return SDocTokenId.COMMENT_END; }
+    {WhiteSpace}                    { return SDocTokenId.WHITESPACE; }
+    {LineTerminator}                { return SDocTokenId.EOL; }
+    {HtmlString}                    { return SDocTokenId.HTML; }
 
     "@"                             { yybegin(AT); yypushback(1); }
-    "*"                             { return JsDocTokenId.ASTERISK; }
-    "{"                             { return JsDocTokenId.BRACKET_LEFT_CURLY; }
-    "}"                             { return JsDocTokenId.BRACKET_RIGHT_CURLY; }
-    "["                             { return JsDocTokenId.BRACKET_LEFT_BRACKET; }
-    "]"                             { return JsDocTokenId.BRACKET_RIGHT_BRACKET; }
-    "="                             { return JsDocTokenId.ASSIGNMENT; }
+    "*"                             { return SDocTokenId.ASTERISK; }
+    ","                             { return SDocTokenId.COMMA; }
+    "{"                             { return SDocTokenId.BRACKET_LEFT_CURLY; }
+    "}"                             { return SDocTokenId.BRACKET_RIGHT_CURLY; }
+    "["                             { return SDocTokenId.BRACKET_LEFT_BRACKET; }
+    "]"                             { return SDocTokenId.BRACKET_RIGHT_BRACKET; }
 
-    "\""                            { yybegin(STRING); return JsDocTokenId.STRING_BEGIN; }
+    "\""                            { yybegin(STRING); return SDocTokenId.STRING_BEGIN; }
 
     ~({WhiteSpace}
         | {LineTerminator}
         | "*" | "@" | "<" | "{"
-        | "}" | "\"" | "]" | "["
-        | "=")                      { yypushback(1); return JsDocTokenId.OTHER; }
+        | "}" | "\"" | "," | "["
+        | "]")                      { yypushback(1); return SDocTokenId.OTHER; }
 }
 
 <STRING> {
     \"                              { yypushback(1); yybegin(STRINGEND);
                                         if (tokenLength - 1 > 0) {
-                                            return JsDocTokenId.STRING;
+                                            return SDocTokenId.STRING;
                                         }
                                     }
 
@@ -200,20 +192,20 @@ CommentEnd = ["*"]+ + "/"
 
     /* escape sequences */
     \\.                             { }
-    {LineTerminator}                { yypushback(1); yybegin(JSDOC);
+    {LineTerminator}                { yypushback(1); yybegin(SDOC);
                                         if (tokenLength - 1 > 0) {
-                                            return JsDocTokenId.UNKNOWN;
+                                            return SDocTokenId.UNKNOWN;
                                         }
                                     }
 }
 
 <STRINGEND> {
-    \"                              { yybegin(JSDOC); return JsDocTokenId.STRING_END; }
+    \"                              { yybegin(SDOC); return SDocTokenId.STRING_END; }
 }
 
 <AT> {
-    "@"{Identifier}                 { yybegin(JSDOC); return JsDocTokenId.KEYWORD; }
-    {AnyChar}                       { yybegin(JSDOC); return JsDocTokenId.AT; }
+    "@"{Identifier}                 { yybegin(SDOC); return SDocTokenId.KEYWORD; }
+    {AnyChar}                       { yybegin(SDOC); return SDocTokenId.AT; }
 }
 
 <<EOF>> {
@@ -221,7 +213,7 @@ CommentEnd = ["*"]+ + "/"
         // backup eof
         input.backup(1);
         //and return the text as error token
-        return JsDocTokenId.UNKNOWN;
+        return SDocTokenId.UNKNOWN;
     } else {
         return null;
     }

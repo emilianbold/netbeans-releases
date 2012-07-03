@@ -166,6 +166,58 @@ public class JsDocLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
+    @SuppressWarnings("unchecked")
+    public void testCommonDocComment09() {
+        String text = "/** @param {String} [optional] optional String */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@param");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_LEFT_CURLY, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "String");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_RIGHT_CURLY, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_LEFT_BRACKET, "[");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "optional");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_RIGHT_BRACKET, "]");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "optional");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "String");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testCommonDocComment10() {
+        String text = "/** @param {String} [optional=\"neco\"] optional String */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@param");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_LEFT_CURLY, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "String");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_RIGHT_CURLY, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_LEFT_BRACKET, "[");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "optional");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.ASSIGNMENT, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.STRING, "neco");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.STRING_END, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_RIGHT_BRACKET, "]");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "optional");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "String");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
+    }
+
     // Not necessary since it's called just on documentation comments like /** */
 //    @SuppressWarnings("unchecked")
 //    public void testComment01() {

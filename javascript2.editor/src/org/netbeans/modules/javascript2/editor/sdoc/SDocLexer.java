@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc;
+package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -51,36 +51,37 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
 /**
- * Base JsDoc Lexer class.
+ * Base SDoc Lexer class.
  * <p>
- * <i>Created on base of {@link JsLexer}</i>
+ * <i>Created on base of {@link JsDocLexer}</i>
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class JsDocLexer implements Lexer<JsDocTokenId> {
+final class SDocLexer implements Lexer<SDocTokenId> {
 
-    private static final Logger LOGGER = Logger.getLogger(JsDocLexer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SDocLexer.class.getName());
 
-    private final JsDocColoringLexer coloringLexer;
+    private final SDocColoringLexer coloringLexer;
 
-    private TokenFactory<JsDocTokenId> tokenFactory;
+    private TokenFactory<SDocTokenId> tokenFactory;
 
-    private JsDocLexer(LexerRestartInfo<JsDocTokenId> info) {
-        coloringLexer = new JsDocColoringLexer(info);
+    private SDocLexer(LexerRestartInfo<SDocTokenId> info) {
+        coloringLexer = new SDocColoringLexer(info);
         tokenFactory = info.tokenFactory();
     }
 
-    public static JsDocLexer create(LexerRestartInfo<JsDocTokenId> info) {
-        synchronized(JsDocLexer.class) {
-            return new JsDocLexer(info);
+    public static SDocLexer create(LexerRestartInfo<SDocTokenId> info) {
+        synchronized (SDocLexer.class) {
+            return new SDocLexer(info);
         }
     }
 
     @Override
-    public Token<JsDocTokenId> nextToken() {
+    public Token<SDocTokenId> nextToken() {
         try {
-            JsDocTokenId tokenId = coloringLexer.nextToken();
+            SDocTokenId tokenId = coloringLexer.nextToken();
             LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
-            Token<JsDocTokenId> token = null;
+            Token<SDocTokenId> token = null;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
             }
@@ -100,3 +101,4 @@ class JsDocLexer implements Lexer<JsDocTokenId> {
     public void release() {
     }
 }
+

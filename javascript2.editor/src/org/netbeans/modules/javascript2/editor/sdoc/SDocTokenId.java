@@ -39,60 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc;
+package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.lexer.*;
+import org.netbeans.api.lexer.InputAttributes;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * JSDoc TokenId class.
+ * List of SDoc TokenIds.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public enum JsDocTokenId implements TokenId {
+public enum SDocTokenId implements TokenId {
 
     // IMPORTANT - Categories of JavaScript tokenIds should be shared across
     //  all JavaScript documentation tools to preserve coloring settings.
-    COMMENT_NOCODE_BEGIN("/**#nocode+*/", "COMMENT_NOCODE"), //NOI18N
-    COMMENT_NOCODE_END("/**#nocode-*/", "COMMENT_NOCODE"), //NOI18N
-    COMMENT_SHARED_END("/**#@-*/", "COMMENT"), //NOI18N
-    COMMENT_SHARED_BEGIN("/**#@+", "COMMENT"), //NOI18N
+    // comment tokens
+    COMMENT_START(null, "COMMENT"),
+    COMMENT_END(null, "COMMENT"),
 
-    COMMENT_START(null, "COMMENT"), //NOI18N
-    COMMENT_END(null, "COMMENT"), //NOI18N
-    KEYWORD(null, "COMMENT_KEYWORD"), //NOI18N
-    OTHER(null, "COMMENT"), //NOI18N
-    WHITESPACE(null, "COMMENT"), //NOI18N
-    EOL(null, "COMMENT"), //NOI18N
-    HTML(null, "COMMENT_HTML"), //NOI18N
-    UNKNOWN(null, "COMMENT"), //NOI18N
-
-    STRING(null, "COMMENT"), //NOI18N
-    STRING_END(null, "COMMENT"), //NOI18N
-    STRING_BEGIN(null, "COMMENT"), //NOI18N
-
+    // represents one char tokens
+    AT("@", "COMMENT"), //NOI18N
+    ASTERISK("*", "COMMENT"), //NOI18N
     BRACKET_LEFT_BRACKET("[", "COMMENT"), //NOI18N
     BRACKET_RIGHT_BRACKET("]", "COMMENT"), //NOI18N
     BRACKET_LEFT_CURLY("{", "COMMENT"), //NOI18N
     BRACKET_RIGHT_CURLY("}", "COMMENT"), //NOI18N
+    COMMA(",", "COMMENT"), //NOI18N
+    EOL(null, "COMMENT"), //NOI18N
 
-    ASSIGNMENT("=", "COMMENT"), //NOI18N
-    AT("@", "COMMENT"), //NOI18N
-    ASTERISK("*", "COMMENT"); //NOI18N
+    // represents 1+ tokens
+    HTML(null, "COMMENT_HTML"),
+    WHITESPACE(null, "COMMENT"),
+    KEYWORD(null, "COMMENT_KEYWORD"),
+    UNKNOWN(null, "COMMENT"),
+    OTHER(null, "COMMENT"),
 
-    public static final String JSDOC_MIME_TYPE = "text/js-jsdoc"; //NOI18N
+    // string tokens
+    STRING(null, "COMMENT"),
+    STRING_BEGIN(null, "COMMENT"),
+    STRING_END(null, "COMMENT");
+
+    public static final String MIME_TYPE = "text/js-sdoc"; //NOI18N
 
     private final String fixedText;
     private final String primaryCategory;
 
-    JsDocTokenId(String fixedText, String primaryCategory) {
+    SDocTokenId(String fixedText, String primaryCategory) {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
@@ -106,38 +109,37 @@ public enum JsDocTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<JsDocTokenId> LANGUAGE =
-        new LanguageHierarchy<JsDocTokenId>() {
+    private static final Language<SDocTokenId> LANGUAGE =
+        new LanguageHierarchy<SDocTokenId>() {
                 @Override
                 protected String mimeType() {
-                    return JsDocTokenId.JSDOC_MIME_TYPE;
+                    return SDocTokenId.MIME_TYPE;
                 }
 
                 @Override
-                protected Collection<JsDocTokenId> createTokenIds() {
-                    return EnumSet.allOf(JsDocTokenId.class);
+                protected Collection<SDocTokenId> createTokenIds() {
+                    return EnumSet.allOf(SDocTokenId.class);
                 }
 
                 @Override
-                protected Map<String, Collection<JsDocTokenId>> createTokenCategories() {
-            Map<String, Collection<JsDocTokenId>> cats = new HashMap<String, Collection<JsDocTokenId>>();
+                protected Map<String, Collection<SDocTokenId>> createTokenCategories() {
+            Map<String, Collection<SDocTokenId>> cats = new HashMap<String, Collection<SDocTokenId>>();
                     return cats;
                 }
 
                 @Override
-                protected Lexer<JsDocTokenId> createLexer(LexerRestartInfo<JsDocTokenId> info) {
-                    return JsDocLexer.create(info);
+                protected Lexer<SDocTokenId> createLexer(LexerRestartInfo<SDocTokenId> info) {
+                    return SDocLexer.create(info);
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding(Token<JsDocTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-
+                protected LanguageEmbedding<?> embedding(Token<SDocTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
                     // No embedding
                     return null;
                 }
             }.language();
 
-     public static Language<JsDocTokenId> language() {
+     public static Language<SDocTokenId> language() {
         return LANGUAGE;
     }
 
