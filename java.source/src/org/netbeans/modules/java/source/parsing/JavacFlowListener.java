@@ -42,14 +42,16 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import com.sun.source.util.TaskEvent;
+import com.sun.source.util.TaskEvent.Kind;
+import com.sun.source.util.TaskListener;
+import com.sun.tools.javac.api.JavacTaskImpl;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.tools.javac.comp.AttrContext;
-import com.sun.tools.javac.comp.Env;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.FlowListener;
 
 import org.openide.filesystems.FileObject;
 
@@ -57,36 +59,56 @@ import org.openide.filesystems.FileObject;
  *
  * @author Tomas Zezula
  */
-class JavacFlowListener extends FlowListener {
+class JavacFlowListener {
         
-        private final Set<URI> flowCompleted = new HashSet<URI>();
-        
-        public static JavacFlowListener instance (final Context context) {
-            final FlowListener flowListener = FlowListener.instance(context);
-            return (flowListener instanceof JavacFlowListener) ? (JavacFlowListener) flowListener : null;
+    protected static final Context.Key<JavacFlowListener> flowListenerKey =
+        new Context.Key<JavacFlowListener>();
+    
+    public static JavacFlowListener instance (final Context context) {
+        final JavacFlowListener flowListener = context.get(flowListenerKey);
+        return flowListener != null ? flowListener : null;
+    }
+
+    static void preRegister(final Context context, JavacTaskImpl jti) {
+        context.put(flowListenerKey, new JavacFlowListener(context, jti));
+    }
+
+    private final Set<URI> flowCompleted = new HashSet<URI>();
+
+    private JavacFlowListener(Context context, JavacTaskImpl jti) {
+        //TODO: should probably use MultiTaskListener when awailable:
+        //XXX: only one listener can be set through setTaskListener!
+        jti.setTaskListener(new TaskListenerImpl());
+    }
+
+    final boolean hasFlowCompleted (final FileObject fo) {
+        if (fo == null) {
+            return false;
         }
-        
-        static void preRegister(final Context context) {
-            context.put(flowListenerKey, new JavacFlowListener());
-        }
-        
-        final boolean hasFlowCompleted (final FileObject fo) {
-            if (fo == null) {
+        else {
+            try {
+                return this.flowCompleted.contains(fo.getURL().toURI());
+            } catch (Exception e) {
                 return false;
-            }
-            else {
-                try {
-                    return this.flowCompleted.contains(fo.getURL().toURI());
-                } catch (Exception e) {
-                    return false;
-                }
-            }
-        }
-        
-        @Override
-        public void flowFinished (final Env<AttrContext> env) {
-            if (env.toplevel != null && env.toplevel.sourcefile != null) {
-                this.flowCompleted.add (env.toplevel.sourcefile.toUri());
             }
         }
     }
+
+    private class TaskListenerImpl implements TaskListener {
+        public TaskListenerImpl() {
+        }
+        @Override
+        public void started(TaskEvent e) {
+        }
+
+        @Override
+        public void finished(TaskEvent e) {
+            if (e.getKind() == Kind.ANALYZE) {
+                JCCompilationUnit toplevel = (JCCompilationUnit) e.getCompilationUnit();
+                if (toplevel != null && toplevel.sourcefile != null) {
+                    flowCompleted.add(toplevel.sourcefile.toUri());
+                }
+            }
+        }
+    }
+}
