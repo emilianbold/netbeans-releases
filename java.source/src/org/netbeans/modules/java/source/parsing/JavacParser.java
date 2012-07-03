@@ -782,7 +782,7 @@ public class JavacParser extends Parser {
         NBClassWriter.preRegister(context);
         NBParserFactory.preRegister(context);
         if (!backgroundCompilation) {
-            JavacFlowListener.preRegister(context);
+            JavacFlowListener.preRegister(context, task);
             NBJavadocEnter.preRegister(context);
             NBJavadocMemberEnter.preRegister(context);
             JavadocEnv.preRegister(context, cpInfo);
