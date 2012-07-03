@@ -69,7 +69,6 @@ public enum SDocTokenId implements TokenId {
     COMMENT_END(null, "COMMENT"),
 
     // represents one char tokens
-    ASSIGNMENT("=", "COMMENT"), //NOI18N
     AT("@", "COMMENT"), //NOI18N
     ASTERISK("*", "COMMENT"), //NOI18N
     BRACKET_LEFT_BRACKET("[", "COMMENT"), //NOI18N

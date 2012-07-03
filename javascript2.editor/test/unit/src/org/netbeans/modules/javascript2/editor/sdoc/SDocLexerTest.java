@@ -45,6 +45,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.javascript2.editor.jsdoc.JsDocTokenId;
 
 /**
  * @author Martin Fousek <marfous@netbeans.org>

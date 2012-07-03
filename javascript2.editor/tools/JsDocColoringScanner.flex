@@ -185,7 +185,8 @@ CommentEnd = ["*"]+ + "/"
     ~({WhiteSpace}
         | {LineTerminator}
         | "*" | "@" | "<" | "{"
-        | "}" | "\"" | "]" | "[" )  { yypushback(1); return JsDocTokenId.OTHER; }
+        | "}" | "\"" | "]" | "["
+        | "=")                      { yypushback(1); return JsDocTokenId.OTHER; }
 }
 
 <STRING> {

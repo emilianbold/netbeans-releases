@@ -171,14 +171,14 @@ CommentEnd = ["*"]+ + "/"
     "}"                             { return SDocTokenId.BRACKET_RIGHT_CURLY; }
     "["                             { return SDocTokenId.BRACKET_LEFT_BRACKET; }
     "]"                             { return SDocTokenId.BRACKET_RIGHT_BRACKET; }
-    "="                             { return SDocTokenId.ASSIGNMENT; }
 
     "\""                            { yybegin(STRING); return SDocTokenId.STRING_BEGIN; }
 
     ~({WhiteSpace}
-        |{LineTerminator}
-        |"*"|"@"|"<"|"{"|"}"|"\""
-        |","|"["|"]")               { yypushback(1); return SDocTokenId.OTHER; }
+        | {LineTerminator}
+        | "*" | "@" | "<" | "{"
+        | "}" | "\"" | "," | "["
+        | "]")                      { yypushback(1); return SDocTokenId.OTHER; }
 }
 
 <STRING> {
