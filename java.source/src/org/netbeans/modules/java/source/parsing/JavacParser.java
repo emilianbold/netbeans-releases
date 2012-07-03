@@ -64,7 +64,6 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Position.LineMapImpl;
-import com.sun.tools.javadoc.JavadocClassReader;
 import com.sun.tools.javadoc.Messager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -135,6 +134,9 @@ import org.netbeans.lib.nbjavac.services.NBJavadocMemberEnter;
 import org.netbeans.lib.nbjavac.services.NBMemberEnter;
 import org.netbeans.lib.nbjavac.services.NBParserFactory;
 import org.netbeans.lib.nbjavac.services.NBClassWriter;
+import org.netbeans.lib.nbjavac.services.NBJavacTrees;
+import org.netbeans.lib.nbjavac.services.NBTreeMaker;
+import org.netbeans.lib.nbjavac.services.PartialReparser;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
@@ -781,6 +783,8 @@ public class JavacParser extends Parser {
         NBAttr.preRegister(context);
         NBClassWriter.preRegister(context);
         NBParserFactory.preRegister(context);
+        NBTreeMaker.preRegister(context);
+        NBJavacTrees.preRegister(context);
         if (!backgroundCompilation) {
             JavacFlowListener.preRegister(context, task);
             NBJavadocEnter.preRegister(context);
@@ -940,6 +944,7 @@ public class JavacParser extends Parser {
                 return false;
             }
             final JavacTaskImpl task = ci.getJavacTask();
+            PartialReparser pr = PartialReparser.instance(task.getContext());
             final JavacTrees jt = JavacTrees.instance(task);
             final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
             final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
@@ -973,7 +978,7 @@ public class JavacParser extends Parser {
                     ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                     long start = System.currentTimeMillis();
                     Map<JCTree,String> docComments = new HashMap<JCTree, String>();
-                    block = task.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
+                    block = pr.reparseMethodBody(cu, orig, newBody, firstInner, docComments);
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.log(Level.FINER, "Reparsed method in: {0}", fo);     //NOI18N
                     }
@@ -1001,7 +1006,7 @@ public class JavacParser extends Parser {
                     ((JCMethodDecl)orig).body = block;
                     if (Phase.RESOLVED.compareTo(currentPhase)<=0) {
                         start = System.currentTimeMillis();
-                        task.reattrMethodBody(orig, block);
+                        pr.reattrMethodBody(orig, block);
                         if (LOGGER.isLoggable(Level.FINER)) {
                             LOGGER.log(Level.FINER, "Resolved method in: {0}", fo);     //NOI18N
                         }
@@ -1016,7 +1021,7 @@ public class JavacParser extends Parser {
                                 }
                                 TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
                                 Tree t = tp.getParentPath().getLeaf();
-                                task.reflowMethodBody(cu, (ClassTree) t, orig);
+                                pr.reflowMethodBody(cu, (ClassTree) t, orig);
                                 if (LOGGER.isLoggable(Level.FINER)) {
                                     LOGGER.log(Level.FINER, "Reflowed method in: {0}", fo); //NOI18N
                                 }
