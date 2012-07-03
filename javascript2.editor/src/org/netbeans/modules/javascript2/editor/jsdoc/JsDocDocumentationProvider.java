@@ -58,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
+ * Provider of the jsDoc documentation type.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */

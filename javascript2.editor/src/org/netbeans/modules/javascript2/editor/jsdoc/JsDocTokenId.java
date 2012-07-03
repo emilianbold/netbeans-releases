@@ -87,7 +87,7 @@ public enum JsDocTokenId implements TokenId {
     AT("@", "COMMENT"), //NOI18N
     ASTERISK("*", "COMMENT"); //NOI18N
 
-    public static final String JSDOC_MIME_TYPE = "text/javascript-comment"; //NOI18N
+    public static final String JSDOC_MIME_TYPE = "text/js-jsdoc"; //NOI18N
 
     private final String fixedText;
     private final String primaryCategory;

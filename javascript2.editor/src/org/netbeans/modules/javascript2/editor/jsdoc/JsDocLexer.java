@@ -79,7 +79,7 @@ class JsDocLexer implements Lexer<JsDocTokenId> {
     public Token<JsDocTokenId> nextToken() {
         try {
             JsDocTokenId tokenId = coloringLexer.nextToken();
-//            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
+            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
             Token<JsDocTokenId> token = null;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
