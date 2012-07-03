@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
@@ -82,16 +82,16 @@ public class DeclarationsI extends ModelElement implements Declarations {
     }
 
     @Override
-    public Collection<? extends SemanticModel> getSemanticModels() {
+    public Collection<? extends PModel> getSemanticModels() {
         if(isValid()) {
-            Collection<SemanticModel> models = new ArrayList<SemanticModel>();
+            Collection<PModel> models = new ArrayList<PModel>();
             
             DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, this);
-            models.add((SemanticModel)dbm.getBox(BoxType.MARGIN));
-            models.add((SemanticModel)dbm.getBox(BoxType.PADDING));
-            models.add((SemanticModel)dbm.getBox(BoxType.BORDER_COLOR));
-            models.add((SemanticModel)dbm.getBox(BoxType.BORDER_STYLE));
-            models.add((SemanticModel)dbm.getBox(BoxType.BORDER_WIDTH));
+            models.add((PModel)dbm.getBox(BoxType.MARGIN));
+            models.add((PModel)dbm.getBox(BoxType.PADDING));
+            models.add((PModel)dbm.getBox(BoxType.BORDER_COLOR));
+            models.add((PModel)dbm.getBox(BoxType.BORDER_STYLE));
+            models.add((PModel)dbm.getBox(BoxType.BORDER_WIDTH));
             
             return models;
         } else {

@@ -57,6 +57,8 @@ public interface Node {
     public Collection<Node> children();
 
     public void accept(NodeVisitor visitor);
+    
+    public void accept(NodeVisitor2 visitor);
 
     public CharSequence image();
 
@@ -73,15 +75,25 @@ public interface Node {
         }
     }
 
-    static class ResolvedTokenNode extends AbstractNode {
+    public static class ResolvedTokenNode extends AbstractNode implements TokenNode {
 
         private ResolvedToken resolvedToken = null;
 
         public ResolvedTokenNode() {
         }
 
+        @Override
+        public void accept(NodeVisitor2 visitor) {
+            visitor.visitTokenNode(this);
+        }
+
         public void setResolvedToken(ResolvedToken resolvedToken) {
             this.resolvedToken = resolvedToken;
+        }
+        
+        @Override
+        public ResolvedToken getResolvedToken() {
+            return resolvedToken;
         }
 
         @Override
@@ -107,21 +119,31 @@ public interface Node {
         public String name() {
             return resolvedToken.getGrammarElement().getName();
         }
-    }
+        }
 
-    static class GrammarElementNode extends AbstractNode {
+        public static class GroupNodeImpl extends AbstractNode implements GroupNode  {
 
         private GrammarElement element;
         private Collection<Node> children = new ArrayList<Node>();
 
-        public GrammarElementNode(GrammarElement group) {
+        public GroupNodeImpl(GrammarElement group) {
             this.element = group;
         }
+
+        @Override
+        public void accept(NodeVisitor2 visitor) {
+            if(visitor.visitGroupNode(this)) {
+                for (Node child : children()) {
+                    child.accept(visitor);
+                }
+            }
+        }
         
+        @Override
         public GrammarElement getGrammarElement() {
             return element;
         }
-
+        
         public <T extends AbstractNode> T addChild(T node) {
             children.add(node);
             return node;

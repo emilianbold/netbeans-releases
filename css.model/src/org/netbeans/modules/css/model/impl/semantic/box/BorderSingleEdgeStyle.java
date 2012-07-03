@@ -44,7 +44,7 @@ package org.netbeans.modules.css.model.impl.semantic.box;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxType;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.model.api.semantic.Edge;
 import org.netbeans.modules.css.model.impl.semantic.NodeModel;
 
 /**

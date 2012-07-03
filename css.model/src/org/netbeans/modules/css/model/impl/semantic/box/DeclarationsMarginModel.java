@@ -47,8 +47,8 @@ import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
-import org.netbeans.modules.css.model.api.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.Edge;
+import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
     "CTL_MarginDescription=Margin Box Model", // NOI18N
     "CTL_MarginCategory=Box" //NOI18N
 })
-public class DeclarationsMarginModel extends DeclarationsBoxModelBase implements SemanticModel {
+public class DeclarationsMarginModel extends DeclarationsBoxModelBase implements PModel {
 
     private static final String NAME = "margin"; //NOI18N
     

@@ -48,7 +48,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.model.api.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
 import org.netbeans.modules.css.model.api.Model;
@@ -139,7 +139,7 @@ public abstract class ModelElement implements Element {
     }
 
     @Override
-    public Collection<? extends SemanticModel> getSemanticModels() {
+    public Collection<? extends PModel> getSemanticModels() {
         return Collections.emptyList();
     }
 

@@ -46,7 +46,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.model.api.semantic.Edge;
 import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 import org.netbeans.modules.css.model.api.*;
 

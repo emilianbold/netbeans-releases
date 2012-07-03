@@ -41,11 +41,6 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.GrammarElement;
-import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
-import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
-
 /**
  * Allow to listen on GrammarResolver parsing.
  * 

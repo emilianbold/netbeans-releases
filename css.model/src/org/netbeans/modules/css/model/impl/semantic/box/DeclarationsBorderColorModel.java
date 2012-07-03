@@ -45,11 +45,11 @@ import java.util.Collection;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.impl.semantic.Color;
+import org.netbeans.modules.css.model.impl.semantic.ColorNodeModel;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
-import org.netbeans.modules.css.model.api.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.Edge;
+import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
     "CTL_BorderColorDescription=Border Color Box Model", // NOI18N
     "CTL_BorderColorCategory=Box" //NOI18N
 })
-public class DeclarationsBorderColorModel extends DeclarationsBoxModelBase implements SemanticModel {
+public class DeclarationsBorderColorModel extends DeclarationsBoxModelBase implements PModel {
 
     private static final String PROPERTY_NAME_PREFIX = "border"; //NOI18N
     private static final String PROPERTY_NAME_POSTFIX = "color"; //NOI18N
@@ -114,6 +114,6 @@ public class DeclarationsBorderColorModel extends DeclarationsBoxModelBase imple
 
     @Override
     public BoxElement createElement(CharSequence text) {
-        return Color.parseValue(text);
+        return ColorNodeModel.parseValue(text);
     }
 }

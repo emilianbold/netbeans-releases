@@ -44,7 +44,7 @@ package org.netbeans.modules.css.visual;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.api.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.openide.nodes.Node;
 
 /**
@@ -53,10 +53,10 @@ import org.openide.nodes.Node;
  */
 public class EditableBoxModelProperty extends Node.Property<EditableBox> {
 
-    private SemanticModel model;
+    private PModel model;
     private RuleNode ruleNode;
 
-    public EditableBoxModelProperty(RuleNode ruleNode, SemanticModel model) {
+    public EditableBoxModelProperty(RuleNode ruleNode, PModel model) {
         super(EditableBox.class);
         this.ruleNode = ruleNode;
         this.model = model;

@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
-import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
+import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
+import org.netbeans.modules.css.model.api.semantic.Edge;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -54,12 +56,16 @@ public class Utils {
     private Utils() {
     }
 
+    public static boolean nameEquals(Node node, Element element) {
+        return LexerUtils.equals(element.getNodeName(), node.name(), true, true);
+    }
+
     public static void dumpBox(Box box) {
         BoxElement top = box.getEdge(Edge.TOP);
         BoxElement right = box.getEdge(Edge.RIGHT);
         BoxElement bottom = box.getEdge(Edge.BOTTOM);
         BoxElement left = box.getEdge(Edge.LEFT);
-        
+
         System.out.println("\n\t" + (top == null ? null : top.asText()));
         System.out.println((left == null ? null : left.asText()) + "\t\t" + (right == null ? null : right.asText()));
         System.out.println("\t" + (bottom == null ? null : bottom.asText()) + "\n");

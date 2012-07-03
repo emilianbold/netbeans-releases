@@ -39,89 +39,21 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl.semantic;
-
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
-import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-
+package org.netbeans.modules.css.model.api.semantic;
 
 /**
  *
  * @author marekfukala
  */
-public class Color extends NodeModel implements BoxElement {
-
-    private String value; //user set value
-
-    public Color(String value) {
-        this.value = value;
+public enum Edge {
+    //do not change the order!
+    TOP, RIGHT, BOTTOM, LEFT;
+    
+    public boolean isVerticalEdge() {
+        return this == RIGHT || this == LEFT;
     }
     
-    public Color(Node node) {
-        super(node);
+    public boolean isHorizontalEdge() {
+        return this == TOP || this == BOTTOM;
     }
-    
-    public static Color parseValue(CharSequence text) {
-        return new Color(text.toString());
-    }
-    
-    public String getValue() {
-        if(value != null) {
-            return value;
-        }
-        
-        //just gather all token nodes and join to an image
-        final StringBuilder builder = new StringBuilder();
-
-        getNode().accept(new NodeVisitor() {
-
-            @Override
-            public boolean visit(Node node) {
-                if(node instanceof Node.ResolvedTokenNode) {
-                    Node.ResolvedTokenNode tokenNode = (Node.ResolvedTokenNode)node;
-                    builder.append(tokenNode.image());
-                }
-                return true;
-            }
-
-            @Override
-            public void unvisit(Node node) {
-            }
-        });
-        
-        return builder.toString();
-    }
-
-    @Override
-    public String asText() {
-        return getValue();
-    }
-
- 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + (this.value != null ? this.value.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Color other = (Color) obj;
-        if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
-            return false;
-        }
-        return true;
-    }
-
-    
-
-    
 }

@@ -47,8 +47,8 @@ import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.semantic.box.Box;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
-import org.netbeans.modules.css.model.api.semantic.SemanticModel;
+import org.netbeans.modules.css.model.api.semantic.Edge;
+import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
     "CTL_BorderWidthDescription=Border Width Box Model", // NOI18N
     "CTL_BorderWidthCategory=Box" //NOI18N
 })
-public class DeclarationsBorderWidthModel extends DeclarationsBoxModelBase implements SemanticModel {
+public class DeclarationsBorderWidthModel extends DeclarationsBoxModelBase implements PModel {
 
     private static final String PROPERTY_NAME_PREFIX = "border"; //NOI18N
     private static final String PROPERTY_NAME_POSTFIX = "width"; //NOI18N

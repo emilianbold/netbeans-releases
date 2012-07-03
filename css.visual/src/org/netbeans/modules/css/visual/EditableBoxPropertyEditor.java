@@ -56,7 +56,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.model.api.semantic.box.BoxElement;
-import org.netbeans.modules.css.model.api.semantic.box.Edge;
+import org.netbeans.modules.css.model.api.semantic.Edge;
 import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;

@@ -384,7 +384,7 @@ public class PropertyValueTest extends CssTestBase {
         
         Node ch2 = i.next();
         assertNotNull(ch2);
-        assertTrue(ch2 instanceof Node.GrammarElementNode);
+        assertTrue(ch2 instanceof Node.GroupNodeImpl);
 //        assertEquals(root, ch2.parent());
         
 
@@ -409,7 +409,7 @@ public class PropertyValueTest extends CssTestBase {
         Iterator<Node> i = ch.iterator();
         Node ch1 = i.next();
         assertNotNull(ch1);
-        assertTrue(ch1 instanceof Node.GrammarElementNode);
+        assertTrue(ch1 instanceof Node.GroupNodeImpl);
         assertEquals("@generic-family", ch1.name());
 //        assertEquals(root, ch1.parent());
         

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic.box;
+package org.netbeans.modules.css.model.impl.semantic.background;
+
+import java.util.Collection;
+import java.util.Stack;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.model.api.semantic.background.Background;
+import org.netbeans.modules.css.model.impl.semantic.Element;
+import org.netbeans.modules.css.model.impl.semantic.ImageI;
 
 /**
  *
  * @author marekfukala
  */
-public enum Edge {
-    //do not change the order!
-    TOP, RIGHT, BOTTOM, LEFT
+public class BackgroundImageProperty {
+
+    private Stack<Background> BGS = new Stack<Background>();
+
+    public BackgroundImageProperty(Node node) {
+        node.accept(new NodeVisitor.Adapter() { 
+            @Override
+            public boolean visit(Node node) {
+                switch (Element.forNode(node)) {
+                    case image:
+                        Background background = new BackgroundI();
+                        background.setImage(new ImageI(node));
+                        BGS.push(background);
+                }
+
+                return true;
+            }
+        });
+    }
+    
+    public Collection<Background> getBackgrounds() {
+        return BGS;
+    }
 }

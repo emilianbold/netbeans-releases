@@ -675,7 +675,7 @@ public class GrammarResolverTest extends CssTestBase {
 
     public void testBackroundPositionOrder() {
         // TODO: fix #142254 and enable this test again
-        PropertyModel p = Properties.getPropertyModel("@bg-position");
+        PropertyModel p = Properties.getPropertyModel("@bg-pos");
         assertResolve(p.getGrammar(), "center top");
     }
 
@@ -829,7 +829,7 @@ public class GrammarResolverTest extends CssTestBase {
 //    
     
     public void testBgPosition() {
-        PropertyModel pm = Properties.getPropertyModel("@bg-position");
+        PropertyModel pm = Properties.getPropertyModel("@bg-pos");
         assertResolve(pm.getGrammarElement(), "center left");
     }
     

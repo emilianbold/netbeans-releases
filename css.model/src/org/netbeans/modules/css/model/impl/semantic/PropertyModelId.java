@@ -71,7 +71,7 @@ public enum PropertyModelId {
     BOX(Margin.class, MarginTop.class, MarginBottom.class, MarginLeft.class, MarginRight.class,
     Padding.class, PaddingTop.class, PaddingBottom.class, PaddingLeft.class, PaddingRight.class,
     Border.class, BorderBottom.class, BorderLeft.class, BorderRight.class, BorderTop.class,
-    BorderColor.class, BorderStyle.class, BorderWidth.class, Color.class, BorderStyleItem.class,
+    BorderColor.class, BorderStyle.class, BorderWidth.class, ColorNodeModel.class, BorderStyleItem.class,
     BorderWidthItem.class);
     
     private Class[] modelClasses;

@@ -55,10 +55,10 @@ public class GrammarParseTreeConvertor {
 
     private static Node convert(Node node) {
         Node converted;
-        if(node instanceof Node.GrammarElementNode) {
+        if(node instanceof Node.GroupNodeImpl) {
             //create a copy of the grammar node
-            Node.GrammarElementNode gen = (Node.GrammarElementNode)node;
-            Node.GrammarElementNode copy = new Node.GrammarElementNode(gen.getGrammarElement());
+            Node.GroupNodeImpl gen = (Node.GroupNodeImpl)node;
+            Node.GroupNodeImpl copy = new Node.GroupNodeImpl(gen.getGrammarElement());
             converted = copy;
             
             //and set a modified list of child nodes

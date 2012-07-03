@@ -82,7 +82,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
         }
         if (accepted) {
             Entry peek = stack.peek();
-            Node.GrammarElementNode gnode = (Node.GrammarElementNode) peek.node;
+            Node.GroupNodeImpl gnode = (Node.GroupNodeImpl) peek.node;
 
             peek.childrenMap.put(pop.grammarElement, node);
             gnode.addChild(node);
@@ -97,7 +97,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
             indent++;
         }
 
-        Node.GrammarElementNode node = new Node.GrammarElementNode(group);
+        Node.GroupNodeImpl node = new Node.GroupNodeImpl(group);
         if (root == null) {
             if(DEBUG) {
                 System.out.println(String.format("Root node set to element %s", group));
@@ -140,7 +140,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
         node.setResolvedToken(resolvedToken);
 
         Entry peek = stack.peek();
-        Node.GrammarElementNode gnode = (Node.GrammarElementNode) peek.node;
+        Node.GroupNodeImpl gnode = (Node.GroupNodeImpl) peek.node;
         peek.childrenMap.put(pop.grammarElement, node);
         gnode.addChild(node);
         
@@ -160,7 +160,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
             System.out.println(String.format("(in group %s)", peek.grammarElement));
         }
 
-        Node.GrammarElementNode group = (Node.GrammarElementNode) peek.node;
+        Node.GroupNodeImpl group = (Node.GroupNodeImpl) peek.node;
 
         peek.choosenBranches.add(element);
         

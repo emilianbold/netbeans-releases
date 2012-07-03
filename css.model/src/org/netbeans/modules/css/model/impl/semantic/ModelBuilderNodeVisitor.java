@@ -192,7 +192,7 @@ public class ModelBuilderNodeVisitor implements NodeVisitor {
                 //doesn't have to be any for the token nodes
                 fieldType = TokenNodeModel.class;
 
-            } else if (node instanceof Node.GrammarElementNode) {
+            } else if (node instanceof Node.GroupNodeImpl) {
                 constructorArgumentClass = Node.class;
                 //get the model type from the field type
                 try {
