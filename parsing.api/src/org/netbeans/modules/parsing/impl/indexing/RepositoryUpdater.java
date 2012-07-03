@@ -3302,7 +3302,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         protected @Override boolean getDone() {
-            return scanBinary(root, BinaryIndexers.load(), null);
+            boolean result = scanBinary(root, BinaryIndexers.load(), null);
+            refreshActiveDocument();
+            return result;
         }
 
         @Override
