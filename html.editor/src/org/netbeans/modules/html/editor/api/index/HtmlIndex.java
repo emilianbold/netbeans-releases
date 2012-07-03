@@ -39,21 +39,27 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.indexing;
+package org.netbeans.modules.html.editor.api.index;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.html.editor.indexing.HtmlIndexer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
@@ -61,6 +67,7 @@ import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -79,12 +86,16 @@ public class HtmlIndex {
      * 
      */
     public static HtmlIndex get(Project project) throws IOException {
+        return get(project, true);
+    }
+    
+    public static HtmlIndex get(Project project, boolean createIfNeccesary) throws IOException {
         if(project == null) {
             throw new NullPointerException();
         }
         synchronized (INDEXES) {
             HtmlIndex index = INDEXES.get(project);
-            if(index == null) {
+            if(index == null && createIfNeccesary) {
                 index = new HtmlIndex(project);
                 INDEXES.put(project, index);
             }
@@ -93,6 +104,7 @@ public class HtmlIndex {
     }
 
     private final QuerySupport querySupport;
+    private ChangeSupport changeSupport;
 
     /** Creates a new instance of JsfIndex */
     private HtmlIndex(Project project) throws IOException {
@@ -102,8 +114,25 @@ public class HtmlIndex {
                 Collections.<String>emptyList(),
                 Collections.<String>emptyList());
         this.querySupport = QuerySupport.forRoots(HtmlIndexer.Factory.NAME, HtmlIndexer.Factory.VERSION, sourceRoots.toArray(new FileObject[]{}));
+        this.changeSupport = new ChangeSupport(this);
     }
 
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+    
+    // TODO: should not be in the API; for now it is OK; need to talk to Marek
+    // whether this approach to notification of changes makes any sense or should
+    // be done completely differently
+    public void notifyChange() {
+        changeSupport.fireChange();
+    }
+    
+    
     /**
      *
      * @param keyName
@@ -166,6 +195,30 @@ public class HtmlIndex {
 
     }
 
+    /**
+     * Returns list of all remote URLs
+     */
+    public List<URL> getAllRemoteDependencies() throws IOException {
+        Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(HtmlIndexer.REFERS_KEY, "", QuerySupport.Kind.PREFIX, HtmlIndexer.REFERS_KEY));
+        Set<String> paths = new HashSet<String>();
+        for (IndexResult result : results) {
+            String importsValue = result.getValue(HtmlIndexer.REFERS_KEY);
+            paths.addAll(decodeListValue(importsValue));
+        }
+        List<URL> urls = new ArrayList<URL>();
+        for (String p : paths) {
+            // TODO: any better way to pick only remote URLs?
+            if (p.startsWith("http")) {
+                try {
+                    urls.add(new URL(p));
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return urls;
+    }
+    
 
     /**
      * Gets all 'related' files to the given html file object.

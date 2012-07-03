@@ -43,13 +43,24 @@ package org.netbeans.modules.web.clientproject;
 
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -58,6 +69,7 @@ import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -77,6 +89,8 @@ public class ClientSideProject implements Project {
     private final PropertyEvaluator eval;
     private final Lookup lookup;
     private BrowserSupport browserSupport;
+    private ClassPath sourcePath;
+    private RemoteFiles remoteFiles;
     
     public ClientSideProject(AntProjectHelper helper) {
         this.helper = helper;
@@ -84,6 +98,7 @@ public class ClientSideProject implements Project {
         eval = createEvaluator();
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
         lookup = createLookup(configuration);
+        remoteFiles = new RemoteFiles(this);
     }
 
     public synchronized BrowserSupport getBrowserSupport() {
@@ -91,6 +106,10 @@ public class ClientSideProject implements Project {
             browserSupport = BrowserSupport.getDefault();
         }
         return browserSupport;
+    }
+
+    public RemoteFiles getRemoteFiles() {
+        return remoteFiles;
     }
     
     public AntProjectHelper getHelper() {
@@ -137,9 +156,18 @@ public class ClientSideProject implements Project {
                new CustomizerProviderImpl(this),        
                new ClientSideConfigurationProvider(this),
                getBrowserSupport(),
+               new ClassPathProviderImpl(this),
+               GenericSources.genericOnly(this)
        });
-   }
+    }
 
+    ClassPath getSourceClassPath() {
+        if (sourcePath == null) {
+            sourcePath = ClassPathProviderImpl.createProjectClasspath(this);
+        }
+        return sourcePath;
+    }
+    
     private final class Info implements ProjectInformation {
 
         @Override
@@ -210,11 +238,13 @@ public class ClientSideProject implements Project {
         protected void projectOpened() {
             projectFileChangesListener = new ProjectFilesListener(p.getBrowserSupport());
             FileUtil.addRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
+            GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{p.getSourceClassPath()});
         }
 
         @Override
         protected void projectClosed() {
             FileUtil.removeRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
+            GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{p.getSourceClassPath()});
         }
         
     }
