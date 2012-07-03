@@ -48,11 +48,16 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -64,11 +69,24 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
+import org.apache.maven.DefaultMaven;
+import org.apache.maven.Maven;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.Model;
+import org.apache.maven.model.building.ModelBuildingException;
+import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -78,15 +96,20 @@ import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import static org.netbeans.modules.maven.grammar.Bundle.*;
 import org.netbeans.modules.maven.grammar.effpom.AnnotationBarManager;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer.Location;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.Annotation;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -97,6 +120,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
@@ -143,8 +167,12 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
         @Override public MultiViewDescription createPanel(Lookup lookup) {
             return new EffectivePomMD(lookup);
         }
-
     }
+    
+    /**
+     * placeholder to put into lookup meaning no lookup returned from base ArtifactViewerFactory
+     */
+    private static final MavenProject NULL = new MavenProject();
     
     @MultiViewElement.Registration(
         displayName="#TAB_Effective",
@@ -155,13 +183,27 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
         position=101
     )
     @Messages("TAB_Effective=Effective")
-    public static MultiViewElement forPOM(final Lookup editor) {
-        class L extends ProxyLookup implements PropertyChangeListener {
+    public static MultiViewElement forPOMEditor(final Lookup editor) {
+        L look = new L(editor);
+        return new EffPOMView(look);
+    }    
+
+    
+     static class L extends ProxyLookup implements PropertyChangeListener {
             Project p;
-            L() {
+            private Lookup editor;
+            L(Lookup editor) {
+                this.editor = editor;
+                setLookups(editor);
                 FileObject pom = editor.lookup(FileObject.class);
                 if (pom != null) {
-                    p = FileOwnerQuery.getOwner(pom);
+                    try {
+                        p = ProjectManager.getDefault().findProject(pom.getParent());
+                    } catch (IOException ex) {
+                        LOG.log(Level.FINE, ex.getMessage(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.log(Level.FINE, ex.getMessage(), ex);
+                    }
                     if (p != null) {
                         NbMavenProject nbmp = p.getLookup().lookup(NbMavenProject.class);
                         if (nbmp != null) {
@@ -172,8 +214,10 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         }
                     } else {
                         LOG.log(Level.WARNING, "no owner of {0}", pom);
+                        setLookups(editor, Lookups.singleton(NULL));
                     }
                 } else {
+                    setLookups(editor, Lookups.singleton(NULL));
                     LOG.log(Level.WARNING, "no FileObject in {0}", editor);
                 }
             }
@@ -184,31 +228,42 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                 }
             }
             private void reset() {
+                assert p != null;
                 ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
                 if (avf != null) {
+                    //a very weird pattern there, if project's artifact doesn't exist, we return null here..
+                    // but later on null MavenProject lookup means Loading.. this we need another state for
+                    // non existing MavenProject lookup result
                     Lookup l = avf.createLookup(p);
                     if (l != null) {
-                        setLookups(l);
+                        setLookups(l, editor);
                     } else {
                         LOG.log(Level.WARNING, "no artifact lookup for {0}", p);
+                        setLookups(editor, Lookups.singleton(NULL));
                     }
                 } else {
                     LOG.warning("no ArtifactViewerFactory found");
+                    setLookups(editor, Lookups.singleton(NULL));
                 }
             }
         }
-        return new EffPOMView(new L());
-    }    
-
+    
     private static class EffPOMView implements MultiViewElement, Runnable {
 
         private final Lookup lookup;
         private final RequestProcessor.Task task = RP.create(this);
         private JToolBar toolbar;
         private JPanel panel;
+        boolean firstTimeShown = true;
+        private final Result<MavenProject> result;
 
         EffPOMView(Lookup lookup) {
             this.lookup = lookup;
+
+            result = lookup.lookupResult(MavenProject.class);
+            result.allInstances();
+            result.addLookupListener(new LookupListener1(task));
+            
         }
 
         @Override public JComponent getVisualRepresentation() {
@@ -227,11 +282,13 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                 Action[] actions = lookup.lookup(a.getClass());
                 Dimension space = new Dimension(3, 0);
                 toolbar.addSeparator(space);
-                for (Action act : actions) {
-                    JButton btn = new JButton();
-                    Actions.connect(btn, act);
-                    toolbar.add(btn);
-                    toolbar.addSeparator(space);
+                if (actions != null) {
+                    for (Action act : actions) {
+                        JButton btn = new JButton();
+                        Actions.connect(btn, act);
+                        toolbar.add(btn);
+                        toolbar.addSeparator(space);
+                    }
                 }
             }
             return toolbar;
@@ -257,8 +314,11 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
 
         @Messages("LBL_loading_Eff=Loading Effective POM...")
         @Override public void componentShowing() {
-            panel.add(new JLabel(LBL_loading_Eff(), SwingConstants.CENTER), BorderLayout.CENTER);
-            task.schedule(0);
+            if (firstTimeShown) {
+                firstTimeShown = false;
+                panel.add(new JLabel(LBL_loading_Eff(), SwingConstants.CENTER), BorderLayout.CENTER);
+                task.schedule(0);
+            }
         }
 
         @Override public void componentHidden() {}
@@ -273,12 +333,21 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
 
         @Override public void run() {
             try {
-                Result<MavenProject> result = lookup.lookupResult(MavenProject.class);
                 Iterator<? extends MavenProject> it = result.allInstances().iterator();
                 MavenProject mp = it.hasNext() ? it.next() : null;
-                result.addLookupListener(new LookupListener1(task));
                 if (mp == null) {
                     //still loading.
+                    return;
+                }
+                if (mp == NULL) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override public void run() {
+                            panel.removeAll();
+                            panel.add(new JLabel("No project associated with the project or loading failed. See Source tab for errors", SwingConstants.CENTER), BorderLayout.CENTER);
+                            panel.revalidate();
+                            LOG.log(Level.FINE, "No MavenProject in base ArtifactViewerFactory lookup. Unloadable project?");
+                        }
+                    });
                     return;
                 }
                 assert mp != null;
@@ -286,10 +355,28 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                 LocationAwareMavenXpp3Writer writer = new LocationAwareMavenXpp3Writer();
                 final StringWriter sw = new StringWriter();
                 final List<Location> loc = writer.write(sw, model);
+                FileObject pom = lookup.lookup(FileObject.class);
+                List<ModelProblem> problems = new ArrayList<ModelProblem>();
+                final Map<ModelProblem, Location> prblmMap = new HashMap<ModelProblem, Location>();
+                if (pom != null) {
+                    File file = FileUtil.toFile(pom);
+                    problems.addAll(runMavenValidationImpl(file));
+                    for (Location lo : loc) {
+                        Iterator<ModelProblem> it2 = problems.iterator();
+                        while (it2.hasNext()) {
+                            ModelProblem modelProblem = it2.next();
+                            if (modelProblem.getLineNumber() == lo.loc.getLineNumber() && modelProblem.getModelId().equals(lo.loc.getSource().getModelId())) {
+                                prblmMap.put(modelProblem, lo);
+                                it2.remove();
+                            }
+                        }
+                    }
+                }
+                
+                
                     EventQueue.invokeLater(new Runnable() {
                         @Override public void run() {
                             Lookup mime = MimeLookup.getLookup("text/x-effective-pom+xml");
-                            Collection<? extends SideBarFactory> bars = mime.lookupAll(SideBarFactory.class);
                             NbEditorKit kit = mime.lookup(NbEditorKit.class);
                             NbEditorDocument doc = (NbEditorDocument) kit.createDefaultDocument();
                             JEditorPane pane = new JEditorPane("text/x-effective-pom+xml", null);
@@ -304,6 +391,31 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                                 Exceptions.printStackTrace(ex);
                             }
                             pane.setCaretPosition(0);
+                            
+                            for (final Map.Entry<ModelProblem, Location> ent : prblmMap.entrySet()) {
+                                doc.addAnnotation(new Position() {
+
+                                    @Override
+                                    public int getOffset() {
+                                        return ent.getValue().startOffset;
+                                    }
+                                }, 1, new Annotation() {
+
+                                    @Override
+                                    public String getAnnotationType() {
+                                        if (ent.getKey().getSeverity() == ModelProblem.Severity.ERROR || ent.getKey().getSeverity() == ModelProblem.Severity.FATAL) {
+                                            return "org-netbeans-spi-editor-hints-parser_annotation_err";
+                                        } else {
+                                            return "org-netbeans-spi-editor-hints-parser_annotation_warn";
+                                        }
+                                    }
+
+                                    @Override
+                                    public String getShortDescription() {
+                                        return ent.getKey().getMessage();
+                                    }
+                                });
+                            }
 
                             panel.revalidate();
                             
@@ -317,12 +429,45 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         panel.add(new JLabel(LBL_failed_to_load(x.getLocalizedMessage()), SwingConstants.CENTER), BorderLayout.CENTER);
                         panel.revalidate();
                         LOG.log(Level.FINE, "Exception thrown while loading effective POM", x);
+                        firstTimeShown = true;
                     }
                 });
             }
         }
 
     }
+    
+    //copied from maven.hints Status Provider..
+    static List<ModelProblem> runMavenValidationImpl(final File pom) {
+        //TODO profiles based on current configuration??
+        MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
+        MavenExecutionRequest meReq = embedder.createMavenExecutionRequest();
+        ProjectBuildingRequest req = meReq.getProjectBuildingRequest();
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MAVEN_3_1); // currently enables just <reporting> warning
+        req.setLocalRepository(embedder.getLocalRepository());
+        List<ArtifactRepository> remoteRepos = RepositoryPreferences.getInstance().remoteRepositories(embedder);
+        req.setRemoteRepositories(remoteRepos);
+        req.setRepositorySession(((DefaultMaven) embedder.lookupComponent(Maven.class)).newRepositorySession(meReq));
+        List<ModelProblem> problems;
+        try {
+            problems = embedder.lookupComponent(ProjectBuilder.class).build(pom, req).getProblems();
+        } catch (ProjectBuildingException x) {
+            problems = new ArrayList<ModelProblem>();
+            List<ProjectBuildingResult> results = x.getResults();
+            if (results != null) { //one code point throwing ProjectBuildingException contains results,
+                for (ProjectBuildingResult result : results) {
+                    problems.addAll(result.getProblems());
+                }
+            } else {
+                // another code point throwing ProjectBuildingException doesn't contain results..
+                Throwable cause = x.getCause();
+                if (cause instanceof ModelBuildingException) {
+                    problems.addAll(((ModelBuildingException) cause).getProblems());
+                }
+            }
+        }
+        return problems;
+    }    
     
     private static class LookupListener1 implements LookupListener {
         private final RequestProcessor.Task task;

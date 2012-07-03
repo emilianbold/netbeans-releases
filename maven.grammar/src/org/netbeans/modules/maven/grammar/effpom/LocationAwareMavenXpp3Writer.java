@@ -141,7 +141,7 @@ public class LocationAwareMavenXpp3Writer {
         public final InputLocation loc;
         public final int startOffset;
         public final int endOffset;
-
+        
         public Location(InputLocation loc, int startOffset, int endOffset) {
             this.loc = loc;
             this.startOffset = startOffset;

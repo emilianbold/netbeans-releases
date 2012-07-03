@@ -106,17 +106,18 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
     private static final RequestProcessor RP = new RequestProcessor(ArtifactMultiViewFactory.class);
 
     @Override @NonNull public Lookup createLookup(@NonNull Artifact artifact, @NullAllowed List<ArtifactRepository> repos) {
-        return createLookup(null, null, artifact, repos);
+        return createViewerLookup(null, artifact, repos);
     }
     @Override @NonNull public Lookup createLookup(@NonNull NBVersionInfo info) {
-        return createLookup(null, info, RepositoryUtil.createArtifact(info), null);
+        return createViewerLookup(info, RepositoryUtil.createArtifact(info), null);
     }
 
     @Override @CheckForNull public Lookup createLookup(@NonNull Project prj) {
         NbMavenProject mvPrj = prj.getLookup().lookup(NbMavenProject.class);
         MavenProject mvn = mvPrj.getMavenProject();
         Artifact artifact = mvn.getArtifact();
-        return artifact != null ? createLookup(prj, null, artifact, null) : null;
+        //artifact null with unloadable projects??
+        return artifact != null ? createPomEditorLookup(prj, artifact) : null;
     }
 
     @Override @NonNull public TopComponent createTopComponent(@NonNull Lookup lookup) {
@@ -145,19 +146,15 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         "TIT_Error=Panel loading error.",
         "BTN_CLOSE=&Close"
     })
-    @NonNull private Lookup createLookup(final @NullAllowed Project prj, final @NullAllowed NBVersionInfo info, final @NonNull Artifact artifact, final @NullAllowed List<ArtifactRepository> fRepos) {
+    @NonNull private Lookup createViewerLookup(final @NullAllowed NBVersionInfo info, final @NonNull Artifact artifact, final @NullAllowed List<ArtifactRepository> fRepos) {
         final InstanceContent ic = new InstanceContent();
         AbstractLookup lookup = new AbstractLookup(ic);
-        if (prj != null) {
-            ic.add(prj);
-        }
         ic.add(artifact);
         if (info != null) {
             ic.add(info);
         }
         final Artifact fArt = artifact;
 
-        if (prj == null) {
             RP.post(new Runnable() {
                     @Override
                 public void run() {
@@ -215,37 +212,6 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     }
                 }
             });
-        } else {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
-                    List<String> profileIds = new ArrayList<String>();
-                    for (Profile p : im.getMavenProject().getActiveProfiles()) {
-                        profileIds.add(p.getId());
-                    }
-                    MavenProject mvnprj = im.loadAlternateMavenProject(EmbedderFactory.getProjectEmbedder(), profileIds, new Properties());
-                    DependencyNode tree = DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getProjectEmbedder(), Artifact.SCOPE_TEST);
-                    FileObject fo = prj.getLookup().lookup(FileObject.class);
-                    POMModel pommodel = null;
-                    if (fo != null) {
-                        ModelSource ms = Utilities.createModelSource(fo);
-                        if (ms.isEditable()) {
-                            POMModel model = POMModelFactory.getDefault().getModel(ms);
-                            if (model != null) {
-                                pommodel = model;
-                            }
-                        }
-                    }
-                    //add all in one place to prevent large time delays between additions
-                    if (pommodel != null) {
-                        ic.add(pommodel);
-                    }
-                    ic.add(tree);
-                    ic.add(mvnprj);
-                }
-            });
-        }
 
         Action[] toolbarActions = new Action[] {
             new AddAsDependencyAction(fArt),
@@ -281,6 +247,49 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
     private static String getTcId(Artifact artifact) {
         return artifact.getGroupId() + ":" + artifact.getArtifactId() +
                 ":" + artifact.getVersion();
+    }
+
+    private Lookup createPomEditorLookup(final Project prj, @NonNull Artifact artifact) {
+        final InstanceContent ic = new InstanceContent();
+        AbstractLookup lookup = new AbstractLookup(ic);
+        ic.add(artifact);
+        if (prj != null) {
+            ic.add(prj);
+            //lookup for project non null means we are part of pom editor
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
+                    MavenProject mvnprj = im.getMavenProject();
+                    DependencyNode tree = DependencyTreeFactory.createDependencyTree(mvnprj, EmbedderFactory.getProjectEmbedder(), Artifact.SCOPE_TEST);
+                    FileObject fo = prj.getLookup().lookup(FileObject.class);
+                    POMModel pommodel = null;
+                    if (fo != null) {
+                        ModelSource ms = Utilities.createModelSource(fo);
+                        if (ms.isEditable()) {
+                            POMModel model = POMModelFactory.getDefault().getModel(ms);
+                            if (model != null) {
+                                pommodel = model;
+                            }
+                        }
+                    }
+                    //add all in one place to prevent large time delays between additions
+                    if (pommodel != null) {
+                        ic.add(pommodel);
+                    }
+                    ic.add(tree);
+                    ic.add(mvnprj);
+                }
+            });
+        }
+        Action[] toolbarActions = new Action[] {
+            new AddAsDependencyAction(artifact),
+            CommonArtifactActions.createScmCheckoutAction(lookup),
+            CommonArtifactActions.createLibraryAction(lookup)
+        };
+        ic.add(toolbarActions);
+        
+        return lookup;
     }
 
 }
