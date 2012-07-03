@@ -809,6 +809,7 @@ implements TokenHierarchyListener, ChangeListener {
                 }
                 return true;
             } else {
+                tokenOffset = tokenEndOffset;
                 return false;
             }
         }
