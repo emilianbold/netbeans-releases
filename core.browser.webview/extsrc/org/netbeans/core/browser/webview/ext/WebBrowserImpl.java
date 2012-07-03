@@ -678,8 +678,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.setScaleX( zoomFactor );
-                browser.setScaleY( zoomFactor );
+                browser.impl_setScale( zoomFactor );
             }
         });
     }
