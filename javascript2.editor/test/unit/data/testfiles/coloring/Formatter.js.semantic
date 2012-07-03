@@ -1,0 +1,86 @@
+/* 
+ * Object that provides output to a page
+ */
+
+var |>GLOBAL:formatter<| = {
+    |>FIELD:indent<|: 0,
+    |>FIELD:space<|: "",
+  
+    // all properties and object function has to be referenced throgh this
+    |>METHOD:addIndent<|: function (count) {
+        this.|>FIELD:indent<| += count;
+        this.|>FIELD:space<| = this.addSpace();
+    },
+
+    |>METHOD:removeIndent<|: function (count) {
+        this.|>FIELD:indent<| -= count;
+        if(this.|>FIELD:indent<| < 0) {
+            this.|>FIELD:indent<| = 0;
+        }
+        this.|>FIELD:space<| =  this.addSpace();
+    },
+
+    |>METHOD:println<|: function (text) {
+        |>GLOBAL:document<|.writeln(this.|>FIELD:space<| + text + "<br/>");
+    },
+
+    |>METHOD:delimiter<|: function(title, emptyLine) {
+        if (emptyLine == |>GLOBAL:undefined<| || !(emptyLine instanceof |>GLOBAL:Boolean<|)) {
+            emptyLine = new |>GLOBAL:Boolean<|(false);
+        }
+        if (emptyLine.valueOf()) {
+            this.println("");
+        }
+        if (title != |>GLOBAL:undefined<|) {
+            this.println("------------------- " + title + " ------------------");
+        } else {
+            this.println("-------------------------------------");
+        }
+    },
+
+    /**
+     * Adding space to the indent
+     * @type String
+     */
+    |>METHOD:addSpace<|: function(){
+        var space = "";
+        for(var i = 0; i < this.|>FIELD:indent<|; i++) {
+            space += "&nbsp;";
+        }
+        return space;
+    },
+    
+    |>METHOD:print<|: function (text) {
+        |>GLOBAL:document<|.writeln(text);
+    },
+
+    |>METHOD:printCode<| : function(code) {
+
+        var text = "" + code;
+        text = "<pre>" + code + "</pre>";
+        var textParts = text.split("\"");
+        var number = 0;
+        if (textParts.length > 1){
+            text = "";
+            for (var i = 0; i < textParts.length; i++) {
+                if (number == 0) {
+                    text += textParts[i] + "<font color='#ce7b00'>\"";
+                    number = 1;
+                } else {
+                    text += textParts[i]+ "\"</font>"; 
+                    number = 0;
+                }
+            }
+        }
+        
+        text = text.replace(/function/g, "<font color='blue'>function</font>");
+        text = text.replace(/if/g, "<font color='blue'>if</font>");
+        text = text.replace(/return/g, "<font color='blue'>return</font>");
+        text = text.replace(/new/g, "<font color='blue'>new</font>");
+        text = text.replace(/var/g, "<font color='blue'>var</font>");
+
+        |>GLOBAL:document<|.write(text);
+        this.println("");
+    }
+
+}

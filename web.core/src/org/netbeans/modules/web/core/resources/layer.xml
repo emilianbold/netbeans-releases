@@ -199,11 +199,11 @@ made subject to such option by the copyright holder.
         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="position" intvalue="0"/>
       </file>
-	<file name="JavaScript.js" url="nbresloc:/org/netbeans/modules/javascript/editing/jstemplate.js">
+	<file name="JavaScript.js" url="nbresloc:/org/netbeans/modules/javascript2/editor/resources/jstemplate.js">
          <attr name="position" intvalue="700"/>
          <attr name="template" boolvalue="true"/>
          <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript/editing/javascript.html"/>
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/javascript.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createJSIterator"/>
          <attr name="templateCategory" stringvalue="web-types"/>

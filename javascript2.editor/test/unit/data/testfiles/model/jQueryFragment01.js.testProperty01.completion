@@ -1,0 +1,33 @@
+Code completion result for source line:
+|jQuery.event.customEvent.test();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CONSTRUCTO $()                             [PUBLIC]   jquery-api.xml
+CONSTRUCTO jQuery()                        [PUBLIC]   jquery-api.xml
+CLASS      formatter                       [PUBLIC]   jQueryFragment01.js
+VARIABLE   arguments                       [PRIVATE]  jQueryFragment01.js
+VARIABLE   functionVar                     [PRIVATE]  jQueryFragment01.js
+VARIABLE   globalProperty                  [PUBLIC]   jQueryFragment01.js
+KEYWORD    break                                      null
+KEYWORD    case                                       null
+KEYWORD    catch                                      null
+KEYWORD    continue                                   null
+KEYWORD    default                                    null
+KEYWORD    delete                                     null
+KEYWORD    do                                         null
+KEYWORD    else                                       null
+KEYWORD    finally                                    null
+KEYWORD    for                                        null
+KEYWORD    function                                   null
+KEYWORD    if                                         null
+KEYWORD    in                                         null
+KEYWORD    instanceof                                 null
+KEYWORD    new                                        null
+KEYWORD    return                                     null
+KEYWORD    switch                                     null
+KEYWORD    throw                                      null
+KEYWORD    try                                        null
+KEYWORD    typeof                                     null
+KEYWORD    var                                        null
+KEYWORD    while                                      null
+KEYWORD    with                                       null
