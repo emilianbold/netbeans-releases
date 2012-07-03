@@ -68,6 +68,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.apache.maven.DefaultMaven;
@@ -269,27 +270,21 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
         @Override public JComponent getVisualRepresentation() {
             if (panel == null) {
                 panel = new JPanel(new BorderLayout());
+                if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                    panel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+                }                
             }
             return panel;
         }
 
         @Override public JComponent getToolbarRepresentation() {
-            // XXX copied from org.netbeans.modules.maven.repository.ui, should be made into shared API
             if (toolbar == null) {
                 toolbar = new JToolBar();
                 toolbar.setFloatable(false);
-                Action[] a = new Action[1];
-                Action[] actions = lookup.lookup(a.getClass());
-                Dimension space = new Dimension(3, 0);
-                toolbar.addSeparator(space);
-                if (actions != null) {
-                    for (Action act : actions) {
-                        JButton btn = new JButton();
-                        Actions.connect(btn, act);
-                        toolbar.add(btn);
-                        toolbar.addSeparator(space);
-                    }
-                }
+                if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                    toolbar.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+                }                
+                //TODO
             }
             return toolbar;
         }
