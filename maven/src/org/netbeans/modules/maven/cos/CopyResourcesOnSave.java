@@ -128,14 +128,15 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                     }
                     URI uri = FileUtilities.getDirURI(project.getProjectDirectory(), dir);
                     File file = Utilities.toFile(uri);
-                    if (!old.contains(file) && added.add(file)) { // if a given file is there multiple times, we get assertion back from FileUtil. there can be only one listener+file tuple
-                        FileUtil.addFileChangeListener(this, file);
+                    if (!old.contains(file) && !added.contains(file)) { // if a given file is there multiple times, we get assertion back from FileUtil. there can be only one listener+file tuple
+                        FileUtil.addRecursiveListener(this, file);
                     }
+                    added.add(file);
                 }
             }
             old.removeAll(added);
             for (File oldFile : old) {
-                FileUtil.removeFileChangeListener(this, oldFile);
+                FileUtil.removeRecursiveListener(this, oldFile);
             }
             resourceUris.removeAll(old);
             resourceUris.addAll(added);
