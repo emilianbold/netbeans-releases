@@ -169,7 +169,10 @@ final class LocalOperationFactory extends FileOperationFactory {
                 }
                 Boolean work = null;
                 String[] list = target.list();
-                if (list != null && target.list().length == 0) {
+                if (list != null) {
+                    // if any children exist, they will be:
+                    // - overwritten (if they exist in sources)
+                    // - kept untouched (if they don't exist in sources)
                     Enumeration<? extends FileObject> children = source.getChildren(true);
                     while (children.hasMoreElements()) {
                         FileObject child = children.nextElement();

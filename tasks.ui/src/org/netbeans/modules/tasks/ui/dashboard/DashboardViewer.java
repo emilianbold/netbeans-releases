@@ -72,6 +72,7 @@ import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeList;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModel;
+import org.netbeans.modules.tasks.ui.treelist.TreeListModelListener;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
 import org.openide.DialogDisplayer;
@@ -123,6 +124,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private boolean persistExpanded = true;
     private TreeListNode activeTaskNode;
     static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
+    private ModelListener modelListener;
 
     private DashboardViewer() {
         expandedNodes = new HashSet<TreeListNode>();
@@ -161,6 +163,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         LinkButton btnAddRepo = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_repo.png", true), new CreateRepositoryAction()); //NOI18N
         btnAddRepo.setToolTipText(NbBundle.getMessage(DashboardViewer.class, "LBL_AddRepo")); // NOI18N
         titleRepositoryNode = new TitleNode(NbBundle.getMessage(TitleNode.class, "LBL_Repositories"), btnAddRepo); // NOI18N
+        modelListener = new ModelListener();
+        model.addModelListener(modelListener);
         model.addRoot(-1, titleCategoryNode);
         model.addRoot(-1, titleRepositoryNode);
 
@@ -242,6 +246,14 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public void removeDashboardSelectionListener(ListSelectionListener listener) {
         treeList.removeListSelectionListener(listener);
+    }
+
+    public void addModelListener(TreeListModelListener listener) {
+        model.addModelListener(listener);
+    }
+
+    public void removeModelListener(TreeListModelListener listener) {
+        model.removeModelListener(listener);
     }
 
     public void setActiveTaskNode(TreeListNode activeTaskNode) {
@@ -1061,5 +1073,20 @@ public final class DashboardViewer implements PropertyChangeListener {
             return true;
         }
         return false;
+    }
+
+    private void removeNodesSelection(List<TreeListNode> nodes) {
+        final List<TreeListNode> allNodes = model.getAllNodes();
+        int firstIndex = allNodes.indexOf(nodes.get(0));
+        int lastIndex = allNodes.indexOf(nodes.get(nodes.size() - 1));
+        treeList.getSelectionModel().removeSelectionInterval(firstIndex, lastIndex);
+    }
+
+    private class ModelListener implements TreeListModelListener {
+
+        @Override
+        public void nodeExpanded(TreeListNode node) {
+            removeNodesSelection(node.getChildren());
+        }
     }
 }

@@ -320,6 +320,10 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug199689.cpp", 2, 18, "bug199689.cpp", 5, 1);
     }
     
+    public void testUsingNS2_2() throws Exception {
+        performTest("main.cc", 54, 10, "file.cc", 46, 9); //clsS2pubFun in c2.clsS2pubFun();
+    }
+        
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
@@ -334,9 +338,6 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         public void testClassS2FunInFunS1() throws Exception {
             performTest("file.cc", 56, 20, "file.h", 14, 13); // clsS2pubFun in s2.clsS2pubFun();
         }
-
-        public void testUsingNS2() throws Exception {
-            performTest("main.cc", 54, 10, "file.cc", 46, 9); //clsS2pubFun in c2.clsS2pubFun();
-        }
+        
     }
 }

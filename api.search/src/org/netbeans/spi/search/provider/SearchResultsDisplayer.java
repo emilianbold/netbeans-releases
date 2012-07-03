@@ -127,7 +127,7 @@ public abstract class SearchResultsDisplayer<T> {
      * Set node that display information from the search listener.
      *
      * This method is called right after a new displayer is created, before
-     * method {@link #getVisualComponent().
+     * method {@link #getVisualComponent()}.
      *
      * The default implementation does nothing. Override it if you want to add
      * the info node to your UI.

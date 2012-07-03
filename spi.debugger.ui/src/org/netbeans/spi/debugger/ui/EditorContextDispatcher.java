@@ -42,6 +42,9 @@
 
 package org.netbeans.spi.debugger.ui;
 
+import java.awt.Component;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -54,8 +57,10 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -629,11 +634,25 @@ public final class EditorContextDispatcher {
         
     }
     
-    private class EditorRegistryListener implements PropertyChangeListener {
+    private class EditorRegistryListener implements PropertyChangeListener, FocusListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("EditorRegistryListener.propertyChange("+propertyName+": "+evt.getOldValue()+" => "+evt.getNewValue()+")");
+            }
+            if (propertyName.equals(EditorRegistry.FOCUS_LOST_PROPERTY)) {
+                Object newFocused = evt.getNewValue();
+                if (newFocused instanceof JRootPane) {
+                    JRootPane root = (JRootPane) newFocused;
+                    if (root.isAncestorOf((Component) evt.getOldValue())) {
+                        logger.fine("Focused root.");
+                        root.addFocusListener(this);
+                        return;
+                    }
+                }
+            }
             if (propertyName.equals(EditorRegistry.FOCUS_GAINED_PROPERTY) ||
                 propertyName.equals(EditorRegistry.FOCUS_LOST_PROPERTY) ||
                 propertyName.equals(EditorRegistry.FOCUSED_DOCUMENT_PROPERTY)) {
@@ -644,6 +663,9 @@ public final class EditorContextDispatcher {
         
         private void update(boolean doFire) {
             JTextComponent focusedComponent = EditorRegistry.focusedComponent();
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("New focused component = "+focusedComponent);
+            }
             JTextComponent oldEditor;
             JTextComponent newEditor;
             String MIMEType = null;
@@ -683,6 +705,27 @@ public final class EditorContextDispatcher {
                 }
             });
             
+        }
+
+        @Override
+        public void focusGained(FocusEvent e) {}
+
+        @Override
+        public void focusLost(FocusEvent e) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Focus Lost from "+e.getComponent());
+                logger.fine("  opposite component is: "+e.getOppositeComponent());
+            }
+            e.getComponent().removeFocusListener(this);
+            synchronized (EditorContextDispatcher.this) {
+                if (e.getOppositeComponent() == currentTextComponent.get()) {
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.fine("Opposite is current. No update.");
+                    }
+                    return ;
+                }
+            }
+            update(true);
         }
 
     }
@@ -852,6 +895,9 @@ public final class EditorContextDispatcher {
         }
         
         public EventFirer(String propertyName, Object oldValue, Object newValue, String MIMEType) {
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("EventFirer("+propertyName+", "+oldValue+", "+newValue+")");
+            }
             this.evt = new PropertyChangeEvent(EditorContextDispatcher.this, propertyName, oldValue, newValue);
             this.MIMEType = MIMEType;
         }

@@ -93,6 +93,12 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     
     private float childrenWidth;
     
+    /**
+     * If the pane works as a text field then this is an y of first paragraph
+     * (so that the text looks centered in a space dedicated for the text field).
+     */
+    private float baseY;
+
     DocumentViewChildren(int capacity) {
         super(capacity);
     }
@@ -105,6 +111,18 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         return (float) startVisualOffset(size());
     }
 
+    float getBaseY() {
+        return baseY;
+    }
+    
+    void setBaseY(float baseY) {
+        this.baseY = baseY;
+    }
+    
+    double getY(int pIndex) {
+        return baseY + startVisualOffset(pIndex);
+    }
+    
     /**
      * Replace paragraph views inside DocumentView.
      * <br/>
@@ -123,11 +141,11 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         }
         int endAddedIndex = index;
         int removeEndIndex = index + removeCount;
-        double startY = startVisualOffset(index);
-        // Leave update.visualDelta == 0d
-        double origEndY = (removeCount == 0) ? startY : endVisualOffset(removeEndIndex - 1);
-        double endY = startY;
-        moveVisualGap(removeEndIndex, origEndY);
+        double startYR = startVisualOffset(index); // relative i.e. not shifted by baseY
+        // Relative y i.e. not shifted by baseY
+        double origEndYR = (removeCount == 0) ? startYR : endVisualOffset(removeEndIndex - 1);
+        double endYR = startYR;
+        moveVisualGap(removeEndIndex, origEndYR);
         // Assign visual offset BEFORE possible removal/addition of views is made
         // since the added views would NOT have the visual offset filled in yet.
         if (removeCount != 0) { // Removing at least one item => index < size
@@ -146,22 +164,30 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 // First assign parent to the view and then later ask for preferred span.
                 // This way the view may get necessary info from its parent regarding its preferred span.
                 view.setParent(docView);
-                endY += view.getPreferredSpan(View.Y_AXIS);
-                view.setRawEndVisualOffset(endY);
+                endYR += view.getPreferredSpan(View.Y_AXIS);
+                view.setRawEndVisualOffset(endYR);
             }
         }
-        double deltaY = endY - origEndY;
+        double deltaY = endYR - origEndYR;
         // Always call heightChangeUpdate() to fix gapStorage.visualGapStart
-        heightChangeUpdate(endAddedIndex, endY, deltaY);
+        heightChangeUpdate(endAddedIndex, endYR, deltaY);
         if (deltaY != 0d) {
             docView.op.notifyHeightChange();
         }
-        return new double[] { startY, origEndY, deltaY };
+        // Return coordinates for repaint in real Y
+        return new double[] { baseY + startYR, baseY + origEndYR, deltaY };
     }
     
-    private void heightChangeUpdate(int endIndex, double endY, double deltaY) {
+    /**
+     * Process change of visual line's height.
+     *
+     * @param endIndex index right above the changed line.
+     * @param endYR end y relative to baseY.
+     * @param deltaY height change of the changed line.
+     */
+    private void heightChangeUpdate(int endIndex, double endYR, double deltaY) {
         if (gapStorage != null) {
-            gapStorage.visualGapStart = endY;
+            gapStorage.visualGapStart = endYR;
             gapStorage.visualGapLength -= deltaY;
             gapStorage.visualGapIndex = endIndex;
         } else { // No gapStorage
@@ -169,7 +195,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 int pCount = size();
                 if (pCount > ViewGapStorage.GAP_STORAGE_THRESHOLD) {
                     gapStorage = new ViewGapStorage(); // Only for visual gap
-                    gapStorage.initVisualGap(endIndex, endY);
+                    gapStorage.initVisualGap(endIndex, endYR);
                     deltaY += gapStorage.visualGapLength; // To shift above visual gap
                 }
                 for (;endIndex < pCount; endIndex++) {
@@ -188,16 +214,16 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     }
     
      void childHeightUpdated(DocumentView docView, int index, float newHeight, Rectangle2D pViewRect) {
-        double startY = startVisualOffset(index);
-        double endY = endVisualOffset(index);
-        double deltaY = newHeight - (endY - startY);
+        double startYR = startVisualOffset(index); // relative i.e. not shifted by baseY
+        double endYR = endVisualOffset(index); // relative i.e. not shifted by baseY
+        double deltaY = newHeight - (endYR - startYR);
         if (deltaY != 0d) {
             ParagraphView pView = get(index);
             index++; // Move to next view
-            moveVisualGap(index, endY);
-            endY += deltaY;
-            pView.setRawEndVisualOffset(endY); // pView at index
-            heightChangeUpdate(index, endY, deltaY);
+            moveVisualGap(index, endYR);
+            endYR += deltaY;
+            pView.setRawEndVisualOffset(endYR); // pView at index
+            heightChangeUpdate(index, endYR, deltaY);
             docView.validChange().addChangeY(pViewRect.getY(), pViewRect.getMaxY(), deltaY);
             docView.op.notifyHeightChange();
         }
@@ -205,10 +231,10 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
     
     Shape getChildAllocation(DocumentView docView, int index, Shape docViewAlloc) {
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(docViewAlloc);
-        double startY = startVisualOffset(index);
-        double endY = endVisualOffset(index);
-        mutableBounds.y += startY;
-        mutableBounds.height = endY - startY;
+        double startYR = startVisualOffset(index); // relative i.e. not shifted by baseY
+        double endYR = endVisualOffset(index); // relative i.e. not shifted by baseY
+        mutableBounds.y += baseY + startYR;
+        mutableBounds.height = endYR - startYR;
         // Leave mutableBounds.width
         return mutableBounds;
     }
@@ -254,7 +280,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
 
     public int viewIndexAtY(double y, Shape alloc) {
         Rectangle2D allocRect = ViewUtils.shapeAsRect(alloc);
-        y -= allocRect.getY(); // Make relative
+        y -= allocRect.getY() + baseY; // Make relative
         return viewIndexFirstVisual(y, size());
     }
 
@@ -670,7 +696,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
 
     @Override
     protected String getXYInfo(int index) {
-        return new StringBuilder(10).append(" y=").append(startVisualOffset(index)).toString();
+        return new StringBuilder(10).append(" y=").append(getY(index)).toString();
     }
 
 }

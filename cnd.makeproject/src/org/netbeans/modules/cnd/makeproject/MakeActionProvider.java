@@ -1349,7 +1349,7 @@ public final class MakeActionProvider implements ActionProvider {
                 Platform buildPlatform = Platforms.getPlatform(buildPlatformId);
                 Platform hostPlatform = Platforms.getPlatform(hostPlatformId);
                 String errormsg = getString("WRONG_PLATFORM", hostPlatform.getDisplayName(), buildPlatform.getDisplayName());
-                if (CndUtils.isUnitTestMode()) {
+                if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                     errormsg += "\n (build platform id =" + buildPlatformId + " host platform id = " + hostPlatformId + ")"; //NOI18N
                     new Exception(errormsg).printStackTrace(System.err);
                 } else {
@@ -1447,7 +1447,7 @@ public final class MakeActionProvider implements ActionProvider {
             SunStudioUserCounter.countIDE(cs.getDirectory(), execEnv);
         }
         if (runBTA) {
-            if (CndUtils.isUnitTestMode()) {
+            if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
                 // do not show any dialogs in unit test mode, just silently fail validation
                 lastValidation = false;
             } else {//if (conf.getDevelopmentHost().isLocalhost()) {

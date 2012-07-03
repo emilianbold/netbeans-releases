@@ -58,6 +58,7 @@ import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,6 +73,8 @@ public class CssAnalyser {
 
     //returned error offsets are AST offsets
     public static List<Error> checkForErrors(final Snapshot snapshot, final Node node) {
+        final FileObject file = snapshot.getSource().getFileObject();
+        
         List<Error> errors = new ArrayList<Error>();
         NodeVisitor<List<Error>> visitor = new NodeVisitor<List<Error>>(errors) {
 

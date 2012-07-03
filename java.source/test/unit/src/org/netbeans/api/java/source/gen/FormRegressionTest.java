@@ -217,6 +217,43 @@ public class FormRegressionTest extends GeneratorTestMDRCompat {
         System.err.println(res);
         assertEquals(golden, res);
     }
+    
+    public void testDontImportSyntheticConstructors() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        String originalCode =
+            "package test;\n" +
+            "public class Test {\n" +
+            "    private void initComponents(java.util.ArrayList orig) {\n" +
+            "        new java.util.ArrayList(orig) {};\n" +
+            "    }\n" +
+            "}\n";
+        TestUtilities.copyStringToFile(testFile, originalCode);
+        String golden =
+            "package test;\n\n" +
+            "import java.util.ArrayList;\n\n" +
+            "public class Test {\n" +
+            "    private void initComponents(ArrayList orig) {\n" +
+            "        new ArrayList(orig) {};\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                GeneratorUtilities gu = GeneratorUtilities.get(workingCopy);
+                
+                workingCopy.rewrite(cut, gu.importFQNs(cut));
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
 
     String getGoldenPckg() {
         return "";

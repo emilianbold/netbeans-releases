@@ -42,6 +42,7 @@
 package org.netbeans.modules.search;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -217,8 +218,14 @@ class GraphicalSearchListener<R> extends SearchListener {
     @Override
     public void fileSkipped(FileObject fileObject,
             SearchFilterDefinition filter, String message) {
+        fileSkipped(fileObject.toURI(), filter, message);
+    }
+
+    @Override
+    public void fileSkipped(URI uri, SearchFilterDefinition filter,
+            String message) {
         LOG.log(Level.FINE, "{0} skipped {1} {2}", new Object[]{ //NOI18N
-                    fileObject.getPath(),
+                    uri.toString(),
                     filter != null ? filter.getClass().getName() : "", //NOI18N
                     message != null ? message : ""});                   //NOI18N
     }

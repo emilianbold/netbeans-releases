@@ -895,6 +895,7 @@ public final class SourceAnalyzerFactory {
         private Data getData (@NonNull final Pair<String,String>owner, @NonNull final Map<Pair<String,String>, Data> map) {
             Data data = map.get(owner);
             if (data == null) {
+                assert owner.first.charAt(owner.first.length()-2) != '.';   //NOI18N
                 data = new Data ();
                 map.put(owner,data);
             }

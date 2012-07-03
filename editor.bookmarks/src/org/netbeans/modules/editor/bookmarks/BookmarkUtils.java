@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -227,6 +228,14 @@ public final class BookmarkUtils {
                     return kb.getKeyStroke(0);
                 }
             }
+        }
+        return null;
+    }
+
+    public static KeyStroke findKeyStroke(String actionID) {
+        Action a = org.openide.awt.Actions.forID("Edit", actionID); // NOI18N
+        if (a != null) {
+            return (KeyStroke) a.getValue(Action.ACCELERATOR_KEY);
         }
         return null;
     }

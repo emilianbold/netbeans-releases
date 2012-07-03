@@ -1779,7 +1779,7 @@ widthcheck:  {
                                 if (!usableKeyOnMac(i, macAlt ? needed | KeyEvent.CTRL_MASK : needed)) {
                                     needed &= ~getMenuShortcutKeyMask();
                                     if (macAlt) {
-                                        // CTRL will be added by the "if (macAlt) .." branch bellow
+                                        // CTRL will be added by the "if (macAlt) .." branch below
                                         needed |= KeyEvent.ALT_MASK;
                                     } else {
                                         needed |= KeyEvent.CTRL_MASK;
