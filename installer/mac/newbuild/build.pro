@@ -55,7 +55,7 @@
 
     <!-- Sun GlassFish V3 properties   -->
     <property name="glassfish.v3.sun.build.type"      value=""/>
-    <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish/3.1.2/promoted"/>
+    <property name="glassfish.v3.sun.location.prefix" value="${gf_builds_host}/java/re/glassfish/v3.1.2/promoted"/>
     <!--
     <property name="glassfish.v3.sun.build.number"    value="74b"/>
     -->
@@ -88,6 +88,7 @@
     <!--<property name="glassfish.v3.build.number"    value="74b"/>-->
     
     
+    <!-- XXX - a hack for 3.1.2 patch2
     <loadresource property="glassfish.v3.build.number">
           <url url="${glassfish.v3.location.prefix}/latest/archive/bundles"/>
           <filterchain>
@@ -96,18 +97,17 @@
               <replaceregex pattern="(.*)glassfish-3.1.2-b([0-9a-z]+)\.zip(.*)" replace="\2" flags="g"/>
             </tokenfilter>
           </filterchain>
-    </loadresource>
+    </loadresource>-->
+    <property name="glassfish.v3.build.number"    value="23"/>
     
-    <property name="glassfish.v3.display.version" value="3.1.2"/>
+    <property name="glassfish.v3.display.version" value="3.1.2.2"/>
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.id"           value="b${glassfish.v3.build.number}"/>
-    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1.2"/>
+    <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1.2.2"/>
     <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}-ml.zip"/>
-    <!--
-    <property name="glassfish_v3_location"     value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}.zip"/>
-    <property name="glassfish_v3_location_ml"  value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}-ml.zip"/>
-    -->
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/p02/b03/bundles/glassfish-3.1.2-2-b03.zip"/>
+    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/p02/b03/bundles/glassfish-3.1.2-2-b03-ml.zip"/>
     <property name="glassfish.v3.subdir"       value="glassfish3"/>
     
     <!-- Open ESB Properties-->    
@@ -148,7 +148,7 @@
     <property name="jdk.bundle.files.suffix" value="nb-7_3"/>
     <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_06.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${gf_builds_host}/java/re/jdk/7u6/promoted/all/b16/bundles/macosx-x64/jdk-7u6-ea-macosx-x64.dmg"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u6/promoted/all/b16/bundles/macosx-x64/jdk-7u6-ea-macosx-x64.dmg"/>
     <property name="jdk.package.name" value="JDK\ 7\ Update\ 06"/>
 
 </project>
