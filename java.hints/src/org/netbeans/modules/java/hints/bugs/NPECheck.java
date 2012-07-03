@@ -204,7 +204,7 @@ public class NPECheck {
                 return State.POSSIBLE_NULL_REPORT;
             }
 
-            if ("NotNull".equals(simpleName) || "NonNull".equals(simpleName)) {
+            if ("NotNull".equals(simpleName) || "NonNull".equals(simpleName) || "Nonnull".equals(simpleName)) {
                 return State.NOT_NULL;
             }
         }
