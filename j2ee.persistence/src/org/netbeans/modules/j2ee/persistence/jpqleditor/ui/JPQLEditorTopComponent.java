@@ -67,6 +67,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -307,6 +309,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                     try {
                         List<URL> localResourcesURLList = new ArrayList<URL>();
+                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(selectedConfigObject.getName());
+                        EntityManager em = emf.createEntityManager();
 //                        localResourcesURLList.addAll(env.getProjectClassPath(selectedConfigObject));
 //                        for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
 //                            localResourcesURLList.add(mappingFO.getURL());

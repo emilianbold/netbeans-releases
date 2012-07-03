@@ -53,6 +53,8 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.swing.SwingUtilities;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -97,6 +99,8 @@ public class JPQLEditorController {
             final int maxRowCount,
             final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
+                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(pu.getName());
+                        EntityManager em = emf.createEntityManager();
 
 //        try {
 //            ph.progress(10);
