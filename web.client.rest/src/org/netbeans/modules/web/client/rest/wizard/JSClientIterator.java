@@ -174,6 +174,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
      */
     @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
+        handle.start();
         Project project = Templates.getProject(myWizard);
         
         Node restNode = myRestPanel.getRestNode();
@@ -185,11 +186,12 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         FileObject existedUnderscore = (FileObject)myWizard.getProperty(
                 RestPanel.EXISTED_UNDERSCORE);
         
-        FileObject libs = FileUtil.createFolder(project.
-                getProjectDirectory(),WebClientLibraryManager.LIBS);
-        
         if ( existedBackbone == null ){
             if ( addBackbone!=null && addBackbone ){
+                FileObject libs = FileUtil.createFolder(project.
+                        getProjectDirectory(),WebClientLibraryManager.LIBS);
+                handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
+                        "TXT_CreateLibs"));                         // NOI18N
                 existedBackbone = addLibrary( libs , "backbone.js");
                 if ( existedUnderscore == null ){
                     existedUnderscore = addLibrary(libs, "underscore.js");
@@ -207,15 +209,20 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         
         FileObject jsFile = createdFile.getPrimaryFile();
         
+        handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
+                    "TXT_GenerateModel"));                         // NOI18N
         JSClientGenerator generator = JSClientGenerator.create( description );
         generator.generate( jsFile);
         
         File htmlFile = (File)myWizard.getProperty(
                 HtmlPanel.HTML_FILE);
         if ( htmlFile != null ){
+            handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
+                    "TXT_GenerateHtml"));                         // NOI18N
             createHtml( htmlFile , existedBackbone , existedBackbone );
         }
 
+        handle.finish();
         return null;
     }
 
