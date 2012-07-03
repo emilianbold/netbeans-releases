@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -150,7 +151,15 @@ public final class TimeStamps {
             if (rootFoCache == null) {
                 rootFoCache = URLMapper.findFileObject(root);
             }
-            String fileId = relativePath != null ? relativePath : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
+            final String fileId = relativePath != null ? relativePath : URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm();
+            if (fileId == null) {
+                throw new IllegalArgumentException(MessageFormat.format(
+                    "The fileId == null, relativePath: {0}, FileObject: {1}, URL: {2}, external URL: {3}", //NOI18N
+                    relativePath,
+                    f,
+                    f.toURL().toExternalForm(),
+                    URLMapper.findURL(f, URLMapper.EXTERNAL).toExternalForm()));
+            }
             long fts = f.lastModified().getTime();
             long lts = timestamps.put(fileId, fts);
             if (lts == LongHashMap.NO_VALUE) {
@@ -276,7 +285,10 @@ public final class TimeStamps {
 
                         for(Map.Entry<Object, Object> entry : p.entrySet()) {
                             try {
-                                timestamps.put((String) entry.getKey(), Long.parseLong((String) entry.getValue()));
+                                final String fileId = (String) entry.getKey();
+                                if (fileId != null) {
+                                    timestamps.put(fileId, Long.parseLong((String) entry.getValue()));
+                                }
                             } catch (NumberFormatException nfe) {
                                 LOG.log(Level.FINE, "Invalid timestamp: key={0}, value={1}, timestamps={2}, exception={3}", //NOI18N
                                         new Object[] { entry.getKey(), entry.getValue(), f, nfe });
