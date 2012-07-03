@@ -1379,15 +1379,8 @@ public class WizardDescriptor extends DialogDescriptor {
                 err.log(Level.INFO, null, x);
             }
         } else if (FINISH_OPTION.equals(convertedValue) || NEXT_OPTION.equals(convertedValue)) {
-            //Bugfix #25820: make sure that storeSettings
-            //is called before propertyChange.
-            if (data.current != null) {
-                Panel old = data.current;
-                data.current.storeSettings(data.getSettings(this));
-                if (! old.equals (data.current)) {
-                    currentPanelWasChangedWhileStoreSettings = true;
-                }
-            }
+            //do not fire prop change event yet, panel data must be validate and stored first
+            return;
         }
 
         // notify listeners about PROP_VALUE change
@@ -1399,6 +1392,13 @@ public class WizardDescriptor extends DialogDescriptor {
         resetWizardOpen(data);
     }
 
+    private <A> void storeSettingsAndNotify(SettingsAndIterator<A> data) {
+        if (data.current != null) {
+            data.current.storeSettings(data.getSettings(this));
+        }
+        firePropertyChange(PROP_VALUE, null, NEXT_OPTION);
+    }
+    
     private <A> void resetWizardOpen(SettingsAndIterator<A> data) {
         if (data.current != null) {
             data.current.storeSettings(data.getSettings(this));
@@ -2111,6 +2111,8 @@ public class WizardDescriptor extends DialogDescriptor {
                     public void run() {
                         err.log(Level.FINE,
                                 "onValidPerformer on next button entry.");
+                        //#163078 - validate first then store
+                        storeSettingsAndNotify(data);
                         panels.nextPanel();
                         try {
                             // change UI to show next step, show wait cursor during
