@@ -152,7 +152,9 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void refreshDiskFolder(boolean setModified) {
-        refreshDiskFolder(new HashSet<String>(), setModified);
+        if (!UNCHANGED_PROJECT_MODE) {
+            refreshDiskFolder(new HashSet<String>(), setModified);
+        }
     }
     
     private void refreshDiskFolder(Set<String> antiLoop, boolean setModified) {
