@@ -41,16 +41,108 @@
  */
 package org.netbeans.modules.web.clientproject.spi;
 
-import org.netbeans.spi.project.ActionProvider;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Properties;
 import org.netbeans.spi.project.ProjectConfiguration;
+import org.openide.filesystems.FileObject;
+import org.openide.util.EditableProperties;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Jan Becicka
  */
-public interface ClientProjectConfiguration extends ProjectConfiguration {
+public final class ClientProjectConfiguration implements ProjectConfiguration {
+
+    private final String name;
+    private final String displayName;
+    private final String type;
+    private final EditableProperties props;
+    private final FileObject file;
     
-    String getName();
-    String getType();
+
+    private ClientProjectConfiguration(FileObject kid, String name, String displayName, String type) {
+        this.name = name;
+        this.displayName = displayName;
+        this.type = type;
+        props = new EditableProperties(true);
+        props.put("type", type);
+        props.put("display.name", displayName);
+        this.file = kid;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public int hashCode() {
+        return name != null ? name.hashCode() : 0;
+    }
+
+    public boolean equals(Object o) {
+        return (o instanceof ClientProjectConfiguration) && Utilities.compareObjects(name, ((ClientProjectConfiguration) o).name);
+    }
+
+    public String toString() {
+        return "ClientProjectConfiguration[" + name + "," + displayName + "]"; // NOI18N
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getName() {
+        return name;
+    }
     
+    public String getProperty(String prop) {
+        return props.getProperty(prop);
+    }
+    
+    public String putProperty(String prop, String value) {
+        return props.put(prop, value);
+    }
+
+    public static ClientProjectConfiguration create(FileObject configFile) {
+
+        try {
+            InputStream is = configFile.getInputStream();
+            try {
+                Properties p = new Properties();
+                p.load(is);
+                String name = configFile.getName();
+                String label = p.getProperty("display.name"); // NOI18N
+                String type = p.getProperty("type");
+                return new ClientProjectConfiguration(configFile, name, label != null ? label : name, type);
+            } finally {
+                is.close();
+            }
+        } catch (IOException x) {
+            throw new IllegalStateException(x);
+        }
+    }
+
+    public void save() {
+        OutputStream os = null;
+        try {
+            os = file.getOutputStream();
+            try {
+                props.store(os);
+            } finally {
+                os.close();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            try {
+                os.close();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
 }

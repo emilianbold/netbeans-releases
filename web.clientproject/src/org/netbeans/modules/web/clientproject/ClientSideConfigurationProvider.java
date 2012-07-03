@@ -45,7 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,7 +53,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -85,40 +83,6 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
 
     public static final String PROP_CONFIG = "config";
     public static final String CONFIG_PROPS_PATH = AntProjectHelper.PRIVATE_PROPERTIES_PATH; // NOI18N
-    
-    public static final class Config implements ClientProjectConfiguration {
-        private final String name;
-        private final String displayName;
-        private final String type;
-
-        public Config(String name, String displayName, String type) {
-            this.name = name;
-            this.displayName = displayName;
-            this.type = type;
-        }
-        public String getDisplayName() {
-            return displayName;
-        }
-        public int hashCode() {
-            return name != null ? name.hashCode() : 0;
-        }
-        public boolean equals(Object o) {
-            return (o instanceof Config) && Utilities.compareObjects(name, ((Config) o).name);
-        }
-        public String toString() {
-            return "ClientSideConfigurationProvider.Config[" + name + "," + displayName + "]"; // NOI18N
-        }
-
-        @Override
-        public String getType() {
-            return type;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-    }
 
     private final ClientSideProject p;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -157,7 +121,7 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
     };
     private final FileChangeListener fclWeak;
     private FileObject configDir;
-    private Map<String,Config> configs;
+    private Map<String,ClientProjectConfiguration> configs;
     private FileObject nbp;
     
     public ClientSideConfigurationProvider(ClientSideProject p) {
@@ -184,27 +148,14 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
     }
 
     private void calculateConfigs() {
-        configs = new HashMap<String,Config>();
+        configs = new HashMap<String,ClientProjectConfiguration>();
         if (configDir != null) {
             for (FileObject kid : configDir.getChildren()) {
                 if (!kid.hasExt("properties")) {
                     continue;
                 }
-                try {
-                    InputStream is = kid.getInputStream();
-                    try {
-                        Properties p = new Properties();
-                        p.load(is);
-                        String name = kid.getName();
-                        String label = p.getProperty("display.name"); // NOI18N
-                        String type = p.getProperty("type");
-                        configs.put(name, new Config(name, label != null ? label : name, type));
-                    } finally {
-                        is.close();
-                    }
-                } catch (IOException x) {
-                    LOGGER.log(Level.INFO, null, x);
-                }
+                ClientProjectConfiguration conf = ClientProjectConfiguration.create(kid);
+                configs.put(conf.getName(), conf);
             }
         }
         LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
@@ -212,7 +163,8 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
 
     @Override
     public Collection<ClientProjectConfiguration> getConfigurations() {
-        calculateConfigs();
+        if (configs==null)
+            calculateConfigs();
         List<ClientProjectConfiguration> l = new ArrayList<ClientProjectConfiguration>();
         l.addAll(configs.values());
         Collections.sort(l, new Comparator<ClientProjectConfiguration>() {
@@ -226,7 +178,8 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
 
     @Override
     public ClientProjectConfiguration getActiveConfiguration() {
-        calculateConfigs();
+        if (configs == null)
+            calculateConfigs();
         String config = p.getEvaluator().getProperty(PROP_CONFIG);
         //TODO: hack for default
         if(config==null)
