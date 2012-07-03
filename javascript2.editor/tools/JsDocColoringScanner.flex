@@ -183,8 +183,9 @@ CommentEnd = ["*"]+ + "/"
     "\""                            { yybegin(STRING); return JsDocTokenId.STRING_BEGIN; }
 
     ~({WhiteSpace}
-        |{LineTerminator}
-        |"*"|"@"|"<"|"{"|"}"|"\"")  { yypushback(1); return JsDocTokenId.OTHER; }
+        | {LineTerminator}
+        | "*" | "@" | "<" | "{"
+        | "}" | "\"" | "]" | "[" )  { yypushback(1); return JsDocTokenId.OTHER; }
 }
 
 <STRING> {
