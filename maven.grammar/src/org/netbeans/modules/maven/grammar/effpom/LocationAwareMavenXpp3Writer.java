@@ -135,6 +135,35 @@ public class LocationAwareMavenXpp3Writer {
         //TODO sometimes like when dependency scope is compile, which is the default value, there is no location for it, but it still gets printed.
         logLocation(parent, trackerId, start, b.length());
     }
+    
+    private void writeXpp3DOM(XmlSerializer serializer, Xpp3Dom root, InputLocationTracker rootTracker) throws IOException {
+        StringBuffer b = b(serializer);
+        serializer.startTag(NAMESPACE, root.getName()).flush();
+        int start = b.length() - root.getName().length() - 2;
+        
+        String[] attributeNames = root.getAttributeNames();
+        for ( int i = 0; i < attributeNames.length; i++ )
+        {
+            String attributeName = attributeNames[i];
+            serializer.attribute(NAMESPACE, attributeName, root.getAttribute( attributeName ));
+        }
+        
+        Xpp3Dom[] children = root.getChildren();
+        for ( int i = 0; i < children.length; i++ )
+        {
+            writeXpp3DOM(serializer, children[i], rootTracker != null ? rootTracker.getLocation(children[i].getName()) : null);
+        }
+
+        String value = root.getValue();
+        if ( value != null )
+        {
+            serializer.text( value );
+        }
+
+        serializer.endTag(NAMESPACE, root.getName()).flush();
+        logLocation(rootTracker, root.getName(), start, b.length());
+        
+    }
 
     public static class Location {
 
@@ -857,7 +886,7 @@ public class LocationAwareMavenXpp3Writer {
             writeBuild((Build) model.getBuild(), "build", serializer);
         }
         if (model.getReports() != null) {
-            ((Xpp3Dom) model.getReports()).writeToSerializer(NAMESPACE, serializer);
+             writeXpp3DOM(serializer, (Xpp3Dom)model.getReports(), model);
         }
         if (model.getReporting() != null) {
             writeReporting((Reporting) model.getReporting(), "reporting", serializer);
@@ -979,13 +1008,13 @@ public class LocationAwareMavenXpp3Writer {
             serializer.endTag(NAMESPACE, "dependencies");
         }
         if (plugin.getGoals() != null) {
-            ((Xpp3Dom) plugin.getGoals()).writeToSerializer(NAMESPACE, serializer);
+            writeXpp3DOM(serializer, (Xpp3Dom)plugin.getGoals(), plugin);
         }
         if (plugin.getInherited() != null) {
             writeValue(serializer, "inherited", plugin.getInherited(), plugin);
         }
         if (plugin.getConfiguration() != null) {
-            ((Xpp3Dom) plugin.getConfiguration()).writeToSerializer(NAMESPACE, serializer);
+            writeXpp3DOM(serializer, (Xpp3Dom)plugin.getConfiguration(), plugin);
         }
         serializer.endTag(NAMESPACE, tagName).flush();
         logLocation(plugin, "", start, b.length());
@@ -1020,7 +1049,7 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "inherited", pluginExecution.getInherited(), pluginExecution);
         }
         if (pluginExecution.getConfiguration() != null) {
-            ((Xpp3Dom) pluginExecution.getConfiguration()).writeToSerializer(NAMESPACE, serializer);
+            writeXpp3DOM(serializer, (Xpp3Dom)pluginExecution.getConfiguration(), pluginExecution);
         }
         serializer.endTag(NAMESPACE, tagName).flush();
         logLocation(pluginExecution, "", start, b.length());
@@ -1125,7 +1154,7 @@ public class LocationAwareMavenXpp3Writer {
             serializer.endTag(NAMESPACE, "pluginRepositories");
         }
         if (profile.getReports() != null) {
-            ((Xpp3Dom) profile.getReports()).writeToSerializer(NAMESPACE, serializer);
+            writeXpp3DOM(serializer, (Xpp3Dom)profile.getReports(), profile);
         }
         if (profile.getReporting() != null) {
             writeReporting((Reporting) profile.getReporting(), "reporting", serializer);
@@ -1181,7 +1210,7 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "inherited", reportPlugin.getInherited(), reportPlugin);
         }
         if (reportPlugin.getConfiguration() != null) {
-            ((Xpp3Dom) reportPlugin.getConfiguration()).writeToSerializer(NAMESPACE, serializer);
+            writeXpp3DOM(serializer, (Xpp3Dom)reportPlugin.getConfiguration(), reportPlugin);
         }
         serializer.endTag(NAMESPACE, tagName).flush();
         logLocation(reportPlugin, "", start, b.length());
@@ -1212,7 +1241,7 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "inherited", reportSet.getInherited(), reportSet);
         }
         if (reportSet.getConfiguration() != null) {
-            ((Xpp3Dom) reportSet.getConfiguration()).writeToSerializer(NAMESPACE, serializer);
+            writeXpp3DOM(serializer, (Xpp3Dom)reportSet.getConfiguration(), reportSet);
         }
         serializer.endTag(NAMESPACE, tagName).flush();
         logLocation(reportSet, "", start, b.length());
