@@ -52,8 +52,8 @@
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1.2.2"/>
     <!--<property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}-ml.zip"/>-->
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/p02/b03/bundles/glassfish-3.1.2-2-b03.zip"/>
-    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/p02/b03/bundles/glassfish-3.1.2-2-b03-ml.zip"/>
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/p02/b04/bundles/latest/glassfish-3.1.2-2-b04.zip"/>
+    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/p02/b04/bundles/latest/glassfish-3.1.2-2-b04-ml.zip"/>
     <property name="glassfish.v3.subdir"       value="glassfish3"/>
     
     <!-- Java ME SDK 3.0 Properties-->
