@@ -48,6 +48,7 @@ import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
+import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -245,6 +246,34 @@ public class C2CUtil {
         } catch (Exception ex) {
             C2C.LOG.log(Level.SEVERE, null, ex);
             return tagsString;
+        }       
+    }
+    
+    public static String getUsers(String message, String usersString, C2CRepository repository) {
+        String[] users = usersString.split(","); // NOI18N
+        if(users == null || users.length == 0) {
+            return null;
+        }
+
+        try {
+            CfcClientData cd = DummyUtils.getClientData(repository.getTaskRepository());
+            if(cd == null /* XXX */) {
+                return usersString;
+            }
+            List<TaskUserProfile> userProfiles = cd.getUsers();
+            List<ListValuePicker.ListValue> usersList = new ArrayList<ListValuePicker.ListValue>(userProfiles.size());
+            for (TaskUserProfile up : userProfiles) {
+                usersList.add(new ListValuePicker.ListValue(up.getRealname() + " (" + up.getLoginName() + ")", up.getLoginName()));
+            }
+            return ListValuePicker.getValues(
+                    NbBundle.getMessage(C2CUtil.class, "CTL_UsersTitle"), 
+                    NbBundle.getMessage(C2CUtil.class, "LBL_Users"), 
+                    message, 
+                    usersString, 
+                    usersList.toArray(new ListValuePicker.ListValue[usersList.size()]));
+        } catch (Exception ex) {
+            C2C.LOG.log(Level.SEVERE, null, ex);
+            return usersString;
         }       
     }
 }
