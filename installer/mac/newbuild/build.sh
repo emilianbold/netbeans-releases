@@ -46,7 +46,9 @@ fi
 
 basename=`dirname "$0"`
 
-. "$basename"/build-private.sh
+if [ -f "$basename"/build-private.sh ]; then
+  . "$basename"/build-private.sh
+fi
 
 cd "$basename"
 chmod -R a+x *.sh
