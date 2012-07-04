@@ -256,8 +256,8 @@ class LoginPanelDetails extends javax.swing.JPanel {
 
     public static interface Credentials {
 
-        public String getUsername (CloudServer kenai);
+        public String getUsername (CloudServer server);
         
-        public char[] getPassword(CloudServer kenai);
+        public char[] getPassword(CloudServer server);
     }
 }

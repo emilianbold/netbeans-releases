@@ -87,7 +87,7 @@ public final class CloudServer {
     }
     
     /**
-     * Adds listener to Kenai instance
+     * Adds listener to the server instance
      * @param l
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -95,7 +95,7 @@ public final class CloudServer {
     }
 
     /**
-     * Adds listener to Kenai instance
+     * Adds listener to the server instance
      * @param name 
      * @param l
      */
@@ -104,7 +104,7 @@ public final class CloudServer {
     }
 
     /**
-     * Removes listener from Kenai instance
+     * Removes listener from the server instance
      * @param l
      */
     public void removePropertyChangeListener(PropertyChangeListener l) {
@@ -112,7 +112,7 @@ public final class CloudServer {
     }
 
     /**
-     * Removes listener from Kenai instance
+     * Removes listener from the server instance
      * @param name
      * @param l
      */

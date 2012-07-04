@@ -185,7 +185,7 @@ public final class DashboardImpl {
         JLabel lbl = new TreeLabel(LBL_No_Project_Open());
         lbl.setForeground(ColorManager.getDefault().getDisabledColor());
         lbl.setHorizontalAlignment(JLabel.CENTER);
-        LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeamServer(), createWhatIsKenaiAction() );
+        LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeamServer(), createWhatIsCloudServerAction() );
 
 //        model.removeRoot(userNode);
 //        model.removeRoot(myProjectsNode);
@@ -199,7 +199,8 @@ public final class DashboardImpl {
         return res;
     }
     
-    private Action createWhatIsKenaiAction() {
+    // XXX obsolete? 
+    private Action createWhatIsCloudServerAction() {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {

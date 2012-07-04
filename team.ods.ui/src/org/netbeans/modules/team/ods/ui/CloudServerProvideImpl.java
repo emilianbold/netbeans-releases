@@ -98,17 +98,17 @@ public class CloudServerProvideImpl implements TeamServerProvider {
 
     @Override
     public Collection<? extends TeamServer> getTeamServers () {
-        Collection<CloudServer> kenais = CloudServerManager.getDefault().getServers();
-        List<CloudUiServer> servers = new ArrayList<CloudUiServer>(kenais.size());
-        for (CloudServer kenai : kenais) {
-            servers.add(CloudUiServer.forServer(kenai));
+        Collection<CloudServer> servers = CloudServerManager.getDefault().getServers();
+        List<CloudUiServer> uiServers = new ArrayList<CloudUiServer>(servers.size());
+        for (CloudServer server : servers) {
+            uiServers.add(CloudUiServer.forServer(server));
         }
-        return servers;
+        return uiServers;
     }
 
     @Override
     public TeamServer getTeamServer (String url) {
-        CloudServer server = CloudServerManager.getDefault().getKenai(url);
+        CloudServer server = CloudServerManager.getDefault().getServer(url);
         return server == null ? null : CloudUiServer.forServer(server);
     }
 
@@ -130,7 +130,7 @@ public class CloudServerProvideImpl implements TeamServerProvider {
 
     @Override
     public TeamServer createTeamServer (String name, String url) throws MalformedURLException {
-        CloudServer server = CloudServerManager.getDefault().createKenai(name, url);
+        CloudServer server = CloudServerManager.getDefault().createServer(name, url);
         if (server != null) {
             //TODO how to check the url is valid??
         }

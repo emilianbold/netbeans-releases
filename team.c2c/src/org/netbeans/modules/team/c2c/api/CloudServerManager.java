@@ -87,7 +87,7 @@ public final class CloudServerManager {
      * @return
      * @throws MalformedURLException
      */
-    public synchronized CloudServer createKenai(String displayName, String url) throws MalformedURLException {
+    public synchronized CloudServer createServer(String displayName, String url) throws MalformedURLException {
         return addInstance(CloudServer.createInstance(displayName, url));
     }    
     
@@ -168,11 +168,11 @@ public final class CloudServerManager {
     }
 
     /**
-     * get kenai instance for specified url
+     * get instance for specified url
      * @param url
      * @return
      */
-    public synchronized CloudServer getKenai(String url) {
+    public synchronized CloudServer getServer(String url) {
         initInstances();
         return instances.get(url);
     }
