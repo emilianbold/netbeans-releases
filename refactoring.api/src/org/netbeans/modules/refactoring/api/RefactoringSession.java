@@ -240,7 +240,9 @@ public final class RefactoringSession {
     }
     
     /**
-     * get elements from session
+     * Get elements from session
+     * @since 1.23 the returned collection is blocking until finished.
+     * @see #finished()
      * @return collection of RefactoringElements
      */
     @NonNull
@@ -254,7 +256,12 @@ public final class RefactoringSession {
         prepareStarted.set(true);
     }
     
-    void finished() {
+    /**
+     * Inform the session it, and all its plugins, are finished.
+     * @since 1.28
+     * @see #getRefactoringElements()
+     */
+    public void finished() {
         finished.set(true);
     }
     
