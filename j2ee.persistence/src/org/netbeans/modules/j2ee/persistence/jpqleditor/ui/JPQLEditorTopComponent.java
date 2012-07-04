@@ -309,8 +309,8 @@ public final class JPQLEditorTopComponent extends TopComponent {
                     ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
                     try {
                         List<URL> localResourcesURLList = new ArrayList<URL>();
-                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(selectedConfigObject.getName());
-                        EntityManager em = emf.createEntityManager();
+                        //EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(selectedConfigObject.getName());
+                        //EntityManager em = emf.createEntityManager();
 //                        localResourcesURLList.addAll(env.getProjectClassPath(selectedConfigObject));
 //                        for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
 //                            localResourcesURLList.add(mappingFO.getURL());

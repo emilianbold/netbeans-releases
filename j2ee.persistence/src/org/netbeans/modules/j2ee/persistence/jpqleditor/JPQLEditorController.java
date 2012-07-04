@@ -99,8 +99,8 @@ public class JPQLEditorController {
             final int maxRowCount,
             final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
-                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(pu.getName());
-                        EntityManager em = emf.createEntityManager();
+//                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(pu.getName());
+//                        EntityManager em = emf.createEntityManager();
 
 //        try {
 //            ph.progress(10);
