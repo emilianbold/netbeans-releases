@@ -43,6 +43,8 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
@@ -51,12 +53,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
+import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -66,7 +71,6 @@ import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 public class OriginResourceIterator implements
         ProgressInstantiatingIterator<WizardDescriptor>
 {
-
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.AsynchronousInstantiatingIterator#instantiate()
      */
@@ -80,11 +84,12 @@ public class OriginResourceIterator implements
      */
     @Override
     public void initialize( WizardDescriptor wizard ) {
+        myWizard = wizard;
         Project project = Templates.getProject(wizard);
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);    
         
         Panel panel ;
-        myRestFilterPanel = new RestFilterPanel();
+        myRestFilterPanel = new RestFilterPanel( wizard );
         if (sourceGroups.length == 0) {
             SourceGroup[] genericSourceGroups = ProjectUtils.
                     getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
@@ -181,10 +186,18 @@ public class OriginResourceIterator implements
     public Set instantiate( ProgressHandle handle ) throws IOException {
         handle.start();
         
+        List<HttpMethods> methods = (List<HttpMethods>)myWizard.getProperty(
+                RestFilterPanel.HTTP_METHODS);
+        FileObject dir = Templates.getTargetFolder(myWizard);
+        String filterName = Templates.getTargetName(myWizard );
+        
+        FileObject filterClass = GenerationUtils.createClass(dir,filterName, null );
+        
         handle.finish();
-        return null;
+        return Collections.singleton(filterClass);
     }
     
+    private WizardDescriptor myWizard;
     private WizardDescriptor.Panel[] myPanels;
     private Panel myRestFilterPanel;
     private int myIndex;

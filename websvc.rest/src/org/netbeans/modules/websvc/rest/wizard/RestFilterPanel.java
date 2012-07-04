@@ -56,14 +56,18 @@ import org.openide.util.HelpCtx;
  *
  */
 public class RestFilterPanel implements Panel<WizardDescriptor> {
+    
+    static final String HTTP_METHODS = "http-methods";          // NOI18N
+
+    RestFilterPanel( WizardDescriptor wizard ) {
+        myDescriptor = wizard;
+    }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
      */
     @Override
     public void addChangeListener( ChangeListener listener ) {
-        // TODO Auto-generated method stub
-        
     }
 
     /* (non-Javadoc)
@@ -72,7 +76,7 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
     @Override
     public Component getComponent() {
         if ( myComponent == null ){
-            myComponent = new RestFilterPanelVisual();
+            myComponent = new RestFilterPanelVisual(myDescriptor);
         }
         return myComponent;
     }
@@ -97,9 +101,7 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
      * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
      */
     @Override
-    public void readSettings( WizardDescriptor arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void readSettings( WizardDescriptor wizard ) {
     }
 
     /* (non-Javadoc)
@@ -107,19 +109,18 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
      */
     @Override
     public void removeChangeListener( ChangeListener arg0 ) {
-        // TODO Auto-generated method stub
-        
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
     @Override
-    public void storeSettings( WizardDescriptor arg0 ) {
-        // TODO Auto-generated method stub
-        
+    public void storeSettings( WizardDescriptor descriptor ) {
+        if ( myComponent != null ){
+            myComponent.read( descriptor );
+        }
     }
     
     private RestFilterPanelVisual myComponent;
-
+    private WizardDescriptor myDescriptor; 
 }

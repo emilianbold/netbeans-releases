@@ -117,7 +117,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
             </file>
-            <file name="OriginResourceFilter.java">
+            <file name="CrossOriginResourceSharingFilter.java">
                 <attr name="position" intvalue="490"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
