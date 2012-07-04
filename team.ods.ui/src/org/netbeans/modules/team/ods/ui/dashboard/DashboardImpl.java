@@ -63,6 +63,7 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.team.c2c.api.CloudServer;
+import org.netbeans.modules.team.ods.ui.CloudUiServer;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
@@ -76,6 +77,7 @@ import org.netbeans.modules.team.ui.common.CategoryNode;
 import org.netbeans.modules.team.ui.common.EmptyNode;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.UserNode;
+import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 
@@ -151,7 +153,21 @@ public final class DashboardImpl {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
-        userNode = new UserNode(dummy, dummy, dummy, null, null);
+        AbstractAction loginAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // XXX handle more instances
+                UIUtils.showLogin(CloudUiServer.forServer(server), false);
+            }
+        };
+        AbstractAction logoutAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // XXX handle more instances
+                CloudUiServer.forServer(server).logout();
+            }
+        };
+        userNode = new UserNode(dummy, loginAction, logoutAction, null, null);
         model.addRoot(-1, userNode);
         
         openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_OpenProjects"), null); // NOI18N
