@@ -113,6 +113,10 @@ public class BuildNumberGlassFish extends Task {
                 matcher = PATTERN_V3.matcher(contents);
                 dateFormatIn = FORMAT_IN_V3;
             }
+            if (!matcher.find()) {
+                matcher = PATTERN_V3_P02.matcher(contents);
+                dateFormatIn = FORMAT_IN_V3;
+            }
             if (matcher.find()) {
                 String buildType = "";
                 String releaseNumber = "";
@@ -153,7 +157,7 @@ public class BuildNumberGlassFish extends Task {
                         releaseNumber);
             } else {
                 throw new BuildException(
-                        "Cannot parse the input file."); // NOI18N
+                        "Cannot parse the input file " + file); // NOI18N
             }
         } catch (IOException e) {
             throw new BuildException(e);
@@ -171,7 +175,11 @@ public class BuildNumberGlassFish extends Task {
             "sjsas-9_1_02-([a-z0-9]+)-bin-" + // NOI18N
             "b(([0-9]+)[a-z]?)-linux-([A-Za-z0-9_]+)\\.bin"); // NOI18N
     private static final Pattern PATTERN_V3 = Pattern.compile(            
-            "glassfish-([0-9]+[\\.0-9]+)-web-b(([0-9]+)[a-z]?)\\.zip"); // NOI18N
+            "glassfish-([0-9]+[\\.0-9]+)-b(([0-9]+)[a-z]?)\\.zip"); // NOI18N
+    
+    // glassfish-3.1.2-2-b03.zip
+    private static final Pattern PATTERN_V3_P02 = Pattern.compile(            
+            "glassfish-([0-9]+[\\.0-9]+)-[0-9]-b(([0-9]+)[a-z]?)\\.zip"); // NOI18N
     
     /**
      * Date format used in the input file.
