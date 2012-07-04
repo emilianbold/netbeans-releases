@@ -45,11 +45,14 @@ import org.netbeans.modules.javascript2.editor.jsdoc.JsDocDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
+ * Contains support methods for obtaining {@link DocumentationProvider}.
  *
  * @author Martin Fousek, Petr Pisl
  */
+public final class DocumentationSupport {
 
-public class DocumentationSupport {
+    private DocumentationSupport() {
+    }
 
     /**
      * Gets {@code DocumentationProvider} for given {@code JsParserResult}.
