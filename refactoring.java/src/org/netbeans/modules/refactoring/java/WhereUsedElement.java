@@ -68,7 +68,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import sun.security.krb5.internal.KDCOptions;
 
 public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private PositionBounds bounds;
