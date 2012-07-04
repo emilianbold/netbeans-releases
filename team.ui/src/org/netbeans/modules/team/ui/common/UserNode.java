@@ -128,8 +128,12 @@ public class UserNode extends LeafNode {
                 panel.add( lblProgress, new GridBagConstraints(6,0,1,1,0.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
                 panel.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0,GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
                 panel.add( btnRefresh, new GridBagConstraints(8,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-                panel.add( btnNewProject, new GridBagConstraints(9,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-                panel.add( btnOpenProject, new GridBagConstraints(10,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+                if(btnNewProject != null) {
+                    panel.add( btnNewProject, new GridBagConstraints(9,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+                }
+                if(btnOpenProject != null) {
+                    panel.add( btnOpenProject, new GridBagConstraints(10,0,1,1,0.0,0.0,GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+                }
             }
         }
 
@@ -139,7 +143,9 @@ public class UserNode extends LeafNode {
         } else {
             lblUser.setForeground(ColorManager.getDefault().getDisabledColor());
         }
-        btnOpenProject.setForeground(foreground, isSelected);
+        if(btnOpenProject != null) {
+            btnOpenProject.setForeground(foreground, isSelected);
+        }
         btnRefresh.setForeground(foreground, isSelected);
         btnLogin.setForeground(foreground, isSelected);
         synchronized( LOCK ) {
