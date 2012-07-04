@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.bugtracking.util;
 
+import java.awt.Component;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import org.openide.util.NbBundle;
+import javax.swing.JList;
+import org.openide.util.NbBundle;  
 
 /**
  *
@@ -52,14 +56,22 @@ import org.openide.util.NbBundle;
 public class ListValuePicker extends javax.swing.JPanel {
 
     public static String getValues(String title, String label, String message, String valuesString, List<String> knownValues) {
+        List<ListValue> lv = new ArrayList<ListValue>(knownValues.size());
+        for (String s : knownValues) {
+            lv.add(new ListValue(s, s));
+        }
+        return getValues(title, label, message, valuesString, lv.toArray(new ListValue[lv.size()]));
+    }
+    
+    public static String getValues(String title, String label, String message, String valuesString, ListValue[] knownValues) {
         String[] values = valuesString.split(","); // NOI18N
         if(values == null || values.length == 0) {
             return null;
         }
 
-        ListValuePicker kp = new ListValuePicker(label, message, knownValues, values);
-        if (BugtrackingUtil.show(kp, title, NbBundle.getMessage(ListValuePicker.class, "LBL_Ok"))) { // NOI18N
-            values = kp.getSelectedValues();
+        ListValuePicker vp = new ListValuePicker(label, message, knownValues, values);
+        if (BugtrackingUtil.show(vp, title, NbBundle.getMessage(ListValuePicker.class, "LBL_Ok"))) { // NOI18N
+            values = vp.getSelectedValues();
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < values.length; i++) {
                 String s = values[i];
@@ -73,33 +85,37 @@ public class ListValuePicker extends javax.swing.JPanel {
         return valuesString;
     }
     
-    private ListValuePicker(String label, String message, List<String> knownKeywords, String[] toSelect) {
+    private ListValuePicker(String label, String message, ListValue[] knownValues, String[] toSelect) {
         initComponents();
+        
         this.messageLabel.setText(message);
         org.openide.awt.Mnemonics.setLocalizedText(valuesLabel, label); 
         
+        valuesList.setCellRenderer(new ListValueRenderer());
         DefaultListModel model = new DefaultListModel();
-        for (String keyword : knownKeywords) {
-            model.addElement(keyword);
+        for (ListValue lvalue : knownValues) {
+            model.addElement(lvalue);
         }
         valuesList.setModel(model);
         int[] selection = new int[toSelect.length];
         for (int i = 0; i < toSelect.length; i++) {
-            String keyword = toSelect[i];
-            keyword = keyword.trim();
-            int idx = model.indexOf(keyword);
+            String s = toSelect[i];
+            s = s.trim();
+            int idx = getIndex(model, s);
             if(idx == -1 ) {
-                idx = model.indexOf(keyword.toUpperCase());
+                idx = getIndex(model, s.toUpperCase());
             }
             if(idx == -1 ) {
-                idx = model.indexOf(keyword.toLowerCase());
+                idx = getIndex(model, s.toLowerCase());
             }
             selection[i] = idx;
         }
 
         valuesList.setSelectedIndices(selection);
         int idx = selection.length > 0 ? selection[0] : -1;
-        if(idx > -1) valuesList.scrollRectToVisible(valuesList.getCellBounds(idx, idx));
+        if(idx > -1) {
+            valuesList.scrollRectToVisible(valuesList.getCellBounds(idx, idx));
+        }
     }
 
     /** This method is called from within the constructor to
@@ -154,11 +170,11 @@ public class ListValuePicker extends javax.swing.JPanel {
 
     private String[] getSelectedValues() {
         Object[] values = valuesList.getSelectedValues();
-        String[] keywords = new String[values.length];
-        for (int i=0; i<values.length; i++) {
-            keywords[i] = values[i].toString();
+        String[] ret = new String[values.length];
+        for (int i=0; i < values.length; i++) {
+            ret[i] = ((ListValue)values[i]).value;
         }
-        return keywords;
+        return ret;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -168,4 +184,58 @@ public class ListValuePicker extends javax.swing.JPanel {
     private javax.swing.JList valuesList;
     // End of variables declaration//GEN-END:variables
 
+    private int getIndex(DefaultListModel model, String s) {
+        for (int i = 0; i < model.getSize(); i++) {
+            ListValue e = (ListValue) model.getElementAt(i);
+            if(e.value.equals(s)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static class ListValue {
+        private String displayValue;
+        private String value;
+        public ListValue(String displayValue, String value) {
+            this.displayValue = displayValue;
+            this.value = value;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 97 * hash + (this.value != null ? this.value.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ListValue other = (ListValue) obj;
+            if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
+                return false;
+            }
+            return true;
+        }
+        
+    }
+
+    private class ListValueRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if(value instanceof ListValue) {
+                ListValue lv = (ListValue) value;
+                return super.getListCellRendererComponent(list, lv.displayValue, index, isSelected, cellHasFocus);
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+        
+    }
 }
