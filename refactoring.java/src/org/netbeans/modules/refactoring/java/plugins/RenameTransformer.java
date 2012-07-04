@@ -215,7 +215,7 @@ public class RenameTransformer extends RefactoringVisitor {
                 Types types = workingCopy.getTypes();
                 
                 if(superclass!=null && !types.isSameType(types.getNoType(TypeKind.NONE), superclass) &&
-                    types.isSubtype(elementToFind.getEnclosingElement().asType(), superclass)) {
+                    types.isSubtype(superclass, elementToFind.getEnclosingElement().asType())) {
                     if(elementToFind.getKind().isField()) {
                         for (Element ele : enclosingTypeElement.getEnclosedElements()) {
                             if (ele.getKind().isField() && ele.getSimpleName().toString().equals(newName)) {
