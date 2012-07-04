@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
+import org.netbeans.modules.team.ui.spi.LoginHandle;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;

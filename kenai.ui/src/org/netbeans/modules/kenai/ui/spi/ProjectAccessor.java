@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.kenai.ui.spi;
 
+import org.netbeans.modules.team.ui.spi.LoginHandle;
 import java.awt.event.ActionListener;
 import java.util.List;
 import javax.swing.Action;

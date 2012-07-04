@@ -40,27 +40,21 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.team.ui.common;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.common.ColorManager;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.kenai.ui.spi.LoginHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * The very first node in dashboard window showing logged-in user name.
@@ -68,8 +62,6 @@ import org.openide.util.RequestProcessor;
  * @author S. Aubrecht
  */
 public class UserNode extends LeafNode {
-
-    private final DashboardImpl dashboard;
 
     private JPanel panel;
     private JLabel lblUser;
@@ -80,41 +72,52 @@ public class UserNode extends LeafNode {
     private LinkButton btnNewProject;
     private LinkButton btnLogout;
     private String progressTitle;
-    private JLabel lpar = new JLabel("(");
-    private JLabel rpar = new JLabel(")");
+    private JLabel lpar = new JLabel("("); // NOI18N
+    private JLabel rpar = new JLabel(")"); // NOI18N
     private LoginHandle login;
     private boolean projectsAvailable = false;
 
     private final Object LOCK = new Object();
     private int loadingCounter = 0;
+    private final Action loginAction;
+    private final Action logoutAction;
+    private final Action refreshAction;
+    private final Action newProjectAction;
+    private final Action openNonMemberProjectAction;
 
-    public UserNode( DashboardImpl dashboard ) {
+    // XXX mayba actions should be already initialized with name, icon & co.
+    public UserNode( Action refreshAction, Action loginAction, Action logoutAction, Action newProjectAction, Action openNonMemberProjectAction ) {
         super( null );
-        this.dashboard = dashboard;
+        
+        this.loginAction = loginAction;
+        this.logoutAction = logoutAction;
+        this.refreshAction = refreshAction;
+        this.newProjectAction = newProjectAction;
+        this.openNonMemberProjectAction = openNonMemberProjectAction;
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    public JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
         synchronized(this) { // ensure panel and it's components created before accessing them
             if( null == panel ) {
                 panel = new JPanel( new GridBagLayout() );
                 panel.setOpaque(false);
 
-                btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_LoginToKenai"), //NOI18N
-                        dashboard.createLoginAction());
-                btnLogout = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Logout"), getLogoutAction());
+                btnLogin = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Login"), loginAction); //NOI18N
+                        
+                btnLogout = new LinkButton(NbBundle.getMessage(UserNode.class, "LBL_Logout"), logoutAction); //NOI18N
                 lblUser = new TreeLabel();
                 lblProgress = createProgressLabel(progressTitle); //NOI18N
-                btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_kenai_project.png", true), ProjectAccessor.getDefault().getOpenNonMemberProjectAction()); //NOI18N
-                btnOpenProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_OpenProject"));
-                btnNewProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/new_kenai_project.png", true), ProjectAccessor.getDefault().getNewKenaiProjectAction()); //NOI18N
-                btnNewProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_NewKenaiProject"));
-                btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/refresh.png", true), new AbstractAction() { //NOI18N
-                    public void actionPerformed(ActionEvent e) {
-                        DashboardImpl.getInstance().refreshProjects();
-                    }
-                });
-                btnRefresh.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_Refresh"));
+                if(openNonMemberProjectAction != null) {
+                    btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_kenai_project.png", true), openNonMemberProjectAction); //NOI18N
+                    btnOpenProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_OpenProject")); //NOI18N
+                }
+                if(newProjectAction != null) {
+                    btnNewProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_kenai_project.png", true), newProjectAction); //NOI18N
+                    btnNewProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_NewProject")); //NOI18N
+                } 
+                btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/refresh.png", true), refreshAction); // NOI18N
+                btnRefresh.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_Refresh")); //NOI18N
 
                 panel.add( btnLogin, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
                 panel.add( lblUser, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 4), 0,0));
@@ -153,34 +156,17 @@ public class UserNode extends LeafNode {
         return panel;
     }
 
-    private Action getLogoutAction() {
-        return new AbstractAction() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        dashboard.getKenai().logout();
-                    }
-                });
-            }
-
-        };
-    }
-
-
-    void loadingStarted(String title) {
+    public void loadingStarted(String title) {
         synchronized( LOCK ) {
             progressTitle = title;
-            if (lblProgress!=null)
+            if (lblProgress != null)
                 lblProgress.setText(title);
             loadingCounter++;
             fireContentChanged();
         }
     }
 
-    void loadingFinished() {
+    public void loadingFinished() {
         synchronized( LOCK ) {
             loadingCounter--;
             if( loadingCounter < 0 )
@@ -193,7 +179,7 @@ public class UserNode extends LeafNode {
         }
     }
 
-    void set( LoginHandle login, boolean projectsAvailable ) {
+    public void set( LoginHandle login, boolean projectsAvailable ) {
         this.projectsAvailable = projectsAvailable;
         this.login = login;
         fireContentChanged();

@@ -184,12 +184,12 @@ public class ProjectNode extends TreeListNode {
             lbl.setFont( isMemberProject ? boldFont : regFont );
             btnBookmark.setForeground(foreground, isSelected);
             btnBookmark.setIcon(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+                        "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
             btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
+                        "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
             btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
             if (isMemberProject) {
-                myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
+                myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
                 myPrjLabel.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
             } else {
                 myPrjLabel.setIcon(null);

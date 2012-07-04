@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.common.CategoryNode;
 import org.netbeans.modules.team.ui.common.ErrorNode;
 import org.netbeans.modules.team.ui.common.EmptyNode;
@@ -72,7 +73,7 @@ import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.treelist.TreeList;
 import org.netbeans.modules.team.ui.treelist.TreeListModel;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.LoginHandle;
+import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -165,14 +166,34 @@ public final class DashboardImpl extends Dashboard {
             }
         };
 
-        userNode = new UserNode(this);
+        userNode = new UserNode(
+                new AbstractAction() {  // refresh
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        refreshProjects();
+                    }
+                },
+                createLoginAction(),    // login    
+                new AbstractAction() {  // logout
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        RequestProcessor.getDefault().post(new Runnable() {
+                            @Override
+                            public void run() {
+                                getKenai().logout();
+                            }
+                        });
+                    }
+                },
+                ProjectAccessor.getDefault().getNewKenaiProjectAction(),
+                ProjectAccessor.getDefault().getOpenNonMemberProjectAction());
         model.addRoot(-1, userNode);
         openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
         model.addRoot(-1, noOpenProjects);
 
         myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_MyProjects"), // NOI18N
-                ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark.png", true)); // NOI18N
+                ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
         if (login!=null) {
             if (!model.getRootNodes().contains(myProjectsNode)) {
                 model.addRoot(-1, myProjectsNode);

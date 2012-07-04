@@ -57,7 +57,7 @@ import javax.swing.JLabel;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.dashboard.UserNode;
+import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.kenai.ui.impl.LoginUtils;
 import org.netbeans.modules.team.ui.spi.TeamServer;

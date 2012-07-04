@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
