@@ -135,9 +135,9 @@ public class GrammarParser {
                     break;
 
                 case ']':
-                    openedParenthesis--;
                     //group end
-                    return;
+                    openedParenthesis--;
+                    return; //return from parseElements
 
                 case '<':
                     //reference
@@ -181,7 +181,7 @@ public class GrammarParser {
                         if (c == Character.MAX_VALUE) {
                             break;
                         }
-                        if (isEndOfValueChar(c)) {
+                        if (isEndOfValue(input)) {
                             input.backup(1);
                             break;
                         } else {
@@ -197,7 +197,7 @@ public class GrammarParser {
                                 propertyName, unitName, input.readText())); //NOI18N
                     }
                     
-                    last = new UnitGrammarElement(parent, acceptor);
+                    last = new UnitGrammarElement(parent, acceptor, null);
                     parent.addElement(last);
                     break;
 
@@ -238,6 +238,27 @@ public class GrammarParser {
                     last.setMaximumOccurances(1);
                     break;
 
+                case '(':
+                    //named elements support; syntax: element($name)
+                    char ch = input.read();
+                    if(ch == '$') {
+                        buf = new StringBuilder();
+                        for (;;) {
+                            ch = input.read();
+                            if (ch == ')') {
+                                break;
+                            } else {
+                                buf.append(ch);
+                            }
+                        }
+                        last.setName(buf.toString());
+                        break;
+                    }
+                    
+                    input.backup(1);
+                    //intentional fallthrough to the default case!
+                    //if the bracket ( is not followed by $ the meaning is 
+                    //a simple value.
 
                 default:
                     //values
@@ -260,7 +281,7 @@ public class GrammarParser {
                             }
                         } else {
                             //unqouted value - end the value by various characters
-                            if(isEndOfValueChar(c)) {
+                            if(isEndOfValue(input)) {
                                 input.backup(1);
                                 break;
                             }
@@ -274,7 +295,7 @@ public class GrammarParser {
                     }
 
                     if (!(ignoreInherits && LexerUtils.equals("inherit", buf, true, true))) { //NOI18N
-                        last = new FixedTextGrammarElement(parent, buf);
+                        last = new FixedTextGrammarElement(parent, buf, null);
                         parent.addElement(last);
                     }
                     break;
@@ -284,8 +305,27 @@ public class GrammarParser {
 
     }
 
-    private static boolean isEndOfValueChar(char c) {
-        return c == ' ' || c == '+' || c == '?' || c == '{' || c == '[' || c == ']' || c == '|';
+    private static boolean isEndOfValue(ParserInput input) {
+        char c = input.LA(0);
+        switch(c) {
+            case ' ': //ws after the element
+            case '+': //multiplicity operator
+            case '?': //multiplicity operator
+            case '*': //multiplicity operator
+            case '&': //first char of the and (&&) operator
+            case '{': //multiplicity in curly bracket
+            case '[': //following group start
+            case ']': //current group end
+            case '|': //first char of || operator or | operator itself
+                return true;
+                
+            case '(': //element name start, must be followed by $ to be the termination char
+                return input.LA(1) == '$';
+                
+            default:
+                return false;
+        }
+        
     }
 
     private static boolean isQuoteChar(char c) {
@@ -306,6 +346,26 @@ public class GrammarParser {
                 return Character.MAX_VALUE;
             } else {
                 return text.charAt(pos++);
+            }
+        }
+        
+        /**
+         * lookahead 
+         * 
+         * la(0) == last read char
+         * la(1) == next char, as read() + backup(1)
+         */
+        public char LA(int lookahead) {
+            //when a char is read, the pointer is moved 
+            //to the next position so if we want to la(0) 
+            //to return the last read char we need to read 
+            //from pos - 1 position
+            int dec = pos == 0 ? 0 : 1;
+            int la_pos = pos - dec + lookahead;
+            if(la_pos >= text.length()) {
+                return Character.MAX_VALUE;
+            } else {
+                return text.charAt(la_pos);
             }
         }
 

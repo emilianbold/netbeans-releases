@@ -96,7 +96,7 @@ public class BackgroundModelImplTest extends CssTestBase {
         
     }
     
-    public void testBackground_Image() {
+    public void testBackgroundImageInBackgroundProperty() {
         PropertyModel background = Properties.getPropertyModel("background");
         assertNotNull(background);
         
@@ -105,7 +105,61 @@ public class BackgroundModelImplTest extends CssTestBase {
         
         ResolvedProperty resolved = ResolvedProperty.resolve(background, "url(flower.png), url(ball.png)");
         
-        NodeUtil.dumpTree(resolved.getParseTree());
+//        NodeUtil.dumpTree(resolved.getParseTree());
+        
+        BackgroundModel model = ModelFactory.getModel(BackgroundModel.class, resolved);
+        assertNotNull(model);
+        
+        Collection<Background> backgrounds = model.getBackgrounds();
+        assertNotNull(backgrounds);
+        
+        /*
+          XXX BUG! the parse tree is broken in this case 
+          (it contains both bg-layer and final-bg-layer for the second url):
+        
+        [S0|background]
+            [C3|@bg-layer]
+                [S4|@bg-image]
+                    [S5|@image]
+                        [L6|@uri]
+                            url(flower.png)(URI;0-15)
+            ,(COMMA;15-16)
+            [C3|@bg-layer]
+                [S4|@bg-image]
+                    [S5|@image]
+                        [L6|@uri]
+                            url(ball.png)(URI;17-30)
+            [C374|@final-bg-layer]
+                [S375|@bg-image]
+                    [S376|@image]
+                        [L377|@uri]
+                            url(ball.png)(URI;17-30)
+         */
+//        assertEquals(2, backgrounds.size()); 
+        
+        Iterator<Background> bgitr = backgrounds.iterator();
+        Background b1 = bgitr.next();
+        assertNotNull(b1);
+        assertNotNull(b1.getImage());
+        assertEquals("url(flower.png)", b1.getImage().getURI());
+        
+        Background b2 = bgitr.next();
+        assertNotNull(b2);
+        assertNotNull(b2.getImage());
+        assertEquals("url(ball.png)", b2.getImage().getURI());
+        
+    }
+    
+    public void testBackgroundImageInBackgroundImageProperty() {
+        PropertyModel background = Properties.getPropertyModel("background-image");
+        assertNotNull(background);
+        
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+//        GrammarParseTreeBuilder.DEBUG = true;
+        
+        ResolvedProperty resolved = ResolvedProperty.resolve(background, "url(flower.png), url(ball.png)");
+        
+//        NodeUtil.dumpTree(resolved.getParseTree());
         
         BackgroundModel model = ModelFactory.getModel(BackgroundModel.class, resolved);
         assertNotNull(model);

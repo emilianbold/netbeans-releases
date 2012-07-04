@@ -117,7 +117,8 @@ public interface Node {
 
         @Override
         public String name() {
-            return resolvedToken.getGrammarElement().getName();
+            //XXX should be ... .getName()
+            return resolvedToken.getGrammarElement().getValue();
         }
         }
 

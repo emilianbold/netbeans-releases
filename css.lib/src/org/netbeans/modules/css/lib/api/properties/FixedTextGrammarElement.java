@@ -52,8 +52,8 @@ public class FixedTextGrammarElement extends ValueGrammarElement {
 
     private CharSequence value;
     
-    public FixedTextGrammarElement(GroupGrammarElement parent, CharSequence value) {
-        super(parent);
+    public FixedTextGrammarElement(GroupGrammarElement parent, CharSequence value, String elementName) {
+        super(parent, elementName);
         this.value = value;
     }
 
@@ -63,14 +63,14 @@ public class FixedTextGrammarElement extends ValueGrammarElement {
     }
     
     @Override
-    public String getName() {
+    public String getValue() {
         return value.toString();
     }
 
     @Override
     public String toString() {
         return new StringBuilder()
-                .append(getName())
+                .append(getValue())
                 .append(super.toString())
                 .toString();
     }

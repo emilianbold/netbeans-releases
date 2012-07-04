@@ -235,7 +235,7 @@ public class CssCompletion implements CodeCompletionHandler {
         Map<String, Collection<ValueGrammarElement>> value2GrammarElement =
                 new HashMap<String, Collection<ValueGrammarElement>>();
         for (ValueGrammarElement element : props) {
-            String elementValue = element.getName().toString();
+            String elementValue = element.getValue().toString();
             Collection<ValueGrammarElement> col = value2GrammarElement.get(elementValue);
             if (col == null) {
                 col = new LinkedList<ValueGrammarElement>();
@@ -1166,7 +1166,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //test the situation when completion is invoked just after a valid token
                     //like color: rgb| or font-family: cursive|
                     for (ValueGrammarElement vge : filteredByPrefix) {
-                        if (vge.getName().toString().equals(prefix)) {
+                        if (vge.getValue().toString().equals(prefix)) {
                             includePrefixInTheExpression = true;
                             break;
                         }

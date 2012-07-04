@@ -44,6 +44,7 @@ package org.netbeans.modules.css.lib.api.properties;
 import java.util.Collections;
 import org.netbeans.modules.css.lib.CssTestBase;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,7 +59,13 @@ public class GrammarParserTest extends CssTestBase {
     public void testCanParserGrammarOfAllProperties() {
         for (PropertyDefinition property : PropertyDefinitionProvider.Query.getProperties()) {
             PropertyModel model = new PropertyModel(property.getName(), Collections.singletonList(property));
-            assertNotNull(GrammarParser.parse(model.getGrammar()));
+            String grammar = model.getGrammar();
+            try {
+                assertNotNull(GrammarParser.parse(model.getGrammar()));
+            } catch (RuntimeException e) {
+                System.err.println("Error parsing grammar: " + grammar);
+                Exceptions.printStackTrace(e);
+            }
         }
     }
     

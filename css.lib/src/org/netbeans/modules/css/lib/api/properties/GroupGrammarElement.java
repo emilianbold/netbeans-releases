@@ -51,7 +51,6 @@ import java.util.List;
 public class GroupGrammarElement extends GrammarElement {
 
     int index;
-    String referenceName = null;
 
     public enum Type {
 
@@ -85,15 +84,15 @@ public class GroupGrammarElement extends GrammarElement {
     }
 
     public GroupGrammarElement(GroupGrammarElement parent, int index, String referenceName) {
-        this(parent, index);
-        this.referenceName = referenceName;
-    }
-
-    public GroupGrammarElement(GroupGrammarElement parent, int index) {
-        super(parent);
+        super(parent, referenceName);
         this.index = index;
         this.type = Type.LIST; //default type
     }
+
+    public GroupGrammarElement(GroupGrammarElement parent, int index) {
+        this(parent, index, null);
+    }
+    
     private List<GrammarElement> elements = new ArrayList<GrammarElement>(5);
     private Type type;
 
@@ -157,20 +156,14 @@ public class GroupGrammarElement extends GrammarElement {
         return getName() != null && getName().charAt(0) != GrammarElement.INVISIBLE_PROPERTY_PREFIX;
     }
         
-    
-    @Override
-    public String getName() {
-        return referenceName;
-    }
-
     @Override
     public String toString2(int level) {
         StringBuilder sb = new StringBuilder();
         String heading = toString();
         heading = heading.substring(0, heading.length() - 1);
         sb.append(indentString(level)).append(heading); //NOI18N
-        if (referenceName != null) {
-            sb.append("(").append(referenceName).append(") "); //NOI18N
+        if (getName() != null) {
+            sb.append("(").append(getName()).append(") "); //NOI18N
         }
         
         sb.append('\n');
@@ -190,8 +183,8 @@ public class GroupGrammarElement extends GrammarElement {
         sb.append('[');
         sb.append(getType().name().charAt(0));
         sb.append(index);
-        if (referenceName != null) {
-            sb.append("|").append(referenceName); //NOI18N
+        if (getName() != null) {
+            sb.append("|").append(getName()); //NOI18N
         }
         sb.append(']');
         return sb.toString(); //NOI18N

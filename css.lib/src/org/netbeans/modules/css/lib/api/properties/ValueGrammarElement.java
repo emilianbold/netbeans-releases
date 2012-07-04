@@ -47,10 +47,12 @@ package org.netbeans.modules.css.lib.api.properties;
  */
 public abstract class ValueGrammarElement extends GrammarElement {
 
-    public ValueGrammarElement(GroupGrammarElement parent) {
-        super(parent);
+    public ValueGrammarElement(GroupGrammarElement parent, String elementName) {
+        super(parent, elementName);
     }
  
     public abstract boolean accepts(Token token);
+    
+    public abstract String getValue();
     
 }

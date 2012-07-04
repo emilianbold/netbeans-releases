@@ -92,7 +92,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
             boolean addSemicolon,
             boolean addSpaceBeforeItem) {
 
-        return new ValueCompletionItem(element, value.getName().toString(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
+        return new ValueCompletionItem(element, value.getValue(), origin, anchorOffset, addSemicolon, addSpaceBeforeItem);
     }
     
     public static CssCompletionItem createValueCompletionItem(CssValueElement element,
@@ -539,7 +539,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getName() {
-            return element.getName().toString();
+            return element.getValue().toString();
         }
 
         @Override

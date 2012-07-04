@@ -65,9 +65,19 @@ public abstract class GrammarElement {
     
     private GroupGrammarElement parent;
     private String path;
+    private String name;
 
-    public GrammarElement(GroupGrammarElement parent) {
+    public GrammarElement(GroupGrammarElement parent, String elementName) {
         this.parent = parent;
+        this.name = elementName;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     public abstract void accept(GrammarElementVisitor visitor);
@@ -124,15 +134,13 @@ public abstract class GrammarElement {
         return origin(false);
     }
     
-    public abstract String getName();
-
     private String origin(boolean allowNonVisibleElements) {
         GroupGrammarElement p = parent;
         while (p != null) {
-            if (p.referenceName != null) {
-                boolean visible = !isArtificialElementName(p.referenceName);
+            if (p.getName() != null) {
+                boolean visible = !isArtificialElementName(p.getName());
                 if (visible || allowNonVisibleElements) {
-                    return p.referenceName;
+                    return p.getName();
                 }
             }
             p = p.parent();

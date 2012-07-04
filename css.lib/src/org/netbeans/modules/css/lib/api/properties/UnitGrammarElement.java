@@ -50,8 +50,8 @@ public class UnitGrammarElement extends ValueGrammarElement {
     private final TokenAcceptor tokenAcceptor;
     private final String name;
     
-    public UnitGrammarElement(GroupGrammarElement parent, TokenAcceptor tokenAcceptor) {
-        super(parent);
+    public UnitGrammarElement(GroupGrammarElement parent, TokenAcceptor tokenAcceptor, String elementName) {
+        super(parent, elementName);
         this.tokenAcceptor = tokenAcceptor;
         this.name = new StringBuilder().append('!').append(getTokenAcceptorId()).toString();
     }
@@ -61,7 +61,7 @@ public class UnitGrammarElement extends ValueGrammarElement {
     }
     
     @Override
-    public String getName() {
+    public String getValue() {
         return name;
     }
 
@@ -73,7 +73,7 @@ public class UnitGrammarElement extends ValueGrammarElement {
     @Override
     public String toString() {
         return new StringBuilder()
-                .append(getName())
+                .append(getValue())
                 .append(super.toString())
                 .toString();
     }
