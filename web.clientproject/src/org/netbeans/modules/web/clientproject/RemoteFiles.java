@@ -49,10 +49,8 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.html.editor.api.index.HtmlIndex;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.filesystems.FileObject;
+import org.openide.modules.Places;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -64,6 +62,7 @@ public class RemoteFiles {
 
     private ClientSideProject project;
     private RequestProcessor RP = new RequestProcessor();
+    private RequestProcessor RP2 = new RequestProcessor(RequestProcessor.class.getName(), 5);
     private List<URL> urls;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private HtmlIndex index;
@@ -131,6 +130,7 @@ public class RemoteFiles {
 
     private synchronized void setUrls(List<URL> urls) {
         this.urls = urls;
+        prefetchRemoteFiles(urls);
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -150,5 +150,20 @@ public class RemoteFiles {
     // content of remote URL is downloaded and cached - cache is shared by all projects
     
     // ability to force cache refresh
+
+    private void prefetchRemoteFiles(final List<URL> urls) {
+        for (final URL u : urls) {
+            RP2.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        RemoteFilesCache.getDefault().getRemoteFile(u);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
+    }
     
 }
