@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -62,6 +64,7 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -99,8 +102,8 @@ public class OriginResourceIterator implements
             panel = JavaTemplates.createPackageChooser(project, sourceGroups, 
                             myRestFilterPanel, true);
         }
-        panel.getComponent();
         myPanels = new Panel[]{ panel };
+        setSteps();
     }
 
     /* (non-Javadoc)
@@ -195,6 +198,21 @@ public class OriginResourceIterator implements
         
         handle.finish();
         return Collections.singleton(filterClass);
+    }
+    
+    private void setSteps() {
+        Object contentData = myWizard.getProperty(WizardDescriptor.PROP_CONTENT_DATA);  
+        if ( contentData instanceof String[] ){
+            String steps[] = (String[])contentData;
+            steps[steps.length-1]=NbBundle.getMessage(OriginResourceIterator.class, 
+                    "TXT_ConfigureFilter");        // NOI18N
+            for( int i=0; i<myPanels.length; i++ ){
+                Panel panel = myPanels[i];
+                JComponent component = (JComponent)panel.getComponent();
+                component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(i));
+            }
+        }
     }
     
     private WizardDescriptor myWizard;
