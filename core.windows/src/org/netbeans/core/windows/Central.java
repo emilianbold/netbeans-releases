@@ -2828,7 +2828,7 @@ final class Central implements ControllerHandler {
             return; //nothing todo
         }
         ModeImpl mode = ( ModeImpl ) WindowManagerImpl.getInstance().findMode( tc );
-        if( null == mode ) {
+        if( null == mode || mode.getState() != Constants.MODE_STATE_JOINED ) {
             return;
         }
         if( minimized ) {
