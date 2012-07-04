@@ -131,6 +131,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     
     private static final String RESOLUTION_RESOLVED = "RESOLVED";               // NOI18N    
     private static final String STATUS_FIXED = "FIXED";                         // NOI18N
+    private static final String STATUS_UNCONFIRMED = "UNCONFIRMED";             // NOI18N
     private static final String RESOLUTION_DUPLICATE = "DUPLICATE";             // NOI18N
 
     private C2CIssue issue;
@@ -378,6 +379,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         modifiedField.setVisible(!isNew);
         statusLabel.setVisible(!isNew);
         statusCombo.setVisible(!isNew);
+        resolutionCombo.setVisible(!isNew);
         separator.setVisible(!isNew);
         commentsPanel.setVisible(!isNew);
         attachmentsLabel.setVisible(!isNew);
@@ -387,12 +389,20 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         cancelButton.setVisible(!isNew);
         separatorLabel3.setVisible(!isNew);
         showInBrowserButton.setVisible(!isNew);
-        ownerCombo.setEditable(issue.isNew());
+        parentLabel.setVisible(!isNew);
+        parentField.setVisible(!isNew);
+        parentButton.setVisible(!isNew);
+        subtaskLabel.setVisible(!isNew);
+        subtaskField.setVisible(!isNew);
+        subtaskButton.setVisible(!isNew);
+        externalLabel.setVisible(!isNew);
+        externalField.setVisible(!isNew);
+        externalButton.setVisible(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
             // Preselect the first product
             selectProduct();
-            initStatusCombo("NEW"); // NOI18N
+            initStatusCombo(STATUS_UNCONFIRMED); // NOI18N
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
@@ -704,7 +714,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         
         statusCombo.setModel(toComboModel(statuses));
         statusCombo.setRenderer(new ClientDataRenderer());
-        statusCombo.setSelectedItem(status);
+        selectInCombo(statusCombo, cd.getStatusByValue(status), false);
     }    
     
     private void updateReadOnlyField(JTextField field) {
@@ -1935,15 +1945,16 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             CfcRepositoryConnector connector = C2C.getInstance().getRepositoryConnector();
             
             TaskData data = issue.getTaskData();
-            try {
-                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
+//            try {
+                // throws NPE
+//                connector.getTaskDataHandler().initializeTaskData(issue.getRepository().getTaskRepository(), data, connector.getTaskMapping(data), new NullProgressMonitor());
                 initialValues.remove(IssueField.COMPONENT.getKey());
                 initialValues.remove(IssueField.VERSION.getKey());
                 initialValues.remove(IssueField.MILESTONE.getKey());
                 reloadForm(false);
-            } catch (CoreException cex) {
-                C2C.LOG.log(Level.INFO, cex.getMessage(), cex);
-            }
+//            } catch (CoreException cex) {
+//                C2C.LOG.log(Level.INFO, cex.getMessage(), cex);
+//            }
         }
     }//GEN-LAST:event_productComboActionPerformed
 

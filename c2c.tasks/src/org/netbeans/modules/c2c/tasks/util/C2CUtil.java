@@ -79,50 +79,29 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class C2CUtil {
-     public static TaskData createTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, String summary, String desc, String typeName) throws MalformedURLException, CoreException {
+    
+     public static TaskData createTaskData(TaskRepository taskRepository) {
         
-        ICfcClient client = cfcrc.getClientManager().getClient(repository);
-        client.updateRepositoryConfiguration(new NullProgressMonitor());
-        CfcClientData clientData = client.getCalmClientData();
+        // XXX is this all we need and how we need it?
+
+        CfcClientData clientData = DummyUtils.getClientData(taskRepository);
         
-        TaskAttributeMapper attributeMapper = cfcrc.getTaskDataHandler().getAttributeMapper(repository);
-        TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
+        CfcRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
+        TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(taskRepository);
+        TaskData data = new TaskData(attributeMapper, rc.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
         
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.createMappedAttribute(TaskAttribute.USER_ASSIGNED);
         ta = rta.createMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());
-        ta.setValue(summary);
         ta = rta.createMappedAttribute(CfcTaskAttribute.DESCRIPTION.getKey());
-        ta.setValue(desc);
-        
         ta = rta.createMappedAttribute(CfcTaskAttribute.TASK_TYPE.getKey());
-        ta.setValue(clientData.getTaskTypes().iterator().next());
-        
-        Product product = clientData.getProducts().get(0);
         ta = rta.createMappedAttribute(CfcTaskAttribute.PRODUCT.getKey());
-        ta.setValue(product.getName());
-        
         ta = rta.createMappedAttribute(CfcTaskAttribute.COMPONENT.getKey());
-        ta.setValue(product.getComponents().get(0).getName());
-        
         ta = rta.createMappedAttribute(CfcTaskAttribute.MILESTONE.getKey());
-        ta.setValue(product.getMilestones().get(0).getValue());
-        
         ta = rta.createMappedAttribute(CfcTaskAttribute.ITERATION.getKey());
-        Collection<String> c = clientData.getActiveIterations();
-        if(!c.isEmpty()) {
-            ta.setValue(c.iterator().next());
-        }
-        
         ta = rta.createMappedAttribute(CfcTaskAttribute.PRIORITY.getKey());
-        ta.setValue(clientData.getPriorities().get(0).getValue());
-        
         ta = rta.createMappedAttribute(CfcTaskAttribute.SEVERITY.getKey());
-        ta.setValue(clientData.getSeverities().get(0).getValue());
-        
         ta = rta.createMappedAttribute(CfcTaskAttribute.STATUS.getKey());
-        ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
-        
         ta = rta.createMappedAttribute(CfcTaskAttribute.RESOLUTION.getKey());
 //        ta.setValue(clientData.getResolutions("UNCONFIRMED").getValue());
         ta = rta.createMappedAttribute(CfcTaskAttribute.DUPLICATE_OF.getKey());

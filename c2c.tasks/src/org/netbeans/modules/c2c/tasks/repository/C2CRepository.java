@@ -59,6 +59,7 @@ import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
@@ -301,7 +302,14 @@ public class C2CRepository {
     }
 
     public C2CIssue createIssue() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        //        XXX
+        //        BugzillaConfiguration conf = getConfiguration();
+        //        if(conf == null || !conf.isValid()) {
+        //            // invalid connection data?
+        //            return null;
+        //        }
+        TaskData data = C2CUtil.createTaskData(getTaskRepository());
+        return new C2CIssue(data, this);
     }
 
     public C2CQuery createQuery() {
