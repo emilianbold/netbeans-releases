@@ -40,16 +40,16 @@ package org.netbeans.lib.nbjavac.services;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javadoc.JavadocEnter;
+import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 
 /**
  *
  * @author lahvac
  */
-public class NBEnter extends JavadocEnter {
+public class NBEnter extends Enter {
 
     public static void preRegister(Context context) {
-        context.put(Enter.class, new Context.Factory<Enter>() {
+        context.put(enterKey, new Context.Factory<Enter>() {
             public Enter make(Context c) {
                 return new NBEnter(c);
             }
@@ -69,4 +69,8 @@ public class NBEnter extends JavadocEnter {
         super.visitClassDef(tree);
     }
 
+    @Override
+    protected int getIndex(JCClassDecl clazz) {
+        return clazz instanceof IndexedClassDecl ? ((IndexedClassDecl) clazz).index : -1;
+    }
 }
