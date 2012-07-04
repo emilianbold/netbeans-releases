@@ -69,8 +69,8 @@ public class JsDocParser {
      * @param scriptText text to parse
      * @return list of blocks
      */
-    public static Map<Integer, JsDocBlock> parse(Snapshot snapshot) {
-        Map<Integer, JsDocBlock> blocks = new HashMap<Integer, JsDocBlock>();
+    public static Map<Integer, JsDocComment> parse(Snapshot snapshot) {
+        Map<Integer, JsDocComment> blocks = new HashMap<Integer, JsDocComment>();
 
         TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
         if (tokenSequence == null) {
@@ -87,7 +87,7 @@ public class JsDocParser {
                 if (commentType == JsDocCommentType.DOC_NO_CODE_START
                         || commentType == JsDocCommentType.DOC_NO_CODE_END
                         || commentType == JsDocCommentType.DOC_SHARED_TAG_END) {
-                    blocks.put(offsetRange.getEnd(), new JsDocBlock(offsetRange, commentType, Collections.<JsDocElement>emptyList()));
+                    blocks.put(offsetRange.getEnd(), new JsDocComment(offsetRange, commentType, Collections.<JsDocElement>emptyList()));
                     continue;
                 } else {
                     blocks.put(offsetRange.getEnd(), parseCommentBlock(tokenSequence, offsetRange, commentType));
@@ -108,7 +108,7 @@ public class JsDocParser {
         return ts.embedded(JsDocTokenId.language());
     }
 
-    private static JsDocBlock parseCommentBlock(TokenSequence ts, OffsetRange range, JsDocCommentType commentType) {
+    private static JsDocComment parseCommentBlock(TokenSequence ts, OffsetRange range, JsDocCommentType commentType) {
         TokenSequence ets = getEmbeddedJsDocTS(ts);
 
         List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
@@ -155,7 +155,7 @@ public class JsDocParser {
             }
         }
 
-        return new JsDocBlock(range, commentType, jsDocElements);
+        return new JsDocComment(range, commentType, jsDocElements);
     }
 
     private static JsDocCommentType getCommentType(CharSequence text) {

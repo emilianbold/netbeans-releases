@@ -46,9 +46,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.javascript2.editor.model.DocIdentifier;
-import org.netbeans.modules.javascript2.editor.model.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.DocumentationProvider.Modifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
@@ -149,14 +149,14 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
                 JsParserResult parserResult = (JsParserResult) result;
 
                 JsDocDocumentationProvider documentationProvider = getDocumentationProvider(parserResult);
-                Set<Modifier> realModifiers = documentationProvider.getModifiers(getNodeForOffset(parserResult, offset));
+                Set<JsModifier> realModifiers = documentationProvider.getModifiers(getNodeForOffset(parserResult, offset));
                 if (expectedModifiers == null) {
                     assertEquals(0, realModifiers.size());
                 } else {
                     String[] expModifiers = expectedModifiers.split("[|]");
                     assertEquals(expModifiers.length, realModifiers.size());
                     for (int i = 0; i < expModifiers.length; i++) {
-                        assertTrue(realModifiers.contains(Modifier.fromString(expModifiers[i])));
+                        assertTrue(realModifiers.contains(JsModifier.fromString(expModifiers[i])));
                     }
                 }
             }

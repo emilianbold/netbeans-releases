@@ -48,7 +48,7 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.jsdoc.JsDocParser;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -83,7 +83,7 @@ public abstract class SanitizingParser extends Parser {
         } catch (Exception ex) {
             LOGGER.log (Level.INFO, "Exception during parsing: {0}", ex);
             // TODO create empty result
-            lastResult = new JsParserResult(snapshot, null, Collections.<Integer, JsComment>emptyMap());
+            lastResult = new JsParserResult(snapshot, null);
         }
         long endTime = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Parsing took: {0} ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
@@ -150,22 +150,22 @@ public abstract class SanitizingParser extends Parser {
             }
         }
         
-        // process comment elements
-        Map<Integer, ? extends JsComment> comments = Collections.<Integer, JsComment>emptyMap();
-        if (context.getSnapshot() != null) {
-            try {
-                long startTime = System.nanoTime();
-                comments = JsDocParser.parse(context.getSnapshot());
-                if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.log(Level.FINE, "Parsing of comments took: {0} ms source: {1}",
-                            new Object[]{(System.nanoTime() - startTime) / 1000000, context.getName()});
-                }
-            } catch (Exception ex) {
-                // if anything wrong happen during parsing comments
-                LOGGER.log(Level.WARNING, null, ex);
-            }
-        }
-        return new JsParserResult(context.getSnapshot(), node, comments);
+//        // process comment elements
+//        Map<Integer, ? extends JsComment> comments = Collections.<Integer, JsComment>emptyMap();
+//        if (context.getSnapshot() != null) {
+//            try {
+//                long startTime = System.nanoTime();
+//                comments = JsDocumentationParser.parse(context.getSnapshot());
+//                if (LOGGER.isLoggable(Level.FINE)) {
+//                    LOGGER.log(Level.FINE, "Parsing of comments took: {0} ms source: {1}",
+//                            new Object[]{(System.nanoTime() - startTime) / 1000000, context.getName()});
+//                }
+//            } catch (Exception ex) {
+//                // if anything wrong happen during parsing comments
+//                LOGGER.log(Level.WARNING, null, ex);
+//            }
+//        }
+        return new JsParserResult(context.getSnapshot(), node);
     }
     
     private boolean sanitizeSource(Context context, Sanitize sanitizing, JsErrorManager errorManager) {

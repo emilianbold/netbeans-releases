@@ -47,12 +47,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
+import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
@@ -68,7 +68,7 @@ public final class Model {
 
     private final OccurrencesSupport occurrencesSupport;
 
-    private final DocumentationProvider docSupport;
+    private final JsDocumentationProvider docSupport;
 
     private final UsageBuilder usageBuilder;
     
@@ -77,7 +77,7 @@ public final class Model {
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
-        this.docSupport = DocumentationSupport.getDocumentationProvider(parserResult);
+        this.docSupport = JsDocumentationSupport.getDocumentationProvider(parserResult);
         this.usageBuilder = new UsageBuilder();
     }
 

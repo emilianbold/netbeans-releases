@@ -47,6 +47,7 @@ import java.util.Map.Entry;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
@@ -113,8 +114,8 @@ public class JsDocParserTest extends JsTestBase {
         }
     }
 
-    private JsDocBlock getFirstJsDocBlock(Snapshot snapshot) {
-        Iterator<Entry<Integer, JsDocBlock>> iterator = JsDocParser.parse(snapshot).entrySet().iterator();
+    private JsDocComment getFirstJsDocBlock(Snapshot snapshot) {
+        Iterator<Entry<Integer, JsDocComment>> iterator = JsDocParser.parse(snapshot).entrySet().iterator();
         return iterator.next().getValue();
     }
 }

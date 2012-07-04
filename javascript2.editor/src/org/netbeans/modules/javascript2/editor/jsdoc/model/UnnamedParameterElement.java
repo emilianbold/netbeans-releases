@@ -42,6 +42,8 @@
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 
 /**
  * Represents parameter element which does not need any parameter name.
@@ -50,7 +52,7 @@ import java.util.List;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class UnnamedParameterElement extends ParameterElement {
+public class UnnamedParameterElement extends ParameterElement implements DocParameter {
 
     private UnnamedParameterElement(Type type,
             List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
@@ -65,6 +67,21 @@ public class UnnamedParameterElement extends ParameterElement {
     public static UnnamedParameterElement create(Type type,
             List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
         return new UnnamedParameterElement(type, paramTypes, paramDescription);
+    }
+
+    @Override
+    public DocIdentifier getParamName() {
+        return null;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return false;
     }
 
 }

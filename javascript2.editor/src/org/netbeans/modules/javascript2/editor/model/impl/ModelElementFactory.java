@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
 import com.oracle.nashorn.ir.LiteralNode;
@@ -93,7 +95,7 @@ class ModelElementFactory {
                 result.addOccurrence(occurrence.getOffsetRange());
             }
         }
-        DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult);
+        JsDocumentationProvider docProvider = JsDocumentationSupport.getDocumentationProvider(parserResult);
         result.setDocumentation(docProvider.getDocumentation(functionNode));
         result.setAnonymous(isAnnonymous);
         return result;
@@ -138,7 +140,7 @@ class ModelElementFactory {
                 newObject.addProperty(propertyName, result.getProperty(propertyName));
             }
         }
-        DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult);
+        JsDocumentationProvider docProvider = JsDocumentationSupport.getDocumentationProvider(parserResult);
         newObject.setDocumentation(docProvider.getDocumentation(objectNode));
         parent.addProperty(name.getName(), newObject);
         return (JsObjectImpl)newObject;
@@ -149,7 +151,7 @@ class ModelElementFactory {
         JsObjectImpl result = new AnonymousObject(modelBuilder.getGlobal(),
                     name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
         modelBuilder.getGlobal().addProperty(name, result);
-        DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult);
+        JsDocumentationProvider docProvider = JsDocumentationSupport.getDocumentationProvider(parserResult);
         result.setDocumentation(docProvider.getDocumentation(objectNode));
         return result;
     }
@@ -157,7 +159,7 @@ class ModelElementFactory {
     static JsObjectImpl create(JsParserResult parserResult, PropertyNode propertyNode, Identifier name, ModelBuilder modelBuilder, boolean belongsToParent) {
         JsObjectImpl scope = modelBuilder.getCurrentObject();
         JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange());
-        DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult);
+        JsDocumentationProvider docProvider = JsDocumentationSupport.getDocumentationProvider(parserResult);
         property.setDocumentation(docProvider.getDocumentation(propertyNode));
         return property;
     }

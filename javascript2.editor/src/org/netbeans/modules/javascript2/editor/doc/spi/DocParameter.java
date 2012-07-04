@@ -39,30 +39,46 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.doc.spi;
 
-import org.netbeans.modules.javascript2.editor.jsdoc.JsDocDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
- * Contains support methods for obtaining {@link DocumentationProvider}.
+ * Stores named and unnamed documentation parameters.
  *
- * @author Martin Fousek, Petr Pisl
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public final class DocumentationSupport {
-
-    private DocumentationSupport() {
-    }
+public interface DocParameter {
 
     /**
-     * Gets {@code DocumentationProvider} for given {@code JsParserResult}.
-     * <p>
-     * <b>Obtained {@code DocumentationProvider} should be cached in callers place.</b>
-     * @param result {@code JsParserResult}
-     * @return {@code DocumentationProvider} for given {@code JsParserResult}
+     * Gets name of the parameter.
+     * @return parameter name
      */
-    public static DocumentationProvider getDocumentationProvider(JsParserResult result) {
-        return new JsDocDocumentationProvider(result);
-    }
+    DocIdentifier getParamName();
+
+    /**
+     * Gets default value of the parameter.
+     * @return default value, {@code null} if no default value set
+     */
+    String getDefaultValue();
+
+    /**
+     * Get information if the parameter is optional or not.
+     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
+     */
+    boolean isOptional();
+
+    /**
+     * Gets the description of the parameter.
+     * @return parameter description, can be empty string, never {@code null}
+     */
+    String getParamDescription();
+
+    /**
+     * Gets the parameter type.
+     * @return parameter type, or {@code null} when no type is set
+     */
+    List<? extends Type> getParamTypes();
 
 }

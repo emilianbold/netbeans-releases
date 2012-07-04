@@ -39,85 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
-
-import com.oracle.nashorn.ir.Node;
-import java.util.List;
-import java.util.Set;
+package org.netbeans.modules.javascript2.editor.doc.api;
 
 /**
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Possible modifiers of the javaScript element declared by documentation tools.
  */
-public interface DocumentationProvider {
+public enum JsModifier {
+
+    /** Private modifier. */
+    PRIVATE("private"),
+
+    /** Public modifier. */
+    PUBLIC("public"),
+
+    /** Static modifier. */
+    STATIC("static");
+
+    private final String value;
+
+    private JsModifier(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return value;
+    }
 
     /**
-     * Gets possible return types get from the method.
-     * @param node of the javaScript code
-     * @return list of potential return types, never {@code null}
+     * Gets {@code JsModifier} corresponding to given value.
+     * @param value {@code String} value of the {@code JsModifier}
+     * @return {@code JsModifier}
      */
-    List<Type> getReturnType(Node node);
-
-    /**
-     * Gets parameters of the method.
-     * @param node of the javaScript code
-     * @return list of parameters, never {@code null}
-     */
-    List<DocParameter> getParameters(Node node);
-
-    /**
-     * Gets documentation for given Node.
-     * @param node of the javaScript code
-     * @return documentation text if any {@code null} otherwise
-     */
-    String getDocumentation(Node node);
-
-    /**
-     * Says whether is code at given code depricated or not.
-     * @param node examined node
-     * @return {@code true} if the comment says "it's deprecated", {@code false} otherwise
-     */
-    boolean isDeprecated(Node node);
-
-    /**
-     * Gets the set of modifiers attached to given node.
-     * @param node examinded node
-     * @return {@code Set} of modifiers
-     */
-    Set<Modifier> getModifiers(Node node);
-
-    /**
-     * Possible modifiers of the javaScript element declared by documentation tools.
-     */
-    public enum Modifier {
-        PRIVATE("private"),
-        PUBLIC("public"),
-        STATIC("static");
-
-        private final String value;
-
-        private Modifier(String value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return value;
-        }
-
-        /**
-         * Gets {@code Modifier} corresponding to given value.
-         * @param value {@code String} value of the {@code Modifier}
-         * @return {@code Modifier}
-         */
-        public static Modifier fromString(String value) {
-            for (Modifier modifier : Modifier.values()) {
-                if (value.equalsIgnoreCase(modifier.toString())) {
-                    return modifier;
-                }
+    public static JsModifier fromString(String value) {
+        for (JsModifier modifier : JsModifier.values()) {
+            if (value.equalsIgnoreCase(modifier.toString())) {
+                return modifier;
             }
-            return null;
         }
+        return null;
     }
 
 }

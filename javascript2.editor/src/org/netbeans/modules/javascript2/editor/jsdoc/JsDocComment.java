@@ -42,34 +42,110 @@
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
-import java.util.Map.Entry;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement.Type;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 
 /**
- * Represents block of JSDoc comment which contains particular {@link JsDocTag}s.
+ * Represents block of jsDoc comment which contains particular {@link JsDocTag}s.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocBlock extends JsComment {
+public class JsDocComment extends JsComment {
 
-    private final Map<JsDocElement.Type, List<JsDocElement>> tags =
-            new EnumMap<JsDocElement.Type, List<JsDocElement>>(JsDocElement.Type.class);
+    private final Map<JsDocElement.Type, List<JsDocElement>> tags = new EnumMap<JsDocElement.Type, List<JsDocElement>>(JsDocElement.Type.class);
     private final JsDocCommentType type;
 
     /**
-     * Creates new {@code JsDocBlock} with given parameters.
+     * Creates new {@code JsComment} with given parameters.
      *
      * @param offsetRange offset range of the comment
      * @param type comment {@code JsDocCommentType}
      * @param elements list of tags contained in this block, never {@code null}
      */
-    public JsDocBlock(OffsetRange offsetRange, JsDocCommentType type, List<JsDocElement> elements) {
+    public JsDocComment(OffsetRange offsetRange, JsDocCommentType type, List<JsDocElement> elements) {
         super(offsetRange);
         this.type = type;
         initTags(elements);
+    }
+
+    /**
+     * Gets type of the jsDoc block comment.
+     * @return type of the jsDoc block comment
+     */
+    public JsDocCommentType getType() {
+        return type;
+    }
+
+    @Override
+    public List<String> getSummary() {
+        List<String> summaries = new LinkedList<String>();
+        for (JsDocElement jsDocElement : getTagsForTypes(
+                new JsDocElement.Type[]{JsDocElement.Type.DESCRIPTION, JsDocElement.Type.CONTEXT_SENSITIVE})) {
+            summaries.add(((DescriptionElement) jsDocElement).getDescription());
+        }
+        return summaries;
+    }
+
+    @Override
+    public List<String> getSyntax() {
+        List<String> syntaxes = new LinkedList<String>();
+        for (JsDocElement jsDocElement : getTagsForType(JsDocElement.Type.SYNTAX)) {
+            syntaxes.add(((DescriptionElement) jsDocElement).getDescription());
+        }
+        return syntaxes;
+    }
+
+    @Override
+    public DocParameter getReturnType() {
+        for (JsDocElement jsDocElement : getTagsForTypes(
+                new JsDocElement.Type[]{JsDocElement.Type.RETURN, JsDocElement.Type.RETURNS})) {
+            return  (DocParameter) jsDocElement;
+        }
+        for (JsDocElement jsDocElement : getTagsForType(JsDocElement.Type.TYPE)) {
+            return UnnamedParameterElement.create(
+                    jsDocElement.getType(),
+                    Arrays.asList(((DeclarationElement) jsDocElement).getDeclaredType()),
+                    "");
+        }
+        return null;
+    }
+
+    @Override
+    public List<DocParameter> getParameters() {
+        List<DocParameter> params = new LinkedList<DocParameter>();
+        for (JsDocElement jsDocElement : getTagsForTypes(
+                new JsDocElement.Type[]{JsDocElement.Type.PARAM, JsDocElement.Type.ARGUMENT})) {
+            params.add((NamedParameterElement) jsDocElement);
+        }
+        return params;
+    }
+
+    @Override
+    public String getDocumentation() {
+        return JsDocumentationPrinter.printDocumentation(this);
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return !getTagsForType(JsDocElement.Type.DEPRECATED).isEmpty();
+    }
+
+    @Override
+    public Set<JsModifier> getModifiers() {
+        Set<JsModifier> modifiers = EnumSet.noneOf(JsModifier.class);
+        for (JsDocElement jsDocElement : getTagsForTypes(new JsDocElement.Type[]{
+                JsDocElement.Type.PRIVATE, JsDocElement.Type.PUBLIC, JsDocElement.Type.STATIC})) {
+            modifiers.add(JsModifier.fromString(jsDocElement.getType().toString().substring(1)));
+        }
+        return modifiers;
     }
 
     private void initTags(List<JsDocElement> elements) {
@@ -89,9 +165,9 @@ public class JsDocBlock extends JsComment {
      * Should be used just in testing use cases.
      * @return list of {@code JsDocTag}s
      */
-    protected List<? extends JsDocElement> getTags() {
+    public List<? extends JsDocElement> getTags() {
         List<JsDocElement> allTags = new LinkedList<JsDocElement>();
-        Iterator<Entry<Type, List<JsDocElement>>> iterator = tags.entrySet().iterator();
+        Iterator<Map.Entry<JsDocElement.Type, List<JsDocElement>>> iterator = tags.entrySet().iterator();
         while (iterator.hasNext()) {
             allTags.addAll(iterator.next().getValue());
         }
@@ -117,15 +193,5 @@ public class JsDocBlock extends JsComment {
             list.addAll(getTagsForType(type));
         }
         return list;
-    }
-
-
-
-    /**
-     * Gets type of the jsDoc block comment.
-     * @return type of the jsDoc block comment
-     */
-    public JsDocCommentType getType() {
-        return type;
     }
 }

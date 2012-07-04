@@ -39,25 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.doc.api;
 
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.jsdoc.JsDocDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
- * Base class which represents JavaScript documentation comment.
+ * Contains support methods for obtaining {@link JsDocumentationProvider}.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Martin Fousek, Petr Pisl
  */
-public class JsComment {
+public final class JsDocumentationSupport {
 
-    private final OffsetRange offsetRange;
-
-    public JsComment(OffsetRange offsetRange) {
-        this.offsetRange = offsetRange;
+    private JsDocumentationSupport() {
     }
 
-    public OffsetRange getOffsetRange() {
-        return offsetRange;
+    /**
+     * Gets {@code JsDocumentationProvider} for given {@code JsParserResult}.
+     * <p>
+     * <b>Obtained {@code JsDocumentationProvider} should be cached in callers place.</b>
+     * @param result {@code JsParserResult}
+     * @return {@code JsDocumentationProvider} for given {@code JsParserResult}
+     */
+    public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
+        // TODO - lookup available documentation tools and get the suitable one
+        return new JsDocDocumentationProvider(result);
     }
 
 }

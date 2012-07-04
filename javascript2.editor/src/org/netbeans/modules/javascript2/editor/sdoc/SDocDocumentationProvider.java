@@ -39,44 +39,57 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.sdoc;
 
+import com.oracle.nashorn.ir.Node;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
+ * Provider for the SDoc documentations.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocParameter {
+public class SDocDocumentationProvider extends JsDocumentationProvider {
 
-    /**
-     * Gets name of the parameter.
-     * @return parameter name
-     */
-    DocIdentifier getParamName();
+    public SDocDocumentationProvider(JsParserResult parserResult) {
+        super(parserResult);
+    }
 
-    /**
-     * Gets default value of the parameter.
-     * @return default value, {@code null} if no default value set
-     */
-    String getDefaultValue();
+    @Override
+    public List<Type> getReturnType(Node node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    /**
-     * Get information if the parameter is optional or not.
-     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
-     */
-    boolean isOptional();
+    @Override
+    public List<DocParameter> getParameters(Node node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description, can be empty string, never {@code null}
-     */
-    String getParamDescription();
+    @Override
+    public String getDocumentation(Node node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-    /**
-     * Gets the parameter type.
-     * @return parameter type, or {@code null} when no type is set
-     */
-    List<? extends Type> getParamTypes();
+    @Override
+    public boolean isDeprecated(Node node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<JsModifier> getModifiers(Node node) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected Map getCommentBlocks() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
 }

@@ -39,16 +39,50 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.doc.spi;
+
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 
 /**
+ * Base class which represents JavaScript documentation comment.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocIdentifier {
+public abstract class JsComment {
 
-    String getName();
+    private final OffsetRange offsetRange;
 
-    int getOffset();
+    /**
+     * Creates new JavaScript comment block.
+     * @param offsetRange offset of the comment block
+     */
+    public JsComment(OffsetRange offsetRange) {
+        this.offsetRange = offsetRange;
+    }
+
+    /**
+     * Gets offsets of this comment.
+     * @return start and end offsets
+     */
+    public OffsetRange getOffsetRange() {
+        return offsetRange;
+    }
+
+    public abstract List<String> getSummary();
+
+    public abstract List<String> getSyntax();
+
+    public abstract DocParameter getReturnType();
+
+    public abstract List<DocParameter> getParameters();
+
+    public abstract String getDocumentation();
+
+    public abstract boolean isDeprecated();
+
+    public abstract Set<JsModifier> getModifiers();
 
 }
