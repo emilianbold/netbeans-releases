@@ -41,14 +41,11 @@
  */
 package org.netbeans.modules.test.refactoring;
 
-import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.test.refactoring.actions.RenameMenuAction;
 import org.netbeans.modules.test.refactoring.actions.RenamePopupAction;
-import org.netbeans.modules.test.refactoring.actions.UndoAction;
 import org.netbeans.modules.test.refactoring.operators.RenameOperator;
 
 /**
@@ -60,46 +57,49 @@ public class RenameTest extends ModifyingRefactoring {
     public RenameTest(String name) {
         super(name);
     }
-    
+
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(RenameTest.class).addTest(
+        return NbModuleSuite.createConfiguration(RenameTest.class).addTest(
                 "testRenameClass",
                 "testRenamePackage",
                 "testRenameMethod",
                 "testRenameGenerics",
                 "testRenameVariable",
                 "testRenameParameter",
-                "testRenameCtor"
-                ).enableModules(".*").clusters(".*"));
+                "testRenameCtor",
+                "testRenameProperty").enableModules(".*").clusters(".*").suite();
     }
 
     public void testRenameClass() {
-        performRename("Rename", "renameClass", "Renamed", 3, 17);        
+        performRename("Rename", "renameClass", "Renamed", 3, 17);
     }
 
     public void testRenamePackage() {
-        performRename("RenamePkg", "renamePkg", "renamedPkg", 6, 12);        
+        performRename("RenamePkg", "renamePkg", "renamedPkg", 6, 12);
     }
 
     public void testRenameMethod() {
-        performRename("RenameMethod", "renameClass", "renamedMethod", 5, 18);        
+        performRename("RenameMethod", "renameClass", "renamedMethod", 5, 18);
     }
 
     public void testRenameGenerics() {
-        performRename("RenameGenerics","renameClass","A",3,30);
+        performRename("RenameGenerics", "renameClass", "A", 3, 30);
     }
 
     public void testRenameVariable() {
-        performRename("RenameLocalVariable","renameClass","renamed",6,16);
+        performRename("RenameLocalVariable", "renameClass", "renamed", 6, 16);
     }
-    
+
     public void testRenameParameter() {
-        performRename("RenameParameter","renameClass","renamned",5,34);
+        performRename("RenameParameter", "renameClass", "renamned", 5, 34);
     }
 
     public void testRenameCtor() {
-        performRename("RenameCtor","renameClass","RenamedCtor",5,34);
+        performRename("RenameCtor", "renameClass", "RenamedCtor", 5, 34);
+    }
+
+    public void testRenameProperty() {
+        performRename("RenameProperty", "renameClass", "renamed", 16, 17, true);
     }
 
 //    public void testRenameUndo() {
@@ -179,25 +179,29 @@ public class RenameTest extends ModifyingRefactoring {
 //        ref(new File(getDataDir(),"projects/RefactoringTest/src/renameUndo/RenameUndo.java".replace('/', File.separatorChar)));
 //
 //    }
-
     
-
-    private void performRename(String className,String pkgName, String newName, int row, int col) {
+    private void performRename(String className, String pkgName, String newName, int row, int col) {
+        performRename(className, pkgName, newName, row, col, false);
+    }
+    private void performRename(String className, String pkgName, String newName, int row, int col, boolean property) {
         openSourceFile(pkgName, className);
         new EventTool().waitNoEvent(1000);
-        EditorOperator editor = new EditorOperator(className+".java");
+        EditorOperator editor = new EditorOperator(className + ".java");
         new EventTool().waitNoEvent(1000);
         editor.setCaretPosition(row, col);
-        editor.select(row, col, col+1);
+        editor.select(row, col, col + 1);
         new EventTool().waitNoEvent(1000);
         new RenamePopupAction().perform(editor);
         new org.netbeans.jemmy.EventTool().waitNoEvent(3000);
         RenameOperator ro = new RenameOperator();
         ro.getNewName().typeText(newName);
+        if (property) {
+            ro.getProperty().setSelected(true);
+        }
         ro.getPreview().push();
         dumpRefactoringResults();
         new EventTool().waitNoEvent(1000);
         editor.closeDiscard();
         new EventTool().waitNoEvent(1000);
-    }  
+    }
 }
