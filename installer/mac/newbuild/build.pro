@@ -29,7 +29,7 @@
             
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value=""/>
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/v3.1.2/promoted"/>
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/v3.1.2/nightly"/>
     
     <!--<property name="glassfish.v3.build.number"    value="74b"/>-->
     
