@@ -45,6 +45,7 @@ import com.tasktop.c2c.internal.client.tasks.core.CfcConstants;
 import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
 import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
+import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
@@ -67,6 +68,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -226,7 +228,44 @@ public final class CreateCloudedIssueAction implements ActionListener {
     
     public TaskData createIssue(TaskRepository repository, String summary, String desc, String typeName) throws CoreException, MalformedURLException {
         CfcRepositoryConnector cfcrc = C2C.getInstance().getRepositoryConnector();
-        TaskData data = C2CUtil.createTaskData(cfcrc, repository, summary, desc, typeName);
+        TaskData data = C2CUtil.createTaskData(repository);
+        
+        CfcClientData clientData = DummyUtils.getClientData(repository);
+        
+        TaskAttribute rta = data.getRoot();
+        TaskAttribute ta = rta.getMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());
+        ta.setValue(summary);
+        ta = rta.getMappedAttribute(CfcTaskAttribute.DESCRIPTION.getKey());
+        ta.setValue(desc);
+        
+        ta = rta.getMappedAttribute(CfcTaskAttribute.TASK_TYPE.getKey());
+        ta.setValue(clientData.getTaskTypes().iterator().next());
+        
+        Product product = clientData.getProducts().get(0);
+        ta = rta.getMappedAttribute(CfcTaskAttribute.PRODUCT.getKey());
+        ta.setValue(product.getName());
+        
+        ta = rta.getMappedAttribute(CfcTaskAttribute.COMPONENT.getKey());
+        ta.setValue(product.getComponents().get(0).getName());
+        
+        ta = rta.getMappedAttribute(CfcTaskAttribute.MILESTONE.getKey());
+        ta.setValue(product.getMilestones().get(0).getValue());
+        
+        ta = rta.getMappedAttribute(CfcTaskAttribute.ITERATION.getKey());
+        Collection<String> c = clientData.getActiveIterations();
+        if(!c.isEmpty()) {
+            ta.setValue(c.iterator().next());
+        }
+        
+        ta = rta.getMappedAttribute(CfcTaskAttribute.PRIORITY.getKey());
+        ta.setValue(clientData.getPriorities().get(0).getValue());
+        
+        ta = rta.getMappedAttribute(CfcTaskAttribute.SEVERITY.getKey());
+        ta.setValue(clientData.getSeverities().get(0).getValue());
+        
+        ta = rta.getMappedAttribute(CfcTaskAttribute.STATUS.getKey());
+        ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
+        
         RepositoryResponse rr = C2CUtil.postTaskData(cfcrc, repository, data);
         String taskId = rr.getTaskId();
         data = cfcrc.getTaskData(repository, taskId, nullProgressMonitor);
