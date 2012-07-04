@@ -42,19 +42,39 @@
  */
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author ads
  */
 public class RestFilterPanelVisual extends javax.swing.JPanel {
-
-    /**
-     * Creates new form RestFilterPanelVisual
-     */
-    public RestFilterPanelVisual() {
+    
+    public RestFilterPanelVisual(WizardDescriptor descriptor) {
         initComponents();
+        
+        httpMethods = new ArrayList<HttpMethodsPanel.HttpMethods>(HttpMethods.values().length);
+        httpMethods.add(HttpMethods.GET);
+        httpMethods.add(HttpMethods.POST);
+        httpMethods.add(HttpMethods.PUT);
+        httpMethods.add(HttpMethods.DELETE);
+        setMethods();
     }
-
+    
+    void read( WizardDescriptor descriptor ) {
+        descriptor.putProperty(RestFilterPanel.HTTP_METHODS, httpMethods);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -86,6 +106,11 @@ public class RestFilterPanelVisual extends javax.swing.JPanel {
         methods.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(selectMethodsBtn, org.openide.util.NbBundle.getMessage(RestFilterPanelVisual.class, "BTN_Methods")); // NOI18N
+        selectMethodsBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectMethods(evt);
+            }
+        });
 
         headersLbl.setLabelFor(headers);
         org.openide.awt.Mnemonics.setLocalizedText(headersLbl, org.openide.util.NbBundle.getMessage(RestFilterPanelVisual.class, "LBL_AllowHeaders")); // NOI18N
@@ -149,6 +174,30 @@ public class RestFilterPanelVisual extends javax.swing.JPanel {
         headers.getAccessibleContext().setAccessibleName(headerLbl.getAccessibleContext().getAccessibleName());
         headers.getAccessibleContext().setAccessibleDescription(headerLbl.getAccessibleContext().getAccessibleDescription());
     }// </editor-fold>//GEN-END:initComponents
+
+    private void selectMethods(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectMethods
+        HttpMethodsPanel panel = new HttpMethodsPanel( httpMethods );
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, 
+                NbBundle.getMessage(HttpMethodsPanel.class, "TTL_HttpMethods"));    // NOI18N
+        DialogDisplayer.getDefault().notify(dialogDescriptor);
+        if (NotifyDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {
+            httpMethods = panel.getSelectedMethods();
+            setMethods();
+        }
+        
+    }//GEN-LAST:event_selectMethods
+
+    private void setMethods( ) {
+        StringBuilder builder = new StringBuilder();
+        for (HttpMethods method : httpMethods) {
+            builder.append( method.toString().toUpperCase());
+            builder.append(", ");           // NOI18N
+        }
+        if ( builder.length() >0 ){
+            methods.setText(builder.substring( 0, builder.length() -2 ));
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel headerLbl;
     private javax.swing.JTextField headers;
@@ -159,4 +208,7 @@ public class RestFilterPanelVisual extends javax.swing.JPanel {
     private javax.swing.JLabel originLbl;
     private javax.swing.JButton selectMethodsBtn;
     // End of variables declaration//GEN-END:variables
+    
+    private List<HttpMethods> httpMethods;
+
 }
