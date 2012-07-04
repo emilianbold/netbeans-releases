@@ -46,6 +46,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.accessibility.AccessibleContext;
@@ -59,6 +61,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.modules.team.c2c.api.CloudServer;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
@@ -69,6 +72,11 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.team.ods.ui.dashboard.Bundle.*;
+import org.netbeans.modules.team.ui.common.CategoryNode;
+import org.netbeans.modules.team.ui.common.EmptyNode;
+import org.netbeans.modules.team.ui.common.ErrorNode;
+import org.netbeans.modules.team.ui.common.UserNode;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -95,7 +103,18 @@ public final class DashboardImpl {
     private final Object LOCK = new Object();
 
     private CloudServer server;
+    private final CategoryNode openProjectsNode;
+    private final CategoryNode myProjectsNode;
 
+    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DashboardImpl.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningProjects"));
+    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DashboardImpl.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningMyProjects"));
+    private final ErrorNode otherProjectsError;
+    
+    private final PropertyChangeListener userListener;
+    private final UserNode userNode;
+    
+//  XXX  private LoginHandle login;
+    
     private DashboardImpl() {
         dashboardComponent = new JScrollPane() {
             @Override
@@ -117,6 +136,49 @@ public final class DashboardImpl {
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
 
+        userListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+//                XXX
+//                if( LoginHandle.PROP_MEMBER_PROJECT_LIST.equals(evt.getPropertyName()) ) {
+//                    refreshMemberProjects(true);
+//                }
+            }
+        };
+
+        Action dummy = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        userNode = new UserNode(dummy, dummy, dummy, null, null);
+        model.addRoot(-1, userNode);
+        
+        openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_OpenProjects"), null); // NOI18N
+        model.addRoot(-1, openProjectsNode);
+        model.addRoot(-1, noOpenProjects);
+
+        myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_MyProjects"), // NOI18N
+                ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
+        
+//        if (login!=null) {
+//            if (!model.getRootNodes().contains(myProjectsNode)) {
+//                model.addRoot(-1, myProjectsNode);
+//            }
+//            if (!model.getRootNodes().contains(noMyProjects)) {
+//                model.addRoot(-1, noMyProjects);
+//            }
+//        }
+        
+        otherProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenProjects"), new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // XXX
+//                clearError(otherProjectsError);
+//                refreshProjects();
+            }
+        });
+        
         AccessibleContext accessibleContext = treeList.getAccessibleContext();
         String a11y = NbBundle.getMessage(DashboardImpl.class, "A11Y_TeamProjects"); //NOI18N
         accessibleContext.setAccessibleName(a11y);
@@ -187,11 +249,11 @@ public final class DashboardImpl {
         lbl.setHorizontalAlignment(JLabel.CENTER);
         LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeamServer(), createWhatIsCloudServerAction() );
 
-//        model.removeRoot(userNode);
-//        model.removeRoot(myProjectsNode);
-//        model.removeRoot(openProjectsNode);
-//        userNode.set(null, false);
-//        res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
+        model.removeRoot(userNode);
+        model.removeRoot(myProjectsNode);
+        model.removeRoot(openProjectsNode);
+        userNode.set(null, false);
+        res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
         res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
         res.add( lbl, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
         res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
