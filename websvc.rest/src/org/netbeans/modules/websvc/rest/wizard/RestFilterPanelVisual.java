@@ -42,9 +42,12 @@
  */
 package org.netbeans.modules.websvc.rest.wizard;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
@@ -69,10 +72,13 @@ public class RestFilterPanelVisual extends javax.swing.JPanel {
         httpMethods.add(HttpMethods.PUT);
         httpMethods.add(HttpMethods.DELETE);
         setMethods();
+        
     }
     
-    void read( WizardDescriptor descriptor ) {
+    void store( WizardDescriptor descriptor ) {
         descriptor.putProperty(RestFilterPanel.HTTP_METHODS, httpMethods);
+        descriptor.putProperty(RestFilterPanel.ORIGIN ,origin.getText().trim());
+        descriptor.putProperty(RestFilterPanel.HEADERS ,headers.getText().trim());
     }
     
     /**

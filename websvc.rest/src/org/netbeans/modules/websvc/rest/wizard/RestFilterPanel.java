@@ -43,12 +43,19 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
+import java.io.IOException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -58,6 +65,8 @@ import org.openide.util.HelpCtx;
 public class RestFilterPanel implements Panel<WizardDescriptor> {
     
     static final String HTTP_METHODS = "http-methods";          // NOI18N
+    static final String ORIGIN = "origin";                                  // NOI18N
+    static final String HEADERS = "headers";                            // NOI18N
 
     RestFilterPanel( WizardDescriptor wizard ) {
         myDescriptor = wizard;
@@ -94,6 +103,22 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
      */
     @Override
     public boolean isValid() {
+        Project project = Templates.getProject(myDescriptor);
+        WebRestSupport support  = project.getLookup().lookup(WebRestSupport.class);
+        if ( support != null ){
+            Object object  = null;
+            try {
+                object = support.getRestServletMapping(support.getWebApp());
+            }
+            catch(IOException e ){
+                // just keep object with null valu
+            }
+            if (  object==  null ){
+                myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(RestFilterPanel.class, 
+                        "ERR_NoJerseyConfig"));                 // NOI18N
+                return false;
+            }
+        }
         return true;
     }
 
@@ -102,13 +127,14 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
      */
     @Override
     public void readSettings( WizardDescriptor wizard ) {
+        myDescriptor = wizard;
     }
 
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
      */
     @Override
-    public void removeChangeListener( ChangeListener arg0 ) {
+    public void removeChangeListener( ChangeListener listener ) {
     }
 
     /* (non-Javadoc)
@@ -117,7 +143,7 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
     @Override
     public void storeSettings( WizardDescriptor descriptor ) {
         if ( myComponent != null ){
-            myComponent.read( descriptor );
+            myComponent.store( descriptor );
         }
     }
     
