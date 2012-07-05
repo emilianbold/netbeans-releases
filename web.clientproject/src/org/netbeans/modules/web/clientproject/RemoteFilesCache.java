@@ -49,6 +49,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -57,11 +58,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 public class RemoteFilesCache {
 
     private static final RemoteFilesCache DEFAULT = new RemoteFilesCache();
+    private static final String REMOTE_URL = "remote.url";
+    
+    private RequestProcessor RP2 = new RequestProcessor(RemoteFilesCache.class.getName(), 5);
     
     public static RemoteFilesCache getDefault() {
         return DEFAULT;
@@ -70,7 +75,41 @@ public class RemoteFilesCache {
     private RemoteFilesCache() {
     }
     
-    public FileObject getRemoteFile(URL url) throws IOException {
+//    public boolean isInCache(URL url) {
+//        File f = getCachedFileName(url);
+//        return f.exists();
+//    }
+    
+    public URL isRemoteFile(FileObject fo){
+        try {
+            return new URL((String)fo.getAttribute(REMOTE_URL));
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+    }
+    
+    public FileObject getRemoteFile(final URL url) throws IOException {
+        final File f = getCachedFileName(url);
+        if (!f.exists()) {
+            f.createNewFile();
+            RP2.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        fetchRemoteFile(f, url);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
+        FileObject fo = FileUtil.toFileObject(f);
+        fo.setAttribute(REMOTE_URL, url.toExternalForm());
+        return fo;
+    }
+    
+    private File getCachedFileName(URL url){
         String s = url.toExternalForm();
         if (s.lastIndexOf('.') != -1) {
             s = s.substring(s.lastIndexOf('.'));
@@ -79,10 +118,7 @@ public class RemoteFilesCache {
         }
         String fileName = getMD5(url.toExternalForm())+s;
         File f = new File(getCacheRoot(), fileName);
-        if (!f.exists()) {
-            fetchRemoteFile(f, url);
-        }
-        return FileUtil.toFileObject(f);
+        return f;
     }
     
     private void fetchRemoteFile(File destination, URL url) throws IOException {
@@ -106,7 +142,8 @@ public class RemoteFilesCache {
                 is.close();
             }
         }
-        
+        FileObject fo = FileUtil.toFileObject(destination);
+        fo.refresh();
     }
 
     private File getCacheRoot() {
@@ -140,6 +177,11 @@ public class RemoteFilesCache {
         @Override
         public FileObject getRemoteFile(URL url) throws IOException {
             return getDefault().getRemoteFile(url);
+        }
+
+        @Override
+        public URL isRemoteFile(FileObject fo) {
+            return getDefault().isRemoteFile(fo);
         }
 
     }

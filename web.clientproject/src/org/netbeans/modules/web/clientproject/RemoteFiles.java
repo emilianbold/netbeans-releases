@@ -62,7 +62,6 @@ public class RemoteFiles {
 
     private ClientSideProject project;
     private RequestProcessor RP = new RequestProcessor();
-    private RequestProcessor RP2 = new RequestProcessor(RequestProcessor.class.getName(), 5);
     private List<URL> urls;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private HtmlIndex index;
@@ -153,16 +152,11 @@ public class RemoteFiles {
 
     private void prefetchRemoteFiles(final List<URL> urls) {
         for (final URL u : urls) {
-            RP2.post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        RemoteFilesCache.getDefault().getRemoteFile(u);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
+            try {
+                RemoteFilesCache.getDefault().getRemoteFile(u);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
     

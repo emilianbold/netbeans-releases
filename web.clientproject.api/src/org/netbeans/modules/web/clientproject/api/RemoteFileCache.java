@@ -55,7 +55,8 @@ import org.openide.util.Lookup;
 public final class RemoteFileCache {
 
     /**
-     * Returns local image of remote file.
+     * Returns local image of remote file. If the file is not in cache the method
+     * may return FileObject which is empty and later update its content.
      */
     public static FileObject getRemoteFile(URL url) throws IOException {
         for (RemoteFileCacheImplementation impl : Lookup.getDefault().lookupAll(RemoteFileCacheImplementation.class)) {
@@ -66,4 +67,19 @@ public final class RemoteFileCache {
         }
         return null;
     }
+
+    /**
+     * Translates local image of remote file back to its original URL.
+     * @return null or URL of the remote file
+     */
+    public static URL isRemoteFile(FileObject fo) {
+        for (RemoteFileCacheImplementation impl : Lookup.getDefault().lookupAll(RemoteFileCacheImplementation.class)) {
+            URL url = impl.isRemoteFile(fo);
+            if (url != null) {
+                return url;
+            }
+        }
+        return null;
+    }
+    
 }

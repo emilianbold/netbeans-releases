@@ -47,9 +47,11 @@ import java.net.URL;
 import org.openide.filesystems.FileObject;
 
 /**
- * Plugable implementation of remote file caching.
+ * Plugable implementation of remote file caching. See API version for JavaDoc.
  */
 public interface RemoteFileCacheImplementation {
 
     FileObject getRemoteFile(URL file) throws IOException;
+    
+    URL isRemoteFile(FileObject fo);
 }

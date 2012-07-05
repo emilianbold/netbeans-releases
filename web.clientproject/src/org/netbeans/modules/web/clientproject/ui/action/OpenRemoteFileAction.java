@@ -43,7 +43,9 @@
 package org.netbeans.modules.web.clientproject.ui.action;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.VetoableChangeListener;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,16 +58,20 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.web.clientproject.RemoteFilesCache;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
-import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.DataEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -77,6 +83,13 @@ public class OpenRemoteFileAction extends NodeAction {
         ClientSideProjectLogicalView.RemoteFile remoteFile = activatedNodes[0].getLookup().lookup(ClientSideProjectLogicalView.RemoteFile.class);
         try {
             FileObject fo = RemoteFilesCache.getDefault().getRemoteFile(remoteFile.getUrl());
+            for (TopComponent tc : WindowManager.getDefault().getRegistry().getOpened()) {
+                String tooltip = tc.getToolTipText();
+                if (tooltip != null && tooltip.equals(remoteFile.getDescription())) {
+                    tc.requestActive();
+                    return;
+                }
+            }
             ViewEnv env = new ViewEnv(fo);
             CloneableEditorSupport ces = new ViewCES(env, remoteFile.getName(), remoteFile.getDescription(), FileEncodingQuery.getEncoding(fo)); // NOI18N
             ces.view();
@@ -95,7 +108,7 @@ public class OpenRemoteFileAction extends NodeAction {
 
     @Override
     protected boolean asynchronous() {
-        return true;
+        return false;
     }
     
     @Override
@@ -108,17 +121,22 @@ public class OpenRemoteFileAction extends NodeAction {
         return null;
     }
 
-    private static class ViewEnv implements CloneableEditorSupport.Env {
+    private static class ViewEnv implements CloneableEditorSupport.Env, FileChangeListener {
 
         private final FileObject    file;
         private static final long serialVersionUID = -5788777967029507963L;
+        private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
         public ViewEnv(FileObject file) {
             this.file = file;
+            this.file.addFileChangeListener(this);
         }
 
         @Override
         public InputStream inputStream() throws IOException {
+            if (file.getSize() == 0) {
+                return new ByteArrayInputStream("Remote document is being downloaded...".getBytes());
+            }
             return file.getInputStream();
         }
 
@@ -139,10 +157,12 @@ public class OpenRemoteFileAction extends NodeAction {
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
+            support.addPropertyChangeListener(l);
         }
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
+            support.removePropertyChangeListener(l);
         }
 
         @Override
@@ -175,6 +195,31 @@ public class OpenRemoteFileAction extends NodeAction {
         @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
             return null;
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            support.firePropertyChange(CloneableEditorSupport.Env.PROP_TIME, null, null);
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
         
     }
