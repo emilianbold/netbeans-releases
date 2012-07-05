@@ -43,13 +43,27 @@
 package org.netbeans.modules.websvc.rest.wizard;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.lang.model.element.Modifier;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -57,6 +71,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
+import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -65,6 +81,13 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 
 
 /**
@@ -189,15 +212,78 @@ public class OriginResourceIterator implements
     public Set instantiate( ProgressHandle handle ) throws IOException {
         handle.start();
         
-        List<HttpMethods> methods = (List<HttpMethods>)myWizard.getProperty(
-                RestFilterPanel.HTTP_METHODS);
         FileObject dir = Templates.getTargetFolder(myWizard);
         String filterName = Templates.getTargetName(myWizard );
         
         FileObject filterClass = GenerationUtils.createClass(dir,filterName, null );
         
-        handle.finish();
+        // TODO: extends project with Jersey lib ( even JEE6 profile ) : include package com.sun.jersey.spi.container.* into classpath 
+        
+        final StringBuilder builder = new StringBuilder();
+        JavaSource javaSource = JavaSource.forFileObject(filterClass);
+        final String fqn[] = new String[1];
+        javaSource.runModificationTask( new Task<WorkingCopy>() {
+            
+            @Override
+            public void run( WorkingCopy  copy ) throws Exception {
+                copy.toPhase(Phase.ELEMENTS_RESOLVED);
+                ClassTree classTree = JavaSourceHelper.getTopLevelClassTree(copy);
+                fqn[0] = JavaSourceHelper.getTopLevelClassElement(copy).getQualifiedName().toString();
+                TreeMaker maker = copy.getTreeMaker();
+                ClassTree newTree = maker.setExtends(classTree, 
+                        maker.QualIdent("com.sun.jersey.spi.container.ContainerResponseFilter"));                                       // NOI18N
+                
+                
+                List<VariableTree> params = new ArrayList<VariableTree>(2);
+                ModifiersTree paramModifiers = maker.Modifiers(Collections.<Modifier>emptySet());
+                params.add(maker.Variable(paramModifiers, "request", maker.QualIdent(
+                        "com.sun.jersey.spi.container.ContainerRequest"), null));                                                                //NOI18N
+                params.add(maker.Variable(paramModifiers, "response", maker.QualIdent(
+                        "com.sun.jersey.spi.container.ContainerResponse"), null));                                                              //NOI18N
+                MethodTree method = maker.Method(maker.Modifiers( EnumSet.of(Modifier.PUBLIC), 
+                            Collections.singletonList(maker.Annotation(maker.QualIdent(Override.class.getName()), 
+                                        Collections.<ExpressionTree>emptyList()))), 
+                        "filter", maker.QualIdent("com.sun.jersey.spi.container.ContainerResponse"),                                    //NOI18N
+                        Collections.<TypeParameterTree>emptyList(), params, 
+                        Collections.<ExpressionTree>emptyList(), getFilterBody(), null);
+                newTree = maker.addClassMember( newTree, method);
+                copy.rewrite( classTree, newTree);
+            }
+        }).commit();
+        
+        Project project = Templates.getProject(myWizard);
+        WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
+        if ( support != null ){
+            support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER, fqn[0]);
+        }
+        
         return Collections.singleton(filterClass);
+    }
+    
+    private String getFilterBody(){
+        StringBuilder builder = new StringBuilder();
+        builder.append('{');
+        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Origin\",\"");                   //NOI18N
+        builder.append(myWizard.getProperty(RestFilterPanel.ORIGIN));
+        builder.append("\");");                                                                                                                      //NOI18N
+        
+        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Methods\",\"");              //NOI18N
+        List<HttpMethods> methods = (List<HttpMethods>)myWizard.getProperty(
+                RestFilterPanel.HTTP_METHODS);
+        for (HttpMethods httpMethod : methods) {
+            builder.append(httpMethod.toString().toUpperCase(Locale.ENGLISH));
+            builder.append(", ");                                                                                                                   //NOI18N
+        }
+        if ( !methods.isEmpty()){
+            builder.delete(builder.length()-2, builder.length());
+        }
+        builder.append("\");");                                                                                                                     //NOI18N
+        
+        builder.append("response.getHttpHeaders().putSingle(\"ccess-Control-Allow-Headers\",\"");                //NOI18N
+        builder.append(myWizard.getProperty(RestFilterPanel.HEADERS));
+        builder.append("\");");                                                                                                                     //NOI18N
+        builder.append('}');
+        return builder.toString();
     }
     
     private void setSteps() {
