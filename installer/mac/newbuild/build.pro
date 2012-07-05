@@ -29,7 +29,8 @@
             
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value=""/>
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/v3.1.2/nightly"/>
+    <!-- /java/re/glassfish/v3.1.2/promoted/p02/b04/bundles/b04-2012-07_03/ -->
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/v3.1.2/promoted"/>
     
     <!--<property name="glassfish.v3.build.number"    value="74b"/>-->
     
@@ -52,8 +53,8 @@
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-3.1.2.2"/>
     <!--<property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-3.1.2-${glassfish.v3.version}-ml.zip"/>-->
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/p02/b04/bundles/latest/glassfish-3.1.2-2-b04.zip"/>
-    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/p02/b04/bundles/latest/glassfish-3.1.2-2-b04-ml.zip"/>
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/p02/b04/bundles/b04-2012-07_03/glassfish-3.1.2-2-b04.zip"/>
+    <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/p02/b04/bundles/b04-2012-07_03/glassfish-3.1.2-2-b04-ml.zip"/>
     <property name="glassfish.v3.subdir"       value="glassfish3"/>
     
     <!-- Java ME SDK 3.0 Properties-->
