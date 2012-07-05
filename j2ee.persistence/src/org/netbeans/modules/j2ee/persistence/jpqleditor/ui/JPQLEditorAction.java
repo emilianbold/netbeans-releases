@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.j2ee.persistence.jpqleditor.ui;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -69,7 +74,18 @@ public class JPQLEditorAction extends NodeAction {
 
     @Override
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        if ((activatedNodes != null) && (activatedNodes.length == 1)) {
+            if (activatedNodes[0] != null) {
+                DataObject data = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+                if (data != null) {
+                    FileObject pXml = data.getPrimaryFile();
+                    Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
+                    PersistenceEnvironment pe = project!=null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
+                    return pe != null;
+                }
+            }
+        }
+        return false;
     }
     
     public HelpCtx getHelpCtx() {
