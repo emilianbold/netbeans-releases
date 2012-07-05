@@ -68,6 +68,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
@@ -91,7 +92,8 @@ public class OpenRemoteFileAction extends NodeAction {
                 }
             }
             ViewEnv env = new ViewEnv(fo);
-            CloneableEditorSupport ces = new ViewCES(env, remoteFile.getName(), remoteFile.getDescription(), FileEncodingQuery.getEncoding(fo)); // NOI18N
+            CloneableEditorSupport ces = new ViewCES(fo, env, remoteFile.getName(), remoteFile.getDescription(), FileEncodingQuery.getEncoding(fo)); // NOI18N
+            env.cos = ces;
             ces.view();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -126,6 +128,7 @@ public class OpenRemoteFileAction extends NodeAction {
         private final FileObject    file;
         private static final long serialVersionUID = -5788777967029507963L;
         private PropertyChangeSupport support = new PropertyChangeSupport(this);
+        private CloneableOpenSupport cos;
 
         public ViewEnv(FileObject file) {
             this.file = file;
@@ -194,7 +197,7 @@ public class OpenRemoteFileAction extends NodeAction {
 
         @Override
         public CloneableOpenSupport findCloneableOpenSupport() {
-            return null;
+            return cos;
         }
 
         @Override
@@ -230,8 +233,8 @@ public class OpenRemoteFileAction extends NodeAction {
         private final Charset charset;
         private String tooltip;
 
-        public ViewCES(CloneableEditorSupport.Env env, String name, String tooltip, Charset charset) {
-            super(env);
+        public ViewCES(FileObject fo, CloneableEditorSupport.Env env, String name, String tooltip, Charset charset) {
+            super(env, Lookups.singleton(fo));
             this.name = name;
             this.charset = charset;
             this.tooltip = tooltip;
