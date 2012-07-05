@@ -885,20 +885,16 @@ public class LogReader {
         }
     }
 
-    static class CommandLineSource implements SourceFileProperties {
+    static class CommandLineSource extends RelocatableImpl implements SourceFileProperties {
 
-        private String compilePath;
         private String sourceName;
-        private String fullName;
         private String compiler;
         private ItemProperties.LanguageKind language;
         private ItemProperties.LanguageStandard standard = LanguageStandard.Unknown;
-        private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
         private List<String> undefinedMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
-        private Set<String> includedFiles = Collections.<String>emptySet();
         private CompileLineStorage storage;
         private int handler = -1;
 
@@ -976,7 +972,7 @@ public class LogReader {
         public String getItemName() {
             return sourceName;
         }
-
+        
         @Override
         public List<String> getUserInludePaths() {
             return userIncludes;

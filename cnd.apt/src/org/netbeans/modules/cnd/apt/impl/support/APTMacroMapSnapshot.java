@@ -182,7 +182,7 @@ public final class APTMacroMapSnapshot {
             }
             return null;
         } else {
-            assert macros instanceof Map<?,?>;
+            assert macros instanceof Map<?,?> : "unexpected to have get from frozen" + macros.getClass();
             @SuppressWarnings("unchecked")
             APTMacro map = ((Map<CharSequence, APTMacro>)macros).get(key);
             return map;
@@ -212,6 +212,7 @@ public final class APTMacroMapSnapshot {
                 if (snap.macros == NO_MACROS) {
                     // skip this snapshot
                 } else if (snap.macros instanceof Map<?,?>) {
+                    assert stack.isEmpty() : "map is allowed only as the last element " + stack;
                     @SuppressWarnings("unchecked")
                     final Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)snap.macros;
                     for (Map.Entry<CharSequence, APTMacro> cur : map.entrySet()) {

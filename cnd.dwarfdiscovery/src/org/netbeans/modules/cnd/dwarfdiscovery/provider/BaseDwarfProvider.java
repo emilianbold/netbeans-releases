@@ -69,6 +69,8 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.FS;
+import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
@@ -78,6 +80,7 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -93,6 +96,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     public static final String RESTRICT_SOURCE_ROOT = "restrict_source_root"; // NOI18N
     public static final String RESTRICT_COMPILE_ROOT = "restrict_compile_root"; // NOI18N
     protected AtomicBoolean isStoped = new AtomicBoolean(false);
+    private final RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
     
     public BaseDwarfProvider() {
     }
@@ -142,6 +146,82 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return CndFileUtils.getLocalFileSystem();
     }
 
+    protected FileObject resolvePath(ProjectProxy project, String buildArtifact, final FileSystem fileSystem, SourceFileProperties f, String name) {
+        FS fs = new RelocatablePathMapperImpl.FS() {
+            @Override
+            public boolean exists(String path) {
+                FileObject fo = fileSystem.findResource(path);
+                if (fo != null && fo.isValid()) {
+                    return true;
+                }
+                return false;
+            }
+        };
+        String sourceRoot = null;
+        if (project != null) {
+            sourceRoot = project.getSourceRoot();
+            if (sourceRoot != null && sourceRoot.length() < 2) {
+                sourceRoot = null;
+            }
+        }
+        if (sourceRoot == null) {
+            sourceRoot = PathUtilities.getDirName(buildArtifact);
+            if (sourceRoot != null && sourceRoot.length() < 2) {
+                sourceRoot = null;
+            }
+        }
+        FileObject fo = fileSystem.findResource(name);
+        if (fo == null || !fo.isValid()) {
+            if (f instanceof Relocatable) {
+                ResolvedPath resolvedPath = mapper.getPath(name);
+                if (resolvedPath == null) {
+                    if (sourceRoot != null) {
+                        if (mapper.init(fs, sourceRoot, name)) {
+                            resolvedPath = mapper.getPath(name);
+                            fo = fileSystem.findResource(resolvedPath.getPath());
+                            if (fo != null && fo.isValid() && fo.isData()) {
+                                ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
+                                return fo;
+                            }
+                        }
+                    }
+                } else {
+                    fo = fileSystem.findResource(resolvedPath.getPath());
+                    if (fo != null && fo.isValid() && fo.isData()) {
+                        ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
+                        return fo;
+                    }
+                }
+            }
+        }
+        if (fo != null && fo.isData()) {
+            name = fo.getPath();
+            ResolvedPath resolvedPath = mapper.getPath(name);
+            if (resolvedPath == null) {
+                if (sourceRoot != null) {
+                    if (!name.startsWith(sourceRoot)) {
+                        if (mapper.init(fs, sourceRoot, name)) {
+                            resolvedPath = mapper.getPath(name);
+                            FileObject resolved = fileSystem.findResource(resolvedPath.getPath());
+                            if (resolved != null && resolved.isValid() && resolved.isData()) {
+                                ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
+                                return resolved;
+                            }
+                        }
+                    }
+                }
+            } else {
+                FileObject resolved = fileSystem.findResource(resolvedPath.getPath());
+                if (resolved != null && resolved.isValid() && resolved.isData()) {
+                    ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
+                    return resolved;
+                }
+            }
+            return fo;
+        }
+        return null;
+    }
+        
     private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls, CompileLineStorage storage) {
         if (isStoped.get()) {
             return true;
@@ -181,27 +261,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     continue;
                 }
             }
-            boolean exist = false;
-            FileObject fo = fileSystem.findResource(name);
-            if (fo == null || !fo.isValid()) {
-                  String fileFinder = Dwarf.fileFinder(file, name);
-                  if (fileFinder != null) {
-                      fo = fileSystem.findResource(fileFinder);
-                      if (fo != null && fo.isValid() && fo.isData()) {
-                          if (f instanceof DwarfSource) {
-                              ((DwarfSource)f).resetItemPath(fileFinder);
-                              name = fileFinder;
-                              exist = true;
-                          }
-                      }
-                  }
-            } else {
-                if (fo.isData()) {
-                    exist = true;
-                }
-            }
+            FileObject fo = resolvePath(project, file, fileSystem, f, name);
 
-            if (exist) {
+            if (fo != null) {
+                name = fo.getPath();
                 SourceFileProperties existed = map.get(name);
                 if (existed == null) {
                     map.put(name, f);
@@ -266,7 +329,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                             continue;
                         }
                     }
-                    ItemProperties.LanguageKind language = null;
+                    ItemProperties.LanguageKind language;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
                             LANG.DW_LANG_C89.toString().equals(lang) ||
                             LANG.DW_LANG_C99.toString().equals(lang)) {
