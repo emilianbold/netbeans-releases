@@ -54,6 +54,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.ui.action.OpenRemoteFileAction;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
@@ -70,6 +71,7 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -292,7 +294,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     }
     
-    private static class RemoteFile {
+    public static class RemoteFile {
         private URL url;
         private String name;
         private String urlAsString;
@@ -348,7 +350,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         private RemoteFile file;
 
         public SingleRemoteFileNode(RemoteFile file) {
-            super(Children.LEAF);
+            super(Children.LEAF, Lookups.singleton(file));
             this.file = file;
         }
         
@@ -372,5 +374,19 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return getIcon(type);
         }
 
+        @Override
+        public Action[] getActions(boolean arg0) {
+            return new Action[] {
+                SystemAction.get(OpenRemoteFileAction.class),
+                //SystemAction.get(RefreshRemoteFileAction.class),
+            };
+        }
+
+        @Override
+        public SystemAction getDefaultAction() {
+            return SystemAction.get(OpenRemoteFileAction.class);
+        }
+
+        
     }
 }
