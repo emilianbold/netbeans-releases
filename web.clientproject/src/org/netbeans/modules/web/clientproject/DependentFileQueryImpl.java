@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.11",
 
-  "background_page": "html/main.html",
+package org.netbeans.modules.web.clientproject;
 
-  "options_page": "html/options.html",
+import java.io.IOException;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.html.editor.api.index.HtmlIndex;
+import org.netbeans.modules.web.browser.spi.DependentFileQueryImplementation;
+import org.netbeans.modules.web.common.api.FileReference;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
+@ServiceProvider(service=DependentFileQueryImplementation.class)
+public class DependentFileQueryImpl implements DependentFileQueryImplementation {
 
-  "permissions": [
-    "tabs",
-    "<all_urls>",
-    "debugger"
-  ],
-
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  }
+    @Override
+    public Boolean isDependent(FileObject master, FileObject dependent) {
+        Project p = FileOwnerQuery.getOwner(master);
+        if (p == null) {
+            return null;
+        }
+        try {
+            HtmlIndex.AllDependenciesMaps all = HtmlIndex.get(p).getAllDependencies();
+            for (FileReference fr: all.getSource2dest().get(master)) {
+                if (fr.target().equals(dependent)) {
+                    return Boolean.TRUE;
+                }
+            }
+            return Boolean.FALSE;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
 
 }

@@ -490,7 +490,8 @@ public final class ExternalBrowserPlugin {
         params.put( Message.TAB_ID, tabId );
         if (newURL != null) {
             try {
-                params.put( "url", newURL.toURI().toString() ); // NOI18N
+                String u = reformatFileURL(newURL.toURI().toString());
+                params.put( "url", u ); // NOI18N
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -499,6 +500,18 @@ public final class ExternalBrowserPlugin {
         return msg.toStringValue();
     }
 
+    // changes "file:/some" to "file:///some"
+    private static String reformatFileURL(String url) {
+        if (!url.startsWith("file:")) {
+            return url;
+        }
+        url = url.substring(5);
+        while (url.length() > 0 && url.startsWith("/")) {
+            url = url.substring(1);
+        }
+        return "file:///"+url;
+    }
+    
     private String createAttachDebuggerMessage(int tabId) {
         Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );

@@ -46,9 +46,15 @@ NetBeans.cleanup();
 // Register reload-callback
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
     if (newUrl != undefined) {
-        chrome.tabs.update(tabId, {url: newUrl});
+        chrome.tabs.get(tabId, function(tab) {
+            if (tab.url === newUrl) {
+                chrome.tabs.reload(tabId, {bypassCache: true});
+            } else {
+                chrome.tabs.update(tabId, {url: newUrl});
+            }
+        });
     } else {
-        chrome.tabs.sendRequest(tabId, {'id': 'RELOAD_FRAME'});
+        chrome.tabs.reload(tabId, {bypassCache: true});
     }
 }
 
