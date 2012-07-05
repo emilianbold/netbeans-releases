@@ -282,7 +282,7 @@ public class Dwarf {
     }
 
     /**
-     * If project was relocated method tries to find source path of file against binary file.
+     * If project was relocated method tries to find source path of file against binary file or source root.
      * Method return best name that consist from binary prefix + common path + source suffix.
      * Example.
      * Binary path /net/server/home/user/projects/application/dist/Debug/GNU-MacOSX/main
@@ -291,16 +291,19 @@ public class Dwarf {
      * @param path
      * @return
      */
-    public static String fileFinder(String binaryPath, String path){
-        binaryPath = binaryPath.replace('\\', '/'); //NOI18N
-        if (binaryPath.startsWith("/")) { //NOI18N
-            binaryPath = binaryPath.substring(1);
+    public static String fileFinder(String binaryOrRootPath, String path){
+        binaryOrRootPath = binaryOrRootPath.replace('\\', '/'); //NOI18N
+        boolean driver = false;
+        if (binaryOrRootPath.startsWith("/")) { //NOI18N
+            binaryOrRootPath = binaryOrRootPath.substring(1);
+        } else {
+            driver = true;
         }
         path = path.replace('\\', '/'); //NOI18N
         if (path.startsWith("/")) { //NOI18N
             path = path.substring(1);
         }
-        String[] splitReal = binaryPath.split("/"); //NOI18N
+        String[] splitReal = binaryOrRootPath.split("/"); //NOI18N
         String[] splitVirtual = path.split("/"); //NOI18N
         for(int i = 0; i < splitReal.length; i++) {
             int startReal;
@@ -322,7 +325,7 @@ public class Dwarf {
                             break;
                         }
                     }
-                    if (len > 1 || startVirtual == splitVirtual.length - 2) {
+                    if (len > 1 || startVirtual == splitVirtual.length - 2 || startReal == splitReal.length - 1) {
                         StringBuilder buf = new StringBuilder();
                         for(int k = 0; k < startReal+len; k++) {
                             buf.append('/').append(splitReal[k]); //NOI18N
@@ -333,7 +336,11 @@ public class Dwarf {
                         if (path.equals(buf.toString().substring(1))) {
                             continue loop2;
                         }
-                        return buf.toString();
+                        if (driver) {
+                            return buf.substring(1);
+                        } else {
+                            return buf.toString();
+                        }
                     }
                 }
             }
@@ -354,7 +361,11 @@ public class Dwarf {
             for(int k = common+1; k < splitVirtual.length; k++) {
                 buf.append('/').append(splitVirtual[k]); //NOI18N
             }
-            return buf.toString();
+            if (driver) {
+                return buf.substring(1);
+            } else {
+                return buf.toString();
+            }
         }
         return null;
     }
