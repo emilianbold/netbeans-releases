@@ -86,6 +86,9 @@ import javax.swing.table.DefaultTableModel;
 //import org.hibernate.impl.SessionFactoryImpl;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
@@ -94,6 +97,7 @@ import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLResult;
 //import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.openide.awt.MouseUtils.PopupMouseAdapter;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -908,10 +912,15 @@ private void runJPQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
     try {
         ph = ProgressHandleFactory.createHandle(//GEN-HEADEREND:event_runJPQLButtonActionPerformed
                 NbBundle.getMessage(JPQLEditorTopComponent.class, "progressTaskname"));//GEN-LAST:event_runJPQLButtonActionPerformed
-            PersistenceUnit pu = (PersistenceUnit) puConfigMap.get(puComboBox.getSelectedItem());
+        FileObject pXml = puObject.getPrimaryFile();
+        Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
+        PersistenceEnvironment pe = project!=null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
+       
+        PersistenceUnit pu = (PersistenceUnit) puConfigMap.get(puComboBox.getSelectedItem());
             ph.start(100);
             controller.executeJPQLQuery(jpqlEditor.getText(),
                     pu,
+                    pe,
                     getMaxRowCount(),
                     ph);
         } catch (Exception ex) {

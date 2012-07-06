@@ -69,6 +69,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.hibernate.catalog.HibernateCatalog;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
@@ -96,65 +97,61 @@ public class JPQLEditorController {
 
     public void executeJPQLQuery(final String jpql,
             final PersistenceUnit pu,
+            final PersistenceEnvironment pe,
             final int maxRowCount,
             final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 //                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(pu.getName());
 //                        EntityManager em = emf.createEntityManager();
 
-//        try {
-//            ph.progress(10);
-//            ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPrepare"));
-//            final Project project = FileOwnerQuery.getOwner(configFileObject);
-//            // Construct custom classpath here.
-//            HibernateEnvironment env = project.getLookup().lookup(HibernateEnvironment.class);
-//            localResourcesURLList.addAll(env.getProjectClassPath(configFileObject));
-//            for (FileObject mappingFO : env.getAllHibernateMappingFileObjects()) {
-//                localResourcesURLList.add(mappingFO.getURL());
-//            }
-//            ClassLoader customClassLoader = env.getProjectClassLoader(
-//                    localResourcesURLList.toArray(new URL[]{}));
-//            final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
-//            Thread t = new Thread() {
-//
-//                @Override
-//                public void run() {
-//                    //Thread.currentThread().setContextClassLoader(customClassLoader);
-//                    ClassLoader customClassLoader = Thread.currentThread().getContextClassLoader();
-//                    JPQLExecutor queryExecutor = new JPQLExecutor();
-//                    JPQLResult jpqlResult = new JPQLResult();
-//                    try {
-//                        // Parse POJOs from JPQL
-//                        // Check and if required compile POJO files mentioned in JPQL
-//                        SessionFactory sessionFactory = processAndConstructSessionFactory(jpql, configFileObject, customClassLoader, project);
-//
-//                        ph.progress(50);
-//                        ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
-//                        jpqlResult = queryExecutor.execute(jpql, sessionFactory, maxRowCount, ph);
-//                        ph.progress(80);
-//                        ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionProcessResults"));
-//
-//                    } catch (Exception e) {
-//                        logger.log(Level.INFO, "Problem in executing JPQL", e);
-//                        jpqlResult.getExceptions().add(e);
-//                    }
-//                    final JPQLResult jpqlResult0 = jpqlResult;
-//                    final ClassLoader customClassLoader0 = customClassLoader;
-//                    SwingUtilities.invokeLater(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            editorTopComponent.setResult(jpqlResult0, customClassLoader0);
-//                        }
-//                    });    
-//                    
-//                    Thread.currentThread().setContextClassLoader(defClassLoader);
-//                }
-//            };
-//            t.setContextClassLoader(customClassLoader);
-//            t.start();
-//        } catch (Exception ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
+        try {
+            ph.progress(10);
+            ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPrepare"));
+            // Construct custom classpath here.
+            localResourcesURLList.addAll(pe.getProjectClassPath(pe.getLocation()));
+            ClassLoader customClassLoader = pe.getProjectClassLoader(
+                    localResourcesURLList.toArray(new URL[]{}));
+            final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread t = new Thread() {
+
+                @Override
+                public void run() {
+                    //Thread.currentThread().setContextClassLoader(customClassLoader);
+                    ClassLoader customClassLoader = Thread.currentThread().getContextClassLoader();
+                    JPQLExecutor queryExecutor = new JPQLExecutor();
+                    JPQLResult jpqlResult = new JPQLResult();
+                    try {
+                        // Parse POJOs from JPQL
+                        // Check and if required compile POJO files mentioned in JPQL
+                        //SessionFactory sessionFactory = processAndConstructSessionFactory(jpql, configFileObject, customClassLoader, project);
+
+                        ph.progress(50);
+                        ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPassControlToHibernate"));
+                        jpqlResult = queryExecutor.execute(jpql, pu, pe, maxRowCount, ph);
+                        ph.progress(80);
+                        ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionProcessResults"));
+
+                    } catch (Exception e) {
+                        logger.log(Level.INFO, "Problem in executing JPQL", e);
+                        jpqlResult.getExceptions().add(e);
+                    }
+                    final JPQLResult jpqlResult0 = jpqlResult;
+                    final ClassLoader customClassLoader0 = customClassLoader;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            editorTopComponent.setResult(jpqlResult0, customClassLoader0);
+                        }
+                    });    
+                    
+                    Thread.currentThread().setContextClassLoader(defClassLoader);
+                }
+            };
+            t.setContextClassLoader(customClassLoader);
+            t.start();
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     public void init(Node[] activatedNodes) {

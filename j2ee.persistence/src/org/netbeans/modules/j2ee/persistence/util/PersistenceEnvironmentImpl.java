@@ -43,11 +43,19 @@ package org.netbeans.modules.j2ee.persistence.util;
 
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
@@ -104,7 +112,14 @@ public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
      */
     @Override
     public List<URL> getProjectClassPath(FileObject projectFile) {
-        return null;//return Utils.getProjectClassPathEntries(projectFile);
+        List<URL> projectClassPathEntries = new ArrayList<URL>();
+        ClassPath cp = ClassPath.getClassPath(projectFile, ClassPath.EXECUTE);
+
+        for (ClassPath.Entry cpEntry : cp.entries()) {
+            projectClassPathEntries.add(cpEntry.getURL());
+        }
+
+        return projectClassPathEntries;
     }
 
     /**
@@ -113,8 +128,21 @@ public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
      * 
      * @return List of java.io.File objects representing each entry on the classpath.
      */
+    @Override
     public List<URL> getProjectClassPath() {
-      return null;//  return Utils.getProjectClassPath(project);
+        List<URL> projectClassPathEntries = new ArrayList<URL>();
+        for (SourceGroup sourceGroup : getSourceGroups(project)) {
+            if (sourceGroup == null) {
+                continue;
+            }
+            ClassPath cp = ClassPath.getClassPath(sourceGroup.getRootFolder(), ClassPath.COMPILE);
+
+            for (ClassPath.Entry cpEntry : cp.entries()) {
+                projectClassPathEntries.add(cpEntry.getURL());
+            }
+        }
+
+        return projectClassPathEntries;
     }
 
     /**
@@ -125,5 +153,29 @@ public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
     @Override
     public Project getProject() {
         return project;
+    }
+
+    @Override
+    public FileObject getLocation() {
+        return PersistenceLocation.getLocation(project);
+    }
+    
+    
+    
+    private static SourceGroup[] getSourceGroups(Project project) {
+        Sources projectSources = ProjectUtils.getSources(project);
+        // first, try to get resources
+        SourceGroup[] resources = projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (resources.length > 0) {
+            return resources;
+        }
+        // try to create it
+        SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(
+            project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, JavaProjectConstants.SOURCES_HINT_MAIN);
+        if (resourcesSourceGroup != null) {
+            return new SourceGroup[] {resourcesSourceGroup};
+        }
+        // fallback to java sources
+        return projectSources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
 }

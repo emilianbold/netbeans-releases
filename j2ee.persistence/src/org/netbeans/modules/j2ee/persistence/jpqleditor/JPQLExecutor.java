@@ -44,7 +44,12 @@ package org.netbeans.modules.j2ee.persistence.jpqleditor;
 //import org.hibernate.Query;
 //import org.hibernate.Session;
 //import org.hibernate.SessionFactory;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
+import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 
 /**
  * Executes JPQL query.
@@ -53,40 +58,39 @@ public class JPQLExecutor {
 
     /**
      * Executes given JPQL query and returns the result.
-     * @param hql the query
+     * @param jpql the query
      * @param configFileObject hibernate configuration object.
      * @return JPQLResult containing the execution result (including any errors).
      */
-//    public JPQLResult execute(String hql, 
-//            SessionFactory sessionFactory,
-//            int maxRowCount,
-//            ProgressHandle ph) {
-//        JPQLResult result = new JPQLResult();
-//        try {
-//            ph.progress(60);
-//            
-//            Session session = sessionFactory.openSession();
-//            session.beginTransaction();
-//
-//            ph.progress(70);
-//            
-//            Query query = session.createQuery(hql);
-//            query.setMaxResults(maxRowCount);
-//
-//            hql = hql.trim();
-//            hql = hql.toUpperCase();
-//
-//            if (hql.startsWith("UPDATE") || hql.startsWith("DELETE")) { //NOI18N
-//                result.setUpdateOrDeleteResult(query.executeUpdate());
-//            } else {
-//                result.setQueryResults(query.list());
-//            }
-//            
-//            session.getTransaction().commit();
-//
-//        } catch (Exception e) {
-//            result.getExceptions().add(e);
-//        }
-//        return result;
-//    }
+    public JPQLResult execute(String jpql, 
+            PersistenceUnit pu,
+            PersistenceEnvironment pe,
+            int maxRowCount,
+            ProgressHandle ph) {
+        JPQLResult result = new JPQLResult();
+        try {
+            ph.progress(60);
+            
+                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(pu.getName());
+                        EntityManager em = emf.createEntityManager();
+
+                        Query query = em.createQuery(jpql);
+                        
+            ph.progress(70);
+            
+            query.setMaxResults(maxRowCount);
+
+            jpql = jpql.trim();
+            jpql = jpql.toUpperCase();
+
+            if (jpql.startsWith("UPDATE") || jpql.startsWith("DELETE")) { //NOI18N
+                result.setUpdateOrDeleteResult(query.executeUpdate());
+            } else {
+                result.setQueryResults(query.getResultList());
+            }
+        } catch (Exception e) {
+            result.getExceptions().add(e);
+        }
+        return result;
+    }
 }

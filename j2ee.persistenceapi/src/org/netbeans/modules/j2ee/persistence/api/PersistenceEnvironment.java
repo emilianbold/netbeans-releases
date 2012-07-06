@@ -76,4 +76,12 @@ public interface PersistenceEnvironment {
      * @return List of java.io.File objects representing each entry on the classpath.
      */
     List<URL> getProjectClassPath(FileObject projectFile);
+
+    public List<URL> getProjectClassPath();
+    
+    /**
+     * 
+      * @return return persistence.xml location
+     */
+    FileObject getLocation();
 }
