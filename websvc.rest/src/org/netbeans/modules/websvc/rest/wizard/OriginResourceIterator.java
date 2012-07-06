@@ -217,9 +217,15 @@ public class OriginResourceIterator implements
         
         FileObject filterClass = GenerationUtils.createClass(dir,filterName, null );
         
-        // TODO: extends project with Jersey lib ( even JEE6 profile ) : include package com.sun.jersey.spi.container.* into classpath 
+        /*
+         *  TODO: extends project with Jersey lib ( even JEE6 profile ) : 
+         *  include package com.sun.jersey.spi.container.* into classpath
+         *  handle.progress(NbBundle.getMessage(OriginResourceIterator.class,
+         *      "MSG_UpdateClassPath"); 
+         */
         
-        final StringBuilder builder = new StringBuilder();
+        handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
+                "MSG_GenerateClassFilter"));                                // NOI18N
         JavaSource javaSource = JavaSource.forFileObject(filterClass);
         final String fqn[] = new String[1];
         javaSource.runModificationTask( new Task<WorkingCopy>() {
@@ -228,22 +234,29 @@ public class OriginResourceIterator implements
             public void run( WorkingCopy  copy ) throws Exception {
                 copy.toPhase(Phase.ELEMENTS_RESOLVED);
                 ClassTree classTree = JavaSourceHelper.getTopLevelClassTree(copy);
-                fqn[0] = JavaSourceHelper.getTopLevelClassElement(copy).getQualifiedName().toString();
+                fqn[0] = JavaSourceHelper.getTopLevelClassElement(copy).
+                        getQualifiedName().toString();
                 TreeMaker maker = copy.getTreeMaker();
                 ClassTree newTree = maker.setExtends(classTree, 
-                        maker.QualIdent("com.sun.jersey.spi.container.ContainerResponseFilter"));                                       // NOI18N
+                        maker.QualIdent("com.sun.jersey.spi.container.ContainerResponseFilter"));// NOI18N
                 
                 
                 List<VariableTree> params = new ArrayList<VariableTree>(2);
-                ModifiersTree paramModifiers = maker.Modifiers(Collections.<Modifier>emptySet());
-                params.add(maker.Variable(paramModifiers, "request", maker.QualIdent(
-                        "com.sun.jersey.spi.container.ContainerRequest"), null));                                                                //NOI18N
-                params.add(maker.Variable(paramModifiers, "response", maker.QualIdent(
-                        "com.sun.jersey.spi.container.ContainerResponse"), null));                                                              //NOI18N
-                MethodTree method = maker.Method(maker.Modifiers( EnumSet.of(Modifier.PUBLIC), 
-                            Collections.singletonList(maker.Annotation(maker.QualIdent(Override.class.getName()), 
+                ModifiersTree paramModifiers = maker.Modifiers(
+                        Collections.<Modifier>emptySet());
+                params.add(maker.Variable(paramModifiers, "request", 
+                        maker.QualIdent(
+                        "com.sun.jersey.spi.container.ContainerRequest"), null)); //NOI18N
+                params.add(maker.Variable(paramModifiers, "response", 
+                        maker.QualIdent(
+                        "com.sun.jersey.spi.container.ContainerResponse"), null)); //NOI18N
+                MethodTree method = maker.Method(maker.Modifiers( 
+                        EnumSet.of(Modifier.PUBLIC), 
+                            Collections.singletonList(maker.Annotation(
+                                    maker.QualIdent(Override.class.getName()), 
                                         Collections.<ExpressionTree>emptyList()))), 
-                        "filter", maker.QualIdent("com.sun.jersey.spi.container.ContainerResponse"),                                    //NOI18N
+                        "filter", 
+                        maker.QualIdent("com.sun.jersey.spi.container.ContainerResponse"),//NOI18N
                         Collections.<TypeParameterTree>emptyList(), params, 
                         Collections.<ExpressionTree>emptyList(), getFilterBody(), null);
                 newTree = maker.addClassMember( newTree, method);
@@ -251,6 +264,8 @@ public class OriginResourceIterator implements
             }
         }).commit();
         
+        handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
+                "MSG_UpdateDescriptor"));               // NOI18N
         Project project = Templates.getProject(myWizard);
         WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
         if ( support != null ){
@@ -263,11 +278,11 @@ public class OriginResourceIterator implements
     private String getFilterBody(){
         StringBuilder builder = new StringBuilder();
         builder.append('{');
-        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Origin\",\"");                   //NOI18N
+        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Origin\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.ORIGIN));
         builder.append("\");");                                                                                                                      //NOI18N
         
-        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Methods\",\"");              //NOI18N
+        builder.append("response.getHttpHeaders().putSingle(\"Access-Control-Allow-Methods\",\"");//NOI18N
         List<HttpMethods> methods = (List<HttpMethods>)myWizard.getProperty(
                 RestFilterPanel.HTTP_METHODS);
         for (HttpMethods httpMethod : methods) {
@@ -279,7 +294,7 @@ public class OriginResourceIterator implements
         }
         builder.append("\");");                                                                                                                     //NOI18N
         
-        builder.append("response.getHttpHeaders().putSingle(\"ccess-Control-Allow-Headers\",\"");                //NOI18N
+        builder.append("response.getHttpHeaders().putSingle(\"ccess-Control-Allow-Headers\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.HEADERS));
         builder.append("\");");                                                                                                                     //NOI18N
         builder.append('}');
