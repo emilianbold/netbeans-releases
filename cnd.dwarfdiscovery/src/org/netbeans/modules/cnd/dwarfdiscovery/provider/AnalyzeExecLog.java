@@ -263,7 +263,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
-        setCommpilerSettings(project);
+        init(project);
         this.progress = progress;
         if (!isStoped.get()) {
             Configuration conf = new Configuration() {

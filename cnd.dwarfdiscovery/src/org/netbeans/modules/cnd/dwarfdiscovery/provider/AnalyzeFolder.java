@@ -214,7 +214,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     public List<Configuration> analyze(final ProjectProxy project, final Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
-        setCommpilerSettings(project);
+        init(project);
         if (!isStoped.get()){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;

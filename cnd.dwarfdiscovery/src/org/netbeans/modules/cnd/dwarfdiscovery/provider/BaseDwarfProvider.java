@@ -96,11 +96,18 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     public static final String RESTRICT_SOURCE_ROOT = "restrict_source_root"; // NOI18N
     public static final String RESTRICT_COMPILE_ROOT = "restrict_compile_root"; // NOI18N
     protected AtomicBoolean isStoped = new AtomicBoolean(false);
-    private final RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
-    
+    private RelocatablePathMapperImpl mapper;
+    private CompilerSettings myCommpilerSettings;
+    private Map<String,GrepEntry> grepBase = new ConcurrentHashMap<String, GrepEntry>();
+
     public BaseDwarfProvider() {
     }
     
+    public final void init(ProjectProxy project) {
+        myCommpilerSettings = new CompilerSettings(project);
+        mapper = new RelocatablePathMapperImpl(project);
+    }
+
     @Override
     public boolean isApplicable(ProjectProxy project) {
         return true;
@@ -660,17 +667,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return list;
     }
 
-    private Map<String,GrepEntry> grepBase = new ConcurrentHashMap<String, GrepEntry>();
-    
     public CompilerSettings getCommpilerSettings(){
         return myCommpilerSettings;
     }
     
-    public void setCommpilerSettings(ProjectProxy project) {
-        myCommpilerSettings = new CompilerSettings(project);
-    }
-    private CompilerSettings myCommpilerSettings;
-
     public static class GrepEntry {
         ArrayList<String> includes = new ArrayList<String>();
         String firstMacro = null;

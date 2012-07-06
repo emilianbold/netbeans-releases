@@ -41,11 +41,17 @@
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapperImpl.MapperEntry;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
@@ -130,7 +136,7 @@ public class PathMapperTest extends NbTestCase {
         FS fs = new FS("/scratch/user1/view_storage/user1_my_rdbms");
         String root = "/scratch/user1/view_storage/user1_my_rdbms/rdbms/src/server";
         String unknown = "/ade/b/1226108341/oracle/oracore/port/include";
-        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
         assertTrue(mapper.init(fs, root, unknown));
         final ResolvedPath path = mapper.getPath(unknown);
         assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
@@ -141,7 +147,7 @@ public class PathMapperTest extends NbTestCase {
         FS fs = new FS("/scratch/user1/view_storage/user1_my_rdbms");
         String root = "/scratch/user1/view_storage/user1_my_rdbms/rdbms/src/server";
         String unknown = "/ade/user1_my_rdbms/oracle/oracore/port/include";
-        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
         assertTrue(mapper.init(fs, root, unknown));
         final ResolvedPath path = mapper.getPath(unknown);
         assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
@@ -152,7 +158,7 @@ public class PathMapperTest extends NbTestCase {
         FS fs = new FS("/scratch/user1/view_storage/user1_my_rdbms");
         String root = "/scratch/user1/view_storage/user1_my_rdbms/rdbms/src/server";
         String unknown = "/net/host1/vol/ifarm_ports/ifarm_views/aime_rdbms_273649/rdbms/src/server/ram/data";
-        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
         assertTrue(mapper.init(fs, root, unknown));
         final ResolvedPath path = mapper.getPath(unknown);
         assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
@@ -161,7 +167,7 @@ public class PathMapperTest extends NbTestCase {
 
     public void testMapperDetectorAll() {
         FS fs = new FS("/scratch/user1/view_storage/user1_my_rdbms");
-        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
         String root;
         String unknown;
         ResolvedPath path;
@@ -203,11 +209,73 @@ public class PathMapperTest extends NbTestCase {
         //}
     }
 
+    public void testMapperDetectorAll2() throws IOException {
+        File storage = File.createTempFile("mapper", ".txt");
+        System.setProperty("makeproject.pathMapperFile", storage.getPath()); // NOI18N
+        BufferedWriter wr = new BufferedWriter(new FileWriter(storage));
+        wr.append("/net/host1/vol/ifarm_ports/ifarm_views/aime_rdbms_273649=/scratch/user1/view_storage/user1_my_rdbms\n");
+        wr.append("/ade/user1_my_rdbms=/scratch/user1/view_storage/user1_my_rdbms\n");
+        wr.append("/ade/b/1226108341=/scratch/user1/view_storage/user1_my_rdbms\n");
+        wr.close();
+        
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(new ProjectProxy() {
+
+            @Override
+            public boolean createSubProjects() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public Project getProject() {
+                return null;
+            }
+
+            @Override
+            public String getMakefile() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getSourceRoot() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getExecutable() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getWorkingFolder() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public boolean mergeProjectProperties() {
+                throw new UnsupportedOperationException();
+            }
+        });
+        assertEquals(3, mapper.dump().size());
+        ResolvedPath path;
+        
+        path = mapper.getPath("/net/host1/vol/ifarm_ports/ifarm_views/aime_rdbms_273649/rdbms/src/server/ram/data1");
+        assertNotNull(path);
+        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
+
+        path = mapper.getPath("/ade/user1_my_rdbms/oracle/oracore/port/include1");
+        assertNotNull(path);
+        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
+
+        path = mapper.getPath("/ade/b/1226108341/oracle/oracore/port/include1");
+        assertNotNull(path);
+        assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
+    }
+
     public void testMapperDetectorHomeLink() {
         FS2 fs = new FS2("/home/user1/tmp-link/pkg-config-0.25");
         String root = "/home/user1/tmp-link/pkg-config-0.25";
         String unknown = "/var/tmp/user1-cnd-test-downloads/pkg-config-0.25/glib-1.2.10/gcache.c";
-        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
         assertTrue(mapper.init(fs, root, unknown));
         final ResolvedPath path = mapper.getPath(unknown);
         assertEquals("/home/user1/tmp-link", path.getRoot());
@@ -218,7 +286,7 @@ public class PathMapperTest extends NbTestCase {
         FS3 fs = new FS3("/scratch/user1/view_storage/user1_vk_ctx_3");
         String root = "/scratch/user1/view_storage/user1_vk_ctx_3/ctx_src_4/src";
         String unknown = "/ade/user1_vk_ctx_3/oracle/ctx/src/gx/include";
-        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
         assertTrue(mapper.init(fs, root, unknown));
         final ResolvedPath path = mapper.getPath(unknown);
         assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3", path.getRoot());
@@ -229,7 +297,7 @@ public class PathMapperTest extends NbTestCase {
         FS3 fs = new FS3("/scratch/user1/view_storage/user1_vk_ctx_3");
         String root = "/scratch/user1/view_storage/user1_vk_ctx_3/ctx_src_4/src/ext/zfm";
         String unknown = "/ade/user1_vk_ctx_3/oracle/ctx/src/gx/include";
-        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
         assertTrue(mapper.init(fs, root, unknown));
         final ResolvedPath path = mapper.getPath(unknown);
         assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3", path.getRoot());

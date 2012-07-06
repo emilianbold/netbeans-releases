@@ -41,16 +41,78 @@
  */
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 
 /**
  *
  * @author Alexander Simon
  */
 public class RelocatablePathMapperImpl implements RelocatablePathMapper {
+    public static final Logger LOG = Logger.getLogger(RelocatablePathMapperImpl.class.getName());
     private static final boolean TEST = false;
     private final List<MapperEntry> mapper = new ArrayList<MapperEntry>();
+    
+    public RelocatablePathMapperImpl(ProjectProxy project) {
+        if(project != null) {
+            Project makeProject = project.getProject();
+            List<String> list = null;
+            if (makeProject != null) {
+                // init path mapper from project
+                //PathMapperStorage storage = makeProject.getLookup().lookup(PathMapperStorage);
+                //list = storage.getList();
+            }
+            if (list == null || list.isEmpty()) {
+                String mapperFile = System.getProperty("makeproject.pathMapperFile"); // NOI18N
+                if (mapperFile != null) {
+                    File file = new File(mapperFile);
+                    if (file.exists() && file.canRead()) {
+                        BufferedReader in = null;
+                        try {
+                            in = new BufferedReader(new FileReader(file));
+                            list = new ArrayList<String>();
+                            while (true) {
+                                String line = in.readLine();
+                                if (line == null) {
+                                    break;
+                                }
+                                line = line.trim();
+                                int i = line.indexOf('='); // NOI18N
+                                if (i > 0) {
+                                    list.add(line.substring(0,i));
+                                    list.add(line.substring(i+1));
+                                }
+                            }
+                        } catch (IOException ex) {
+                            LOG.log(Level.INFO, "Cannot read mapper file {0}", mapperFile); // NOI18N
+                        }
+                        if (in != null) {
+                            try {
+                                in.close();
+                            } catch (IOException ex) {
+                            }
+                        }
+                    }
+                }
+            }
+            if (list != null) {
+                for(int i = 0; i < list.size(); i+=2) {
+                    if (i+1 < list.size()) {
+                        mapper.add(new MapperEntry(list.get(i), list.get(i+1)));
+                        LOG.log(Level.FINE, "Map path {0} -> {1}", new Object[]{list.get(i), list.get(i+1)}); // NOI18N
+                    }
+                }
+            }
+        }
+    }
 
     @Override
     public ResolvedPath getPath(String path) {
