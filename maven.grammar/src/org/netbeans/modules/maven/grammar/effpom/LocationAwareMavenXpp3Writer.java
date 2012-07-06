@@ -148,10 +148,12 @@ public class LocationAwareMavenXpp3Writer {
             serializer.attribute(NAMESPACE, attributeName, root.getAttribute( attributeName ));
         }
         
+        boolean config = rootTracker != null ? rootTracker.getLocation(root.getName()) != null : true;
+        
         Xpp3Dom[] children = root.getChildren();
         for ( int i = 0; i < children.length; i++ )
         {
-            writeXpp3DOM(serializer, children[i], rootTracker != null ? rootTracker.getLocation(children[i].getName()) : null);
+            writeXpp3DOM(serializer, children[i], rootTracker != null ? rootTracker.getLocation(config ? root.getName() : root) : null);
         }
 
         String value = root.getValue();
@@ -161,7 +163,7 @@ public class LocationAwareMavenXpp3Writer {
         }
 
         serializer.endTag(NAMESPACE, root.getName()).flush();
-        logLocation(rootTracker, root.getName(), start, b.length());
+        logLocation(rootTracker, config ? root.getName() : root, start, b.length());
         
     }
 
