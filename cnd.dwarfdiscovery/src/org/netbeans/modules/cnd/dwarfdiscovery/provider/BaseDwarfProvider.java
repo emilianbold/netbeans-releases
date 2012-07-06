@@ -147,6 +147,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
     }
 
     protected FileObject resolvePath(ProjectProxy project, String buildArtifact, final FileSystem fileSystem, SourceFileProperties f, String name) {
+        FileObject fo = fileSystem.findResource(name);
+        if (!(f instanceof Relocatable)) {
+            return fo;
+        }
         FS fs = new RelocatablePathMapperImpl.FS() {
             @Override
             public boolean exists(String path) {
@@ -170,27 +174,24 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 sourceRoot = null;
             }
         }
-        FileObject fo = fileSystem.findResource(name);
         if (fo == null || !fo.isValid()) {
-            if (f instanceof Relocatable) {
-                ResolvedPath resolvedPath = mapper.getPath(name);
-                if (resolvedPath == null) {
-                    if (sourceRoot != null) {
-                        if (mapper.init(fs, sourceRoot, name)) {
-                            resolvedPath = mapper.getPath(name);
-                            fo = fileSystem.findResource(resolvedPath.getPath());
-                            if (fo != null && fo.isValid() && fo.isData()) {
-                                ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
-                                return fo;
-                            }
+            ResolvedPath resolvedPath = mapper.getPath(name);
+            if (resolvedPath == null) {
+                if (sourceRoot != null) {
+                    if (mapper.init(fs, sourceRoot, name)) {
+                        resolvedPath = mapper.getPath(name);
+                        fo = fileSystem.findResource(resolvedPath.getPath());
+                        if (fo != null && fo.isValid() && fo.isData()) {
+                            ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
+                            return fo;
                         }
                     }
-                } else {
-                    fo = fileSystem.findResource(resolvedPath.getPath());
-                    if (fo != null && fo.isValid() && fo.isData()) {
-                        ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
-                        return fo;
-                    }
+                }
+            } else {
+                fo = fileSystem.findResource(resolvedPath.getPath());
+                if (fo != null && fo.isValid() && fo.isData()) {
+                    ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
+                    return fo;
                 }
             }
         }
@@ -216,6 +217,22 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     ((Relocatable) f).resetItemPath(resolvedPath, mapper, fs);
                     return resolved;
                 }
+            }
+            sourceRoot = null;
+            if (project != null) {
+                sourceRoot = project.getSourceRoot();
+                if (sourceRoot != null && sourceRoot.length() < 2) {
+                    sourceRoot = null;
+                }
+            }
+            if (sourceRoot == null) {
+                sourceRoot = PathUtilities.getBaseName(name);
+                if (sourceRoot != null && sourceRoot.length() < 2) {
+                    sourceRoot = null;
+                }
+            }
+            if (sourceRoot != null) {
+                ((Relocatable) f).resolveIncludePaths(sourceRoot, mapper, fs);
             }
             return fo;
         }

@@ -224,6 +224,17 @@ public class PathMapperTest extends NbTestCase {
         assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3", path.getRoot());
         assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3/oracle/ctx/src/gx/include", path.getPath());
     }
+
+    public void testMapperDetectorCTX2() {
+        FS3 fs = new FS3("/scratch/user1/view_storage/user1_vk_ctx_3");
+        String root = "/scratch/user1/view_storage/user1_vk_ctx_3/ctx_src_4/src/ext/zfm";
+        String unknown = "/ade/user1_vk_ctx_3/oracle/ctx/src/gx/include";
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl();
+        assertTrue(mapper.init(fs, root, unknown));
+        final ResolvedPath path = mapper.getPath(unknown);
+        assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3", path.getRoot());
+        assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3/oracle/ctx/src/gx/include", path.getPath());
+    }
     
     private static final class FS implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
