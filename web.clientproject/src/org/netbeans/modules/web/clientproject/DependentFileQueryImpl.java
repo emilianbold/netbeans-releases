@@ -43,6 +43,7 @@
 package org.netbeans.modules.web.clientproject;
 
 import java.io.IOException;
+import java.util.Collection;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.index.HtmlIndex;
@@ -63,9 +64,12 @@ public class DependentFileQueryImpl implements DependentFileQueryImplementation 
         }
         try {
             HtmlIndex.AllDependenciesMaps all = HtmlIndex.get(p).getAllDependencies();
-            for (FileReference fr: all.getSource2dest().get(master)) {
-                if (fr.target().equals(dependent)) {
-                    return Boolean.TRUE;
+            Collection<FileReference> c = all.getSource2dest().get(master);
+            if (c != null) {
+                for (FileReference fr : c) {
+                    if (fr.target().equals(dependent)) {
+                        return Boolean.TRUE;
+                    }
                 }
             }
             return Boolean.FALSE;
