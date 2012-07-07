@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.test.refactoring.operators;
 
+import java.awt.Component;
 import javax.swing.JLabel;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -54,8 +56,8 @@ import org.netbeans.jemmy.operators.JTextFieldOperator;
 public class RenameOperator extends ParametersPanelOperator{
     private JTextFieldOperator textField;
     private JCheckBoxOperator commments;
+    private JCheckBoxOperator property;
     private JLabelOperator error;
-    
     
     public RenameOperator() {
         super("Rename");
@@ -73,6 +75,13 @@ public class RenameOperator extends ParametersPanelOperator{
             commments = new JCheckBoxOperator(this);
         }
         return commments;
+    }
+    
+    public JCheckBoxOperator getProperty() {
+        if(property == null) {
+            property = new JCheckBoxOperator(this, 1);
+        }
+        return property;
     }
 
     public JLabelOperator getError() {

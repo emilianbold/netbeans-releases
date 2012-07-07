@@ -771,8 +771,15 @@ implements TokenHierarchyListener, ChangeListener {
         boolean moveNextToken(int limitStartOffset, int limitEndOffset) {
             if (ts.moveNext()) {
                 Token<T> token = ts.token();
-                tokenOffset = ts.offset();
-                tokenEndOffset = tokenOffset + token.length();
+                int nextTokenOffset = ts.offset();
+                int nextTokenLength = token.length();
+                if (nextTokenOffset >= tokenEndOffset || nextTokenLength >= 0) {
+                    tokenOffset = nextTokenOffset;
+                    tokenEndOffset = tokenOffset + nextTokenLength;
+                } else {
+                    // Become robust against an invalid lexer's output by returning "no more tokens" here
+                    return false;
+                }
                 if (tokenEndOffset <= limitStartOffset) {
                     // Must move the sequence forward by bin-search
                     ts.move(limitStartOffset);
