@@ -164,8 +164,6 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
             panel.add( btn, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
             panel.add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
-            
-            panel.setBorder(new LineBorder(Color.red, 1));
         }
         return panel;
     }

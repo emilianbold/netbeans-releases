@@ -102,7 +102,6 @@ public class MemberNode extends LeafNode {
                 btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction()); // NOI18N
                 panel.add(btn, BorderLayout.EAST);
                 
-                panel.setBorder(new LineBorder(Color.blue, 1));
                 panel.validate();
             }
             lbl.setForeground(foreground);
