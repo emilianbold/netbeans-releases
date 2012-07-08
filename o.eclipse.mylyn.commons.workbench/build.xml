@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="o.eclipse.mylyn.commons.workbench">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">  
+        <jar jarfile="${cluster}/${module.jar}">
+            <fileset dir="build/classes"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="org.eclipse.mylyn.commons.workbench;singleton:=true"/>
+                <attribute name="Bundle-Version" value="3.7.1"/>
+                <attribute 
+                    name="Require-Bundle" 
+                    value="org.eclipse.mylyn.tasks.ui;bundle-version=&quot;[3.0.0,4.0.0)&quot;"/>
+                <attribute 
+                    name="Export-Package" 
+                    value="org.eclipse.mylyn.commons.workbench"/>
+            </manifest>
+        </jar>
+    </target>    
+</project>

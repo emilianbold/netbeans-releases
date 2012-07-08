@@ -43,54 +43,33 @@
 package org.netbeans.modules.kenai.ui.spi;
 
 import java.awt.Cursor;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.PasswordAuthentication;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JRootPane;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
-import org.netbeans.modules.kenai.ui.KenaiLoginTask;
-import org.netbeans.modules.kenai.ui.LoginPanel;
-import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.kenai.ui.dashboard.UserNode;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.team.ui.common.UserNode;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.impl.LoginUtils;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 
 /**
  * This class is not yet final. We be changed
  * @author Jan Becicka
  */
 public final class UIUtils {
-
-    public final static String ONLINE_ON_CHAT_PREF = ".online_chat";// NOI18N
-    private final static String KENAI_PASSWORD_PREF = ".password"; //NOI18N
-    private final static String KENAI_USERNAME_PREF = ".username"; //NOI18N
-    public final static String ONLINE_STATUS_PREF = ".online"; // NOI18N
-    public final static String LOGIN_STATUS_PREF = ".login";// NOI18N
 
     // Usage logging
     private static Logger metricsLogger;
@@ -103,8 +82,8 @@ public final class UIUtils {
         return kenai.getUrl().getHost() + name;
     }
 
-    public static void waitStartupFinished() {
-        KenaiLoginTask.waitStartupFinished();
+    public static void addDashboardListener(Kenai kenai, PropertyChangeListener propertyChangeListener) {
+        KenaiServer.forKenai(kenai).getDashboard().addPropertyChangeListener(propertyChangeListener);
     }
     
     private UIUtils() {
@@ -118,37 +97,8 @@ public final class UIUtils {
      * @deprecated 
      */
     @Deprecated
-    public static synchronized boolean tryLogin(final Kenai kenai, boolean force) {
-        if (kenai.getStatus()!=Kenai.Status.OFFLINE) {
-            return true;
-        }
-        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-
-        if (!force) {
-            String online = preferences.get(getPrefName(kenai, LOGIN_STATUS_PREF), "false"); // NOI18N
-            if (!Boolean.parseBoolean(online)) {
-                return false;
-            }
-        }
-
-        String uname=preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), null); // NOI18N
-        if (uname==null) {
-            return false;
-        }
-        boolean goOnline = Boolean.parseBoolean(preferences.get(getPrefName(kenai, ONLINE_STATUS_PREF), "false")) && Utilities.isChatSupported(kenai);
-        PresenceIndicator.getDefault().init();
-        try {
-            KenaiConnection.getDefault(kenai);
-            char[] password = loadPassword(kenai, preferences);
-            if (password == null) {
-                return false;
-            }
-            kenai.login(uname, password,
-                    force ? true : goOnline);
-        } catch (KenaiException ex) {
-            return false;
-        }
-        return true;
+    public static synchronized boolean tryLogin(Kenai kenai, boolean force) {
+        return LoginUtils.tryLogin (kenai, force);
     }
 
     /**
@@ -170,23 +120,6 @@ public final class UIUtils {
         }
         return showKenaiLogin(null);
     }
-    /**
-     * Loads password from the keyring. For settings compatibility,
-     * can also interpret and upgrade old insecure storage.
-     */
-    @SuppressWarnings("deprecation")
-    private static char[] loadPassword(Kenai kenai,Preferences preferences) {
-        String passwordPref = getPrefName(kenai, KENAI_PASSWORD_PREF);
-        String scrambledPassword = preferences.get(passwordPref, null); // NOI18N
-        char[] newPassword = Keyring.read(passwordPref);
-        if (scrambledPassword != null) {
-            preferences.remove(passwordPref);
-            if (newPassword == null) {
-                return Scrambler.getInstance().descramble(scrambledPassword).toCharArray();
-            }
-        }
-        return newPassword;
-    }
 
     /**
      * Invokes login dialog
@@ -204,107 +137,9 @@ public final class UIUtils {
      * cancelled
      */
     public static Kenai showKenaiLogin(final Kenai kenai) {
-        PresenceIndicator.getDefault().init();
-        final LoginPanel loginPanel = new LoginPanel(kenai, new CredentialsImpl());
-        final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-        final String ctlLogin = NbBundle.getMessage(Utilities.class, "CTL_Login");
-        final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
-        DialogDescriptor login = new DialogDescriptor(
-                loginPanel,
-                NbBundle.getMessage(Utilities.class, "CTL_LoginToKenai"),
-                true,
-                new Object[]{ctlLogin,ctlCancel},ctlLogin,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null, new ActionListener() {
-                    public void actionPerformed(ActionEvent event) {
-                        final Kenai k = loginPanel.getKenai();
-                        if (event.getSource().equals(ctlLogin)) {
-                            UIUtils.logKenaiUsage("LOGIN"); // NOI18N
-                        loginPanel.showProgress();
-                        RequestProcessor.getDefault().post(new Runnable() {
-
-                            public void run() {
-                                try {
-                                    KenaiConnection.getDefault(k);
-                                    PasswordAuthentication current = k.getPasswordAuthentication();
-                                    if (current !=null && !(loginPanel.getUsername().equals(current.getUserName()) && Arrays.equals(loginPanel.getPassword(), current.getPassword()))) {
-                                        k.logout();
-                                    }
-                                    k.login(loginPanel.getUsername(), loginPanel.getPassword(), loginPanel.isOnline());
-                                    SwingUtilities.invokeLater(new Runnable() {
-
-                                        public void run() {
-                                            JRootPane rootPane = loginPanel.getRootPane();
-                                            if (rootPane != null) {
-                                                JDialog parent = (JDialog) rootPane.getParent();
-                                                if (parent != null) {
-                                                    parent.setVisible(false);
-                                                    parent.dispose();
-                                                }
-                                            }
-                                        }
-                                    });
-                                } catch (final KenaiException ex) {
-                                    SwingUtilities.invokeLater(new Runnable() {
-
-                                        public void run() {
-                                            loginPanel.showError(ex);
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                        String passwordPref = getPrefName(k, KENAI_PASSWORD_PREF);
-                        if (loginPanel.isStorePassword()) {
-                            preferences.put(getPrefName(k, KENAI_USERNAME_PREF), loginPanel.getUsername()); // NOI18N
-                            Keyring.save(passwordPref, loginPanel.getPassword(),
-                                    NbBundle.getMessage(UIUtils.class, "UIUtils.password_keyring_description", k.getUrl().getHost()));
-                        } else {
-                            preferences.remove(getPrefName(k, KENAI_USERNAME_PREF)); // NOI18N
-                            Keyring.delete(passwordPref);
-                        }
-                        preferences.remove(passwordPref);
-                    } else {
-                        loginPanel.putClientProperty("cancel", "true"); // NOI18N
-                        JDialog parent = (JDialog) loginPanel.getRootPane().getParent();
-                        parent.setVisible(false);
-                        parent.dispose();
-                    }
-                }
-        });
-        login.setClosingOptions(new Object[]{ctlCancel});
-        Dialog d = DialogDisplayer.getDefault().createDialog(login);
-
-        d.pack();
-        d.setResizable(false);
-        loginPanel.clearStatus();
-        d.setVisible(true);
-
-        if (loginPanel.getClientProperty("cancel")==null) {  // NOI18N
-            return loginPanel.getKenai();
-        }
-        return null;
-    }
-
-    private static class CredentialsImpl implements LoginPanel.Credentials {
-
-        public String getUsername(Kenai kenai) {
-            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-            String uname = preferences.get(getPrefName(kenai, KENAI_USERNAME_PREF), ""); // NOI18N
-            if (uname==null) {
-                return "";
-            }
-            return uname;
-        }
-
-        public char[] getPassword(Kenai kenai) {
-            final Preferences preferences = NbPreferences.forModule(LoginPanel.class);
-            char[] password = loadPassword(kenai, preferences);
-            if (password==null) {
-                return new char[0];
-            }
-            return password;
-        }
+        TeamServer server = KenaiServer.forKenai(kenai);
+        server = org.netbeans.modules.team.ui.spi.UIUtils.showLogin(server, false);
+        return (server instanceof KenaiServer) ? ((KenaiServer) server).getKenai() : null;
     }
 
     public static JLabel createUserWidget(String user) {
@@ -345,8 +180,9 @@ public final class UIUtils {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getButton()==1)
+                if (e.getButton()==1) {
                     u.startChat();
+                }
             }
 
         });
@@ -354,6 +190,10 @@ public final class UIUtils {
         return result;
     }
 
+    public static ProjectHandle<KenaiProject>[] getDashboardProjects() {
+        return KenaiServer.getOpenProjects();
+    }
+    
     public static void logKenaiUsage(Object... parameters) {
         String paramStr = getParamString(parameters);
         if (loggedParams.add(paramStr)) {

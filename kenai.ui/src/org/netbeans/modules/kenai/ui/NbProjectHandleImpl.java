@@ -50,7 +50,7 @@ import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
+import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;

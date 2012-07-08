@@ -52,11 +52,12 @@ import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
+import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 

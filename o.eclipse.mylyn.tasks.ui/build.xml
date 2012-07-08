@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="o.eclipse.mylyn.tasks.ui">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar" depends="init,compile,jar-prep" unless="is.jar.uptodate">  
+        <jar jarfile="${cluster}/${module.jar}">
+            <fileset dir="build/classes"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="org.eclipse.mylyn.tasks.ui;singleton:=true"/>
+                <attribute name="Bundle-Version" value="3.5.0"/>
+                <attribute 
+                    name="Require-Bundle" 
+                    value="org.eclipse.mylyn.tasks.core;bundle-version=&quot;[3.0.0,4.0.0)&quot;"/>
+                <attribute 
+                    name="Export-Package" 
+                    value="org.eclipse.mylyn.tasks.ui;org.eclipse.mylyn.internal.tasks.ui.util;org.eclipse.mylyn.internal.tasks.ui.editors"/>
+            </manifest>
+        </jar>
+    </target>    
+</project>

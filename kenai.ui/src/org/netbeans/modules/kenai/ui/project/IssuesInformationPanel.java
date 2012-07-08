@@ -71,10 +71,10 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiPopupMenu;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -257,13 +257,14 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
 
                         public void actionPerformed(final ActionEvent e) {
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
-                            DashboardImpl.getInstance().addProject(pHandle, false, false);
+                            final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                            dashboard.addProject(pHandle, false, false);
                             RequestProcessor.getDefault().post(new Runnable() {
 
                                 public void run() {
                                     ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
                                     h.start();
-                                    QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
+                                    dashboard.getQueryAccessor(KenaiProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
                                     h.finish();
                                 }
                             });
@@ -275,13 +276,14 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                             try {
                                 if (instProj.getFeatures(Type.ISSUES).length > 0) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
-                                    DashboardImpl.getInstance().addProject(pHandle, false, false);
+                                    final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);                                    
+                                    dashboard.addProject(pHandle, false, false);
                                     RequestProcessor.getDefault().post(new Runnable() {
 
                                         public void run() {
                                             ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
                                             h.start();
-                                            QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
+                                            dashboard.getQueryAccessor(KenaiProject.class).getFindIssueAction(pHandle).actionPerformed(e);
                                             h.finish();
                                         }
                                     });

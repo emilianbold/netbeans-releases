@@ -136,6 +136,7 @@ import org.netbeans.modules.bugzilla.repository.CustomIssueField;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import org.netbeans.modules.bugzilla.util.NbBugzillaConstants;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.awt.HtmlBrowser;

@@ -51,12 +51,13 @@ import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.mylyn.BugtrackingCommand;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class AddAttachmentCommand extends BugzillaCommand {
+public class AddAttachmentCommand extends BugtrackingCommand {
 
     private final String id;
     private final BugzillaRepository repository;

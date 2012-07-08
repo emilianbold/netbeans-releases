@@ -61,15 +61,17 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProjectMember.Role;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.kenai.ui.project.DetailsAction;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.LoginHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.LoginHandle;
+import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.URLDisplayerAction;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -81,13 +83,22 @@ import org.openide.windows.WindowManager;
  * @author Jan Becicka
  */
 @ServiceProvider(service=ProjectAccessor.class)
-public class ProjectAccessorImpl extends ProjectAccessor {
+public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProject> {
+    
+    private static ProjectAccessorImpl instance;
+
+    public static ProjectAccessor getDefault() {
+        if(instance == null) {
+            instance = new ProjectAccessorImpl();
+        }
+        return instance;
+    }
 
     @Override
-    public List<ProjectHandle> getMemberProjects(Kenai kenai, LoginHandle login, boolean force) {
+    public List<ProjectHandle> getMemberProjects(KenaiServer server, LoginHandle login, boolean force) {
         try {
             LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
-            for (KenaiProject prj : kenai.getMyProjects(force)) {
+            for (KenaiProject prj : server.getKenai().getMyProjects(force)) {
                 l.add(new ProjectHandleImpl(prj));
                 for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
                     if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
@@ -114,9 +125,9 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public ProjectHandle getNonMemberProject(Kenai kenai, String projectId, boolean force) {
+    public ProjectHandle getNonMemberProject(KenaiServer server, String projectId, boolean force) {
         try {
-            return new ProjectHandleImpl(kenai.getProject(projectId,force));
+            return new ProjectHandleImpl(server.getKenai().getProject(projectId,force));
         } catch (KenaiException ex) {
             Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getProject() " + projectId + " failed", ex);
             return null;
@@ -128,7 +139,9 @@ public class ProjectAccessorImpl extends ProjectAccessor {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new OpenKenaiProjectAction(DashboardImpl.getInstance().getKenai()).actionPerformed(null);
+                TeamServer ts = org.netbeans.modules.team.ui.spi.UIUtils.getSelectedServer();
+                assert ts instanceof KenaiServer;
+                new OpenKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
             }
         };
     }
@@ -142,8 +155,9 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     private Action getOpenAction(final ProjectHandle project) {
         // this action is supposed to be used for openenig a project from My Projects
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
-                Dashboard.getDefault().addProject(project, false, true);
+                KenaiServer.getDashboard(project).addProject(project, false, true);
             }
         };
     }
@@ -154,11 +168,11 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public Action[] getPopupActions(final ProjectHandle project, boolean opened) {
-        PasswordAuthentication pa = project.getKenaiProject().getKenai().getPasswordAuthentication();
+    public Action[] getPopupActions(final ProjectHandle<KenaiProject> project, boolean opened) {
+        PasswordAuthentication pa = project.getTeamProject().getKenai().getPasswordAuthentication();
         if (!opened) {
             try {
-                if (pa != null && pa.getUserName().equals(project.getKenaiProject().getOwner().getUserName())) {
+                if (pa != null && pa.getUserName().equals(project.getTeamProject().getOwner().getUserName())) {
                     return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project), new DeleteProjectAction(project)};
                 } else {
                     return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
@@ -169,7 +183,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
             }
         } else {
             try {
-                if (pa != null && pa.getUserName().equals(project.getKenaiProject().getOwner().getUserName())) {
+                if (pa != null && pa.getUserName().equals(project.getTeamProject().getOwner().getUserName())) {
                     return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project), new DeleteProjectAction(project)};
                 } else {
                     return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project)};
@@ -182,9 +196,9 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public Action getOpenWikiAction(ProjectHandle project) {
+    public Action getOpenWikiAction(ProjectHandle<KenaiProject> project) {
         try {
-            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getKenaiProject().getFeatures(Type.WIKI);
+            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getTeamProject().getFeatures(Type.WIKI);
             if (wiki.length == 1) {
                 return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
             }
@@ -195,9 +209,9 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public Action getOpenDownloadsAction(ProjectHandle project) {
+    public Action getOpenDownloadsAction(ProjectHandle<KenaiProject> project) {
         try {
-            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getKenaiProject().getFeatures(Type.DOWNLOADS);
+            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getTeamProject().getFeatures(Type.DOWNLOADS);
             if (wiki.length == 1) {
                 return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
             }
@@ -208,16 +222,16 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public Action getBookmarkAction(final ProjectHandle project) {
+    public Action getBookmarkAction(final ProjectHandle<KenaiProject> project) {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                Kenai kenai = project.getKenaiProject().getKenai();
+                Kenai kenai = project.getTeamProject().getKenai();
                 try {
                     if (kenai.getStatus()==Kenai.Status.OFFLINE) {
                         UIUtils.showLogin(kenai);
                         return;
                     }
-                    if (kenai.getMyProjects().contains(project.getKenaiProject())) {
+                    if (kenai.getMyProjects().contains(project.getTeamProject())) {
                         if (JOptionPane.YES_OPTION != 
                                 JOptionPane.showConfirmDialog(
                                 WindowManager.getDefault().getMainWindow(),
@@ -230,11 +244,12 @@ public class ProjectAccessorImpl extends ProjectAccessor {
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                DashboardImpl.getInstance().bookmarkingStarted();
+                final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(project);
+                dashboard.bookmarkingStarted();
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
-                            KenaiProject prj = project.getKenaiProject();
+                            KenaiProject prj = project.getTeamProject();
                             if (prj.getKenai().getMyProjects().contains(prj)) {
                                 unbookmark(prj);
                             } else {
@@ -245,7 +260,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
                         } finally {
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    DashboardImpl.getInstance().bookmarkingFinished();
+                                    dashboard.bookmarkingFinished();
                                 }
                             });
                         }
@@ -270,20 +285,22 @@ public class ProjectAccessorImpl extends ProjectAccessor {
     }
 
     @Override
-    public Action getNewKenaiProjectAction() {
+    public Action getNewTeamProjectAction() {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new NewKenaiProjectAction(DashboardImpl.getInstance().getKenai()).actionPerformed(null);
+                TeamServer ts = org.netbeans.modules.team.ui.spi.UIUtils.getSelectedServer();
+                assert ts instanceof KenaiServer;
+                new NewKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
             }
         };
     }
 
     private static class RefreshAction extends AbstractAction {
 
-        private final ProjectHandle project;
+        private final ProjectHandle<KenaiProject> project;
 
-        public RefreshAction(ProjectHandle project) {
+        public RefreshAction(ProjectHandle<KenaiProject> project) {
             super( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject"));
             this.project = project;
         }
@@ -293,7 +310,7 @@ public class ProjectAccessorImpl extends ProjectAccessor {
 
                 public void run() {
                     try {
-                        project.getKenaiProject().getKenai().getProject(project.getId(), true);
+                        project.getTeamProject().getKenai().getProject(project.getId(), true);
                     } catch (KenaiException ex) {
                         Exceptions.printStackTrace(ex);
                     }

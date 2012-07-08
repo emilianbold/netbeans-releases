@@ -52,9 +52,9 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import org.netbeans.modules.team.ui.spi.MemberAccessor;
+import org.netbeans.modules.team.ui.spi.MemberHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -65,14 +65,22 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=MemberAccessor.class)
 public class MemberAccessorImpl extends MemberAccessor {
+    private static MemberAccessor instance;
+
+    public static MemberAccessor getDefault() {
+        if (instance == null) {
+            instance = new MemberAccessorImpl();
+        }
+        return instance;
+    }
 
     @Override
     public List<MemberHandle> getMembers(ProjectHandle project) {
         ArrayList<MemberHandle> handles = new ArrayList();
         ProjectHandleImpl prj = (ProjectHandleImpl) project;
         try {
-            KenaiUser owner = prj.getKenaiProject().getOwner();
-            for (KenaiProjectMember member : prj.getKenaiProject().getMembers()) {
+            KenaiUser owner = prj.getTeamProject().getOwner();
+            for (KenaiProjectMember member : prj.getTeamProject().getMembers()) {
                 handles.add(new MemberHandleImpl(member, member.getKenaiUser().equals(owner)));
             }
         } catch (KenaiException ex) {

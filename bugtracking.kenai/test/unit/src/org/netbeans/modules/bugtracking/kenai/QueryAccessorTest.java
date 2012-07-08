@@ -55,9 +55,9 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.openide.util.Exceptions;
 
 /**
@@ -192,7 +192,7 @@ public class QueryAccessorTest extends NbTestCase {
         }
 
         @Override
-        public KenaiProject getKenaiProject() {
+        public KenaiProject getTeamProject() {
             return kp;
         }
 

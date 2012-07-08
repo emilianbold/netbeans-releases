@@ -63,10 +63,9 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -331,7 +330,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         Set<CreatedProjectInfo> set = new HashSet<CreatedProjectInfo>();
         try {
             KenaiProject project = kenai.getProject(newPrjName);
-            Dashboard.getDefault().addProject(new ProjectHandleImpl(project), true, true);
+            KenaiServer.getDashboard(kenai).addProject(new ProjectHandleImpl(project), true, true);
             set.add(new CreatedProjectInfo(project, newPrjScmLocal));
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
