@@ -64,9 +64,9 @@ public class LogoutPanel extends javax.swing.JPanel {
     /** Creates new form LogoutPanel */
     public LogoutPanel() {
         initComponents();
-        kenaiList.setCellRenderer(new TeamServerListRenderer());
-        kenaiList.setModel(new TeamServerComboModel(false, Status.ONLINE));
-        support = new CheckListSupport(kenaiList);
+        teamServerList.setCellRenderer(new TeamServerListRenderer());
+        teamServerList.setModel(new TeamServerComboModel(false, Status.ONLINE));
+        support = new CheckListSupport(teamServerList);
     }
 
     /** This method is called from within the constructor to
@@ -79,18 +79,18 @@ public class LogoutPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         scrollPane = new javax.swing.JScrollPane();
-        kenaiList = new javax.swing.JList();
+        teamServerList = new javax.swing.JList();
         labelServers = new javax.swing.JLabel();
 
         setName("Form"); // NOI18N
 
         scrollPane.setName("scrollPane"); // NOI18N
 
-        kenaiList.setName("kenaiList"); // NOI18N
-        scrollPane.setViewportView(kenaiList);
-        kenaiList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LogoutPanel.class, "LogoutPanel.kenaiList.AccessibleContext.accessibleDescription")); // NOI18N
+        teamServerList.setName("teamServerList"); // NOI18N
+        scrollPane.setViewportView(teamServerList);
+        teamServerList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LogoutPanel.class, "LogoutPanel.teamServerList.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelServers.setLabelFor(kenaiList);
+        labelServers.setLabelFor(teamServerList);
         org.openide.awt.Mnemonics.setLocalizedText(labelServers, org.openide.util.NbBundle.getMessage(LogoutPanel.class, "LogoutPanel.labelServers.text")); // NOI18N
         labelServers.setName("labelServers"); // NOI18N
 
@@ -118,16 +118,16 @@ public class LogoutPanel extends javax.swing.JPanel {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList kenaiList;
     private javax.swing.JLabel labelServers;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JList teamServerList;
     // End of variables declaration//GEN-END:variables
 
     public Collection<TeamServer> getSelectedServers() {
         Collection<TeamServer> result = new ArrayList<TeamServer>();
-        for (int i=0;i<kenaiList.getModel().getSize(); i++) {
+        for (int i=0;i<teamServerList.getModel().getSize(); i++) {
             if (support.getSelectionModel().isSelectedIndex(i)) {
-                result.add((TeamServer) kenaiList.getModel().getElementAt(i));
+                result.add((TeamServer) teamServerList.getModel().getElementAt(i));
             }
         }
         return result;

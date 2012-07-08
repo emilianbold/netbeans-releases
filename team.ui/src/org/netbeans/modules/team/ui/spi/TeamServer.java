@@ -42,7 +42,9 @@
 package org.netbeans.modules.team.ui.spi;
 
 import java.beans.PropertyChangeListener;
+import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.Collection;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
@@ -52,13 +54,28 @@ import javax.swing.JComponent;
  */
 public interface TeamServer {
     
+    
     /**
      * fired when user logs in/out
      */
     public static final String PROP_LOGIN = "login"; //NOI18N
 
+    /**
+     * fired when user login failed
+     */
+    public static final String PROP_LOGIN_FAILED = "login_failed";
+    
+    /**
+     * fired when user login started
+     */
+    public static final String PROP_LOGIN_STARTED = "login_started";
+    
     public URL getUrl ();
 
+    public PasswordAuthentication getPasswordAuthentication();
+    
+    public Collection<ProjectHandle> getMyProjects();
+    
     public Status getStatus ();
 
     public void logout ();
@@ -78,7 +95,7 @@ public interface TeamServer {
     public LoginPanelSupport createLoginSupport ();
     
     /**
-     * user status on kenai
+     * user status on team
      */
     public static enum Status {
         /**

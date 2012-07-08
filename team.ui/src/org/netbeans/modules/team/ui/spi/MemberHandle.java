@@ -40,26 +40,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.team.ui.spi;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import java.beans.PropertyChangeListener;
 
 /**
  *
  * @author Jan Becicka
  */
-public class RemoveProjectAction extends AbstractAction {
-
-    private ProjectHandle prj;
-    public RemoveProjectAction(ProjectHandle project) {
-        super(org.openide.util.NbBundle.getMessage(RemoveProjectAction.class, "CTL_RemoveProject"));
-        this.prj=project;
-    }
-
-    public void actionPerformed(ActionEvent arg0) {
-        DashboardImpl.getInstance().removeProject(prj);
-    }
+public abstract class MemberHandle implements Comparable <MemberHandle> {
+    public abstract String getFullName();
+    public abstract String getDisplayName();
+    public abstract String getName();
+    public abstract String getFQN();
+    public String getRole() { return null; }
+    public abstract boolean hasMessages();
+    public abstract boolean isOnline();
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 }

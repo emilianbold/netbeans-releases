@@ -37,7 +37,7 @@
                   <Component id="error" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="progressBar" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="kenaiLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="teamServerLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="86" max="-2" attributes="0"/>
                       <Component id="teamCombo" pref="297" max="32767" attributes="0"/>
                   </Group>
@@ -52,7 +52,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="2" attributes="0">
-                  <Component id="kenaiLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="teamServerLabel" alignment="2" min="-2" max="-2" attributes="0"/>
                   <Component id="teamCombo" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -78,10 +78,10 @@
     </Component>
     <Component class="javax.swing.JProgressBar" name="progressBar">
     </Component>
-    <Component class="javax.swing.JLabel" name="kenaiLabel">
+    <Component class="javax.swing.JLabel" name="teamServerLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/team/ui/Bundle.properties" key="LoginPanel.kenaiLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/team/ui/Bundle.properties" key="LoginPanel.teamServerLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

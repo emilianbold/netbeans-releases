@@ -85,7 +85,7 @@ public class UserNode extends LeafNode {
     private final Action newProjectAction;
     private final Action openNonMemberProjectAction;
 
-    // XXX mayba actions should be already initialized with name, icon & co.
+    // XXX maybe actions should be already initialized with name, icon & co.
     public UserNode( Action refreshAction, Action loginAction, Action logoutAction, Action newProjectAction, Action openNonMemberProjectAction ) {
         super( null );
         
@@ -109,11 +109,11 @@ public class UserNode extends LeafNode {
                 lblUser = new TreeLabel();
                 lblProgress = createProgressLabel(progressTitle); //NOI18N
                 if(openNonMemberProjectAction != null) {
-                    btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_kenai_project.png", true), openNonMemberProjectAction); //NOI18N
+                    btnOpenProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true), openNonMemberProjectAction); //NOI18N
                     btnOpenProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_OpenProject")); //NOI18N
                 }
                 if(newProjectAction != null) {
-                    btnNewProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_kenai_project.png", true), newProjectAction); //NOI18N
+                    btnNewProject = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true), newProjectAction); //NOI18N
                     btnNewProject.setToolTipText(NbBundle.getMessage(UserNode.class, "LBL_NewProject")); //NOI18N
                 } 
                 btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/refresh.png", true), refreshAction); // NOI18N

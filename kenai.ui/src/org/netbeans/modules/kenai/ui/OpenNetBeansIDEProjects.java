@@ -40,9 +40,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.kenai.ui;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -59,8 +58,10 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.KenaiPopupMenu;
-import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.team.ui.common.LinkButton;
+import org.netbeans.modules.team.ui.common.QueryListNode;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
@@ -104,7 +105,7 @@ public class OpenNetBeansIDEProjects extends LeafNode {
             @Override
             public void actionPerformed(ActionEvent e) {
                 RequestProcessor.getDefault().post(new Runnable() {
-
+                    @Override
                     public void run() {
                         ProgressHandle handle = null;
                         try {

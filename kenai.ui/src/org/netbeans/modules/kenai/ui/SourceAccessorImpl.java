@@ -60,15 +60,14 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.favorites.api.Favorites;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.spi.NbProjectHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.SourceAccessor;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -83,14 +82,22 @@ import org.openide.windows.WindowManager;
  * @author Milan Kubec, Jan Becicka
  */
 @ServiceProvider(service=SourceAccessor.class)
-public class SourceAccessorImpl extends SourceAccessor {
+public class SourceAccessorImpl extends SourceAccessor<KenaiProject> {
+    private static SourceAccessor instance;
+
+    public static SourceAccessor getDefault() {
+        if(instance == null) {
+            instance = new SourceAccessorImpl();
+        }
+        return instance;
+    }
 
     private Map<SourceHandle,ProjectAndFeature> handlesMap = new HashMap<SourceHandle,ProjectAndFeature>();
 
     @Override
-    public List<SourceHandle> getSources(ProjectHandle prjHandle) {
+    public List<SourceHandle> getSources(ProjectHandle<KenaiProject> prjHandle) {
 
-        KenaiProject project = prjHandle.getKenaiProject();
+        KenaiProject project = prjHandle.getTeamProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
 
         if (project != null) {
@@ -98,7 +105,7 @@ public class SourceAccessorImpl extends SourceAccessor {
                 for (KenaiFeature feature : project.getFeatures(Type.SOURCE)) {
                     SourceHandle srcHandle = new SourceHandleImpl(prjHandle, feature);
                     handlesList.add(srcHandle);
-                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getKenaiProject(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
+                    handlesMap.put(srcHandle, new ProjectAndFeature(prjHandle.getTeamProject(), feature, ((SourceHandleImpl) srcHandle).getExternalScmType()));
                 }
             } catch (KenaiException ex) {
                 Exceptions.printStackTrace(ex);
@@ -210,7 +217,7 @@ public class SourceAccessorImpl extends SourceAccessor {
     }
 
     @Override
-    public Action getOpenFavorites(final SourceHandle src) {
+    public Action getOpenFavoritesAction(final SourceHandle src) {
 
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {

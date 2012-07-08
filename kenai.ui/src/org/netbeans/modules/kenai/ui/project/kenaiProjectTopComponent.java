@@ -66,6 +66,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -787,7 +788,7 @@ public final class kenaiProjectTopComponent extends TopComponent implements Prop
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+        if (evt.getPropertyName().equals(TeamServer.PROP_LOGIN)) {
             reinitialize(instProj, true);
         } else if (Kenai.PROP_URL_CHANGED.equals(evt.getPropertyName())) {
             SwingUtilities.invokeLater(new Runnable() {

@@ -42,20 +42,22 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import org.netbeans.modules.team.ui.common.UserNode;
-import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
+import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.netbeans.modules.team.ui.common.LinkButton;
+import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.spi.MemberHandle;
+import org.netbeans.modules.team.ui.spi.MemberAccessor;
+import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -99,6 +101,8 @@ public class MemberNode extends LeafNode {
                 panel.add(lbl, BorderLayout.CENTER);
                 btn = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true), getDefaultAction()); // NOI18N
                 panel.add(btn, BorderLayout.EAST);
+                
+                panel.setBorder(new LineBorder(Color.blue, 1));
                 panel.validate();
             }
             lbl.setForeground(foreground);
@@ -112,7 +116,7 @@ public class MemberNode extends LeafNode {
 
     @Override
     public Action getDefaultAction() {
-        return MemberAccessor.getDefault().getStartChatAction(user);
+        return MemberAccessorImpl.getDefault().getStartChatAction(user);
     }
 
     @Override

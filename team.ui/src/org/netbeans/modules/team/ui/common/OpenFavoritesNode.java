@@ -1,3 +1,5 @@
+package org.netbeans.modules.team.ui.common;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,9 +42,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
+
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -51,37 +52,40 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.team.ui.spi.Dashboard;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.openide.util.NbBundle;
 
 /**
- * Node for a single netbeans project.
+ * Node to open a directory in the favorites tab
  *
  * @author Jan Becicka
  */
-public class NbProjectNode extends LeafNode {
+public class OpenFavoritesNode<S extends TeamServer, P> extends LeafNode {
 
-    private final NbProjectHandle prj;
+    private final SourceHandle src;
 
-    private LinkButton btn;
     private JPanel panel;
+    private LinkButton btn;
+    private final Dashboard<S, P> dashboard;
 
-    public NbProjectNode( NbProjectHandle prj, TreeListNode parent ) {
+    public OpenFavoritesNode(SourceHandle src, TreeListNode parent, Dashboard<S, P> dashboard ) {
         super( parent );
-        assert prj!=null;
-        this.prj = prj;
+        this.src=src;
+        this.dashboard = dashboard;
     }
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        if (null == panel) {
+        if( null == panel ) {
             panel = new JPanel(new GridBagLayout());
             panel.setOpaque(false);
-            btn = new LinkButton(prj.getDisplayName(), prj.getIcon(), getDefaultAction()); //NOI18N
-            panel.add(btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 25, 0, 0), 0, 0));
-            panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenFavorites"), getDefaultAction()); //NOI18N
+            panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,45,0,0), 0, 0));
+            panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
         }
         btn.setForeground(foreground, isSelected);
         return panel;
@@ -89,6 +93,6 @@ public class NbProjectNode extends LeafNode {
 
     @Override
     public Action getDefaultAction() {
-        return SourceAccessor.getDefault().getDefaultAction(prj);
+        return dashboard.getSourceAccessor().getOpenFavoritesAction(src);
     }
 }

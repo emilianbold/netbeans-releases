@@ -40,23 +40,16 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.team.ui.spi;
 
-import javax.swing.Icon;
+import java.util.List;
+import javax.swing.Action;
 
 /**
- * Handle representing netbeans project
+ *
  * @author Jan Becicka
  */
-public abstract class NbProjectHandle {
-    /**
-     * DisplayName of given project
-     * @return
-     */
-    public abstract String getDisplayName();
-    /**
-     * Icon of given project
-     * @return
-     */
-    public abstract Icon getIcon();
+public abstract class MemberAccessor<P> {
+    public abstract List<MemberHandle> getMembers(ProjectHandle<P> project );
+    public abstract Action getStartChatAction(MemberHandle member);
 }

@@ -65,7 +65,8 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.ui.common.AbstractDashboard;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -316,7 +317,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                                 DashboardImpl.getInstance().addProject(pHandle, false, true);
                                             }
                                         });
-                                        QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
+                                        DashboardImpl.getInstance().getQueryAccessor().getFindIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_ISSUETRACKER"))); //NOI18N
@@ -362,7 +363,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                                 DashboardImpl.getInstance().addProject(pHandle, false, true);
                                             }
                                         });
-                                        QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
+                                        DashboardImpl.getInstance().getQueryAccessor().getCreateIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_ISSUETRACKER"))); //NOI18N

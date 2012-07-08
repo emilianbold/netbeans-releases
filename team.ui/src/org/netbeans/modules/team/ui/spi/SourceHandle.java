@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.team.ui.spi;
 
 import java.io.File;
 import java.util.List;
@@ -28,8 +28,8 @@ public abstract class SourceHandle {
     public abstract boolean isSupported();
 
     /**
-     * Returns SCM feature's name, deduced from the Kenai server response.<br><br>
-     * Usage should be with KenaiService.Names.*, such as:<br><br>
+     * Returns SCM feature's name, deduced from the Teams server response.<br><br>
+     * e.g the usage should be with KenaiService.Names.*, such as:<br><br>
      * <pre>
      * // source is an instance of SourceHandle...
      * String featureName = source.getScmFeatureName();

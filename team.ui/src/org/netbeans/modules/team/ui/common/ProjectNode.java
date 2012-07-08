@@ -40,34 +40,29 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.team.ui.common;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.kenai.api.KenaiException;
-import org.netbeans.modules.kenai.ui.RemoveProjectAction;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.kenai.ui.spi.BuildAccessor;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.ProjectAccessor;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -76,7 +71,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class ProjectNode extends TreeListNode {
+public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
 
     private final ProjectHandle project;
     private final ProjectAccessor accessor;
@@ -95,44 +90,42 @@ public class ProjectNode extends TreeListNode {
     private final Object LOCK = new Object();
 
     private final PropertyChangeListener projectListener;
+    private final AbstractDashboard<S, P> dashboard;
 
-    public ProjectNode( final ProjectHandle project ) {
+    public ProjectNode( final ProjectHandle project, final AbstractDashboard<S, P> dashboard ) {
         super( true, null );
         if (project==null)
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
+        this.dashboard = dashboard;
         this.projectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
                     refreshChildren();
                     if (evt.getNewValue() != null || evt.getOldValue() !=null) {
-                        try {
-                            boolean m = project.getKenaiProject().getKenai().getMyProjects().contains(project.getKenaiProject());
-                            if (m != isMemberProject) {
-                                DashboardImpl.getInstance().refreshMemberProjects(false);
-                            }
-                            isMemberProject = m;
-                        } catch (KenaiException ex) {
-                            Exceptions.printStackTrace(ex);
+                        boolean m = dashboard.getServer().getMyProjects().contains(project);
+                        if (m != isMemberProject) {
+                            dashboard.refreshMemberProjects(false);
                         }
+                        isMemberProject = m;
                     }
                     if( null != lbl ) {
                         lbl.setText(project.getDisplayName());
                         lbl.setFont( isMemberProject ? boldFont : regFont );                    
                     }
                     if (null != btnBookmark) {
-                        btnBookmark.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+                        btnBookmark.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
                     }
                 }
             }
         };
         this.project = project;
         this.project.addPropertyChangeListener( projectListener );
-        this.accessor = ProjectAccessor.getDefault();
+        this.accessor = dashboard.getProjectAccessor();
         regFont = new TreeLabel().getFont();
         boldFont = regFont.deriveFont(Font.BOLD);
     }
 
-    ProjectHandle getProject() {
+    public ProjectHandle getProject() {
         return project;
     }
 
@@ -142,18 +135,22 @@ public class ProjectNode extends TreeListNode {
 
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
-        if( null != MessagingAccessor.getDefault() )
-            children.add( new MessagingNode(this, project) );
-        if( null != MemberAccessor.getDefault() )
-            children.add( new MemberListNode(this) );
+        if( null != dashboard.getMessagingAccessor() ) {
+            children.add( dashboard.createMessagingNode(this, project) ); 
+        }
+        if( null != dashboard.getMemberAccessor() ) {
+            children.add( new MemberListNode(this, dashboard) );
+        }
         BuildAccessor builds = BuildAccessor.getDefault();
         if (builds.isEnabled(project)) {
             children.add(new BuildListNode(this, builds));
         }
-        if( null != QueryAccessor.getDefault() )
-            children.add( new QueryListNode(this) );
-        if( null != SourceAccessor.getDefault() )
-            children.add( new SourceListNode(this) );
+        if( null != dashboard.getQueryAccessor() ) {
+            children.add( new QueryListNode(this, dashboard) );
+        }
+        if( null != dashboard.getSourceAccessor() ) {
+            children.add( dashboard.createSourceListNode(this, project) );
+        }
         return children;
     }
 
@@ -168,16 +165,16 @@ public class ProjectNode extends TreeListNode {
 
                 component.add( new JLabel(), new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
                 btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
-                        "org/netbeans/modules/kenai/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), // NOI18N
+                        "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), // NOI18N
                         accessor.getBookmarkAction(project)); //NOI18N
                 btnBookmark.setRolloverEnabled(true);
                 component.add( btnBookmark, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 myPrjLabel = new JLabel();
                 component.add( myPrjLabel, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close.png", true), new RemoveProjectAction(project)); //NOI18N
+                btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), new RemoveProjectAction(project)); //NOI18N
                 btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
                 btnClose.setRolloverEnabled(true);
-                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/close_over.png", true)); // NOI18N
+                btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
                 component.add( btnClose, new GridBagConstraints(4,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
             }
             lbl.setForeground(foreground);
@@ -210,7 +207,7 @@ public class ProjectNode extends TreeListNode {
         return accessor.getPopupActions(project, true);
     }
 
-    void setMemberProject(boolean isMemberProject) {
+    public void setMemberProject(boolean isMemberProject) {
         if( isMemberProject == this.isMemberProject )
             return;
         this.isMemberProject = isMemberProject;
@@ -224,4 +221,18 @@ public class ProjectNode extends TreeListNode {
         if( null != project )
             project.removePropertyChangeListener( projectListener );
     }
+    
+    private class RemoveProjectAction extends AbstractAction {
+
+        private ProjectHandle prj;
+        public RemoveProjectAction(ProjectHandle project) {
+            super(org.openide.util.NbBundle.getMessage(ProjectNode.class, "CTL_RemoveProject"));
+            this.prj=project;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            dashboard.removeProject(prj);
+        }
+    }    
 }

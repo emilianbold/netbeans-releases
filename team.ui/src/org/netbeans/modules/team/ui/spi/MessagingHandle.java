@@ -3,12 +3,12 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.team.ui.spi;
 
 import java.beans.PropertyChangeListener;
 
 /**
- * Abstraction of messaging info associated with a kenai project.
+ * Abstraction of messaging info associated with a team project.
  * 
  * @author S. Aubrecht
  */

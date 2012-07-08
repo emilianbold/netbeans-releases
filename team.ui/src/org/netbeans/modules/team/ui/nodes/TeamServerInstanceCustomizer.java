@@ -73,7 +73,7 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     private DialogDescriptor dd;
     private JButton addButton;
 
-    /** Creates new customizer KenaiInstanceCustomizer */
+    /** Creates new customizer TeamInstanceCustomizer */
     public TeamServerInstanceCustomizer(JButton addButton, Collection<TeamServerProvider> providers) {
         this.addButton = addButton;
         initComponents();

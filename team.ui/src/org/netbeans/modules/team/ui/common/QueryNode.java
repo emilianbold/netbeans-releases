@@ -1,3 +1,5 @@
+package org.netbeans.modules.team.ui.common;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,9 +42,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
+
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -55,30 +56,34 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.team.ui.spi.Dashboard;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
-import org.netbeans.modules.kenai.ui.spi.QueryHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
  * Node query results.
  *
  * @author S. Aubrecht
  */
-public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> implements PropertyChangeListener {
+public class QueryNode<S extends TeamServer, P> extends AsynchronousLeafNode<List<QueryResultHandle>> implements PropertyChangeListener {
 
+    private final Dashboard<S, P> dashboard;
     private final QueryHandle query;
-
+    
     private JPanel panel;
     private List<JLabel> labels = new ArrayList<JLabel>(15);
     private List<LinkButton> buttons = new ArrayList<LinkButton>(10);
     private final Object LOCK = new Object();
 
-    public QueryNode( QueryHandle query, TreeListNode parent ) {
+    public QueryNode( QueryHandle query, TreeListNode parent, Dashboard<S, P> dashboard ) {
         super( parent, query.getDisplayName() );
         this.query = query;
+        this.dashboard = dashboard;
         query.addPropertyChangeListener(this);
     }
 
@@ -88,6 +93,7 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
         query.removePropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if( QueryHandle.PROP_QUERY_RESULT.equals(evt.getPropertyName()) ) {
             refresh();
@@ -96,7 +102,7 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
 
     @Override
     public Action getDefaultAction() {
-        return QueryAccessor.getDefault().getDefaultAction(query);
+        return dashboard.getQueryAccessor().getDefaultAction(query);
     }
 
     @Override
@@ -113,7 +119,7 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
 
     @Override
     protected JComponent createComponent(List<QueryResultHandle> data) {
-        QueryAccessor accessor = QueryAccessor.getDefault();
+        QueryAccessor accessor = dashboard.getQueryAccessor();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
 
@@ -153,8 +159,8 @@ public class QueryNode extends AsynchronousLeafNode<List<QueryResultHandle>> imp
         return panel;
     }
 
+    @Override
     protected List<QueryResultHandle> load() {
-        QueryAccessor accessor = QueryAccessor.getDefault();
-        return accessor.getQueryResults(query);
+        return dashboard.getQueryAccessor().getQueryResults(query);
     }
 }

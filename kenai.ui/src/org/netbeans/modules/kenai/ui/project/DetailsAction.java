@@ -47,12 +47,9 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -64,7 +61,7 @@ public class DetailsAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle proj) {
+    public static synchronized AbstractAction forProject(final ProjectHandle<KenaiProject> proj) {
 
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject")) { //NOI18N
 
@@ -78,7 +75,7 @@ public class DetailsAction {
                 t = RequestProcessor.getDefault().post(new Runnable() {
 
                     public void run() {
-                        final KenaiProject kenaiProj = proj.getKenaiProject();
+                        final KenaiProject kenaiProj = proj.getTeamProject();
                         SwingUtilities.invokeLater(new Runnable() {
 
                             public void run() {

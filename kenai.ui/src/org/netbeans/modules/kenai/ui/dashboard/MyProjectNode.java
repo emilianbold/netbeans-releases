@@ -49,15 +49,19 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.kenai.api.*;
-import org.netbeans.modules.team.ui.common.InterestingNode;
+import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
+import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.netbeans.modules.team.ui.common.ProjectProvider;
+import org.netbeans.modules.team.ui.spi.Dashboard;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
-import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
-import org.netbeans.modules.kenai.ui.spi.QueryHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.MessagingAccessor;
+import org.netbeans.modules.team.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.ui.spi.ProjectAccessor;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
@@ -70,10 +74,10 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Becicka
  */
-public class MyProjectNode extends LeafNode implements InterestingNode {
+public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements ProjectProvider {
 
     private Notification bugNotification;
-    private final ProjectHandle project;
+    private final ProjectHandle<KenaiProject> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
     private final MessagingAccessor maccessor;
@@ -110,7 +114,7 @@ public class MyProjectNode extends LeafNode implements InterestingNode {
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
 
-    public MyProjectNode( final ProjectHandle project ) {
+    public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
         super( null );
         if (project==null)
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
@@ -127,7 +131,7 @@ public class MyProjectNode extends LeafNode implements InterestingNode {
                     }
                 } else if (KenaiProject.PROP_PROJECT_NOTIFICATION.equals(evt.getPropertyName())) {
                     KenaiNotification notification = (KenaiNotification) evt.getNewValue();
-                    if (notification.getType() == KenaiService.Type.ISSUES && !notification.getAuthor().equals(project.getKenaiProject().getKenai().getPasswordAuthentication().getUserName())) {
+                    if (notification.getType() == KenaiService.Type.ISSUES && !notification.getAuthor().equals(project.getTeamProject().getKenai().getPasswordAuthentication().getUserName())) {
                         showBugNotification(notification);
                     }
 
@@ -153,17 +157,17 @@ public class MyProjectNode extends LeafNode implements InterestingNode {
             }
         };
         this.project = project;
-        this.accessor = ProjectAccessor.getDefault();
-        this.maccessor = MessagingAccessor.getDefault();
-        this.qaccessor = QueryAccessor.getDefault();
+        this.accessor = ProjectAccessorImpl.getDefault();
+        this.maccessor = MessagingAccessorImpl.getDefault();
+        this.qaccessor = DashboardImpl.getInstance().getQueryAccessor();
         this.project.addPropertyChangeListener( projectListener );
         this.mh = maccessor.getMessaging(project);
         this.mh.addPropertyChangeListener(projectListener);
-        project.getKenaiProject().getKenai().addPropertyChangeListener(projectListener);
-        project.getKenaiProject().addPropertyChangeListener(projectListener);
+        project.getTeamProject().getKenai().addPropertyChangeListener(projectListener);
+        project.getTeamProject().addPropertyChangeListener(projectListener);
     }
 
-    ProjectHandle getProject() {
+    public ProjectHandle getProject() {
         return project;
     }
 
@@ -284,13 +288,13 @@ public class MyProjectNode extends LeafNode implements InterestingNode {
         super.dispose();
         if( null != project ) {
             project.removePropertyChangeListener( projectListener );
-            project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
-            project.getKenaiProject().removePropertyChangeListener(projectListener);
+            project.getTeamProject().getKenai().removePropertyChangeListener(projectListener);
+            project.getTeamProject().removePropertyChangeListener(projectListener);
         }
         if (null != mh) {
             mh.removePropertyChangeListener(projectListener);
         }
-        project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
+        project.getTeamProject().getKenai().removePropertyChangeListener(projectListener);
         if (allIssuesQuery != null) {
             allIssuesQuery.removePropertyChangeListener(projectListener);
             allIssuesQuery=null;

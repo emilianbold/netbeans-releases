@@ -72,9 +72,10 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiPopupMenu;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.team.ui.common.AbstractDashboard;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -263,7 +264,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                                 public void run() {
                                     ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
                                     h.start();
-                                    QueryAccessor.getDefault().getCreateIssueAction(pHandle).actionPerformed(e);
+                                    DashboardImpl.getInstance().getQueryAccessor().getCreateIssueAction(pHandle).actionPerformed(e);
                                     h.finish();
                                 }
                             });
@@ -281,7 +282,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                                         public void run() {
                                             ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
                                             h.start();
-                                            QueryAccessor.getDefault().getFindIssueAction(pHandle).actionPerformed(e);
+                                            DashboardImpl.getInstance().getQueryAccessor().getFindIssueAction(pHandle).actionPerformed(e);
                                             h.finish();
                                         }
                                     });

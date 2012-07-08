@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.team.ui.spi;
 
 /**
  * Abstraction of a query result (a single link on a line in Issues section).

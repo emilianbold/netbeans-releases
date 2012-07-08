@@ -3,16 +3,15 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.team.ui.spi;
 
-import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import org.openide.util.Lookup;
 
 /**
- * Main access point to Kenai's Build API.
+ * Main access point to Teams's Build API.
  * All methods except those returning an Action or ActionListener are allowed
  * to block indefinetely as they will be called outside AWT thread.
  * However the Dashboard UI may declare appropriate service(s) as unreachable
@@ -20,7 +19,7 @@ import org.openide.util.Lookup;
  *
  * @author S. Aubrecht
  */
-public abstract class BuildAccessor {
+public abstract class BuildAccessor<P> {
 
     /**
      * Obtains the default accessor for the system from lookup.
@@ -47,17 +46,17 @@ public abstract class BuildAccessor {
     /**
      * Checks whether build-related UI should even be shown for this project.
      */
-    public abstract boolean isEnabled(ProjectHandle project);
+    public abstract boolean isEnabled(ProjectHandle<P> project);
     
     /**
      * Retrieve the list of builds in given project.
      * @return a list of builds (never null)
      */
-    public abstract List<BuildHandle> getBuilds( ProjectHandle project );
+    public abstract List<BuildHandle> getBuilds( ProjectHandle<P> project );
 
     /**
      * @return Action to invoke when user clicks 'New Build...' button, or null to disable
      */
-    public abstract Action getNewBuildAction( ProjectHandle project );
+    public abstract Action getNewBuildAction( ProjectHandle<P> project );
 
 }

@@ -65,20 +65,20 @@ import org.openide.util.NbBundle;
  * Root node in Services tab.
  * @author Jan Becicka
  */
-public class KenaiRootNode extends AbstractNode {
+public class TeamRootNode extends AbstractNode {
 
-    public static final String KENAI_NODE_NAME = "kenai"; // NOI18N
-    private static final String ICON_BASE = "org/netbeans/modules/team/ui/resources/kenai-small.png"; // NOI18N
+    public static final String TEAM_NODE_NAME = "team"; // NOI18N
+    private static final String ICON_BASE = "org/netbeans/modules/team/ui/resources/team-small.png"; // NOI18N
     
-    @ServicesTabNodeRegistration(name=KENAI_NODE_NAME, displayName="#LBL_KenaiNode", iconResource=ICON_BASE, position=489) // NOI18N
-    public static KenaiRootNode getDefault() {
-        return new KenaiRootNode();
+    @ServicesTabNodeRegistration(name=TEAM_NODE_NAME, displayName="#LBL_TeamNode", iconResource=ICON_BASE, position=489) // NOI18N
+    public static TeamRootNode getDefault() {
+        return new TeamRootNode();
     }
 
-    private KenaiRootNode() {
+    private TeamRootNode() {
         super(Children.create(new RootNodeChildren(), true));
-        setName(KENAI_NODE_NAME);
-        setDisplayName(NbBundle.getMessage(KenaiRootNode.class, "LBL_KenaiNode"));
+        setName(TEAM_NODE_NAME);
+        setDisplayName(NbBundle.getMessage(TeamRootNode.class, "LBL_TeamNode"));
         setIconBaseWithExtension(ICON_BASE);
     }
     

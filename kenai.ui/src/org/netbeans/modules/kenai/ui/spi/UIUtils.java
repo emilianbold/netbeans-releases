@@ -56,10 +56,13 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
+import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiUser;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.kenai.ui.impl.LoginUtils;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle;
 
@@ -78,6 +81,10 @@ public final class UIUtils {
 
     public static String getPrefName(Kenai kenai, String name)  {
         return kenai.getUrl().getHost() + name;
+    }
+
+    public static void addDashboardListener(PropertyChangeListener propertyChangeListener) {
+        DashboardImpl.getInstance().addPropertyChangeListener(propertyChangeListener);
     }
     
     private UIUtils() {
@@ -174,8 +181,9 @@ public final class UIUtils {
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getButton()==1)
+                if (e.getButton()==1) {
                     u.startChat();
+                }
             }
 
         });
@@ -183,6 +191,10 @@ public final class UIUtils {
         return result;
     }
 
+    public static ProjectHandle<KenaiProject>[] getDashboardProjects() {
+        return DashboardImpl.getInstance().getOpenProjects();
+    }
+    
     public static void logKenaiUsage(Object... parameters) {
         String paramStr = getParamString(parameters);
         if (loggedParams.add(paramStr)) {

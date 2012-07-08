@@ -1,3 +1,5 @@
+package org.netbeans.modules.team.ui.common;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,56 +42,84 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
+
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.spi.BuildHandle;
 
 /**
- * Node for a open other project
+ * Node for build status.
  *
- * @author Jan Becicka
+ * @author S. Aubrecht
  */
-public class OpenNbProjectNode extends LeafNode {
+public class BuildNode extends LeafNode implements PropertyChangeListener {
 
-    private final SourceHandle src;
+    private final BuildHandle build;
 
-        private JPanel panel;
-        private LinkButton btn;
+    private JPanel panel;
+    private JLabel lblName;
+    private JLabel lblStatus;
+    private JLabel lbl1;
+    private JLabel lbl2;
 
-    public OpenNbProjectNode(SourceHandle src, TreeListNode parent ) {
+    public BuildNode( BuildHandle build, TreeListNode parent ) {
         super( parent );
-        this.src=src;
+        this.build = build;
+        build.addPropertyChangeListener(this);
     }
 
+    @Override
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        if( null == panel ) {
+            panel = new JPanel( new GridBagLayout() );
+            panel.setOpaque(false);
+            lblName = new TreeLabel( build.getDisplayName() );
+            lblStatus = new TreeLabel();
+            lbl1 = new TreeLabel("("); //NOI18N
+            lbl2 = new TreeLabel(")"); //NOI18N
 
-        @Override
-        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-            if( null == panel ) {
-                panel = new JPanel(new GridBagLayout());
-                panel.setOpaque(false);
-                btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenNbProject"), getDefaultAction()); //NOI18N
-                panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,45,0,0), 0, 0));
-                panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-            }
-            btn.setForeground(foreground, isSelected);
-            return panel;
+            panel.add( lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0) );
+            panel.add( lbl1, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0) );
+            panel.add( lblStatus, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0) );
+            panel.add( lbl2, new GridBagConstraints(3, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0) );
         }
+        lblName.setForeground(foreground);
+        if( isSelected )
+            lblStatus.setForeground(foreground);
+        else
+            lblStatus.setForeground(build.getStatus().getColor());
+        lblStatus.setText(build.getStatus().toString());
+        lbl1.setForeground(foreground);
+        lbl2.setForeground(foreground);
+        return panel;
+    }
 
-        @Override
-        public Action getDefaultAction() {
-            return SourceAccessor.getDefault().getOpenOtherAction(src);
+    @Override
+    protected void dispose() {
+        super.dispose();
+        build.removePropertyChangeListener(this);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if( BuildHandle.PROP_STATUS.equals(evt.getPropertyName()) ) {
+            fireContentChanged();
         }
+    }
+
+    @Override
+    public Action getDefaultAction() {
+        return build.getDefaultAction();
+    }
 }

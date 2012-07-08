@@ -48,7 +48,8 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.team.ui.spi.Dashboard;
 import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -95,7 +96,7 @@ public final class OpenKenaiProjectAction extends AbstractAction {
             KenaiProject selProjects[] = openPanel.getSelectedProjects();
             if (null != selProjects && selProjects.length > 0) {
                 for (KenaiProject prj : selProjects) {
-                    Dashboard.getDefault().addProject(new ProjectHandleImpl(prj), false, true);
+                    DashboardImpl.getInstance().addProject(new ProjectHandleImpl(prj), false, true);
                 }
                 UIUtils.activateTeamDashboard();
             }

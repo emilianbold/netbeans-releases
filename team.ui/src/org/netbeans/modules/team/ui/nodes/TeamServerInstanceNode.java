@@ -59,13 +59,13 @@ import org.openide.util.lookup.Lookups;
  */
 public class TeamServerInstanceNode extends AbstractNode {
 
-    private TeamServer kenaiInstance;
+    private TeamServer serverInstance;
     private TeamServerInstanceProperties properties;
 
     public TeamServerInstanceNode(final TeamServer instance) {
         super(new Children.Array(), Lookups.singleton(instance));
-        this.kenaiInstance=instance;
-        setName(kenaiInstance.getUrl().toString());
+        this.serverInstance=instance;
+        setName(serverInstance.getUrl().toString());
         setDisplayName(instance.getDisplayName());
         setShortDescription(instance.getDisplayName() + " (" + instance.getUrl() + ")"); // NOI18N
         properties = new TeamServerInstanceProperties(instance.getDisplayName(),instance.getUrl().toString());
@@ -73,7 +73,7 @@ public class TeamServerInstanceNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        return ImageUtilities.icon2Image(kenaiInstance.getIcon());
+        return ImageUtilities.icon2Image(serverInstance.getIcon());
     }
 
     @Override
@@ -84,17 +84,14 @@ public class TeamServerInstanceNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            new LoginAction(kenaiInstance),
-            new RemoveInstanceAction(kenaiInstance),
+            new LoginAction(serverInstance),
+            new RemoveInstanceAction(serverInstance),
             SystemAction.get(PropertiesAction.class)
         };
     }
 
     @Override
     public String getHtmlDisplayName() {
-//        if (Kenai.getDefault().getUrl().toString().equals(kenaiInstance.getUrl())) {
-//            return "<b>" + getDisplayName() + "</b>"; // NOI18N
-//        }
         return super.getHtmlDisplayName();
     }
 

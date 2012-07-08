@@ -3,19 +3,21 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.team.ui.spi;
 
-import org.netbeans.modules.team.ui.spi.LoginHandle;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import javax.swing.Action;
+import org.netbeans.modules.team.ui.common.ProjectNode;
+import org.netbeans.modules.team.ui.common.SourceListNode;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
 
 /**
- * Singleton providing access to Kenai Dashboard window.
+ * Singleton providing access to Team Dashboard window.
  *
  * @author S. Aubrecht
  */
-public abstract class Dashboard {
+public abstract class Dashboard<S extends TeamServer, P> {
 
     /**
      * Name of the property that will be fired when some change in opened projects
@@ -29,12 +31,8 @@ public abstract class Dashboard {
      */
     public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
 
-    public static Dashboard getDefault() {
-        return DashboardImpl.getInstance();
-    }
-
     /**
-     * Display given Kenai user in the Dashboard window, the UI will start querying for
+     * Display given Team user in the Dashboard window, the UI will start querying for
      * user's member projects.
      * Typically should be called after successful login.
      * @param login User login details.
@@ -42,9 +40,9 @@ public abstract class Dashboard {
     public abstract void setUser( LoginHandle login );
 
     /**
-     * Add a Kenai project to the Dashboard.
+     * Add a Team project to the Dashboard.
      * @param project
-     * @param isMemberProject True if current kenai user is project's owner or observer.
+     * @param isMemberProject True if current team user is project's owner or observer.
      * @see ProjectAccessor#getOpenNonMemberProjectAction()
      */
     public abstract void addProject( ProjectHandle project, boolean isMemberProject, boolean select );
@@ -52,7 +50,7 @@ public abstract class Dashboard {
     public abstract void removeProject( ProjectHandle project );
 
     /**
-     * getter for all open projects in Kenai Dashboard
+     * getter for all open projects in Team Dashboard
      * @return array of ProjectHandles
      */
     public abstract ProjectHandle[] getOpenProjects();
@@ -74,9 +72,24 @@ public abstract class Dashboard {
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
     /**
-     * currently visible kenai
+     * currently visible team
      * @return
      */
-    public abstract Kenai getKenai();
+    public abstract S getServer();
+    
+    public abstract Action createLogoutAction();
+    public abstract Action createLoginAction();
+    public abstract LeafNode createMemberNode(MemberHandle user, TreeListNode parent);
+    protected abstract void setSelectedServer(ProjectHandle<P> project);
+    public abstract TreeListNode createMessagingNode(ProjectNode pn, ProjectHandle<P> project);
+    public abstract TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<P> project);
+    public abstract TreeListNode createMyProjectNode(ProjectHandle<P> p);   
+    public abstract TreeListNode createSourceNode(SourceHandle s, SourceListNode sln);    
 
+    public abstract ProjectAccessor<S, P> getProjectAccessor();
+    public abstract MessagingAccessor<P> getMessagingAccessor();
+    public abstract MemberAccessor<P> getMemberAccessor();
+    public abstract SourceAccessor<P> getSourceAccessor();
+    public abstract QueryAccessor<P> getQueryAccessor();
+    
 }

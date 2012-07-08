@@ -60,20 +60,21 @@ public class Utilities {
     }
 
     public static TeamServer getPreferredServer() {
-        Collection<TeamServer> kenais = TeamServerManager.getDefault().getTeamServers();
-        TeamServer kenai = null;
-        for (TeamServer k:kenais) {
+        Collection<TeamServer> servers = TeamServerManager.getDefault().getTeamServers();
+        TeamServer server = null;
+        for (TeamServer k:servers) {
             if (k.getUrl().getHost().endsWith("java.net")) { //NOI18N
                 return k;
             }
             if (k.getUrl().getHost().equals("kenai.com")) { //NOI18N
-                kenai = k;
+                server = k;
             }
         }
-        if (kenai!=null)
-            return kenai;
-        if (!kenais.isEmpty()) {
-            return kenais.iterator().next();
+        if (server!=null) {
+            return server;
+        }
+        if (!servers.isEmpty()) {
+            return servers.iterator().next();
         }
         return null;
     }

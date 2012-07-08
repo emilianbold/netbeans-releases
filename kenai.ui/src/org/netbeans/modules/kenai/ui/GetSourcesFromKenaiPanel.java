@@ -84,16 +84,15 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.team.ui.common.AbstractDashboard;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
+import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -106,7 +105,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import static org.netbeans.modules.kenai.ui.Bundle.*;
 import org.netbeans.modules.kenai.ui.impl.KenaiServer;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
@@ -143,7 +142,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         updateRepoPath();
         listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+                if (TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
                     if (kenai.getPasswordAuthentication() != null) {
                         loginButton.setEnabled(false);
                     } else {
@@ -535,10 +534,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ProjectHandle[] openedProjects = getOpenProjects();
-                        for (ProjectHandle prjHandle : openedProjects) {
+                        for (ProjectHandle<KenaiProject> prjHandle : openedProjects) {
                             KenaiProject kProject = null;
                             if (prjHandle != null) {
-                                kProject = prjHandle.getKenaiProject();
+                                kProject = prjHandle.getTeamProject();
                             }
                             final KenaiProject project = kProject;
                             if (project != null) {
@@ -567,24 +566,24 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     }
                 }
 
-                private ProjectHandle[] getOpenProjects() {
+                private ProjectHandle<KenaiProject>[] getOpenProjects() {
                     if (kenai==null) {
                         return new ProjectHandle[0];
                     }
                     String kenaiName = kenai.getUrl().getHost();
-                    Preferences prefs = NbPreferences.forModule(DashboardImpl.class).node(DashboardImpl.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
-                    int count = prefs.getInt(DashboardImpl.PREF_COUNT, 0); //NOI18N
+                    Preferences prefs = NbPreferences.forModule(AbstractDashboard.class).node(AbstractDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
+                    int count = prefs.getInt(AbstractDashboard.PREF_COUNT, 0); //NOI18N
                     ProjectHandle[] handles = new ProjectHandle[count];
                     ArrayList<String> ids = new ArrayList<String>(count);
                     for (int i = 0; i < count; i++) {
-                        String id = prefs.get(DashboardImpl.PREF_ID + i, null); //NOI18N
+                        String id = prefs.get(AbstractDashboard.PREF_ID + i, null); //NOI18N
                         if (null != id && id.trim().length() > 0) {
                             ids.add(id.trim());
                         }
                     }
 
                     HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
-                    ProjectAccessor accessor = ProjectAccessor.getDefault();
+                    ProjectAccessor accessor = ProjectAccessorImpl.getDefault();
                     for (String id : ids) {
                         ProjectHandle handle = accessor.getNonMemberProject(kenai, id, false);
                         if (handle != null) {

@@ -55,7 +55,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 /**
- * Instance properties for Kenai instance
+ * Instance properties for Team instance
  *
  * @author Jan Becicka
  */

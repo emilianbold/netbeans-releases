@@ -58,7 +58,7 @@ import org.openide.util.RequestProcessor;
 public final class ModuleLifecycleManager extends ModuleInstall {
     @Override
     public void restored() {
-        // invoke eventuall login on all known kenai instances
+        // invoke eventuall login on all known team instances
         RequestProcessor.getDefault().post(new LoginTask());
     }
 }

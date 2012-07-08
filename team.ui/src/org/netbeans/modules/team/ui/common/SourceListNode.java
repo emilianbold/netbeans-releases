@@ -40,78 +40,60 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.team.ui.common;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.spi.Dashboard;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.BuildAccessor;
-import org.netbeans.modules.kenai.ui.spi.BuildHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.NbProjectHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.SourceAccessor;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.openide.util.NbBundle;
 
 /**
- * Node for project's builds section.
+ * Node for project's sources section.
  *
- * @author S. Aubrecht
+ * @author S. Aubrecht, Jan Becicka
  */
-public class BuildListNode extends SectionNode {
+public class SourceListNode<S extends TeamServer, P> extends SectionNode {
+    private final Dashboard<S, P> dashboard;
+    private final LeafNode[] nodes;
 
-    private final BuildAccessor accessor;
-
-    public BuildListNode(ProjectNode parent, BuildAccessor accessor) {
-        super( NbBundle.getMessage(BuildListNode.class, "LBL_Builds"), parent,  //NOI18N
-                ProjectHandle.PROP_BUILD_LIST );
-        this.accessor = accessor;
+    public SourceListNode( ProjectNode parent, Dashboard<S, P> dashboard, LeafNode... nodes  ) {
+        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
+        this.dashboard = dashboard;
+        this.nodes = nodes;
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        List<BuildHandle> builds = accessor.getBuilds(project);
-        for( BuildHandle b : builds ) {
-            res.add( new BuildNode( b, this ) );
+        SourceAccessor<P> accessor = dashboard.getSourceAccessor();
+        List<SourceHandle> sources = accessor.getSources(project);
+        if(sources.isEmpty() && nodes != null) {
+            res.addAll(Arrays.asList(nodes));
         }
-        res.add( new NewBuildNode(this) );
+        for (SourceHandle s : sources) {
+            res.add(dashboard.createSourceNode(s, this));
+            res.addAll(getRecentProjectsNodes(s));
+            if (s.getWorkingDirectory() != null) {
+                res.add(new OpenNbProjectNode(s, this, dashboard ));
+                res.add(new OpenFavoritesNode(s, this, dashboard ));
+        }
+        }
         return res;
     }
 
-    private class NewBuildNode extends LeafNode {
-
-        private JPanel panel;
-        private LinkButton btn;
-
-        public NewBuildNode( BuildListNode parent ) {
-            super( parent );
+    private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
+        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
+        for( NbProjectHandle s : handle.getRecentProjects()) {
+            res.add( new NbProjectNode( s, this, dashboard ) );
         }
-
-        @Override
-        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-            if( null == panel ) {
-                panel = new JPanel(new GridBagLayout());
-                panel.setOpaque(false);
-                btn = new LinkButton(NbBundle.getMessage(BuildListNode.class, "LBL_NewBuild"), //NOI18N
-                        BuildAccessor.getDefault().getNewBuildAction(project));
-                panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-                panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-            }
-            btn.setForeground(foreground, isSelected);
-            return panel;
-        }
-
-        @Override
-        public Action getDefaultAction() {
-            return BuildAccessor.getDefault().getNewBuildAction(project);
-        }
+        return res;
     }
 }

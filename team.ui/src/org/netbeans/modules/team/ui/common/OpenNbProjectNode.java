@@ -1,3 +1,5 @@
+package org.netbeans.modules.team.ui.common;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,53 +42,57 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.kenai.api.KenaiProject;
+
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.NbProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle;
 
 /**
- * Node for project's sources section.
+ * Node to open other project
  *
- * @author S. Aubrecht, Jan Becicka
+ * @author Jan Becicka
  */
-public class SourceListNode extends SectionNode {
+public class OpenNbProjectNode<S extends TeamServer, P> extends LeafNode {
 
-    public SourceListNode( ProjectNode parent ) {
-        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
+    private final SourceHandle src;
+
+    private JPanel panel;
+    private LinkButton btn;
+    private final Dashboard<S, P> dashboard;
+
+    public OpenNbProjectNode(SourceHandle src, TreeListNode parent, Dashboard<S, P> dashboard ) {
+        super( parent );
+        this.src=src;
+        this.dashboard = dashboard;
     }
 
     @Override
-    protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        SourceAccessor accessor = SourceAccessor.getDefault();
-        List<SourceHandle> sources = accessor.getSources(project);
-        if (sources.isEmpty() && project.getKenaiProject().getKenai().getUrl().toString().equals("https://netbeans.org")) {//NOI!18N
-            res.add(new OpenNetBeansIDEProjects(project.getKenaiProject().getKenai(), this));
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        if( null == panel ) {
+            panel = new JPanel(new GridBagLayout());
+            panel.setOpaque(false);
+            btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenNbProject"), getDefaultAction()); //NOI18N
+            panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,45,0,0), 0, 0));
+            panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
         }
-        for (SourceHandle s : sources) {
-            res.add(new SourceNode(s, this));
-            res.addAll(getRecentProjectsNodes(s));
-            if (s.getWorkingDirectory() != null) {
-                res.add(new OpenNbProjectNode(s, this));
-                res.add(new OpenFavoritesNode(s, this));
-        }
-        }
-        return res;
+        btn.setForeground(foreground, isSelected);
+        return panel;
     }
 
-    private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
-        for( NbProjectHandle s : handle.getRecentProjects()) {
-            res.add( new NbProjectNode( s, this ) );
-        }
-        return res;
+    @Override
+    public Action getDefaultAction() {
+        return dashboard.getSourceAccessor().getOpenOtherAction(src);
     }
 }

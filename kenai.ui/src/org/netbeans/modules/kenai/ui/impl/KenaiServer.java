@@ -43,16 +43,26 @@ package org.netbeans.modules.kenai.ui.impl;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -70,8 +80,13 @@ public class KenaiServer implements TeamServer {
         kenai.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
-                if (Kenai.PROP_LOGIN.equals(pce.getPropertyName()))  {
-                    propertyChangeSupport.firePropertyChange(PROP_LOGIN, pce.getOldValue(), pce.getNewValue());
+                String propName = pce.getPropertyName();
+                if (propName.equals(Kenai.PROP_LOGIN)) {
+                    propertyChangeSupport.firePropertyChange(TeamServer.PROP_LOGIN, pce.getOldValue(), pce.getNewValue());
+                } else if (propName.equals(Kenai.PROP_LOGIN_STARTED)) {
+                    propertyChangeSupport.firePropertyChange(TeamServer.PROP_LOGIN_STARTED, pce.getOldValue(), pce.getNewValue());
+                } else if (propName.equals(Kenai.PROP_LOGIN_FAILED)) {
+                    propertyChangeSupport.firePropertyChange(TeamServer.PROP_LOGIN_FAILED, pce.getOldValue(), pce.getNewValue());
                 }
             }
         }, kenai));
@@ -141,8 +156,28 @@ public class KenaiServer implements TeamServer {
     @Override
     public JComponent getDashboardComponent () {
         DashboardImpl dashboard = DashboardImpl.getInstance();
-        dashboard.setKenai(kenai);
+        dashboard.setServer(this);
         return dashboard.getComponent();
+    }
+
+    @Override
+    public PasswordAuthentication getPasswordAuthentication() {
+        return kenai.getPasswordAuthentication();
+    }
+
+    @Override
+    public Collection<ProjectHandle> getMyProjects() {
+        try {
+            Collection<KenaiProject> projects = kenai.getMyProjects();
+            List<ProjectHandle> ret = new ArrayList<ProjectHandle>(projects.size());
+            for (KenaiProject p : projects) {
+                ret.add(new ProjectHandleImpl(p));
+            }
+            return ret;
+        } catch (KenaiException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.emptyList();
     }
     
 }

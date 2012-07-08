@@ -3,19 +3,17 @@
  * and open the template in the editor.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.team.ui.spi;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiProject;
 
 /**
- * Abstraction of a single Kenai project.
+ * Abstraction of a single Team project.
  *
  * @author S. Aubrecht
  */
-public abstract class ProjectHandle implements Comparable<ProjectHandle> {
+public abstract class ProjectHandle<P> implements Comparable<ProjectHandle> {
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
@@ -49,7 +47,7 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
      * from dashboard.
      * This event is not fired, when user logs out.
      * Value is undefined (null)
-     * @see Kenai#PROP_LOGIN
+     * @see TeamServer#PROP_LOGIN
      */
     public static final String PROP_CLOSE = "close"; // NOI18N
 
@@ -75,7 +73,7 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
      */
     public abstract String getDisplayName();
 
-    public abstract KenaiProject getKenaiProject();
+    public abstract P getTeamProject();
 
     /**
      * Is this project private?
@@ -95,6 +93,7 @@ public abstract class ProjectHandle implements Comparable<ProjectHandle> {
         changeSupport.firePropertyChange(propName, oldValue, newValue);
     }
 
+    @Override
     public int compareTo( ProjectHandle other ) {
         return getDisplayName().compareToIgnoreCase(other.getDisplayName());
     }

@@ -66,7 +66,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.modules.team.ui.common.CategoryNode;
 import org.netbeans.modules.team.ui.common.ColorManager;
-import org.netbeans.modules.team.ui.common.InterestingNode;
+import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.openide.explorer.propertysheet.PropertySheet;
 
 /**
@@ -99,14 +99,16 @@ final class RendererPanel extends JPanel {
     public RendererPanel( final TreeListNode node ) {
         super( new BorderLayout() );
 
-        if( null == expandableRootBackground )
+        if( null == expandableRootBackground ) {
             deriveColorsAndMargin();
+        }
 
         this.node = node;
         isRoot = node.getParent() == null;
         setOpaque(!isRoot || !isAqua || !node.isExpandable());
         if( node.isExpandable() ) {
             expander = new LinkButton(EMPTY_ICON, new AbstractAction() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     node.setExpanded( !node.isExpanded() );
                 }
@@ -119,7 +121,7 @@ final class RendererPanel extends JPanel {
     }
 
     public void configure( Color foreground, Color background, boolean isSelected, boolean hasFocus, int nestingDepth, int rowHeight ) {
-        if( isRoot && node.isExpandable() || node instanceof InterestingNode) {
+        if( isRoot && node.isExpandable() || node instanceof ProjectProvider) {
             foreground = isSelected ? expandableRootSelectedForeground : expandableRootForeground;
             background = isSelected ? expandableRootSelectedBackground : expandableRootBackground;
         } else if (node instanceof CategoryNode) {
@@ -127,8 +129,9 @@ final class RendererPanel extends JPanel {
         }
 
         JComponent inner = node.getComponent(foreground, background, isSelected, hasFocus);
-        if( node.isExpandable() || !isRoot )
+        if( node.isExpandable() || !isRoot ) {
             inner.setBorder(INNER_BORDER);
+        }
         add(inner, BorderLayout.CENTER);
 
         setBackground(background);

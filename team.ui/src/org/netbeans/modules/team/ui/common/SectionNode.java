@@ -1,3 +1,5 @@
+package org.netbeans.modules.team.ui.common;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,7 +42,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+
 
 import org.netbeans.modules.team.ui.treelist.*;
 import java.awt.Color;
@@ -55,8 +57,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -101,7 +102,7 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
             lblError = new TreeLabel();
             lblStatus.setVisible(false);
             lblError.setVisible(false);
-            Image img = ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/error.png"); //NOI18N
+            Image img = ImageUtilities.loadImage("org/netbeans/modules/team/ui/resources/error.png"); //NOI18N
             lblError.setIcon( new ImageIcon(img) );
 
             panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0) );

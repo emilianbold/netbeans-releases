@@ -85,7 +85,7 @@ public class TeamServerProviderImpl implements TeamServerProvider {
         KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
-                if (Kenai.PROP_LOGIN.equals(pce.getPropertyName())) {
+                if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName())) {
                     final Preferences preferences = NbPreferences.forModule(TeamServerProviderImpl.class);
                     preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), LoginUtils.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
                 } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {

@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.team.ui.common;
 
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+
 /**
  *
  * @author ondra
  */
-public interface InterestingNode {
-    
+public interface ProjectProvider {
+    public ProjectHandle getProject();// XXX hack
 }

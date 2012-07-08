@@ -79,10 +79,10 @@ class TeamServerListRenderer implements ListCellRenderer {
 
         if (value instanceof TeamServer) {
             ret.setFont(ret.getFont().deriveFont(Font.BOLD));
-            final TeamServer kenai = (TeamServer) value;
-            ret.setText(kenai.getDisplayName());
-            ret.setIcon(kenai.getIcon());
-            ret.setToolTipText(kenai.getUrl().toString());
+            final TeamServer server = (TeamServer) value;
+            ret.setText(server.getDisplayName());
+            ret.setIcon(server.getIcon());
+            ret.setToolTipText(server.getUrl().toString());
         } else {
             ret.setIcon(null);
             ret.setText(value==null?null:value.toString());

@@ -142,7 +142,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
 
         error = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
-        kenaiLabel = new javax.swing.JLabel();
+        teamServerLabel = new javax.swing.JLabel();
         teamCombo = listedProvider == null ? new org.netbeans.modules.team.ui.TeamServerCombo(true) : new org.netbeans.modules.team.ui.TeamServerCombo(listedProvider, true);
         loginDetails = new javax.swing.JPanel();
 
@@ -151,7 +151,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
         error.setForeground(java.awt.Color.red);
         error.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ui/resources/error.png"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(kenaiLabel, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.kenaiLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(teamServerLabel, org.openide.util.NbBundle.getMessage(LoginPanel.class, "LoginPanel.teamServerLabel.text")); // NOI18N
 
         teamCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -171,7 +171,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
                     .addComponent(error)
                     .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(kenaiLabel)
+                        .addComponent(teamServerLabel)
                         .addGap(86, 86, 86)
                         .addComponent(teamCombo, 0, 297, Short.MAX_VALUE))
                     .addComponent(loginDetails, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -182,7 +182,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(kenaiLabel)
+                    .addComponent(teamServerLabel)
                     .addComponent(teamCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(loginDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
@@ -221,10 +221,10 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     javax.swing.JLabel error;
-    javax.swing.JLabel kenaiLabel;
     javax.swing.JPanel loginDetails;
     javax.swing.JProgressBar progressBar;
     javax.swing.JComboBox teamCombo;
+    javax.swing.JLabel teamServerLabel;
     // End of variables declaration//GEN-END:variables
 
     public TeamServer getTeamServer() {

@@ -56,7 +56,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ui.TeamServerManager;
-import org.netbeans.modules.team.ui.nodes.KenaiRootNode;
+import org.netbeans.modules.team.ui.nodes.TeamRootNode;
 import org.netbeans.modules.team.ui.nodes.TeamServerInstanceCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -216,9 +216,9 @@ public class AddInstanceAction extends AbstractAction {
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override
                     public void run() {
-                        Node hudson = NodeOp.findChild(root, KenaiRootNode.KENAI_NODE_NAME);
+                        Node hudson = NodeOp.findChild(root, TeamRootNode.TEAM_NODE_NAME);
                         if (hudson == null) {
-                            LOG.fine("ServicesTab does not contain " + KenaiRootNode.KENAI_NODE_NAME);
+                            LOG.fine("ServicesTab does not contain " + TeamRootNode.TEAM_NODE_NAME);
                             return;
                         }
                         Node _selected;

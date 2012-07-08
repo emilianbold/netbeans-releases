@@ -55,15 +55,19 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.LineBorder;
 import org.netbeans.modules.kenai.api.Kenai;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
+import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
-import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
-import org.netbeans.modules.kenai.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.MessagingAccessor;
+import org.netbeans.modules.team.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.ui.spi.ProjectAccessor;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,19 +78,19 @@ import org.openide.util.NbBundle;
  */
 public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> implements PropertyChangeListener {
 
-    private final ProjectHandle project;
+    private final ProjectHandle<KenaiProject> project;
     private MessagingHandle messaging;
     private JPanel panel;
     private List<JLabel> labels = new ArrayList<JLabel>(5);
     private List<LinkButton> buttons = new ArrayList<LinkButton>(3);
     private final Object LOCK = new Object();
 
-    public MessagingNode( TreeListNode parent, ProjectHandle project ) {
+    public MessagingNode( TreeListNode parent, ProjectHandle<KenaiProject> project ) {
         super( parent, null );
         this.project = project;
         messaging = load();
         messaging.addPropertyChangeListener(this);
-        project.getKenaiProject().getKenai().addPropertyChangeListener(Kenai.PROP_XMPP_LOGIN, this);
+        project.getTeamProject().getKenai().addPropertyChangeListener(Kenai.PROP_XMPP_LOGIN, this);
     }
 
     @Override
@@ -105,7 +109,7 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
 
     @Override
     protected JComponent createComponent( MessagingHandle data ) {
-        MessagingAccessor accessor = MessagingAccessor.getDefault();
+        MessagingAccessor accessor = MessagingAccessorImpl.getDefault();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
 
@@ -155,17 +159,19 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
                 panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
             }
 
-            btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_ProjectDetails"), ProjectAccessor.getDefault().getDetailsAction(project)); //NOI18N
+            btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_ProjectDetails"), ProjectAccessorImpl.getDefault().getDetailsAction(project)); //NOI18N
             buttons.add( btn );
             panel.add( btn, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 
             panel.add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
+            
+            panel.setBorder(new LineBorder(Color.red, 1));
         }
         return panel;
     }
 
     protected MessagingHandle load() {
-        MessagingAccessor accessor = MessagingAccessor.getDefault();
+        MessagingAccessor accessor = MessagingAccessorImpl.getDefault();
         return accessor.getMessaging(project);
     }
 
@@ -189,6 +195,6 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
         super.dispose();
         if( null != messaging )
             messaging.removePropertyChangeListener(this);
-        project.getKenaiProject().getKenai().removePropertyChangeListener(this);
+        project.getTeamProject().getKenai().removePropertyChangeListener(this);
     }
 }

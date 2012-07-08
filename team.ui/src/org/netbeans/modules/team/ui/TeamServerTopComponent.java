@@ -73,7 +73,7 @@ public final class TeamServerTopComponent extends TopComponent {
 
     private static TeamServerTopComponent instance;
     /** path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/team/ui/resources/kenai-small.png"; // NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/team/ui/resources/team-small.png"; // NOI18N
     private static final String PREFERRED_ID = "TeamTopComponent"; // NOI18N
     private JComboBox combo;
 
@@ -115,7 +115,7 @@ public final class TeamServerTopComponent extends TopComponent {
     }
 
     /**
-     * Obtain the KenaiTopComponent instance. Never call {@link #getDefault} directly!
+     * Obtain the TeamServerTopComponent instance. Never call {@link #getDefault} directly!
      */
     public static synchronized TeamServerTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
@@ -218,9 +218,9 @@ public final class TeamServerTopComponent extends TopComponent {
         return panel;
     }
 
-    public void setSelectedServer(TeamServer kenai) {
+    public void setSelectedServer(TeamServer server) {
         if (combo!=null) {
-            combo.setSelectedItem(kenai);
+            combo.setSelectedItem(server);
         }
     }
 

@@ -51,13 +51,14 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.spi.SourceAccessor;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.openide.util.NbBundle;
 
 /**
@@ -89,7 +90,7 @@ public class SourceNode extends LeafNode {
             panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
             if( source.isSupported() ) {
-                btn = new LinkButton(NbBundle.getMessage(SourceNode.class, "LBL_GetSources"), SourceAccessor.getDefault().getOpenSourcesAction(source)); //NOI18N
+                btn = new LinkButton(NbBundle.getMessage(SourceNode.class, "LBL_GetSources"), SourceAccessorImpl.getDefault().getOpenSourcesAction(source)); //NOI18N
                 String featureName = source.getScmFeatureName();
                 String repotype = "MSG_UNKNOWN_SCM"; // NOI18N
                 if (featureName.equals(KenaiService.Names.SUBVERSION)) {
@@ -122,6 +123,6 @@ public class SourceNode extends LeafNode {
 
     @Override
     public Action getDefaultAction() {
-        return SourceAccessor.getDefault().getDefaultAction(source);
+        return SourceAccessorImpl.getDefault().getDefaultAction(source);
     }
 }

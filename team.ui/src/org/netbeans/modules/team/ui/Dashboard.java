@@ -97,7 +97,7 @@ public final class Dashboard {
     }
 
     /**
-     * currently visible kenai instance
+     * currently visible team server instance
      * @return
      */
     public TeamServer getTeamServer() {

@@ -40,56 +40,23 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.team.ui.spi;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.SourceAccessor;
-import org.netbeans.modules.kenai.ui.spi.SourceHandle;
-import org.openide.util.NbBundle;
+import javax.swing.Icon;
 
 /**
- * Node for a open other project
- *
+ * Handle representing netbeans project
  * @author Jan Becicka
  */
-public class OpenFavoritesNode extends LeafNode {
-
-    private final SourceHandle src;
-
-        private JPanel panel;
-        private LinkButton btn;
-
-    public OpenFavoritesNode(SourceHandle src, TreeListNode parent ) {
-        super( parent );
-        this.src=src;
-    }
-
-
-        @Override
-        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-            if( null == panel ) {
-                panel = new JPanel(new GridBagLayout());
-                panel.setOpaque(false);
-                btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenFavorites"), getDefaultAction()); //NOI18N
-                panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,45,0,0), 0, 0));
-                panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
-            }
-            btn.setForeground(foreground, isSelected);
-            return panel;
-        }
-
-        @Override
-        public Action getDefaultAction() {
-            return SourceAccessor.getDefault().getOpenFavorites(src);
-        }
+public abstract class NbProjectHandle {
+    /**
+     * DisplayName of given project
+     * @return
+     */
+    public abstract String getDisplayName();
+    /**
+     * Icon of given project
+     * @return
+     */
+    public abstract Icon getIcon();
 }

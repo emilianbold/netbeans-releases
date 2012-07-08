@@ -21,14 +21,14 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.team.ui.Bundle"/>
                 <attr name="component" methodvalue="org.netbeans.modules.team.ui.TeamServerTopComponent.findInstance"/>
                 <attr name="displayName" bundlevalue="org.netbeans.modules.team.ui.Bundle#Actions/Window/org-netbeans-modules-team-ui-TeamAction.instance"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/team/ui/resources/kenai-small.png"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/team/ui/resources/team-small.png"/>
                 <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
             </file>
         </folder>
     </folder>
     <folder name="Menu">
         <folder name="Versioning">
-            <folder name="Kenai">
+            <folder name="Team">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.team.ui.Bundle"/>
                 <attr name="position" intvalue="50"/>
                 <file name="org-netbeans-modules-team-ui-LoginAction.shadow">

@@ -40,9 +40,8 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+package org.netbeans.modules.team.ui.common;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -53,11 +52,13 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.Dashboard;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
-import org.netbeans.modules.kenai.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,25 +66,26 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class QueryListNode extends SectionNode {
+public class QueryListNode<S extends TeamServer, P> extends SectionNode {
+    private final Dashboard<S, P> dashboard;
 
-    public QueryListNode( ProjectNode parent ) {
+    public QueryListNode( ProjectNode parent, Dashboard<S, P> dashboard) {
         super( NbBundle.getMessage(QueryListNode.class, "LBL_Issues"), parent, ProjectHandle.PROP_QUERY_LIST ); //NOI18N
+        this.dashboard = dashboard;
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        QueryAccessor accessor = QueryAccessor.getDefault();
+        QueryAccessor accessor = dashboard.getQueryAccessor();
         List<QueryHandle> queries = accessor.getQueries(project);
         for( QueryHandle q : queries ) {
-            res.add( new QueryNode( q, this ) );
+            res.add( new QueryNode( q, this, dashboard ) );
         }
         res.add( new FindIssueNode(this) );
         res.add( new NewIssueNode(this) );
         return res;
     }
-
 
     private class FindIssueNode extends LeafNode {
 
@@ -113,7 +115,7 @@ public class QueryListNode extends SectionNode {
 
         @Override
         public Action getDefaultAction() {
-            return QueryAccessor.getDefault().getFindIssueAction(project);
+            return dashboard.getQueryAccessor().getFindIssueAction(project);
         }
     }
 
@@ -144,7 +146,7 @@ public class QueryListNode extends SectionNode {
 
         @Override
         public Action getDefaultAction() {
-            return QueryAccessor.getDefault().getCreateIssueAction(project);
+            return dashboard.getQueryAccessor().getCreateIssueAction(project);
         }
     }
 }

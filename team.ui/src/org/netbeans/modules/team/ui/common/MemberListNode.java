@@ -1,3 +1,5 @@
+package org.netbeans.modules.team.ui.common;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,7 +42,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.dashboard;
+
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -48,10 +50,10 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.kenai.ui.spi.MemberAccessor;
-import org.netbeans.modules.kenai.ui.spi.MemberHandle;
-import org.netbeans.modules.kenai.ui.spi.MessagingAccessor;
-import org.netbeans.modules.kenai.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.ui.spi.MemberAccessor;
+import org.netbeans.modules.team.ui.spi.MemberHandle;
+import org.netbeans.modules.team.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,11 +66,13 @@ public class MemberListNode extends SectionNode {
     private MessagingHandle msg;
     private PropertyChangeListener l;
     private static final String PROP_MEMBERS = "members"; // NOI18N
+    private final AbstractDashboard dashboard;
 
-    public MemberListNode( ProjectNode parent ) {
-        super(getText(MessagingAccessor.getDefault().getMessaging(parent.getProject())),
+    public MemberListNode( ProjectNode parent, AbstractDashboard dashboard ) {
+        super(getText(dashboard.getMessagingAccessor().getMessaging(parent.getProject())),
              parent, PROP_MEMBERS); //NOI18N
-        msg = MessagingAccessor.getDefault().getMessaging(project);
+        this.dashboard = dashboard;
+        msg = dashboard.getMessagingAccessor().getMessaging(project);
         msg.addPropertyChangeListener(l=new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {
@@ -98,10 +102,13 @@ public class MemberListNode extends SectionNode {
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        MemberAccessor accessor = MemberAccessor.getDefault();
+        MemberAccessor accessor = dashboard.getMemberAccessor();
         List<MemberHandle> sources = accessor.getMembers(project);
         for (MemberHandle s : sources) {
-            res.add(new MemberNode(s, this));
+            LeafNode n = dashboard.createMemberNode(s, this);
+            if(n != null) {
+                res.add(n);
+            }
         }
         return res;
     }

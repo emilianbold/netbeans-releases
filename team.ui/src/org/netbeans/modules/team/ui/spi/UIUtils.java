@@ -77,8 +77,8 @@ public final class UIUtils {
      * less than 20 possible combinations at max. */
     private static Set<String> loggedParams = Collections.synchronizedSet(new HashSet<String>());
 
-    public static String getPrefName(TeamServer kenai, String name)  {
-        return kenai.getUrl().getHost() + name;
+    public static String getPrefName(TeamServer server, String name)  {
+        return server.getUrl().getHost() + name;
     }
 
     public static void waitStartupFinished() {
@@ -99,17 +99,17 @@ public final class UIUtils {
 
     /**
      * Invokes login dialog
-     * @param kenai
+     * @param team
      * @return true, if user was succesfully logged in
      */
-    public static boolean showLogin(final TeamServer kenai) {
-        return showLogin(kenai, true) != null;
+    public static boolean showLogin(final TeamServer team) {
+        return showLogin(team, true) != null;
     }
 
     /**
      * Invokes login dialog
      * @param preselectedServer
-     * @return kenai instance, where user requested login, or null if login was
+     * @return team instance, where user requested login, or null if login was
      * cancelled
      */
     public static TeamServer showLogin (final TeamServer preselectedServer, boolean listAllProviders) {
@@ -120,7 +120,7 @@ public final class UIUtils {
         final String ctlCancel = NbBundle.getMessage(Utilities.class, "CTL_Cancel");
         DialogDescriptor login = new DialogDescriptor(
                 loginPanel,
-                NbBundle.getMessage(Utilities.class, "CTL_LoginToKenai"),
+                NbBundle.getMessage(Utilities.class, "CTL_LoginToTeam"),
                 true,
                 new Object[]{ctlLogin,ctlCancel},ctlLogin,
                 DialogDescriptor.DEFAULT_ALIGN,
@@ -167,9 +167,9 @@ public final class UIUtils {
     }
     
     public static void activateTeamDashboard () {
-        TeamServerTopComponent kenaiTc = TeamServerTopComponent.findInstance();
-        kenaiTc.open();
-        kenaiTc.requestActive();
+        TeamServerTopComponent serverTc = TeamServerTopComponent.findInstance();
+        serverTc.open();
+        serverTc.requestActive();
     }
     
     public static JComboBox createTeamCombo (TeamServerProvider forProvider, boolean alwaysVisible) {

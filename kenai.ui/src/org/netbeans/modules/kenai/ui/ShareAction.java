@@ -147,7 +147,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
 
         public static void showDashboard(Set<CreatedProjectInfo> projects) {
             UIUtils.activateTeamDashboard();
-            DashboardImpl.getInstance().selectAndExpand(projects.iterator().next().project);
+            DashboardImpl.getInstance().selectAndExpand(new ProjectHandleImpl(projects.iterator().next().project));
 
         }
 

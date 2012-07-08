@@ -100,6 +100,7 @@ import org.openide.util.WeakListeners;
 import static org.netbeans.modules.kenai.ui.Bundle.*;
 import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
  *
@@ -212,7 +213,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         kenaiListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if (Kenai.PROP_LOGIN.equals(evt.getPropertyName())) {
+                if (TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
                     if (panel.getKenai().getPasswordAuthentication() != null) {
                         loginButton.setEnabled(false);
                     } else {

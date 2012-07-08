@@ -1,3 +1,5 @@
+package org.netbeans.modules.team.ui.common;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,20 +42,57 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
 
-import java.util.List;
+
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import javax.swing.Action;
-import org.openide.util.Lookup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.spi.NbProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
+ * Node for a single netbeans project.
  *
  * @author Jan Becicka
  */
-public abstract class MemberAccessor {
-    public static MemberAccessor getDefault() {
-        return Lookup.getDefault().lookup(MemberAccessor.class);
+public class NbProjectNode<S extends TeamServer, P> extends LeafNode {
+
+    private final NbProjectHandle prj;
+
+    private LinkButton btn;
+    private JPanel panel;
+    private final Dashboard<S, P> dashboard;
+
+    public NbProjectNode( NbProjectHandle prj, TreeListNode parent, Dashboard<S, P> dashboard ) {
+        super( parent );
+        assert prj!=null;
+        this.prj = prj;
+        this.dashboard = dashboard;
     }
-    public abstract List<MemberHandle> getMembers(ProjectHandle project );
-    public abstract Action getStartChatAction(MemberHandle member);
+
+    @Override
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        if (null == panel) {
+            panel = new JPanel(new GridBagLayout());
+            panel.setOpaque(false);
+            btn = new LinkButton(prj.getDisplayName(), prj.getIcon(), getDefaultAction()); //NOI18N
+            panel.add(btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 25, 0, 0), 0, 0));
+            panel.add(new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+        }
+        btn.setForeground(foreground, isSelected);
+        return panel;
+    }
+
+    @Override
+    public Action getDefaultAction() {
+        return dashboard.getSourceAccessor().getDefaultAction(prj);
+    }
 }

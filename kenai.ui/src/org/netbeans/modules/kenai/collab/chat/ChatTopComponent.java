@@ -64,6 +64,7 @@ import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
@@ -765,7 +766,7 @@ public class ChatTopComponent extends TopComponent {
     final class KenaiL implements PropertyChangeListener {
 
         public void propertyChange(final PropertyChangeEvent e) {
-            if (Kenai.PROP_LOGIN.equals(e.getPropertyName())) {
+            if (TeamServer.PROP_LOGIN.equals(e.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         Kenai.Status s = ((Kenai) e.getSource()).getStatus();

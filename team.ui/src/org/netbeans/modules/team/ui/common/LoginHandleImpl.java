@@ -39,23 +39,45 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.team.ui.common;
 
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.team.ui.spi.LoginHandle;
 
 /**
- *
+ * Implementation of LoginHandle. Currently fires events when user logs in/out
  * @author Jan Becicka
  */
-public abstract class MemberHandle implements Comparable <MemberHandle> {
-    public abstract String getFullName();
-    public abstract String getDisplayName();
-    public abstract String getName();
-    public abstract String getFQN();
-    public String getRole() { return null; }
-    public abstract boolean hasMessages();
-    public abstract boolean isOnline();
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+public class LoginHandleImpl extends LoginHandle {
+
+    private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private String uname;
+
+    public LoginHandleImpl(String uname) {
+        this.uname=uname;
+    }
+
+    @Override
+    public String getUserName() {
+        return uname;
+    }
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
 }
