@@ -66,21 +66,22 @@ public class WikiAction {
     static RequestProcessor.Task t = null;
 
     public static synchronized AbstractAction forProject(final ProjectHandle<Project> project) {
-        List<ProjectService> services = project.getTeamProject().getProjectServices();
+        List<ProjectService> services = project.getTeamProject().getProjectServicesOfType(ServiceType.WIKI);
+        if(services == null) {
+            return null;
+        }
         for (ProjectService s : services) {
-            if(s.getServiceType() == ServiceType.WIKI) {
-                final String url = s.getUrl();
-                return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_ProjectWiki")) { //NOI18N
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
-                        } catch (MalformedURLException muex) {
-                            Logger.getLogger(WikiAction.class.getName()).log(Level.INFO, "Unable to show the wiki page " + url, muex); // NOI18N
-                        }
+            final String url = s.getUrl();
+            return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_ProjectWiki")) { //NOI18N
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
+                    } catch (MalformedURLException muex) {
+                        Logger.getLogger(WikiAction.class.getName()).log(Level.INFO, "Unable to show the wiki page " + url, muex); // NOI18N
                     }
-                };
-            }
+                }
+            };
         }
         return null;
     }
