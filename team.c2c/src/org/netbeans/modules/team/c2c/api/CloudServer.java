@@ -67,6 +67,17 @@ public final class CloudServer {
      */
     public static final String PROP_LOGIN = "login";
     
+    /**
+     * fired when user login started
+     */
+    public static final String PROP_LOGIN_STARTED = "login_started";
+
+    /**
+     * fired when user login failed
+     */
+    public static final String PROP_LOGIN_FAILED = "login_failed";
+    
+    
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private final URL url;
     private final String displayName;
@@ -154,10 +165,23 @@ public final class CloudServer {
     }
 
     public void login (String username, char[] password) throws CloudException {
-        CloudClient createClient = ClientFactory.getInstance().createClient(getUrl().toString(), new PasswordAuthentication(username, password.clone()));
-        currentProfile = createClient.getCurrentProfile();
-        auth = new PasswordAuthentication(username, password.clone());
-        Arrays.fill(password, '\0');
+        PasswordAuthentication old = auth;
+        firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, username));
+        CloudClient createClient = null;
+        synchronized (this) {
+            createClient = ClientFactory.getInstance().createClient(getUrl().toString(), new PasswordAuthentication(username, password.clone()));
+
+            currentProfile = createClient.getCurrentProfile();
+
+            auth = new PasswordAuthentication(username, password.clone());
+            Arrays.fill(password, '\0');
+        }
+        // XXX ts - need perhaps a different way how to determine if failed or not
+        if(createClient == null) {
+            firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_FAILED, null, null));
+        } else {
+            firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
+        }    
     }
 
     private void firePropertyChange (PropertyChangeEvent event) {
