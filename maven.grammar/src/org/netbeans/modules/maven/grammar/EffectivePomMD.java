@@ -424,6 +424,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         panel.add(new JLabel(LBL_failed_to_load(x.getLocalizedMessage()), SwingConstants.CENTER), BorderLayout.CENTER);
                         panel.revalidate();
                         LOG.log(Level.FINE, "Exception thrown while loading effective POM", x);
+                        Exceptions.printStackTrace(x);
                         firstTimeShown = true;
                     }
                 });
