@@ -55,6 +55,8 @@ import com.tasktop.c2c.server.profile.domain.project.ProjectsQuery;
 import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
 import com.tasktop.c2c.server.profile.service.HudsonServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
+import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.scm.service.ScmServiceClient;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -74,18 +76,22 @@ public final class CloudClient {
     private final ProfileWebServiceClient profileClient;
     private static final String PROFILE_SERVICE = "/alm/api"; //NOI18N
     private static final String HUDSON_SERVICE = "/alm/s/%s/hudson"; //NOI18N
+    private static final String SCM_SERVICE = "/alm/s/%s/scm/api"; //NOI18N
     private final AbstractWebLocation location;
     private final ActivityServiceClient activityClient;
     private final HudsonServiceClient hudsonClient;
+    private final ScmServiceClient scmClient;
 
     CloudClient (ProfileWebServiceClient profileClient,
             ActivityServiceClient activityClient,
             HudsonServiceClient hudsonClient,
+            ScmServiceClient scmClient,
             AbstractWebLocation location) {
         this.profileClient = profileClient;
         this.activityClient = activityClient;
         this.hudsonClient = hudsonClient;
         this.location = location;
+        this.scmClient = scmClient;
     }
 
     public Profile getCurrentProfile () throws CloudException {
@@ -181,7 +187,7 @@ public final class CloudClient {
             public HudsonStatus call () throws Exception {
                 return hudsonClient.getStatus();
             }
-        }, hudsonClient, buildHudsonUrl(HUDSON_SERVICE, projectId));
+        }, hudsonClient, buildUrl(HUDSON_SERVICE, projectId));
     }
 
     public JobDetails getJobDetails (String projectId, final String jobName) throws CloudException {
@@ -190,7 +196,7 @@ public final class CloudClient {
             public JobDetails call () throws Exception {
                 return hudsonClient.getJobDetails(jobName);
             }
-        }, hudsonClient, buildHudsonUrl(HUDSON_SERVICE, projectId));
+        }, hudsonClient, buildUrl(HUDSON_SERVICE, projectId));
     }
 
     public BuildDetails getBuildDetails (String projectId, final String jobName, final int buildNumber) throws CloudException {
@@ -199,7 +205,16 @@ public final class CloudClient {
             public BuildDetails call () throws Exception {
                 return hudsonClient.getBuildDetails(jobName, buildNumber);
             }
-        }, hudsonClient, buildHudsonUrl(HUDSON_SERVICE, projectId));
+        }, hudsonClient, buildUrl(HUDSON_SERVICE, projectId));
+    }
+    
+    public List<ScmRepository> getScmRepositories (String projectId) throws CloudException {
+        return run(new Callable<List<ScmRepository>> () {
+            @Override
+            public List<ScmRepository> call () throws Exception {
+                return scmClient.getScmRepositories();
+            }
+        }, scmClient, buildUrl(SCM_SERVICE, projectId));
     }
 
     private <T> T run (Callable<T> callable, AbstractRestServiceClient client, String service) throws CloudException {
@@ -224,7 +239,7 @@ public final class CloudClient {
         }
     }
     
-    private static String buildHudsonUrl (String urlTemplate, String projectName) {
+    private static String buildUrl (String urlTemplate, String projectName) {
         return String.format(urlTemplate, projectName);
     }
 }

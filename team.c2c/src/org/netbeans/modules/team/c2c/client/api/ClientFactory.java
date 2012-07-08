@@ -45,6 +45,7 @@ import com.tasktop.c2c.client.commons.client.CredentialsInjector;
 import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
 import com.tasktop.c2c.server.profile.service.HudsonServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
+import com.tasktop.c2c.server.scm.service.ScmServiceClient;
 import java.net.PasswordAuthentication;
 import java.net.Proxy;
 import java.net.ProxySelector;
@@ -94,8 +95,9 @@ public final class ClientFactory {
         ProfileWebServiceClient profileClient = context.getBean(ProfileWebServiceClient.class);
         ActivityServiceClient activityClient = context.getBean(ActivityServiceClient.class);
         HudsonServiceClient hudsonClient = context.getBean(HudsonServiceClient.class);
+        ScmServiceClient scmClient = context.getBean(ScmServiceClient.class);
         CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
-        return new CloudClient(profileClient, activityClient, hudsonClient, location);
+        return new CloudClient(profileClient, activityClient, hudsonClient, scmClient, location);
     }
     
     private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {

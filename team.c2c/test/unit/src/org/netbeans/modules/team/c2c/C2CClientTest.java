@@ -54,6 +54,7 @@ import com.tasktop.c2c.server.profile.domain.build.JobSummary;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
+import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -238,6 +239,14 @@ public class C2CClientTest extends NbTestCase  {
         assertNotNull(details);
     }
 
+    public void testGetScmRepositories () throws Exception {
+        CloudClient client = getClient();
+        List<ScmRepository> repositories = client.getScmRepositories("anagramgame");
+        assertNotNull(repositories);
+        assertEquals(1, repositories.size());
+        assertEquals("anagramgame.git", repositories.iterator().next().getName());
+    }
+    
     private CloudClient getClient () {
         return ClientFactory.getInstance().createClient("https://q.tasktop.com",
                 new PasswordAuthentication(uname, passw.toCharArray()));
