@@ -109,9 +109,11 @@ public class LocationAwareMavenXpp3Writer {
     } //-- void write( Writer, Model )
 
     private StringBuffer b(XmlSerializer serializer) {
+        return sw(serializer).getBuffer();
+    }
+    private StringWriter sw(XmlSerializer serializer) {
         MXSerializer ser = (MXSerializer) serializer;
-        StringWriter w = (StringWriter) ser.getWriter();
-        return w.getBuffer();
+        return  (StringWriter) ser.getWriter();
     }
 
     private void logLocation(InputLocationTracker tracker, Object value, int startOffset, int endOffset) {
@@ -123,22 +125,30 @@ public class LocationAwareMavenXpp3Writer {
         }
     }
 
+    private void flush(XmlSerializer serializer) {
+        sw(serializer).flush();
+    }
+
     private void writeValue(XmlSerializer serializer, String tag, String value, InputLocationTracker parent) throws IOException {
         writeValue(serializer, tag, value, parent, tag);
     }
 
     private void writeValue(XmlSerializer serializer, String tag, String value, InputLocationTracker parent, Object trackerId) throws IOException {
         StringBuffer b = b(serializer);
-        serializer.startTag(NAMESPACE, tag).flush();
+        serializer.startTag(NAMESPACE, tag);
+        flush(serializer);
         int start = b.length() - tag.length() - 2;
-        serializer.text(value).endTag(NAMESPACE, tag).flush();
+        serializer.text(value).endTag(NAMESPACE, tag);
+        flush(serializer);
         //TODO sometimes like when dependency scope is compile, which is the default value, there is no location for it, but it still gets printed.
         logLocation(parent, trackerId, start, b.length());
     }
     
     private void writeXpp3DOM(XmlSerializer serializer, Xpp3Dom root, InputLocationTracker rootTracker) throws IOException {
         StringBuffer b = b(serializer);
-        serializer.startTag(NAMESPACE, root.getName()).flush();
+        serializer.startTag(NAMESPACE, root.getName());
+        //need to flush the inner writer, flush on serializer closes tag
+        flush(serializer);
         int start = b.length() - root.getName().length() - 2;
         
         String[] attributeNames = root.getAttributeNames();
@@ -183,7 +193,8 @@ public class LocationAwareMavenXpp3Writer {
 
     private void writeActivation(Activation activation, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (activation.isActiveByDefault() != false) {
@@ -207,7 +218,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeActivationFile(ActivationFile activationFile, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (activationFile.getMissing() != null) {
@@ -222,7 +234,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeActivationOS(ActivationOS activationOS, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (activationOS.getName() != null) {
@@ -243,7 +256,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeActivationProperty(ActivationProperty activationProperty, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (activationProperty.getName() != null) {
@@ -258,7 +272,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeBuild(Build build, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (build.getSourceDirectory() != null) {
@@ -310,7 +325,8 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "finalName", build.getFinalName(), build);
         }
         if ((build.getFilters() != null) && (build.getFilters().size() > 0)) {
-            serializer.startTag(NAMESPACE, "filters").flush();
+            serializer.startTag(NAMESPACE, "filters");
+            flush(serializer);
             int start2 = b.length();
             InputLocationTracker filtersTracker = build.getLocation("filters");
             int index = 0;
@@ -339,7 +355,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeBuildBase(BuildBase buildBase, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (buildBase.getDefaultGoal() != null) {
@@ -368,7 +385,8 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "finalName", buildBase.getFinalName(), buildBase);
         }
         if ((buildBase.getFilters() != null) && (buildBase.getFilters().size() > 0)) {
-            serializer.startTag(NAMESPACE, "filters").flush();
+            serializer.startTag(NAMESPACE, "filters");
+            flush(serializer);
             int start2 = b.length();
             InputLocationTracker filtersTracker = buildBase.getLocation("filters");
             int index = 0;
@@ -397,7 +415,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeCiManagement(CiManagement ciManagement, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (ciManagement.getSystem() != null) {
@@ -420,7 +439,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeContributor(Contributor contributor, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (contributor.getName() != null) {
@@ -439,7 +459,8 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "organizationUrl", contributor.getOrganizationUrl(), contributor);
         }
         if ((contributor.getRoles() != null) && (contributor.getRoles().size() > 0)) {
-            serializer.startTag(NAMESPACE, "roles").flush();
+            serializer.startTag(NAMESPACE, "roles");
+            flush(serializer);
             int start2 = b.length();
             InputLocationTracker rolesTracker = contributor.getLocation("roles");
             int index = 0;
@@ -456,7 +477,8 @@ public class LocationAwareMavenXpp3Writer {
             serializer.startTag(NAMESPACE, "timezone").text(contributor.getTimezone()).endTag(NAMESPACE, "timezone");
         }
         if ((contributor.getProperties() != null) && (contributor.getProperties().size() > 0)) {
-            serializer.startTag(NAMESPACE, "properties").flush();
+            serializer.startTag(NAMESPACE, "properties");
+            flush(serializer);
             int start2 = b.length();
             InputLocationTracker propTracker = contributor.getLocation("properties");
             for (Iterator iter = contributor.getProperties().keySet().iterator(); iter.hasNext();) {
@@ -473,7 +495,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeDependency(Dependency dependency, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (dependency.getGroupId() != null) {
@@ -528,7 +551,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeDeploymentRepository(DeploymentRepository deploymentRepository, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (deploymentRepository.isUniqueVersion() != true) {
@@ -558,7 +582,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeDeveloper(Developer developer, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (developer.getId() != null) {
@@ -580,7 +605,8 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "organizationUrl", developer.getOrganizationUrl(), developer);
         }
         if ((developer.getRoles() != null) && (developer.getRoles().size() > 0)) {
-            serializer.startTag(NAMESPACE, "roles").flush();
+            serializer.startTag(NAMESPACE, "roles");
+            flush(serializer);
             int start2 = b.length();
             InputLocationTracker rolesTracker = developer.getLocation("roles");
             int index = 0;
@@ -596,7 +622,8 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "timezone", developer.getTimezone(), developer);
         }
         if ((developer.getProperties() != null) && (developer.getProperties().size() > 0)) {
-            serializer.startTag(NAMESPACE, "properties").flush();
+            serializer.startTag(NAMESPACE, "properties");
+            flush(serializer);
             int start2 = b.length();
             InputLocationTracker propTracker = developer.getLocation("properties");
             for (Iterator iter = developer.getProperties().keySet().iterator(); iter.hasNext();) {
@@ -613,7 +640,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeDistributionManagement(DistributionManagement distributionManagement, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
 
@@ -641,7 +669,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeExclusion(Exclusion exclusion, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (exclusion.getGroupId() != null) {
@@ -656,7 +685,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeExtension(Extension extension, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (extension.getGroupId() != null) {
@@ -674,7 +704,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeIssueManagement(IssueManagement issueManagement, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (issueManagement.getSystem() != null) {
@@ -689,7 +720,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeLicense(License license, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (license.getName() != null) {
@@ -710,7 +742,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeMailingList(MailingList mailingList, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
 
@@ -730,7 +763,8 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "archive", mailingList.getArchive(), mailingList);
         }
         if ((mailingList.getOtherArchives() != null) && (mailingList.getOtherArchives().size() > 0)) {
-            serializer.startTag(NAMESPACE, "otherArchives").flush();
+            serializer.startTag(NAMESPACE, "otherArchives");
+            flush(serializer);
             InputLocation otherLoc = mailingList.getLocation("otherArchives");
             int index = 0;
             for (Iterator iter = mailingList.getOtherArchives().iterator(); iter.hasNext();) {
@@ -821,7 +855,8 @@ public class LocationAwareMavenXpp3Writer {
             writePrerequisites((Prerequisites) model.getPrerequisites(), "prerequisites", serializer);
         }
         if ((model.getModules() != null) && (model.getModules().size() > 0)) {
-            serializer.startTag(NAMESPACE, "modules").flush();
+            serializer.startTag(NAMESPACE, "modules");
+            flush(serializer);
             int start2 = b.length();
             int index = 0;
             InputLocation tracker = model.getLocation("modules");
@@ -846,7 +881,8 @@ public class LocationAwareMavenXpp3Writer {
             writeDistributionManagement((DistributionManagement) model.getDistributionManagement(), "distributionManagement", serializer);
         }
         if ((model.getProperties() != null) && (model.getProperties().size() > 0)) {
-            serializer.startTag(NAMESPACE, "properties").flush();
+            serializer.startTag(NAMESPACE, "properties");
+            flush(serializer);
             int start2 = b.length();
             InputLocation tracker = model.getLocation("properties");
             for (Iterator iter = model.getProperties().keySet().iterator(); iter.hasNext();) {
@@ -906,7 +942,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeNotifier(Notifier notifier, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if ((notifier.getType() != null) && !notifier.getType().equals("mail")) {
@@ -942,7 +979,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeOrganization(Organization organization, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (organization.getName() != null) {
@@ -957,7 +995,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeParent(Parent parent, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (parent.getGroupId() != null) {
@@ -978,7 +1017,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writePlugin(Plugin plugin, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if ((plugin.getGroupId() != null) && !plugin.getGroupId().equals("org.apache.maven.plugins")) {
@@ -1024,7 +1064,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writePluginExecution(PluginExecution pluginExecution, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if ((pluginExecution.getId() != null) && !pluginExecution.getId().equals("default")) {
@@ -1034,7 +1075,8 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "phase", pluginExecution.getPhase(), pluginExecution);
         }
         if ((pluginExecution.getGoals() != null) && (pluginExecution.getGoals().size() > 0)) {
-            serializer.startTag(NAMESPACE, "goals").flush();
+            serializer.startTag(NAMESPACE, "goals");
+            flush(serializer);
             int start2 = b.length();
             int index = 0;
             InputLocation tracker = pluginExecution.getLocation("goals");
@@ -1059,7 +1101,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writePluginManagement(PluginManagement pluginManagement, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if ((pluginManagement.getPlugins() != null) && (pluginManagement.getPlugins().size() > 0)) {
@@ -1076,7 +1119,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writePrerequisites(Prerequisites prerequisites, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if ((prerequisites.getMaven() != null) && !prerequisites.getMaven().equals("2.0")) {
@@ -1088,7 +1132,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeProfile(Profile profile, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if ((profile.getId() != null) && !profile.getId().equals("default")) {
@@ -1101,7 +1146,8 @@ public class LocationAwareMavenXpp3Writer {
             writeBuildBase((BuildBase) profile.getBuild(), "build", serializer);
         }
         if ((profile.getModules() != null) && (profile.getModules().size() > 0)) {
-            serializer.startTag(NAMESPACE, "modules").flush();
+            serializer.startTag(NAMESPACE, "modules");
+            flush(serializer);
             int start2 = b.length();
             int index = 0;
             InputLocation tracker = profile.getLocation("modules");
@@ -1117,7 +1163,8 @@ public class LocationAwareMavenXpp3Writer {
             writeDistributionManagement((DistributionManagement) profile.getDistributionManagement(), "distributionManagement", serializer);
         }
         if ((profile.getProperties() != null) && (profile.getProperties().size() > 0)) {
-            serializer.startTag(NAMESPACE, "properties").flush();
+            serializer.startTag(NAMESPACE, "properties");
+            flush(serializer);
             int start2 = b.length();
             InputLocation tracker = profile.getLocation("properties");
             for (Iterator iter = profile.getProperties().keySet().iterator(); iter.hasNext();) {
@@ -1167,7 +1214,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeRelocation(Relocation relocation, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (relocation.getGroupId() != null) {
@@ -1188,7 +1236,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeReportPlugin(ReportPlugin reportPlugin, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if ((reportPlugin.getGroupId() != null) && !reportPlugin.getGroupId().equals("org.apache.maven.plugins")) {
@@ -1220,14 +1269,16 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeReportSet(ReportSet reportSet, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if ((reportSet.getId() != null) && !reportSet.getId().equals("default")) {
             writeValue(serializer, "id", reportSet.getId(), reportSet);
         }
         if ((reportSet.getReports() != null) && (reportSet.getReports().size() > 0)) {
-            serializer.startTag(NAMESPACE, "reports").flush();
+            serializer.startTag(NAMESPACE, "reports");
+            flush(serializer);
             int start2 = b.length();
             InputLocation tracker = reportSet.getLocation("reports");
             int index = 0;
@@ -1251,7 +1302,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeReporting(Reporting reporting, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (reporting.getExcludeDefaults() != null) {
@@ -1274,7 +1326,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeRepository(Repository repository, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (repository.getReleases() != null) {
@@ -1301,7 +1354,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeRepositoryPolicy(RepositoryPolicy repositoryPolicy, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (repositoryPolicy.getEnabled() != null) {
@@ -1319,7 +1373,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeResource(Resource resource, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (resource.getTargetPath() != null) {
@@ -1332,7 +1387,8 @@ public class LocationAwareMavenXpp3Writer {
             writeValue(serializer, "directory", resource.getDirectory(), resource);
         }
         if ((resource.getIncludes() != null) && (resource.getIncludes().size() > 0)) {
-            serializer.startTag(NAMESPACE, "includes").flush();
+            serializer.startTag(NAMESPACE, "includes");
+            flush(serializer);
             int start2 = b.length();
             InputLocation inclTracker = resource.getLocation("includes");
             int index = 0;
@@ -1345,7 +1401,8 @@ public class LocationAwareMavenXpp3Writer {
             logLocation(resource, "includes", start2, b.length());
         }
         if ((resource.getExcludes() != null) && (resource.getExcludes().size() > 0)) {
-            serializer.startTag(NAMESPACE, "excludes").flush();
+            serializer.startTag(NAMESPACE, "excludes");
+            flush(serializer);
             int start2 = b.length();
             InputLocation inclTracker = resource.getLocation("excludes");
             int index = 0;
@@ -1363,7 +1420,8 @@ public class LocationAwareMavenXpp3Writer {
     
     private void writeScm(Scm scm, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (scm.getConnection() != null) {
@@ -1384,7 +1442,8 @@ public class LocationAwareMavenXpp3Writer {
 
     private void writeSite(Site site, String tagName, XmlSerializer serializer)
             throws java.io.IOException {
-        serializer.startTag(NAMESPACE, tagName).flush();
+        serializer.startTag(NAMESPACE, tagName);
+        flush(serializer);
         StringBuffer b = b(serializer);
         int start = b.length();
         if (site.getId() != null) {
