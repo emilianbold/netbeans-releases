@@ -121,8 +121,8 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public TreeListNode createMessagingNode(ProjectNode pn, ProjectHandle<Project> project) {
-        return new MessagingNode(pn, project, this);
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<Project> project) {
+        return new ProjectLinksNode(pn, project, this);
     }
 
     @Override

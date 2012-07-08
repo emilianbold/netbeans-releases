@@ -110,8 +110,8 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public TreeListNode createMessagingNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
-        return new MessagingNode(pn, project);
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
+        return new ProjectLinksNode(pn, project);
     }
 
     @Override

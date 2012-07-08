@@ -69,7 +69,7 @@ public interface DashboardProvider<S extends TeamServer<P>, P> {
     public Action createLogoutAction();
     public Action createLoginAction();
     public LeafNode createMemberNode(MemberHandle user, TreeListNode parent);
-    public TreeListNode createMessagingNode(ProjectNode pn, ProjectHandle<P> project);
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<P> project);
     public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<P> project);
     public TreeListNode createMyProjectNode(ProjectHandle<P> p);   
     public TreeListNode createSourceNode(SourceHandle s, SourceListNode sln);    

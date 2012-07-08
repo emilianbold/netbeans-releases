@@ -139,9 +139,7 @@ public class ProjectNode<S extends TeamServer<P>, P> extends TreeListNode {
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
         DashboardProvider<S, P> provider = dashboard.getDashboardProvider();
-        if( null != provider.getMessagingAccessor() ) {
-            children.add( provider.createMessagingNode(this, project) ); 
-        }
+        children.add( provider.createProjectLinksNode(this, project) ); 
         if( null != provider.getMemberAccessor() ) {
             children.add( new MemberListNode(this, provider) );
         }
