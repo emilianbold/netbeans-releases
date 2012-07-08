@@ -55,10 +55,10 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryResultHandle.ResultType;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle.ResultType;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -85,8 +85,8 @@ class FakeJiraSupport {
         this.openIssueUrl = openIssueUrl;
     }
 
-    public static synchronized FakeJiraSupport get(ProjectHandle handle) {
-        KenaiProject project = handle.getKenaiProject();
+    public static synchronized FakeJiraSupport get(ProjectHandle<KenaiProject> handle) {
+        KenaiProject project = handle.getTeamProject();
         if(project == null) {
             return null;
         }

@@ -47,7 +47,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -83,8 +84,8 @@ class Support {
     void post(Runnable r) {
         getRequestProcessor().post(r);
     }
-    KenaiHandler getKenaiHandler(ProjectHandle ph, QueryAccessorImpl accessor) {
-        return getKenaiHandler(ph.getKenaiProject().getKenai(), accessor);
+    KenaiHandler getKenaiHandler(ProjectHandle<KenaiProject> ph, QueryAccessorImpl accessor) {
+        return getKenaiHandler(ph.getTeamProject().getKenai(), accessor);
     }
     KenaiHandler getKenaiHandler(Kenai kenai) {
         return getKenaiHandler(kenai, null);
