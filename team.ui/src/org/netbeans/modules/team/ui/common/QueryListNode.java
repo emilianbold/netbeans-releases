@@ -47,6 +47,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -79,6 +80,9 @@ public class QueryListNode<S extends TeamServer<P>, P> extends SectionNode {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
         QueryAccessor accessor = dashboard.getQueryAccessor();
         List<QueryHandle> queries = accessor.getQueries(project);
+        if(queries == null) {
+            return null;
+        }
         for( QueryHandle q : queries ) {
             res.add( new QueryNode( q, this, dashboard ) );
         }
