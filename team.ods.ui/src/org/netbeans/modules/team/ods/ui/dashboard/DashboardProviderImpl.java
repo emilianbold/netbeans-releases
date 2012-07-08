@@ -54,6 +54,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.ws.Holder;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
+import org.netbeans.modules.team.ods.ui.impl.SourceAccessorImpl;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
@@ -83,11 +84,11 @@ import org.openide.util.RequestProcessor;
 public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, Project> {
 
     private final CloudUiServer server;
+    private ProjectAccessorImpl projectAccessor;
 
     public DashboardProviderImpl(CloudUiServer server) {
         this.server = server;
     }
-    
     
     @Override
     public Action createLogoutAction() {
@@ -140,7 +141,10 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
 
     @Override
     public ProjectAccessor<CloudUiServer, Project> getProjectAccessor() {
-        return new ProjectAccessorImpl(server.getDashboard());
+        if(projectAccessor == null) {
+            projectAccessor = new ProjectAccessorImpl(server.getDashboard());
+        }
+        return projectAccessor;
     }
 
     @Override
