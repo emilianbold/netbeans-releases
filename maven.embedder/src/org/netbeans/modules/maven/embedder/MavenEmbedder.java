@@ -101,6 +101,7 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.codehaus.plexus.PlexusContainer;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
@@ -354,6 +355,8 @@ public final class MavenEmbedder {
         for (String id : res.getModelIds()) {
             Model m = res.getRawModel(id);
             toRet.add(m);
+            System.out.println
+            ("pomfile=" + m.getPomFile());
         }
 //        for (ModelProblem p : res.getProblems()) {
 //            System.out.println("problem=" + p);
@@ -362,7 +365,7 @@ public final class MavenEmbedder {
 //            }
 //        }
         return toRet;
-    }    
+    }
     
     public List<String> getLifecyclePhases() {
 
@@ -468,5 +471,63 @@ public final class MavenEmbedder {
      */
     public static Set<String> getAllProjectProfiles(MavenProject mp) {
         return NBModelBuilder.getAllProfiles(mp.getModel());
+    }
+    /**
+     * descriptions of models that went into effective pom, containing information that was lost in processing and is not cheap to obtain.
+     * in the list the current project's model description comes first, second is it's parent and so on.
+     * @param mp
+     * @return null if the parameter passed was not created using the Project Maven Embedder.
+     * @since 2.30
+     */
+    public static @CheckForNull List<ModelDescription> getModelDescriptors(MavenProject mp) {
+        return NBModelBuilder.getModelDescriptors(mp.getModel());
+    }
+    
+    /**
+     * descriptor containing some base information about the models collected while building
+     * effective model. 
+     * @since 2.30
+     */
+    public static interface ModelDescription {
+        /*
+         * groupId:artifactId:version
+         */
+        String getId();
+        /**
+         * artifactId as defined in the model
+         * @return 
+         */
+        String getArtifactId();
+        /**
+         * version as defined in the model
+         * @return 
+         */
+        String getVersion();
+        /**
+         * groupId as defined in the model
+         * @return 
+         */
+        String getGroupId();
+        /**
+         * name as defined in the model
+         * @return 
+         */
+        String getName();
+        /**
+         * location of the model pom file.
+         * @return 
+         */
+        File getLocation();
+        /**
+         * all profile ids as found in the model
+         * @return 
+         */
+        List<String> getProfiles();
+        /**
+         * get all module declarations from base and from profile locations
+         * @return 
+         */
+        List<String> getModules();
+        
     }
 }

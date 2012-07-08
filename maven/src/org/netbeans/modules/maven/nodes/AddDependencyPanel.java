@@ -79,12 +79,15 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.support.DelayedDocumentChangeListener;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -156,6 +159,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     }
 
     private MavenProject project;
+    private Project nbProject;
 
     private final TextValueCompleter groupCompleter;
     private final TextValueCompleter artifactCompleter;
@@ -176,6 +180,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     @Messages("BTN_OK=Add")
     private AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
+        this.nbProject = prj;
         initComponents();
         groupCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtGroupId);
         artifactCompleter = new TextValueCompleter(Collections.<String>emptyList(), txtArtifactId);
@@ -764,7 +769,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     }
 
-    private static List<Dependency> getDependenciesFromDM(MavenProject project) {
+    private static List<Dependency> getDependenciesFromDM(MavenProject project, Project nbprj) {
+        NbMavenProjectImpl p = nbprj.getLookup().lookup(NbMavenProjectImpl.class);
         MavenProject localProj = project;
         DependencyManagement curDM;
         List<Dependency> result = new ArrayList<Dependency>();
@@ -787,8 +793,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
             }
             try {
-                localProj = localProj.getParent();
-            } catch (IllegalStateException x) { // #197994 variant
+                localProj = p.loadParentOf(EmbedderFactory.getProjectEmbedder(), localProj);
+            } catch (ProjectBuildingException x) {
                 break;
             }
         }
@@ -1402,7 +1408,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         @Override
         public void run() {
             synchronized (DM_DEPS_LOCK) {
-                dmDeps = getDependenciesFromDM(project);
+                dmDeps = getDependenciesFromDM(project, AddDependencyPanel.this.nbProject);
             }
             SwingUtilities.invokeLater(new Runnable() {
                 @Override

@@ -70,7 +70,6 @@ import org.apache.maven.plugin.PluginArtifactsCache;
 import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.NbArtifactFixer;
@@ -80,6 +79,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -373,10 +373,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "The artifacts are:\n {0}"
     })
     public void doArtifactChecks(@NonNull MavenProject project) {
-        MavenProject parent = project;
-        while (parent != null) {
-            parent = checkParent(parent);
-        }
+        checkParents(project);
         
         boolean missingNonSibling = false;
         List<Artifact> missingJars = new ArrayList<Artifact>();
@@ -429,27 +426,27 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "Please check that <relativePath> tag is present and correct, the version of parent POM in sources matches the version defined. \n"
             + "If parent is only available through a remote repository, please check that the repository hosting it is defined in the current POM."
     })
-    private @CheckForNull MavenProject checkParent(@NonNull MavenProject project) {
-        MavenProject parentDecl;
-        try {
-            parentDecl = project.getParent();
-        } catch (IllegalStateException x) { // #197994
-            parentDecl = null;
+    private void checkParents(@NonNull MavenProject project) {
+        List<MavenEmbedder.ModelDescription> mdls = MavenEmbedder.getModelDescriptors(project);
+        boolean first = true;
+        if (mdls == null) { //null means just about broken project..
+            return;
         }
-        if (parentDecl == null) {
-            return null;
+        for (MavenEmbedder.ModelDescription m : mdls) {
+            if (first) {
+                first = false;
+                continue;
+            }
+            if (NbArtifactFixer.FALLBACK_NAME.equals(m.getName())) {
+                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        ERR_NoParent(),
+                        MSG_NoParent(m.getId()),
+                        new SanityBuildAction(nbproject));
+                report.setId(MISSING_PARENT);
+                addReport(report);
+                addMissingArtifact(EmbedderFactory.getProjectEmbedder().createArtifact(m.getGroupId(), m.getArtifactId(), m.getVersion(), "pom"));
+            }
         }
-        Artifact art = project.getParentArtifact();
-        if (art != null && NbArtifactFixer.FALLBACK_NAME.equals(parentDecl.getName())) {
-            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                    ERR_NoParent(),
-                    MSG_NoParent(art.getId()),
-                    new SanityBuildAction(nbproject));
-            report.setId(MISSING_PARENT);
-            addReport(report);
-            addMissingArtifact(art);
-        }
-        return parentDecl;
     }
 
     
