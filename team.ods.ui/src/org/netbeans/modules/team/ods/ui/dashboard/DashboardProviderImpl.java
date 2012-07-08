@@ -45,9 +45,11 @@ import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.xml.ws.Holder;
@@ -65,6 +67,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle.ResultType;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -142,69 +145,11 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
 
     @Override
     public MessagingAccessor getMessagingAccessor() {
-//        if(messagingAccessor == null) {
-//            messagingAccessor = new MessagingAccessor<Project>() {
-//
-//                @Override
-//                public MessagingHandle getMessaging(ProjectHandle<Project> project) {
-//                    return new MessagingHandle() {
-//
-//                        @Override
-//                        public int getOnlineCount() {
-//                            throw new UnsupportedOperationException("Not supported yet.");
-//                        }
-//
-//                        @Override
-//                        public int getMessageCount() {
-//                            throw new UnsupportedOperationException("Not supported yet.");
-//                        }
-//
-//                        @Override
-//                        public void addPropertyChangeListener(PropertyChangeListener l) {
-//                            throw new UnsupportedOperationException("Not supported yet.");
-//                        }
-//
-//                        @Override
-//                        public void removePropertyChangeListener(PropertyChangeListener l) {
-//                            throw new UnsupportedOperationException("Not supported yet.");
-//                        }
-//                    };
-//                }
-//
-//                @Override
-//                public Action getOpenMessagesAction(ProjectHandle<Project> project) {
-//                    return null;
-//                }
-//
-//                @Override
-//                public Action getCreateChatAction(ProjectHandle<Project> project) {
-//                    throw new UnsupportedOperationException("Not supported yet.");
-//                }
-//
-//                @Override
-//                public Action getReconnectAction(ProjectHandle<Project> project) {
-//                    throw new UnsupportedOperationException("Not supported yet.");
-//                }
-//                
-//            };
-//        }
         return null;
     }
 
     @Override
     public MemberAccessor getMemberAccessor() {
-//        return new MemberAccessor() {
-//
-//            @Override
-//            public List getMembers(ProjectHandle project) {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//
-//            @Override
-//            public Action getStartChatAction(MemberHandle member) {
-//                throw new UnsupportedOperationException("Not supported yet.");
-//            }
-//        };
         return null;
     }
 
@@ -314,7 +259,43 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
     public static class ODSQueryAccessor extends QueryAccessor<Project> {
+        private final QueryHandle allIssues;
+        private final QueryHandle myIssues;
+        private final QueryHandle someQuery;
 
+        public ODSQueryAccessor() {
+            allIssues = new QueryHandle() {
+                @Override
+                public String getDisplayName() {
+                    return "All Issues";
+                }
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {}
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {}
+            };
+            myIssues = new QueryHandle() {
+                @Override
+                public String getDisplayName() {
+                    return "My Issues";
+                }
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {}
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {}
+            };
+            someQuery = new QueryHandle() {
+                @Override
+                public String getDisplayName() {
+                    return "Some another query";
+                }
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {}
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {}
+            };
+        }
+        
         @Override
         public Class<Project> type() {
             return Project.class;
@@ -322,37 +303,76 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
             
         @Override
         public QueryHandle getAllIssuesQuery(ProjectHandle<Project> project) {
-            return null;
+            return allIssues;
         }
 
         @Override
         public List<QueryHandle> getQueries(ProjectHandle<Project> project) {
-            return null;
+            return Arrays.asList(allIssues, myIssues, someQuery);
         }
 
         @Override
         public List<QueryResultHandle> getQueryResults(QueryHandle query) {
-            return null;
+            LinkedList<QueryResultHandle> ret = new LinkedList<QueryResultHandle>();
+            Random r = new Random(System.currentTimeMillis());
+            final int t = r.nextInt(100);
+            final int c = r.nextInt(t);
+            ret.add(new QueryResultHandle() {
+                @Override public String getText() { return "" + c; }
+                @Override public String getToolTipText() { return c + " changed tasks"; }
+                @Override public ResultType getResultType() { return ResultType.ALL_CHANGES_RESULT; }
+            });
+            ret.add(new QueryResultHandle() {
+                @Override public String getText() { return c + " new or changed"; }
+                @Override public String getToolTipText() { return c + " new or changed tasks"; }
+                @Override public ResultType getResultType() { return ResultType.NAMED_RESULT; }
+            });
+            ret.add(new QueryResultHandle() {
+                @Override public String getText() { return t + ""; }
+                @Override public String getToolTipText() { return t + " total"; }
+                @Override public ResultType getResultType() { return ResultType.NAMED_RESULT; }
+            });
+            return ret;
         }
-
+        
         @Override
         public Action getFindIssueAction(ProjectHandle<Project> project) {
-            return null;
+            return new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };
         }
 
         @Override
         public Action getCreateIssueAction(ProjectHandle<Project> project) {
-            return null;
+            return new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };
         }
 
         @Override
         public Action getOpenQueryResultAction(QueryResultHandle result) {
-            return null;
+            return new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };
         }
 
         @Override
         public Action getDefaultAction(QueryHandle query) {
-            return null;
+            return new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    throw new UnsupportedOperationException("Not supported yet.");
+                }
+            };
         }
 
     };
