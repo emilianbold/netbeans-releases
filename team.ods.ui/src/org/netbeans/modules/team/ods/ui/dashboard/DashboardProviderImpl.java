@@ -70,6 +70,7 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -227,6 +228,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
 
         @Override
         public List<QueryHandle> getQueries(ProjectHandle<Project> project) {
+            try {
+                // XXX emulate network latency
+                Thread.currentThread().sleep(3000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             return Arrays.asList(allIssues, myIssues, someQuery);
         }
 
