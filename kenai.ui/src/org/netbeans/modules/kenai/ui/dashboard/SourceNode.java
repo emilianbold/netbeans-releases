@@ -57,7 +57,6 @@ import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.openide.util.NbBundle;
 
@@ -109,10 +108,11 @@ public class SourceNode extends LeafNode {
             }
             panel.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
-        if( !isSelected && !source.isSupported() )
+        if( !isSelected && !source.isSupported() ) {
             lbl.setForeground(ColorManager.getDefault().getDisabledColor());
-        else
+        } else {
             lbl.setForeground(foreground);
+        }
         if( null != btn ) {
             lbl1.setForeground(foreground);
             lbl2.setForeground(foreground);

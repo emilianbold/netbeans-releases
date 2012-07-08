@@ -118,10 +118,12 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
 
     public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
         super( null );
-        if (project==null)
+        if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
+        }
         dashboard = KenaiServer.getDashboard(project);
         this.projectListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
                     refreshChildren();
@@ -170,6 +172,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
         project.getTeamProject().addPropertyChangeListener(projectListener);
     }
 
+    @Override
     public ProjectHandle getProject() {
         return project;
     }
@@ -243,7 +246,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
 
     private void setOnline(final boolean b) {
         Runnable run = new Runnable() {
-
+            @Override
             public void run() {
                 if (btnBugs == null || "0".equals(btnBugs.getText())) { // NOI18N
                     if (leftPar != null) {
@@ -279,8 +282,9 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     }
 
     void setMemberProject(boolean isMemberProject) {
-        if( isMemberProject == this.isMemberProject )
+        if( isMemberProject == this.isMemberProject ) {
             return;
+        }
         this.isMemberProject = isMemberProject;
         fireContentChanged();
         refreshChildren();

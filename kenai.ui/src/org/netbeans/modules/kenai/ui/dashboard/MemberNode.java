@@ -73,7 +73,7 @@ public class MemberNode extends LeafNode {
     private JPanel panel;
     private JLabel lbl;
     private LinkButton btn;
-    private Object LOCK = new Object();
+    private final Object LOCK = new Object();
 
     public MemberNode( final MemberHandle user, TreeListNode parent ) {
         super( parent );

@@ -55,7 +55,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
@@ -66,7 +65,6 @@ import org.openide.util.ImageUtilities;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
-import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 
@@ -168,11 +166,13 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
         return panel;
     }
 
+    @Override
     protected MessagingHandle load() {
         MessagingAccessor accessor = MessagingAccessorImpl.getDefault();
         return accessor.getMessaging(project);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (Kenai.PROP_XMPP_LOGIN.equals(evt.getPropertyName())) {
             if (evt.getOldValue() == null) {
@@ -191,8 +191,9 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
     @Override
     protected void dispose() {
         super.dispose();
-        if( null != messaging )
+        if( null != messaging ) {
             messaging.removePropertyChangeListener(this);
+        }
         project.getTeamProject().getKenai().removePropertyChangeListener(this);
     }
 }
