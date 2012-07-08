@@ -43,9 +43,17 @@
 package org.netbeans.modules.team.ods.ui.dashboard;
 
 import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.profile.domain.project.ProjectService;
+import com.tasktop.c2c.server.cloud.domain.ServiceType;
 import java.awt.event.ActionEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -57,13 +65,24 @@ public class WikiAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<Project> proj) {
-        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_ProjectWiki")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("noT yeT!");
+    public static synchronized AbstractAction forProject(final ProjectHandle<Project> project) {
+        List<ProjectService> services = project.getTeamProject().getProjectServices();
+        for (ProjectService s : services) {
+            if(s.getServiceType() == ServiceType.WIKI) {
+                final String url = s.getUrl();
+                return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_ProjectWiki")) { //NOI18N
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL(url));
+                        } catch (MalformedURLException muex) {
+                            Logger.getLogger(WikiAction.class.getName()).log(Level.INFO, "Unable to show the wiki page " + url, muex); // NOI18N
+                        }
+                    }
+                };
             }
-        };
+        }
+        return null;
     }
 
 }

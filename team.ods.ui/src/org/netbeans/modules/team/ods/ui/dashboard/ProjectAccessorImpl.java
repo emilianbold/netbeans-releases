@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.team.ods.ui.dashboard;
 
+import org.netbeans.modules.team.ods.ui.project.DetailsAction;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;

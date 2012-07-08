@@ -40,49 +40,53 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.ods.ui.dashboard;
+package org.netbeans.modules.team.ods.ui.project;
 
+import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.team.ods.ui.dashboard.ProjectAccessorImpl;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author tester
+ * @author Tomas Stupka
  */
 public class DetailsAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<DummyCloudProject> proj) {
+    public static synchronized AbstractAction forProject(final ProjectHandle<Project> proj) {
 
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Details")) { //NOI18N
-
+            @Override
             public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("noT yeT!");
-//                if (t != null && !t.isFinished()) {
-//                    t.cancel();
-//                }
-//                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenKenaiProjectAction")); //NOI18N
-//                handle.setInitialDelay(0);
-//                handle.start();
-//                t = RequestProcessor.getDefault().post(new Runnable() {
-//
-//                    public void run() {
-//                        final KenaiProject kenaiProj = proj.getKenaiProject();
-//                        SwingUtilities.invokeLater(new Runnable() {
-//
-//                            public void run() {
-//                                kenaiProjectTopComponent tc = kenaiProjectTopComponent.getInstance(kenaiProj);
-//                                tc.open();
-//                                tc.requestActive();
-//                            }
-//                        });
-//                        handle.finish();
-//                    }
-//                });
+                if (t != null && !t.isFinished()) {
+                    t.cancel();
+                }
+                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DetailsAction.class, "CTL_LoadingProjectDetails")); //NOI18N
+                handle.setInitialDelay(0);
+                handle.start();
+                t = RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        final Project project = proj.getTeamProject();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.getInstance(project);
+                                tc.open();
+                                tc.requestActive();
+                            }
+                        });
+                        handle.finish();
+                    }
+                });
             }
         };
     }

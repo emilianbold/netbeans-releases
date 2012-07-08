@@ -51,6 +51,7 @@ import java.awt.Insets;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -108,10 +109,12 @@ public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> {
             btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ProjectDetails"), dashboardProvider.getProjectAccessor().getDetailsAction(project)); //NOI18N
             buttons.add( btn );
             panel.add( btn, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ProjectWiki"), WikiAction.forProject(project)); //NOI18N
-            buttons.add( btn );
-            panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-
+            Action a = WikiAction.forProject(project);
+            if(a != null) {
+                btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ProjectWiki"), a); //NOI18N
+                buttons.add( btn );
+                panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
+            }
             panel.add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
         return panel;
