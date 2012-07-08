@@ -62,10 +62,10 @@ import org.openide.util.NbBundle;
  */
 public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project> {
     
-    private final DefaultDashboard<CloudUiServer, Project> dashboard;
+    private final CloudUiServer server;
 
-    ProjectAccessorImpl(DefaultDashboard<CloudUiServer, Project> dashboard) {
-        this.dashboard = dashboard;
+    ProjectAccessorImpl(CloudUiServer server) {
+        this.server = server;
     }
 
     @Override
@@ -132,7 +132,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                dashboard.addProject(project, false, true);
+                server.getDashboard().addProject(project, false, true);
             }
         };
     }

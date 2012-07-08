@@ -183,6 +183,7 @@ public class CloudUiServer implements TeamServer<Project> {
     }
 
     @Override
+    // XXX no need to have this implemented in the TeamServer
     public Collection<ProjectHandle<Project>> getMyProjects() {
         CloudClient client = getClient();
         List<Project> projects;
@@ -202,7 +203,7 @@ public class CloudUiServer implements TeamServer<Project> {
         return ret;
     }
 
-    private CloudClient getClient() {
+    public CloudClient getClient() {
         assert getImpl(true).isLoggedIn();
         return ClientFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
     }

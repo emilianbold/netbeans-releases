@@ -44,25 +44,20 @@ package org.netbeans.modules.team.ods.ui.dashboard;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.xml.ws.Holder;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
 import org.netbeans.modules.team.ods.ui.impl.SourceAccessorImpl;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
-import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
@@ -85,6 +80,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
 
     private final CloudUiServer server;
     private ProjectAccessorImpl projectAccessor;
+    private SourceAccessorImpl sourceAccessor;
 
     public DashboardProviderImpl(CloudUiServer server) {
         this.server = server;
@@ -142,7 +138,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     @Override
     public ProjectAccessor<CloudUiServer, Project> getProjectAccessor() {
         if(projectAccessor == null) {
-            projectAccessor = new ProjectAccessorImpl(server.getDashboard());
+            projectAccessor = new ProjectAccessorImpl(server);
         }
         return projectAccessor;
     }
@@ -159,91 +155,10 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
 
     @Override
     public SourceAccessor<Project> getSourceAccessor() {
-        return new SourceAccessor<Project>() {
-
-            @Override
-            public Action getOpenFavoritesAction(SourceHandle src) {
-                return new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                };
-            }
-
-            @Override
-            public List<SourceHandle> getSources(final ProjectHandle<Project> project) {
-                LinkedList<SourceHandle> ret = new LinkedList<SourceHandle>();
-                ret.add(new SourceHandle() {
-
-                    @Override
-                    public String getDisplayName() {
-                        return project.getDisplayName() + "-s git repository";
-                    }
-
-                    @Override
-                    public boolean isSupported() {
-                        return true;
-                    }
-
-                    @Override
-                    public String getScmFeatureName() {
-                        return "MSG_GIT";
-                    }
-
-                    @Override
-                    public List<NbProjectHandle> getRecentProjects() {
-                        return Collections.emptyList();
-                    }
-
-                    @Override
-                    public File getWorkingDirectory() {
-                        return new File("/tmp");
-                    }
-                });
-                return ret;
-            }
-
-            @Override
-            public Action getOpenSourcesAction(SourceHandle project) {
-                return new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                };
-            }
-
-            @Override
-            public Action getDefaultAction(SourceHandle source) {
-                return new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                };
-            }
-
-            @Override
-            public Action getDefaultAction(NbProjectHandle prj) {
-                return new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                };
-            }
-
-            @Override
-            public Action getOpenOtherAction(SourceHandle src) {
-                return new AbstractAction() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        throw new UnsupportedOperationException("Not supported yet.");
-                    }
-                };
-            }
-        };
+        if(sourceAccessor == null) {
+            sourceAccessor = new SourceAccessorImpl(server);
+        }
+        return sourceAccessor;
     }
 
     @Override
