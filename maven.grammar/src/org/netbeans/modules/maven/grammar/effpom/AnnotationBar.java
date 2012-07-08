@@ -60,8 +60,11 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.maven.model.InputLocation;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer.Location;
+import org.netbeans.modules.maven.hyperlinks.HyperlinkProviderImpl;
+import static org.netbeans.modules.maven.grammar.effpom.Bundle.*;
 
 /**
  * strongly inspired by git's implementation
@@ -206,6 +209,23 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
                     showTooltipWindow(e);
                 }
             }
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                if (me.isConsumed()) {
+                    return;
+                }
+                if (me.getClickCount() > 1 && !me.isPopupTrigger()) {
+                    if (elementAnnotations != null) {
+                        Location al = getAnnotateLine(getLineFromMouseEvent(me));
+                        if (al != null) {
+                            HyperlinkProviderImpl.openAtSource(al.loc);
+                        }
+                    }
+                    
+                }
+            }
+            
         });
 
         // register with tooltip manager
@@ -255,13 +275,26 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
 //        }
     }
 
+    @NbBundle.Messages("ACT_GoToSource=Go to Source")
     private JPopupMenu createPopup(MouseEvent e) {
         final JPopupMenu popupMenu = new JPopupMenu();
 
         // annotation for target line
-        Location al = null;
         if (elementAnnotations != null) {
-            al = getAnnotateLine(getLineFromMouseEvent(e));
+            final Location al = getAnnotateLine(getLineFromMouseEvent(e));
+            if (al != null) {
+                JMenuItem item = new JMenuItem(ACT_GoToSource());
+                popupMenu.add(item);
+                item.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent ae) {
+                        InputLocation loc = al.loc;
+                        if (loc != null) {
+                            HyperlinkProviderImpl.openAtSource(loc);
+                        }
+                    }
+                });
+            }
         }
         return popupMenu;
     }
