@@ -77,6 +77,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
+import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 
@@ -1023,7 +1024,7 @@ public final class TreeUtilities {
             public Void visitClass(ClassTree node, Void p) {
                 if (fromIdx[0] < -2)
                     return super.visitClass(node, p);
-                fromIdx[0] = ((JCClassDecl)node).index;
+                fromIdx[0] = ((IndexedClassDecl)node).index;
                 return null;
             }
             @Override
@@ -1049,7 +1050,7 @@ public final class TreeUtilities {
         scanner = new TreeScanner<Void, Void>() {
             @Override
             public Void visitClass(ClassTree node, Void p) {
-                ((JCClassDecl)node).index = fromIdx[0]++;
+                ((IndexedClassDecl)node).index = fromIdx[0]++;
                 return null;
             }
         };

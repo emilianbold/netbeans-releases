@@ -719,25 +719,22 @@ public class Node {
             super.expandPath(treePath);
             // call getNodes(true) but restrict it by timeout to prevent occasional infinite loop
             try {
-                ActionProducer actionProducer = new ActionProducer(new org.netbeans.jemmy.Action() {
-
+                new Waiter(new Waitable() {
                     @Override
-                    public Object launch(Object obj) {
+                    public Object actionProduced(Object anObject) {
                         try {
                             Visualizer.findNode(treePath.getLastPathComponent()).getChildren().getNodes(true);
                         } catch (ClassCastException e) {
                             // ignore for trees in IDE which are not compound from VisualizerNode instances
                         }
-                        return null;
+                        return Boolean.TRUE;
                     }
 
                     @Override
                     public String getDescription() {
                         return "org.openide.nodes.Node.getChildren().getNodes(true)";  //NOI18N
                     }
-                });
-                actionProducer.getTimeouts().setTimeout("ActionProducer.MaxActionTime", getTimeouts().getTimeout("JTreeOperator.WaitNodeVisibleTimeout"));  //NOI18N
-                actionProducer.produceAction(null);
+                }).waitAction(null);
             } catch (InterruptedException e) {
                 throw new JemmyException("Interrupted.", e);
             } catch (TimeoutExpiredException tee) {

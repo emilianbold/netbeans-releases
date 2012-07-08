@@ -161,6 +161,7 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.lib.nbjavac.services.CancelService;
 import org.netbeans.lib.nbjavac.services.NBParserFactory.NBJavacParser;
+import org.netbeans.lib.nbjavac.services.NBParserFactory;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
@@ -560,7 +561,7 @@ public class Utilities {
             ParserFactory factory = ParserFactory.instance(context);
             ScannerFactory scannerFactory = ScannerFactory.instance(context);
             Names names = Names.instance(context);
-            Parser parser = new JackpotJavacParser(context, factory, scannerFactory.newScanner(buf, false), false, false, CancelService.instance(context), names);
+            Parser parser = new JackpotJavacParser(context, (NBParserFactory) factory, scannerFactory.newScanner(buf, false), false, false, CancelService.instance(context), names);
             if (parser instanceof JavacParser) {
                 if (pos != null)
                     pos[0] = new ParserSourcePositions((JavacParser)parser);
@@ -594,7 +595,7 @@ public class Utilities {
             ScannerFactory scannerFactory = ScannerFactory.instance(context);
             Names names = Names.instance(context);
             Scanner scanner = scannerFactory.newScanner(buf, false);
-            Parser parser = new JackpotJavacParser(context, factory, scanner, false, false, CancelService.instance(context), names);
+            Parser parser = new JackpotJavacParser(context, (NBParserFactory) factory, scanner, false, false, CancelService.instance(context), names);
             if (parser instanceof JavacParser) {
                 if (pos != null)
                     pos[0] = new ParserSourcePositions((JavacParser)parser);
@@ -1230,7 +1231,7 @@ public class Utilities {
 
         private final Context ctx;
         private final com.sun.tools.javac.util.Name dollar;
-        public JackpotJavacParser(Context ctx, ParserFactory fac,
+        public JackpotJavacParser(Context ctx, NBParserFactory fac,
                          Lexer S,
                          boolean keepDocComments,
                          boolean keepLineMap,

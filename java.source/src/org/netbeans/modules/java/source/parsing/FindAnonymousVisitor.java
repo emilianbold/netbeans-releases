@@ -50,6 +50,7 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 
 /**
  * Partial reparse helper visitor.
@@ -76,7 +77,7 @@ class FindAnonymousVisitor extends TreeScanner<Void,Void> {
     @Override
     public Void visitClass(ClassTree node, Void p) {
         if (firstInner == -1) {
-            firstInner = ((JCClassDecl)node).index;
+            firstInner = ((IndexedClassDecl)node).index;
         }
         if (node.getSimpleName().length() != 0) {
             hasLocalClass = true;

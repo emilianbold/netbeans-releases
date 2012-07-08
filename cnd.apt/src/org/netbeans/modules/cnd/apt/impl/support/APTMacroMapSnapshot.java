@@ -45,11 +45,14 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
@@ -69,11 +72,13 @@ import org.openide.util.CharSequences;
 public final class APTMacroMapSnapshot {
     private static final Map<CharSequence, APTMacro> NO_MACROS = Collections.unmodifiableMap(new HashMap<CharSequence, APTMacro>(0));
     /**
-     * optimize by memory
+     * optimize by memory.
      * one of:
      * 1)APTMacro when only one macro is defined
      * 2)Map<CharSequence, APTMacro> - map of macros
      * 3)CharSequence for alone UNDEFINED_MACRO with specified name
+     * 4) frozen array has Holder with sorted array: [name1, name2, ..., macro1, macro2, ...]
+     *    macro names followed by corresponding macro objects. Aray is sorted to be comparable by equals
      */
     private Object macros;
 
@@ -87,6 +92,9 @@ public final class APTMacroMapSnapshot {
             parent = parent.parent;
         }
         this.parent = parent;
+        if (this.parent != null) {
+            this.parent.freeze();
+        }
     }
 
     private Map<CharSequence, APTMacro> createMacroMap(int prefferedSize) {
@@ -97,6 +105,7 @@ public final class APTMacroMapSnapshot {
     }
 
     private void prepareMacroMapToAddMacro(CharSequence name, APTMacro macro) {
+        assert !(macros instanceof Holder) : "frozen snap can not be modified";
         if (macros == NO_MACROS) {
             return;
         }
@@ -139,6 +148,7 @@ public final class APTMacroMapSnapshot {
                 macros = macro;
             }
         } else {
+            assert macros instanceof Map<?,?> : "unexpected class " + macros.getClass();
             @SuppressWarnings("unchecked")
             Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)macros;
             map.put(name, macro);
@@ -177,7 +187,7 @@ public final class APTMacroMapSnapshot {
             }
             return null;
         } else {
-            assert macros instanceof Map<?,?>;
+            assert macros instanceof Map<?,?> : "unexpected to have get from frozen" + macros.getClass();
             @SuppressWarnings("unchecked")
             APTMacro map = ((Map<CharSequence, APTMacro>)macros).get(key);
             return map;
@@ -207,6 +217,7 @@ public final class APTMacroMapSnapshot {
                 if (snap.macros == NO_MACROS) {
                     // skip this snapshot
                 } else if (snap.macros instanceof Map<?,?>) {
+                    assert stack.isEmpty() : "map is allowed only as the last element " + stack;
                     @SuppressWarnings("unchecked")
                     final Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)snap.macros;
                     for (Map.Entry<CharSequence, APTMacro> cur : map.entrySet()) {
@@ -214,6 +225,18 @@ public final class APTMacroMapSnapshot {
                             out.put(cur.getKey(), cur.getValue());
                         } else {
                             out.remove(cur.getKey());
+                        }
+                    }
+                } else if (snap.macros instanceof Holder) {
+                    Object[] arr = ((Holder)snap.macros).arr;
+                    int collSize = arr.length/2;
+                    for (int j = 0; j < collSize; j++) {
+                        CharSequence key = (CharSequence) arr[j];
+                        APTMacro value = (APTMacro) arr[j+collSize];
+                        if (value != UNDEFINED_MACRO) {
+                            out.put(key, value);
+                        } else {
+                            out.remove(key);
                         }
                     }
                 } else if (snap.macros instanceof APTMacro) {
@@ -251,6 +274,8 @@ public final class APTMacroMapSnapshot {
             return 0;
         } else if (macros instanceof Map<?, ?>) {
             return ((Map<?,?>)macros).size();
+        } else if (macros instanceof Holder) {
+            return ((Holder)macros).arr.length / 2;
         } else {
             return 1;
         }
@@ -261,21 +286,34 @@ public final class APTMacroMapSnapshot {
     
     public void write(RepositoryDataOutput output) throws IOException {
         APTSerializeUtils.writeSnapshot(this.parent, output);
-        if (this.macros instanceof Map<?, ?>) {
-            output.writeInt(size());
-            @SuppressWarnings("unchecked")
-            Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)this.macros;
-            APTSerializeUtils.writeStringToMacroMap(map, output);
+        if (this.macros == NO_MACROS) {
+            output.writeInt(0);
         } else if (this.macros instanceof CharSequence) {
             output.writeInt(-1);
             output.writeCharSequenceUTF((CharSequence)this.macros);
-        } else {
-            assert this.macros instanceof APTMacro : "unexpected object " + this.macros;
+        } else if (this.macros instanceof APTMacro) {
             output.writeInt(-2);
             APTSerializeUtils.writeMacro((APTMacro)this.macros, output);
+        } else {
+            assert this.macros instanceof Holder : "unexpected object " + this.macros;
+            output.writeInt(size());
+            writeMacros(((Holder)this.macros).arr, output);
         }
     }
-    
+
+    public static void writeMacros(Object[] macros, RepositoryDataOutput output) throws IOException {
+        assert macros != null;
+        int collSize = macros.length/2;
+        for (int i = 0; i < collSize; i++) {
+            CharSequence key = (CharSequence) macros[i];
+            assert CharSequences.isCompact(key);
+            output.writeCharSequenceUTF(key);
+            APTMacro macro = (APTMacro) macros[i+collSize];
+            assert macro != null;
+            APTSerializeUtils.writeMacro(macro, output);
+        }
+    }
+
     public APTMacroMapSnapshot(RepositoryDataInput input) throws IOException {
         this.parent = APTSerializeUtils.readSnapshot(input);
         int collSize = input.readInt();
@@ -283,17 +321,65 @@ public final class APTMacroMapSnapshot {
             this.macros = APTSerializeUtils.readMacro(input);
         } else if (collSize == -1) {
             this.macros = CharSequences.create(input.readCharSequenceUTF());
+        } else if (collSize == 0) {
+            macros = NO_MACROS;
         } else {
-            macros = createMacroMap(collSize);
-            @SuppressWarnings("unchecked")
-            Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)this.macros;
-            APTSerializeUtils.readStringToMacroMap(collSize, map, input);
+            Object[] arr = readMacros(collSize, input);
+            macros = SnapshotHolderCache.getManager().getHolder(new Holder(arr));
         }
     }  
-        
+
+    private static Object[] readMacros(int collSize, RepositoryDataInput input) throws IOException {
+        Object[] macros = new Object[collSize*2];
+        for (int i = 0; i < macros.length; i++) {
+            CharSequence key = CharSequences.create(input.readCharSequenceUTF());
+            assert key != null;
+            APTMacro macro = APTSerializeUtils.readMacro(input);
+            assert macro != null;
+            macros[i] = key;
+            macros[i+collSize] = APTMacroCache.getManager().getMacro(macro);
+        }
+        return macros;
+    }
+
     //This is a single instance of a class to indicate that macro is undefined,
     //not a child of APTMacro to track errors more easily
     public static final APTMacro UNDEFINED_MACRO = new UndefinedMacro();
+
+    @SuppressWarnings("unchecked")
+    private void freeze() {
+        if (macros instanceof Map<?,?>) {
+            if (macros != NO_MACROS) {
+                Object[] arr = compact((Map<CharSequence,APTMacro>)macros);
+                macros = SnapshotHolderCache.getManager().getHolder(new Holder(arr));
+            }
+        }
+    }
+
+    private static Object[] compact(Map<CharSequence, APTMacro> map) {
+        assert map != NO_MACROS;
+        int size = map.size();
+        assert size > 0;
+        Object[] out = new Object[size*2];
+        int index = 0;
+        // prepare entries for sorting
+        @SuppressWarnings("unchecked")
+        Map.Entry<CharSequence, APTMacro>[] entries = new Map.Entry[size];
+        for (Entry<CharSequence, APTMacro> entry : map.entrySet()) {
+            entries[index++] = entry;
+        }
+        index = 0;
+        Arrays.sort(entries, ENTRY_COMPARATOR);
+        // compact output array based on sorted collection to be comparable for equality
+        for (Map.Entry<CharSequence, APTMacro> entry : entries) {
+            // first half are macro names
+            out[index]=entry.getKey();
+            // second half are macros
+            out[index+size]=entry.getValue();
+            index++;
+        }
+        return out;
+    }
 
     private static final class UndefinedMacro implements APTMacro {
         @Override
@@ -336,5 +422,53 @@ public final class APTMacroMapSnapshot {
             throw new UnsupportedOperationException("Not supported in fake impl."); // NOI18N
         }
 
+    }
+
+    final class Holder {
+
+        // array have to be sorted, otherwise equals can not work
+        private final Object[] arr;
+        private final int hashCode;
+
+        public Holder(Object[] arr) {
+            this.arr = arr;
+            this.hashCode = Arrays.hashCode(this.arr);
+        }
+
+        @Override
+        public int hashCode() {
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Holder other = (Holder) obj;
+            if (hashCode != other.hashCode) {
+                return false;
+            }
+            // macro names are at the beginning, it speeds up comparision
+            if (!Arrays.equals(this.arr, other.arr)) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private static final Comparator<Entry<CharSequence, APTMacro>> ENTRY_COMPARATOR = new EntryComparatorImpl();
+    private static class EntryComparatorImpl implements Comparator<Entry<CharSequence, APTMacro>> {
+        private final Comparator<CharSequence> charSeqComparator = CharSequences.comparator();
+        public EntryComparatorImpl() {
+        }
+
+        @Override
+        public int compare(Entry<CharSequence, APTMacro> o1, Entry<CharSequence, APTMacro> o2) {
+            return charSeqComparator.compare(o1.getKey(), o2.getKey());
+        }
     }
 }

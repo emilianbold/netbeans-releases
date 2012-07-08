@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="FinishSession">
+        <api name="refactoring"/>
+        <summary>Changed access level of #finish() to public.</summary>
+        <version major="1" minor="28"/>
+        <date day="4" month="7" year="2012"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Changed access level of #finish() to public.
+            </p>    
+        </description>
+        <class package="org.netbeans.modules.refactoring.api" name="RefactoringSession"/>
+        <issue number="214926"/>
+    </change>
     <change id="ContextRemove">
         <api name="refactoring"/>
         <summary>Added method to remove value from Context.</summary>

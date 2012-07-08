@@ -295,6 +295,8 @@ public class BinaryAnalyser {
                 }
                 cont = new FolderContinuation (todo, path, ctx);
                 return cont.execute();
+            } else if (!rootFile.exists()) {
+                return deleted();
             }
         } else {
             final FileObject rootFo =  URLMapper.findFileObject(root);
@@ -981,6 +983,11 @@ public class BinaryAnalyser {
                 if (ctx.isCancelled()) {
                     return Result.CLOSED;
                 }
+            }
+            
+            for (String deleted : getTimeStamps().second) {
+                delete(deleted);
+                markChanged();
             }
             return Result.FINISHED;
         }

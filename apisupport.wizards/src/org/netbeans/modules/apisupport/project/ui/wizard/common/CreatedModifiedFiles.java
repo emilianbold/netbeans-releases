@@ -95,6 +95,7 @@ import org.netbeans.modules.apisupport.project.api.EditableManifest;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.ModuleDependency;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
@@ -196,16 +197,19 @@ public final class CreatedModifiedFiles {
             return getProject().getLookup().lookup(NbModuleProvider.class);
         }
         
+        @Override
         public String[] getModifiedPaths() {
             String[] s = new String[getModifiedPathsSet().size()];
             return getModifiedPathsSet().toArray(s);
         }
         
+        @Override
         public String[] getCreatedPaths() {
             String[] s = new String[getCreatedPathsSet().size()];
             return getCreatedPathsSet().toArray(s);
         }
         
+        @Override
         public String[] getInvalidPaths() {
             String[] s = new String[getInvalidPathsSet().size()];
             return getInvalidPathsSet().toArray(s);
@@ -327,6 +331,21 @@ public final class CreatedModifiedFiles {
             layerHandle.setAutosave(false);
         }
         try {
+            //aggregate all Add Dependency operations into a single operation..
+            AddModuleDependency depOp = null;
+            Iterator<Operation> it = operations.iterator();
+            while (it.hasNext()) {
+                Operation oper = it.next();
+                if (oper instanceof AddModuleDependency) {
+                    if (depOp == null) {
+                        depOp = (AddModuleDependency) oper;
+                    } else {
+                        depOp.addDependencies(((AddModuleDependency)oper).getDependencies());
+                        it.remove();
+                    }
+                }
+            }
+            //and now execute
             for (Operation op : operations) {
                 op.run();
             }
@@ -430,6 +449,7 @@ public final class CreatedModifiedFiles {
             addCreatedOrModifiedPath(path, false);
         }
         
+        @Override
         public void run() throws IOException {
             FileObject target = FileUtil.createData(getProject().getProjectDirectory(), path);
             if (tokens == null) {
@@ -491,6 +511,7 @@ public final class CreatedModifiedFiles {
             addCreatedOrModifiedPath(this.bundlePath, true);
         }
         
+        @Override
         public void run() throws IOException {
             FileObject prjDir = getProject().getProjectDirectory();
             FileObject bundleFO = FileUtil.createData(prjDir, bundlePath);
@@ -534,12 +555,13 @@ public final class CreatedModifiedFiles {
             addModifiedFileObject(mfFO);
         }
         
+        @Override
         public void run() throws IOException {
             //#65420 it can happen the manifest is currently being edited. save it
             // and cross fingers because it can be in inconsistent state
             try {
                 DataObject dobj = DataObject.find(mfFO);
-                SaveCookie safe = dobj.getCookie(SaveCookie.class);
+                SaveCookie safe = dobj.getLookup().lookup(SaveCookie.class);
                 if (safe != null) {
                     safe.save();
                 }
@@ -588,6 +610,7 @@ public final class CreatedModifiedFiles {
             addCreatedOrModifiedPath(interfaceClassPath, true);
         }
         
+        @Override
         public void run() throws IOException {
             FileObject service = FileUtil.createData(
                     getProject().getProjectDirectory(),interfaceClassPath);
@@ -652,25 +675,40 @@ public final class CreatedModifiedFiles {
     }
     private static final class AddModuleDependency extends AbstractOperation {
         
-        private String codeNameBase;
-        private String releaseVersion;
-        private SpecificationVersion specVersion;
-        private boolean useInCompiler;
+        private List<NbModuleProvider.ModuleDependency> dependencies;
+        private Map<String, ModuleDependency> codenamebaseMap;
+
         
         public AddModuleDependency(Project project, String codeNameBase,
                 String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler) {
             super(project);
-            this.codeNameBase = codeNameBase;
-            this.releaseVersion = releaseVersion;
-            this.specVersion = specVersion;
-            this.useInCompiler = useInCompiler;
+            this.dependencies = new ArrayList<ModuleDependency>();
+            this.codenamebaseMap = new HashMap<String, ModuleDependency>();
+            addDependencies(Collections.singletonList(new ModuleDependency(codeNameBase, releaseVersion, specVersion, useInCompiler)));
             getModifiedPathsSet().add(getModuleInfo().getProjectFilePath()); // NOI18N
         }
         
+        public List<ModuleDependency> getDependencies() {
+            return dependencies;
+        }
+        
+        @Override
         public void run() throws IOException {
-            getModuleInfo().addDependency(codeNameBase, releaseVersion, specVersion, useInCompiler);
+            getModuleInfo().addDependencies(dependencies.toArray(new NbModuleProvider.ModuleDependency[0]));
             // XXX consider this carefully
             ProjectManager.getDefault().saveProject(getProject());
+        }
+
+        private void addDependencies(List<ModuleDependency> list) {
+            for (ModuleDependency md : list) {
+                ModuleDependency res = codenamebaseMap.get(md.getCodeNameBase());
+                if (res != null) {
+                    //TODO update restrictions somehow?
+                } else {
+                    codenamebaseMap.put(md.getCodeNameBase(), md);
+                    dependencies.add(md);
+                }
+            }
         }
         
     }
@@ -782,7 +820,7 @@ public final class CreatedModifiedFiles {
             // and cross fingers because it can be in inconsistent state
             try {
                 DataObject dobj = DataObject.find(manifestFile);
-                SaveCookie safe = dobj.getCookie(SaveCookie.class);
+                SaveCookie safe = dobj.getLookup().lookup(SaveCookie.class);
                 if (safe != null) {
                     safe.save();
                 }
@@ -820,6 +858,7 @@ public final class CreatedModifiedFiles {
             addCreatedOrModifiedPath(propertyPath,true);
         }
         
+        @Override
         public void run() throws IOException {
             EditableProperties p = getEditableProperties();
             p.putAll(getProperties());
@@ -896,6 +935,7 @@ public final class CreatedModifiedFiles {
             this.cmf = cmf;
         }
         
+        @Override
         public void run() throws IOException {
             op.run(cmf.getLayerHandle().layer(true));
         }
@@ -923,6 +963,7 @@ public final class CreatedModifiedFiles {
             return s.toArray(new String[s.size()]);
         }
         
+        @Override
         public String[] getInvalidPaths() {
             //TODO applicable here?
             return new String[0];
@@ -974,6 +1015,7 @@ public final class CreatedModifiedFiles {
             final String locBundleKey = (localizedDisplayName != null ? LayerUtil.generateBundleKeyForFile(layerPath) : null);
 
             LayerOperation op = new LayerOperation() {
+                @Override
                 public void run(FileSystem layer) throws IOException {
                     FileObject targetFO = FileUtil.createData(layer.getRoot(), layerPath);
                     if (content != null) {
@@ -1013,15 +1055,19 @@ public final class CreatedModifiedFiles {
             FileSystem layer = cmf.getLayerHandle().layer(false);
             if (layer != null && layer.findResource(layerPath) != null) {
                 layerOp = new Operation() {
+                    @Override
                     public void run() throws IOException {
                         throw new IOException("cannot overwrite " + layerPath); // NOI18N
                     }
+                    @Override
                     public String[] getModifiedPaths() {
                         return new String[0];
                     }
+                    @Override
                     public String[] getCreatedPaths() {
                         return new String[0];
                     }
+                    @Override
                     public String[] getInvalidPaths() {
                         // #85138: make sure we do not overwrite an existing entry.
                         return new String[] {layerPath};
@@ -1039,6 +1085,7 @@ public final class CreatedModifiedFiles {
             }
         }
         
+        @Override
         public void run() throws IOException{
             layerOp.run();
             if (createBundleKey != null) {
@@ -1060,6 +1107,7 @@ public final class CreatedModifiedFiles {
     public Operation createLayerAttribute(final String parentPath,
             final String attrName, final Object attrValue) {
         return layerModifications(new LayerOperation() {
+            @Override
             public void run(FileSystem layer) throws IOException {
                 FileObject f = layer.findResource(parentPath);
                 if (f == null) {
@@ -1090,6 +1138,7 @@ public final class CreatedModifiedFiles {
     public Operation orderLayerEntry(final String layerPath, final String precedingItemName, final String newItemName,
             final String followingItemName) {
         return layerModifications(new LayerOperation() {
+            @Override
             public void run(FileSystem layer) throws IOException {
                 FileObject f = layer.findResource(layerPath);
                 if (f == null) {

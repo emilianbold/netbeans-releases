@@ -53,12 +53,13 @@ import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
 import org.netbeans.spi.java.hints.*;
+import org.netbeans.spi.java.hints.Hint.Options;
 
 /**XXX: null initializer to a non-null variable!
  *
  * @author lahvac
  */
-@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs")
+@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY)
 public class NPECheck {
 
     @TriggerPattern("$var = $expr")
@@ -133,9 +134,10 @@ public class NPECheck {
         ExecutableElement ee = (ExecutableElement) e;
         int index = 0;
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        List<? extends VariableElement> params = ee.getParameters();
 
-        for (VariableElement param : ee.getParameters()) {
-            if (getStateFromAnnotations(param) == NOT_NULL) {
+        for (VariableElement param : params) {
+            if (getStateFromAnnotations(param) == NOT_NULL && (!ee.isVarArgs() || param != params.get(params.size() - 1))) {
                 switch (paramStates.get(index)) {
                     case NULL:
                         result.add(ErrorDescriptionFactory.forTree(ctx, mit.getArguments().get(index), NbBundle.getMessage(NPECheck.class, "ERR_NULL_TO_NON_NULL_ARG")));
@@ -150,6 +152,23 @@ public class NPECheck {
         
         return result;
     } 
+    
+    @TriggerPatterns({
+        @TriggerPattern("$variable != null"),
+        @TriggerPattern("null != $variable")
+    })
+    public static ErrorDescription notNullWouldBeNPE(HintContext ctx) {
+        TreePath variable = ctx.getVariables().get("$variable");
+        State r = computeExpressionsState(ctx.getInfo()).get(variable.getLeaf());
+        
+        if (r == State.NOT_NULL_BE_NPE) {
+            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_NotNullWouldBeNPE");
+            
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
+        }
+        
+        return null;
+    }
     
     private static final Object KEY_EXPRESSION_STATE = new Object();
     //Cancelling:
@@ -185,7 +204,7 @@ public class NPECheck {
                 return State.POSSIBLE_NULL_REPORT;
             }
 
-            if ("NotNull".equals(simpleName) || "NonNull".equals(simpleName)) {
+            if ("NotNull".equals(simpleName) || "NonNull".equals(simpleName) || "Nonnull".equals(simpleName)) {
                 return State.NOT_NULL;
             }
         }
@@ -252,11 +271,7 @@ public class NPECheck {
             State expr = scan(node.getExpression(), p);
             boolean wasNPE = false;
             
-            if (expr == State.NULL) {
-                wasNPE = true;
-            }
-
-            if (expr == State.POSSIBLE_NULL_REPORT) {
+            if (expr == State.NULL || expr == State.POSSIBLE_NULL || expr == State.POSSIBLE_NULL_REPORT) {
                 wasNPE = true;
             }
             
@@ -460,7 +475,7 @@ public class NPECheck {
                 if (right == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getLeftOperand()));
                     
-                    if (isVariableElement(e)) {
+                    if (isVariableElement(e) && variable2State.get(e) != State.NOT_NULL_BE_NPE) {
                         testedTo.put((VariableElement) e, State.NOT_NULL);
                         
                         return null;
@@ -469,7 +484,7 @@ public class NPECheck {
                 if (left == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getRightOperand()));
                     
-                    if (isVariableElement(e)) {
+                    if (isVariableElement(e) && variable2State.get(e) != State.NOT_NULL_BE_NPE) {
                         testedTo.put((VariableElement) e, State.NOT_NULL);
                         
                         return null;

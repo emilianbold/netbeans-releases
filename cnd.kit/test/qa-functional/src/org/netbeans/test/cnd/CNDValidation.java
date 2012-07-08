@@ -43,12 +43,15 @@
  */
 package org.netbeans.test.cnd;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.JDialog;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 
@@ -116,12 +119,26 @@ public class CNDValidation extends JellyTestCase {
         npwo.selectProject(SAMPLE_PROJECT_NAME);
         npwo.btNext().pushNoBlock();
         // close "No C/C++ Compilers Found" dialog
-        try {
-            NbDialogOperator dialogOper = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.cnd.toolchain.compilerset.Bundle", "NO_COMPILERS_FOUND_TITLE"));
-            dialogOper.close();
-        } catch (TimeoutExpiredException e) {
-            // ignore if not found
-        }
+        final AtomicBoolean stopClosingThread = new AtomicBoolean(false);
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                String title = Bundle.getStringTrimmed("org.netbeans.modules.cnd.toolchain.compilerset.Bundle", "NO_COMPILERS_FOUND_TITLE");
+                while (!stopClosingThread.get()) {
+                    JDialog jDialog =  JDialogOperator.findJDialog(title, false, false);
+                    if (jDialog != null) {
+                        new NbDialogOperator(jDialog).close();
+                        return;
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        // ignore
+                    }
+                }
+            }
+        }).start();
         NewCNDProjectNameLocationStepOperator npnlso = new NewCNDProjectNameLocationStepOperator();
         npnlso.txtProjectName().setText(SAMPLE_PROJECT_NAME);
         npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
@@ -129,6 +146,7 @@ public class CNDValidation extends JellyTestCase {
         npnlso.finish();
         // wait project appear in projects view
         new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
+        stopClosingThread.set(true);
     }
 
     /**

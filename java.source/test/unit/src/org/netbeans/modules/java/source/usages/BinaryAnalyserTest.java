@@ -42,29 +42,40 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.usages.BinaryAnalyser.Changes;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Result;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -101,6 +112,86 @@ public class BinaryAnalyserTest extends NbTestCase {
         assertReference(index, "annotations.ArrayOfStringArgAnnotation", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
         assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
         assertReference(index, "java.util.List", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
+    }
+    
+    public void testDeleteClassFolderContent() throws Exception {
+        FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+        FileObject indexDir = workDir.createFolder("index");
+        File jar = new File(getDataDir(), "Annotations.jar");
+        FileObject classFolderFO = workDir.createFolder("classes");
+        File classFolder = FileUtil.toFile(classFolderFO);
+        
+        assertNotNull(classFolder);
+        
+        unzip(jar, classFolder);
+        
+        final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
+        BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
+
+        assertEquals(Result.FINISHED, a.start(Utilities.toURI(classFolder).toURL(), new AtomicBoolean(), new AtomicBoolean()));
+
+        a.finish();
+        
+        Set<String> origClasses = listClasses(index);
+
+        assertTrue(origClasses.toString(), !origClasses.isEmpty());
+        
+        for (File c : classFolder.listFiles()) {
+            delete(c);
+        }
+        
+        a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
+
+        assertEquals(Result.FINISHED, a.start(Utilities.toURI(classFolder).toURL(), new AtomicBoolean(), new AtomicBoolean()));
+        Changes changes = a.finish();
+        
+        Set<String> removedClasses = new HashSet<String>();
+        
+        for (ElementHandle<TypeElement> eh : changes.removed) {
+            removedClasses.add(eh.getBinaryName());
+        }
+        
+        assertEquals(origClasses, removedClasses);
+        assertEquals(new HashSet<String>(), listClasses(index));
+    }
+    
+    public void testDeleteClassFolder() throws Exception {
+        FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
+        FileObject indexDir = workDir.createFolder("index");
+        File jar = new File(getDataDir(), "Annotations.jar");
+        FileObject classFolderFO = workDir.createFolder("classes");
+        File classFolder = FileUtil.toFile(classFolderFO);
+        
+        assertNotNull(classFolder);
+        
+        unzip(jar, classFolder);
+        
+        final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
+        BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
+
+        assertEquals(Result.FINISHED, a.start(Utilities.toURI(classFolder).toURL(), new AtomicBoolean(), new AtomicBoolean()));
+
+        a.finish();
+        
+        Set<String> origClasses = listClasses(index);
+
+        assertTrue(origClasses.toString(), !origClasses.isEmpty());
+        
+        delete(classFolder);
+        
+        a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
+
+        assertEquals(Result.FINISHED, a.start(Utilities.toURI(classFolder).toURL(), new AtomicBoolean(), new AtomicBoolean()));
+        Changes changes = a.finish();
+        
+        Set<String> removedClasses = new HashSet<String>();
+        
+        for (ElementHandle<TypeElement> eh : changes.removed) {
+            removedClasses.add(eh.getBinaryName());
+        }
+        
+        assertEquals(origClasses, removedClasses);
+        assertEquals(new HashSet<String>(), listClasses(index));
     }
 
     @Override
@@ -298,4 +389,50 @@ public class BinaryAnalyserTest extends NbTestCase {
         assertTrue(result.containsAll(Arrays.asList(in)));
     }
 
+    private void unzip(File what, File where) throws IOException {
+        JarFile jf = new JarFile(what);
+        Enumeration<JarEntry> en = jf.entries();
+        
+        while (en.hasMoreElements()) {
+            JarEntry current = en.nextElement();
+            if (current.isDirectory()) continue;
+            File target = new File(where, current.getName());
+            target.getParentFile().mkdirs();
+            assertTrue(target.getParentFile().isDirectory());
+            InputStream in = jf.getInputStream(current);
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
+            
+            FileUtil.copy(in, out);
+            
+            in.close();
+            out.close();
+        }
+    }
+    
+    private void delete(File what) {
+        File[] children = what.listFiles();
+        
+        if (children != null) {
+            for (File c : children) {
+                delete(c);
+            }
+        }
+        
+        assertTrue(what.delete());
+    }
+    
+    private Set<String> listClasses(Index index) throws IOException, InterruptedException {
+        final Set<String> result = new HashSet<String>();
+        index.query(
+                result,
+                DocumentUtil.binaryNameConvertor(),
+                DocumentUtil.declaredTypesFieldSelector(),
+                null,
+                Queries.createQuery(
+                DocumentUtil.FIELD_SIMPLE_NAME,
+                DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,
+                "",
+                DocumentUtil.translateQueryKind(NameKind.PREFIX)));
+        return result;
+    }
 }

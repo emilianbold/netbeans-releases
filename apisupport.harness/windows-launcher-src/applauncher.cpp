@@ -51,6 +51,7 @@
 using namespace std;
 
 const char *AppLauncher::OPT_DEFAULT_USER_DIR = "default_userdir=";
+const char *AppLauncher::OPT_DEFAULT_CACHE_DIR = "default_cachedir=";
 const char *AppLauncher::OPT_DEFAULT_OPTIONS = "default_options=";
 const char *AppLauncher::OPT_EXTRA_CLUSTERS = "extra_clusters=";
 const char *AppLauncher::OPT_JDK_HOME = "jdkhome=";
@@ -107,8 +108,8 @@ bool AppLauncher::findUserDir(const char *str) {
             logMsg("User home: %s", userHome.c_str());
         }
         str += strlen(HOME_TOKEN);
+        userDir = userHome;
     }
-    userDir = userHome;
     const char *appToken = strstr(str, APPNAME_TOKEN);
     if (appToken) {
         userDir += string(str, appToken - str);
@@ -117,6 +118,29 @@ bool AppLauncher::findUserDir(const char *str) {
         str += strlen(APPNAME_TOKEN);
     }
     userDir += str;
+    return true;
+}
+
+bool AppLauncher::findCacheDir(const char *str) {
+    logMsg("AppLauncher::findCacheDir");
+    if (strncmp(str, HOME_TOKEN, strlen(HOME_TOKEN)) == 0) {
+        if (userHome.empty()) {
+            if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_APPDATA_NAME, userHome)) {
+                return false;
+            }
+            logMsg("User home: %s", userHome.c_str());
+        }
+        str += strlen(HOME_TOKEN);
+        cacheDir = userHome;
+    }
+    const char *appToken = strstr(str, APPNAME_TOKEN);
+    if (appToken) {
+        cacheDir += string(str, appToken - str);
+        str += appToken - str;
+        cacheDir += appName;
+        str += strlen(APPNAME_TOKEN);
+    }
+    cacheDir += str;
     return true;
 }
 
@@ -132,6 +156,10 @@ void AppLauncher::adjustHeapSize() {
 
 const char * AppLauncher::getDefUserDirOptName() {
     return OPT_DEFAULT_USER_DIR;
+}
+
+const char * AppLauncher::getDefCacheDirOptName() {
+    return OPT_DEFAULT_CACHE_DIR;
 }
 
 const char * AppLauncher::getDefOptionsOptName() {
