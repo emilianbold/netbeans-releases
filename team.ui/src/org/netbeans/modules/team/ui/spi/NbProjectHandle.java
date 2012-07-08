@@ -59,4 +59,9 @@ public abstract class NbProjectHandle {
      * @return
      */
     public abstract Icon getIcon();
+    /**
+     * Url of the given project
+     * @return
+     */    
+    public abstract String getUrl();
 }

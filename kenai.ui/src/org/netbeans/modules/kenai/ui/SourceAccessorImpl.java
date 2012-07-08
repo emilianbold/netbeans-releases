@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;

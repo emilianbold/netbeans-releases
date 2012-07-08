@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.team.ui.common;
 
 import java.io.IOException;
 import java.net.URL;
@@ -52,6 +52,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -60,20 +61,22 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
- * Handle representing netbeans project in kenai dashboard
+ * Handle representing netbeans project in team dashboard
  * @author Jan Becicka
  */
-public class NbProjectHandleImpl extends NbProjectHandle{
+public class NbProjectHandleImpl extends NbProjectHandle {
 
     private Icon icon;
     private String displayName;
     URL url;
-    private SourceHandleImpl parent;
+    private SourceHandle parent;
+    private RemoveHandler removeHandler;
 
-    NbProjectHandleImpl(Project p, SourceHandleImpl parent) throws IOException {
+    NbProjectHandleImpl(Project p, SourceHandle parent, RemoveHandler removeHandler) throws IOException {
         displayName = ProjectUtils.getInformation(p).getDisplayName();
         icon = ProjectUtils.getInformation(p).getIcon();
         url = p.getProjectDirectory().getURL();
+        this.removeHandler = removeHandler;
         p.getProjectDirectory().addFileChangeListener(new FileChangeAdapter() {
             @Override
             public void fileDeleted(FileEvent fe) {
@@ -93,10 +96,11 @@ public class NbProjectHandleImpl extends NbProjectHandle{
         assert url!=null;
     }
 
-    NbProjectHandleImpl(UnloadedProjectInformation i, SourceHandleImpl parent) {
+    NbProjectHandleImpl(UnloadedProjectInformation i, SourceHandle parent, RemoveHandler removeHandler) {
         displayName = i.getDisplayName();
         icon = i.getIcon();
         url = i.getURL();
+        this.removeHandler = removeHandler;
         this.parent = parent;
         assert this.parent!=null;
         assert displayName!=null;
@@ -138,7 +142,7 @@ public class NbProjectHandleImpl extends NbProjectHandle{
     }
 
     public void remove() {
-        parent.remove(this);
+        removeHandler.remove(this);
     }
 
     @Override
@@ -161,5 +165,14 @@ public class NbProjectHandleImpl extends NbProjectHandle{
         int hash = 3;
         hash = 67 * hash + (this.url != null ? this.url.hashCode() : 0);
         return hash;
+    }
+
+    @Override
+    public String getUrl() {
+        return url.toString();
+    }
+    
+    public interface RemoveHandler {
+        void remove(NbProjectHandleImpl impl);
     }
 }

@@ -40,16 +40,15 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.team.ui.common;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.HashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.api.RecentProjects;
 import org.netbeans.modules.project.ui.api.UnloadedProjectInformation;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.openide.filesystems.FileStateInvalidException;
 
 /**
@@ -67,23 +66,23 @@ public class RecentProjectsCache {
         return instance;
     }
 
-    public synchronized NbProjectHandleImpl getProjectHandle(URL url, SourceHandleImpl src) throws FileStateInvalidException, IOException {
+    public synchronized NbProjectHandleImpl getProjectHandle(URL url, SourceHandle src, NbProjectHandleImpl.RemoveHandler handler) throws FileStateInvalidException, IOException {
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             if (p.getProjectDirectory().getURL().equals(url)) {
-                return new NbProjectHandleImpl(p, src);
+                return new NbProjectHandleImpl(p, src, handler);
             }
         }
         for (UnloadedProjectInformation i : RecentProjects.getDefault().getRecentProjectInformation()) {
             if (i.getURL().equals(url)) {
-                return new NbProjectHandleImpl(i, src);
+                return new NbProjectHandleImpl(i, src, handler);
             }
 
         }
         return null;
     }
 
-    public synchronized NbProjectHandleImpl getProjectHandle(Project p, SourceHandleImpl src) throws IOException  {
-        return new NbProjectHandleImpl(p, src);
+    public synchronized NbProjectHandleImpl getProjectHandle(Project p, SourceHandle src, NbProjectHandleImpl.RemoveHandler handler) throws IOException  {
+        return new NbProjectHandleImpl(p, src, handler);
     }
 
 }

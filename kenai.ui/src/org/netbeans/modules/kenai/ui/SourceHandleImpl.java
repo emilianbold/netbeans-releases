@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import org.netbeans.modules.team.ui.common.RecentProjectsCache;
+import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -187,7 +189,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         for (Project prj : newProjects) {
             try {
                 if (isUnder(prj.getProjectDirectory())) {
-                    NbProjectHandleImpl nbHandle = RecentProjectsCache.getDefault().getProjectHandle(prj, this);
+                    NbProjectHandleImpl nbHandle = RecentProjectsCache.getDefault().getProjectHandle(prj, this, removeHandler);
                     recent.remove(nbHandle);
                     recent.add(0, nbHandle);
                     if (recent.size()>MAX_PROJECTS) {
@@ -237,7 +239,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         List<String> roots = getStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation());
         for (String root:roots) {
             try {
-                NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root), this);
+                NbProjectHandleImpl nbH = RecentProjectsCache.getDefault().getProjectHandle(new URL(root), this, removeHandler);
                 if (nbH!=null)
                     recent.add(nbH);
             } catch (IOException ex) {
@@ -284,7 +286,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     private void storeRecent() {
         List<String> value = new ArrayList<String>();
         for (NbProjectHandle nbp:recent) {
-            value.add(((NbProjectHandleImpl) nbp).url.toString());
+            value.add(((NbProjectHandleImpl) nbp).getUrl());
         }
         if (prefs!=null)
             putStringList(prefs, RECENTPROJECTS_PREFIX + feature.getLocation(), value);
@@ -347,4 +349,11 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             Logger.getLogger(SourceHandleImpl.class.getName()).log(Level.INFO, null, ex);
         }
     }
+    
+    private NbProjectHandleImpl.RemoveHandler removeHandler = new NbProjectHandleImpl.RemoveHandler() {
+        @Override
+        public void remove(NbProjectHandleImpl nbProjectHandle) {
+            SourceHandleImpl.this.remove(nbProjectHandle);
+        }
+    };
 }
