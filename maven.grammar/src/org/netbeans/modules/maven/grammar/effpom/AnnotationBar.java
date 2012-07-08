@@ -299,7 +299,7 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
     @Override
     public void run() {
         // determine current line
-        int line = -1;
+        int line;
         int offset = caret.getDot();
         try {
             line = Utilities.getLineOffset(doc, offset);
@@ -451,7 +451,9 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
      */
     private void paintView(View view, Graphics g, int yBase) {
         JTextComponent component = editorUI.getComponent();
-        if (component == null) return;
+        if (component == null) {
+            return;
+        }
         BaseTextUI textUI = (BaseTextUI)component.getUI();
 
         Element rootElem = textUI.getRootView(component).getElement();
@@ -516,8 +518,10 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
      * @return found AnnotateLine or <code>null</code>
      */
     private Location getAnnotateLine(int line) {
-        return  elementAnnotations.get(line);
-
+        if (elementAnnotations != null) {
+            return  elementAnnotations.get(line);
+        }
+        return null;
     }
 
     /**
@@ -545,8 +549,8 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
         g.setColor(backgroundColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
-        AbstractDocument doc = (AbstractDocument)component.getDocument();
-        doc.readLock();
+        AbstractDocument docum = (AbstractDocument)component.getDocument();
+        docum.readLock();
         try{
             foldHierarchy.lock();
             try{
@@ -576,7 +580,7 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
         } catch (BadLocationException ble){
             LOG.log(Level.WARNING, null, ble);
         } finally {
-            doc.readUnlock();
+            docum.readUnlock();
         }
     }
 
