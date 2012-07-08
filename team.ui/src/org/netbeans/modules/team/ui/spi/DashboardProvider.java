@@ -16,7 +16,7 @@ import org.netbeans.modules.team.ui.treelist.TreeListNode;
  *
  * @author S. Aubrecht
  */
-public interface DashboardProvider<S extends TeamServer, P> {
+public interface DashboardProvider<S extends TeamServer<P>, P> {
 
 //    /**
 //     * Display given Team user in the Dashboard window, the UI will start querying for

@@ -52,7 +52,7 @@ import javax.swing.JComponent;
  *
  * @author Ondrej Vrabec
  */
-public interface TeamServer {
+public interface TeamServer<P> {
     
     
     /**
@@ -74,7 +74,7 @@ public interface TeamServer {
 
     public PasswordAuthentication getPasswordAuthentication();
     
-    public Collection<ProjectHandle> getMyProjects();
+    public Collection<ProjectHandle<P>> getMyProjects();
     
     public Status getStatus ();
 

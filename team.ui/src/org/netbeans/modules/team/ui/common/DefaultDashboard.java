@@ -83,7 +83,7 @@ import org.openide.windows.TopComponent;
  * @author S. Aubrecht, Tomas Stupka
  */
 @NbBundle.Messages("A11Y_TeamProjects=Team Projects")
-public final class DefaultDashboard<S extends TeamServer, P> {
+public final class DefaultDashboard<S extends TeamServer<P>, P> {
 
     /**
      * Name of the property that will be fired when some change in opened projects

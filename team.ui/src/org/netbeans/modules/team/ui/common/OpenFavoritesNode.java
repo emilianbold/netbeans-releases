@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class OpenFavoritesNode<S extends TeamServer, P> extends LeafNode {
+public class OpenFavoritesNode<S extends TeamServer<P>, P> extends LeafNode {
 
     private final SourceHandle src;
 

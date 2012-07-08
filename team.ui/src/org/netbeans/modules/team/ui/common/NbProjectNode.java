@@ -63,7 +63,7 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
  *
  * @author Jan Becicka
  */
-public class NbProjectNode<S extends TeamServer, P> extends LeafNode {
+public class NbProjectNode<S extends TeamServer<P>, P> extends LeafNode {
 
     private final NbProjectHandle prj;
 

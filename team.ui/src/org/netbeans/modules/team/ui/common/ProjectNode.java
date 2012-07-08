@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
+public class ProjectNode<S extends TeamServer<P>, P> extends TreeListNode {
 
     private final ProjectHandle project;
     private final ProjectAccessor accessor;
