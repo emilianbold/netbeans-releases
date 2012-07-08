@@ -41,255 +41,327 @@
  */
 package org.netbeans.modules.team.ods.ui.dashboard;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.MalformedURLException;
-import java.net.URL;
-import javax.accessibility.AccessibleContext;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
 import javax.swing.Action;
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import org.netbeans.modules.team.c2c.api.CloudServer;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
-import org.netbeans.modules.team.ui.common.ColorManager;
-import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.treelist.TreeList;
-import org.netbeans.modules.team.ui.treelist.TreeListModel;
-import org.openide.awt.HtmlBrowser;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import static org.netbeans.modules.team.ods.ui.dashboard.Bundle.*;
-import org.netbeans.modules.team.ui.common.CategoryNode;
-import org.netbeans.modules.team.ui.common.EmptyNode;
-import org.netbeans.modules.team.ui.common.ErrorNode;
-import org.netbeans.modules.team.ui.common.UserNode;
+import org.netbeans.modules.team.ui.common.AbstractDashboard;
+import org.netbeans.modules.team.ui.common.ProjectNode;
+import org.netbeans.modules.team.ui.common.SourceListNode;
+import org.netbeans.modules.team.ui.spi.MemberAccessor;
+import org.netbeans.modules.team.ui.spi.MemberHandle;
+import org.netbeans.modules.team.ui.spi.MessagingAccessor;
+import org.netbeans.modules.team.ui.spi.NbProjectHandle;
+import org.netbeans.modules.team.ui.spi.ProjectAccessor;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.SourceAccessor;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.UIUtils;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Jan Becicka, Ondrej Vrabec
+ * @author Tomas Stupka
  */
-public final class DashboardImpl {
-    
-    private final TreeListModel model = new TreeListModel();
-    private static final ListModel EMPTY_MODEL = new AbstractListModel() {
-        @Override
-        public int getSize() {
-            return 0;
-        }
-        @Override
-        public Object getElementAt(int index) {
-            return null;
-        }
-    };
-    private final TreeList treeList = new TreeList(model);
-    private final JScrollPane dashboardComponent;
-    private boolean opened = false;
+public class DashboardImpl extends AbstractDashboard<CloudUiServer, DummyCloudProject> {
 
-    private final Object LOCK = new Object();
+    private PropertyChangeListener kenaiListener;
+    private ProjectAccessor<CloudUiServer, DummyCloudProject> projectAccessor;
+    private MessagingAccessor<DummyCloudProject> messagingAccessor;
+    
+    @Override
+    public void setServer(CloudUiServer server) {
+        super.setServer(server);
+    }
 
-    private CloudServer server;
-    private final CategoryNode openProjectsNode;
-    private final CategoryNode myProjectsNode;
-
-    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DashboardImpl.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningProjects"));
-    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DashboardImpl.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DashboardImpl.class, "LBL_OpeningMyProjects"));
-    private final ErrorNode otherProjectsError;
-    
-    private final PropertyChangeListener userListener;
-    private final UserNode userNode;
-    
-//  XXX  private LoginHandle login;
-    
-    private DashboardImpl() {
-        dashboardComponent = new JScrollPane() {
+    @Override
+    public Action createLogoutAction() {
+        return new AbstractAction() {  
             @Override
-            public void requestFocus() {
-                Component view = getViewport().getView();
-                if (view != null) {
-                    view.requestFocus();
-                } else {
-                    super.requestFocus();
+            public void actionPerformed(ActionEvent e) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        getServer().logout();
+                    }
+                });
+            }
+        };
+    }
+
+    @Override
+    public Action createLoginAction() {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // XXX handle more instances
+                TeamServer s = UIUtils.showLogin(getServer(), false);
+                if(s != null) {
+                    
                 }
             }
-            @Override
-            public boolean requestFocusInWindow() {
-                Component view = getViewport().getView();
-                return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
-            }
         };
-        dashboardComponent.setBorder(BorderFactory.createEmptyBorder());
-        dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
-        dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
-
-        userListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-//                XXX
-//                if( LoginHandle.PROP_MEMBER_PROJECT_LIST.equals(evt.getPropertyName()) ) {
-//                    refreshMemberProjects(true);
-//                }
-            }
-        };
-
-        Action dummy = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
-        AbstractAction loginAction = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // XXX handle more instances
-                UIUtils.showLogin(CloudUiServer.forServer(server), false);
-            }
-        };
-        AbstractAction logoutAction = new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // XXX handle more instances
-                CloudUiServer.forServer(server).logout();
-            }
-        };
-        userNode = new UserNode(dummy, loginAction, logoutAction, null, null);
-        model.addRoot(-1, userNode);
-        
-        openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_OpenProjects"), null); // NOI18N
-        model.addRoot(-1, openProjectsNode);
-        model.addRoot(-1, noOpenProjects);
-
-        myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DashboardImpl.class, "LBL_MyProjects"), // NOI18N
-                ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
-        
-//        if (login!=null) {
-//            if (!model.getRootNodes().contains(myProjectsNode)) {
-//                model.addRoot(-1, myProjectsNode);
-//            }
-//            if (!model.getRootNodes().contains(noMyProjects)) {
-//                model.addRoot(-1, noMyProjects);
-//            }
-//        }
-        
-        otherProjectsError = new ErrorNode(NbBundle.getMessage(DashboardImpl.class, "ERR_OpenProjects"), new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // XXX
-//                clearError(otherProjectsError);
-//                refreshProjects();
-            }
-        });
-        
-        AccessibleContext accessibleContext = treeList.getAccessibleContext();
-        String a11y = NbBundle.getMessage(DashboardImpl.class, "A11Y_TeamProjects"); //NOI18N
-        accessibleContext.setAccessibleName(a11y);
-        accessibleContext.setAccessibleDescription(a11y);
-        setServer(server);
     }
-    
-    private static class Holder {
-        private static final DashboardImpl theInstance = new DashboardImpl();
+
+    @Override
+    protected void setSelectedServer(ProjectHandle<DummyCloudProject> project) {
+        org.netbeans.modules.team.ui.spi.UIUtils.setSelectedServer(getServer());
     }
     
     public static DashboardImpl getInstance() {
         return Holder.theInstance;
     }
-    
-    
-    public void setServer (CloudServer server) {
-        this.server = server;
-    }
-    
-    public JComponent getComponent() {
-        synchronized( LOCK ) {
-            if (!opened) {
-                switchContent();
-                opened = true;
-            }
-        }
-        return dashboardComponent;
+
+    @Override
+    public LeafNode createMemberNode(MemberHandle user, TreeListNode parent) {
+        return null;
     }
 
-    private void switchContent() {
-        Runnable r = new Runnable() {
+    @Override
+    public TreeListNode createMessagingNode(ProjectNode pn, ProjectHandle<DummyCloudProject> project) {
+        return new MessagingNode(pn, project, this);
+    }
+
+    @Override
+    public TreeListNode createMyProjectNode(ProjectHandle<DummyCloudProject> p) {
+        return new MyProjectNode(p, this);
+    }
+
+    @Override
+    public TreeListNode createSourceNode(SourceHandle s, SourceListNode sln) {
+        return new SourceNode(s, sln, this);
+    }
+
+    @Override
+    public ProjectAccessor<CloudUiServer, DummyCloudProject> getProjectAccessor() {
+        return ProjectAccessorImpl.getDefault();
+    }
+
+    @Override
+    public MessagingAccessor getMessagingAccessor() {
+//        if(messagingAccessor == null) {
+//            messagingAccessor = new MessagingAccessor<DummyCloudProject>() {
+//
+//                @Override
+//                public MessagingHandle getMessaging(ProjectHandle<DummyCloudProject> project) {
+//                    return new MessagingHandle() {
+//
+//                        @Override
+//                        public int getOnlineCount() {
+//                            throw new UnsupportedOperationException("Not supported yet.");
+//                        }
+//
+//                        @Override
+//                        public int getMessageCount() {
+//                            throw new UnsupportedOperationException("Not supported yet.");
+//                        }
+//
+//                        @Override
+//                        public void addPropertyChangeListener(PropertyChangeListener l) {
+//                            throw new UnsupportedOperationException("Not supported yet.");
+//                        }
+//
+//                        @Override
+//                        public void removePropertyChangeListener(PropertyChangeListener l) {
+//                            throw new UnsupportedOperationException("Not supported yet.");
+//                        }
+//                    };
+//                }
+//
+//                @Override
+//                public Action getOpenMessagesAction(ProjectHandle<DummyCloudProject> project) {
+//                    return null;
+//                }
+//
+//                @Override
+//                public Action getCreateChatAction(ProjectHandle<DummyCloudProject> project) {
+//                    throw new UnsupportedOperationException("Not supported yet.");
+//                }
+//
+//                @Override
+//                public Action getReconnectAction(ProjectHandle<DummyCloudProject> project) {
+//                    throw new UnsupportedOperationException("Not supported yet.");
+//                }
+//                
+//            };
+//        }
+        return null;
+    }
+
+    @Override
+    public MemberAccessor getMemberAccessor() {
+//        return new MemberAccessor() {
+//
+//            @Override
+//            public List getMembers(ProjectHandle project) {
+//                throw new UnsupportedOperationException("Not supported yet.");
+//            }
+//
+//            @Override
+//            public Action getStartChatAction(MemberHandle member) {
+//                throw new UnsupportedOperationException("Not supported yet.");
+//            }
+//        };
+        return null;
+    }
+
+    @Override
+    public SourceAccessor<DummyCloudProject> getSourceAccessor() {
+        return new SourceAccessor<DummyCloudProject>() {
+
             @Override
-            public void run() {
-                boolean isEmpty = true;
-
-                synchronized( LOCK ) {
-                    isEmpty = true;
-                }
-
-                boolean isTreeListShowing = dashboardComponent.getViewport().getView() == treeList;
-                if( isEmpty ) {
-                    if( isTreeListShowing || dashboardComponent.getViewport().getView() == null ) {
-                        dashboardComponent.setViewportView(createEmptyContent());
-                        dashboardComponent.invalidate();
-                        dashboardComponent.revalidate();
-                        dashboardComponent.repaint();
+            public Action getOpenFavoritesAction(SourceHandle src) {
+                return new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        throw new UnsupportedOperationException("Not supported yet.");
                     }
-                } else {
-                    
-                }
+                };
+            }
+
+            @Override
+            public List<SourceHandle> getSources(final ProjectHandle<DummyCloudProject> project) {
+                LinkedList<SourceHandle> ret = new LinkedList<SourceHandle>();
+                ret.add(new SourceHandle() {
+
+                    @Override
+                    public String getDisplayName() {
+                        return project.getDisplayName() + "-s git repository";
+                    }
+
+                    @Override
+                    public boolean isSupported() {
+                        return true;
+                    }
+
+                    @Override
+                    public String getScmFeatureName() {
+                        return "MSG_GIT";
+                    }
+
+                    @Override
+                    public List<NbProjectHandle> getRecentProjects() {
+                        return Collections.emptyList();
+                    }
+
+                    @Override
+                    public File getWorkingDirectory() {
+                        return new File("/tmp");
+                    }
+                });
+                return ret;
+            }
+
+            @Override
+            public Action getOpenSourcesAction(SourceHandle project) {
+                return new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                };
+            }
+
+            @Override
+            public Action getDefaultAction(SourceHandle source) {
+                return new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                };
+            }
+
+            @Override
+            public Action getDefaultAction(NbProjectHandle prj) {
+                return new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                };
+            }
+
+            @Override
+            public Action getOpenOtherAction(SourceHandle src) {
+                return new AbstractAction() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                };
             }
         };
-        if( SwingUtilities.isEventDispatchThread() ) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
-        }
     }
 
-    @Messages({"LBL_No_Project_Open=No Team Project Open", "LBL_WhatIsTeamServer=What is Team Server?"})
-    private JComponent createEmptyContent() {
-        JPanel res = new JPanel( new GridBagLayout() );
-        res.setOpaque(false);
-        
-        JLabel lbl = new TreeLabel(LBL_No_Project_Open());
-        lbl.setForeground(ColorManager.getDefault().getDisabledColor());
-        lbl.setHorizontalAlignment(JLabel.CENTER);
-        LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeamServer(), createWhatIsCloudServerAction() );
+    @Override
+    public QueryAccessor<DummyCloudProject> getQueryAccessor() {
+        return getQueryAccessor(DummyCloudProject.class);
+    }
 
-        model.removeRoot(userNode);
-        model.removeRoot(myProjectsNode);
-        model.removeRoot(openProjectsNode);
-        userNode.set(null, false);
-        res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
-        res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
-        res.add( lbl, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
-        res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
-        res.add( new JLabel(), new GridBagConstraints(0, 4, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
-        return res;
+    @Override
+    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<DummyCloudProject> project) {
+        return new SourceListNode(pn, this, (LeafNode[]) null);
     }
     
-    // XXX obsolete? 
-    private Action createWhatIsCloudServerAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(
-                            new URL("http://netbeans.org/kb/docs/ide/team-servers.html")); //NOI18N
-                } catch( MalformedURLException ex ) {
-                    //shouldn't happen
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        };
-    }
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
+    public static class ODSQueryAccessor extends QueryAccessor<DummyCloudProject> {
+
+        @Override
+        public Class<DummyCloudProject> type() {
+            return DummyCloudProject.class;
+        }
+            
+        @Override
+        public QueryHandle getAllIssuesQuery(ProjectHandle<DummyCloudProject> project) {
+            return null;
+        }
+
+        @Override
+        public List<QueryHandle> getQueries(ProjectHandle<DummyCloudProject> project) {
+            return null;
+        }
+
+        @Override
+        public List<QueryResultHandle> getQueryResults(QueryHandle query) {
+            return null;
+        }
+
+        @Override
+        public Action getFindIssueAction(ProjectHandle<DummyCloudProject> project) {
+            return null;
+        }
+
+        @Override
+        public Action getCreateIssueAction(ProjectHandle<DummyCloudProject> project) {
+            return null;
+        }
+
+        @Override
+        public Action getOpenQueryResultAction(QueryResultHandle result) {
+            return null;
+        }
+
+        @Override
+        public Action getDefaultAction(QueryHandle query) {
+            return null;
+        }
+
+    };
+    
+    private static class Holder {
+        private static final DashboardImpl theInstance = new DashboardImpl();
+    }    
+    
 }

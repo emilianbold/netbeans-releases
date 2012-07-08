@@ -44,15 +44,20 @@ package org.netbeans.modules.team.ods.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
 import org.netbeans.modules.team.c2c.api.CloudServer;
 import org.netbeans.modules.team.ods.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.team.ods.ui.dashboard.DummyCloudProject;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.util.WeakListeners;
@@ -73,8 +78,13 @@ public class CloudUiServer implements TeamServer {
         server.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
-                if (CloudServer.PROP_LOGIN.equals(pce.getPropertyName()))  {
-                    propertyChangeSupport.firePropertyChange(PROP_LOGIN, pce.getOldValue(), pce.getNewValue());
+                String propName = pce.getPropertyName();
+                if (propName.equals(CloudServer.PROP_LOGIN)) {
+                    propertyChangeSupport.firePropertyChange(TeamServer.PROP_LOGIN, pce.getOldValue(), pce.getNewValue());
+                } else if (propName.equals(CloudServer.PROP_LOGIN_STARTED)) {
+                    propertyChangeSupport.firePropertyChange(TeamServer.PROP_LOGIN_STARTED, pce.getOldValue(), pce.getNewValue());
+                } else if (propName.equals(CloudServer.PROP_LOGIN_FAILED)) {
+                    propertyChangeSupport.firePropertyChange(TeamServer.PROP_LOGIN_FAILED, pce.getOldValue(), pce.getNewValue());
                 }
             }
         }, server));
@@ -135,7 +145,7 @@ public class CloudUiServer implements TeamServer {
     @Override
     public JComponent getDashboardComponent () {
         DashboardImpl dashboard = DashboardImpl.getInstance();
-        dashboard.setServer(getImpl(false));
+        dashboard.setServer(this);
         return dashboard.getComponent();
     }
 
@@ -154,6 +164,66 @@ public class CloudUiServer implements TeamServer {
             throw new IllegalStateException("Original cloud server no longer exists.");
         }
         return server;
+    }
+
+    @Override
+    public PasswordAuthentication getPasswordAuthentication() {
+        return getServer().getPasswordAuthentication();
+    }
+
+    @Override
+    public Collection<ProjectHandle> getMyProjects() {
+        Collection<ProjectHandle> ret = new LinkedList<ProjectHandle>();
+        
+        ret.add(new ProjectHandle<DummyCloudProject>("1") {
+            @Override
+            public String getDisplayName() {
+                return "My First cloud project";
+            }
+
+            @Override
+            public DummyCloudProject getTeamProject() {
+                return new DummyCloudProject();
+            }
+
+            @Override
+            public boolean isPrivate() {
+                return false;
+            }
+        });
+        ret.add(new ProjectHandle<DummyCloudProject>("2") {
+            @Override
+            public String getDisplayName() {
+                return "My Second cloud project";
+            }
+
+            @Override
+            public DummyCloudProject getTeamProject() {
+                return new DummyCloudProject();
+            }
+
+            @Override
+            public boolean isPrivate() {
+                return false;
+            }
+        });
+        ret.add(new ProjectHandle<DummyCloudProject>("3") {
+            @Override
+            public String getDisplayName() {
+                return "My Third cloud project";
+            }
+
+            @Override
+            public DummyCloudProject getTeamProject() {
+                return new DummyCloudProject();
+            }
+
+            @Override
+            public boolean isPrivate() {
+                return false;
+            }
+        });
+        return ret;
     }
     
 }
