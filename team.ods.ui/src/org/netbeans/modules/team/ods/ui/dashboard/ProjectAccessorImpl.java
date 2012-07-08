@@ -44,13 +44,13 @@ package org.netbeans.modules.team.ods.ui.dashboard;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 
@@ -60,13 +60,10 @@ import org.openide.util.NbBundle;
  */
 public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyCloudProject> {
     
-    private static ProjectAccessorImpl instance;
+    private final DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard;
 
-    public static ProjectAccessor getDefault() {
-        if(instance == null) {
-            instance = new ProjectAccessorImpl();
-        }
-        return instance;
+    ProjectAccessorImpl(DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard) {
+        this.dashboard = dashboard;
     }
 
     @Override
@@ -131,8 +128,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
     private Action getOpenAction(final ProjectHandle project) {
         // this action is supposed to be used for openenig a project from My Projects
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
-                DashboardImpl.getInstance().addProject(project, false, true);
+                dashboard.addProject(project, false, true);
             }
         };
     }

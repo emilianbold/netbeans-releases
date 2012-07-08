@@ -88,7 +88,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
-import org.netbeans.modules.team.ui.common.AbstractDashboard;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
@@ -571,12 +571,12 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                         return new ProjectHandle[0];
                     }
                     String kenaiName = kenai.getUrl().getHost();
-                    Preferences prefs = NbPreferences.forModule(AbstractDashboard.class).node(AbstractDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
-                    int count = prefs.getInt(AbstractDashboard.PREF_COUNT, 0); //NOI18N
+                    Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DefaultDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(kenaiName) ? "" : "-" + kenaiName)); //NOI18N
+                    int count = prefs.getInt(DefaultDashboard.PREF_COUNT, 0); //NOI18N
                     ProjectHandle[] handles = new ProjectHandle[count];
                     ArrayList<String> ids = new ArrayList<String>(count);
                     for (int i = 0; i < count; i++) {
-                        String id = prefs.get(AbstractDashboard.PREF_ID + i, null); //NOI18N
+                        String id = prefs.get(DefaultDashboard.PREF_ID + i, null); //NOI18N
                         if (null != id && id.trim().length() > 0) {
                             ids.add(id.trim());
                         }

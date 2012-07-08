@@ -55,7 +55,7 @@ import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
-import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -83,8 +83,20 @@ import org.openide.windows.TopComponent;
  * @author S. Aubrecht, Tomas Stupka
  */
 @NbBundle.Messages("A11Y_TeamProjects=Team Projects")
-public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboard<S, P> {
+public final class DefaultDashboard<S extends TeamServer, P> {
 
+    /**
+     * Name of the property that will be fired when some change in opened projects
+     * in Dashboard occurs. Firing this property doesn't neccessary mean that number
+     * of opened project has changed.
+     */
+    public static final String PROP_OPENED_PROJECTS = "openedProjects"; // NOI18N
+
+    /**
+     * fired when user clicks refresh
+     */
+    public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
+    
     public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     public static final String PREF_COUNT = "count"; //NOI18N
     public static final String PREF_ID = "id"; //NOI18N
@@ -122,16 +134,18 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
 
     private final CategoryNode openProjectsNode;
     private final CategoryNode myProjectsNode;
-    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(AbstractDashboard.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(AbstractDashboard.class, "LBL_OpeningProjects"));
-    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(AbstractDashboard.class, "NO_MY_PROJECTS"), NbBundle.getMessage(AbstractDashboard.class, "LBL_OpeningMyProjects"));
+    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningProjects"));
+    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningMyProjects"));
 
     private final Object LOCK = new Object();
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private PropertyChangeListener serverListener;
     private S server;
+    private final DashboardProvider<S, P> dashboardProvider;
 
-    protected AbstractDashboard() {
+    public DefaultDashboard(S server, DashboardProvider<S, P> dashboardProvider) {
+        this.dashboardProvider = dashboardProvider;
         dashboardComponent = new JScrollPane() {
             @Override
             public void requestFocus() {
@@ -167,16 +181,16 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
                         refreshProjects();
                     }
                 },
-                createLoginAction(),    // login    
-                createLogoutAction(),
-                getProjectAccessor().getNewTeamProjectAction(),
-                getProjectAccessor().getOpenNonMemberProjectAction());
+                dashboardProvider.createLoginAction(),    // login    
+                dashboardProvider.createLogoutAction(),
+                dashboardProvider.getProjectAccessor().getNewTeamProjectAction(),
+                dashboardProvider.getProjectAccessor().getOpenNonMemberProjectAction());
         model.addRoot(-1, userNode);
-        openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(AbstractDashboard.class, "LBL_OpenProjects"), null); // NOI18N
+        openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_OpenProjects"), null); // NOI18N
         model.addRoot(-1, openProjectsNode);
         model.addRoot(-1, noOpenProjects);
 
-        myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(AbstractDashboard.class, "LBL_MyProjects"), // NOI18N
+        myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_MyProjects"), // NOI18N
                 ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
         if (login!=null) {
             if (!model.getRootNodes().contains(myProjectsNode)) {
@@ -187,7 +201,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
             }
         }
 
-        memberProjectsError = new ErrorNode(NbBundle.getMessage(AbstractDashboard.class, "ERR_OpenMemberProjects"), new AbstractAction() {
+        memberProjectsError = new ErrorNode(NbBundle.getMessage(DefaultDashboard.class, "ERR_OpenMemberProjects"), new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearError(memberProjectsError);
@@ -195,7 +209,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
             }
         });
 
-        otherProjectsError = new ErrorNode(NbBundle.getMessage(AbstractDashboard.class, "ERR_OpenProjects"), new AbstractAction() {
+        otherProjectsError = new ErrorNode(NbBundle.getMessage(DefaultDashboard.class, "ERR_OpenProjects"), new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearError(otherProjectsError);
@@ -203,13 +217,13 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
             }
         });
         AccessibleContext accessibleContext = treeList.getAccessibleContext();
-        String a11y = NbBundle.getMessage(AbstractDashboard.class, "A11Y_TeamProjects");
+        String a11y = NbBundle.getMessage(DefaultDashboard.class, "A11Y_TeamProjects");
         accessibleContext.setAccessibleName(a11y);
         accessibleContext.setAccessibleDescription(a11y);
         setServer(server);
     }
 
-    protected QueryAccessor<P> getQueryAccessor(Class<P> p) {
+    public QueryAccessor<P> getQueryAccessor(Class<P> p) {
         Collection<? extends QueryAccessor> c = Lookup.getDefault().lookupAll(QueryAccessor.class);
         for (QueryAccessor a : c) {
             if(a.type().equals(p)) {
@@ -223,35 +237,30 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
      * currently visible team instance
      * @return
      */
-    @Override
     public S getServer() {
         return server;
     }
 
-    @Override
-    public ProjectHandle[] getOpenProjects() {
+    public ProjectHandle<P>[] getOpenProjects() {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
         s.addAll(memberProjects);
         return s.toArray(new ProjectHandle[s.size()]);
     }
 
-    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
     }
 
-    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.removePropertyChangeListener(listener);
     }
 
-    @Override
     public boolean isMemberProject(ProjectHandle m) {
         return memberProjects.contains(m);
     }
 
-    public void setServer(S server) {
+    private void setServer(S server) {
         this.server = server;
         final PasswordAuthentication newValue = server!=null?server.getPasswordAuthentication():null;
         if (newValue == null) {
@@ -268,7 +277,6 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
                 if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName())) {
-
                     final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
                     if (newValue == null) {
                         setUser(null);
@@ -308,7 +316,6 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
      * Typically should be called after successful login.
      * @param login User login details.
      */
-    @Override
     public void setUser( final LoginHandle login ) {
         synchronized( LOCK ) {
             if( null != this.login ) {
@@ -365,9 +372,8 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
      * @param project
      * @param isMemberProject
      */
-    @Override
     public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {
-        setSelectedServer(project);
+        UIUtils.setSelectedServer(dashboardProvider.getServer(project));
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -406,7 +412,6 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
         });
     }
 
-    @Override
     public void removeProject( ProjectHandle project ) {
         synchronized( LOCK ) {
             if( !openProjects.contains(project) ) {
@@ -432,7 +437,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
             public void actionPerformed(ActionEvent e) {
                 try {
                     URLDisplayer.getDefault().showURL(
-                            new URL(NbBundle.getMessage(AbstractDashboard.class, "URL_TeamOverview"))); //NOI18N
+                            new URL(NbBundle.getMessage(DefaultDashboard.class, "URL_TeamOverview"))); //NOI18N
                 } catch( MalformedURLException ex ) {
                     //shouldn't happen
                     Exceptions.printStackTrace(ex);
@@ -543,7 +548,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
                 boolean isEmpty;
 
                 synchronized( LOCK ) {
-                    isEmpty = null == AbstractDashboard.this.login && openProjects.isEmpty();
+                    isEmpty = null == DefaultDashboard.this.login && openProjects.isEmpty();
                 }
 
                 boolean isTreeListShowing = dashboardComponent.getViewport().getView() == treeList;
@@ -584,10 +589,10 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
         JPanel res = new JPanel( new GridBagLayout() );
         res.setOpaque(false);
 
-        JLabel lbl = new TreeLabel(NbBundle.getMessage(AbstractDashboard.class, "LBL_No_Team_Project_Open")); //NOI18N
+        JLabel lbl = new TreeLabel(NbBundle.getMessage(DefaultDashboard.class, "LBL_No_Team_Project_Open")); //NOI18N
         lbl.setForeground(ColorManager.getDefault().getDisabledColor());
         lbl.setHorizontalAlignment(JLabel.CENTER);
-        LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(AbstractDashboard.class, "LBL_WhatIsTeam"), createWhatIsTeamAction() ); //NOI18N
+        LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DefaultDashboard.class, "LBL_WhatIsTeam"), createWhatIsTeamAction() ); //NOI18N
 
         model.removeRoot(userNode);
         model.removeRoot(myProjectsNode);
@@ -606,7 +611,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
             return;
         }
         String teamName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(AbstractDashboard.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
         int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
         if( 0 == count ) {
             projectLoadingFinished();
@@ -634,7 +639,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
 
     private void storeAllProjects() {
         String serverName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(AbstractDashboard.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
         int index = 0;
         for( ProjectHandle project : openProjects ) {
             //do not store private projects
@@ -684,7 +689,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
     }
 
     public void bookmarkingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(AbstractDashboard.class, "LBL_Bookmarking"));
+        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Bookmarking"));
     }
 
     public void bookmarkingFinished() {
@@ -692,27 +697,26 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
     }
 
     public void deletingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(AbstractDashboard.class, "LBL_Deleting"));
+        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Deleting"));
     }
 
     public void deletingFinished() {
         userNode.loadingFinished();
     }
 
-
-    protected void loggingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(AbstractDashboard.class, "LBL_Authenticating"));
+    public void loggingStarted() {
+        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Authenticating"));
     }
 
-    protected void loggingFinished() {
+    public void loggingFinished() {
         userNode.loadingFinished();
     }
 
-    protected void xmppStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(AbstractDashboard.class, "LBL_ConnectingXMPP"));
+    public void xmppStarted() {
+        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_ConnectingXMPP"));
     }
 
-    protected void xmppFinsihed() {
+    public void xmppFinsihed() {
         userNode.loadingFinished();
     }
 
@@ -733,7 +737,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
     }
 
     public void myProjectsProgressStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(AbstractDashboard.class, "LBL_LoadingIssues"));
+        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_LoadingIssues"));
     }
 
     public void myProjectsProgressFinished() {
@@ -798,7 +802,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
 
     private void addMemberProjectsToModel( int index, List<ProjectHandle> projects ) {
         for( ProjectHandle p : projects ) {
-            model.addRoot(index, createMyProjectNode(p) );
+            model.addRoot(index, dashboardProvider.createMyProjectNode(p) );
         }
     }
 
@@ -860,6 +864,10 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
         }
     }
 
+    DashboardProvider<S, P> getDashboardProvider() {
+        return dashboardProvider;
+    }
+
     private class OtherProjectsLoader implements Runnable, Cancellable {
 
         private boolean cancelled = false;
@@ -881,7 +889,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
                 @Override
                 public void run() {
                     ArrayList<ProjectHandle> projects = new ArrayList<ProjectHandle>(projectIds.size());
-                    ProjectAccessor<S, P> accessor = getProjectAccessor();
+                    ProjectAccessor<S, P> accessor = dashboardProvider.getProjectAccessor();
                     for( String id : projectIds ) {
                         ProjectHandle handle = accessor.getNonMemberProject(server, id, forceRefresh);
                         if (handle!=null) {
@@ -945,7 +953,7 @@ public abstract class AbstractDashboard<S extends TeamServer, P> extends Dashboa
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    ProjectAccessor<S, P> accessor = AbstractDashboard.this.getProjectAccessor();
+                    ProjectAccessor<S, P> accessor = dashboardProvider.getProjectAccessor();
                     res[0] = new ArrayList( accessor.getMemberProjects(server, user, forceRefresh) );
                 }
             };

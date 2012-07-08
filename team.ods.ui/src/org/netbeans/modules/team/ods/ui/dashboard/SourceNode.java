@@ -52,7 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 public class SourceNode<S extends TeamServer, P> extends LeafNode {
 
     private final SourceHandle source;
-    private final Dashboard<S, P> dashboard;
+    private final DashboardProvider<S, P> dashboard;
 
     private JPanel panel;
     private JLabel lbl;
@@ -76,7 +76,7 @@ public class SourceNode<S extends TeamServer, P> extends LeafNode {
     private JLabel lbl2;
     private LinkButton btn;
 
-    public SourceNode( SourceHandle source, TreeListNode parent, Dashboard<S, P> dashboard ) {
+    public SourceNode( SourceHandle source, TreeListNode parent, DashboardProvider<S, P> dashboard ) {
         super( parent );
         this.source = source;
         this.dashboard = dashboard;

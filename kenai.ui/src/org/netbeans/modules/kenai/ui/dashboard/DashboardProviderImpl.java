@@ -42,22 +42,19 @@
 package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
 import org.netbeans.modules.kenai.ui.OpenNetBeansIDEProjects;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
 import org.netbeans.modules.kenai.ui.impl.KenaiServer;
-import org.netbeans.modules.team.ui.common.AbstractDashboard;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
@@ -69,49 +66,19 @@ import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public class DashboardImpl extends AbstractDashboard<KenaiServer, KenaiProject> {
-
-    private PropertyChangeListener kenaiListener;
+public class DashboardProviderImpl implements DashboardProvider<KenaiServer, KenaiProject> {
     
-    @Override
-    public void setServer(KenaiServer server) {
-        super.setServer(server);
-        if (server==null) {
-            return;
-        }
-        kenaiListener = new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent pce) {
-                if (Kenai.PROP_XMPP_LOGIN_STARTED.equals(pce.getPropertyName())) {
-                    xmppStarted();
-                } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
-                    xmppFinsihed();
-                } else if (Kenai.PROP_XMPP_LOGIN_FAILED.equals(pce.getPropertyName())) {
-                    xmppFinsihed();
-                }
-            }
-        };
+    private final KenaiServer server;
 
-        server.addPropertyChangeListener(WeakListeners.propertyChange(kenaiListener, server));
-
-        KenaiConnection.getDefault(server.getKenai()).addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (KenaiConnection.PROP_XMPP_STARTED.equals(evt.getPropertyName())) {
-                    xmppStarted();
-                } else if (KenaiConnection.PROP_XMPP_FINISHED.equals(evt.getPropertyName())) {
-                    xmppFinsihed();
-                }
-            }
-        });
+    public DashboardProviderImpl(KenaiServer server) {
+        this.server = server;
     }
-
+    
     @Override
     public Action createLogoutAction() {
         return new AbstractAction() {  
@@ -120,7 +87,7 @@ public class DashboardImpl extends AbstractDashboard<KenaiServer, KenaiProject> 
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override
                     public void run() {
-                        getServer().logout();
+                        server.logout();
                     }
                 });
             }
@@ -132,18 +99,9 @@ public class DashboardImpl extends AbstractDashboard<KenaiServer, KenaiProject> 
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                org.netbeans.modules.kenai.ui.spi.UIUtils.showLogin(getServer().getKenai());
+                org.netbeans.modules.kenai.ui.spi.UIUtils.showLogin(server.getKenai());
             }
         };
-    }
-
-    @Override
-    protected void setSelectedServer(ProjectHandle<KenaiProject> project) {
-        org.netbeans.modules.team.ui.spi.UIUtils.setSelectedServer(KenaiServer.forKenai((project.getTeamProject()).getKenai()));
-    }
-    
-    public static DashboardImpl getInstance() {
-        return Holder.theInstance;
     }
 
     @Override
@@ -167,11 +125,6 @@ public class DashboardImpl extends AbstractDashboard<KenaiServer, KenaiProject> 
     }
 
     @Override
-    public ProjectAccessor<KenaiServer, KenaiProject> getProjectAccessor() {
-        return ProjectAccessorImpl.getDefault();
-    }
-
-    @Override
     public MessagingAccessor<KenaiProject> getMessagingAccessor() {
         return MessagingAccessorImpl.getDefault();
     }
@@ -187,21 +140,27 @@ public class DashboardImpl extends AbstractDashboard<KenaiServer, KenaiProject> 
     }
 
     @Override
-    public QueryAccessor<KenaiProject> getQueryAccessor() {
-        return getQueryAccessor(KenaiProject.class);
-    }
-
-    @Override
     public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
-        if (getServer().getUrl().toString().equals("https://netbeans.org")) {//NOI18N
-            return new SourceListNode(pn, this, new OpenNetBeansIDEProjects(getServer().getKenai(), pn));
+        if (server.getUrl().toString().equals("https://netbeans.org")) { //NOI18N
+            return new SourceListNode(pn, this, new OpenNetBeansIDEProjects(server.getKenai(), pn));
         } else {
             return new SourceListNode(pn, this, (LeafNode[]) null);
         }
     }
-    
-    private static class Holder {
-        private static final DashboardImpl theInstance = new DashboardImpl();
-    }    
+
+    @Override
+    public QueryAccessor<KenaiProject> getQueryAccessor() {
+        return server.getDashboard().getQueryAccessor(KenaiProject.class);
+    }            
+
+    @Override
+    public ProjectAccessor<KenaiServer, KenaiProject> getProjectAccessor() {
+        return ProjectAccessorImpl.getDefault();
+    }
+
+    @Override
+    public KenaiServer getServer(ProjectHandle<KenaiProject> project) {
+        return KenaiServer.forKenai((project.getTeamProject()).getKenai());
+    }
     
 }

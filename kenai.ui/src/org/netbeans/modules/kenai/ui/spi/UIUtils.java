@@ -58,7 +58,6 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.kenai.ui.impl.LoginUtils;
@@ -83,8 +82,8 @@ public final class UIUtils {
         return kenai.getUrl().getHost() + name;
     }
 
-    public static void addDashboardListener(PropertyChangeListener propertyChangeListener) {
-        DashboardImpl.getInstance().addPropertyChangeListener(propertyChangeListener);
+    public static void addDashboardListener(Kenai kenai, PropertyChangeListener propertyChangeListener) {
+        KenaiServer.forKenai(kenai).getDashboard().addPropertyChangeListener(propertyChangeListener);
     }
     
     private UIUtils() {
@@ -192,7 +191,7 @@ public final class UIUtils {
     }
 
     public static ProjectHandle<KenaiProject>[] getDashboardProjects() {
-        return DashboardImpl.getInstance().getOpenProjects();
+        return KenaiServer.getOpenProjects();
     }
     
     public static void logKenaiUsage(Object... parameters) {

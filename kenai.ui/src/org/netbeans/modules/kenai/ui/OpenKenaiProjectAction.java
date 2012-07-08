@@ -48,8 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -68,6 +67,7 @@ public final class OpenKenaiProjectAction extends AbstractAction {
     public OpenKenaiProjectAction() {
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
 
         final JButton open = new JButton(NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectAction.OpenFromKenai"));
@@ -79,6 +79,7 @@ public final class OpenKenaiProjectAction extends AbstractAction {
 
         KenaiSearchPanel openPanel = new KenaiSearchPanel(KenaiSearchPanel.PanelType.OPEN, true, kenai!=null?kenai:Utilities.getPreferredKenai());
         openPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (KenaiDialogDescriptor.PROP_SELECTION_VALID.equals(evt.getPropertyName())) {
                     open.setEnabled((Boolean) evt.getNewValue());
@@ -96,7 +97,8 @@ public final class OpenKenaiProjectAction extends AbstractAction {
             KenaiProject selProjects[] = openPanel.getSelectedProjects();
             if (null != selProjects && selProjects.length > 0) {
                 for (KenaiProject prj : selProjects) {
-                    DashboardImpl.getInstance().addProject(new ProjectHandleImpl(prj), false, true);
+                    ProjectHandleImpl pHandle = new ProjectHandleImpl(prj);
+                    KenaiServer.getDashboard(pHandle).addProject(pHandle, false, true);
                 }
                 UIUtils.activateTeamDashboard();
             }

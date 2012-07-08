@@ -61,7 +61,6 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProjectMember.Role;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
 import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.kenai.ui.project.DetailsAction;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
@@ -69,8 +68,10 @@ import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.URLDisplayerAction;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -138,7 +139,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new OpenKenaiProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
+                TeamServer ts = org.netbeans.modules.team.ui.spi.UIUtils.getSelectedServer();
+                assert ts instanceof KenaiServer;
+                new OpenKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
             }
         };
     }
@@ -152,8 +155,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     private Action getOpenAction(final ProjectHandle project) {
         // this action is supposed to be used for openenig a project from My Projects
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
-                DashboardImpl.getInstance().addProject(project, false, true);
+                KenaiServer.getDashboard(project).addProject(project, false, true);
             }
         };
     }
@@ -240,7 +244,8 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                DashboardImpl.getInstance().bookmarkingStarted();
+                final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(project);
+                dashboard.bookmarkingStarted();
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
@@ -255,7 +260,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
                         } finally {
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
-                                    DashboardImpl.getInstance().bookmarkingFinished();
+                                    dashboard.bookmarkingFinished();
                                 }
                             });
                         }
@@ -284,7 +289,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new NewKenaiProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
+                TeamServer ts = org.netbeans.modules.team.ui.spi.UIUtils.getSelectedServer();
+                assert ts instanceof KenaiServer;
+                new NewKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
             }
         };
     }

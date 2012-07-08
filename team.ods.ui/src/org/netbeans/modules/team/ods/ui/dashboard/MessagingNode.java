@@ -51,19 +51,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
-import org.netbeans.modules.team.ui.common.AbstractDashboard;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.openide.util.ImageUtilities;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
-import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 
@@ -81,12 +77,12 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
     private List<JLabel> labels = new ArrayList<JLabel>(5);
     private List<LinkButton> buttons = new ArrayList<LinkButton>(3);
     private final Object LOCK = new Object();
-    private final AbstractDashboard dashboard;
+    private final DashboardProviderImpl dashboardProvider;
 
-    public MessagingNode( TreeListNode parent, ProjectHandle<DummyCloudProject> project, AbstractDashboard dashboard ) {
+    public MessagingNode( TreeListNode parent, ProjectHandle<DummyCloudProject> project, DashboardProviderImpl dashboardProvider ) {
         super( parent, null );
         this.project = project;
-        this.dashboard = dashboard;
+        this.dashboardProvider = dashboardProvider;
 //        messaging = load();
 //        messaging.addPropertyChangeListener(this);
         // XXX
@@ -109,7 +105,7 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
 
     @Override
     protected JComponent createComponent( MessagingHandle data ) {
-        MessagingAccessor accessor = dashboard.getMessagingAccessor();
+        MessagingAccessor accessor = dashboardProvider.getMessagingAccessor();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
 
@@ -159,7 +155,7 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
 //                panel.add( lbl, new GridBagConstraints(4,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 //            }
 
-            btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_ProjectDetails"), dashboard.getProjectAccessor().getDetailsAction(project)); //NOI18N
+            btn = new LinkButton(NbBundle.getMessage(MessagingNode.class, "LBL_ProjectDetails"), dashboardProvider.getProjectAccessor().getDetailsAction(project)); //NOI18N
             buttons.add( btn );
             panel.add( btn, new GridBagConstraints(5,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
 

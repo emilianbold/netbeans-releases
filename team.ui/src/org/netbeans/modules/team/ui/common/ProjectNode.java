@@ -60,6 +60,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -90,12 +91,13 @@ public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
     private final Object LOCK = new Object();
 
     private final PropertyChangeListener projectListener;
-    private final AbstractDashboard<S, P> dashboard;
+    private final DefaultDashboard<S, P> dashboard;
 
-    public ProjectNode( final ProjectHandle project, final AbstractDashboard<S, P> dashboard ) {
+    public ProjectNode( final ProjectHandle project, final DefaultDashboard<S, P> dashboard ) {
         super( true, null );
-        if (project==null)
+        if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
+        }
         this.dashboard = dashboard;
         this.projectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -120,7 +122,7 @@ public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
         };
         this.project = project;
         this.project.addPropertyChangeListener( projectListener );
-        this.accessor = dashboard.getProjectAccessor();
+        this.accessor = dashboard.getDashboardProvider().getProjectAccessor();
         regFont = new TreeLabel().getFont();
         boldFont = regFont.deriveFont(Font.BOLD);
     }
@@ -133,23 +135,25 @@ public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
         return accessor;
     }
 
+    @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
-        if( null != dashboard.getMessagingAccessor() ) {
-            children.add( dashboard.createMessagingNode(this, project) ); 
+        DashboardProvider<S, P> provider = dashboard.getDashboardProvider();
+        if( null != provider.getMessagingAccessor() ) {
+            children.add( provider.createMessagingNode(this, project) ); 
         }
-        if( null != dashboard.getMemberAccessor() ) {
-            children.add( new MemberListNode(this, dashboard) );
+        if( null != provider.getMemberAccessor() ) {
+            children.add( new MemberListNode(this, provider) );
         }
         BuildAccessor builds = BuildAccessor.getDefault();
         if (builds.isEnabled(project)) {
             children.add(new BuildListNode(this, builds));
         }
-        if( null != dashboard.getQueryAccessor() ) {
-            children.add( new QueryListNode(this, dashboard) );
+        if( null != provider.getQueryAccessor() ) {
+            children.add( new QueryListNode(this, provider) );
         }
-        if( null != dashboard.getSourceAccessor() ) {
-            children.add( dashboard.createSourceListNode(this, project) );
+        if( null != provider.getSourceAccessor() ) {
+            children.add( provider.createSourceListNode(this, project) );
         }
         return children;
     }

@@ -58,10 +58,9 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.QueryListNode;
-import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
@@ -117,7 +116,7 @@ public class OpenNetBeansIDEProjects extends LeafNode {
 
                                 @Override
                                 public void run() {
-                                    DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                    KenaiServer.getDashboard(pHandle).addProject(pHandle, false, true);
                                 }
                             });
                         } catch (KenaiException e) {

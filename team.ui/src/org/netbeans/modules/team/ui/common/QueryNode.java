@@ -56,7 +56,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
@@ -72,7 +72,7 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
  */
 public class QueryNode<S extends TeamServer, P> extends AsynchronousLeafNode<List<QueryResultHandle>> implements PropertyChangeListener {
 
-    private final Dashboard<S, P> dashboard;
+    private final DashboardProvider<S, P> dashboard;
     private final QueryHandle query;
     
     private JPanel panel;
@@ -80,7 +80,7 @@ public class QueryNode<S extends TeamServer, P> extends AsynchronousLeafNode<Lis
     private List<LinkButton> buttons = new ArrayList<LinkButton>(10);
     private final Object LOCK = new Object();
 
-    public QueryNode( QueryHandle query, TreeListNode parent, Dashboard<S, P> dashboard ) {
+    public QueryNode( QueryHandle query, TreeListNode parent, DashboardProvider<S, P> dashboard ) {
         super( parent, query.getDisplayName() );
         this.query = query;
         this.dashboard = dashboard;

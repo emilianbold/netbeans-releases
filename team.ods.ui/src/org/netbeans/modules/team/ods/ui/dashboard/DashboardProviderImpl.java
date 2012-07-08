@@ -49,10 +49,12 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.xml.ws.Holder;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
-import org.netbeans.modules.team.ui.common.AbstractDashboard;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
@@ -74,17 +76,15 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DashboardImpl extends AbstractDashboard<CloudUiServer, DummyCloudProject> {
+public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, DummyCloudProject> {
 
-    private PropertyChangeListener kenaiListener;
-    private ProjectAccessor<CloudUiServer, DummyCloudProject> projectAccessor;
-    private MessagingAccessor<DummyCloudProject> messagingAccessor;
-    
-    @Override
-    public void setServer(CloudUiServer server) {
-        super.setServer(server);
+    private final CloudUiServer server;
+
+    public DashboardProviderImpl(CloudUiServer server) {
+        this.server = server;
     }
-
+    
+    
     @Override
     public Action createLogoutAction() {
         return new AbstractAction() {  
@@ -93,7 +93,7 @@ public class DashboardImpl extends AbstractDashboard<CloudUiServer, DummyCloudPr
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override
                     public void run() {
-                        getServer().logout();
+                        server.logout();
                     }
                 });
             }
@@ -106,21 +106,12 @@ public class DashboardImpl extends AbstractDashboard<CloudUiServer, DummyCloudPr
             @Override
             public void actionPerformed(ActionEvent e) {
                 // XXX handle more instances
-                TeamServer s = UIUtils.showLogin(getServer(), false);
+                TeamServer s = UIUtils.showLogin(server, false);
                 if(s != null) {
                     
                 }
             }
         };
-    }
-
-    @Override
-    protected void setSelectedServer(ProjectHandle<DummyCloudProject> project) {
-        org.netbeans.modules.team.ui.spi.UIUtils.setSelectedServer(getServer());
-    }
-    
-    public static DashboardImpl getInstance() {
-        return Holder.theInstance;
     }
 
     @Override
@@ -135,7 +126,7 @@ public class DashboardImpl extends AbstractDashboard<CloudUiServer, DummyCloudPr
 
     @Override
     public TreeListNode createMyProjectNode(ProjectHandle<DummyCloudProject> p) {
-        return new MyProjectNode(p, this);
+        return new MyProjectNode(p, server.getDashboard(), this);
     }
 
     @Override
@@ -145,7 +136,7 @@ public class DashboardImpl extends AbstractDashboard<CloudUiServer, DummyCloudPr
 
     @Override
     public ProjectAccessor<CloudUiServer, DummyCloudProject> getProjectAccessor() {
-        return ProjectAccessorImpl.getDefault();
+        return new ProjectAccessorImpl(server.getDashboard());
     }
 
     @Override
@@ -307,12 +298,17 @@ public class DashboardImpl extends AbstractDashboard<CloudUiServer, DummyCloudPr
 
     @Override
     public QueryAccessor<DummyCloudProject> getQueryAccessor() {
-        return getQueryAccessor(DummyCloudProject.class);
+        return server.getDashboard().getQueryAccessor(DummyCloudProject.class);
     }
 
     @Override
     public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<DummyCloudProject> project) {
         return new SourceListNode(pn, this, (LeafNode[]) null);
+    }
+
+    @Override
+    public CloudUiServer getServer(ProjectHandle<DummyCloudProject> project) {
+        return server;
     }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
@@ -359,9 +355,4 @@ public class DashboardImpl extends AbstractDashboard<CloudUiServer, DummyCloudPr
         }
 
     };
-    
-    private static class Holder {
-        private static final DashboardImpl theInstance = new DashboardImpl();
-    }    
-    
 }

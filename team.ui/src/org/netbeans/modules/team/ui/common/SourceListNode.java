@@ -45,7 +45,7 @@ package org.netbeans.modules.team.ui.common;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -61,10 +61,10 @@ import org.openide.util.NbBundle;
  * @author S. Aubrecht, Jan Becicka
  */
 public class SourceListNode<S extends TeamServer, P> extends SectionNode {
-    private final Dashboard<S, P> dashboard;
+    private final DashboardProvider<S, P> dashboard;
     private final LeafNode[] nodes;
 
-    public SourceListNode( ProjectNode parent, Dashboard<S, P> dashboard, LeafNode... nodes  ) {
+    public SourceListNode( ProjectNode parent, DashboardProvider<S, P> dashboard, LeafNode... nodes  ) {
         super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
         this.dashboard = dashboard;
         this.nodes = nodes;

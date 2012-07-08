@@ -64,9 +64,8 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
-import org.netbeans.modules.team.ui.common.AbstractDashboard;
-import org.netbeans.modules.team.ui.spi.QueryAccessor;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -311,13 +310,14 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
+                                        final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                                         SwingUtilities.invokeLater( new Runnable() {
                                             @Override
                                             public void run() {
-                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                                dashboard.addProject(pHandle, false, true);
                                             }
                                         });
-                                        DashboardImpl.getInstance().getQueryAccessor().getFindIssueAction(pHandle).actionPerformed(e);
+                                        dashboard.getQueryAccessor(KenaiProject.class).getFindIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_ISSUETRACKER"))); //NOI18N
@@ -357,13 +357,14 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                 if (kp != null) {
                                     if (kp.getFeatures(Type.ISSUES).length > 0) {
                                         final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
+                                        final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                                         SwingUtilities.invokeLater( new Runnable() {
                                             @Override
                                             public void run() {
-                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
+                                                dashboard.addProject(pHandle, false, true);
                                             }
                                         });
-                                        DashboardImpl.getInstance().getQueryAccessor().getCreateIssueAction(pHandle).actionPerformed(e);
+                                        dashboard.getQueryAccessor(KenaiProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_ISSUETRACKER"))); //NOI18N
@@ -409,12 +410,13 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                 final KenaiProject kp = getActualKenaiProject(proj, getKenaiProjectName(proj));
                                 if (kp != null) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                        SwingUtilities.invokeLater( new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                DashboardImpl.getInstance().addProject(pHandle, false, true);
-                                            }
-                                        });
+                                    final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                                    SwingUtilities.invokeLater( new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            dashboard.addProject(pHandle, false, true);
+                                        }
+                                    });
                                 }
                             } catch (KenaiException e) {
                                 String err = e.getLocalizedMessage();

@@ -51,8 +51,9 @@ import javax.swing.*;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
-import org.netbeans.modules.team.ui.spi.Dashboard;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
@@ -113,11 +114,13 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
+    private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
 
     public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
         super( null );
         if (project==null)
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
+        dashboard = KenaiServer.getDashboard(project);
         this.projectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
@@ -148,7 +151,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
                     for (QueryResultHandle queryResult : queryResults) {
                         if (queryResult.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                            DashboardImpl.getInstance().myProjectsProgressStarted();
+                            dashboard.myProjectsProgressStarted();
                             setBugsLater(queryResult);
                             return;
                         }
@@ -159,7 +162,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
         this.project = project;
         this.accessor = ProjectAccessorImpl.getDefault();
         this.maccessor = MessagingAccessorImpl.getDefault();
-        this.qaccessor = DashboardImpl.getInstance().getQueryAccessor();
+        this.qaccessor = dashboard.getQueryAccessor(KenaiProject.class);
         this.project.addPropertyChangeListener( projectListener );
         this.mh = maccessor.getMessaging(project);
         this.mh.addPropertyChangeListener(projectListener);
@@ -198,7 +201,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 issuesRP.post(new Runnable() {
 
                     public void run() {
-                        DashboardImpl.getInstance().myProjectsProgressStarted();
+                        dashboard.myProjectsProgressStarted();
                         allIssuesQuery = qaccessor.getAllIssuesQuery(project);
                         if (allIssuesQuery != null) {
                             allIssuesQuery.addPropertyChangeListener(projectListener);
@@ -210,7 +213,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                                 }
                             }
                         }
-                        DashboardImpl.getInstance().myProjectsProgressFinished();
+                        dashboard.myProjectsProgressFinished();
                     }
                 });
 
@@ -253,7 +256,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 if (btnMessages != null) {
                     btnMessages.setVisible(b);
                 }
-                DashboardImpl.getInstance().dashboardComponent.repaint();
+                dashboard.dashboardComponent.repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -320,9 +323,8 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 rightPar.setVisible(visible);
                 btnBugs.setVisible(!"0".equals(bug.getText())); // NOI18N
                 component.validate();
-                DashboardImpl instance = DashboardImpl.getInstance();
-                instance.myProjectsProgressFinished();
-                instance.dashboardComponent.repaint();
+                dashboard.myProjectsProgressFinished();
+                dashboard.dashboardComponent.repaint();
             }
         });
     }

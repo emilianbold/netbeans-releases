@@ -52,7 +52,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -67,9 +67,9 @@ import org.openide.util.NbBundle;
  * @author S. Aubrecht
  */
 public class QueryListNode<S extends TeamServer, P> extends SectionNode {
-    private final Dashboard<S, P> dashboard;
+    private final DashboardProvider<S, P> dashboard;
 
-    public QueryListNode( ProjectNode parent, Dashboard<S, P> dashboard) {
+    public QueryListNode( ProjectNode parent, DashboardProvider<S, P> dashboard) {
         super( NbBundle.getMessage(QueryListNode.class, "LBL_Issues"), parent, ProjectHandle.PROP_QUERY_LIST ); //NOI18N
         this.dashboard = dashboard;
     }

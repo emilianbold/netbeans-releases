@@ -181,6 +181,10 @@ public final class UIUtils {
             TeamServerTopComponent.getDefault().setSelectedServer(teamServer);
         }
     }
+    
+    public static TeamServer getSelectedServer () {
+        return Dashboard.getInstance().getTeamServer();
+    }
 
     private static String getParamString(Object... parameters) {
         if (parameters == null || parameters.length == 0) {

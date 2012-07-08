@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
@@ -54,8 +53,9 @@ import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.c2c.api.CloudServer;
-import org.netbeans.modules.team.ods.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.team.ods.ui.dashboard.DashboardProviderImpl;
 import org.netbeans.modules.team.ods.ui.dashboard.DummyCloudProject;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -72,9 +72,11 @@ public class CloudUiServer implements TeamServer {
     private final WeakReference<CloudServer> impl;
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    private final DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard;
 
     private CloudUiServer (CloudServer server) {
         this.impl = new WeakReference<CloudServer>(server);
+        dashboard = new DefaultDashboard<CloudUiServer, DummyCloudProject>(this, new DashboardProviderImpl(this));
         server.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -101,6 +103,10 @@ public class CloudUiServer implements TeamServer {
         }
         return serverUi;
     }
+    
+    public DefaultDashboard getDashboard() {
+        return dashboard;
+    }    
 
     @Override
     public URL getUrl () {
@@ -144,8 +150,6 @@ public class CloudUiServer implements TeamServer {
 
     @Override
     public JComponent getDashboardComponent () {
-        DashboardImpl dashboard = DashboardImpl.getInstance();
-        dashboard.setServer(this);
         return dashboard.getComponent();
     }
 

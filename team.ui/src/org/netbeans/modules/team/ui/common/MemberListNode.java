@@ -49,10 +49,12 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.openide.util.NbBundle;
 
@@ -61,14 +63,14 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class MemberListNode extends SectionNode {
+public class MemberListNode<S extends TeamServer, P> extends SectionNode {
 
     private MessagingHandle msg;
     private PropertyChangeListener l;
     private static final String PROP_MEMBERS = "members"; // NOI18N
-    private final AbstractDashboard dashboard;
+    private final DashboardProvider<S, P> dashboard;
 
-    public MemberListNode( ProjectNode parent, AbstractDashboard dashboard ) {
+    public MemberListNode( ProjectNode<S, P> parent, DashboardProvider<S, P> dashboard ) {
         super(getText(dashboard.getMessagingAccessor().getMessaging(parent.getProject())),
              parent, PROP_MEMBERS); //NOI18N
         this.dashboard = dashboard;
@@ -102,7 +104,7 @@ public class MemberListNode extends SectionNode {
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        MemberAccessor accessor = dashboard.getMemberAccessor();
+        MemberAccessor<P> accessor = dashboard.getMemberAccessor();
         List<MemberHandle> sources = accessor.getMembers(project);
         for (MemberHandle s : sources) {
             LeafNode n = dashboard.createMemberNode(s, this);
@@ -120,6 +122,4 @@ public class MemberListNode extends SectionNode {
             msg.removePropertyChangeListener(l);
         }
     }
-
-
 }

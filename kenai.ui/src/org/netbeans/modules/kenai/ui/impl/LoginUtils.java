@@ -48,7 +48,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.team.ui.common.AbstractDashboard;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.openide.util.NbPreferences;
 import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
@@ -73,7 +73,7 @@ public class LoginUtils {
         if (kenai.getStatus()!=Kenai.Status.OFFLINE) {
             return true;
         }
-        final Preferences preferences = NbPreferences.forModule(AbstractDashboard.class);
+        final Preferences preferences = NbPreferences.forModule(DefaultDashboard.class);
 
         if (!force) {
             String online = preferences.get(UIUtils.getPrefName(kenai, LOGIN_STATUS_PREF), "false"); // NOI18N

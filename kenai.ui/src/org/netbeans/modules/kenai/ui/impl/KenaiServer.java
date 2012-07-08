@@ -46,8 +46,10 @@ import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -56,8 +58,10 @@ import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
-import org.netbeans.modules.kenai.ui.dashboard.DashboardImpl;
+import org.netbeans.modules.kenai.ui.dashboard.DashboardProviderImpl;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -71,12 +75,17 @@ import org.openide.util.WeakListeners;
  */
 public class KenaiServer implements TeamServer {
     private static final Map<Kenai, KenaiServer> serverMap = new WeakHashMap<Kenai, KenaiServer>(3);
+
     private final Kenai kenai;
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    private final PropertyChangeListener kenaiListener;
 
+    private DefaultDashboard<KenaiServer, KenaiProject> dashboard;
+    
     private KenaiServer (Kenai kenai) {
         this.kenai = kenai;
+        dashboard = new DefaultDashboard<KenaiServer, KenaiProject>(this, new DashboardProviderImpl(this));
         kenai.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -90,8 +99,38 @@ public class KenaiServer implements TeamServer {
                 }
             }
         }, kenai));
+        
+        kenaiListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent pce) {
+                if (Kenai.PROP_XMPP_LOGIN_STARTED.equals(pce.getPropertyName())) {
+                    dashboard.xmppStarted();
+                } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
+                    dashboard.xmppFinsihed();
+                } else if (Kenai.PROP_XMPP_LOGIN_FAILED.equals(pce.getPropertyName())) {
+                    dashboard.xmppFinsihed();
+                }
+            }
+        };
+
+        kenai.addPropertyChangeListener(WeakListeners.propertyChange(kenaiListener, this));
+
+        KenaiConnection.getDefault(getKenai()).addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (KenaiConnection.PROP_XMPP_STARTED.equals(evt.getPropertyName())) {
+                    dashboard.xmppStarted();
+                } else if (KenaiConnection.PROP_XMPP_FINISHED.equals(evt.getPropertyName())) {
+                    dashboard.xmppFinsihed();
+                }
+            }
+        });        
     }
 
+    public DefaultDashboard<KenaiServer, KenaiProject> getDashboard() {
+        return dashboard;
+    }
+    
     public static KenaiServer forKenai (Kenai kenai) {
         KenaiServer serverUi;
         synchronized (serverMap) {
@@ -102,6 +141,30 @@ public class KenaiServer implements TeamServer {
             }
         }
         return serverUi;
+    }
+    
+    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
+        return getDashboard(pHandle.getTeamProject().getKenai());
+    }
+    
+    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(Kenai kenai) {
+        KenaiServer server = forKenai(kenai);
+        return server.getDashboard();
+    }
+    
+    public static ProjectHandle<KenaiProject>[] getOpenProjects() {
+        ArrayList<KenaiServer> servers;
+        synchronized (serverMap) {
+            servers = new ArrayList<KenaiServer>(serverMap.values());
+        }
+        LinkedList<ProjectHandle<KenaiProject>> ret = new LinkedList<ProjectHandle<KenaiProject>>();
+        for (KenaiServer s : servers) {
+            ProjectHandle<KenaiProject>[] projects = s.getDashboard().getOpenProjects();
+            if(projects != null) {
+                ret.addAll(Arrays.asList(projects));
+            }
+        }
+        return ret.toArray(new ProjectHandle[ret.size()]);
     }
     
     @Override
@@ -155,8 +218,6 @@ public class KenaiServer implements TeamServer {
 
     @Override
     public JComponent getDashboardComponent () {
-        DashboardImpl dashboard = DashboardImpl.getInstance();
-        dashboard.setServer(this);
         return dashboard.getComponent();
     }
 

@@ -49,9 +49,9 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
-import org.netbeans.modules.team.ui.common.AbstractDashboard;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
-import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -109,13 +109,15 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final Dashboard<CloudUiServer, DummyCloudProject> dashboard;
+    private final DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard;
+    private final DashboardProvider<CloudUiServer, DummyCloudProject> provider;
 
-    public MyProjectNode( final ProjectHandle<DummyCloudProject> project, Dashboard<CloudUiServer, DummyCloudProject> dashboard) {
+    public MyProjectNode( final ProjectHandle<DummyCloudProject> project, final DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard, DashboardProvider<CloudUiServer, DummyCloudProject> provider) {
         super( null );
         if (project==null)
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
         this.dashboard = dashboard;
+        this.provider = provider;
         this.projectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
@@ -150,7 +152,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
                     for (QueryResultHandle queryResult : queryResults) {
                         if (queryResult.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                            DashboardImpl.getInstance().myProjectsProgressStarted();
+                            dashboard.myProjectsProgressStarted();
                             setBugsLater(queryResult);
                             return;
                         }
@@ -159,9 +161,9 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
             }
         };
         this.project = project;
-        this.accessor = dashboard.getProjectAccessor();
+        this.accessor = provider.getProjectAccessor();
 //        this.maccessor = MessagingAccessor.getDefault();
-        this.qaccessor = dashboard.getQueryAccessor();
+        this.qaccessor = provider.getQueryAccessor();
         this.project.addPropertyChangeListener( projectListener );
 //        this.mh = maccessor.getMessaging(project);
 //        this.mh.addPropertyChangeListener(projectListener);
@@ -201,7 +203,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 issuesRP.post(new Runnable() {
 
                     public void run() {
-                        DashboardImpl.getInstance().myProjectsProgressStarted();
+                        dashboard.myProjectsProgressStarted();
                         allIssuesQuery = qaccessor.getAllIssuesQuery(project);
                         if (allIssuesQuery != null) {
                             allIssuesQuery.addPropertyChangeListener(projectListener);
@@ -213,7 +215,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                                 }
                             }
                         }
-                        DashboardImpl.getInstance().myProjectsProgressFinished();
+                        dashboard.myProjectsProgressFinished();
                     }
                 });
 
@@ -256,7 +258,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
 //                if (btnMessages != null) {
 //                    btnMessages.setVisible(b);
 //                }
-                DashboardImpl.getInstance().dashboardComponent.repaint();
+                dashboard.dashboardComponent.repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -324,9 +326,8 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 rightPar.setVisible(visible);
                 btnBugs.setVisible(!"0".equals(bug.getText())); // NOI18N
                 component.validate();
-                DashboardImpl instance = DashboardImpl.getInstance();
-                instance.myProjectsProgressFinished();
-                instance.dashboardComponent.repaint();
+                dashboard.myProjectsProgressFinished();
+                dashboard.dashboardComponent.repaint();
             }
         });
     }

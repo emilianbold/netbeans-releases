@@ -52,7 +52,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.spi.Dashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
@@ -70,9 +70,9 @@ public class OpenNbProjectNode<S extends TeamServer, P> extends LeafNode {
 
     private JPanel panel;
     private LinkButton btn;
-    private final Dashboard<S, P> dashboard;
+    private final DashboardProvider<S, P> dashboard;
 
-    public OpenNbProjectNode(SourceHandle src, TreeListNode parent, Dashboard<S, P> dashboard ) {
+    public OpenNbProjectNode(SourceHandle src, TreeListNode parent, DashboardProvider<S, P> dashboard ) {
         super( parent );
         this.src=src;
         this.dashboard = dashboard;
