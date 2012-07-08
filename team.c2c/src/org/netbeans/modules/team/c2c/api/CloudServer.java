@@ -177,7 +177,7 @@ public final class CloudServer {
             Arrays.fill(password, '\0');
         }
         // XXX ts - need perhaps a different way how to determine if failed or not
-        if(createClient == null) {
+        if(currentProfile == null) {
             firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_FAILED, null, null));
         } else {
             firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
