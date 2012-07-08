@@ -47,36 +47,43 @@ import java.lang.ref.WeakReference;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.c2c.api.CloudServer;
+import org.netbeans.modules.team.c2c.client.api.ClientFactory;
+import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ods.ui.dashboard.DashboardProviderImpl;
-import org.netbeans.modules.team.ods.ui.dashboard.DummyCloudProject;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
+import com.tasktop.c2c.server.profile.domain.project.Project;
+import java.util.ArrayList;
+import java.util.Collections;
+import org.netbeans.modules.team.ods.ui.impl.ProjectHandleImpl;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class CloudUiServer implements TeamServer {
+public class CloudUiServer implements TeamServer<Project> {
 
     private static final Map<CloudServer, CloudUiServer> serverMap = new WeakHashMap<CloudServer, CloudUiServer>(3);
     private final WeakReference<CloudServer> impl;
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-    private final DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard;
+    private final DefaultDashboard<CloudUiServer, Project> dashboard;
 
     private CloudUiServer (CloudServer server) {
         this.impl = new WeakReference<CloudServer>(server);
-        dashboard = new DefaultDashboard<CloudUiServer, DummyCloudProject>(this, new DashboardProviderImpl(this));
+        dashboard = new DefaultDashboard<CloudUiServer, Project>(this, new DashboardProviderImpl(this));
         server.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -176,58 +183,28 @@ public class CloudUiServer implements TeamServer {
     }
 
     @Override
-    public Collection<ProjectHandle> getMyProjects() {
-        Collection<ProjectHandle> ret = new LinkedList<ProjectHandle>();
-        
-        ret.add(new ProjectHandle<DummyCloudProject>("1") {
-            @Override
-            public String getDisplayName() {
-                return "My First cloud project";
-            }
-
-            @Override
-            public DummyCloudProject getTeamProject() {
-                return new DummyCloudProject();
-            }
-
-            @Override
-            public boolean isPrivate() {
-                return false;
-            }
-        });
-        ret.add(new ProjectHandle<DummyCloudProject>("2") {
-            @Override
-            public String getDisplayName() {
-                return "My Second cloud project";
-            }
-
-            @Override
-            public DummyCloudProject getTeamProject() {
-                return new DummyCloudProject();
-            }
-
-            @Override
-            public boolean isPrivate() {
-                return false;
-            }
-        });
-        ret.add(new ProjectHandle<DummyCloudProject>("3") {
-            @Override
-            public String getDisplayName() {
-                return "My Third cloud project";
-            }
-
-            @Override
-            public DummyCloudProject getTeamProject() {
-                return new DummyCloudProject();
-            }
-
-            @Override
-            public boolean isPrivate() {
-                return false;
-            }
-        });
+    public Collection<ProjectHandle<Project>> getMyProjects() {
+        CloudClient client = getClient();
+        List<Project> projects;
+        try {
+            projects = client.getMyProjects();
+        } catch (CloudException ex) {
+            Exceptions.printStackTrace(ex); // XXX
+            return Collections.emptyList();
+        }
+        if(projects == null) {
+            return Collections.emptyList();
+        }
+        Collection<ProjectHandle<Project>> ret = new ArrayList<ProjectHandle<Project>>(projects.size());
+        for (Project project : projects) {
+            ret.add(new ProjectHandleImpl(project));
+        }
         return ret;
+    }
+
+    private CloudClient getClient() {
+        assert getImpl(true).isLoggedIn();
+        return ClientFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
     }
     
 }

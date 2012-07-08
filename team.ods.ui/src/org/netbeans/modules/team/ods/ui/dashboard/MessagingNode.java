@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.team.ods.ui.dashboard;
 
+import com.tasktop.c2c.server.profile.domain.project.Project;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
@@ -55,7 +56,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
  */
 public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> implements PropertyChangeListener {
 
-    private final ProjectHandle<DummyCloudProject> project;
+    private final ProjectHandle<Project> project;
 //    private MessagingHandle messaging;
     private JPanel panel;
     private List<JLabel> labels = new ArrayList<JLabel>(5);
@@ -79,14 +79,14 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
     private final Object LOCK = new Object();
     private final DashboardProviderImpl dashboardProvider;
 
-    public MessagingNode( TreeListNode parent, ProjectHandle<DummyCloudProject> project, DashboardProviderImpl dashboardProvider ) {
+    public MessagingNode( TreeListNode parent, ProjectHandle<Project> project, DashboardProviderImpl dashboardProvider ) {
         super( parent, null );
         this.project = project;
         this.dashboardProvider = dashboardProvider;
 //        messaging = load();
 //        messaging.addPropertyChangeListener(this);
         // XXX
-        //        project.getDummyCloudProject().getKenai().addPropertyChangeListener(Kenai.PROP_XMPP_LOGIN, this);
+        //        project.getProject().getKenai().addPropertyChangeListener(Kenai.PROP_XMPP_LOGIN, this);
     }
 
     @Override
@@ -192,6 +192,6 @@ public class MessagingNode extends AsynchronousLeafNode<MessagingHandle> impleme
         super.dispose();
 //        if( null != messaging )
 //            messaging.removePropertyChangeListener(this);
-//        XXX project.getDummyCloudProject().getKenai().removePropertyChangeListener(this);
+//        XXX project.getProject().getKenai().removePropertyChangeListener(this);
     }
 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.team.ods.ui.dashboard;
 
+import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,11 +59,11 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyCloudProject> {
+public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project> {
     
-    private final DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard;
+    private final DefaultDashboard<CloudUiServer, Project> dashboard;
 
-    ProjectAccessorImpl(DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard) {
+    ProjectAccessorImpl(DefaultDashboard<CloudUiServer, Project> dashboard) {
         this.dashboard = dashboard;
     }
 
@@ -71,7 +72,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
         return new ArrayList<ProjectHandle>(server.getMyProjects());
 //        try {
 //            LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
-//            for (DummyCloudProject prj : server.getKenai().getMyProjects(force)) {
+//            for (Project prj : server.getKenai().getMyProjects(force)) {
 //                l.add(new ProjectHandleImpl(prj));
 //                for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
 //                    if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
@@ -122,7 +123,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
     @Override
     public Action getDetailsAction(final ProjectHandle project) {
         return DetailsAction.forProject(project);    
-//        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getDummyCloudProject().getWebLocation());
+//        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
     }
 
     private Action getOpenAction(final ProjectHandle project) {
@@ -141,12 +142,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
     }
 
     @Override
-    public Action[] getPopupActions(final ProjectHandle<DummyCloudProject> project, boolean opened) {
+    public Action[] getPopupActions(final ProjectHandle<Project> project, boolean opened) {
         return new Action[0];
-//        PasswordAuthentication pa = project.getDummyCloudProject().getKenai().getPasswordAuthentication();
+//        PasswordAuthentication pa = project.getProject().getKenai().getPasswordAuthentication();
 //        if (!opened) {
 //            try {
-//                if (pa != null && pa.getUserName().equals(project.getDummyCloudProject().getOwner().getUserName())) {
+//                if (pa != null && pa.getUserName().equals(project.getProject().getOwner().getUserName())) {
 //                    return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project), new DeleteProjectAction(project)};
 //                } else {
 //                    return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
@@ -157,7 +158,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
 //            }
 //        } else {
 //            try {
-//                if (pa != null && pa.getUserName().equals(project.getDummyCloudProject().getOwner().getUserName())) {
+//                if (pa != null && pa.getUserName().equals(project.getProject().getOwner().getUserName())) {
 //                    return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project), new DeleteProjectAction(project)};
 //                } else {
 //                    return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project)};
@@ -170,9 +171,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
     }
 
     @Override
-    public Action getOpenWikiAction(ProjectHandle<DummyCloudProject> project) {
+    public Action getOpenWikiAction(ProjectHandle<Project> project) {
 //        try {
-//            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getDummyCloudProject().getFeatures(Type.WIKI);
+//            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.WIKI);
 //            if (wiki.length == 1) {
 //                return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
 //            }
@@ -183,9 +184,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
     }
 
     @Override
-    public Action getOpenDownloadsAction(ProjectHandle<DummyCloudProject> project) {
+    public Action getOpenDownloadsAction(ProjectHandle<Project> project) {
 //        try {
-//            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getDummyCloudProject().getFeatures(Type.DOWNLOADS);
+//            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.DOWNLOADS);
 //            if (wiki.length == 1) {
 //                return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
 //            }
@@ -196,16 +197,16 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
     }
 
     @Override
-    public Action getBookmarkAction(final ProjectHandle<DummyCloudProject> project) {
+    public Action getBookmarkAction(final ProjectHandle<Project> project) {
 //        return new AbstractAction() {
 //            public void actionPerformed(ActionEvent e) {
-//                Kenai kenai = project.getDummyCloudProject().getKenai();
+//                Kenai kenai = project.getProject().getKenai();
 //                try {
 //                    if (kenai.getStatus()==Kenai.Status.OFFLINE) {
 //                        UIUtils.showLogin(kenai);
 //                        return;
 //                    }
-//                    if (kenai.getMyProjects().contains(project.getDummyCloudProject())) {
+//                    if (kenai.getMyProjects().contains(project.getProject())) {
 //                        if (JOptionPane.YES_OPTION != 
 //                                JOptionPane.showConfirmDialog(
 //                                WindowManager.getDefault().getMainWindow(),
@@ -222,7 +223,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
 //                RequestProcessor.getDefault().post(new Runnable() {
 //                    public void run() {
 //                        try {
-//                            DummyCloudProject prj = project.getDummyCloudProject();
+//                            Project prj = project.getProject();
 //                            if (prj.getKenai().getMyProjects().contains(prj)) {
 //                                unbookmark(prj);
 //                            } else {
@@ -244,14 +245,14 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
         return null;
     }
 
-//    private void unbookmark(DummyCloudProject prj) throws KenaiException {
+//    private void unbookmark(Project prj) throws KenaiException {
 //        String fullName = prj.getKenai().getPasswordAuthentication().getUserName()
 //         + "@" + prj.getKenai().getUrl().getHost(); // NOI18N
 //        KenaiUser user = KenaiUser.forName(fullName);
 //        prj.deleteMember(user);
 //    }
 //
-//    private void bookmark(DummyCloudProject prj) throws KenaiException {
+//    private void bookmark(Project prj) throws KenaiException {
 //        String fullName = prj.getKenai().getPasswordAuthentication().getUserName()
 //         + "@" + prj.getKenai().getUrl().getHost(); // NOI18N
 //        KenaiUser user = KenaiUser.forName(fullName);
@@ -264,16 +265,16 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
             @Override
             public void actionPerformed(ActionEvent e) {
                 throw new UnsupportedOperationException("no yet!");
-//                new NewDummyCloudProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
+//                new NewProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
             }
         };
     }
 
 //    private static class RefreshAction extends AbstractAction {
 //
-//        private final ProjectHandle<DummyCloudProject> project;
+//        private final ProjectHandle<Project> project;
 //
-//        public RefreshAction(ProjectHandle<DummyCloudProject> project) {
+//        public RefreshAction(ProjectHandle<Project> project) {
 //            super( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject"));
 //            this.project = project;
 //        }
@@ -283,7 +284,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, DummyClo
 //
 //                public void run() {
 //                    try {
-//                        project.getDummyCloudProject().getKenai().getProject(project.getId(), true);
+//                        project.getProject().getKenai().getProject(project.getId(), true);
 //                    } catch (KenaiException ex) {
 //                        Exceptions.printStackTrace(ex);
 //                    }

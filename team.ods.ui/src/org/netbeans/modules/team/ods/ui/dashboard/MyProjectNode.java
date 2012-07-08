@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.team.ods.ui.dashboard;
 
+import com.tasktop.c2c.server.profile.domain.project.Project;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -73,7 +74,7 @@ import org.openide.util.RequestProcessor;
 public class MyProjectNode extends LeafNode implements ProjectProvider {
 
     private Notification bugNotification;
-    private final ProjectHandle<DummyCloudProject> project;
+    private final ProjectHandle<Project> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
 //    private final MessagingAccessor maccessor;
@@ -109,15 +110,13 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard;
-    private final DashboardProvider<CloudUiServer, DummyCloudProject> provider;
+    private final DefaultDashboard<CloudUiServer, Project> dashboard;
 
-    public MyProjectNode( final ProjectHandle<DummyCloudProject> project, final DefaultDashboard<CloudUiServer, DummyCloudProject> dashboard, DashboardProvider<CloudUiServer, DummyCloudProject> provider) {
+    public MyProjectNode( final ProjectHandle<Project> project, final DefaultDashboard<CloudUiServer, Project> dashboard, DashboardProviderImpl provider) {
         super( null );
         if (project==null)
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
         this.dashboard = dashboard;
-        this.provider = provider;
         this.projectListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {

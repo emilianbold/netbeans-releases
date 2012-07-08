@@ -52,12 +52,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,10 +63,10 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class SourceNode<S extends TeamServer, P> extends LeafNode {
+public class SourceNode<CloudUIServer, Project> extends LeafNode {
 
     private final SourceHandle source;
-    private final DashboardProvider<S, P> dashboard;
+    private final DashboardProviderImpl provider;
 
     private JPanel panel;
     private JLabel lbl;
@@ -76,10 +74,10 @@ public class SourceNode<S extends TeamServer, P> extends LeafNode {
     private JLabel lbl2;
     private LinkButton btn;
 
-    public SourceNode( SourceHandle source, TreeListNode parent, DashboardProvider<S, P> dashboard ) {
+    public SourceNode( SourceHandle source, TreeListNode parent, DashboardProviderImpl dashboard ) {
         super( parent );
         this.source = source;
-        this.dashboard = dashboard;
+        this.provider = dashboard;
     }
 
     @Override
@@ -91,7 +89,7 @@ public class SourceNode<S extends TeamServer, P> extends LeafNode {
             panel.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
 
             if( source.isSupported() ) {
-                btn = new LinkButton(NbBundle.getMessage(SourceNode.class, "LBL_GetSources"), dashboard.getSourceAccessor().getOpenSourcesAction(source)); //NOI18N
+                btn = new LinkButton(NbBundle.getMessage(SourceNode.class, "LBL_GetSources"), provider.getSourceAccessor().getOpenSourcesAction(source)); //NOI18N
                 String featureName = source.getScmFeatureName();
                 String repotype = "MSG_GIT"; // XXX budle me!
                 btn.setToolTipText(NbBundle.getMessage(SourceNode.class, repotype));
@@ -117,6 +115,6 @@ public class SourceNode<S extends TeamServer, P> extends LeafNode {
 
     @Override
     public Action getDefaultAction() {
-        return dashboard.getSourceAccessor().getDefaultAction(source);
+        return provider.getSourceAccessor().getDefaultAction(source);
     }
 }

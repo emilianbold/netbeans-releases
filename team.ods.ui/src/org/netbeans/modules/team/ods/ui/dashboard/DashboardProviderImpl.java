@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.ods.ui.dashboard;
 
+import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -76,7 +77,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, DummyCloudProject> {
+public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, Project> {
 
     private final CloudUiServer server;
 
@@ -120,12 +121,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, D
     }
 
     @Override
-    public TreeListNode createMessagingNode(ProjectNode pn, ProjectHandle<DummyCloudProject> project) {
+    public TreeListNode createMessagingNode(ProjectNode pn, ProjectHandle<Project> project) {
         return new MessagingNode(pn, project, this);
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle<DummyCloudProject> p) {
+    public TreeListNode createMyProjectNode(ProjectHandle<Project> p) {
         return new MyProjectNode(p, server.getDashboard(), this);
     }
 
@@ -135,17 +136,17 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, D
     }
 
     @Override
-    public ProjectAccessor<CloudUiServer, DummyCloudProject> getProjectAccessor() {
+    public ProjectAccessor<CloudUiServer, Project> getProjectAccessor() {
         return new ProjectAccessorImpl(server.getDashboard());
     }
 
     @Override
     public MessagingAccessor getMessagingAccessor() {
 //        if(messagingAccessor == null) {
-//            messagingAccessor = new MessagingAccessor<DummyCloudProject>() {
+//            messagingAccessor = new MessagingAccessor<Project>() {
 //
 //                @Override
-//                public MessagingHandle getMessaging(ProjectHandle<DummyCloudProject> project) {
+//                public MessagingHandle getMessaging(ProjectHandle<Project> project) {
 //                    return new MessagingHandle() {
 //
 //                        @Override
@@ -171,17 +172,17 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, D
 //                }
 //
 //                @Override
-//                public Action getOpenMessagesAction(ProjectHandle<DummyCloudProject> project) {
+//                public Action getOpenMessagesAction(ProjectHandle<Project> project) {
 //                    return null;
 //                }
 //
 //                @Override
-//                public Action getCreateChatAction(ProjectHandle<DummyCloudProject> project) {
+//                public Action getCreateChatAction(ProjectHandle<Project> project) {
 //                    throw new UnsupportedOperationException("Not supported yet.");
 //                }
 //
 //                @Override
-//                public Action getReconnectAction(ProjectHandle<DummyCloudProject> project) {
+//                public Action getReconnectAction(ProjectHandle<Project> project) {
 //                    throw new UnsupportedOperationException("Not supported yet.");
 //                }
 //                
@@ -208,8 +209,8 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, D
     }
 
     @Override
-    public SourceAccessor<DummyCloudProject> getSourceAccessor() {
-        return new SourceAccessor<DummyCloudProject>() {
+    public SourceAccessor<Project> getSourceAccessor() {
+        return new SourceAccessor<Project>() {
 
             @Override
             public Action getOpenFavoritesAction(SourceHandle src) {
@@ -222,7 +223,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, D
             }
 
             @Override
-            public List<SourceHandle> getSources(final ProjectHandle<DummyCloudProject> project) {
+            public List<SourceHandle> getSources(final ProjectHandle<Project> project) {
                 LinkedList<SourceHandle> ret = new LinkedList<SourceHandle>();
                 ret.add(new SourceHandle() {
 
@@ -297,35 +298,35 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, D
     }
 
     @Override
-    public QueryAccessor<DummyCloudProject> getQueryAccessor() {
-        return server.getDashboard().getQueryAccessor(DummyCloudProject.class);
+    public QueryAccessor<Project> getQueryAccessor() {
+        return server.getDashboard().getQueryAccessor(Project.class);
     }
 
     @Override
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<DummyCloudProject> project) {
+    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<Project> project) {
         return new SourceListNode(pn, this, (LeafNode[]) null);
     }
 
     @Override
-    public CloudUiServer getServer(ProjectHandle<DummyCloudProject> project) {
+    public CloudUiServer getServer(ProjectHandle<Project> project) {
         return server;
     }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
-    public static class ODSQueryAccessor extends QueryAccessor<DummyCloudProject> {
+    public static class ODSQueryAccessor extends QueryAccessor<Project> {
 
         @Override
-        public Class<DummyCloudProject> type() {
-            return DummyCloudProject.class;
+        public Class<Project> type() {
+            return Project.class;
         }
             
         @Override
-        public QueryHandle getAllIssuesQuery(ProjectHandle<DummyCloudProject> project) {
+        public QueryHandle getAllIssuesQuery(ProjectHandle<Project> project) {
             return null;
         }
 
         @Override
-        public List<QueryHandle> getQueries(ProjectHandle<DummyCloudProject> project) {
+        public List<QueryHandle> getQueries(ProjectHandle<Project> project) {
             return null;
         }
 
@@ -335,12 +336,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, D
         }
 
         @Override
-        public Action getFindIssueAction(ProjectHandle<DummyCloudProject> project) {
+        public Action getFindIssueAction(ProjectHandle<Project> project) {
             return null;
         }
 
         @Override
-        public Action getCreateIssueAction(ProjectHandle<DummyCloudProject> project) {
+        public Action getCreateIssueAction(ProjectHandle<Project> project) {
             return null;
         }
 
