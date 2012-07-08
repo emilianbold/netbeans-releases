@@ -320,6 +320,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
             return UndoRedo.NONE;
         }
 
+        @Messages("ERR_No_Project_Loaded=No project associated with the project or loading failed. See Source tab for errors")
         @Override public void run() {
             try {
                 Iterator<? extends MavenProject> it = result.allInstances().iterator();
@@ -332,7 +333,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                     EventQueue.invokeLater(new Runnable() {
                         @Override public void run() {
                             panel.removeAll();
-                            panel.add(new JLabel("No project associated with the project or loading failed. See Source tab for errors", SwingConstants.CENTER), BorderLayout.CENTER);
+                            panel.add(new JLabel(ERR_No_Project_Loaded(), SwingConstants.CENTER), BorderLayout.CENTER);
                             panel.revalidate();
                             LOG.log(Level.FINE, "No MavenProject in base ArtifactViewerFactory lookup. Unloadable project?");
                         }
