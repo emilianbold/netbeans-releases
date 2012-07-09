@@ -164,7 +164,7 @@ public final class MavenProjectCache {
             if (newproject == null) {
                 newproject = getFallbackProject(pomFile);
             }
-            //clear the project building request, it references multiple Maven Models via the RepositorySession cache
+            //#215159 clear the project building request, it references multiple Maven Models via the RepositorySession cache
             //is not used in maven itself, most likely used by m2e only..
             newproject.setProjectBuildingRequest(null);
             //TODO some exceptions in result contain various model caches as well..
