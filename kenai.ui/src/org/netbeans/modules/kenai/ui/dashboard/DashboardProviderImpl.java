@@ -42,6 +42,8 @@
 package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.awt.event.ActionEvent;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -51,9 +53,10 @@ import org.netbeans.modules.kenai.ui.OpenNetBeansIDEProjects;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
 import org.netbeans.modules.kenai.ui.impl.KenaiServer;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
+import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
@@ -161,6 +164,26 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     @Override
     public KenaiServer getServer(ProjectHandle<KenaiProject> project) {
         return KenaiServer.forKenai((project.getTeamProject()).getKenai());
+    }
+
+    @Override
+    public BuildAccessor<KenaiProject> getBuildAccessor() {
+        return new BuildAccessor() {
+            public boolean isEnabled(ProjectHandle project) {
+                return false;
+            }
+            public List<BuildHandle> getBuilds(ProjectHandle project) {
+                return Collections.emptyList();
+            }
+            public Action getNewBuildAction(ProjectHandle project) {
+                return null;
+            };
+
+            @Override
+            public Class type() {
+                return Object.class;
+            }
+        };
     }
     
 }

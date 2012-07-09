@@ -54,6 +54,7 @@ import org.netbeans.modules.team.ods.ui.CloudUiServer;
 import org.netbeans.modules.team.ods.ui.impl.SourceAccessorImpl;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
+import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
@@ -165,6 +166,11 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     @Override
     public QueryAccessor<Project> getQueryAccessor() {
         return server.getDashboard().getQueryAccessor(Project.class);
+    }
+    
+    @Override
+    public BuildAccessor<Project> getBuildAccessor() {
+        return server.getDashboard().getBuildAccessor(Project.class);
     }
 
     @Override
