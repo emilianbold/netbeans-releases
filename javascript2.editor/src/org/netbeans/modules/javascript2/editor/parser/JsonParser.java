@@ -39,6 +39,7 @@ package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.Node;
+import com.oracle.nashorn.runtime.JSException;
 import java.util.Collections;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -70,7 +71,14 @@ public class JsonParser extends SanitizingParser {
         com.oracle.nashorn.runtime.Context.setContext(contextN);
         com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
         com.oracle.nashorn.parser.JsonParser parser = new com.oracle.nashorn.parser.JsonParser(source, errorManager, contextN._strict);
-        com.oracle.nashorn.ir.Node objectNode = parser.parse();
+        
+        com.oracle.nashorn.ir.Node objectNode = null;
+        try {
+            objectNode = parser.parse();
+        } catch (JSException ex) {
+            // JSON parser has no recovery
+            errorManager.error(ex.getMessage(), ex.getToken());
+        }
         
         // we are doing this as our infrusture requires function node on top
         // TODO we may get rid of such dep later
