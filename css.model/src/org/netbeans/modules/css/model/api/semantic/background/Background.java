@@ -42,10 +42,9 @@
 package org.netbeans.modules.css.model.api.semantic.background;
 
 import org.netbeans.modules.css.model.api.semantic.Attachment;
-import org.netbeans.modules.css.model.api.semantic.Clip;
+import org.netbeans.modules.css.model.api.semantic.Box;
 import org.netbeans.modules.css.model.api.semantic.Color;
 import org.netbeans.modules.css.model.api.semantic.Image;
-import org.netbeans.modules.css.model.api.semantic.Origin;
 import org.netbeans.modules.css.model.api.semantic.RepeatStyle;
 import org.netbeans.modules.css.model.api.semantic.Size;
 
@@ -71,13 +70,13 @@ public interface Background {
 
     public void setPosition(BackgroundPosition position);
 
-    public Clip getClip();
+    public Box getClip();
 
-    public void setClip(Clip clip);
+    public void setClip(Box clip);
 
-    public Origin getOrigin();
+    public Box getOrigin();
 
-    public void setOrigin(Origin origin);
+    public void setOrigin(Box origin);
 
     public Size getSize();
 

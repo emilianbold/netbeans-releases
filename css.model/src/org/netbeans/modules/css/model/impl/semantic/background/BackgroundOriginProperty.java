@@ -39,12 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic;
+package org.netbeans.modules.css.model.impl.semantic.background;
+
+import java.util.Collection;
+import java.util.Stack;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.model.api.semantic.background.Background;
+import org.netbeans.modules.css.model.impl.semantic.Element;
 
 /**
  *
  * @author marekfukala
  */
-public interface Clip {
+public class BackgroundOriginProperty {
+
+    private Stack<Background> BGS = new Stack<Background>();
+
+    public BackgroundOriginProperty(Node node) {
+        node.accept(new NodeVisitor.Adapter() { 
+            @Override
+            public boolean visit(Node node) {
+                switch (Element.forNode(node)) {
+                    case bg_box:
+                        Background background = new BackgroundI();
+                        background.setOrigin(new BgBox(node).getFirstBox());
+                        BGS.push(background);
+                }
+
+                return true;
+            }
+        });
+    }
     
+    public Collection<Background> getBackgrounds() {
+        return BGS;
+    }
 }

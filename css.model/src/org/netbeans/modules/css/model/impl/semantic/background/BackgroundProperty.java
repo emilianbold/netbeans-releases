@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.model.api.semantic.Attachment;
+import org.netbeans.modules.css.model.api.semantic.Box;
 import org.netbeans.modules.css.model.api.semantic.background.Background;
 import org.netbeans.modules.css.model.impl.semantic.ColorI;
 import org.netbeans.modules.css.model.impl.semantic.Element;
@@ -60,7 +62,6 @@ public class BackgroundProperty {
     
     public BackgroundProperty(Node node) {
         node.accept(new NodeVisitor.Adapter() {
-
             @Override
             public boolean visit(Node node) {
                 switch(Element.forNode(node)) {
@@ -76,6 +77,36 @@ public class BackgroundProperty {
                         break;
                     case background_color:
                         MODELS.peek().setColor(new ColorI(node));
+                        break;
+                    case repeat_style:
+                        MODELS.peek().setRepeatStyle(new RepeatStyleI(node));
+                        break;
+                    case attachment:
+                        MODELS.peek().setAttachment(new AttachmentI(node).getValue());
+                        break;
+                    case bg_box:
+                        //If one <box> value is present then it sets both ‘background-origin’ 
+                        //and ‘background-clip’ to that value. If two values are present, 
+                        //then the first sets ‘background-origin’ and the second ‘background-clip’. 
+                        Box box = new BgBox(node).getFirstBox();
+                        Box box2 = new BgBox(node).getSecondBox();
+                        
+                        assert box != null;
+                        //box2 is arbitrary
+                        Background bg = MODELS.peek();
+                        
+                        if(box2 == null) {
+                            bg.setClip(box);
+                            bg.setOrigin(box);
+                        } else {
+                            bg.setOrigin(box);
+                            bg.setClip(box2);
+                        }
+                        
+                        break;
+                    case bg_size:
+                        MODELS.peek().setSize(new BgSizeI(node).getSize());
+                        break;
                 }
                 
                 return true;

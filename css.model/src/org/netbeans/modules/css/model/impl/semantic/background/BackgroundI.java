@@ -42,15 +42,13 @@
 package org.netbeans.modules.css.model.impl.semantic.background;
 
 import org.netbeans.modules.css.model.api.semantic.Attachment;
-import org.netbeans.modules.css.model.api.semantic.Clip;
+import org.netbeans.modules.css.model.api.semantic.Box;
 import org.netbeans.modules.css.model.api.semantic.Color;
 import org.netbeans.modules.css.model.api.semantic.Image;
-import org.netbeans.modules.css.model.api.semantic.Origin;
-import org.netbeans.modules.css.model.api.semantic.background.BackgroundPosition;
 import org.netbeans.modules.css.model.api.semantic.RepeatStyle;
 import org.netbeans.modules.css.model.api.semantic.Size;
 import org.netbeans.modules.css.model.api.semantic.background.Background;
-import org.netbeans.modules.css.model.api.semantic.background.BackgroundModel;
+import org.netbeans.modules.css.model.api.semantic.background.BackgroundPosition;
 
 /**
  *
@@ -62,8 +60,8 @@ public class BackgroundI implements Background {
     private RepeatStyle repeatStyle;
     private Attachment attachment;
     private BackgroundPosition position;
-    private Clip clip;
-    private Origin origin;
+    private Box clip;
+    private Box origin;
     private Size size;
     private Color color;
 
@@ -108,22 +106,22 @@ public class BackgroundI implements Background {
     }
 
     @Override
-    public Clip getClip() {
+    public Box getClip() {
         return clip;
     }
 
     @Override
-    public void setClip(Clip clip) {
+    public void setClip(Box clip) {
         this.clip = clip;
     }
 
     @Override
-    public Origin getOrigin() {
+    public Box getOrigin() {
         return origin;
     }
 
     @Override
-    public void setOrigin(Origin origin) {
+    public void setOrigin(Box origin) {
         this.origin = origin;
     }
 

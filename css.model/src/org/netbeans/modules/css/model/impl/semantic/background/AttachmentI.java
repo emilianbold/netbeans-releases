@@ -39,12 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic;
+package org.netbeans.modules.css.model.impl.semantic.background;
+
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.NodeVisitor2;
+import org.netbeans.modules.css.lib.api.properties.TokenNode;
+import org.netbeans.modules.css.model.api.semantic.Attachment;
 
 /**
  *
  * @author marekfukala
  */
-public interface Origin {
+public class AttachmentI {
+
+    private Attachment attachment;
+
+    public AttachmentI(Node node) {
+        node.accept(new NodeVisitor2() {
+            @Override
+            public void visitTokenNode(TokenNode tokenNode) {
+                attachment = Attachment.valueOf(tokenNode.image().toString().toUpperCase());
+            }
+        });
+        
+    }
+    
+    public Attachment getValue() {
+        return attachment;
+    }
+    
+    @Override
+    public String toString() {
+        return attachment.name().toString();
+    }
     
 }
+    
+    
