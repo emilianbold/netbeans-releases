@@ -43,6 +43,7 @@ package org.netbeans.modules.web.browser.api;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
+import org.openide.loaders.DataObject;
 
 /**
  * Descriptor providing a display name and unique ID for a browser factory.
@@ -51,12 +52,13 @@ final class WebBrowserFactoryDescriptor {
 
     private String id;
     private String name;
+    private DataObject dob;
     private boolean def;
     private HtmlBrowser.Factory factory;
 
-    public WebBrowserFactoryDescriptor(String id, String name, boolean def, Factory factory) {
+    public WebBrowserFactoryDescriptor(String id, DataObject dob, boolean def, Factory factory) {
         this.id = id;
-        this.name = name;
+        this.dob = dob;
         this.def = def;
         this.factory = factory;
     }
@@ -75,6 +77,12 @@ final class WebBrowserFactoryDescriptor {
     * @return
     */
     public String getName() {
+        if (name == null) {
+            // retrieve browser's name when it is really needed and not in constructor;
+            // if it called too early it causes:  "IllegalStateException: Should not acquire 
+            //      Children.MUTEX while holding ProjectManager.mutex()"
+            name = dob.getNodeDelegate().getDisplayName();
+        }
         return name;
     }
 
@@ -94,7 +102,7 @@ final class WebBrowserFactoryDescriptor {
 
     @Override
     public String toString() {
-        return "WebBrowserFactoryDescriptor{" + "id=" + id + ", name=" + name + ", def=" + def + ", factory=" + factory + '}';
+        return "WebBrowserFactoryDescriptor{" + "id=" + id + ", def=" + def + ", factory=" + factory + '}';
     }
     
 }

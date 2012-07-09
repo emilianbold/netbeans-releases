@@ -101,6 +101,7 @@
                 <friend>org.netbeans.modules.extbrowser</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
+                <friend>org.netbeans.modules.web.clientproject.api</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <friend>org.netbeans.modules.web.livehtml</friend>
