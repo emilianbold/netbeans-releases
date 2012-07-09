@@ -55,6 +55,7 @@ import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -226,6 +227,16 @@ public final class DefaultDashboard<S extends TeamServer<P>, P> {
     public QueryAccessor<P> getQueryAccessor(Class<P> p) {
         Collection<? extends QueryAccessor> c = Lookup.getDefault().lookupAll(QueryAccessor.class);
         for (QueryAccessor a : c) {
+            if(a.type().equals(p)) {
+                return a;
+            }
+        }
+        return null;
+    }
+    
+    public BuildAccessor<P> getBuildAccessor(Class<P> p) {
+        Collection<? extends BuildAccessor> c = Lookup.getDefault().lookupAll(BuildAccessor.class);
+        for (BuildAccessor a : c) {
             if(a.type().equals(p)) {
                 return a;
             }

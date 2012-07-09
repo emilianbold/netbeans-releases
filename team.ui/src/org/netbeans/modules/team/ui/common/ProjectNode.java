@@ -143,7 +143,7 @@ public class ProjectNode<S extends TeamServer<P>, P> extends TreeListNode {
         if( null != provider.getMemberAccessor() ) {
             children.add( new MemberListNode(this, provider) );
         }
-        BuildAccessor builds = BuildAccessor.getDefault();
+        BuildAccessor builds = provider.getBuildAccessor();
         if (builds.isEnabled(project)) {
             children.add(new BuildListNode(this, builds));
         }

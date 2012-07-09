@@ -79,7 +79,9 @@ public interface DashboardProvider<S extends TeamServer<P>, P> {
     public MemberAccessor<P> getMemberAccessor();
     public SourceAccessor<P> getSourceAccessor();
     public QueryAccessor<P> getQueryAccessor();
+    public BuildAccessor<P> getBuildAccessor();
 
     public S getServer(ProjectHandle<P> project);
+
     
 }

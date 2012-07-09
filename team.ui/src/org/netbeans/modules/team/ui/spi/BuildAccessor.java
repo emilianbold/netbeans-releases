@@ -5,10 +5,8 @@
 
 package org.netbeans.modules.team.ui.spi;
 
-import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
-import org.openide.util.Lookup;
 
 /**
  * Main access point to Teams's Build API.
@@ -21,28 +19,8 @@ import org.openide.util.Lookup;
  */
 public abstract class BuildAccessor<P> {
 
-    /**
-     * Obtains the default accessor for the system from lookup.
-     * @return the default instance, or a dummy fallback (never null)
-     */
-    public static BuildAccessor getDefault() {
-        BuildAccessor dflt = Lookup.getDefault().lookup(BuildAccessor.class);
-        if (dflt == null) {
-            dflt = new BuildAccessor() {
-                public boolean isEnabled(ProjectHandle project) {
-                    return false;
-                }
-                public List<BuildHandle> getBuilds(ProjectHandle project) {
-                    return Collections.emptyList();
-                }
-                public Action getNewBuildAction(ProjectHandle project) {
-                    return null;
-                }
-            };
-        }
-        return dflt;
-    }
-
+    public abstract Class<P> type();
+    
     /**
      * Checks whether build-related UI should even be shown for this project.
      */

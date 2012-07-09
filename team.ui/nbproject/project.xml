@@ -144,6 +144,7 @@
                 <friend>org.netbeans.modules.kenai.ui</friend>
                 <friend>org.netbeans.modules.team.ods.ui</friend>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
+                <friend>org.netbeans.modules.kenai.hudson</friend>
                 <package>org.netbeans.modules.team.ui.common</package>
                 <package>org.netbeans.modules.team.ui.spi</package>
                 <package>org.netbeans.modules.team.ui.treelist</package>

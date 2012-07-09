@@ -44,8 +44,6 @@ package org.netbeans.modules.team.ui.common;
 
 
 
-import org.netbeans.modules.team.ui.common.ProjectNode;
-import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -104,7 +102,7 @@ public class BuildListNode extends SectionNode {
                 panel = new JPanel(new GridBagLayout());
                 panel.setOpaque(false);
                 btn = new LinkButton(NbBundle.getMessage(BuildListNode.class, "LBL_NewBuild"), //NOI18N
-                        BuildAccessor.getDefault().getNewBuildAction(project));
+                        accessor.getNewBuildAction(project));
                 panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
                 panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
             }
@@ -114,7 +112,7 @@ public class BuildListNode extends SectionNode {
 
         @Override
         public Action getDefaultAction() {
-            return BuildAccessor.getDefault().getNewBuildAction(project);
+            return accessor.getNewBuildAction(project);
         }
     }
 }
