@@ -2976,7 +2976,7 @@ public class ETable extends JTable {
         if (getColumnModel() instanceof ETableColumnModel) {
             return null;
         } else {
-            return getRowSorter();
+            return super.getRowSorter();
         }
     }
     
