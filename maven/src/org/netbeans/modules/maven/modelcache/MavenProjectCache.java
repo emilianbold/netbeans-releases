@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.modelcache;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
@@ -53,6 +54,7 @@ import org.apache.maven.execution.DefaultMavenExecutionResult;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.M2AuxilaryConfigImpl;
 import org.netbeans.modules.maven.configurations.M2Configuration;
@@ -162,6 +164,10 @@ public final class MavenProjectCache {
             if (newproject == null) {
                 newproject = getFallbackProject(pomFile);
             }
+            //clear the project building request, it references multiple Maven Models via the RepositorySession cache
+            //is not used in maven itself, most likely used by m2e only..
+            newproject.setProjectBuildingRequest(null);
+            //TODO some exceptions in result contain various model caches as well..
             newproject.setContextValue(CONTEXT_EXECUTION_RESULT, res);
             long endLoading = System.currentTimeMillis();
             LOG.log(Level.FINE, "Loaded project in {0} msec at {1}", new Object[] {endLoading - startLoading, projectDirectory.getPath()});
@@ -186,6 +192,13 @@ public final class MavenProjectCache {
         newproject.setDescription(Bundle.LBL_Incomplete_Project_Desc());
         newproject.setFile(projectFile);
         return newproject;
+    }
+    
+    public static boolean isFallbackproject(MavenProject prj) {
+        if ("error".equals(prj.getGroupId()) && "error".equals(prj.getArtifactId()) && Bundle.LBL_Incomplete_Project_Name().equals(prj.getName())) {
+            return true;
+        }
+        return false;
     }
     
     private static final Properties statics = new Properties();

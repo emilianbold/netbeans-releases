@@ -157,11 +157,18 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    
     <folder name="Editors">
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-maven-grammar-effpom-AnnotationBarManager.instance">
+                        <attr name="position" intvalue="2001"/>
+                    </file>
+                </folder>
+        
         <folder name="text">
+           
             <folder name="x-maven-pom+xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.grammar.Bundle"/>
+                
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-maven-grammar-CodeTemplates.xml" url="POM-abbreviations.xml"/>

@@ -336,6 +336,9 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
         }
 
         @Override public boolean preferSources() {
+            if ("file".equals(url.getProtocol())) { //#215242
+                return true;
+            }
             return p.getLookup().lookup(ForeignClassBundler.class).preferSources();
         }
         

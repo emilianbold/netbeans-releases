@@ -111,7 +111,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
             err.add(ErrorDescriptionFactory.createErrorDescription(
                     Severity.HINT,
                     NbBundle.getMessage(MoveToDependencyManagementHint.class, "TEXT_MoveToDependencyManagementHint"),
-                    Collections.<Fix>singletonList(new MoveFix(selectionStart, selectionEnd, model)),
+                    Collections.<Fix>singletonList(new MoveFix(selectionStart, selectionEnd, model, prj)),
                     model.getBaseDocument(), line.getLineNumber() + 1));
 
         }
@@ -132,11 +132,13 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         private POMModel mdl;
         private int start;
         private int end;
+        private final Project project;
 
-        MoveFix(int selectionStart, int selectionEnd, POMModel model) {
+        MoveFix(int selectionStart, int selectionEnd, POMModel model, Project prj) {
             mdl = model;
             start = selectionStart;
             end = selectionEnd;
+	    project = prj;
         }
 
         @Override
@@ -177,7 +179,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
                     }
                     List<Dependency> deps = extractSelectedDeps(dps, start, end);
 
-                    MoveToDependencyManagementPanel pnl = new MoveToDependencyManagementPanel(fl);
+                    MoveToDependencyManagementPanel pnl = new MoveToDependencyManagementPanel(fl, project);
                     DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(MoveToDependencyManagementHint.class, "TIT_MoveDepMan"));
                     Object ret = DialogDisplayer.getDefault().notify(dd);
                     if (ret == DialogDescriptor.OK_OPTION) {

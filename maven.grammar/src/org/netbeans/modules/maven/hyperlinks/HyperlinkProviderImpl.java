@@ -317,7 +317,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
         return null;
     }
     
-    private void openAtSource(InputLocation location) {
+    public static void openAtSource(InputLocation location) {
         InputSource source = location.getSource();
         if (source != null && source.getLocation() != null) {
             FileObject fobj = FileUtil.toFileObject(FileUtil.normalizeFile(new File(source.getLocation())));

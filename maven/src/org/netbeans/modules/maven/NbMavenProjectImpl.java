@@ -59,6 +59,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.apache.maven.DefaultMaven;
+import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.manager.ArtifactHandlerManager;
@@ -66,7 +68,11 @@ import org.apache.maven.cli.MavenCli;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Resource;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -79,6 +85,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
@@ -240,6 +247,42 @@ public final class NbMavenProjectImpl implements Project {
             LOG.log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
         }
         return MavenProjectCache.getFallbackProject(this.getPOMFile());
+    }
+    
+    /**
+     * replacement for MavenProject.getParent() which has bad long term memory behaviour. We offset it by recalculating/reparsing everything
+     * therefore should not be used lightly!
+     * pass a MavenProject instance and current configuration and other settings will be applied when loading the parent.
+     * @param project
+     * @return null or the parent mavenproject
+     */
+    
+    public MavenProject loadParentOf(MavenEmbedder embedder, MavenProject project) throws ProjectBuildingException {
+
+        MavenProject parent = null;
+        ProjectBuilder builder = embedder.lookupComponent(ProjectBuilder.class);
+        MavenExecutionRequest req = embedder.createMavenExecutionRequest();
+        M2Configuration active = configProvider.getActiveConfiguration();
+        req.addActiveProfiles(active.getActivatedProfiles());
+        req.setNoSnapshotUpdates(true);
+        req.setUpdateSnapshots(false);
+        req.setInteractiveMode(false);
+        req.setRecursive(false);
+        req.setOffline(true);
+        req.setUserProperties(MavenProjectCache.createSystemPropsForProjectLoading(active.getProperties()));
+
+        ProjectBuildingRequest request = req.getProjectBuildingRequest();
+        request.setRemoteRepositories(project.getRemoteArtifactRepositories());
+        DefaultMaven maven = (DefaultMaven) embedder.lookupComponent(Maven.class);
+        
+        request.setRepositorySession(maven.newRepositorySession(req));
+
+        if (project.getParentFile() != null) {
+            parent = builder.build(project.getParentFile(), request).getProject();
+        } else if (project.getModel().getParent() != null) {
+            parent = builder.build(project.getParentArtifact(), request).getProject();
+        }
+        return parent;
     }
 
     public List<String> getCurrentActiveProfiles() {
