@@ -57,7 +57,8 @@ public class JsonParser extends SanitizingParser {
     public String getDefaultScriptName() {
         return "json.json"; // NOI18N
     }
-    
+
+    @Override
     protected com.oracle.nashorn.ir.FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
         com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(name, text);
         com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
@@ -71,7 +72,7 @@ public class JsonParser extends SanitizingParser {
         com.oracle.nashorn.runtime.Context.setContext(contextN);
         com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
         com.oracle.nashorn.parser.JsonParser parser = new com.oracle.nashorn.parser.JsonParser(source, errorManager, contextN._strict);
-        
+
         com.oracle.nashorn.ir.Node objectNode = null;
         try {
             objectNode = parser.parse();
@@ -79,7 +80,7 @@ public class JsonParser extends SanitizingParser {
             // JSON parser has no recovery
             errorManager.error(ex.getMessage(), ex.getToken());
         }
-        
+
         // we are doing this as our infrusture requires function node on top
         // TODO we may get rid of such dep later
         com.oracle.nashorn.ir.FunctionNode node = null;
