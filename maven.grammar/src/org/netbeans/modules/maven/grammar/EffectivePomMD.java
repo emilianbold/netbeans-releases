@@ -65,6 +65,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
@@ -75,6 +76,7 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
+import org.apache.maven.model.building.ModelBuildingResult;
 import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuilder;
@@ -99,7 +101,6 @@ import org.netbeans.modules.maven.grammar.effpom.AnnotationBarManager;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer;
 import org.netbeans.modules.maven.grammar.effpom.LocationAwareMavenXpp3Writer.Location;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
-import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerFactory;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
@@ -109,14 +110,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -156,18 +152,13 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
         return new EffPOMView(lookup);
     }
 
-    @ServiceProvider(service=ArtifactViewerPanelProvider.class, position=600)
-    public static class Factory implements ArtifactViewerPanelProvider {
-
-        @Override public MultiViewDescription createPanel(Lookup lookup) {
-            return new EffectivePomMD(lookup);
-        }
-    }
-    
-    /**
-     * placeholder to put into lookup meaning no lookup returned from base ArtifactViewerFactory
-     */
-    private static final MavenProject NULL = new MavenProject();
+//    @ServiceProvider(service=ArtifactViewerPanelProvider.class, position=600)
+//    public static class Factory implements ArtifactViewerPanelProvider {
+//
+//        @Override public MultiViewDescription createPanel(Lookup lookup) {
+//            return new EffectivePomMD(lookup);
+//        }
+//    }
     
     @MultiViewElement.Registration(
         displayName="#TAB_Effective",
@@ -179,87 +170,39 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
     )
     @Messages("TAB_Effective=Effective")
     public static MultiViewElement forPOMEditor(final Lookup editor) {
-        L look = new L(editor);
-        return new EffPOMView(look);
+        return new EffPOMView(editor);
     }    
 
-    
-     static class L extends ProxyLookup implements PropertyChangeListener {
-            Project p;
-            private Lookup editor;
-            L(Lookup editor) {
-                this.editor = editor;
-                setLookups(editor);
-                FileObject pom = editor.lookup(FileObject.class);
-                if (pom != null) {
-                    try {
-                        p = ProjectManager.getDefault().findProject(pom.getParent());
-                    } catch (IOException ex) {
-                        LOG.log(Level.FINE, ex.getMessage(), ex);
-                    } catch (IllegalArgumentException ex) {
-                        LOG.log(Level.FINE, ex.getMessage(), ex);
-                    }
-                    if (p != null) {
-                        NbMavenProject nbmp = p.getLookup().lookup(NbMavenProject.class);
-                        if (nbmp != null) {
-                            nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
-                            reset();
-                        } else {
-                            LOG.log(Level.WARNING, "not a Maven project: {0}", p);
-                        }
-                    } else {
-                        LOG.log(Level.WARNING, "no owner of {0}", pom);
-                        setLookups(editor, Lookups.singleton(NULL));
-                    }
-                } else {
-                    setLookups(editor, Lookups.singleton(NULL));
-                    LOG.log(Level.WARNING, "no FileObject in {0}", editor);
-                }
-            }
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-                    reset();
-                }
-            }
-            private void reset() {
-                assert p != null;
-                ArtifactViewerFactory avf = Lookup.getDefault().lookup(ArtifactViewerFactory.class);
-                if (avf != null) {
-                    //a very weird pattern there, if project's artifact doesn't exist, we return null here..
-                    // but later on null MavenProject lookup means Loading.. this we need another state for
-                    // non existing MavenProject lookup result
-                    Lookup l = avf.createLookup(p);
-                    if (l != null) {
-                        setLookups(l, editor);
-                    } else {
-                        LOG.log(Level.WARNING, "no artifact lookup for {0}", p);
-                        setLookups(editor, Lookups.singleton(NULL));
-                    }
-                } else {
-                    LOG.warning("no ArtifactViewerFactory found");
-                    setLookups(editor, Lookups.singleton(NULL));
-                }
-            }
-        }
-    
-    private static class EffPOMView implements MultiViewElement, Runnable {
+    private static class EffPOMView implements MultiViewElement, Runnable, PropertyChangeListener {
 
         private final Lookup lookup;
         private final RequestProcessor.Task task = RP.create(this);
         private JToolBar toolbar;
         private JPanel panel;
         boolean firstTimeShown = true;
-        private final Result<MavenProject> result;
 
         EffPOMView(Lookup lookup) {
             this.lookup = lookup;
-
-            result = lookup.lookupResult(MavenProject.class);
-            result.allInstances();
-            result.addLookupListener(new LookupListener1(task));
-            
         }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (panel != null && panel.isVisible()) {
+                            panel.add(new JLabel(LBL_loading_Eff(), SwingConstants.CENTER), BorderLayout.CENTER);
+
+                            task.schedule(0);
+                        } else {
+                            firstTimeShown = true;
+                        }
+                    }
+                });
+            }
+        }
+        
 
         @Override public JComponent getVisualRepresentation() {
             if (panel == null) {
@@ -323,29 +266,58 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
         @Messages("ERR_No_Project_Loaded=No project associated with the project or loading failed. See Source tab for errors")
         @Override public void run() {
             try {
-                Iterator<? extends MavenProject> it = result.allInstances().iterator();
-                MavenProject mp = it.hasNext() ? it.next() : null;
-                if (mp == null) {
-                    //still loading.
-                    return;
-                }
-                if (mp == NULL) {
+                FileObject pom = lookup.lookup(FileObject.class);
+                Model model = null;
+                String errorMessage = null;
+                if (pom != null) {
+                    Project p = null;
+                    
+                    try {
+                        p = ProjectManager.getDefault().findProject(pom.getParent());
+                    } catch (IOException ex) {
+                        LOG.log(Level.FINE, ex.getMessage(), ex);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.log(Level.FINE, ex.getMessage(), ex);
+                    }
+                    if (p != null) {
+                        NbMavenProject nbmp = p.getLookup().lookup(NbMavenProject.class);
+                        if (nbmp != null) {
+                            model = nbmp.getMavenProject().getModel();
+                            if (model == null || nbmp.isUnloadable()) {
+                                errorMessage = "POM's project currently unloadable.";
+                            }
+                            nbmp.addPropertyChangeListener(WeakListeners.propertyChange(this, nbmp));
+                        } else {
+                            LOG.log(Level.WARNING, "not a Maven project: {0}", p);
+                            ModelBuildingResult res = EmbedderFactory.getProjectEmbedder().executeModelBuilder(FileUtil.toFile(pom));
+                            model = res.getEffectiveModel();
+                        }
+                    } else {
+                        LOG.log(Level.WARNING, "not a project: {0}", p);
+                        ModelBuildingResult res = EmbedderFactory.getProjectEmbedder().executeModelBuilder(FileUtil.toFile(pom));
+                        model = res.getEffectiveModel();
+                    }
+                } else {
+                    errorMessage = "No file in editor lookup";
+                }                
+                
+                
+                if (errorMessage != null) {
+                    final String message = errorMessage;
                     EventQueue.invokeLater(new Runnable() {
                         @Override public void run() {
                             panel.removeAll();
-                            panel.add(new JLabel(ERR_No_Project_Loaded(), SwingConstants.CENTER), BorderLayout.CENTER);
+                            panel.add(new JLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
                             panel.revalidate();
-                            LOG.log(Level.FINE, "No MavenProject in base ArtifactViewerFactory lookup. Unloadable project?");
                         }
                     });
                     return;
                 }
-                assert mp != null;
-                Model model = mp.getModel();
+                assert model != null;
+                assert pom != null;
                 LocationAwareMavenXpp3Writer writer = new LocationAwareMavenXpp3Writer();
                 final StringWriter sw = new StringWriter();
                 final List<Location> loc = writer.write(sw, model);
-                FileObject pom = lookup.lookup(FileObject.class);
                 List<ModelProblem> problems = new ArrayList<ModelProblem>();
                 final Map<ModelProblem, Location> prblmMap = new HashMap<ModelProblem, Location>();
                 if (pom != null) {
@@ -362,56 +334,52 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                         }
                     }
                 }
-                
-                
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override public void run() {
-                            Lookup mime = MimeLookup.getLookup("text/x-effective-pom+xml");
-                            NbEditorKit kit = mime.lookup(NbEditorKit.class);
-                            NbEditorDocument doc = (NbEditorDocument) kit.createDefaultDocument();
-                            JEditorPane pane = new JEditorPane("text/x-effective-pom+xml", null);
-                            pane.setDocument(doc);
-                            panel.removeAll();
-                            panel.add(doc.createEditor(pane), BorderLayout.CENTER);
-                            pane.setEditable(false);
-                            
-                            try {
-                                doc.insertString(0, sw.toString(), null);
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                            pane.setCaretPosition(0);
-                            
-                            for (final Map.Entry<ModelProblem, Location> ent : prblmMap.entrySet()) {
-                                doc.addAnnotation(new Position() {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override public void run() {
+                        Lookup mime = MimeLookup.getLookup("text/xml");
+                        NbEditorKit kit = mime.lookup(NbEditorKit.class);
+                        NbEditorDocument doc = (NbEditorDocument) kit.createDefaultDocument();
+                        JEditorPane pane = new JEditorPane("text/xml", null);
+                        pane.setDocument(doc);
+                        panel.removeAll();
+                        panel.add(doc.createEditor(pane), BorderLayout.CENTER);
+                        pane.setEditable(false);
 
-                                    @Override
-                                    public int getOffset() {
-                                        return ent.getValue().startOffset;
-                                    }
-                                }, 1, new Annotation() {
-
-                                    @Override
-                                    public String getAnnotationType() {
-                                        if (ent.getKey().getSeverity() == ModelProblem.Severity.ERROR || ent.getKey().getSeverity() == ModelProblem.Severity.FATAL) {
-                                            return "org-netbeans-spi-editor-hints-parser_annotation_err";
-                                        } else {
-                                            return "org-netbeans-spi-editor-hints-parser_annotation_warn";
-                                        }
-                                    }
-
-                                    @Override
-                                    public String getShortDescription() {
-                                        return ent.getKey().getMessage();
-                                    }
-                                });
-                            }
-
-                            panel.revalidate();
-                            
-                            AnnotationBarManager.showAnnotationBar(pane, loc);
+                        try {
+                            doc.insertString(0, sw.toString(), null);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                    });
+                        pane.setCaretPosition(0);
+
+                        for (final Map.Entry<ModelProblem, Location> ent : prblmMap.entrySet()) {
+                            doc.addAnnotation(new Position() {
+
+                                @Override
+                                public int getOffset() {
+                                    return ent.getValue().startOffset;
+                                }
+                            }, 1, new Annotation() {
+
+                                @Override
+                                public String getAnnotationType() {
+                                    if (ent.getKey().getSeverity() == ModelProblem.Severity.ERROR || ent.getKey().getSeverity() == ModelProblem.Severity.FATAL) {
+                                        return "org-netbeans-spi-editor-hints-parser_annotation_err";
+                                    } else {
+                                        return "org-netbeans-spi-editor-hints-parser_annotation_warn";
+                                    }
+                                }
+
+                                @Override
+                                public String getShortDescription() {
+                                    return ent.getKey().getMessage();
+                                }
+                            });
+                        }
+                        panel.revalidate();
+                        AnnotationBarManager.showAnnotationBar(pane, loc);
+                    }
+                });
             } catch (final Exception x) {
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {
@@ -429,6 +397,7 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
     }
     
     //copied from maven.hints Status Provider..
+    //eventually should have the model problems coming from either the Mavenproject or the modelBuilder result.
     static List<ModelProblem> runMavenValidationImpl(final File pom) {
         //TODO profiles based on current configuration??
         MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
@@ -459,19 +428,4 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
         }
         return problems;
     }    
-    
-    private static class LookupListener1 implements LookupListener {
-        private final RequestProcessor.Task task;
-        
-        public LookupListener1(RequestProcessor.Task task) {
-            this.task = task;
-        }
-
-        @Override
-        public void resultChanged(LookupEvent ev) {
-            task.schedule(100);
-        }
-        
-    }
-
 }

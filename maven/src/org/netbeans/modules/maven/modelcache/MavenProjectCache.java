@@ -194,6 +194,13 @@ public final class MavenProjectCache {
         return newproject;
     }
     
+    public static boolean isFallbackproject(MavenProject prj) {
+        if ("error".equals(prj.getGroupId()) && "error".equals(prj.getArtifactId()) && Bundle.LBL_Incomplete_Project_Name().equals(prj.getName())) {
+            return true;
+        }
+        return false;
+    }
+    
     private static final Properties statics = new Properties();
 
     public static Properties cloneStaticProps() {

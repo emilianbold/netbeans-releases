@@ -334,29 +334,19 @@ public final class MavenEmbedder {
      * Creates a list of POM models in an inheritance lineage.
      * Each resulting model is "raw", so contains no interpolation or inheritance.
      * In particular beware that groupId and/or version may be null if inherited from a parent; use {@link Model#getParent} to resolve.
+     * Internally calls <code>executeModelBuilder</code> so if you need to call both just use the execute method.
      * @param pom a POM to inspect
      * @param embedder an embedder to use
      * @return a list of models, starting with the specified POM, going through any parents, finishing with the Maven superpom (with a null artifactId)
      * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
      */
     public List<Model> createModelLineage(File pom) throws ModelBuildingException {
-        ModelBuilder mb = lookupComponent(ModelBuilder.class);
-        assert mb!=null : "ModelBuilder component not found in maven";
-        ModelBuildingRequest req = new DefaultModelBuildingRequest();
-        req.setPomFile(pom);
-        req.setProcessPlugins(false);
-        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-        req.setModelResolver(new NBRepositoryModelResolver(this));
-        req.setSystemProperties(getSystemProperties());
-        
-        ModelBuildingResult res = mb.build(req);
+        ModelBuildingResult res = executeModelBuilder(pom);
         List<Model> toRet = new ArrayList<Model>();
 
         for (String id : res.getModelIds()) {
             Model m = res.getRawModel(id);
             toRet.add(m);
-            System.out.println
-            ("pomfile=" + m.getPomFile());
         }
 //        for (ModelProblem p : res.getProblems()) {
 //            System.out.println("problem=" + p);
@@ -365,6 +355,25 @@ public final class MavenEmbedder {
 //            }
 //        }
         return toRet;
+    }
+    /**
+     * 
+     * @param pom
+     * @return result object with access to effective pom model and raw models for each parent.
+     * @throws ModelBuildingException if the POM or parents could not even be parsed; warnings are not reported
+     */
+    public ModelBuildingResult executeModelBuilder(File pom) throws ModelBuildingException {
+        ModelBuilder mb = lookupComponent(ModelBuilder.class);
+        assert mb!=null : "ModelBuilder component not found in maven";
+        ModelBuildingRequest req = new DefaultModelBuildingRequest();
+        req.setPomFile(pom);
+        req.setProcessPlugins(false);
+        req.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        req.setLocationTracking(true);
+        req.setModelResolver(new NBRepositoryModelResolver(this));
+        req.setSystemProperties(getSystemProperties());
+        return mb.build(req);
+        
     }
     
     public List<String> getLifecyclePhases() {
