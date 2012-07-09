@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -262,7 +263,8 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     }
     
     /* package-local */ List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress, ProjectProxy project, CompileLineStorage storage){
-        LogReader clrf = new LogReader(objFileName, root, project);
+        FileSystem fileSystem = getFileSystem(project);
+        LogReader clrf = new LogReader(objFileName, root, project, getRelocatablePathMapper(), fileSystem);
         List<SourceFileProperties> list = clrf.getResults(progress, isStoped, storage);
         return list;
     }

@@ -1,0 +1,8 @@
+Code completion result for source line:
+f|ormatter.print("text");
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+VARIABLE   formatter                       [PUBLIC]   Formatter.js
+KEYWORD    finally                                    null
+KEYWORD    for                                        null
+KEYWORD    function                                   null
