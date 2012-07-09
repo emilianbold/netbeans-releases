@@ -180,9 +180,11 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
         private JToolBar toolbar;
         private JPanel panel;
         boolean firstTimeShown = true;
+        private final Lookup mime;
 
         EffPOMView(Lookup lookup) {
             this.lookup = lookup;
+            mime = MimeLookup.getLookup("text/xml");
         }
         
         @Override
@@ -336,7 +338,6 @@ public class EffectivePomMD implements MultiViewDescription, Serializable {
                 }
                 EventQueue.invokeLater(new Runnable() {
                     @Override public void run() {
-                        Lookup mime = MimeLookup.getLookup("text/xml");
                         NbEditorKit kit = mime.lookup(NbEditorKit.class);
                         NbEditorDocument doc = (NbEditorDocument) kit.createDefaultDocument();
                         JEditorPane pane = new JEditorPane("text/xml", null);
