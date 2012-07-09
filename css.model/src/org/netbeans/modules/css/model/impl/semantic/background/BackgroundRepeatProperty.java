@@ -42,67 +42,37 @@
 package org.netbeans.modules.css.model.impl.semantic.background;
 
 import java.util.Collection;
+import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.model.api.semantic.ModelProvider;
-import org.netbeans.modules.css.model.api.semantic.background.BackgroundModel;
+import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.model.api.semantic.background.Background;
 import org.netbeans.modules.css.model.impl.semantic.Element;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-@ServiceProvider(service=ModelProvider.class)
-public class BackgroundModelProvider implements ModelProvider<BackgroundModel> {
+public class BackgroundRepeatProperty {
 
-    @Override
-    public Class getModelClass() {
-        return BackgroundModel.class;
-    }
+    private Stack<Background> BGS = new Stack<Background>();
 
-    @Override
-    public BackgroundModel createModel(ResolvedProperty resolvedProperty) {
-        BackgroundModelI model = new BackgroundModelI();
-        Node node = resolvedProperty.getParseTree();
-          switch(Element.forNode(node)) {
-            case background:
-                model.addBackgrounds(new BackgroundProperty(node).getBackgrounds());
-                break;
-            case background_position:
-                model.addBackgrounds(new BackgroundPositionProperty(node).getBackgrounds());
-                break;
-            case background_color:
-                model.addBackground(new BackgroundColorProperty(node).getBackground());
-                break;
-            case background_image:
-                model.addBackgrounds(new BackgroundImageProperty(node).getBackgrounds());
-                break;
-            case background_repeat:
-                model.addBackgrounds(new BackgroundRepeatProperty(node).getBackgrounds());
-                break;
-            case background_attchment:
-                model.addBackgrounds(new BackgroundAttachmentProperty(node).getBackgrounds());
-                break;
-            case background_clip:
-                model.addBackgrounds(new BackgroundClipProperty(node).getBackgrounds());
-                break;
-            case background_origin:
-                model.addBackgrounds(new BackgroundOriginProperty(node).getBackgrounds());
-                break;
-            case background_size:
-                model.addBackgrounds(new BackgroundSizeProperty(node).getBackgrounds());
-                break;
-                
-            default:
-                return null;
-        }
-        return model;
-    }
+    public BackgroundRepeatProperty(Node node) {
+        node.accept(new NodeVisitor.Adapter() { 
+            @Override
+            public boolean visit(Node node) {
+                switch (Element.forNode(node)) {
+                    case repeat_style:
+                        Background background = new BackgroundI();
+                        background.setRepeatStyle(new RepeatStyleI(node));
+                        BGS.push(background);
+                }
 
-    @Override
-    public BackgroundModel createModel(Collection<ResolvedProperty> resolvedProperty) {
-        throw new UnsupportedOperationException("Not supported yet.");
+                return true;
+            }
+        });
     }
     
+    public Collection<Background> getBackgrounds() {
+        return BGS;
+    }
 }

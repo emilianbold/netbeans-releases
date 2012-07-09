@@ -97,6 +97,49 @@ public class GrammarParserTest extends CssTestBase {
         
     }
     
+    public void testNamedElementsWithStarMultiplicity() {
+        String g = "[ x ]($my)*";
+        GroupGrammarElement root = GrammarParser.parse(g);
+        
+        System.out.println(root.toString2(0));
+        
+        
+        List<GrammarElement> children = root.elements();
+        assertNotNull(children);
+        assertEquals(1, children.size());
+        
+        Iterator<GrammarElement> itr = children.iterator();
+        GroupGrammarElement g1 = (GroupGrammarElement)itr.next();
+        assertNotNull(g1);
+        assertEquals("my", g1.getName());
+        
+        assertEquals(0, g1.getMinimumOccurances());
+        assertEquals(Integer.MAX_VALUE, g1.getMaximumOccurances());
+        
+    }
+    
+    public void testNamedElementsWithParticularMultiplicity() {
+        String g = "[ x ] ($my) {3,10}";
+        GroupGrammarElement root = GrammarParser.parse(g);
+        
+        System.out.println(root.toString2(0));
+        
+        
+        List<GrammarElement> children = root.elements();
+        assertNotNull(children);
+        assertEquals(1, children.size());
+        
+        Iterator<GrammarElement> itr = children.iterator();
+        GroupGrammarElement g1 = (GroupGrammarElement)itr.next();
+        assertNotNull(g1);
+        assertEquals("my", g1.getName());
+        
+        assertEquals(3, g1.getMinimumOccurances());
+        assertEquals(10, g1.getMaximumOccurances());
+        
+        
+    }
+    
     public void testParseNoNamedElements() {
         String g = "( )";
         GroupGrammarElement root = GrammarParser.parse(g);

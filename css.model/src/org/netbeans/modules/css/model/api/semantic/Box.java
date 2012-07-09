@@ -41,12 +41,33 @@
  */
 package org.netbeans.modules.css.model.api.semantic;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author marekfukala
  */
-public enum Attachment {
+public enum Box {
+
+    BORDER_BOX("border-box"),
+    PADDING_BOX("padding-box"),
+    CONTENT_BOX("content-box");
     
-    SCROLL, FIXED, LOCAL;
-    
+    private static final Map<String, Box> MAP = new HashMap<String, Box>();
+
+    static {
+        for (Box v : values()) {
+            MAP.put(v.name, v);
+        }
+    }
+    private String name;
+
+    private Box(String name) {
+        this.name = name;
+    }
+
+    public static Box forName(String name) {
+        return MAP.get(name);
+    }
 }

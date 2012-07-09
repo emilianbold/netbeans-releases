@@ -158,7 +158,9 @@ public class PropertyDefinition {
             public void visit(GroupGrammarElement element) {
                 if(element.isVisible()) {
                     Collection<PropertyDefinition> props = Properties.getProperties(element.getName());
-                    subs.addAll(props);
+                    if(props != null) {
+                        subs.addAll(props);
+                    }
                 }
                 
             }

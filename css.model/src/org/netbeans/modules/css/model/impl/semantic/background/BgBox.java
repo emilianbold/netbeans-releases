@@ -39,14 +39,50 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api.semantic;
+package org.netbeans.modules.css.model.impl.semantic.background;
+
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.NodeVisitor2;
+import org.netbeans.modules.css.lib.api.properties.TokenNode;
+import org.netbeans.modules.css.model.api.semantic.Box;
 
 /**
  *
  * @author marekfukala
  */
-public enum Attachment {
+public class BgBox {
+
+    private Box box;
+    private Box box2;
+
+    public BgBox(Node node) {
+        node.accept(new NodeVisitor2() {
+            @Override
+            public void visitTokenNode(TokenNode tokenNode) {
+                Box b = Box.forName(tokenNode.image().toString().toLowerCase());
+                if(box == null) {
+                    box = b;
+                } else {
+                    box2 = b;
+                }
+            }
+        });
+        
+    }
     
-    SCROLL, FIXED, LOCAL;
+    public Box getFirstBox() {
+        return box;
+    }
+    
+    public Box getSecondBox() {
+        return box2;
+    }
+    
+    @Override
+    public String toString() {
+        return box.name().toString();
+    }
     
 }
+    
+    

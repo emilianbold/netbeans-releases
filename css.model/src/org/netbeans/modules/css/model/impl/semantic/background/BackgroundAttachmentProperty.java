@@ -41,10 +41,38 @@
  */
 package org.netbeans.modules.css.model.impl.semantic.background;
 
+import java.util.Collection;
+import java.util.Stack;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.model.api.semantic.background.Background;
+import org.netbeans.modules.css.model.impl.semantic.Element;
+
 /**
  *
  * @author marekfukala
  */
-public class BgLayer {
+public class BackgroundAttachmentProperty {
+
+    private Stack<Background> BGS = new Stack<Background>();
+
+    public BackgroundAttachmentProperty(Node node) {
+        node.accept(new NodeVisitor.Adapter() { 
+            @Override
+            public boolean visit(Node node) {
+                switch (Element.forNode(node)) {
+                    case attachment:
+                        Background background = new BackgroundI();
+                        background.setAttachment(new AttachmentI(node).getValue());
+                        BGS.push(background);
+                }
+
+                return true;
+            }
+        });
+    }
     
+    public Collection<Background> getBackgrounds() {
+        return BGS;
+    }
 }

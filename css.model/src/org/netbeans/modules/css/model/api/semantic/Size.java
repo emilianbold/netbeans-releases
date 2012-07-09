@@ -46,5 +46,23 @@ package org.netbeans.modules.css.model.api.semantic;
  * @author marekfukala
  */
 public interface Size {
+
+    public boolean isCover();
     
+    public boolean isContain();
+    
+    public Value getHorizontalSize();
+    
+    public Value getVerticalSize();
+    
+    //semantic values
+    public interface Value {
+        
+        public Length getLength();
+        
+        public Percentage getPercentage();
+        
+        public boolean isAuto();
+        
+    }
 }

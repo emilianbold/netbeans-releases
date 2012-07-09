@@ -56,9 +56,24 @@ public enum Element {
     background_position("background-position"),
     background_color("background-color"),
     background_image("background-image"),
+    background_repeat("background-repeat"),
+    background_attchment("background-attachment"),
+    background_clip("background-clip"),
+    background_origin("background-origin"),
+    background_size("background-size"),
+    
     color("color"),
+
+    //inner (named) elements
+    single("single"),
+    pair("pair"),
+    
     
     //elements
+    bg_size("@bg-size"),
+    bg_box("@bg-box"),
+    attachment("@attachment"),
+    repeat_style("@repeat-style"),
     bg_pos("@bg-pos"),
     
     bg_pos_1("@bg-pos-1"),

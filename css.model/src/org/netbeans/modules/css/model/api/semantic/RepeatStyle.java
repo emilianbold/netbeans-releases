@@ -41,10 +41,50 @@
  */
 package org.netbeans.modules.css.model.api.semantic;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author marekfukala
  */
 public interface RepeatStyle {
     
+    public Repeat getHozizontalRepeat();
+    
+    public Repeat getVerticalRepeat();
+    
+    //semantic values
+    public static enum Repeat {
+        REPEAT, NO_REPEAT, SPACE, ROUND;
+    }
+    
+    //property values
+    public static enum Value {
+        
+        REPEAT("repeat"), 
+        NO_REPEAT("no-repeat"), 
+        SPACE("space"), 
+        ROUND("round"), 
+        REPEAT_X("repeat-x"), 
+        REPEAT_Y("repeat-y"); //NOI18N
+        
+        private static final Map<String, Value> MAP = new HashMap<String, Value>();
+        static {
+            for(Value v : values()) {
+                MAP.put(v.name, v);
+            }
+        }
+        
+        private String name;
+
+        private Value(String name) {
+            this.name = name;
+        }
+        
+        public static Value forName(String name) {
+            return MAP.get(name);
+        }
+        
+    }
 }

@@ -49,11 +49,15 @@ import org.netbeans.modules.css.lib.api.properties.NodeUtil;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.model.api.semantic.Attachment;
+import org.netbeans.modules.css.model.api.semantic.Box;
 import org.netbeans.modules.css.model.api.semantic.Color;
 import org.netbeans.modules.css.model.api.semantic.Edge;
-import org.netbeans.modules.css.model.api.semantic.Image;
+import org.netbeans.modules.css.model.api.semantic.Length;
 import org.netbeans.modules.css.model.api.semantic.ModelFactory;
 import org.netbeans.modules.css.model.api.semantic.Percentage;
+import org.netbeans.modules.css.model.api.semantic.RepeatStyle;
+import org.netbeans.modules.css.model.api.semantic.Size;
 import org.netbeans.modules.css.model.api.semantic.background.BackgroundPosition;
 import org.netbeans.modules.css.model.api.semantic.background.Background;
 import org.netbeans.modules.css.model.api.semantic.background.BackgroundModel;
@@ -275,6 +279,100 @@ public class BackgroundModelImplTest extends CssTestBase {
         
     }
     
+    public void testRepeatStyle() {
+
+        PropertyModel property = Properties.getPropertyModel("background-repeat");
+        assertNotNull(property);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat-x"), 
+                RepeatStyle.Repeat.REPEAT, RepeatStyle.Repeat.NO_REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat-y"), 
+                RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat"), 
+                RepeatStyle.Repeat.REPEAT, RepeatStyle.Repeat.REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "space"), 
+                RepeatStyle.Repeat.SPACE, RepeatStyle.Repeat.SPACE);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "round"), 
+                RepeatStyle.Repeat.ROUND, RepeatStyle.Repeat.ROUND);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat"), 
+                RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.NO_REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat repeat"), 
+                RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "round repeat"), 
+                RepeatStyle.Repeat.ROUND, RepeatStyle.Repeat.REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat space"), 
+                RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.SPACE);
+        
+        //in background aggregated property
+        
+        property = Properties.getPropertyModel("background");
+        assertNotNull(property);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat-x"), 
+                RepeatStyle.Repeat.REPEAT, RepeatStyle.Repeat.NO_REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat-y"), 
+                RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "repeat"), 
+                RepeatStyle.Repeat.REPEAT, RepeatStyle.Repeat.REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "space"), 
+                RepeatStyle.Repeat.SPACE, RepeatStyle.Repeat.SPACE);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "round"), 
+                RepeatStyle.Repeat.ROUND, RepeatStyle.Repeat.ROUND);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat"), 
+                RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.NO_REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat repeat"), 
+                RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "round repeat"), 
+                RepeatStyle.Repeat.ROUND, RepeatStyle.Repeat.REPEAT);
+        
+        assertRepeatStyle(ResolvedProperty.resolve(property, "no-repeat space"), 
+                RepeatStyle.Repeat.NO_REPEAT, RepeatStyle.Repeat.SPACE);
+        
+        
+    }
+    
+    private void assertRepeatStyle(ResolvedProperty property, 
+            RepeatStyle.Repeat expectedHorizontal, 
+            RepeatStyle.Repeat expectedVertical) {
+        BackgroundModel model = ModelFactory.getModel(BackgroundModel.class, property);
+        assertNotNull(model);
+        
+        Collection<Background> backgrounds = model.getBackgrounds();
+        assertNotNull(backgrounds);
+        
+        assertEquals(1, backgrounds.size());
+        
+        Background bg = backgrounds.iterator().next();
+        assertNotNull(bg);
+        
+        RepeatStyle rs = bg.getRepeatStyle();
+        assertNotNull(rs);
+        
+        RepeatStyle.Repeat horizontal = rs.getHozizontalRepeat();
+        assertNotNull(horizontal);
+        assertEquals(expectedHorizontal, horizontal);
+        
+        RepeatStyle.Repeat vertical = rs.getVerticalRepeat();
+        assertNotNull(vertical);
+        assertEquals(expectedVertical, vertical);
+        
+    }
+    
     
     public void testBackgroundPositionInBackgroundProperty() {
         
@@ -353,28 +451,291 @@ public class BackgroundModelImplTest extends CssTestBase {
         
         assertEquals(h, hpos.getRelativeTo());
         assertEquals(hcenter, hpos.isCenter());
-        assertToString(hpos.getPercentage(), hpercentage);
-        assertToString(hpos.getLength(), hlength);
+        assertToString(hpercentage, hpos.getPercentage());
+        assertToString(hlength, hpos.getLength());
         
         Position vpos = pos.getVerticalPosition();
         assertNotNull(vpos);
         
         assertEquals(v, vpos.getRelativeTo());
         assertEquals(vcenter, vpos.isCenter());
-        assertToString(vpos.getPercentage(), vpercentage);
-        assertToString(vpos.getLength(), vlength);
+        assertToString(vpercentage, vpos.getPercentage());
+        assertToString(vlength, vpos.getLength());
         
     }
     
-    private void assertToString(Object object, String expectedToString) {
-        if(object == null) {
-            assertNull(expectedToString);
-        } else if(expectedToString == null) {
-            assertNull(object);
+    private void assertToString(String expectedToString, Object object) {
+        if(expectedToString == null || object == null) {
+            assertSame(expectedToString, object);
         } else {
             String asText = object.toString();
             assertEquals(expectedToString, asText);
         }
+    }
+    
+      public void testBackgroundAttachment() {
+
+        PropertyModel property = Properties.getPropertyModel("background-attachment");
+        assertNotNull(property);
+        
+        assertAttachment(ResolvedProperty.resolve(property, "fixed"), 
+                Attachment.FIXED);
+        assertAttachment(ResolvedProperty.resolve(property, "local"), 
+                Attachment.LOCAL);
+        assertAttachment(ResolvedProperty.resolve(property, "scroll"), 
+                Attachment.SCROLL);
+       
+        property = Properties.getPropertyModel("background");
+        assertNotNull(property);
+        
+        assertAttachment(ResolvedProperty.resolve(property, "fixed"), 
+                Attachment.FIXED);
+        assertAttachment(ResolvedProperty.resolve(property, "local"), 
+                Attachment.LOCAL);
+        assertAttachment(ResolvedProperty.resolve(property, "scroll"), 
+                Attachment.SCROLL);
+        
+       
+    }
+    
+    private void assertAttachment(ResolvedProperty property, Attachment attachment) {
+        BackgroundModel model = ModelFactory.getModel(BackgroundModel.class, property);
+        assertNotNull(model);
+        
+        Collection<Background> backgrounds = model.getBackgrounds();
+        assertNotNull(backgrounds);
+        
+        assertEquals(1, backgrounds.size());
+        
+        Background bg = backgrounds.iterator().next();
+        assertNotNull(bg);
+        
+        Attachment a = bg.getAttachment();
+        assertNotNull(a);
+        assertEquals(attachment, a);
+        
+    }
+    
+      public void testBackgroundClip() {
+
+        PropertyModel property = Properties.getPropertyModel("background-clip");
+        assertNotNull(property);
+        
+        assertClip(ResolvedProperty.resolve(property, "border-box"), 
+                Box.BORDER_BOX);
+        assertClip(ResolvedProperty.resolve(property, "padding-box"), 
+                Box.PADDING_BOX);
+        assertClip(ResolvedProperty.resolve(property, "content-box"), 
+                Box.CONTENT_BOX);
+
+        property = Properties.getPropertyModel("background");
+        assertNotNull(property);
+        
+        assertClip(ResolvedProperty.resolve(property, "border-box"), 
+                Box.BORDER_BOX);
+        assertClip(ResolvedProperty.resolve(property, "padding-box"), 
+                Box.PADDING_BOX);
+        assertClip(ResolvedProperty.resolve(property, "content-box"), 
+                Box.CONTENT_BOX);
+        
+       
+    }
+    
+    private void assertClip(ResolvedProperty property, Box clip) {
+        BackgroundModel model = ModelFactory.getModel(BackgroundModel.class, property);
+        assertNotNull(model);
+        
+        Collection<Background> backgrounds = model.getBackgrounds();
+        assertNotNull(backgrounds);
+        
+        assertEquals(1, backgrounds.size());
+        
+        Background bg = backgrounds.iterator().next();
+        assertNotNull(bg);
+        
+        Box c = bg.getClip();
+        assertNotNull(c);
+        assertEquals(clip, c);
+        
+    }
+     
+    public void testBackgroundOrigin() {
+
+        PropertyModel property = Properties.getPropertyModel("background-origin");
+        assertNotNull(property);
+        
+        assertOrigin(ResolvedProperty.resolve(property, "border-box"), 
+                Box.BORDER_BOX);
+        assertOrigin(ResolvedProperty.resolve(property, "padding-box"), 
+                Box.PADDING_BOX);
+        assertOrigin(ResolvedProperty.resolve(property, "content-box"), 
+                Box.CONTENT_BOX);
+
+        property = Properties.getPropertyModel("background");
+        assertNotNull(property);
+        
+        assertOrigin(ResolvedProperty.resolve(property, "border-box"), 
+                Box.BORDER_BOX);
+        assertOrigin(ResolvedProperty.resolve(property, "padding-box"), 
+                Box.PADDING_BOX);
+        assertOrigin(ResolvedProperty.resolve(property, "content-box"), 
+                Box.CONTENT_BOX);
+        
+       
+    }
+    
+    public void testBackgroundOriginVsClip() {
+
+        PropertyModel property = Properties.getPropertyModel("background");
+        assertNotNull(property);
+        
+        assertClip(ResolvedProperty.resolve(property, "border-box padding-box"), 
+                Box.PADDING_BOX);
+
+        assertOrigin(ResolvedProperty.resolve(property, "border-box padding-box"), 
+                Box.BORDER_BOX);
+        
+       
+    }
+    
+    private void assertOrigin(ResolvedProperty property, Box origin) {
+        
+        Node tree = property.getParseTree();
+        NodeUtil.dumpTree(tree);
+        
+        BackgroundModel model = ModelFactory.getModel(BackgroundModel.class, property);
+        assertNotNull(model);
+        
+        Collection<Background> backgrounds = model.getBackgrounds();
+        assertNotNull(backgrounds);
+        
+        assertEquals(1, backgrounds.size());
+        
+        Background bg = backgrounds.iterator().next();
+        assertNotNull(bg);
+        
+        Box c = bg.getOrigin();
+        assertNotNull(c);
+        assertEquals(origin, c);
+        
+    }
+     
+      public void testBackgroundSizeInBackgroundSizeProperty() {
+
+        PropertyModel property = Properties.getPropertyModel("background-size");
+        assertNotNull(property);
+        
+        assertSize(ResolvedProperty.resolve(property, "cover"), 
+                true, false,
+                false, null, null,
+                false, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "contain"), 
+                false, true,
+                false, null, null,
+                false, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "auto"), 
+                false, false,
+                true, null, null,
+                true, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "auto auto"), 
+                false, false,
+                true, null, null,
+                true, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "10px"), 
+                false, false,
+                false, null, "10px",
+                true, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "10px auto"), 
+                false, false,
+                false, null, "10px",
+                true, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "10% auto"), 
+                false, false,
+                false, "10%", null,
+                true, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "10% 20px"), 
+                false, false,
+                false, "10%", null,
+                false, null, "20px");
+        
+        assertSize(ResolvedProperty.resolve(property, "10px 20%"), 
+                false, false,
+                false, null, "10px",
+                false, "20%", null);
+        
+        assertSize(ResolvedProperty.resolve(property, "auto 20%"), 
+                false, false,
+                true, null, null,
+                false, "20%", null);
+
+      }
+      
+      public void testBackgroundSizeInBackgroundProperty() {
+          
+        PropertyModel property = Properties.getPropertyModel("background");
+        assertNotNull(property);
+        
+        assertSize(ResolvedProperty.resolve(property, "center / cover"), 
+                true, false,
+                false, null, null,
+                false, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "center / auto auto"), 
+                false, false,
+                true, null, null,
+                true, null, null);
+        
+        assertSize(ResolvedProperty.resolve(property, "center / 10px 20%"), 
+                false, false,
+                false, null, "10px",
+                false, "20%", null);
+        
+       
+    }
+    
+    private void assertSize(ResolvedProperty property, boolean isCover, boolean isContain,
+            boolean horizontalAuto, String horizontalPercentage, String horizontalLength,
+            boolean verticalAuto, String verticalPercentage, String verticalLength
+            ) {
+        
+//        System.out.println("-------------------");
+//        NodeUtil.dumpTree(property.getParseTree());
+        
+        BackgroundModel model = ModelFactory.getModel(BackgroundModel.class, property);
+        assertNotNull(model);
+        
+        Collection<Background> backgrounds = model.getBackgrounds();
+        assertNotNull(backgrounds);
+        
+        assertEquals(1, backgrounds.size());
+        
+        Background bg = backgrounds.iterator().next();
+        assertNotNull(bg);
+        
+        Size s = bg.getSize();
+        assertNotNull(s);
+        
+        assertEquals(isCover, s.isCover());
+        assertEquals(isContain, s.isContain());
+        
+        Size.Value h = s.getHorizontalSize();
+        assertEquals(horizontalAuto, h.isAuto());
+        assertToString(horizontalPercentage, h.getPercentage());
+        assertToString(horizontalLength, h.getLength());
+        
+        Size.Value v = s.getVerticalSize();
+        assertEquals(verticalAuto, v.isAuto());
+        assertToString(verticalPercentage, v.getPercentage());
+        assertToString(verticalLength, v.getLength());
+        
+        
     }
     
 }
