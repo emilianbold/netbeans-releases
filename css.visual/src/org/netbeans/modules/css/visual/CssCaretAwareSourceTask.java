@@ -46,6 +46,7 @@ package org.netbeans.modules.css.visual;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
@@ -53,10 +54,10 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.*;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 /**
@@ -66,7 +67,6 @@ import org.openide.windows.WindowManager;
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
 
     private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
-    
     private boolean cancelled;
 
     @Override
@@ -99,72 +99,74 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         final int caretOffset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
 
         SwingUtilities.invokeLater(new Runnable() {
-        
             @Override
             public void run() {
                 final RuleEditorTC ruleEditorTC = (RuleEditorTC) WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
                 if (ruleEditorTC != null) {
                     RequestProcessor.getDefault().post(new Runnable() {
-
                         @Override
                         public void run() {
                             updateCssPropertiesWindow(ruleEditorTC, result, caretOffset);
                         }
-                        
                     });
                 }
             }
-
         });
 
     }
 
     private void updateCssPropertiesWindow(final RuleEditorTC ruleEditorTC, final CssCslParserResult result, int documentOffset) {
-        if(cancelled) {
-            return ;
+        if (cancelled) {
+            return;
         }
-        
-        final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
-        if(astOffset == -1) {
-            //disable the rule editor
-            ruleEditorTC.setContext(null);
-            return ;
-        }
-        
-        Model model = result.getModel();
-        
-        model.runReadTask(new Model.ModelTask() {
 
+        final RuleEditorController controller = ruleEditorTC.getRuleEditorController();
+
+        final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);
+        if (astOffset == -1) {
+            //disable the rule editor content
+            controller.setNoRuleState();
+            return;
+        }
+
+        Model model = result.getModel();
+
+        model.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {
                 final Collection<Rule> rules = new ArrayList<Rule>();
+                final AtomicReference<Rule> ruleRef = new AtomicReference<Rule>();
                 styleSheet.accept(new ModelVisitor.Adapter() {
-
                     @Override
                     public void visitRule(Rule rule) {
-                        rules.add(rule);
+                        if (cancelled) {
+                            return;
+                        }
+                        if (astOffset > rule.getStartOffset() && astOffset < rule.getEndOffset()) {
+                            ruleRef.set(rule);
+                        }
                     }
                 });
-                
-                Rule match = null;
-                for (Rule rule : rules) {
-                    if (astOffset > rule.getStartOffset() && astOffset < rule.getEndOffset()) {
-                        match = rule;
-                        break;
-                    }
-                }
-                if(cancelled) {
-                    return ;
+
+                if (cancelled) {
+                    return;
                 }
                 
-                RuleContext context = match == null ? null : new RuleContext(match, result.getModel());
-                ruleEditorTC.setContext(context);
+                Rule match = ruleRef.get();
+                if (match == null) {
+                    controller.setNoRuleState();
+                } else {
+                    controller.setModel(result.getModel());
+                    controller.setRule(match);
+
+                }
+
             }
         });
 
     }
-    
-    @MimeRegistration(mimeType="text/x-css", service=TaskFactory.class)
+
+    @MimeRegistration(mimeType = "text/x-css", service = TaskFactory.class)
     public static class Factory extends TaskFactory {
 
         @Override
@@ -178,6 +180,4 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
             }
         }
     }
-
-    
 }

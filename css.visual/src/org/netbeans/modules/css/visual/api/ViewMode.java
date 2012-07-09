@@ -39,62 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
-
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.netbeans.modules.css.model.api.semantic.PModel;
-import org.openide.nodes.Node;
+package org.netbeans.modules.css.visual.api;
 
 /**
+ * View modes for the {@link RuleEditorPanel}.
  *
  * @author marekfukala
  */
-public class EditableBoxModelProperty extends Node.Property<EditableBox> {
-
-    private PModel model;
-    private RuleNode ruleNode;
-
-    public EditableBoxModelProperty(RuleNode ruleNode, PModel model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
-    }
+public enum ViewMode {
     
-    public EditableBox getEditableBox() {
-        return (EditableBox)model;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
+    /**
+     * Standard view mode.
+     * 
+     * Shows only physical properties of the selected rule. 
+     * The properties are shown in natural order.
+     */
+    STANDART, 
     
-    @Override
-    public boolean canRead() {
-        return true;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return getEditableBox();
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
+    /**
+     * Alphabetized view mode.
+     * 
+     * Shows physical properties of the selected rule first, then all
+     * of the existing unused properties. All the properties are sorted
+     * alphabetically.
+     */
+    ALPHABETIZED, 
+    
+    /**
+     * Categorized view mode.
+     * 
+     * Shows categories for the css properties. In each category the physical
+     * properties of the selected rule are show first, then the rest of 
+     * existing css properties belonging to the category. All properties sorted 
+     * alphabetically, categories also sorted alphabetically.
+     */
+    CATEGORIZED;
     
 }

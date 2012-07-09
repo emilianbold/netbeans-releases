@@ -403,7 +403,10 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.inspect</friend>
+                <package>org.netbeans.modules.css.visual.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

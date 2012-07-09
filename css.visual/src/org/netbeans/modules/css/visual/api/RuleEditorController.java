@@ -39,39 +39,89 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.visual.api;
 
+import javax.swing.JComponent;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.css.visual.RuleEditorPanel;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author marekfukala
  */
-public class RuleContext {
+public final class RuleEditorController {
     
-    private Rule rule;
-    
-    private Model model;
-    
-    private Snapshot snapshot;
+    private RuleEditorPanel peer;
 
-    public RuleContext(Rule rule, Model model) {
-        this.rule = rule;
-        this.model = model;
-    }
-
-    public Rule getRule() {
-        return rule;
+    public static RuleEditorController createInstance() {
+        return new RuleEditorController(new RuleEditorPanel());
     }
     
-    public Model getModel() {
-        return model;
+    private RuleEditorController(RuleEditorPanel peer) {
+        this.peer = peer;
     }
-
-    public RuleNode getNode() {
-        return rule == null ? null : new RuleNode(model, rule);
+    
+    public JComponent getRuleEditorComponent() {
+        return peer;
     }
+    
+    /**
+     * Sets the css source model to the {@link RuleEditorPanel}.
+     * 
+     * All subsequent actions refers to this model.
+     * 
+     * @param cssSourceModel an instance of {@link Model}
+     */
+    public void setModel(Model cssSourceModel) {
+        Parameters.notNull("cssSourceModel", cssSourceModel);
+        peer.setModel(cssSourceModel);
+    }
+    
+    /**
+     * Sets the given css rule as the context.
+     * 
+     * @param rule a non null instance of {@link Rule). <b>MUST belong to the selected css model instance!</b>
+     */
+    public void setRule(Rule rule) {
+        Parameters.notNull("rule", rule);
+        peer.setRule(rule);
+    }
+    
+    /**
+     * Switches the panel to the 'no selected rule mode'. 
+     * The panel will show some informational message instead of the css rule properties.
+     */
+    public void setNoRuleState() {
+        peer.setNoRuleState();
+    }
+    
+    /**
+     * Sets the view mode of the rule editor component. See {@link ViewMode}
+     * 
+     * @param mode 
+     */
+    public void setViewMode(ViewMode mode) {
+        peer.setViewMode(mode);
+    }
+    
+    /**
+     * Registers an instance of {@link RuleEditorListener} to the component.
+     * @param listener
+     * @return true if the listeners list changed
+     */
+    public boolean addRuleEditorListener(RuleEditorListener listener) {
+        return peer.addRuleEditorListener(listener);
+    }
+    /**
+     * Unregisters an instance of {@link RuleEditorListener} from the component.
+     * @param listener
+     * @return true if the listeners list changed (listener removed)
+     */
+    public boolean removeRuleEditorListener(RuleEditorListener listener) {
+        return peer.removeRuleEditorListener(listener);
+    }
+    
     
 }

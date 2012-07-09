@@ -45,12 +45,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.model.api.*;
-import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -95,27 +92,27 @@ public class RuleNode extends AbstractNode {
         //rule properties property set
         sets.add(new RulePropertySet(rule));
 
-        //semantic models property sets
-        Declarations declarations = rule.getDeclarations();
-        if (declarations != null) {
-            Map<String, Collection<PModel>> category2models = new HashMap<String, Collection<PModel>>();
-            Collection<? extends PModel> models = declarations.getSemanticModels();
-            //create a property set for each model catogory and put all models to them
-            for (PModel semanticModel : models) {
-                String categoryName = semanticModel.getCategoryName();
-                Collection<PModel> subCol = category2models.get(categoryName);
-                if (subCol == null) {
-                    subCol = new ArrayList<PModel>();
-                    category2models.put(categoryName, subCol);
-                }
-                subCol.add(semanticModel);
-            }
-
-            for (String categoryName : category2models.keySet()) {
-                sets.add(new SemanticModelCategoryPropertySet(categoryName, category2models.get(categoryName)));
-            }
-
-        }
+//        //semantic models property sets
+//        Declarations declarations = rule.getDeclarations();
+//        if (declarations != null) {
+//            Map<String, Collection<PModel>> category2models = new HashMap<String, Collection<PModel>>();
+//            Collection<? extends PModel> models = declarations.getSemanticModels();
+//            //create a property set for each model catogory and put all models to them
+//            for (PModel semanticModel : models) {
+//                String categoryName = semanticModel.getCategoryName();
+//                Collection<PModel> subCol = category2models.get(categoryName);
+//                if (subCol == null) {
+//                    subCol = new ArrayList<PModel>();
+//                    category2models.put(categoryName, subCol);
+//                }
+//                subCol.add(semanticModel);
+//            }
+//
+//            for (String categoryName : category2models.keySet()) {
+//                sets.add(new SemanticModelCategoryPropertySet(categoryName, category2models.get(categoryName)));
+//            }
+//
+//        }
 
         return sets.toArray(new PropertySet[0]);
     }
@@ -147,30 +144,30 @@ public class RuleNode extends AbstractNode {
             });
         }
     
-    private class SemanticModelCategoryPropertySet extends PropertySet {
-
-        private Property<?>[] properties;
-
-        public SemanticModelCategoryPropertySet(String categoryName, Collection<PModel> models) {
-            super(categoryName, categoryName, null);
-
-            Collection<Property> props = new ArrayList<Property>(models.size());
-
-            for (PModel semanticModel : models) {
-                Property prop = SemanticModelPERegistry.getProperty(RuleNode.this, semanticModel);
-                if (prop != null) {
-                    props.add(prop);
-                }
-            }
-
-            properties = props.toArray(new Property[]{});
-        }
-
-        @Override
-        public Property<?>[] getProperties() {
-            return properties;
-        }
-    }
+//    private class SemanticModelCategoryPropertySet extends PropertySet {
+//
+//        private Property<?>[] properties;
+//
+//        public SemanticModelCategoryPropertySet(String categoryName, Collection<PModel> models) {
+//            super(categoryName, categoryName, null);
+//
+//            Collection<Property> props = new ArrayList<Property>(models.size());
+//
+//            for (PModel semanticModel : models) {
+//                Property prop = SemanticModelPERegistry.getProperty(RuleNode.this, semanticModel);
+//                if (prop != null) {
+//                    props.add(prop);
+//                }
+//            }
+//
+//            properties = props.toArray(new Property[]{});
+//        }
+//
+//        @Override
+//        public Property<?>[] getProperties() {
+//            return properties;
+//        }
+//    }
 
     private class RulePropertySet extends PropertySet {
 

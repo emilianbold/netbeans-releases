@@ -39,59 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.visual.api;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
-import org.openide.nodes.Node;
+import org.netbeans.modules.css.model.api.Declaration;
 
 /**
  *
  * @author marekfukala
  */
-public class BoxModelProperty extends Node.Property<EditableBox> {
-
-    EditableBox model;
-    private RuleNode ruleNode;
-
-    public BoxModelProperty(RuleNode ruleNode, EditableBox model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-//        return model.getDisplayName();
-        return null;
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-//        return new EditableBoxPropertyEditor(this);
-        return null;
-    }
+public interface RuleEditorListener {
     
-    @Override
-    public boolean canRead() {
-        return true;
-    }
-
-    @Override
-    public boolean canWrite() {
-        return true;
-    }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return model;
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
+    public void declarationSelected(Declaration declaration);
     
+    public void declarationDisabled(Declaration declaration);
+    
+    /**
+     * Not obvious what such action should do. Maybe 
+     */
+    public void declarationRestored(Declaration declaration);
+    
+    public void declarationAdded(Declaration declaration);
+    
+    public void declarationRemoved(Declaration declaration);
+    
+    public void viewModeSelected(ViewMode mode);
 }

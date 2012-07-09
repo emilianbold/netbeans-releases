@@ -39,63 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.visual.editors;
 
-import java.awt.BorderLayout;
-import org.netbeans.modules.css.visual.api.RuleEditorController;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
+import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
+import org.netbeans.modules.css.model.api.semantic.PModel;
+import org.netbeans.modules.css.visual.RuleNode;
+import org.openide.nodes.Node;
 
 /**
- * 
- * @author mfukala@netbeans.org
+ *
+ * @author marekfukala
  */
-@TopComponent.Description(
-        preferredID = RuleEditorTC.ID,
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS,
-        iconBase="org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
-@TopComponent.Registration(
-        mode = "properties", // NOI18N
-        openAtStartup = false)
-@ActionID(
-        category = "Window", // NOI18N
-        id = "org.netbeans.modules.css.visual.v2.RuleEditorTC") // NOI18N
-@ActionReference(
-        path = "Menu/Window/Navigator", // NOI18N
-        position = 900)
-@TopComponent.OpenActionRegistration(
-        displayName = "#CTL_RuleEditorAction", // NOI18N
-        preferredID = RuleEditorTC.ID)
-@NbBundle.Messages({
-    "CTL_RuleEditorAction=Rule Editor", // NOI18N
-    "CTL_RuleEditorTC=Rule Editor", // NOI18N
-    "HINT_RuleEditorTC=This window is an editor of CSS rule properties" // NOI18N
-}) 
-public final class RuleEditorTC extends TopComponent {
-    /** TopComponent ID. */
-    public static final String ID = "RuleEditorTC"; // NOI18N
-    /** Panel shown in this {@code TopComponent}. */
-    private RuleEditorController controller;
+public class EditableBoxModelProperty extends Node.Property<EditableBox> {
 
-    public RuleEditorTC() {
-        initComponents();
-        setName(Bundle.CTL_RuleEditorTC());
-        setToolTipText(Bundle.HINT_RuleEditorTC());
-    }
+    private PModel model;
+    private RuleNode ruleNode;
 
-    public RuleEditorController getRuleEditorController() {
-        return controller;
+    public EditableBoxModelProperty(RuleNode ruleNode, PModel model) {
+        super(EditableBox.class);
+        this.ruleNode = ruleNode;
+        this.model = model;
     }
     
-    /**
-     * Initializes the components in this {@code TopComponent}.
-     */
-    private void initComponents() {
-        setLayout(new BorderLayout());
-        controller = RuleEditorController.createInstance();
-        add(controller.getRuleEditorComponent(), BorderLayout.CENTER);
+    public EditableBox getEditableBox() {
+        return (EditableBox)model;
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        return model.getDisplayName();
+    }
+
+    @Override
+    public PropertyEditor getPropertyEditor() {
+        return new EditableBoxPropertyEditor(this);
+    }
+    
+    @Override
+    public boolean canRead() {
+        return true;
+    }
+
+    @Override
+    public boolean canWrite() {
+        return true;
+    }
+
+    @Override
+    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
+        return getEditableBox();
+    }
+
+    @Override
+    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        ruleNode.applyModelChanges();
+    }
+
+    
 }

@@ -42,18 +42,38 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import javax.swing.JPanel;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.visual.RuleNode;
+import org.netbeans.modules.css.visual.api.RuleEditorListener;
+import org.netbeans.modules.css.visual.api.RuleEditorController;
+import org.netbeans.modules.css.visual.api.ViewMode;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 
 /**
+ * Rule editor panel is a {@link JPanel} component which can be embedded in 
+ * the client's UI.
+ * 
+ * It can be controlled and observed via {@link RuleEditorPanelController} 
+ * and {@link RuleEditorListener}.
  *
  * @author marekfukala
  */
-public class RuleEditorPanel extends javax.swing.JPanel {
+public class RuleEditorPanel extends JPanel {
 
     private PropertySheet sheet;
-    private RuleContext ruleContext;
-
+    
+    private Model model;
+    private Rule rule;
+    
+    private Collection<RuleEditorListener> LISTENERS
+            = Collections.synchronizedCollection(new ArrayList<RuleEditorListener>());
+    
     /**
      * Creates new form RuleEditorPanel
      */
@@ -63,22 +83,43 @@ public class RuleEditorPanel extends javax.swing.JPanel {
         sheet = new PropertySheet();
         add(sheet, BorderLayout.CENTER);
     }
-
-    void setContext(RuleContext ruleContext) {
-        this.ruleContext = ruleContext;
-
-        updateContent();
+    
+    public void setModel(Model model) {
+        this.model = model;
+        this.rule = null;
     }
     
-    RuleContext getContext() {
-        return ruleContext;
+    public void setRule(Rule rule) {
+        this.rule = rule;
+        sheet.setNodes(new Node[]{new RuleNode(model, rule)});
     }
-
-    private void updateContent() {
-        Node node = ruleContext == null ? null : ruleContext.getNode();
-        sheet.setNodes(node == null ? null : new Node[]{node});
+    
+    public void setNoRuleState() {
+        sheet.setNodes(null);
+        //TODO - show some 'no rule selected' message
     }
-
+    
+    public void setViewMode(ViewMode mode) {
+        //TODO
+    }
+    
+    /**
+     * Registers an instance of {@link RuleEditorListener} to the component.
+     * @param listener
+     * @return true if the listeners list changed
+     */
+    public boolean addRuleEditorListener(RuleEditorListener listener) {
+        return LISTENERS.add(listener);
+    }
+    /**
+     * Unregisters an instance of {@link RuleEditorListener} from the component.
+     * @param listener
+     * @return true if the listeners list changed (listener removed)
+     */
+    public boolean removeRuleEditorListener(RuleEditorListener listener) {
+        return LISTENERS.remove(listener);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -93,4 +134,5 @@ public class RuleEditorPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
+
 }

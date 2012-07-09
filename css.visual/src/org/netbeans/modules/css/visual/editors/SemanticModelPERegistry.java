@@ -39,9 +39,11 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.visual.editors;
 
+import org.netbeans.modules.css.visual.editors.EditableBoxModelProperty;
 import org.netbeans.modules.css.model.api.semantic.PModel;
+import org.netbeans.modules.css.visual.RuleNode;
 import org.openide.nodes.Node.Property;
 
 /**
