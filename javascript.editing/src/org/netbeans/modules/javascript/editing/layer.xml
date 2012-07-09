@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Editors">
+    <!-- <folder name="Editors">
         <file name="org-netbeans-modules-javascript-editing-embedding-JsEmbeddingProvider$Factory.instance">
             <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
         </file>
@@ -307,5 +307,5 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript/editing/json.html"/>
             </file>
         </folder>
-    </folder>
+    </folder> -->
 </filesystem>
