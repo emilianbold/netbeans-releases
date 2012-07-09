@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.model.api.*;
@@ -54,6 +55,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -62,6 +64,10 @@ import org.openide.util.lookup.Lookups;
  *
  * @author marekfukala
  */
+@NbBundle.Messages({
+    "rule.properties=Properties",
+    "rule.properties.description=Properties of the css rule"
+}) 
 public class RuleNode extends AbstractNode {
 
     private PropertySet[] propertySets;
@@ -174,7 +180,9 @@ public class RuleNode extends AbstractNode {
         private Property<?>[] properties;
 
         public RulePropertySet(Rule rule) {
-            super("properties", "Properties", "Properties of the selected css rule");
+            super("css_properties", //NOI18N
+                    Bundle.rule_properties(), 
+                    Bundle.rule_properties_description());
 
             if (rule.getDeclarations() == null) {
                 //empty rule
