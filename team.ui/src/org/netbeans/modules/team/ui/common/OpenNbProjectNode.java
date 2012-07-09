@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class OpenNbProjectNode<S extends TeamServer<P>, P> extends LeafNode {
+public class OpenNbProjectNode<S extends TeamServer, P> extends LeafNode {
 
     private final SourceHandle src;
 

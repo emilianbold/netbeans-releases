@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class MemberListNode<S extends TeamServer<P>, P> extends SectionNode {
+public class MemberListNode<S extends TeamServer, P> extends SectionNode {
 
     private MessagingHandle msg;
     private PropertyChangeListener l;

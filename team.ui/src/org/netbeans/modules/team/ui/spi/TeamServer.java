@@ -44,7 +44,6 @@ package org.netbeans.modules.team.ui.spi;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.util.Collection;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
@@ -52,7 +51,7 @@ import javax.swing.JComponent;
  *
  * @author Ondrej Vrabec
  */
-public interface TeamServer<P> {
+public interface TeamServer {
     
     
     /**
@@ -73,8 +72,6 @@ public interface TeamServer<P> {
     public URL getUrl ();
 
     public PasswordAuthentication getPasswordAuthentication();
-    
-    public Collection<ProjectHandle<P>> getMyProjects();
     
     public Status getStatus ();
 

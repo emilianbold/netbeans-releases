@@ -42,6 +42,7 @@
 package org.netbeans.modules.kenai.ui.dashboard;
 
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
@@ -184,6 +185,11 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
                 return Object.class;
             }
         };
+    }
+
+    @Override
+    public Collection<ProjectHandle<KenaiProject>> getMyProjects() {
+        return server.getMyProjects();
     }
     
 }

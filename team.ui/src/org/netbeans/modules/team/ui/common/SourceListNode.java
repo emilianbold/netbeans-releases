@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht, Jan Becicka
  */
-public class SourceListNode<S extends TeamServer<P>, P> extends SectionNode {
+public class SourceListNode<S extends TeamServer, P> extends SectionNode {
     private final DashboardProvider<S, P> dashboard;
     private final LeafNode[] nodes;
 

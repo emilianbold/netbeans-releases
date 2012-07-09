@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class QueryListNode<S extends TeamServer<P>, P> extends SectionNode {
+public class QueryListNode<S extends TeamServer, P> extends SectionNode {
     private final DashboardProvider<S, P> dashboard;
 
     public QueryListNode( ProjectNode parent, DashboardProvider<S, P> dashboard) {

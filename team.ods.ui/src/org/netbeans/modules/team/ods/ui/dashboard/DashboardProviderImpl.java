@@ -45,6 +45,7 @@ import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
@@ -181,6 +182,11 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
     @Override
     public CloudUiServer getServer(ProjectHandle<ODSProject> project) {
         return server;
+    }
+
+    @Override
+    public Collection<ProjectHandle<ODSProject>> getMyProjects() {
+        return server.getMyProjects();
     }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)

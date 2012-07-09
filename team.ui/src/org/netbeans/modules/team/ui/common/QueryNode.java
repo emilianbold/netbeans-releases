@@ -70,7 +70,7 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
  *
  * @author S. Aubrecht
  */
-public class QueryNode<S extends TeamServer<P>, P> extends AsynchronousLeafNode<List<QueryResultHandle>> implements PropertyChangeListener {
+public class QueryNode<S extends TeamServer, P> extends AsynchronousLeafNode<List<QueryResultHandle>> implements PropertyChangeListener {
 
     private final DashboardProvider<S, P> dashboard;
     private final QueryHandle query;

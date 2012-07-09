@@ -73,7 +73,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Ondrej Vrabec
  */
-public class KenaiServer implements TeamServer<KenaiProject> {
+public class KenaiServer implements TeamServer {
     private static final Map<Kenai, KenaiServer> serverMap = new WeakHashMap<Kenai, KenaiServer>(3);
 
     private final Kenai kenai;
@@ -226,7 +226,6 @@ public class KenaiServer implements TeamServer<KenaiProject> {
         return kenai.getPasswordAuthentication();
     }
 
-    @Override
     public Collection<ProjectHandle<KenaiProject>> getMyProjects() {
         try {
             Collection<KenaiProject> projects = kenai.getMyProjects();

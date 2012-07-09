@@ -5,6 +5,7 @@
 
 package org.netbeans.modules.team.ui.spi;
 
+import java.util.Collection;
 import javax.swing.Action;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
@@ -16,7 +17,7 @@ import org.netbeans.modules.team.ui.treelist.TreeListNode;
  *
  * @author S. Aubrecht
  */
-public interface DashboardProvider<S extends TeamServer<P>, P> {
+public interface DashboardProvider<S extends TeamServer, P> {
 
 //    /**
 //     * Display given Team user in the Dashboard window, the UI will start querying for
@@ -82,6 +83,8 @@ public interface DashboardProvider<S extends TeamServer<P>, P> {
     public BuildAccessor<P> getBuildAccessor();
 
     public S getServer(ProjectHandle<P> project);
+    
+    public Collection<ProjectHandle<P>> getMyProjects();
 
     
 }

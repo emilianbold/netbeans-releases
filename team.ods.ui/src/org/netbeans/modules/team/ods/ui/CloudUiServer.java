@@ -74,7 +74,7 @@ import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
  *
  * @author Ondrej Vrabec
  */
-public class CloudUiServer implements TeamServer<ODSProject> {
+public class CloudUiServer implements TeamServer {
 
     private static final Map<CloudServer, CloudUiServer> serverMap = new WeakHashMap<CloudServer, CloudUiServer>(3);
     private final WeakReference<CloudServer> impl;
@@ -183,7 +183,6 @@ public class CloudUiServer implements TeamServer<ODSProject> {
         return getServer().getPasswordAuthentication();
     }
 
-    @Override
     // XXX no need to have this implemented in the TeamServer
     public Collection<ProjectHandle<ODSProject>> getMyProjects() {
         CloudClient client = getClient();

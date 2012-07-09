@@ -84,7 +84,7 @@ import org.openide.windows.TopComponent;
  * @author S. Aubrecht, Tomas Stupka
  */
 @NbBundle.Messages("A11Y_TeamProjects=Team Projects")
-public final class DefaultDashboard<S extends TeamServer<P>, P> {
+public final class DefaultDashboard<S extends TeamServer, P> {
 
     /**
      * Name of the property that will be fired when some change in opened projects
@@ -877,6 +877,10 @@ public final class DefaultDashboard<S extends TeamServer<P>, P> {
 
     DashboardProvider<S, P> getDashboardProvider() {
         return dashboardProvider;
+    }
+
+    Collection<ProjectHandle<P>> getMyProjects() {
+        return dashboardProvider.getMyProjects();
     }
 
     private class OtherProjectsLoader implements Runnable, Cancellable {
