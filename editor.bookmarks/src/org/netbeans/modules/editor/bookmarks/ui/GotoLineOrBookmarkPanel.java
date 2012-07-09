@@ -71,6 +71,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JRootPane;
@@ -90,7 +91,9 @@ import org.netbeans.lib.editor.util.GapList;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
+import org.openide.actions.GotoAction;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * Goto line or bookmark (replacement of GotoDialogPanel).
@@ -190,8 +193,9 @@ public class GotoLineOrBookmarkPanel extends JPanel implements ActionListener, F
             Container contentPane = rootPane.getContentPane();
             KeyBindingSettings kbs = MimeLookup.getLookup("").lookup(KeyBindingSettings.class);
             KeyStroke ks;
-            if ((contentPane.getLayout() instanceof BorderLayout) &&
-                    (ks = BookmarkUtils.findKeyStroke(kbs, ExtKit.gotoAction)) != null)
+            GotoAction gotoAction = SystemAction.get(GotoAction.class);
+            if ((contentPane.getLayout() instanceof BorderLayout) && gotoAction != null &&
+                    (ks = (KeyStroke) gotoAction.getValue(Action.ACCELERATOR_KEY)) != null)
             {
                 BorderLayout layout = (BorderLayout) contentPane.getLayout();
                 Component buttonBar = layout.getLayoutComponent(BorderLayout.SOUTH);

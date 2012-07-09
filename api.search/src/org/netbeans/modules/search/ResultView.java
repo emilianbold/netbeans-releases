@@ -69,6 +69,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -601,7 +602,7 @@ public final class ResultView extends TopComponent {
             ResultViewPanel rvp = (ResultViewPanel) c;
             if (rvp.getToolTipText() != null) {
                 sb.append("<br>&nbsp;&nbsp;");                          //NOI18N
-                sb.append(rvp.getToolTipText());
+                sb.append(UiUtils.escapeHtml(rvp.getToolTipText()));
                 sb.append("&nbsp;");                                    //NOI18N
             }
         }

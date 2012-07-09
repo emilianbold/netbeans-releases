@@ -1,0 +1,23 @@
+==>RenameProperty
+package renameClass;
+
+public class RenameProperty {
+
+    private String renamed;
+    
+    public String test() {
+        String local = getRenamed();
+        System.out.println(local);
+        setRenamed("Hello World!");
+        System.out.println(getRenamed());
+        return renamed;
+    }
+
+    public String getRenamed() {
+        return renamed;
+    }
+
+    public void setRenamed(String renamed) {
+        this.renamed = renamed;
+    }
+}

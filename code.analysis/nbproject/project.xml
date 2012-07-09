@@ -226,6 +226,7 @@
                 <friend>org.netbeans.modules.java.hints.ui</friend>
                 <friend>org.netbeans.modules.latex.hints</friend>
                 <friend>org.netbeans.spi.java.hints</friend>
+                <package>org.netbeans.modules.analysis.api</package>
                 <package>org.netbeans.modules.analysis.spi</package>
             </friend-packages>
         </data>

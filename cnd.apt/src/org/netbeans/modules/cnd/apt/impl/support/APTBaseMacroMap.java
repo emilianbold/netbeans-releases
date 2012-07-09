@@ -138,7 +138,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
     } 
 
     @Override
-    public final boolean isDefined(CharSequence token) {
+    public boolean isDefined(CharSequence token) {
         token = CharSequences.create(token);
         return getMacro(token) != null;
     } 

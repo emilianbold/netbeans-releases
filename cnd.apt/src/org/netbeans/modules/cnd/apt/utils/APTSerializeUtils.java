@@ -292,29 +292,6 @@ public class APTSerializeUtils {
         }
         return snap;
     }
-
-    public static void writeStringToMacroMap(Map<CharSequence, APTMacro> macros, RepositoryDataOutput output) throws IOException {
-        assert macros != null;
-        for (Entry<CharSequence, APTMacro> entry : macros.entrySet()) {
-            assert entry != null;
-            assert CharSequences.isCompact(entry.getKey());
-            String key = entry.getKey().toString();
-            output.writeUTF(key);
-            APTMacro macro = entry.getValue();
-            assert macro != null;
-            writeMacro(macro, output);            
-        }
-    }
-
-    public static void readStringToMacroMap(int collSize, Map<CharSequence, APTMacro> macros, RepositoryDataInput input) throws IOException {
-        for (int i = 0; i < collSize; ++i) {
-            CharSequence key = CharSequences.create(input.readCharSequenceUTF());
-            assert key != null;
-            APTMacro macro = readMacro(input);
-            assert macro != null;
-            macros.put(key, macro);
-        }
-    }
     
     public static void writeMacro(APTMacro macro, RepositoryDataOutput output) throws IOException {
         assert macro != null;

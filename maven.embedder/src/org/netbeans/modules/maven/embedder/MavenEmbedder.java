@@ -180,12 +180,18 @@ public final class MavenEmbedder {
         String s = getLocalRepository().getBasedir();
         return FileUtil.normalizeFile(new File(s));
     }
+    
+    //only for unit tests..
+    private static Settings testSettings;
 
     @SuppressWarnings("NestedSynchronizedStatement")
     @org.netbeans.api.annotations.common.SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
     public synchronized Settings getSettings() {
         if (Boolean.getBoolean("no.local.settings")) { // for unit tests
-            return new Settings(); // could instead make public void setSettings(Settings settingsOverride)
+            if (testSettings == null) {
+                testSettings = new Settings();
+            }
+            return testSettings; // could instead make public void setSettings(Settings settingsOverride)
         }
         File settingsXml = embedderConfiguration.getSettingsXml();
         long newSettingsTimestamp = settingsXml.hashCode() ^ settingsXml.lastModified() ^ MavenCli.DEFAULT_USER_SETTINGS_FILE.lastModified();

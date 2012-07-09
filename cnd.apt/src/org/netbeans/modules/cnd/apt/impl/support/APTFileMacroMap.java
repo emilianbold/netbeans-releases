@@ -92,6 +92,25 @@ public class APTFileMacroMap extends APTBaseMacroMap {
     }
 
     @Override
+    public boolean isDefined(CharSequence token) {
+        // check own map
+        initCache();
+        // no need to check in super, because everything is in cache already
+        APTMacro res = macroCache.get(token);
+        if (res == APTMacroMapSnapshot.UNDEFINED_MACRO) {
+            return false;
+        } else if (res != null) {
+            return true;
+        }
+
+        // then check system map
+        if (sysMacroMap != null) {
+            return sysMacroMap.isDefined(token);
+        }
+        return false;
+    }
+    
+    @Override
     public APTMacro getMacro(APTToken token) {
         // check own map
         CharSequence macroText = token.getTextID();

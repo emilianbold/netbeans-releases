@@ -42,6 +42,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -89,6 +90,11 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     protected synchronized void projectOpened() {
         if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.OPEN);
+
+            //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
+            //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
+            Preferences prefs = ProjectUtils.getPreferences(prj, Project.class, false);
+            prefs.put("issue214819_fx_enabled", "true"); //NOI18N
 
             pcp = prj.getLookup().lookup(ProjectConfigurationProvider.class);
             assert pcp != null;

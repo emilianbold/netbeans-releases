@@ -78,8 +78,8 @@ if [ -z "$BUILD_NBJDK7" ] ; then
 fi
 
 if [ -z "$BUNDLE_JDK_PLATFORM" ] ; then
-    #build NetBeans/JDK for windows,solaris-x86,solaris-sparc,linux by default (Mac has own native build)
-    BUNDLE_JDK_PLATFORM="windows,solaris-x86,solaris-sparc,linux"
+    #build NetBeans/JDK for windows,windows-x64,linux,linux-x64 by default (Mac has own native build)
+    BUNDLE_JDK_PLATFORM="windows,windows-x64,linux,linux-x64"
 fi
 
 if [ -z "$EN_BUILD" ] ; then
@@ -210,6 +210,7 @@ run() {
             \"-Dgf-mod.build.type=${GFMOD_BUILD_TYPE}\"\
             \"-Dcommunity.mlbuild=${COMMUNITY_ML_BUILD}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
+            \"-Djdk.builds.host=${JDK_BUILDS_HOST}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
             \"-Dportalpack.builds.host=${PORTALPACK_BUILDS_HOST}\" \

@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
-import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
@@ -77,7 +76,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
-public class DwarfSource implements SourceFileProperties{
+public class DwarfSource extends RelocatableImpl implements SourceFileProperties {
     public static final Logger LOG = Logger.getLogger(DwarfSource.class.getName());
     private static final boolean CUT_LOCALHOST_NET_ADRESS = Boolean.getBoolean("cnd.dwarfdiscovery.cut.localhost.net.adress"); // NOI18N
     private static boolean ourGatherMacros = true;
@@ -87,19 +86,15 @@ public class DwarfSource implements SourceFileProperties{
     private static final String CYGWIN_PATH = ":/cygwin"; // NOI18N
     private String cygwinPath;
     
-    private String compilePath;
     private String sourceName;
-    private String fullName;
     private ItemProperties.LanguageKind language;
     private ItemProperties.LanguageStandard standard;
-    private List<String> userIncludes;
     private List<String> systemIncludes;
     private boolean haveSystemIncludes;
     private Map<String, String> userMacros;
     private List<String> undefinedMacros;
     private Map<String, String> systemMacros;
     private boolean haveSystemMacros;
-    private Set<String> includedFiles;
     private CompilerSettings normilizeProvider;
     private Map<String,GrepEntry> grepBase;
     private String compilerName;
@@ -203,39 +198,6 @@ public class DwarfSource implements SourceFileProperties{
         return fullName;
     }
 
-    void resetItemPath(String path) {
-        String newCompilePath = Dwarf.fileFinder(path, compilePath);
-        if (newCompilePath != null) {
-            compilePath = PathCache.getString(newCompilePath);
-        }
-        HashSet<String> newIncludedFiles = new HashSet<String>();
-        for(String incl : includedFiles) {
-            String newIncl = Dwarf.fileFinder(path, incl);
-            if (newIncl != null) {
-                newIncludedFiles.add(PathCache.getString(newIncl));
-            } else {
-                newIncludedFiles.add(incl);
-            }
-        }
-        includedFiles = newIncludedFiles;
-        List<String> newUserIncludes = new ArrayList<String>();
-        for(String incl : userIncludes) {
-            String newIncl = null;
-            if (incl.startsWith("/")) { //NOI18N
-                newIncl = Dwarf.fileFinder(path, incl);
-                if (newIncl != null) {
-                    newIncl = PathCache.getString(newIncl);
-                }
-            }
-            if (newIncl == null) {
-                newIncl = incl;
-            }
-            newUserIncludes.add(newIncl);
-        }
-        userIncludes = newUserIncludes;
-        fullName = PathCache.getString(path);
-    }
-    
     @Override
     public String getItemName() {
         return sourceName;

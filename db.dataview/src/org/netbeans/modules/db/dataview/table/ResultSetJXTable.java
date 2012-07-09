@@ -64,8 +64,8 @@ import org.jdesktop.swingx.decorator.ColorHighlighter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
 import org.jdesktop.swingx.decorator.HighlighterFactory;
 import org.jdesktop.swingx.renderer.CheckBoxProvider;
-import org.jdesktop.swingx.renderer.FormatStringValue;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
+import org.jdesktop.swingx.renderer.StringValues;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.output.DataView;
@@ -139,9 +139,9 @@ public class ResultSetJXTable extends JXTableDecorator {
     protected void setDefaultCellRenderers() {
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
         setDefaultRenderer(String.class, new ResultSetCellRenderer());
-        setDefaultRenderer(Number.class, new ResultSetCellRenderer(FormatStringValue.NUMBER_TO_STRING, JLabel.RIGHT));
+        setDefaultRenderer(Number.class, new ResultSetCellRenderer(StringValues.NUMBER_TO_STRING, JLabel.RIGHT));
         setDefaultRenderer(Boolean.class, new ResultSetCellRenderer(new CheckBoxProvider()));
-        setDefaultRenderer(java.sql.Date.class, new ResultSetCellRenderer(FormatStringValue.DATE_TO_STRING));
+        setDefaultRenderer(java.sql.Date.class, new ResultSetCellRenderer(StringValues.DATE_TO_STRING));
         setDefaultRenderer(java.sql.Time.class, new ResultSetCellRenderer(ResultSetCellRenderer.TIME_TO_STRING));
         setDefaultRenderer(java.sql.Timestamp.class, new ResultSetCellRenderer(ResultSetCellRenderer.DATETIME_TO_STRING));
         setDefaultRenderer(java.util.Date.class, new ResultSetCellRenderer(ResultSetCellRenderer.DATETIME_TO_STRING));

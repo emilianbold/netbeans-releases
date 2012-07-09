@@ -404,6 +404,7 @@ public class TopSecurityManager extends SecurityManager {
     }
 
     private final Set<Class> warnedSunMisc = new WeakSet<Class>();
+    private final Set<String> callerWhiteList = createCallerWhiteList();
     @Override
     public void checkMemberAccess(Class<?> clazz, int which) {
         final String n = clazz.getName();
@@ -420,8 +421,13 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
             final String msg = "Dangerous reflection access to " + n + " by " + caller + " detected!";
-            Level l = Level.FINE;
-            assert (l = Level.INFO) != null;
+            Level l;
+            if (caller != null && callerWhiteList.contains(caller.getName())) {
+                l = Level.FINEST;
+            } else {
+                l = Level.FINE;
+                assert (l = Level.INFO) != null;
+            }
             if (!warnedSunMisc.add(caller)) {
                 LOG.log(l, msg);
                 return; 
@@ -432,8 +438,15 @@ public class TopSecurityManager extends SecurityManager {
         super.checkMemberAccess(clazz, which);
     }
     
-    
-
+    /**
+     * Create list of safe callers for {@link #checkMemberAccess(Class, int)}.
+     */
+    private Set<String> createCallerWhiteList() {
+        Set<String> wl = new HashSet<String>();
+        wl.add("org.netbeans.core.output2.FileMapStorage");             //NOI18N
+        wl.add("com.sun.tools.javac.util.CloseableURLClassLoader");     //NOI18N
+        return wl;
+    }
     
     public @Override void checkPermission(Permission perm) {
 //        assert checkLogger(perm); //#178013 & JDK bug 1694855

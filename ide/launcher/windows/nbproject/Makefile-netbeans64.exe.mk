@@ -22,6 +22,7 @@ AS=as.exe
 
 # Macros
 CND_PLATFORM=Cygwin64-Windows
+CND_DLIB_EXT=dll
 CND_CONF=netbeans64.exe
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -65,17 +66,17 @@ netbeans64.exe: ${OBJECTFILES}
 ${OBJECTDIR}/netbeans.o: netbeans.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/netbeans.o netbeans.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -DARCHITECTURE=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/netbeans.o netbeans.cpp
 
 ${OBJECTDIR}/nblauncher.o: nblauncher.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/nblauncher.o nblauncher.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -DARCHITECTURE=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/nblauncher.o nblauncher.cpp
 
 ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o: ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/1413142467
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -DARCHITECTURE=64 -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp
 
 # Subprojects
 .build-subprojects:
