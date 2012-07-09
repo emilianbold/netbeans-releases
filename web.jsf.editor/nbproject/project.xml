@@ -405,11 +405,11 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.mozilla.rhino.patched</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.libs.nashorn</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
@@ -474,7 +474,7 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
+                        <code-name-base>org.netbeans.modules.javascript2.editor</code-name-base>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.lexer</code-name-base>

@@ -76,8 +76,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.java.source.parsing.ClassParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.save.Reformatter;
-import org.netbeans.modules.javascript.editing.embedding.JsEmbeddingProvider;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
@@ -136,7 +136,7 @@ public class JspIndenterTest extends TestBase2 {
         TestLanguageProvider.register(HTMLTokenId.language());
         TestLanguageProvider.register(JspTokenId.language());
         TestLanguageProvider.register(JavaTokenId.language());
-        TestLanguageProvider.register(JsTokenId.language());
+        TestLanguageProvider.register(JsTokenId.javascriptLanguage());
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-css"), cssFactory);
@@ -149,7 +149,7 @@ public class JspIndenterTest extends TestBase2 {
         ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
         GsfIndentTaskFactory jsFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), jsFactory, GsfParserFactory.create(FileUtil.getConfigRoot().getFileObject("Editors/text/javascript/language.instance")));
+        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), jsFactory, GsfParserFactory.create(FileUtil.getConfigRoot().getFileObject("Editors/text/javascript/org-netbeans-modules-csl-core-CslEditorKit-createLexerLanguageInstance.instance")));
         MockMimeLookup.setInstances(MimePath.EMPTY, new JsEmbeddingProvider.Factory(), new CssEmbeddingProvider.Factory());
     }
 

@@ -61,10 +61,10 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.javascript.kit</code-name-base>
+                    <code-name-base>org.netbeans.modules.javascript2.kit</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>0.103</specification-version>
+                        <specification-version>0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
