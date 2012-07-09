@@ -233,7 +233,10 @@ public final class NbMavenProjectImpl implements Project {
             // #135070
             req.setRecursive(false);
             MavenExecutionResult res = embedder.readProjectWithDependencies(req, true);
+            //#215159 clear the project building request, it references multiple Maven Models via the RepositorySession cache
+            //is not used in maven itself, most likely used by m2e only..
             if (!res.hasExceptions()) {
+                res.getProject().setProjectBuildingRequest(null);
                 return res.getProject();
             } else {
                 List<Throwable> exc = res.getExceptions();
@@ -282,6 +285,9 @@ public final class NbMavenProjectImpl implements Project {
         } else if (project.getModel().getParent() != null) {
             parent = builder.build(project.getParentArtifact(), request).getProject();
         }
+        //clear the project building request, it references multiple Maven Models via the RepositorySession cache
+        //is not used in maven itself, most likely used by m2e only..
+        parent.setProjectBuildingRequest(null);
         return parent;
     }
 
