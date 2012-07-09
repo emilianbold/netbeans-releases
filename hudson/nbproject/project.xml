@@ -239,6 +239,7 @@
                 <friend>org.netbeans.modules.hudson.php</friend>
                 <friend>org.netbeans.modules.hudson.subversion</friend>
                 <friend>org.netbeans.modules.hudson.tasklist</friend>
+                <friend>org.netbeans.modules.ods.hudson</friend>
                 <package>org.netbeans.modules.hudson.api</package>
                 <package>org.netbeans.modules.hudson.spi</package>
             </friend-packages>
