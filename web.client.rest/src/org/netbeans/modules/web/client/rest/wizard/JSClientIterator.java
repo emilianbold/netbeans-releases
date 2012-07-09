@@ -219,7 +219,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         if ( htmlFile != null ){
             handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                     "TXT_GenerateHtml"));                         // NOI18N
-            createHtml( htmlFile , existedBackbone , existedBackbone );
+            createHtml( htmlFile , jsFile, existedBackbone , existedBackbone );
         }
 
         handle.finish();
@@ -242,7 +242,8 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         myPanels = null;
     }
     
-    private void createHtml( File htmlFile, FileObject backbone , FileObject underscore) 
+    private void createHtml( File htmlFile, FileObject appFile, 
+            FileObject backbone , FileObject underscore) 
         throws IOException 
     {
         File parentFile = htmlFile.getParentFile();
@@ -259,14 +260,14 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         Map<String,String> map = new HashMap<String, String>();
         StringBuilder builder = new StringBuilder();
         if ( underscore == null ){
-            builder.append("<script src='http://documentcloud.github.com/underscore/underscore-min.js'>"); 
-            builder.append("</script>\n");  
+            builder.append("<script src='http://documentcloud.github.com/underscore/underscore-min.js'>"); // NOI18N
+            builder.append("</script>\n");  // NOI18N
         }
         else {
             String relativePath = FileUtil.getRelativePath(folder, underscore);
-            builder.append("<script src='");// NOI18N
+            builder.append("<script src='");    // NOI18N
             builder.append(relativePath);
-            builder.append("'></script>\n");
+            builder.append("'></script>\n");    // NOI18N
         }
         if ( backbone == null ){
             builder.append("<script src='http://backbonejs.org/backbone-min.js'></script>");// NOI18N
@@ -275,8 +276,13 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             String relativePath = FileUtil.getRelativePath(folder, backbone);
             builder.append("<script src='");// NOI18N
             builder.append(relativePath);
-            builder.append("'></script>");
+            builder.append("'></script>");  // NOI18N
         }
+        
+        String relativePath = FileUtil.getRelativePath(folder, appFile );
+        builder.append("<script src='");    // NOI18N
+        builder.append(relativePath);
+        builder.append("'></script>");      // NOI18N
         map.put("script", builder.toString());  // NOI18N
         
         DataObject createdFile = templateDO.createFromTemplate(dataFolder, 
