@@ -66,6 +66,7 @@ import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
+import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -83,7 +84,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Milan Kubec, Jan Becicka, Tomas Stupka
  */
-public class SourceAccessorImpl extends SourceAccessor<com.tasktop.c2c.server.profile.domain.project.Project> {
+public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     private static CloudUiServer server;
 
     private Map<SourceHandle,ProjectAndRepository> handlesMap = new HashMap<SourceHandle,ProjectAndRepository>();
@@ -93,9 +94,9 @@ public class SourceAccessorImpl extends SourceAccessor<com.tasktop.c2c.server.pr
     }
 
     @Override
-    public List<SourceHandle> getSources(ProjectHandle<com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
+    public List<SourceHandle> getSources(ProjectHandle<ODSProject> prjHandle) {
 
-        com.tasktop.c2c.server.profile.domain.project.Project project = prjHandle.getTeamProject();
+        ODSProject project = prjHandle.getTeamProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
         
         CloudClient client = server.getClient();
@@ -104,9 +105,9 @@ public class SourceAccessorImpl extends SourceAccessor<com.tasktop.c2c.server.pr
                 
                 // XXX add support for external - see repository.getScmLocation()
                 
-                List<ProjectService> services = project.getProjectServicesOfType(ServiceType.SCM);
+                List<ProjectService> services = project.getProject().getProjectServicesOfType(ServiceType.SCM);
                 if(!services.isEmpty() && services.iterator().next().isAvailable()) { // XXX what if there is more?
-                    List<ScmRepository> repositories = client.getScmRepositories(project.getIdentifier());
+                    List<ScmRepository> repositories = client.getScmRepositories(project.getProject().getIdentifier());
                     for (ScmRepository repository : repositories) {
                         SourceHandle srcHandle = new SourceHandleImpl(prjHandle, repository);
                         handlesList.add(srcHandle);
@@ -263,10 +264,10 @@ public class SourceAccessorImpl extends SourceAccessor<com.tasktop.c2c.server.pr
     }
 
     public static class ProjectAndRepository {
-        public com.tasktop.c2c.server.profile.domain.project.Project project;
+        public ODSProject project;
         public ScmRepository repository;
         public String externalScmType;
-        public ProjectAndRepository(com.tasktop.c2c.server.profile.domain.project.Project project, ScmRepository repository) {
+        public ProjectAndRepository(ODSProject project, ScmRepository repository) {
             this.project = project;
             this.repository = repository;
         }

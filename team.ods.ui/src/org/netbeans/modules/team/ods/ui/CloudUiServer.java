@@ -67,23 +67,24 @@ import org.openide.util.WeakListeners;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.impl.ProjectHandleImpl;
 
 /**
  *
  * @author Ondrej Vrabec
  */
-public class CloudUiServer implements TeamServer<Project> {
+public class CloudUiServer implements TeamServer<ODSProject> {
 
     private static final Map<CloudServer, CloudUiServer> serverMap = new WeakHashMap<CloudServer, CloudUiServer>(3);
     private final WeakReference<CloudServer> impl;
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-    private final DefaultDashboard<CloudUiServer, Project> dashboard;
+    private final DefaultDashboard<CloudUiServer, ODSProject> dashboard;
 
     private CloudUiServer (CloudServer server) {
         this.impl = new WeakReference<CloudServer>(server);
-        dashboard = new DefaultDashboard<CloudUiServer, Project>(this, new DashboardProviderImpl(this));
+        dashboard = new DefaultDashboard<CloudUiServer, ODSProject>(this, new DashboardProviderImpl(this));
         server.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -184,7 +185,7 @@ public class CloudUiServer implements TeamServer<Project> {
 
     @Override
     // XXX no need to have this implemented in the TeamServer
-    public Collection<ProjectHandle<Project>> getMyProjects() {
+    public Collection<ProjectHandle<ODSProject>> getMyProjects() {
         CloudClient client = getClient();
         List<Project> projects;
         try {
@@ -196,9 +197,9 @@ public class CloudUiServer implements TeamServer<Project> {
         if(projects == null) {
             return Collections.emptyList();
         }
-        Collection<ProjectHandle<Project>> ret = new ArrayList<ProjectHandle<Project>>(projects.size());
+        Collection<ProjectHandle<ODSProject>> ret = new ArrayList<ProjectHandle<ODSProject>>(projects.size());
         for (Project project : projects) {
-            ret.add(new ProjectHandleImpl(project));
+            ret.add(new ProjectHandleImpl(new ODSProject(client, project)));
         }
         return ret;
     }

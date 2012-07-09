@@ -52,6 +52,7 @@ import javax.swing.Action;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
+import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
@@ -60,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project> {
+public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProject> {
     
     private final CloudUiServer server;
 
@@ -122,12 +123,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getDetailsAction(final ProjectHandle project) {
+    public Action getDetailsAction(final ProjectHandle<ODSProject> project) {
         return DetailsAction.forProject(project);    
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
     }
 
-    private Action getOpenAction(final ProjectHandle project) {
+    private Action getOpenAction(final ProjectHandle<ODSProject> project) {
         // this action is supposed to be used for openenig a project from My Projects
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
@@ -138,12 +139,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getDefaultAction(ProjectHandle project, boolean opened) {
+    public Action getDefaultAction(ProjectHandle<ODSProject> project, boolean opened) {
         return opened ? getDetailsAction(project) : getOpenAction(project);
     }
 
     @Override
-    public Action[] getPopupActions(final ProjectHandle<Project> project, boolean opened) {
+    public Action[] getPopupActions(final ProjectHandle<ODSProject> project, boolean opened) {
         return new Action[0];
 //        PasswordAuthentication pa = project.getProject().getKenai().getPasswordAuthentication();
 //        if (!opened) {
@@ -172,7 +173,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getOpenWikiAction(ProjectHandle<Project> project) {
+    public Action getOpenWikiAction(ProjectHandle<ODSProject> project) {
 //        try {
 //            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.WIKI);
 //            if (wiki.length == 1) {
@@ -185,7 +186,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getOpenDownloadsAction(ProjectHandle<Project> project) {
+    public Action getOpenDownloadsAction(ProjectHandle<ODSProject> project) {
 //        try {
 //            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.DOWNLOADS);
 //            if (wiki.length == 1) {
@@ -198,7 +199,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getBookmarkAction(final ProjectHandle<Project> project) {
+    public Action getBookmarkAction(final ProjectHandle<ODSProject> project) {
 //        return new AbstractAction() {
 //            public void actionPerformed(ActionEvent e) {
 //                Kenai kenai = project.getProject().getKenai();

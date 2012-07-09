@@ -41,28 +41,28 @@
  */
 package org.netbeans.modules.team.ods.ui.impl;
 
-import com.tasktop.c2c.server.profile.domain.project.Project;
+import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
  *
  * @author tomas
  */
-public class ProjectHandleImpl extends ProjectHandle<Project> {
-    private final Project project;
+public class ProjectHandleImpl extends ProjectHandle<ODSProject> {
+    private final ODSProject project;
 
-    public ProjectHandleImpl(Project project) {
-        super(String.valueOf(project.getId()));
+    public ProjectHandleImpl(ODSProject project) {
+        super(String.valueOf(project.getProject().getId()));
         this.project = project;
     }
     
     @Override
     public String getDisplayName() {
-        return project.getName();
+        return project.getProject().getName();
     }
 
     @Override
-    public Project getTeamProject() {
+    public ODSProject getTeamProject() {
         return project;
     }
 

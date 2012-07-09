@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
@@ -65,8 +66,8 @@ public class WikiAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<Project> project) {
-        List<ProjectService> services = project.getTeamProject().getProjectServicesOfType(ServiceType.WIKI);
+    public static synchronized AbstractAction forProject(final ProjectHandle<ODSProject> project) {
+        List<ProjectService> services = project.getTeamProject().getProject().getProjectServicesOfType(ServiceType.WIKI);
         if(services == null) {
             return null;
         }

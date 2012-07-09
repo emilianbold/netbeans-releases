@@ -55,6 +55,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
@@ -69,14 +70,14 @@ import org.openide.util.NbBundle;
  */
 public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> {
 
-    private final ProjectHandle<Project> project;
+    private final ProjectHandle<ODSProject> project;
     private JPanel panel;
     private List<JLabel> labels = new ArrayList<JLabel>(5);
     private List<LinkButton> buttons = new ArrayList<LinkButton>(3);
     private final Object LOCK = new Object();
     private final DashboardProviderImpl dashboardProvider;
 
-    public ProjectLinksNode( TreeListNode parent, ProjectHandle<Project> project, DashboardProviderImpl dashboardProvider ) {
+    public ProjectLinksNode( TreeListNode parent, ProjectHandle<ODSProject> project, DashboardProviderImpl dashboardProvider ) {
         super( parent, null );
         this.project = project;
         this.dashboardProvider = dashboardProvider;
