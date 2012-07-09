@@ -728,15 +728,46 @@ public class LogReaderTest extends TestCase {
         assert li.compilerType == LogReader.CompilerType.CPP;
     }
 
+    public void testIcpcInvocation() {
+        String line = "usr/local/packages/icc_remote/12.0.5.225_fixbug13889838/bin/icpc xsolmod.cpp -c -o xsolmod.o  -O2  -DOCCI_NO_WSTRING=1 -fPIC -cxxlib -std=c89 "+
+                "-fno-omit-frame-pointer -mp1 -fp_port -mP2OPT_convert_opt=F  -fno-strict-aliasing -sox=profile -sox=inline "+
+                "  -no-global-hoist -mGLOB_preemption_model=3  -hotpatch  -wd191 -wd175 -wd188 -wd810 -we127 -we1345 -we1338 -wd279 "+
+                "-wd186 -wd1572 -wd589 -wd11505 -we592 -Qoption,cpp,--treat_func_as_string_literal -mPGOPTI_func_group -mPGOPTI_conv_icall_pgosf=FALSE "+
+                "-vec-report0 -std=c89 -fno-omit-frame-pointer -mp1 -fp_port -mP2OPT_convert_opt=F  -fno-strict-aliasing -sox=profile -sox=inline   "+
+                "-no-global-hoist -mGLOB_preemption_model=3  -hotpatch  -wd191 -wd175 -wd188 -wd810 -we127 -we1345 -we1338 -wd279 -wd186 -wd1572 "+
+                "-wd589 -wd11505 -we592 -Qoption,cpp,--treat_func_as_string_literal -mPGOPTI_func_group -mPGOPTI_conv_icall_pgosf=FALSE "+
+                "-vec-report0 -DXSMODNAME=xsolapi -DXSolapi -Wall -Wcheck -w2 -Wunused-function -we55 -we140 -we266 -we117 -we167 -we1418 "+
+                "-wd981 -wd869 -wd174 -wd111 -wd593 -wd177 -wd1684 -wd193 -wd2415 -wd2545 -wd2259 -wd2557 -DTRUSTED_OLAPI -wd1476 -wd1505  "+
+                "-I/ade/b/1226108341/oracle/rdbms/src/hdir -I/ade/b/1226108341/oracle/rdbms/public -I/ade/b/1226108341/oracle/rdbms/include "+
+                "-I/ade/b/1226108341/oracle/rdbms/src/port/generic -I/ade/b/1226108341/oracle/oraolap/src/include -I/ade/b/1226108341/oracle/oraolap/src/xsolapi "+
+                "-I/ade/b/1226108341/oracle/oraolap/public -Iport/server -Iport/generic   -I/ade/b/1226108341/oracle/oracore/include "+
+                "-I/ade/b/1226108341/oracle/oracore/public -I/ade/b/1226108341/oracle/oracore/port/include -I/ade/b/1226108341/oracle/xdk/include "+
+                "-I/ade/b/1226108341/oracle/xdk/public -I/ade/b/1226108341/oracle/ldap/public/sslinc -I/ade/b/1226108341/oracle/ldap/include/sslinc "+
+                "-I/ade/b/1226108341/oracle/ldap/include/cryptoinc -I/ade/b/1226108341/oracle/network/public -I/ade/b/1226108341/oracle/network/include "+
+                "-I/ade/b/1226108341/oracle/plsql/public -I/ade/b/1226108341/oracle/plsql/include -I/ade/b/1226108341/oracle/javavm/include "+
+                "-I/ade/b/1226108341/oracle/has/include -I/ade/b/1226108341/oracle/opsm/include -I/ade/b/1226108341/oracle/ldap/public "+
+                "-I/ade/b/1226108341/oracle/ldap/include -I/ade/b/1226108341/oracle/nlsrtl/include -I/ade/b/1226108341/oracle/oss/include   "+
+                "-DLINUX -DORAX86_64 -D_GNU_SOURCE -D_LARGEFILE64_SOURCE=1 -D_LARGEFILE_SOURCE=1 -DSLTS_ENABLE -DSLMXMX_ENABLE -D_REENTRANT "+
+                "-DNS_THREADS -DLONG_IS_64 -DSS_64BIT_SERVER -DLDAP_CM -DBNRMAJVSN=12 -DBNRMINVSN=1 -DBNRMIDTVSN=0 -DBNRPMAJVSN=0 -DBNRPMINVSN=2 "+
+                "-DBNRMAJVSN_STR=\\\"12\\\" -DBNRMAJVSNLETTER_STR=\\\"12c\\\" -DBNRMINVSN_STR=\\\"1\\\" -DBNRMIDTVSN_STR=\\\"0\\\" -DBNRPMAJVSN_STR=\\\"0\\\" "+
+                "DBNRPMINVSN_STR=\\\"2\\\" -DBNRVERSION_STR=\\\"12.1.0.0.2\\\" -DBNRSTATUS_STR=\\\"Beta\\\" -DBNRSTATUS_MAC=BNRBETA -DBNRCURRYEAR=2012 "+
+                "-DBNRCURRYEAR_STR=\\\"2012\\\" -DPLSQLNCG_SUPPORTED=1  -DNTEV_USE_POLL -DNTEV_USE_QUEUE -DNTEV_USE_GENERIC -DNTEV_USE_EPOLL";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertTrue(result.startsWith("Source:xsolmod.cpp"));
+        //assertDocumentText(line, expResult, result);
+        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
+        assertEquals(li.compilerType, LogReader.CompilerType.CPP);
+    }
 
     private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new TreeMap<String, String>();
         List<String> undefs = new ArrayList<String>();
+        List<String> languageArtifacts = new ArrayList<String>();
         line = LogReader.trimBackApostropheCalls(line, null);
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         String[] cmds = pattern.split(line);
-        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros, undefs,null, null, null, false).get(0);
+        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros, undefs, null, languageArtifacts, null, false).get(0);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");

@@ -147,6 +147,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
         if (mapperEntry == null) {
             return false;
         }
+        LOG.log(Level.FINE, "Found path map {0} -> {1}", new Object[]{mapperEntry.from, mapperEntry.to}); // NOI18N
         synchronized(mapper) {
             if (!mapper.contains(mapperEntry)) {
                 mapper.add(mapperEntry);
@@ -181,7 +182,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
         }
         String[] rootSegments = root.split("/"); //NOI18N
         String[] unknownSegments = unknown.split("/"); //NOI18N
-        for(int k = 0; k < unknownSegments.length; k++) {
+        for(int k = 1; k < unknownSegments.length; k++) {
             for(int i = rootSegments.length - 1; i > 1; i--) {
                 StringBuilder buf = new StringBuilder();
                 for(int j = 0; j < i; j++) {

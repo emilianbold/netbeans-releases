@@ -158,9 +158,9 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
 
     @Override
     public void prepareValidation() {
-        if (wizardDescriptor.isSimpleMode()) {
+        //if (wizardDescriptor.isSimpleMode()) {
             component.enableControls(false);
-        }
+        //}
     }
 
     @Override
