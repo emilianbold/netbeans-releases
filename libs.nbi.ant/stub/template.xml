@@ -9,6 +9,10 @@
     </target>
 
     <target name="-init-ant-props" if="do.load.ant.props" depends="-init-props">
+        <property file="${suite.location}/nbproject/platform.properties" prefix="suite.platform."/>    
+        <condition property="branding.token" value="${suite.platform.branding.token}">
+            <isset property="suite.platform.branding.token"/>
+        </condition>
         <property file="${suite.location}/nbproject/project.properties" prefix="suite.props."/>    
     </target>
     <target name="-init-maven-props" if="do.load.maven.props" depends="-init-props">
