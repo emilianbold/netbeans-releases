@@ -113,13 +113,14 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getOpenNonMemberProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("not yet!");
-//                new OpenKenaiProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
-            }
-        };
+        return NotYetAction.instance;
+//                new AbstractAction() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                throw new UnsupportedOperationException("not yet!");
+////                new OpenKenaiProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
+//            }
+//        };
     }
 
     @Override
@@ -263,13 +264,14 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getNewTeamProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("no yet!");
-//                new NewProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
-            }
-        };
+        return NotYetAction.instance;
+//        return new AbstractAction() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                throw new UnsupportedOperationException("no yet!");
+////                new NewProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
+//            }
+//        };
     }
 
 //    private static class RefreshAction extends AbstractAction {

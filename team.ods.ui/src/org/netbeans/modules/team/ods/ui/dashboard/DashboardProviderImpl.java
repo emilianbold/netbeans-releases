@@ -269,42 +269,22 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
         
         @Override
         public Action getFindIssueAction(ProjectHandle<ODSProject> project) {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+            return NotYetAction.instance;
         }
 
         @Override
         public Action getCreateIssueAction(ProjectHandle<ODSProject> project) {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+            return NotYetAction.instance;
         }
 
         @Override
         public Action getOpenQueryResultAction(QueryResultHandle result) {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+            return NotYetAction.instance;
         }
 
         @Override
         public Action getDefaultAction(QueryHandle query) {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+            return NotYetAction.instance;
         }
 
     };

@@ -127,23 +127,13 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     @Override
     public Action getOpenSourcesAction(SourceHandle srcHandle) {
 //        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
+        return NotYetAction.instance;
     }
 
     @Override
     public Action getDefaultAction(SourceHandle srcHandle) {
 //        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
+        return NotYetAction.instance;
     }
 
     @Override
