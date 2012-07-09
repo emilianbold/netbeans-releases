@@ -52,7 +52,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
 import org.netbeans.modules.team.ods.ui.api.ODSProject;
-import org.netbeans.modules.team.ods.ui.impl.SourceAccessorImpl;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;

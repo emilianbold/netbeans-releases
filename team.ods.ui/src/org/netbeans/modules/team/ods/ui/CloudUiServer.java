@@ -68,7 +68,7 @@ import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.team.ods.ui.api.ODSProject;
-import org.netbeans.modules.team.ods.ui.impl.ProjectHandleImpl;
+import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
 
 /**
  *
