@@ -77,6 +77,8 @@ import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
 
 /**
@@ -93,8 +95,10 @@ public class LogReader {
     private final PathMap pathMapper;
     private final ProjectProxy project;
     private final CompilerSettings compilerSettings;
+    private final RelocatablePathMapper localMapper;
+    private final FileSystem fileSystem;
 
-    public LogReader(String fileName, String root, ProjectProxy project) {
+    public LogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
         if (root.length()>0) {
             this.root = CndFileUtils.normalizeFile(new File(root)).getAbsolutePath();
         } else {
@@ -104,17 +108,51 @@ public class LogReader {
         this.project = project;
         this.pathMapper = getPathMapper(project);
         this.compilerSettings = new CompilerSettings(project);
+        this.localMapper = relocatablePathMapper;
+        this.fileSystem = fileSystem;
 
         // XXX
         setWorkingDir(root);
     }
 
     private String convertPath(String path){
-        if(pathMapper != null) {
-            if (CndPathUtilitities.isPathAbsolute(path)) {
+        if (CndPathUtilitities.isPathAbsolute(path)) {
+            if(pathMapper != null) {
                 String local = pathMapper.getLocalPath(path);
                 if (local != null) {
-                    return local;
+                    path = local;
+                }
+            }
+            if (localMapper != null && fileSystem != null) {
+                FileObject fo = fileSystem.findResource(path);
+                if (fo == null || !fo.isValid()) {
+                    RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(path);
+                    if (resolvedPath == null) {
+                        if (root != null) {
+                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
+                                @Override
+                                public boolean exists(String path) {
+                                    FileObject fo = fileSystem.findResource(path);
+                                    if (fo != null && fo.isValid()) {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            };
+                            if (localMapper.init(fs, root, path)) {
+                                resolvedPath = localMapper.getPath(path);
+                                fo = fileSystem.findResource(resolvedPath.getPath());
+                                if (fo != null && fo.isValid() && fo.isData()) {
+                                    path = fo.getPath();
+                                }
+                            }
+                        }
+                    } else {
+                        fo = fileSystem.findResource(resolvedPath.getPath());
+                        if (fo != null && fo.isValid()) {
+                            path = fo.getPath();
+                        }
+                    }
                 }
             }
         }
@@ -659,9 +697,13 @@ public class LogReader {
             while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')){
                 end++;
             }
-            if (end >= line.length() || line.charAt(end)!='-') {
+            if (end >= line.length()) {
                 // suspected compiler invocation has no options or a part of a path?? -- noway
                 li.compilerType =  CompilerType.UNKNOWN;
+            } else if (line.charAt(end)!='-') {
+                // suspected compiler invocation has no options or a part of a path?? -- noway
+                // gcc source.c -c
+//                li.compilerType =  CompilerType.UNKNOWN;
 //            } else if (start > 0 && line.charAt(start-1)!='/') {
 //                // suspected compiler invocation is not first command in line?? -- noway
 //                String prefix = line.substring(0, start - 1).trim();

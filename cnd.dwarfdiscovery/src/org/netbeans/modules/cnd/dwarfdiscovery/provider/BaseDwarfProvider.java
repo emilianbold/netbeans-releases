@@ -143,7 +143,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
 
-    private FileSystem getFileSystem(ProjectProxy project) {
+    protected FileSystem getFileSystem(ProjectProxy project) {
         if (project != null) {
             Project p = project.getProject();
             if (p != null) {                
@@ -151,6 +151,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         }
         return CndFileUtils.getLocalFileSystem();
+    }
+    
+    protected RelocatablePathMapper getRelocatablePathMapper() {
+        return mapper;
     }
 
     protected FileObject resolvePath(ProjectProxy project, String buildArtifact, final FileSystem fileSystem, SourceFileProperties f, String name) {

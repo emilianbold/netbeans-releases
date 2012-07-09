@@ -304,6 +304,15 @@ public class PathMapperTest extends NbTestCase {
         assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3/oracle/ctx/src/gx/include", path.getPath());
     }
     
+    public void testMapper0() {
+        FS4 fs = new FS4("/scratch/alsimon/view_storage/alsimon_my_rdbms");
+        String root = "/scratch/alsimon/view_storage/alsimon_my_rdbms/rdbms";
+        String unknown = "odbc";
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
+        assertFalse(mapper.init(fs, root, unknown));
+    }
+    
+    
     private static final class FS implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS(String prefix) {
@@ -351,6 +360,19 @@ public class PathMapperTest extends NbTestCase {
         private FS3(String prefix) {
             set.add(prefix+"/ctx_src_4/src");
             set.add(prefix+"/oracle/ctx/src/gx/include");
+        }
+        
+        @Override
+        public boolean exists(String path) {
+            return set.contains(path);
+        }
+    }
+
+    private static final class FS4 implements RelocatablePathMapperImpl.FS {
+        Set<String> set = new HashSet<String>();
+        private FS4(String prefix) {
+            set.add(prefix+"/rdbms");
+            set.add(prefix+"/odbc");
         }
         
         @Override
