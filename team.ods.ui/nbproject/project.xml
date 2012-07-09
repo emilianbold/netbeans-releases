@@ -164,7 +164,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.ods.hudson</friend>
+                <package>org.netbeans.modules.team.ods.ui.api</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
