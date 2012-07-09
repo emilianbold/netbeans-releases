@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import com.oracle.nashorn.parser.Token;
 import com.oracle.nashorn.runtime.ErrorManager;
 import com.oracle.nashorn.runtime.Source;
 import java.util.ArrayList;
@@ -96,6 +97,12 @@ public class JsErrorManager extends ErrorManager {
     }
 
     @Override
+    public void error(String message, long token) {
+        LOGGER.log(Level.FINE, "Error {0} ({1})", new Object[] {message, token});
+        addParserError(new ParserError(message, token));
+    }
+    
+    @Override
     public void error(String message) {
         LOGGER.log(Level.FINE, "Error {0}", message);
         addParserError(new ParserError(message));
@@ -108,6 +115,11 @@ public class JsErrorManager extends ErrorManager {
 
     @Override
     public void warning(String message, Source source, long token) {
+        LOGGER.log(Level.FINE, "Warning {0} ({1})", new Object[] {message, token});
+    }
+    
+    @Override
+    public void warning(String message, long token) {
         LOGGER.log(Level.FINE, "Warning {0} ({1})", new Object[] {message, token});
     }
 
@@ -153,9 +165,10 @@ public class JsErrorManager extends ErrorManager {
     
     private JsParserError convert(ParserError error) {
         String message = error.message;
-        int line = -1;
         int offset = -1;
-        if (error.line == -1 && error.column == -1) {
+        if (error.token > 0) {
+            offset = Token.descPosition(error.token);
+        } else if (error.line == -1 && error.column == -1) {
             String parts[] = error.message.split(":");
             if (parts.length > 4) {
                 message = parts[4];
