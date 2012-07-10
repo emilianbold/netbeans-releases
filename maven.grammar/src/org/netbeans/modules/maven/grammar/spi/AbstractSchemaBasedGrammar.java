@@ -539,8 +539,8 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
 
      public static class MyTextElement extends AbstractResultNode implements Text {
         
-        private String name;
-        private String prefix;
+        protected final String name;
+        protected final String prefix;
         
         public MyTextElement(String name, String prefix) {
             this.name = name;
@@ -568,6 +568,17 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
             return name.substring(prefix.length());
         }
         
+    }
+     
+    protected static class ExpressionValueTextElement extends AbstractSchemaBasedGrammar.MyTextElement {
+          public ExpressionValueTextElement(String name, String prefix) {
+              super(name, prefix);
+          }
+          
+          @Override
+        public String getNodeValue() {
+            return name.substring(prefix.length()) + "}";
+        }
     }
      
     protected static class ComplexElement extends AbstractResultNode implements Element {
