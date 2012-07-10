@@ -52,9 +52,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashSet;
-import java.util.Set;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.openide.awt.ActionID;
@@ -62,7 +59,6 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.openide.util.Exceptions;
 
 @ActionID(
     category = "Versioning",
@@ -113,16 +109,16 @@ public final class ListCloudedIssuesAction implements ActionListener {
         IRepositoryQuery q = CfcQueryUtil.getQuery(PredefinedTaskQuery.ALL, "", rc.getConnectorKind());
         status = rc.performQuery(taskRepository, q, collector, null, new NullProgressMonitor());
         
-        System.out.println(" ----------- mutitaskdata query  ---------------- ");
-        Set<String> s = new HashSet<String>();
-        s.add("1");
-        s.add("2");
-        s.add("3");
-        try {
-            rc.getTaskDataHandler().getMultiTaskData(taskRepository, s, collector, nullProgressMonitor);
-        } catch (CoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+//        System.out.println(" ----------- mutitaskdata query  ---------------- ");
+//        Set<String> s = new HashSet<String>();
+//        s.add("1");
+//        s.add("2");
+//        s.add("3");
+//        try {
+//            rc.getTaskDataHandler().getMultiTaskData(taskRepository, s, collector, nullProgressMonitor);
+//        } catch (CoreException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
     }
  
     
