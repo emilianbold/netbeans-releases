@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -53,7 +54,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Janicek
  */
-public class GotoBaseActionTest {
+public class GotoBaseActionTest extends NbTestCase {
 
     private static class GotoBaseActionImpl extends GotoBaseAction {
 
@@ -74,13 +75,14 @@ public class GotoBaseActionTest {
 
     private static final GotoBaseAction gotoAction = new GotoBaseActionImpl("GotoBaseActionTest");
 
-    
-    public GotoBaseActionTest() {
+
+    public GotoBaseActionTest(String name) {
+        super(name);
     }
 
     @Test
-    public void findPackagePathTest1() {
-        File folder = new File("/home/martin/whatever/grails-app/domain/packagename");
+    public void testFindPackagePath1() throws IOException {
+        File folder = new File(getWorkDir(), "/whatever/grails-app/domain/packagename");
         File file = new File(folder, "SomeDomainClass.groovy");
 
         setupFolder(folder);
@@ -91,8 +93,8 @@ public class GotoBaseActionTest {
     }
 
     @Test
-    public void findPackagePathTest2() {
-        File folder = new File("/home/martin/whatever/grails-app/domain/packagename/secondarypkg");
+    public void testFindPackagePath2() throws IOException {
+        File folder = new File(getWorkDir(), "/whatever/grails-app/domain/packagename/secondarypkg");
         File file = new File(folder, "AnotherDomainClass.groovy");
 
         setupFolder(folder);
