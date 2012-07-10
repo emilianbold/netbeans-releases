@@ -608,7 +608,6 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
         incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) incSearchTextField);
         addEnterKeystrokeFindNextTo(incSearchTextField);
-        incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
         
         MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
         for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
@@ -645,6 +644,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
             searchProps.setProperty(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, Boolean.TRUE);
             highlightCanceled = false;
         }
+        incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
     }
     
     public void looseFocus() {
