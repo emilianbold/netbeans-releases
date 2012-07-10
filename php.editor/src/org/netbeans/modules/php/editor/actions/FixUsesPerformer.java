@@ -121,13 +121,7 @@ public class FixUsesPerformer {
         for (int i = 0; i < selections.length; i++) {
             String use = selections[i];
             if (canBeUsed(use)) {
-                CreateAliasStrategy createAliasStrategy;
-                if (options.aliasesCapitalsOfNamespaces()) {
-                    createAliasStrategy = new CapitalsStrategy(i, useParts, selections);
-                } else {
-                    createAliasStrategy = new UnqualifiedNameStrategy(i, useParts, selections);
-                }
-                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), useParts, createAliasStrategy);
+                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), useParts, createAliasStrategy(i, useParts, selections));
                 if (sanitizedUse.shouldBeUsed()) {
                     useParts.add(sanitizedUse.getSanitizedUsePart());
                 }
@@ -138,6 +132,16 @@ public class FixUsesPerformer {
             }
         }
         editList.replace(startOffset, 0, createInsertString(useParts), false, 0);
+    }
+
+    private AliasStrategy createAliasStrategy(final int selectionIndex, final List<String> existingUseParts, final String[] selections) {
+        AliasStrategy createAliasStrategy;
+        if (options.aliasesCapitalsOfNamespaces()) {
+            createAliasStrategy = new CapitalsStrategy(selectionIndex, existingUseParts, selections);
+        } else {
+            createAliasStrategy = new UnqualifiedNameStrategy(selectionIndex, existingUseParts, selections);
+        }
+        return createAliasStrategy;
     }
 
     private void processUseElement(final UseScope useElement, final List<String> useParts) {
@@ -245,17 +249,17 @@ public class FixUsesPerformer {
         return use != null && !use.contains(SPACE);
     }
 
-    private interface CreateAliasStrategy {
+    private interface AliasStrategy {
         public String createAlias(final QualifiedName qualifiedName);
     }
 
-    private static abstract class CreateAliasStrategyImpl implements CreateAliasStrategy {
+    private static abstract class AliasStrategyImpl implements AliasStrategy {
 
         private final int selectionIndex;
         private final List<String> existingUseParts;
         private final String[] selections;
 
-        public CreateAliasStrategyImpl(final int selectionIndex, final List<String> existingUseParts, final String[] selections) {
+        public AliasStrategyImpl(final int selectionIndex, final List<String> existingUseParts, final String[] selections) {
             this.selectionIndex = selectionIndex;
             this.existingUseParts = existingUseParts;
             this.selections = selections;
@@ -307,7 +311,7 @@ public class FixUsesPerformer {
 
     }
 
-    private static class CapitalsStrategy extends CreateAliasStrategyImpl {
+    private static class CapitalsStrategy extends AliasStrategyImpl {
 
         public CapitalsStrategy(int selectionIndex, List<String> existingUseParts, String[] selections) {
             super(selectionIndex, existingUseParts, selections);
@@ -324,7 +328,7 @@ public class FixUsesPerformer {
 
     }
 
-    private static class UnqualifiedNameStrategy extends CreateAliasStrategyImpl {
+    private static class UnqualifiedNameStrategy extends AliasStrategyImpl {
 
         public UnqualifiedNameStrategy(int selectionIndex, List<String> existingUseParts, String[] selections) {
             super(selectionIndex, existingUseParts, selections);
@@ -343,7 +347,7 @@ public class FixUsesPerformer {
         private String alias;
         private final boolean shouldBeUsed;
 
-        public SanitizedUse(final String use, final List<String> existingUseParts, final CreateAliasStrategy createAliasStrategy) {
+        public SanitizedUse(final String use, final List<String> existingUseParts, final AliasStrategy createAliasStrategy) {
             this.use = use;
             QualifiedName qualifiedName = QualifiedName.create(use);
             if (!existingUseParts.contains(use)) {
