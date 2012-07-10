@@ -97,14 +97,33 @@ public final class RuleEditorController {
         peer.setNoRuleState();
     }
     
-    /**
-     * Sets the view mode of the rule editor component. See {@link ViewMode}
-     * 
-     * @param mode 
-     */
-    public void setViewMode(ViewMode mode) {
-        peer.setViewMode(mode);
+    public void setSortMode(SortMode sortMode) {
+        //TODO
     }
+    
+    /**
+     * Show physical propertis + all existing unused properties.
+     * 
+     * Shows physical properties of the selected rule first, then all
+     * of the existing unused properties. The unused the properties are sorted
+     * alphabetically.
+     */
+    public void setShowAllProperties(boolean enabled) {
+        //TODO
+    }
+    
+     /**
+     * Show property categories.
+     * 
+     * Shows categories for the css properties. In each category the physical
+     * properties of the selected rule are show first, then the rest of 
+     * existing css properties belonging to the category. All unused properties 
+     * sorted  alphabetically, categories also sorted alphabetically.
+     */
+    public void setShowCategories(boolean enabled) {
+        //TODO
+    }
+    
     
     /**
      * Registers an instance of {@link RuleEditorListener} to the component.
