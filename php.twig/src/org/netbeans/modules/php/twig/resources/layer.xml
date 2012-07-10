@@ -118,7 +118,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
                 </file>
 
-                <file name="org-netbeans-modules-javascript-editing-embedding-JsEmbeddingProvider$Factory.instance">
+                <file name="org-netbeans-modules-javascript2-editor-embedding-JsEmbeddingProvider$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
                 <file name="org-netbeans-modules-html-editor-gsf-embedding-CssEmbeddingProvider$Factory.instance">
@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-html-editor-HtmlBracesMatching.instance">
                         <attr name="position" intvalue="50"/>
                     </file>
-                    <file name="org-netbeans-modules-javascript-editing-JsBracesMatcherFactory.instance">
+                    <file name="org-netbeans-modules-javascript2-editor-JsBracesMatcher$JsBracesMatcherFactory.instance">
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>

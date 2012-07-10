@@ -44,40 +44,20 @@
 
 package org.openide.awt;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.FocusTraversalPolicy;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.beans.PropertyChangeEvent;
-import javax.swing.Icon;
-import javax.swing.plaf.UIResource;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
+import javax.swing.plaf.UIResource;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * Copy of original CloseButtonTabbedPane from the NetBeans 3.4 winsys.  Old code never dies.
@@ -88,10 +68,6 @@ import org.openide.util.Exceptions;
  *
  */
 final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeListener {
-
-    private Image closeTabImage;
-    private Image closeTabPressedImage;
-    private Image closeTabMouseOverImage;
 
     static final String PROP_CLOSE = "close";
 

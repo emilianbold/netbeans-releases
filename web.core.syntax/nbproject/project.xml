@@ -521,7 +521,7 @@ made subject to such option by the copyright holder.
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.javascript.editing</code-name-base>
+                        <code-name-base>org.netbeans.modules.javascript2.editor</code-name-base>
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>

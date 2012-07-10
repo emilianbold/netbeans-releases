@@ -63,18 +63,12 @@
       'build-platform' target once for each platform supported by mobility.
     -->
     <target name="clean-all">
-        <antcall target="clean-platform">
-            <param name="product.platforms" value="windows"/>
-        </antcall>
-        <antcall target="clean-platform">
-            <param name="product.platforms" value="linux"/>
-        </antcall>
-        <antcall target="clean-platform">
-            <param name="product.platforms" value="solaris-x86"/>
-        </antcall>
-        <antcall target="clean-platform">
-            <param name="product.platforms" value="solaris-sparc"/>
-        </antcall>
+        <for-each list="${bundle.jdk.platform}" separator="," property="bundle.jdk.platform.single">
+	    <antcall target="clean-platform">
+                <param name="product.version" value="${product.version.${bundle.jdk.platform.single}}"/>
+                <param name="product.platforms" value="${bundle.jdk.platform.single}"/>
+            </antcall>
+        </for-each>
     </target>
     
     <!--
@@ -84,18 +78,12 @@
       'build-platform' target once for each platform supported by mobility.
     -->
     <target name="build-all">
-        <antcall target="build-platform">
-            <param name="product.platforms" value="windows"/>
-        </antcall>
-        <antcall target="build-platform">
-            <param name="product.platforms" value="linux"/>
-        </antcall>
-        <antcall target="build-platform">
-            <param name="product.platforms" value="solaris-x86"/>
-        </antcall>
-        <antcall target="build-platform">
-            <param name="product.platforms" value="solaris-sparc"/>
-        </antcall>
+        <for-each list="${bundle.jdk.platform}" separator="," property="bundle.jdk.platform.single">
+            <antcall target="build-platform">
+                <param name="product.version" value="${product.version.${bundle.jdk.platform.single}}"/>
+                <param name="product.platforms" value="${bundle.jdk.platform.single}"/>
+            </antcall>
+        </for-each>
     </target>
     
     <!--
@@ -105,18 +93,12 @@
       'release-platform' target once for each platform supported by mobility.
     -->
     <target name="release-all">
-        <antcall target="release-platform">
-            <param name="product.platforms" value="windows"/>
-        </antcall>
-        <antcall target="release-platform">
-            <param name="product.platforms" value="linux"/>
-        </antcall>
-        <antcall target="release-platform">
-            <param name="product.platforms" value="solaris-x86"/>
-        </antcall>
-        <antcall target="release-platform">
-            <param name="product.platforms" value="solaris-sparc"/>
-        </antcall>
+        <for-each list="${bundle.jdk.platform}" separator="," property="bundle.jdk.platform.single">
+            <antcall target="release-platform">
+                <param name="product.version" value="${product.version.${bundle.jdk.platform.single}}"/>
+                <param name="product.platforms" value="${bundle.jdk.platform.single}"/>
+            </antcall>
+        </for-each>
     </target>
     
     <!--

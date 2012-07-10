@@ -67,7 +67,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.windows.IOColors;
 import org.openide.windows.OutputListener;
-
+import org.netbeans.swing.plaf.LFCustoms;
 /**
  * Abstract Lines implementation with handling for getLine wrap calculations, etc.
  */
@@ -313,7 +313,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         longestLineLen = 0;
         listener = null;
         dirty = false;
-        curDefColors = DEF_COLORS.clone();
+        curDefColors = getDefColors().clone();
     }
 
     private boolean dirty;
@@ -827,12 +827,15 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     /** initial default colors */
-    static final Color[] DEF_COLORS;
+    private static Color[] DEF_COLORS = null;
 
     /** current default colors */
     Color[] curDefColors;
 
-    static {
+    static Color[] getDefColors() {
+        if (DEF_COLORS != null) {
+            return DEF_COLORS;
+        }
         Color out = UIManager.getColor("nb.output.foreground"); //NOI18N
         if (out == null) {
             out = UIManager.getColor("textText");
@@ -843,12 +846,12 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
 
         Color err = UIManager.getColor("nb.output.err.foreground"); //NOI18N
         if (err == null) {
-            err = new Color(164, 0, 0);
+            err = LFCustoms.shiftColor(Color.red);
         }
 
         Color hyperlink = UIManager.getColor("nb.output.link.foreground"); //NOI18N
         if (hyperlink == null) {
-            hyperlink = Color.BLUE.darker();
+            hyperlink = LFCustoms.shiftColor(Color.blue);
         }
 
         Color hyperlinkImp = UIManager.getColor("nb.output.link.foreground.important"); //NOI18N
@@ -856,7 +859,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
             hyperlinkImp = hyperlink;
         }
 
-        DEF_COLORS = new Color[]{out, err, hyperlink, hyperlinkImp};
+        return DEF_COLORS = new Color[]{out, err, hyperlink, hyperlinkImp};
     }
 
     public void setDefColor(IOColors.OutputType type, Color color) {

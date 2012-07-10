@@ -97,6 +97,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  *
@@ -1070,7 +1071,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
     
     static class TypeParameterItem extends JavaCompletionItem {
         
-        private static final String TYPE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
 
         private String simpleName;
         private String leftText;
@@ -1094,7 +1094,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         protected String getLeftHtmlText() {
             if (leftText == null)
-                leftText = TYPE_PARAMETER_COLOR + simpleName + COLOR_END;
+                leftText = LFCustoms.getTextFgColorHTML() + simpleName + COLOR_END;
             return leftText;
         }
         
@@ -1406,7 +1406,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
         private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
         private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         private static ImageIcon icon[][] = new ImageIcon[2][4];
 
@@ -1487,7 +1486,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             if (leftText == null) {
                 StringBuilder lText = new StringBuilder();
-                lText.append(METHOD_COLOR);
+                lText.append(LFCustoms.getTextFgColorHTML());
                 if (!isInherited)
                     lText.append(BOLD);
                 if (isDeprecated || isBlackListed())
@@ -1916,7 +1915,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
         private static final String GETTER_BADGE_PATH = "org/netbeans/modules/java/editor/resources/getter_badge.png"; //NOI18N
         private static final String SETTER_BADGE_PATH = "org/netbeans/modules/java/editor/resources/setter_badge.png"; //NOI18N
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
         private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
         
         private static ImageIcon superIcon;
@@ -1967,7 +1965,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             if (leftText == null) {
                 StringBuilder lText = new StringBuilder();
-                lText.append(METHOD_COLOR);
+                lText.append(LFCustoms.getTextFgColorHTML());
                 lText.append(BOLD);
                 lText.append(name);
                 lText.append(BOLD_END);
@@ -2541,7 +2539,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class ParametersItem extends JavaCompletionItem {
         
         private static final String PARAMETERS_COLOR = "<font color=#808080>"; //NOI18N
-        private static final String ACTIVE_PARAMETER_COLOR = "<font color=#000000>"; //NOI18N
 
         protected ElementHandle<ExecutableElement> elementHandle;
         private boolean isDeprecated;
@@ -2612,7 +2609,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 for (int i = 0; i < params.size(); i++) {
                     ParamDesc paramDesc = params.get(i);
                     if (i == activeParamsIndex)
-                        lText.append(COLOR_END).append(ACTIVE_PARAMETER_COLOR).append(BOLD);
+                        lText.append(COLOR_END).append(LFCustoms.getTextFgColorHTML()).append(BOLD);
                     lText.append(escape(paramDesc.typeName));
                     lText.append(' ');
                     lText.append(paramDesc.name);

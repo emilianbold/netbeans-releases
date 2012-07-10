@@ -56,6 +56,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.ref.Reference;
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
@@ -181,8 +183,16 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     
     private static final long vmDeadline;
     static {
+        boolean debugMode = false;
+
+        // check if we are debugged
+        RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
+        List<String> args = runtime.getInputArguments();
+        if (args.contains("-Xdebug")) {
+            debugMode = true;
+        }
         Integer vmTimeRemaining = Integer.getInteger("nbjunit.hard.timeout");
-        if (vmTimeRemaining != null) {
+        if (vmTimeRemaining != null && !debugMode) {
             vmDeadline = System.currentTimeMillis() + vmTimeRemaining;
         } else {
             vmDeadline = 0L;

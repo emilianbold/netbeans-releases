@@ -39,6 +39,7 @@
 
 package org.netbeans.installer.utils.system.resolver;
 
+import java.io.File;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -61,6 +62,39 @@ public class NameResolver implements StringResolver{
             } catch (NativeException e) {                
                 ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
                         ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+            }
+        }   
+        if(SystemUtils.isWindows()) {
+            File defaultApplicationsLocation = null;
+            if (parsed.contains("$N{install_x86}")) {
+                try {
+                 String path = SystemUtils.getEnvironmentVariable("ProgramFiles(x86)");
+                if (path != null) {
+                    defaultApplicationsLocation = new File(path).getAbsoluteFile();
+                } else {
+                    defaultApplicationsLocation = SystemUtils.getDefaultApplicationsLocation();
+                }
+                parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install_x86\\}",
+                            StringUtils.escapeRegExp(defaultApplicationsLocation.getAbsolutePath()));
+                } catch (NativeException e) {
+                    ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
+                            ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+                }
+            }
+            if (parsed.contains("$N{install_x64}")) {
+                 try {
+                    String path = SystemUtils.getEnvironmentVariable("ProgramW6432");
+                    if (path != null) {
+                        defaultApplicationsLocation = new File(path).getAbsoluteFile();
+                    } else {
+                        defaultApplicationsLocation = SystemUtils.getDefaultApplicationsLocation();
+                    }
+                    parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install_x64\\}",
+                            StringUtils.escapeRegExp(defaultApplicationsLocation.getAbsolutePath()));
+                } catch (NativeException e) {
+                    ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
+                            ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+                }
             }
         }
         if (parsed.contains("$N{home}")) {

@@ -162,6 +162,7 @@ public class CheckBoxWithButtonPanel extends JPanel
         } else {
             disableButton();
         }
+        this.setMinimumSize(this.getPreferredSize()); // #214745
     }
 
     /**
