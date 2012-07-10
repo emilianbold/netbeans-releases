@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.io.IOException;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -89,15 +90,15 @@ public final class StartEntry implements Persistent, SelfPersistent{
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         assert output != null;
-        output.writeCharSequenceUTF(startFile);
         KeyFactory.getDefaultFactory().writeKey(startFileProject, output);
+        APTSerializeUtils.writeFileNameIndex(startFile, output, startFileProject.getUnitId());
     }
     
     public StartEntry(FileSystem fs, RepositoryDataInput input) throws IOException {
         assert input != null;
         fileSystem = fs;
-        startFile = FilePathCache.getManager().getString(input.readCharSequenceUTF());
         startFileProject = KeyFactory.getDefaultFactory().readKey(input);
+        startFile = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), startFileProject.getUnitId());
     }
 
     @Override

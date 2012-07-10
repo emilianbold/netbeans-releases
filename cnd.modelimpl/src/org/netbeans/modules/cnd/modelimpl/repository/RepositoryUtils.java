@@ -43,19 +43,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.repository;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
@@ -87,7 +79,10 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 130;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 131;
+
+//    /** temporary flag, to be removed as soon as relocatable repository is achieved */
+//    public static final boolean RELOCATABLE = true;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {

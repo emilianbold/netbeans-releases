@@ -316,6 +316,19 @@ public class PersistentUtils {
 
     private static final String NULL_STRING = new String(new char[]{0});
 
+    public static void writeFileNameIndex(CharSequence st, RepositoryDataOutput aStream, int unitId) throws IOException {
+        int id = KeyUtilities.getFileIdByName(unitId, st);
+        aStream.writeInt(id);
+    }
+
+    public static CharSequence readFileNameIndex(RepositoryDataInput aStream, APTStringManager manager, int unitId) throws IOException {
+        int id = aStream.readInt();
+        CharSequence path = KeyUtilities.getFileNameById(unitId, id);
+        CharSequence res = manager.getString(path);
+        assert CharSequences.isCompact(res);
+        return res;
+    }
+
     public static void writeUTF(CharSequence st, RepositoryDataOutput aStream) throws IOException {
         if (st == null) {
             aStream.writeUTF(NULL_STRING);
@@ -742,13 +755,13 @@ public class PersistentUtils {
 //            filesHandlers.put(key, state);
 //        }
 //    }
-    public static void writePreprocState(APTPreprocHandler.State state, RepositoryDataOutput output) throws IOException {
+    public static void writePreprocState(APTPreprocHandler.State state, RepositoryDataOutput output, int unitIndex) throws IOException {
         APTPreprocHandler.State cleanedState = APTHandlersSupport.createCleanPreprocState(state);
-        APTSerializeUtils.writePreprocState(cleanedState, output);
+        APTSerializeUtils.writePreprocState(cleanedState, output, unitIndex);
     }
 
-    public static APTPreprocHandler.State readPreprocState(FileSystem fs, RepositoryDataInput input) throws IOException {
-        APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(fs, input);
+    public static APTPreprocHandler.State readPreprocState(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
+        APTPreprocHandler.State state = APTSerializeUtils.readPreprocState(fs, input, unitIndex);
         assert state.isCleaned();
         return state;
     }
