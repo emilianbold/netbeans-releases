@@ -407,10 +407,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(ConstantDeclaration node) {
             ASTNode parentNode = null;
             List<ASTNode> path = getPath();
-            synchronized (path) {
-                if (path != null && path.size() > 1) {
-                    parentNode = path.get(1);
-                }
+            if (path != null && path.size() > 1) {
+                parentNode = path.get(1);
             }
             if (parentNode instanceof ClassDeclaration || parentNode instanceof InterfaceDeclaration
                     || parentNode instanceof TraitDeclaration) {

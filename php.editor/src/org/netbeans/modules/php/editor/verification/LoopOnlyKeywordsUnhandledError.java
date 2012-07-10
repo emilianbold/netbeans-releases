@@ -88,13 +88,10 @@ public class LoopOnlyKeywordsUnhandledError extends DefaultTreePathVisitor {
 
     private boolean isInProperControlStructure() {
         boolean result = false;
-        List<ASTNode> path = getPath();
-        synchronized (path) {
-            for (ASTNode node : path) {
-                if (isProperStructure(node)) {
-                    result = true;
-                    break;
-                }
+        for (ASTNode node : getPath()) {
+            if (isProperStructure(node)) {
+                result = true;
+                break;
             }
         }
         return result;
