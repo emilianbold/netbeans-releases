@@ -47,22 +47,14 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.project.api.PhpAnnotations;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
@@ -115,19 +107,20 @@ public class PHPDOCCodeCompletion {
         return false;
     }
 
-    public static void complete(final PHPCompletionResult completionResult, CompletionRequest request) {
-        String prefix = null;
-        if (request.prefix.startsWith(TAG_PREFIX)){
-            prefix = request.prefix.substring(TAG_PREFIX.length());
-        } else {
-            return;
+    public static void complete(final PHPCompletionResult completionResult, final CompletionRequest request) {
+        if (request.prefix.startsWith(TAG_PREFIX)) {
+            completeAnnotation(completionResult, request);
         }
+    }
+
+    private static void completeAnnotation(final PHPCompletionResult completionResult, final CompletionRequest request) {
+        String prefix = request.prefix.substring(TAG_PREFIX.length());
         List<PhpAnnotationsProvider> providers = PhpAnnotations.getDefault().getProviders(request.info.getSnapshot().getSource().getFileObject());
         ASTNode nodeAfterOffset = Utils.getNodeAfterOffset(request.result, request.anchor);
         int priority = 0;
         for (PhpAnnotationsProvider annotationProvider : providers) {
             priority++;
-            List<PhpAnnotationTag> annotations = null;
+            List<PhpAnnotationTag> annotations;
             if (nodeAfterOffset instanceof TypeDeclaration) {
                 annotations = annotationProvider.getTypeAnnotations();
             } else if (nodeAfterOffset instanceof MethodDeclaration) {
