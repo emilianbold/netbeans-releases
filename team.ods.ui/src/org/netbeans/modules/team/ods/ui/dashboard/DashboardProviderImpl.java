@@ -51,7 +51,7 @@ import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.team.ods.ui.CloudUiServer;
+import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;

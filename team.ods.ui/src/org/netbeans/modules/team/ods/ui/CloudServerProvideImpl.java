@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.ods.ui;
 
+import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ods.ui;
+package org.netbeans.modules.team.ods.ui.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,6 +67,8 @@ import org.openide.util.WeakListeners;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.team.ods.ui.CloudServerProvideImpl;
+import org.netbeans.modules.team.ods.ui.LoginPanelSupportImpl;
 import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
 
 /**
@@ -165,7 +167,7 @@ public class CloudUiServer implements TeamServer {
         return new LoginPanelSupportImpl(getImpl(true));
     }
 
-    CloudServer getServer () {
+    public CloudServer getServer () {
         return getImpl(false);
     }
 

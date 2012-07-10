@@ -42,7 +42,7 @@
 package org.netbeans.modules.team.ods.ui.dashboard;
 
 import com.tasktop.c2c.server.profile.domain.project.Project;
-import org.netbeans.modules.team.ods.ui.CloudUiServer;
+import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
