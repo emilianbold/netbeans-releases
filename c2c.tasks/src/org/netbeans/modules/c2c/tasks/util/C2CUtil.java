@@ -141,8 +141,11 @@ public class C2CUtil {
     }
      
     public static RepositoryResponse postTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
+        C2C.LOG.log(Level.FINE, " dataRoot before post {0}", data.getRoot().toString());
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
-        return  cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
+        RepositoryResponse rr = cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
+        
+        return rr;
     }     
 
     /**

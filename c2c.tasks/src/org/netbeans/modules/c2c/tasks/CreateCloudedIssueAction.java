@@ -72,6 +72,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.openide.awt.ActionID;
@@ -127,8 +128,8 @@ public final class CreateCloudedIssueAction implements ActionListener {
             taskData = rc.getTaskData(taskRepository, rr.getTaskId(), nullProgressMonitor);
 
             printTaskData(taskData); 
-            System.out.println("   custom field name : " + clientData.getCustomFields().get(0).getName());
-            System.out.println("   custom field value : " + taskData.getRoot().getAttribute(CfcConstants.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName()).getValue());
+            C2C.LOG.log(Level.FINE, "   custom field name : " + clientData.getCustomFields().get(0).getName());
+            C2C.LOG.log(Level.FINE, "   custom field value : " + taskData.getRoot().getAttribute(CfcConstants.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName()).getValue());
             
             // reassign
             rta = taskData.getRoot();
@@ -169,7 +170,7 @@ public final class CreateCloudedIssueAction implements ActionListener {
             is.read(b);
             is.close();
             
-            System.out.println("   attachment data : " + new String(b));
+            C2C.LOG.log(Level.FINE, "   attachment data : " + new String(b));
             
             // resolve
             rta = taskData.getRoot();
@@ -200,19 +201,19 @@ public final class CreateCloudedIssueAction implements ActionListener {
             // get history
 //            TaskHistory history = rc.getTaskHistory(taskRepository, new ITaskImpl(taskData), nullProgressMonitor);
 //            List<TaskRevision> revisions = history.getRevisions();
-//            System.out.println(" ************************************************* ");
-//            System.out.println(" History: ");
+//            C2C.LOG.log(Level.FINE, " ************************************************* ");
+//            C2C.LOG.log(Level.FINE, " History: ");
 //            for (TaskRevision r : revisions) {
-//                System.out.println("   rev : " + r.getId());
-//                System.out.println("   author : " + r.getAuthor());
-//                System.out.println("   date : " + r.getDate());
-//                System.out.println("   changes : ");
+//                C2C.LOG.log(Level.FINE, "   rev : " + r.getId());
+//                C2C.LOG.log(Level.FINE, "   author : " + r.getAuthor());
+//                C2C.LOG.log(Level.FINE, "   date : " + r.getDate());
+//                C2C.LOG.log(Level.FINE, "   changes : ");
 //                List<Change> changes = r.getChanges();
 //                for (Change c : changes) {
-//                    System.out.println("    ----------------------------------------- ");
-//                    System.out.println("     attr : " + c.getAttributeId());
-//                    System.out.println("     field : " + c.getField());
-//                    System.out.println("     removed : " + c.getRemoved());
+//                    C2C.LOG.log(Level.FINE, "    ----------------------------------------- ");
+//                    C2C.LOG.log(Level.FINE, "     attr : " + c.getAttributeId());
+//                    C2C.LOG.log(Level.FINE, "     field : " + c.getField());
+//                    C2C.LOG.log(Level.FINE, "     removed : " + c.getRemoved());
 //                    
 //                }
 //            }
@@ -269,6 +270,7 @@ public final class CreateCloudedIssueAction implements ActionListener {
         RepositoryResponse rr = C2CUtil.postTaskData(cfcrc, repository, data);
         String taskId = rr.getTaskId();
         data = cfcrc.getTaskData(repository, taskId, nullProgressMonitor);
+        C2C.LOG.log(Level.FINE, " dataRoot after get {0}", data.getRoot().toString());
         return data;
     }    
 
@@ -283,16 +285,16 @@ public final class CreateCloudedIssueAction implements ActionListener {
     }
 
     private void printTaskData(TaskData data) {
-        System.out.println(" *************************************************** ");
-        System.out.println(" id : " + data.getTaskId());
-        System.out.println("   summary : " + data.getRoot().getAttribute(CfcTaskAttribute.SUMMARY.getKey()).getValue());
-        System.out.println("   owner : " + data.getRoot().getAttribute(CfcTaskAttribute.OWNER.getKey()).getValue());
-        System.out.println("   status : " + data.getRoot().getAttribute(CfcTaskAttribute.STATUS.getKey()).getValue());
-        System.out.println("   parent : " + data.getRoot().getAttribute(CfcTaskAttribute.PARENT.getKey()).getValue());
-        System.out.println("   subtask : " + data.getRoot().getAttribute(CfcTaskAttribute.SUBTASK.getKey()).getValue());
+        C2C.LOG.log(Level.INFO, " *************************************************** ");
+        C2C.LOG.log(Level.INFO, " id : " + data.getTaskId());
+        C2C.LOG.log(Level.INFO, "   summary : " + data.getRoot().getAttribute(CfcTaskAttribute.SUMMARY.getKey()).getValue());
+        C2C.LOG.log(Level.INFO, "   owner : " + data.getRoot().getAttribute(CfcTaskAttribute.OWNER.getKey()).getValue());
+        C2C.LOG.log(Level.INFO, "   status : " + data.getRoot().getAttribute(CfcTaskAttribute.STATUS.getKey()).getValue());
+        C2C.LOG.log(Level.INFO, "   parent : " + data.getRoot().getAttribute(CfcTaskAttribute.PARENT.getKey()).getValue());
+        C2C.LOG.log(Level.INFO, "   subtask : " + data.getRoot().getAttribute(CfcTaskAttribute.SUBTASK.getKey()).getValue());
         
         List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
-        System.out.println("   attachmnets : " + (attrs != null ? attrs.size() : "null"));
+        C2C.LOG.log(Level.INFO, "   attachmnets : " + (attrs != null ? attrs.size() : "null"));
     }
     
     private class ITaskImpl implements ITask {
