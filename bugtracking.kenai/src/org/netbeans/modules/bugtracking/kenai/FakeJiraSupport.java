@@ -55,6 +55,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
@@ -85,7 +86,7 @@ class FakeJiraSupport {
         this.openIssueUrl = openIssueUrl;
     }
 
-    public static synchronized FakeJiraSupport get(ProjectHandle<KenaiProject> handle) {
+    public static synchronized FakeJiraSupport get(ProjectHandle<KenaiServer, KenaiProject> handle) {
         KenaiProject project = handle.getTeamProject();
         if(project == null) {
             return null;

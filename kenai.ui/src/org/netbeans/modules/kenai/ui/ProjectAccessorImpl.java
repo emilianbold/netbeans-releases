@@ -61,7 +61,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProjectMember.Role;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.kenai.ui.project.DetailsAction;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -87,7 +87,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     
     private static ProjectAccessorImpl instance;
 
-    public static ProjectAccessor getDefault() {
+    public static ProjectAccessorImpl getDefault() {
         if(instance == null) {
             instance = new ProjectAccessorImpl();
         }
@@ -95,9 +95,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     }
 
     @Override
-    public List<ProjectHandle> getMemberProjects(KenaiServer server, LoginHandle login, boolean force) {
+    public List<ProjectHandle<KenaiServer, KenaiProject>> getMemberProjects(KenaiServer server, LoginHandle login, boolean force) {
         try {
-            LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
+            LinkedList<ProjectHandle<KenaiServer, KenaiProject>> l = new LinkedList<ProjectHandle<KenaiServer, KenaiProject>>();
             for (KenaiProject prj : server.getKenai().getMyProjects(force)) {
                 l.add(new ProjectHandleImpl(prj));
                 for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
@@ -125,7 +125,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     }
 
     @Override
-    public ProjectHandle getNonMemberProject(KenaiServer server, String projectId, boolean force) {
+    public ProjectHandle<KenaiServer, KenaiProject> getNonMemberProject(KenaiServer server, String projectId, boolean force) {
         try {
             return new ProjectHandleImpl(server.getKenai().getProject(projectId,force));
         } catch (KenaiException ex) {
@@ -168,7 +168,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     }
 
     @Override
-    public Action[] getPopupActions(final ProjectHandle<KenaiProject> project, boolean opened) {
+    public Action[] getPopupActions(final ProjectHandle<KenaiServer, KenaiProject> project, boolean opened) {
         PasswordAuthentication pa = project.getTeamProject().getKenai().getPasswordAuthentication();
         if (!opened) {
             try {
@@ -196,7 +196,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     }
 
     @Override
-    public Action getOpenWikiAction(ProjectHandle<KenaiProject> project) {
+    public Action getOpenWikiAction(ProjectHandle<KenaiServer, KenaiProject> project) {
         try {
             KenaiFeature[] wiki = ((ProjectHandleImpl) project).getTeamProject().getFeatures(Type.WIKI);
             if (wiki.length == 1) {
@@ -209,7 +209,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     }
 
     @Override
-    public Action getOpenDownloadsAction(ProjectHandle<KenaiProject> project) {
+    public Action getOpenDownloadsAction(ProjectHandle<KenaiServer, KenaiProject> project) {
         try {
             KenaiFeature[] wiki = ((ProjectHandleImpl) project).getTeamProject().getFeatures(Type.DOWNLOADS);
             if (wiki.length == 1) {
@@ -222,7 +222,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     }
 
     @Override
-    public Action getBookmarkAction(final ProjectHandle<KenaiProject> project) {
+    public Action getBookmarkAction(final ProjectHandle<KenaiServer, KenaiProject> project) {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 Kenai kenai = project.getTeamProject().getKenai();
@@ -298,9 +298,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
 
     private static class RefreshAction extends AbstractAction {
 
-        private final ProjectHandle<KenaiProject> project;
+        private final ProjectHandle<KenaiServer, KenaiProject> project;
 
-        public RefreshAction(ProjectHandle<KenaiProject> project) {
+        public RefreshAction(ProjectHandle<KenaiServer, KenaiProject> project) {
             super( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject"));
             this.project = project;
         }

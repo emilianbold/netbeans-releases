@@ -84,7 +84,7 @@ import org.openide.windows.TopComponent;
  * @author S. Aubrecht, Tomas Stupka
  */
 @NbBundle.Messages("A11Y_TeamProjects=Team Projects")
-public final class DefaultDashboard<S extends TeamServer<P>, P> {
+public final class DefaultDashboard<S extends TeamServer, P> {
 
     /**
      * Name of the property that will be fired when some change in opened projects
@@ -224,7 +224,7 @@ public final class DefaultDashboard<S extends TeamServer<P>, P> {
         setServer(server);
     }
 
-    public QueryAccessor<P> getQueryAccessor(Class<P> p) {
+    public QueryAccessor<S, P> getQueryAccessor(Class<P> p) {
         Collection<? extends QueryAccessor> c = Lookup.getDefault().lookupAll(QueryAccessor.class);
         for (QueryAccessor a : c) {
             if(a.type().equals(p)) {
@@ -234,7 +234,7 @@ public final class DefaultDashboard<S extends TeamServer<P>, P> {
         return null;
     }
     
-    public BuildAccessor<P> getBuildAccessor(Class<P> p) {
+    public BuildAccessor<S, P> getBuildAccessor(Class<P> p) {
         Collection<? extends BuildAccessor> c = Lookup.getDefault().lookupAll(BuildAccessor.class);
         for (BuildAccessor a : c) {
             if(a.type().equals(p)) {
@@ -252,7 +252,7 @@ public final class DefaultDashboard<S extends TeamServer<P>, P> {
         return server;
     }
 
-    public ProjectHandle<P>[] getOpenProjects() {
+    public ProjectHandle<S, P>[] getOpenProjects() {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
         s.addAll(memberProjects);
@@ -384,7 +384,7 @@ public final class DefaultDashboard<S extends TeamServer<P>, P> {
      * @param isMemberProject
      */
     public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {
-        UIUtils.setSelectedServer(dashboardProvider.getServer(project));
+        UIUtils.setSelectedServer(project.getTeamServer());
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -877,6 +877,10 @@ public final class DefaultDashboard<S extends TeamServer<P>, P> {
 
     DashboardProvider<S, P> getDashboardProvider() {
         return dashboardProvider;
+    }
+
+    Collection<ProjectHandle<S, P>> getMyProjects() {
+        return dashboardProvider.getMyProjects();
     }
 
     private class OtherProjectsLoader implements Runnable, Cancellable {

@@ -39,36 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ods.ui.impl;
+package org.netbeans.modules.team.ods.ui.dashboard;
 
-import org.netbeans.modules.team.ods.ui.api.ODSProject;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 /**
  *
  * @author tomas
  */
-public class ProjectHandleImpl extends ProjectHandle<ODSProject> {
-    private final ODSProject project;
-
-    public ProjectHandleImpl(ODSProject project) {
-        super(String.valueOf(project.getProject().getId()));
-        this.project = project;
-    }
+public class NotYetAction extends AbstractAction {
+    
+    public static Action instance = new NotYetAction();
     
     @Override
-    public String getDisplayName() {
-        return project.getProject().getName();
+    public void actionPerformed(ActionEvent e) {
+        notYet();
     }
-
-    @Override
-    public ODSProject getTeamProject() {
-        return project;
-    }
-
-    @Override
-    public boolean isPrivate() {
-        return false;
+    
+    public static void notYet() {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Not yet implemented!", NotifyDescriptor.INFORMATION_MESSAGE));
     }
     
 }

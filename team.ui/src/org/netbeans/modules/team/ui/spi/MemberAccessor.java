@@ -49,7 +49,7 @@ import javax.swing.Action;
  *
  * @author Jan Becicka
  */
-public abstract class MemberAccessor<P> {
-    public abstract List<MemberHandle> getMembers(ProjectHandle<P> project );
+public abstract class MemberAccessor<S extends TeamServer, P> {
+    public abstract List<MemberHandle> getMembers(ProjectHandle<S, P> project );
     public abstract Action getStartChatAction(MemberHandle member);
 }

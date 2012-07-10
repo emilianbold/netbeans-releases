@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class ProjectNode<S extends TeamServer<P>, P> extends TreeListNode {
+public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
 
     private final ProjectHandle project;
     private final ProjectAccessor accessor;
@@ -104,7 +104,7 @@ public class ProjectNode<S extends TeamServer<P>, P> extends TreeListNode {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
                     refreshChildren();
                     if (evt.getNewValue() != null || evt.getOldValue() !=null) {
-                        boolean m = dashboard.getServer().getMyProjects().contains(project);
+                        boolean m = dashboard.getMyProjects().contains(project);
                         if (m != isMemberProject) {
                             dashboard.refreshMemberProjects(false);
                         }
@@ -144,7 +144,7 @@ public class ProjectNode<S extends TeamServer<P>, P> extends TreeListNode {
             children.add( new MemberListNode(this, provider) );
         }
         BuildAccessor builds = provider.getBuildAccessor();
-        if (builds.isEnabled(project)) {
+        if (builds != null && builds.isEnabled(project)) {
             children.add(new BuildListNode(this, builds));
         }
         if( null != provider.getQueryAccessor() ) {

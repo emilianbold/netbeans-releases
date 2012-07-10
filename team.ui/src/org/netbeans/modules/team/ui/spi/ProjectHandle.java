@@ -13,7 +13,7 @@ import java.beans.PropertyChangeSupport;
  *
  * @author S. Aubrecht
  */
-public abstract class ProjectHandle<P> implements Comparable<ProjectHandle> {
+public abstract class ProjectHandle<S extends TeamServer, P> implements Comparable<ProjectHandle> {
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
@@ -74,6 +74,8 @@ public abstract class ProjectHandle<P> implements Comparable<ProjectHandle> {
     public abstract String getDisplayName();
 
     public abstract P getTeamProject();
+    
+    public abstract S getTeamServer();
 
     /**
      * Is this project private?

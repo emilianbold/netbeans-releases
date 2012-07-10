@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
@@ -54,12 +55,14 @@ import org.openide.util.WeakListeners;
  *
  * @author Jan Becicka
  */
-public class ProjectHandleImpl extends ProjectHandle<KenaiProject> implements PropertyChangeListener {
+public class ProjectHandleImpl extends ProjectHandle<KenaiServer, KenaiProject> implements PropertyChangeListener {
 
     private KenaiProject prj;
+    private KenaiServer server;
     public ProjectHandleImpl(KenaiProject prj) {
         super( prj.getName() );
         this.prj=prj;
+        server = KenaiServer.forKenai(prj.getKenai());
         prj.addPropertyChangeListener(WeakListeners.propertyChange(this, prj));
     }
 
@@ -84,5 +87,10 @@ public class ProjectHandleImpl extends ProjectHandle<KenaiProject> implements Pr
 
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(PROP_CONTENT, evt.getOldValue(), evt.getNewValue());
+    }
+
+    @Override
+    public KenaiServer getTeamServer() {
+        return server;
     }
 }

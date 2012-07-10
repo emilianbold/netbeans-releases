@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.ods.ui.impl;
+package org.netbeans.modules.team.ods.ui.dashboard;
 
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
@@ -66,7 +66,6 @@ import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
-import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -84,7 +83,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Milan Kubec, Jan Becicka, Tomas Stupka
  */
-public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
+public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> {
     private static CloudUiServer server;
 
     private Map<SourceHandle,ProjectAndRepository> handlesMap = new HashMap<SourceHandle,ProjectAndRepository>();
@@ -94,9 +93,9 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     }
 
     @Override
-    public List<SourceHandle> getSources(ProjectHandle<ODSProject> prjHandle) {
-
-        ODSProject project = prjHandle.getTeamProject();
+    public List<SourceHandle> getSources(ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
+        
+        com.tasktop.c2c.server.profile.domain.project.Project project = prjHandle.getTeamProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
         
         CloudClient client = server.getClient();
@@ -105,9 +104,9 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
                 
                 // XXX add support for external - see repository.getScmLocation()
                 
-                List<ProjectService> services = project.getProject().getProjectServicesOfType(ServiceType.SCM);
+                List<ProjectService> services = project.getProjectServicesOfType(ServiceType.SCM);
                 if(!services.isEmpty() && services.iterator().next().isAvailable()) { // XXX what if there is more?
-                    List<ScmRepository> repositories = client.getScmRepositories(project.getProject().getIdentifier());
+                    List<ScmRepository> repositories = client.getScmRepositories(project.getIdentifier());
                     for (ScmRepository repository : repositories) {
                         SourceHandle srcHandle = new SourceHandleImpl(prjHandle, repository);
                         handlesList.add(srcHandle);
@@ -127,23 +126,13 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     @Override
     public Action getOpenSourcesAction(SourceHandle srcHandle) {
 //        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
+        return NotYetAction.instance;
     }
 
     @Override
     public Action getDefaultAction(SourceHandle srcHandle) {
 //        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        };
+        return NotYetAction.instance;
     }
 
     @Override
@@ -264,10 +253,10 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     }
 
     public static class ProjectAndRepository {
-        public ODSProject project;
+        public com.tasktop.c2c.server.profile.domain.project.Project project;
         public ScmRepository repository;
         public String externalScmType;
-        public ProjectAndRepository(ODSProject project, ScmRepository repository) {
+        public ProjectAndRepository(com.tasktop.c2c.server.profile.domain.project.Project project, ScmRepository repository) {
             this.project = project;
             this.repository = repository;
         }

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.ui.impl;
+package org.netbeans.modules.kenai.ui.spi;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -61,6 +61,8 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardProviderImpl;
+import org.netbeans.modules.kenai.ui.impl.LoginPanelSupportImpl;
+import org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -73,7 +75,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Ondrej Vrabec
  */
-public class KenaiServer implements TeamServer<KenaiProject> {
+public class KenaiServer implements TeamServer {
     private static final Map<Kenai, KenaiServer> serverMap = new WeakHashMap<Kenai, KenaiServer>(3);
 
     private final Kenai kenai;
@@ -143,7 +145,7 @@ public class KenaiServer implements TeamServer<KenaiProject> {
         return serverUi;
     }
     
-    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
+    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(ProjectHandle<KenaiServer, KenaiProject> pHandle) {
         return getDashboard(pHandle.getTeamProject().getKenai());
     }
     
@@ -152,14 +154,14 @@ public class KenaiServer implements TeamServer<KenaiProject> {
         return server.getDashboard();
     }
     
-    public static ProjectHandle<KenaiProject>[] getOpenProjects() {
+    public static ProjectHandle<KenaiServer, KenaiProject>[] getOpenProjects() {
         ArrayList<KenaiServer> servers;
         synchronized (serverMap) {
             servers = new ArrayList<KenaiServer>(serverMap.values());
         }
-        LinkedList<ProjectHandle<KenaiProject>> ret = new LinkedList<ProjectHandle<KenaiProject>>();
+        LinkedList<ProjectHandle<KenaiServer, KenaiProject>> ret = new LinkedList<ProjectHandle<KenaiServer, KenaiProject>>();
         for (KenaiServer s : servers) {
-            ProjectHandle<KenaiProject>[] projects = s.getDashboard().getOpenProjects();
+            ProjectHandle<KenaiServer, KenaiProject>[] projects = s.getDashboard().getOpenProjects();
             if(projects != null) {
                 ret.addAll(Arrays.asList(projects));
             }
@@ -226,11 +228,10 @@ public class KenaiServer implements TeamServer<KenaiProject> {
         return kenai.getPasswordAuthentication();
     }
 
-    @Override
-    public Collection<ProjectHandle<KenaiProject>> getMyProjects() {
+    public Collection<ProjectHandle<KenaiServer, KenaiProject>> getMyProjects() {
         try {
             Collection<KenaiProject> projects = kenai.getMyProjects();
-            List<ProjectHandle<KenaiProject>> ret = new ArrayList<ProjectHandle<KenaiProject>>(projects.size());
+            List<ProjectHandle<KenaiServer, KenaiProject>> ret = new ArrayList<ProjectHandle<KenaiServer, KenaiProject>>(projects.size());
             for (KenaiProject p : projects) {
                 ret.add(new ProjectHandleImpl(p));
             }

@@ -45,14 +45,13 @@ import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
-import org.netbeans.modules.team.ods.ui.api.ODSProject;
-import org.netbeans.modules.team.ods.ui.impl.SourceAccessorImpl;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
@@ -79,7 +78,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, ODSProject> {
+public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, Project> {
 
     private final CloudUiServer server;
     private ProjectAccessorImpl projectAccessor;
@@ -124,12 +123,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
     }
 
     @Override
-    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<ODSProject> project) {
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<CloudUiServer, Project> project) {
         return new ProjectLinksNode(pn, project, this);
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle<ODSProject> p) {
+    public TreeListNode createMyProjectNode(ProjectHandle<CloudUiServer, Project> p) {
         return new MyProjectNode(p, server.getDashboard(), this);
     }
 
@@ -139,7 +138,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
     }
 
     @Override
-    public ProjectAccessor<CloudUiServer, ODSProject> getProjectAccessor() {
+    public ProjectAccessor<CloudUiServer, Project> getProjectAccessor() {
         if(projectAccessor == null) {
             projectAccessor = new ProjectAccessorImpl(server);
         }
@@ -147,17 +146,17 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
     }
 
     @Override
-    public MessagingAccessor getMessagingAccessor() {
+    public MessagingAccessor<CloudUiServer, Project> getMessagingAccessor() {
         return null;
     }
 
     @Override
-    public MemberAccessor getMemberAccessor() {
+    public MemberAccessor<CloudUiServer, Project> getMemberAccessor() {
         return null;
     }
 
     @Override
-    public SourceAccessor<ODSProject> getSourceAccessor() {
+    public SourceAccessor<CloudUiServer, Project> getSourceAccessor() {
         if(sourceAccessor == null) {
             sourceAccessor = new SourceAccessorImpl(server);
         }
@@ -165,27 +164,27 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
     }
 
     @Override
-    public QueryAccessor<ODSProject> getQueryAccessor() {
-        return server.getDashboard().getQueryAccessor(ODSProject.class);
+    public QueryAccessor<CloudUiServer, Project> getQueryAccessor() {
+        return server.getDashboard().getQueryAccessor(Project.class);
     }
     
     @Override
-    public BuildAccessor<ODSProject> getBuildAccessor() {
-        return server.getDashboard().getBuildAccessor(ODSProject.class);
+    public BuildAccessor<CloudUiServer, Project> getBuildAccessor() {
+        return server.getDashboard().getBuildAccessor(Project.class);
     }
 
     @Override
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<ODSProject> project) {
+    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<CloudUiServer, Project> project) {
         return new SourceListNode(pn, this, (LeafNode[]) null);
     }
 
     @Override
-    public CloudUiServer getServer(ProjectHandle<ODSProject> project) {
-        return server;
+    public Collection<ProjectHandle<CloudUiServer, Project>> getMyProjects() {
+        return server.getMyProjects();
     }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
-    public static class ODSQueryAccessor extends QueryAccessor<ODSProject> {
+    public static class ODSQueryAccessor extends QueryAccessor<CloudUiServer, Project> {
         private final QueryHandle allIssues;
         private final QueryHandle myIssues;
         private final QueryHandle someQuery;
@@ -224,17 +223,17 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
         }
         
         @Override
-        public Class<ODSProject> type() {
-            return ODSProject.class;
+        public Class<Project> type() {
+            return Project.class;
         }
             
         @Override
-        public QueryHandle getAllIssuesQuery(ProjectHandle<ODSProject> project) {
+        public QueryHandle getAllIssuesQuery(ProjectHandle<CloudUiServer, Project> project) {
             return allIssues;
         }
 
         @Override
-        public List<QueryHandle> getQueries(ProjectHandle<ODSProject> project) {
+        public List<QueryHandle> getQueries(ProjectHandle<CloudUiServer, Project> project) {
             try {
                 // XXX emulate network latency
                 Thread.currentThread().sleep(3000);
@@ -269,43 +268,23 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
         }
         
         @Override
-        public Action getFindIssueAction(ProjectHandle<ODSProject> project) {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+        public Action getFindIssueAction(ProjectHandle<CloudUiServer, Project> project) {
+            return NotYetAction.instance;
         }
 
         @Override
-        public Action getCreateIssueAction(ProjectHandle<ODSProject> project) {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+        public Action getCreateIssueAction(ProjectHandle<CloudUiServer, Project> project) {
+            return NotYetAction.instance;
         }
 
         @Override
         public Action getOpenQueryResultAction(QueryResultHandle result) {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+            return NotYetAction.instance;
         }
 
         @Override
         public Action getDefaultAction(QueryHandle query) {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    throw new UnsupportedOperationException("Not supported yet.");
-                }
-            };
+            return NotYetAction.instance;
         }
 
     };

@@ -53,6 +53,7 @@ import org.netbeans.modules.kenai.api.Kenai.Status;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -63,7 +64,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Becicka
  */
 @ServiceProvider(service=MessagingAccessor.class)
-public class MessagingAccessorImpl extends MessagingAccessor<KenaiProject> {
+public class MessagingAccessorImpl extends MessagingAccessor<KenaiServer, KenaiProject> {
 
     private static MessagingAccessor instance;
     
@@ -75,7 +76,7 @@ public class MessagingAccessorImpl extends MessagingAccessor<KenaiProject> {
     }
 
     @Override
-    public MessagingHandle getMessaging(ProjectHandle<KenaiProject> project) {
+    public MessagingHandle getMessaging(ProjectHandle<KenaiServer, KenaiProject> project) {
         Kenai k = project.getTeamProject().getKenai();
         KenaiConnection kc = KenaiConnection.getDefault(k);
         //synchronized (kc) {
@@ -113,7 +114,7 @@ public class MessagingAccessorImpl extends MessagingAccessor<KenaiProject> {
 
 
     @Override
-    public Action getOpenMessagesAction(final ProjectHandle<KenaiProject> project) {
+    public Action getOpenMessagesAction(final ProjectHandle<KenaiServer, KenaiProject> project) {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 final ChatTopComponent chatTC = ChatTopComponent.findInstance();
@@ -125,12 +126,12 @@ public class MessagingAccessorImpl extends MessagingAccessor<KenaiProject> {
     }
 
     @Override
-    public Action getCreateChatAction(final ProjectHandle<KenaiProject> project) {
+    public Action getCreateChatAction(final ProjectHandle<KenaiServer, KenaiProject> project) {
         return new CreateChatAction(project.getTeamProject());
     }
 
     @Override
-    public Action getReconnectAction(final ProjectHandle<KenaiProject> project) {
+    public Action getReconnectAction(final ProjectHandle<KenaiServer, KenaiProject> project) {
         return new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {

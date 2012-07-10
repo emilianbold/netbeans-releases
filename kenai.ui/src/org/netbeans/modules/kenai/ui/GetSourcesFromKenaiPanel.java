@@ -104,7 +104,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import static org.netbeans.modules.kenai.ui.Bundle.*;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 
@@ -534,7 +534,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ProjectHandle[] openedProjects = getOpenProjects();
-                        for (ProjectHandle<KenaiProject> prjHandle : openedProjects) {
+                        for (ProjectHandle<KenaiServer, KenaiProject> prjHandle : openedProjects) {
                             KenaiProject kProject = null;
                             if (prjHandle != null) {
                                 kProject = prjHandle.getTeamProject();
@@ -566,7 +566,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     }
                 }
 
-                private ProjectHandle<KenaiProject>[] getOpenProjects() {
+                private ProjectHandle<KenaiServer, KenaiProject>[] getOpenProjects() {
                     if (kenai==null) {
                         return new ProjectHandle[0];
                     }
@@ -583,9 +583,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     }
 
                     HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
-                    ProjectAccessor accessor = ProjectAccessorImpl.getDefault();
+                    ProjectAccessorImpl accessor = ProjectAccessorImpl.getDefault();
                     for (String id : ids) {
-                        ProjectHandle handle = accessor.getNonMemberProject(kenai, id, false);
+                        ProjectHandle handle = accessor.getNonMemberProject(KenaiServer.forKenai(kenai), id, false);
                         if (handle != null) {
                             projects.add(handle);
                         } else {
@@ -594,7 +594,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     }
                     PasswordAuthentication pa = kenai.getPasswordAuthentication();
                     if (pa!=null) {
-                        projects.addAll(accessor.getMemberProjects(kenai, new LoginHandleImpl(pa.getUserName()), false));
+                        projects.addAll(accessor.getMemberProjects(KenaiServer.forKenai(kenai), new LoginHandleImpl(pa.getUserName()), false));
                     }
                     return projects.toArray(handles);
                 }

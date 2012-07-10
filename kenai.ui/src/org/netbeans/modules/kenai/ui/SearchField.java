@@ -61,7 +61,7 @@ import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;

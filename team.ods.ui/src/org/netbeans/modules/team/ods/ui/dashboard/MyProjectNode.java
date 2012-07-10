@@ -50,7 +50,6 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
-import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
@@ -73,7 +72,7 @@ import org.openide.util.RequestProcessor;
 public class MyProjectNode extends LeafNode implements ProjectProvider {
 
     private Notification bugNotification;
-    private final ProjectHandle<ODSProject> project;
+    private final ProjectHandle<CloudUiServer, Project> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
 //    private final MessagingAccessor maccessor;
@@ -109,9 +108,9 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DefaultDashboard<CloudUiServer, ODSProject> dashboard;
+    private final DefaultDashboard<CloudUiServer, Project> dashboard;
 
-    public MyProjectNode( final ProjectHandle<ODSProject> project, final DefaultDashboard<CloudUiServer, ODSProject> dashboard, DashboardProviderImpl provider) {
+    public MyProjectNode( final ProjectHandle<CloudUiServer, Project> project, final DefaultDashboard<CloudUiServer, Project> dashboard, DashboardProviderImpl provider) {
         super( null );
         if (project==null)
             throw new IllegalArgumentException("project cannot be null"); // NOI18N

@@ -47,7 +47,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
@@ -61,10 +61,10 @@ import org.openide.windows.WindowManager;
  */
 public class DeleteProjectAction extends AbstractAction {
 
-    private ProjectHandle<KenaiProject> project;
+    private ProjectHandle<KenaiServer, KenaiProject> project;
     private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
 
-    public DeleteProjectAction(ProjectHandle<KenaiProject> project) {
+    public DeleteProjectAction(ProjectHandle<KenaiServer, KenaiProject> project) {
         super(org.openide.util.NbBundle.getMessage(DeleteProjectAction.class, "CTL_DeleteProject"));
         this.project = project;
         dashboard = KenaiServer.getDashboard(project);

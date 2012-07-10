@@ -52,8 +52,6 @@ import javax.swing.Action;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ods.ui.CloudUiServer;
-import org.netbeans.modules.team.ods.ui.api.ODSProject;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 
@@ -61,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProject> {
+public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project> {
     
     private final CloudUiServer server;
 
@@ -70,8 +68,8 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     }
 
     @Override
-    public List<ProjectHandle> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
-        return new ArrayList<ProjectHandle>(server.getMyProjects());
+    public List<ProjectHandle<CloudUiServer, Project>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
+        return new ArrayList<ProjectHandle<CloudUiServer, Project>>(server.getMyProjects());
 //        try {
 //            LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
 //            for (Project prj : server.getKenai().getMyProjects(force)) {
@@ -101,7 +99,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     }
 
     @Override
-    public ProjectHandle getNonMemberProject(CloudUiServer server, String projectId, boolean force) {
+    public ProjectHandle<CloudUiServer, Project> getNonMemberProject(CloudUiServer server, String projectId, boolean force) {
 //        try {
 //            return new ProjectHandleImpl(server.getKenai().getProject(projectId,force));
 //        } catch (KenaiException ex) {
@@ -113,22 +111,23 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getOpenNonMemberProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("not yet!");
-//                new OpenKenaiProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
-            }
-        };
+        return NotYetAction.instance;
+//                new AbstractAction() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                throw new UnsupportedOperationException("not yet!");
+////                new OpenKenaiProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
+//            }
+//        };
     }
 
     @Override
-    public Action getDetailsAction(final ProjectHandle<ODSProject> project) {
+    public Action getDetailsAction(final ProjectHandle<CloudUiServer, Project> project) {
         return DetailsAction.forProject(project);    
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
     }
 
-    private Action getOpenAction(final ProjectHandle<ODSProject> project) {
+    private Action getOpenAction(final ProjectHandle<CloudUiServer, Project> project) {
         // this action is supposed to be used for openenig a project from My Projects
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
@@ -139,12 +138,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     }
 
     @Override
-    public Action getDefaultAction(ProjectHandle<ODSProject> project, boolean opened) {
+    public Action getDefaultAction(ProjectHandle<CloudUiServer, Project> project, boolean opened) {
         return opened ? getDetailsAction(project) : getOpenAction(project);
     }
 
     @Override
-    public Action[] getPopupActions(final ProjectHandle<ODSProject> project, boolean opened) {
+    public Action[] getPopupActions(final ProjectHandle<CloudUiServer, Project> project, boolean opened) {
         return new Action[0];
 //        PasswordAuthentication pa = project.getProject().getKenai().getPasswordAuthentication();
 //        if (!opened) {
@@ -173,7 +172,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     }
 
     @Override
-    public Action getOpenWikiAction(ProjectHandle<ODSProject> project) {
+    public Action getOpenWikiAction(ProjectHandle<CloudUiServer, Project> project) {
 //        try {
 //            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.WIKI);
 //            if (wiki.length == 1) {
@@ -186,7 +185,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     }
 
     @Override
-    public Action getOpenDownloadsAction(ProjectHandle<ODSProject> project) {
+    public Action getOpenDownloadsAction(ProjectHandle<CloudUiServer, Project> project) {
 //        try {
 //            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.DOWNLOADS);
 //            if (wiki.length == 1) {
@@ -199,7 +198,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     }
 
     @Override
-    public Action getBookmarkAction(final ProjectHandle<ODSProject> project) {
+    public Action getBookmarkAction(final ProjectHandle<CloudUiServer, Project> project) {
 //        return new AbstractAction() {
 //            public void actionPerformed(ActionEvent e) {
 //                Kenai kenai = project.getProject().getKenai();
@@ -263,13 +262,14 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getNewTeamProjectAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("no yet!");
-//                new NewProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
-            }
-        };
+        return NotYetAction.instance;
+//        return new AbstractAction() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                throw new UnsupportedOperationException("no yet!");
+////                new NewProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
+//            }
+//        };
     }
 
 //    private static class RefreshAction extends AbstractAction {
@@ -294,4 +294,5 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 //            });
 //        }
 //    }
+
 }

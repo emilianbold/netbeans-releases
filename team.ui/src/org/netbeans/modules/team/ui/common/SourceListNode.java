@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht, Jan Becicka
  */
-public class SourceListNode<S extends TeamServer<P>, P> extends SectionNode {
+public class SourceListNode<S extends TeamServer, P> extends SectionNode {
     private final DashboardProvider<S, P> dashboard;
     private final LeafNode[] nodes;
 
@@ -73,7 +73,7 @@ public class SourceListNode<S extends TeamServer<P>, P> extends SectionNode {
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        SourceAccessor<P> accessor = dashboard.getSourceAccessor();
+        SourceAccessor<S, P> accessor = dashboard.getSourceAccessor();
         List<SourceHandle> sources = accessor.getSources(project);
         if(sources.isEmpty() && nodes != null) {
             res.addAll(Arrays.asList(nodes));

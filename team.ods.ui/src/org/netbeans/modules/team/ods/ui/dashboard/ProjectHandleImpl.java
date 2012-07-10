@@ -39,32 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ods.ui.api;
+package org.netbeans.modules.team.ods.ui.dashboard;
 
 import com.tasktop.c2c.server.profile.domain.project.Project;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.ods.ui.CloudUiServer;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
  *
  * @author Tomas Stupka
  */
-// XXX
-public final class ODSProject {
-    private final CloudClient client;
+public class ProjectHandleImpl extends ProjectHandle<CloudUiServer, Project> {
     private final Project project;
+    private final CloudUiServer server;
 
-    public ODSProject(CloudClient client, Project project) {
-        this.client = client;
+    public ProjectHandleImpl(CloudUiServer server, Project project) {
+        super(String.valueOf(project.getId()));
         this.project = project;
-    }
-
-    public CloudClient getClient() {
-        return client;
-    }
-
-    public Project getProject() {
-        return project;
+        this.server = server;
     }
     
+    @Override
+    public String getDisplayName() {
+        return project.getName();
+    }
+
+    @Override
+    public Project getTeamProject() {
+        return project;
+    }
+
+    @Override
+    public boolean isPrivate() {
+        return false;
+    }
+
+    @Override
+    public CloudUiServer getTeamServer() {
+        return server;
+    }
     
 }
