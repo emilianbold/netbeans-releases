@@ -62,6 +62,10 @@ public final class JsDocumentationSupport {
      * @param result {@code JsParserResult}
      * @return {@code JsDocumentationProvider} for given {@code JsParserResult}
      */
+    //XXX This should not be called for the result. This implementation allows 
+    // to call the getDocumentationProvider many times for the same result. Which
+    // causes that the same snapshot is parsed manytimes (whenewer is called this method). 
+    // Or the JsDocumentationProvider should be somehow cached here.
     public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
         // TODO - lookup available documentation tools and get the suitable one
         return new JsDocDocumentationProvider(result);
