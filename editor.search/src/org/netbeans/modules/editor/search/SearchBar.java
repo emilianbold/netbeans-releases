@@ -166,8 +166,9 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
         incSearchTextField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (ReplaceBar.getInstance(SearchBar.getInstance()).isVisible())
+                if (ReplaceBar.getInstance(SearchBar.getInstance()).isVisible()) {
                     ReplaceBar.getInstance(SearchBar.getInstance()).getReplaceTextField().select(0, 0);
+                }
                 hadFocusOnIncSearchTextField = true;
                 incSearchTextField.selectAll();
             }
@@ -291,8 +292,9 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
                     return;
                 }
                 hadFocusOnIncSearchTextField = false;
-                if (isClosingSearchType() && !ReplaceBar.getInstance(SearchBar.getInstance()).isVisible())
+                if (isClosingSearchType() && !ReplaceBar.getInstance(SearchBar.getInstance()).isVisible()) {
                     looseFocus();
+                }
             }
         };
     }
@@ -588,10 +590,12 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
             public void actionPerformed(ActionEvent e) {
                 if (!popupMenuWasCanceled) {
                     looseFocus();                
-                    if (isClosingSearchType())           
+                    if (isClosingSearchType()) {
                         getActualTextComponent().scrollRectToVisible(actualViewPort);
-                } else
+                    }
+                } else {
                     popupMenuWasCanceled = false;
+                }
             }
         });
     }
@@ -603,8 +607,9 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
     
     public void gainFocus() {
         String lastSearch = "";
-        if (!isClosingSearchType())
+        if (!isClosingSearchType()) {
             lastSearch = incSearchTextField.getText();
+        }
         incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) incSearchTextField);
         addEnterKeystrokeFindNextTo(incSearchTextField);
@@ -613,12 +618,15 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
         for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
             comboBoxModelIncSearch.removeElementAt(i);
         }
-        for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
+        for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory()) {
             comboBoxModelIncSearch.addElement(spw.getSearchExpression());
-        if (!isClosingSearchType())
+        }
+        if (!isClosingSearchType()) {
             incSearchTextField.setText(lastSearch);
-        if (!isVisible() && isClosingSearchType())
+        }
+        if (!isVisible() && isClosingSearchType()) {
             whenOpenedWasNotVisible = true;
+        }
         if (whenOpenedWasNotVisible) {
             incSearchTextField.setText("");
             whenOpenedWasNotVisible = false;
@@ -685,8 +693,9 @@ public final class SearchBar extends JPanel implements PropertyChangeListener{
 
         // search starting at current caret position
         int caretPosition = getActualTextComponent().getSelectionStart();
-        if (isClosingSearchType())
+        if (isClosingSearchType()) {
             caretPosition = getActualTextComponent().getCaretPosition();
+        }
         if (regexpCheckBox.isSelected()) {
             Pattern pattern;
             String patternErrorMsg = null;
