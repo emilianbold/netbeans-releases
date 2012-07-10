@@ -2,11 +2,11 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Cloud">
-        <!--file name="GlassFishCloudWizardProvider.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.cloud.wizards.OracleServerInstanceProvider.getProvider"/>
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.wizards.OracleServerInstanceProvider"/>
+        <file name="GlassFishCloudInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider.getInstance"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
-        </file-->
+        </file>
         <!-- org-netbeans.modules-glassfish-cloud-wizards-GlassFishCloudWizardProvider.instance -->
         <file name="GlassFishCloudWizardProvider.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.wizards.GlassFishCloudWizardProvider"/>

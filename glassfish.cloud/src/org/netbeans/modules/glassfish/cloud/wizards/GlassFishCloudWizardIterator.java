@@ -42,9 +42,11 @@
 package org.netbeans.modules.glassfish.cloud.wizards;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -91,25 +93,25 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
      */
     @SuppressWarnings("LocalVariableHidesMemberVariable") // String name
     @Override
-    public Set<GlassFishCloudInstance> instantiate() throws IOException {
+    public Set<ServerInstance> instantiate() throws IOException {
         String name = (String)wizard.getProperty(
                 GlassFishWizardIterator.PROPERTY_WIZARD_DISPLAY_NAME);
         String host = (String)wizard.getProperty(
                 GlassFishCloudWizardCpasPanel.PROPERTY_CPAS_HOST);
         String portStr = (String)wizard.getProperty(
                 GlassFishCloudWizardCpasPanel.PROPERTY_CPAS_PORT);
-        // TODO: Instantiate GlassFishCloudInstance
-        return null;
+        int port;
+        try {
+            port = Integer.parseInt(portStr);
+        } catch (NumberFormatException nfe) {
+            port = -1;
+        }
+        
+        GlassFishCloudInstance cloudInstance
+                = new GlassFishCloudInstance(name, host, port);
+        GlassFishCloudInstanceProvider.addCloudInstance(cloudInstance);
+        return Collections.singleton(cloudInstance.getServerInstance());
     }
 
-    /** Cleans up this iterator, called when the wizard is being closed,
-     * no matter what closing option invoked.
-     * <p/>
-     * @param wizard Wizard's descriptor.
-     */
-    @Override
-    public void uninitialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
 }

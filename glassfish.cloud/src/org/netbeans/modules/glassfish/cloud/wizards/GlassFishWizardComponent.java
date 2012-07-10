@@ -51,9 +51,119 @@ import javax.swing.event.DocumentListener;
  * @author kratz
  */
 public abstract class GlassFishWizardComponent
-        extends javax.swing.JPanel
-        implements DocumentListener {
-    
+        extends javax.swing.JPanel {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner Classes                                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Validation result.
+     * <p/>
+     * Validation result contains information if validated value is valid
+     * or not and also error message related to failed validation.
+     */
+    class ValidationResult {
+
+        /** Validation result. */
+        private final boolean valid;
+
+        /** Error message is set to non <code>null</code> value when validation
+         *  has failed. */
+        private final String errorMessage;
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Constructors                                                       //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Constructs an instance of validation result object with all values
+         * initialized as provided arguments.
+         * <p/>
+         * @param valid        Validation result.
+         * @param errorMessage Error message is set to non <code>null</code>
+         *                     value when validation has failed.
+         */
+        ValidationResult(boolean valid, String errorMessage) {
+            this.valid = valid;
+            this.errorMessage = errorMessage;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Getters                                                            //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Get validation result.
+         * <p/>
+         * @return Validation result.
+         */
+        boolean isValid() {
+            return valid;
+        }
+
+        /**
+         * Get error message related to validation failure.
+         * <p/>
+         * @return Error message related to validation failure
+         *         or <code>null</code> when validation result
+         *         is <code>true</code>.
+         */
+        String getErrorMessage() {
+            return errorMessage;
+        }
+    }
+
+    /**
+     * Event listener to validate component field on the fly.
+     */
+    abstract class ComponentFieldListener implements DocumentListener {
+        
+        ////////////////////////////////////////////////////////////////////////
+        // Abstract methods                                                   //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Process received notification from all notification types.
+         */
+        abstract void processEvent();
+
+        ////////////////////////////////////////////////////////////////////////
+        // Implemented Interface Methods                                      //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Gives notification that there was an insert into component field.
+         * <p/>
+         * @param event Change event object.
+         */
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            processEvent();
+        }
+
+        /**
+         * Gives notification that a portion of component field has been removed.
+         * <p/>
+         * @param event Change event object.
+         */
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            processEvent();
+        }
+
+        /**
+         * Gives notification that an attribute or set of attributes changed.
+         * <p/>
+         * @param event Change event object.
+         */
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            processEvent();
+        }
+
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -72,40 +182,6 @@ public abstract class GlassFishWizardComponent
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Gives notification that there was an insert into the document.
-     * <p/>
-     * @param event Change event object.
-     */
-    @Override
-    public void insertUpdate(DocumentEvent event) {
-        update(event);
-    }
-
-    /**
-     * Gives notification that a portion of the document has been removed.
-     * <p/>
-     * @param event Change event object.
-     */
-    @Override
-    public void removeUpdate(DocumentEvent event) {
-        update(event);
-    }
-
-    /**
-     * Gives notification that an attribute or set of attributes changed.
-     * <p/>
-     * @param event Change event object.
-     */
-    @Override
-    public void changedUpdate(DocumentEvent event) {
-        update(event);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -121,11 +197,14 @@ public abstract class GlassFishWizardComponent
     /**
      * Update change events listener to notify him about state change.
      * <p/>
-     * @param event Change event object.
+     * This method should be called in child class where field change event
+     * listeners are implemented.
+     * <p/>
+     * @param result Field validation result.
      */
-    private void update(DocumentEvent event) {
+    void update(ValidationResult result) {
         if (changeListener != null) {
-            changeListener.stateChanged(new ChangeEvent((this)));
+            changeListener.stateChanged(new ChangeEvent((result)));
         }
     }
 

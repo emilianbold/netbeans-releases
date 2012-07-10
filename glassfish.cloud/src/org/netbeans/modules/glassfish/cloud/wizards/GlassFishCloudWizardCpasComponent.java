@@ -41,12 +41,55 @@
  */
 package org.netbeans.modules.glassfish.cloud.wizards;
 
+import javax.swing.event.DocumentListener;
+import static org.openide.util.NbBundle.getMessage;
+
 /**
  *
  * @author kratz
  */
 public class GlassFishCloudWizardCpasComponent
         extends GlassFishWizardComponent {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /** Validity of host field. */
+    private boolean hostValid;
+    
+    /** Validity of port field. */
+    private boolean portValid;
+
+    /** Event listener to validate host field on the fly. */
+    private DocumentListener hostEventListener = new ComponentFieldListener() {
+
+        /**
+         * Process received notification.
+         */
+        @Override
+        void processEvent() {
+            ValidationResult result = hostValid();
+            hostValid = result.isValid();
+            update(result);            
+        }
+
+    };
+
+    /** Event listener to validate port field on the fly. */
+    private DocumentListener portEventListener = new ComponentFieldListener() {
+
+        /**
+         * Process received notification.
+         */
+        @Override
+        void processEvent() {
+            ValidationResult result = portValid();
+            portValid = result.isValid();
+            update(result);            
+        }
+
+    };
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -57,6 +100,10 @@ public class GlassFishCloudWizardCpasComponent
      */
     public GlassFishCloudWizardCpasComponent() {
         initComponents();
+        hostValid = hostValid().isValid();
+        portValid = portValid().isValid();
+        hostTextField.getDocument().addDocumentListener(hostEventListener);
+        portTextField.getDocument().addDocumentListener(portEventListener);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -97,6 +144,83 @@ public class GlassFishCloudWizardCpasComponent
     public String getPortText() {
         String text = portTextField.getText();
         return text != null ? text.trim() : null;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Enable modification of form elements.
+     */
+    void enableModifications() {
+        hostTextField.setEditable(true);
+        portTextField.setEditable(true);
+    }
+
+    /**
+     * Disable modification of form elements.
+     */
+    void disableModifications() {
+        hostTextField.setEditable(false);
+        portTextField.setEditable(false);
+    }
+
+    /**
+     * Validate host field.
+     * <p/>
+     * Host field should be non empty string value containing at least one
+     * non-whitespace character.
+     * Value of <code>validationError</code> is set to inform about field
+     * status.
+     * <p/>
+     * @return <code>true</code> when host field is valid or <code>false</code>
+     *         otherwise.
+     */
+    final ValidationResult hostValid() {
+        String host = getHost();
+        if (host != null && host.length() > 0) {
+            return new ValidationResult(true, null);
+        } else {
+            return new ValidationResult(false,
+                    getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.CLOUD_PANEL_ERROR_HOST_EMPTY));
+        }
+    }
+
+    /**
+     * Validate port field.
+     * <p/>
+     * Port field should be non empty string value containing at least one
+     * non-whitespace character. It's content must be also valid decimal
+     * number.
+     * <p/>
+     * @return <code>true</code> when host field is valid or <code>false</code>
+     *         otherwise.
+     */
+    final ValidationResult portValid() {
+        String portText = getPortText();
+        if (portText != null && portText.length() > 0) {
+            try {
+                Integer.parseInt(portText);
+            } catch (NumberFormatException nfe) {
+                return new ValidationResult(false,
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_ERROR_PORT_FORMAT));
+            }
+            return new ValidationResult(true, null);
+        } else {
+            return new ValidationResult(false,
+                    getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.CLOUD_PANEL_ERROR_PORT_EMPTY));
+        }
+    }
+
+    /**
+     * Validate component.
+     */
+    boolean valid() {
+        return hostValid && portValid; 
     }
 
     ////////////////////////////////////////////////////////////////////////////

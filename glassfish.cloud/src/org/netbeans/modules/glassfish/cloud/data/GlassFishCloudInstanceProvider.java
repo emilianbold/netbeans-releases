@@ -41,6 +41,15 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.spi.server.ServerInstanceProvider;
+import org.openide.util.ChangeSupport;
+
 /**
  * GlassFish Cloud Instances Provider.
  * <p>
@@ -48,7 +57,8 @@ package org.netbeans.modules.glassfish.cloud.data;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudInstanceProvider {
+public class GlassFishCloudInstanceProvider
+    implements ServerInstanceProvider {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -67,7 +77,7 @@ public class GlassFishCloudInstanceProvider {
      * <p>
      * @return <code>AdminFactoryHttp</code> singleton instance.
      */
-    static GlassFishCloudInstanceProvider getInstance() {
+    public static GlassFishCloudInstanceProvider getInstance() {
         if (instance != null) {
             return instance;
         }
@@ -79,17 +89,107 @@ public class GlassFishCloudInstanceProvider {
         return instance;
     }
 
+    /**
+     * Add new GlassFish cloud instance into this provider.
+     * <p/>
+     * @param instance GlassFish cloud instance to be added.
+     */
+    public static void addCloudInstance(GlassFishCloudInstance instance) {
+        getInstance().addInstance(instance);
+    }
+
+    /**
+     * Remove GlassFish cloud instance from this provider.
+     * <p/>
+     * @param instance GlassFish cloud instance to be removed.
+     */
+    public static void removeCloudInstance(GlassFishCloudInstance instance) {
+        getInstance().removeInstance(instance);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** Stored NEtBeans server instances. */
+    private List<ServerInstance> serverInstances;
+
+    /** Stored GlassFish cloud instances. */
+    private Map<String, GlassFishCloudInstance> cloudInstances;
+
+    /** Change listeners. */
+    private ChangeSupport changeListeners;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
+    private GlassFishCloudInstanceProvider() {
+        changeListeners = new ChangeSupport(this);
+        serverInstances = new LinkedList<ServerInstance>();
+        cloudInstances = new HashMap<String, GlassFishCloudInstance>();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented Interface Methods                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    @Override
+    public List<ServerInstance> getInstances() {
+        return serverInstances;
+    }
+
+    /**
+     * Adds a change listener to this provider.
+     * <p/>
+     * The listener must be notified any time instance is added or removed.
+     * <p/>
+     * @param listener Change listener to add, <code>null</code> is allowed 
+     *                 (but it si no op then).
+     */
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        changeListeners.addChangeListener(listener);
+    }
+
+    /**
+     * Removes the previously added listener.
+     * <p/>
+     * No more events will be fired on the removed listener.
+     * <p/>
+     * @param listener Listener to remove, <code>null</code> is allowed
+     *                 (but it si no op then).
+     */
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        changeListeners.removeChangeListener(listener);
+    }
+   
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
-    
 
+    /**
+     * Add new GlassFish cloud instance into this provider.
+     * <p/>
+     * @param instance GlassFish cloud instance to be added.
+     */
+    public void addInstance(GlassFishCloudInstance instance) {
+        serverInstances.add(instance.getServerInstance());
+        // TODO: name is not unique key
+        cloudInstances.put(instance.getName(), instance);
+        changeListeners.fireChange();
+    }
+
+    /**
+     * Remove GlassFish cloud instance from this provider.
+     * <p/>
+     * @param instance GlassFish cloud instance to be removed.
+     */
+    public void removeInstance(GlassFishCloudInstance instance) {
+        serverInstances.remove(instance.getServerInstance());
+        // TODO: name is not unique key
+        cloudInstances.remove(instance.getName());
+        changeListeners.fireChange();
+    }
 }

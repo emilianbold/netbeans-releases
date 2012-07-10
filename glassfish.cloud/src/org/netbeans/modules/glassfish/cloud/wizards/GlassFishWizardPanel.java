@@ -136,7 +136,31 @@ public abstract class GlassFishWizardPanel
     @Override
     public void stateChanged(ChangeEvent e) {
         listeners.fireChange();
-        asynchError = null;
+        asynchError = null;        
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Set error message to be displayed at the bottom of the wizard.
+     * <p/>
+     * @param message Error message to be displayed.
+     */
+    public void setErrorMessage(String message) {
+        wizardDescriptor.putProperty(
+                WizardDescriptor.PROP_ERROR_MESSAGE, message);
+    }
+    
+    /**
+     * Set warning message to be displayed at the bottom of the wizard.
+     * <p/>
+     * @param message Warning message to be displayed.
+     */
+    public void setWarningMessage(String message) {
+        wizardDescriptor.putProperty(
+                WizardDescriptor.PROP_WARNING_MESSAGE, message);
     }
 
 }

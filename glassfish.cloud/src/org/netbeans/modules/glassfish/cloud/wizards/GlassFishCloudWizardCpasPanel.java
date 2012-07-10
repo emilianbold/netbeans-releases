@@ -42,9 +42,13 @@
 package org.netbeans.modules.glassfish.cloud.wizards;
 
 import java.awt.Component;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import static org.openide.util.NbBundle.getMessage;
+import org.openide.util.Utilities;
 
 /**
  * GlassFish Cloud Wizard CPAS Panel.
@@ -89,7 +93,9 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
 
     @Override
     public void prepareValidation() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // Lock form before validation.
+        getComponent().setCursor(Utilities.createProgressCursor(getComponent()));
+        component.disableModifications();
     }
 
     /**
@@ -144,17 +150,99 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
         }
     }
 
+    /**
+     * Test whether the panel is finished and it is safe to proceed to the next
+     * one.
+     * <p/>
+     * If the panel is valid, the "Next" (or "Finish") button will be
+     * enabled.
+     * <p/>
+     * @retrn <code>true</code> if the user has entered satisfactory information
+     *        or <code>false</code> otherwise.
+     */
     @Override
     public boolean isValid() {
-        if (asynchError != null) {
+        if (component == null || wizardDescriptor == null || asynchError != null) {
             return false;
         }
-        return true;
+        return component.valid();
     }
 
+    /**
+     * Is called in separate thread when Next of Finish buttons are clicked and
+     * allows deeper check to find out that panel is in valid state and it is ok
+     * to leave it.
+     * <p/>
+     * @throws WizardValidationException when validation fails
+     */
     @Override
     public void validate() throws WizardValidationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        try {
+            // This should not happen at this stage but let's make sure.
+            if (component == null || wizardDescriptor == null) {
+                throw new WizardValidationException((JComponent)getComponent(), 
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_VALIDATION_FAILED),
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_ERROR_COMPONENT_UNINITIALIZED));
+            }
+            // Form fields validation.
+            String error = performValidation();
+            if (error != null) {
+                throw new WizardValidationException((JComponent)getComponent(), 
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_VALIDATION_FAILED),
+                        error);
+            }
+        // Unlock form after validation.
+        } finally {
+            component.setCursor(null);
+            component.enableModifications();
+        }
+    }
+
+    /**
+     * Invoked when the target of the listener has changed its state.
+     * <p/>
+     * @param e a ChangeEvent object
+     */
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        super.stateChanged(e);
+        Object source = e.getSource();
+        if (source instanceof GlassFishWizardComponent.ValidationResult) {
+            GlassFishWizardComponent.ValidationResult result
+                    = (GlassFishWizardComponent.ValidationResult)source;
+            setErrorMessage(result.getErrorMessage());
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Validate form elements and return error message when any error was found.
+     * <p/>
+     * Validate all panel component fields and return error message related to
+     * first error found during validation.
+     * <p/>
+     * @return Error message or <code>null</code> when no error was found.
+     */
+    public String performValidation() {
+        if (component == null || wizardDescriptor == null) {
+            return null;
+        }
+        GlassFishWizardComponent.ValidationResult result
+                = component.hostValid();
+        if (!result.isValid()) {
+            return result.getErrorMessage();
+        }
+        result = component.portValid();
+        if (!result.isValid()) {
+            return result.getErrorMessage();
+        }
+        return null;
     }
 
 }

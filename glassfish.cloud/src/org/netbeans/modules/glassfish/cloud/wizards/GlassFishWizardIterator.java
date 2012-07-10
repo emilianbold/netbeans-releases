@@ -111,6 +111,10 @@ public abstract class GlassFishWizardIterator
         this.panel = new WizardDescriptor.Panel[panelsCount];
         this.name = new String[panelsCount];
         this.listeners = new ChangeSupport(this);
+        for (int i = 0; i < panelsCount; i++) {
+            this.panel[i] = null;
+            this.name[i] = null;
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -120,11 +124,29 @@ public abstract class GlassFishWizardIterator
     /**
      * Initializes this iterator, called from WizardDescriptor's constructor.
      * <p/>
+     * Child method should override this method to correctly initialize content
+     * of <code>panel</code> and <code>name</code> attributes which are being
+     * cleaned by <code>uninitialize</code> method.
+     * <p/>
      * @param wizard Wizard's descriptor.
      */
     @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
+    }
+
+    /**
+     * Cleans up this iterator, called when the wizard is being closed,
+     * no matter what closing option invoked.
+     * <p/>
+     * @param wizard Wizard's descriptor.
+     */
+    @Override
+    public void uninitialize(WizardDescriptor wizard) {
+        for (int i = 0; i < panelsCount; i++) {
+            this.panel[i] = null;
+            this.name[i] = null;
+        }
     }
 
     @Override

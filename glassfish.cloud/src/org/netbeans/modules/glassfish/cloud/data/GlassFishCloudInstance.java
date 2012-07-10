@@ -43,7 +43,10 @@ package org.netbeans.modules.glassfish.cloud.data;
 
 import javax.swing.JComponent;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
+import org.openide.nodes.Node;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -64,6 +67,12 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     /** The display name of GlassFish cloud server type. */
     private final String serverDisplayName;
 
+    /** GlassFish Cloud GUI Node. */
+    private volatile Node basicNode;
+
+    /** Stored server instance. */
+    private ServerInstance serverInstance;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -75,10 +84,26 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
      * @param host GlassFish cloud host to set.
      * @param port GlassFish server port to set.
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public GlassFishCloudInstance(String name, String host, int port) {
         super(name, host, port);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
+        this.serverInstance = ServerInstanceFactory.createServerInstance(this);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Getters and Setters                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get <code>ServerInstance</code> object related to this cloud instance.
+     * <p/>
+     * @return <code>ServerInstance</code> object related to this
+     *         cloud instance.
+     */
+    public ServerInstance getServerInstance() {
+        return serverInstance;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -114,8 +139,8 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
      * @return Node representing instance, may return <code>null</code>.
      */
     @Override
-    public org.openide.nodes.Node getFullNode() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Node getFullNode() {
+        return getBasicNode();
     }
 
     /**
@@ -126,8 +151,16 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
      * @return Node representing instance, may return <code>null</code>.
      */
     @Override
-    public org.openide.nodes.Node getBasicNode() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Node getBasicNode() {
+        if (basicNode != null) {
+            return basicNode;
+        }
+        synchronized(this) {
+            if (basicNode == null) {
+                basicNode = new GlassFishCloudInstanceNode(this);
+            }
+        }
+        return basicNode;
     }
 
     /**

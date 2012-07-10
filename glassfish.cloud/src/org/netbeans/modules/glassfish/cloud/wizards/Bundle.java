@@ -65,6 +65,26 @@ public class Bundle {
      *  after &lt;index&gt;). */
     private static final String ADD_CLOUD_WIZARD_PANEL_NAME_SUFFIX = ".name";
 
+    /** Cloud panel validation failed. */
+    static final String CLOUD_PANEL_VALIDATION_FAILED
+            = "GlassFishCloudWizardCpasPanel.validation.failed";
+
+    /** Cloud panel component was not initialized. */
+    static final String CLOUD_PANEL_ERROR_COMPONENT_UNINITIALIZED
+            = "GlassFishCloudWizardCpasPanel.error.component.uninitialized";
+
+    /** Cloud panel validation error: Host name is empty. */
+    static final String CLOUD_PANEL_ERROR_HOST_EMPTY
+            = "GlassFishCloudWizardCpasPanel.error.host.empty";
+
+    /** Cloud panel validation error: Port value is empty. */
+    static final String CLOUD_PANEL_ERROR_PORT_EMPTY
+            = "GlassFishCloudWizardCpasPanel.error.port.empty";
+
+    /** Cloud panel validation error: Port value is not a number. */
+    static final String CLOUD_PANEL_ERROR_PORT_FORMAT
+            = "GlassFishCloudWizardCpasPanel.error.port.format";
+
     /** Add Cloud wizard name property. */
     static final String ADD_CLOUD_WIZARD_DISPLAY_NAME
             = "GlassFish.cloud.wizard.displayName";
