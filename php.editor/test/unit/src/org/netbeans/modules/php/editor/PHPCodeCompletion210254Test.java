@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.modules.php.editor;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class PHPCodeCompletion210254Test extends PHPCodeCompletionTestBase {
 
-    public PHPHintsTest(String testName) {
+    public PHPCodeCompletion210254Test(String testName) {
         super(testName);
     }
 
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests210254/test210254_01.php", "use ^FirstTrait, SecondTrait, MyTrait;", false);
     }
 
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests210254/test210254_01.php", "use F^irstTrait, SecondTrait, MyTrait;", false);
     }
 
-    public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHint(), "testImplementAbstractMethodsHint.php");
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests210254/test210254_01.php", "use FirstTrait, ^SecondTrait, MyTrait;", false);
     }
 
-    public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHint(), "testMethodRedeclarationHint.php");
+    public void testUseCase4() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests210254/test210254_01.php", "use FirstTrait, S^econdTrait, MyTrait;", false);
     }
 
-    public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
+    public void testUseCase5() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests210254/test210254_01.php", "use FirstTrait, SecondTrait, ^MyTrait;", false);
     }
 
-    public void testWrongOrderOfArgsHint() throws Exception {
-        checkHintsInStartEndFile(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
+    public void testUseCase6() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests210254/test210254_01.php", "use FirstTrait, SecondTrait, M^yTrait;", false);
     }
 
-    public void testUnusedUsesHint() throws Exception {
-        checkHintsInStartEndFile(new UnusedUsesHint(), "testUnusedUsesHint.php");
-    }
-
-    public void testAmbiguousComparisonHint() throws Exception {
-        checkHintsInStartEndFile(new AmbiguousComparisonHint(), "testAmbiguousComparisonHint.php");
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests210254/"))
+            })
+        );
     }
 
 }
