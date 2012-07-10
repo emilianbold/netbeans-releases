@@ -629,6 +629,10 @@ public final class CodeStyle {
         return preferences.getBoolean(startUseWithNamespaceSeparator, getDefaultAsBoolean(startUseWithNamespaceSeparator));
     }
 
+    public boolean aliasesFromCapitalsOfNamespaces() {
+        return preferences.getBoolean(aliasesCapitalsOfNamespaces, getDefaultAsBoolean(aliasesCapitalsOfNamespaces));
+    }
+
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
         @Override
