@@ -97,29 +97,14 @@ public final class PhpSourcePath {
     public static FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
-        // first, check source CP
-        ClassPath classPath = ClassPath.getClassPath(file, SOURCE_CP);
-        if (classPath != null && classPath.contains(file)) {
-            // it is a source file
-            PhpSourcePathImplementation phpSourcePath = getPhpSourcePathForProjectFile(file);
-            if (phpSourcePath != null) {
-                return phpSourcePath.getFileType(file);
-            }
-            // happens at least in tests
-            return FileType.UNKNOWN;
+        // classpath performance is bad so first, check internal files
+        if (isInternalFile(file)) {
+            return FileType.INTERNAL;
         }
-        // now, check include path of opened projects
-        classPath = IncludePathClassPathProvider.findProjectIncludePath(file);
-        if (classPath != null && classPath.contains(file)) {
-            // internal?
-            for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-                if (dir.equals(file)
-                        || FileUtil.isParentOf(dir, file)) {
-                    return FileType.INTERNAL;
-                }
-            }
-            // include
-            return FileType.INCLUDE;
+        // check classpath
+        FileType fileType = getFileTypeFromClassPath(file);
+        if (fileType != null) {
+            return fileType;
         }
         // perhaps a file without a project or a file on global include path
         // in fact, this is not supported by the editor yet (model does not work for a file without a project)
@@ -207,6 +192,41 @@ public final class PhpSourcePath {
         // XXX disabled because of runtime.php underneath nbbuild directory
         //assert phpSourcePath != null : "Not PHP project (interface PhpSourcePath not found in lookup)! [" + project + "]";
         return phpSourcePath;
+    }
+
+    private static FileType getFileTypeFromClassPath(FileObject file) {
+        // first, check source CP
+        ClassPath classPath = ClassPath.getClassPath(file, SOURCE_CP);
+        if (classPath != null && classPath.contains(file)) {
+            // it is a source file
+            PhpSourcePathImplementation phpSourcePath = getPhpSourcePathForProjectFile(file);
+            if (phpSourcePath != null) {
+                return phpSourcePath.getFileType(file);
+            }
+            // happens at least in tests
+            return FileType.UNKNOWN;
+        }
+        // now, check include path of opened projects
+        classPath = IncludePathClassPathProvider.findProjectIncludePath(file);
+        if (classPath != null && classPath.contains(file)) {
+            // internal?
+            if (isInternalFile(file)) {
+                return FileType.INTERNAL;
+            }
+            // include
+            return FileType.INCLUDE;
+        }
+        return null;
+    }
+
+    private static boolean isInternalFile(FileObject file) {
+        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
+            if (dir.equals(file)
+                    || FileUtil.isParentOf(dir, file)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // PhpSourcePathImplementation implementation for file which does not belong to any project
