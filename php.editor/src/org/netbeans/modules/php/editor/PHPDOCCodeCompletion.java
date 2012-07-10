@@ -107,13 +107,14 @@ public class PHPDOCCodeCompletion {
         return false;
     }
 
-    public static void complete(final PHPCompletionResult completionResult, CompletionRequest request) {
-        String prefix = null;
-        if (request.prefix.startsWith(TAG_PREFIX)){
-            prefix = request.prefix.substring(TAG_PREFIX.length());
-        } else {
-            return;
+    public static void complete(final PHPCompletionResult completionResult, final CompletionRequest request) {
+        if (request.prefix.startsWith(TAG_PREFIX)) {
+            completeAnnotation(completionResult, request);
         }
+    }
+
+    private static void completeAnnotation(final PHPCompletionResult completionResult, final CompletionRequest request) {
+        String prefix = request.prefix.substring(TAG_PREFIX.length());
         List<PhpAnnotationsProvider> providers = PhpAnnotations.getDefault().getProviders(request.info.getSnapshot().getSource().getFileObject());
         ASTNode nodeAfterOffset = Utils.getNodeAfterOffset(request.result, request.anchor);
         int priority = 0;
