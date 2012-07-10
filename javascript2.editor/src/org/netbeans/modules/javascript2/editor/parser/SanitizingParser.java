@@ -292,7 +292,7 @@ public abstract class SanitizingParser extends Parser {
             }
 
             StringBuilder builder = new StringBuilder(context.getOriginalSource());
-            erase(builder, start, end);
+            erase(builder, start, end - 1);
             context.setSanitizedSource(builder.toString());
             context.setSanitization(sanitizing);
             return true;
