@@ -121,7 +121,13 @@ public class FixUsesPerformer {
         for (int i = 0; i < selections.length; i++) {
             String use = selections[i];
             if (canBeUsed(use)) {
-                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), useParts, new NumberedUnqualifiedNameStrategy(i, useParts, selections));
+                CreateAliasStrategy createAliasStrategy;
+                if (options.aliasesCapitalsOfNamespaces()) {
+                    createAliasStrategy = new CapitalsStrategy(i, useParts, selections);
+                } else {
+                    createAliasStrategy = new NumberedUnqualifiedNameStrategy(i, useParts, selections);
+                }
+                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), useParts, createAliasStrategy);
                 if (sanitizedUse.shouldBeUsed()) {
                     useParts.add(sanitizedUse.getSanitizedUsePart());
                 }
@@ -243,12 +249,13 @@ public class FixUsesPerformer {
         public String createAlias(final QualifiedName qualifiedName);
     }
 
-    private static class NumberedUnqualifiedNameStrategy implements CreateAliasStrategy {
+    private static abstract class CreateAliasStrategyImpl implements CreateAliasStrategy {
+
         private final int selectionIndex;
         private final List<String> existingUseParts;
         private final String[] selections;
 
-        public NumberedUnqualifiedNameStrategy(final int selectionIndex, final List<String> existingUseParts, final String[] selections) {
+        public CreateAliasStrategyImpl(final int selectionIndex, final List<String> existingUseParts, final String[] selections) {
             this.selectionIndex = selectionIndex;
             this.existingUseParts = existingUseParts;
             this.selections = selections;
@@ -257,13 +264,19 @@ public class FixUsesPerformer {
         @Override
         public String createAlias(final QualifiedName qualifiedName) {
             String result = "";
-            String possibleAliasedName = qualifiedName.getName();
+            final String possibleAliasedName = getPossibleAliasName(qualifiedName);
+            String newAliasedName = possibleAliasedName;
             int i = 1;
-            while (existSelectionWith(possibleAliasedName, selectionIndex) || existUseWith(possibleAliasedName)) {
+            while (existSelectionWith(newAliasedName, selectionIndex) || existUseWith(newAliasedName)) {
                 i++;
-                result = possibleAliasedName = possibleAliasedName + i;
+                result = newAliasedName = possibleAliasedName + i;
             }
-            return result;
+            return result.isEmpty() && mustHaveAlias(qualifiedName) ? possibleAliasedName : result;
+        }
+
+        private boolean mustHaveAlias(final QualifiedName qualifiedName) {
+            final String unqualifiedName = qualifiedName.getName();
+            return existSelectionWith(unqualifiedName, selectionIndex) || existUseWith(unqualifiedName);
         }
 
         private boolean existSelectionWith(final String name, final int selectionIndex) {
@@ -288,6 +301,38 @@ public class FixUsesPerformer {
 
         private boolean endsWithName(final String usePart, final String name) {
             return usePart.endsWith(ImportDataCreator.NS_SEPARATOR + name);
+        }
+
+        protected abstract String getPossibleAliasName(final QualifiedName qualifiedName);
+
+    }
+
+    private static class CapitalsStrategy extends CreateAliasStrategyImpl {
+
+        public CapitalsStrategy(int selectionIndex, List<String> existingUseParts, String[] selections) {
+            super(selectionIndex, existingUseParts, selections);
+        }
+
+        @Override
+        protected String getPossibleAliasName(final QualifiedName qualifiedName) {
+            final StringBuilder sb = new StringBuilder();
+            for (String segment : qualifiedName.getSegments()) {
+                sb.append(Character.toUpperCase(segment.charAt(0)));
+            }
+            return sb.toString();
+        }
+
+    }
+
+    private static class NumberedUnqualifiedNameStrategy extends CreateAliasStrategyImpl {
+
+        public NumberedUnqualifiedNameStrategy(int selectionIndex, List<String> existingUseParts, String[] selections) {
+            super(selectionIndex, existingUseParts, selections);
+        }
+
+        @Override
+        protected String getPossibleAliasName(QualifiedName qualifiedName) {
+            return qualifiedName.getName();
         }
 
     }

@@ -292,17 +292,20 @@ public class FixUsesAction extends BaseAction {
         private final boolean preferFullyQualifiedNames;
         private final boolean preferMultipleUseStatementsCombined;
         private final boolean startUseWithNamespaceSeparator;
+        private final boolean aliasesCapitalsOfNamespaces;
 
-        public Options(boolean preferFullyQualifiedNames, boolean preferMultipleUseStatementsCombined, boolean startUseWithNamespaceSeparator) {
+        public Options(boolean preferFullyQualifiedNames, boolean preferMultipleUseStatementsCombined, boolean startUseWithNamespaceSeparator, boolean aliasesCapitalsOfNamespaces) {
             this.preferFullyQualifiedNames = preferFullyQualifiedNames;
             this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
             this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;
+            this.aliasesCapitalsOfNamespaces = aliasesCapitalsOfNamespaces;
         }
 
         public Options(CodeStyle codeStyle) {
             this.preferFullyQualifiedNames = codeStyle.preferFullyQualifiedNames();
             this.preferMultipleUseStatementsCombined = codeStyle.preferMultipleUseStatementsCombined();
             this.startUseWithNamespaceSeparator = codeStyle.startUseWithNamespaceSeparator();
+            this.aliasesCapitalsOfNamespaces = codeStyle.aliasesFromCapitalsOfNamespaces();
         }
 
         public boolean preferFullyQualifiedNames() {
@@ -317,6 +320,9 @@ public class FixUsesAction extends BaseAction {
             return startUseWithNamespaceSeparator;
         }
 
+        public boolean aliasesCapitalsOfNamespaces() {
+            return aliasesCapitalsOfNamespaces;
+        }
 
     }
 }
