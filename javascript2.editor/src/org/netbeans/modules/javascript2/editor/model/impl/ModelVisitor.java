@@ -69,14 +69,12 @@ public class ModelVisitor extends PathNodeVisitor {
      */
     private final List<List<FunctionNode>> functionStack;
     private final JsParserResult parserResult;
-    private final JsDocumentationProvider docProvider;
 
-    public ModelVisitor(JsParserResult parserResult, JsDocumentationProvider docProvider) {
+    public ModelVisitor(JsParserResult parserResult) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
         this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(fileObject, parserResult.getSnapshot().getText().length()));
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult;
-        this.docProvider = docProvider;
     }
 
     public JsObject getGlobalObject() {
@@ -460,7 +458,7 @@ public class ModelVisitor extends PathNodeVisitor {
             
             if (fncScope != null) {
                 // check parameters and return types of the function.
-                List<Type> types = docProvider.getReturnType(functionNode);
+                List<Type> types = parserResult.getDocumentationProvider().getReturnType(functionNode);
                 if (types != null && !types.isEmpty()) {
                     for(Type type : types) {
                         fncScope.addReturnType(new TypeUsageImpl(type.getType(), -1, true));
@@ -471,7 +469,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
                 }
                 
-                List<DocParameter> docParams = docProvider.getParameters(functionNode);
+                List<DocParameter> docParams = parserResult.getDocumentationProvider().getParameters(functionNode);
                 for (DocParameter docParameter : docParams) {
                     JsObjectImpl param = (JsObjectImpl)fncScope.getParameter(docParameter.getParamName().getName());
                     if(param != null) {

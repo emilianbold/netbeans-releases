@@ -95,7 +95,7 @@ class ModelElementFactory {
                 result.addOccurrence(occurrence.getOffsetRange());
             }
         }
-        JsDocumentationProvider docProvider = JsDocumentationSupport.getDocumentationProvider(parserResult);
+        JsDocumentationProvider docProvider = parserResult.getDocumentationProvider();
         result.setDocumentation(docProvider.getDocumentation(functionNode));
         result.setAnonymous(isAnnonymous);
         return result;
@@ -140,7 +140,7 @@ class ModelElementFactory {
                 newObject.addProperty(propertyName, result.getProperty(propertyName));
             }
         }
-        JsDocumentationProvider docProvider = JsDocumentationSupport.getDocumentationProvider(parserResult);
+        JsDocumentationProvider docProvider = parserResult.getDocumentationProvider();
         newObject.setDocumentation(docProvider.getDocumentation(objectNode));
         parent.addProperty(name.getName(), newObject);
         return (JsObjectImpl)newObject;
@@ -151,7 +151,7 @@ class ModelElementFactory {
         JsObjectImpl result = new AnonymousObject(modelBuilder.getGlobal(),
                     name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
         modelBuilder.getGlobal().addProperty(name, result);
-        JsDocumentationProvider docProvider = JsDocumentationSupport.getDocumentationProvider(parserResult);
+        JsDocumentationProvider docProvider = parserResult.getDocumentationProvider();
         result.setDocumentation(docProvider.getDocumentation(objectNode));
         return result;
     }
@@ -159,7 +159,7 @@ class ModelElementFactory {
     static JsObjectImpl create(JsParserResult parserResult, PropertyNode propertyNode, Identifier name, ModelBuilder modelBuilder, boolean belongsToParent) {
         JsObjectImpl scope = modelBuilder.getCurrentObject();
         JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange());
-        JsDocumentationProvider docProvider = JsDocumentationSupport.getDocumentationProvider(parserResult);
+        JsDocumentationProvider docProvider = parserResult.getDocumentationProvider();
         property.setDocumentation(docProvider.getDocumentation(propertyNode));
         return property;
     }
