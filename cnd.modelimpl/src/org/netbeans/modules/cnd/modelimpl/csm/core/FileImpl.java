@@ -101,6 +101,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -250,6 +251,7 @@ public final class FileImpl implements CsmFile,
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
         this.projectUID = UIDCsmConverter.projectToUID(project);
+        assert (projectUID instanceof KeyBasedUID); // this fact is used in write() and getInitId()
         this.fileBuffer = fileBuffer;
         
         hasBrokenIncludes = new AtomicBoolean(false);
@@ -1867,6 +1869,10 @@ public final class FileImpl implements CsmFile,
     }
     private CsmUID<CsmFile> uid = null;
 
+    private int getUnitId() {
+        return ((KeyBasedUID)projectUID).getKey().getUnitId();
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     @Override
@@ -1877,8 +1883,7 @@ public final class FileImpl implements CsmFile,
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
-        PersistentUtils.writeBuffer(this.fileBuffer, output);
-
+        PersistentUtils.writeBuffer(this.fileBuffer, output, getUnitId());
         output.writeBoolean(hasBrokenIncludes.get());
         currentFileContent.write(output);
 
@@ -1910,7 +1915,7 @@ public final class FileImpl implements CsmFile,
         assert this.projectUID != null;
         this.projectRef = null;
 
-        this.fileBuffer = PersistentUtils.readBuffer(input);
+        this.fileBuffer = PersistentUtils.readBuffer(input, getUnitId());
 
         hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
         currentFileContent = new FileContent(this, this._getProject(false), input);

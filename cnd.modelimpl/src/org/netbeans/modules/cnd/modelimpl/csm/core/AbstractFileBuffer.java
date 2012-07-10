@@ -51,6 +51,7 @@ import java.nio.charset.Charset;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -147,15 +148,15 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     // impl of SelfPersistent
 
     // final is important here - see PersistentUtils.writeBuffer/readBuffer
-    public final void write(RepositoryDataOutput output) throws IOException {
+    public final void write(RepositoryDataOutput output, int unitId) throws IOException {
         assert this.absPath != null;
-        PersistentUtils.writeUTF(absPath, output);
+        APTSerializeUtils.writeFileNameIndex(absPath, output, unitId);
         PersistentUtils.writeFileSystem(fileSystem, output);        
         output.writeByte((byte) bufType.ordinal());
     }  
     
-    protected AbstractFileBuffer(RepositoryDataInput input) throws IOException {
-        this.absPath = PersistentUtils.readUTF(input, FilePathCache.getManager());
+    protected AbstractFileBuffer(RepositoryDataInput input, int unitId) throws IOException {
+        this.absPath = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), unitId);
         this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
         bufType = BufferType.values()[input.readByte()];
