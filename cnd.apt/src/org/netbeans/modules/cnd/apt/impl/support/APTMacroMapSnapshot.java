@@ -424,7 +424,7 @@ public final class APTMacroMapSnapshot {
 
     }
 
-    final class Holder {
+    final static class Holder {
 
         // array have to be sorted, otherwise equals can not work
         private final Object[] arr;

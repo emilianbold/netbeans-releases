@@ -315,6 +315,7 @@
                         <file name="org-netbeans-modules-php-editor-verification-AbstractClassInstantiationHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-MethodRedeclarationHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-ModifiersCheckHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-AmbiguousComparisonHint.instance"/>
                     </folder>
                     <folder name="experimental">
                         <attr name="position" intvalue="200"/>

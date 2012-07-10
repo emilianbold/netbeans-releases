@@ -68,8 +68,6 @@ public final class Model {
 
     private final OccurrencesSupport occurrencesSupport;
 
-    private final JsDocumentationProvider docSupport;
-
     private final UsageBuilder usageBuilder;
     
     private ModelVisitor visitor;
@@ -77,14 +75,13 @@ public final class Model {
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
-        this.docSupport = JsDocumentationSupport.getDocumentationProvider(parserResult);
         this.usageBuilder = new UsageBuilder();
     }
 
     private synchronized ModelVisitor getModelVisitor() {
         if (visitor == null) {
             long start = System.currentTimeMillis();
-            visitor = new ModelVisitor(parserResult, docSupport);
+            visitor = new ModelVisitor(parserResult);
             FunctionNode root = parserResult.getRoot();
             if (root != null) {
                 root.accept(visitor);
