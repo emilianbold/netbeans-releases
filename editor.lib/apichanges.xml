@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="absolute-positioned-tooltips">
+            <summary>Tooltips can be positioned at absolute position, not relative to the caret</summary>
+            <version major="3" minor="26"/>
+            <date day="5" month="7" year="2012"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                    Tooltips are usually positioned above/below the caret, so they appear in the area the user is focused on.
+                    Some tooltips however should be displayed above or next to the editor window, e.g. begin/end of a code block,
+                    which is alredy off the visible area. This change allows to specify <code>Point</code> relative to the
+                    view or the scroller, where the tooltip should appear.
+                </p>
+            </description>
+            <issue number="214755"/>
+        </change>
         <change id="clickable-annotations">
             <summary>Clickable annotations in the editor glyph gutter</summary>
             <version major="3" minor="24"/>

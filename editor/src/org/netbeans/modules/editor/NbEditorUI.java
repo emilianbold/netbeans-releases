@@ -230,7 +230,15 @@ public class NbEditorUI extends EditorUI {
         //border! - Tim
         scroller.setBorder(empty);
         scroller.setViewportBorder(empty);
-
+        
+        if (component.getClientProperty("nbeditorui.vScrollPolicy") != null) {
+            scroller.setVerticalScrollBarPolicy(
+                    (Integer)component.getClientProperty("nbeditorui.vScrollPolicy"));
+        }
+        if (component.getClientProperty("nbeditorui.hScrollPolicy") != null) {
+            scroller.setHorizontalScrollBarPolicy(
+                    (Integer)component.getClientProperty("nbeditorui.hScrollPolicy"));
+        }
         // extComponent will be a panel
         JComponent ec = new JPanel(new BorderLayout());
         ec.putClientProperty(JTextComponent.class, component);
