@@ -67,10 +67,10 @@ import org.openide.util.NbBundle;
 })
 public final class RuleEditorFilters {
 
-    private static final String SHOW_ALL_PROPERTIES = "show.all.properties"; //NOI18N
-    private static final String SHOW_CATEGORIES = "show.property.categories"; //NOI18N
+    public static final String SHOW_ALL_PROPERTIES = "show.all.properties"; //NOI18N
+    public static final String SHOW_CATEGORIES = "show.property.categories"; //NOI18N
+    
     private RuleEditorPanel ruleEditorPanel;
-    private SortMode sortMode;
     private FiltersManager filters;
 
     public RuleEditorFilters(RuleEditorPanel ruleEditorPanel) {
@@ -93,8 +93,6 @@ public final class RuleEditorFilters {
     void setSortMode(SortMode mode) {
         ruleEditorPanel.setSortMode(mode);
         
-        this.sortMode = mode;
-        
         //update the toggle bottons (they are switching)
         sortNaturalToggleButton.setSelected(mode == SortMode.NATURAL);
         sortAlphaToggleButton.setSelected(mode == SortMode.ALPHABETICAL);
@@ -114,13 +112,13 @@ public final class RuleEditorFilters {
         desc.addFilter(SHOW_ALL_PROPERTIES,
                 Bundle.filters_show_all_properties(),
                 Bundle.filters_show_all_properties_tooltip(),
-                true,
+                false,
                 new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/showAllProperties.png")), //NOI18N
                 null);
         desc.addFilter(SHOW_CATEGORIES,
                 Bundle.filters_show_categories(),
                 Bundle.filters_show_categories_tooltip(),
-                false,
+                true,
                 new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/showCategories.gif")), //NOI18N
                 null);
 
@@ -136,7 +134,7 @@ public final class RuleEditorFilters {
             sortNaturalToggleButton = new JToggleButton(new SortActionSupport.NaturalSortAction(this));
             sortNaturalToggleButton.setToolTipText(sortNaturalToggleButton.getText());
             sortNaturalToggleButton.setText(null);
-            sortNaturalToggleButton.setSelected(sortMode == SortMode.NATURAL);
+            sortNaturalToggleButton.setSelected(getSortMode() == SortMode.NATURAL);
             sortNaturalToggleButton.setFocusable(false);
         }
         res[0] = sortNaturalToggleButton;
@@ -145,7 +143,7 @@ public final class RuleEditorFilters {
             sortAlphaToggleButton = new JToggleButton(new SortActionSupport.AlphabeticalSortAction(this));
             sortAlphaToggleButton.setToolTipText(sortAlphaToggleButton.getText());
             sortAlphaToggleButton.setText(null);
-            sortAlphaToggleButton.setSelected(sortMode == SortMode.ALPHABETICAL);
+            sortAlphaToggleButton.setSelected(getSortMode() == SortMode.ALPHABETICAL);
             sortAlphaToggleButton.setFocusable(false);
         }
         res[1] = sortAlphaToggleButton;

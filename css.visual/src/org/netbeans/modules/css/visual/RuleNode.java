@@ -45,9 +45,16 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.nodes.AbstractNode;
@@ -67,7 +74,7 @@ import org.openide.util.lookup.Lookups;
 @NbBundle.Messages({
     "rule.properties=Properties",
     "rule.properties.description=Properties of the css rule"
-}) 
+})
 public class RuleNode extends AbstractNode {
 
     private PropertySet[] propertySets;
@@ -95,108 +102,75 @@ public class RuleNode extends AbstractNode {
      */
     private PropertySet[] createPropertySets() {
         Collection<PropertySet> sets = new ArrayList<PropertySet>();
-        //rule properties property set
-        sets.add(new RulePropertySet(rule));
 
-//        //semantic models property sets
-//        Declarations declarations = rule.getDeclarations();
-//        if (declarations != null) {
-//            Map<String, Collection<PModel>> category2models = new HashMap<String, Collection<PModel>>();
-//            Collection<? extends PModel> models = declarations.getSemanticModels();
-//            //create a property set for each model catogory and put all models to them
-//            for (PModel semanticModel : models) {
-//                String categoryName = semanticModel.getCategoryName();
-//                Collection<PModel> subCol = category2models.get(categoryName);
-//                if (subCol == null) {
-//                    subCol = new ArrayList<PModel>();
-//                    category2models.put(categoryName, subCol);
-//                }
-//                subCol.add(semanticModel);
-//            }
-//
-//            for (String categoryName : category2models.keySet()) {
-//                sets.add(new SemanticModelCategoryPropertySet(categoryName, category2models.get(categoryName)));
-//            }
-//
-//        }
+        Collection<Declaration> declarations = rule.getDeclarations().getDeclarations();
 
+        Map<PropertyCategory, Collection<Declaration>> categoryToDeclarationsMap = new EnumMap<PropertyCategory, Collection<Declaration>>(PropertyCategory.class);
+        for (Declaration d : declarations) {
+            //check the declaration
+            org.netbeans.modules.css.model.api.Property property = d.getProperty();
+            PropertyValue propertyValue = d.getPropertyValue();
+            if (property != null && propertyValue != null) {
+                Collection<PropertyDefinition> defs = Properties.getProperties(property.getContent().toString());
+                if(defs != null && !defs.isEmpty()) {
+                    PropertyDefinition def = defs.iterator().next();
+                    PropertyCategory category = def.getPropertyCategory();
+                    
+                    Collection<Declaration> values = categoryToDeclarationsMap.get(category);
+                    if(values == null) {
+                        values = new LinkedList<Declaration>();
+                        categoryToDeclarationsMap.put(category, values);
+                    }
+                    values.add(d);
+                    
+                }
+            }
+        }
+        
+        for(Entry<PropertyCategory, Collection<Declaration>> entry : categoryToDeclarationsMap.entrySet()) {
+            sets.add(new PropertyCategoryPropertySet(entry.getKey(), entry.getValue()));
+        }
+        
         return sets.toArray(new PropertySet[0]);
     }
 
     public void applyModelChanges() {
-            final NbEditorDocument doc = (NbEditorDocument)model.getLookup().lookup(Document.class);
-            if (doc == null) {
-                return;
-            }
-            model.runReadTask(new Model.ModelTask() {
-
-                @Override
-                public void run(StyleSheet styleSheet) {
-                    doc.runAtomic(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                model.applyChanges();
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            } catch (BadLocationException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                        }
-                    });
-
-                }
-            });
+        final NbEditorDocument doc = (NbEditorDocument) model.getLookup().lookup(Document.class);
+        if (doc == null) {
+            return;
         }
-    
-//    private class SemanticModelCategoryPropertySet extends PropertySet {
-//
-//        private Property<?>[] properties;
-//
-//        public SemanticModelCategoryPropertySet(String categoryName, Collection<PModel> models) {
-//            super(categoryName, categoryName, null);
-//
-//            Collection<Property> props = new ArrayList<Property>(models.size());
-//
-//            for (PModel semanticModel : models) {
-//                Property prop = SemanticModelPERegistry.getProperty(RuleNode.this, semanticModel);
-//                if (prop != null) {
-//                    props.add(prop);
-//                }
-//            }
-//
-//            properties = props.toArray(new Property[]{});
-//        }
-//
-//        @Override
-//        public Property<?>[] getProperties() {
-//            return properties;
-//        }
-//    }
+        model.runReadTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+                doc.runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            model.applyChanges();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
 
-    private class RulePropertySet extends PropertySet {
+            }
+        });
+    }
+
+    private class PropertyCategoryPropertySet extends PropertySet {
 
         private Property<?>[] properties;
 
-        public RulePropertySet(Rule rule) {
-            super("css_properties", //NOI18N
-                    Bundle.rule_properties(), 
-                    Bundle.rule_properties_description());
+        public PropertyCategoryPropertySet(PropertyCategory propertyCategory, Collection<Declaration> declarations) {
+            super(propertyCategory.name(), //NOI18N
+                    propertyCategory.getDisplayName(),
+                    propertyCategory.getShortDescription());
 
-            if (rule.getDeclarations() == null) {
-                //empty rule
-                properties = new Property[0];
-                return;
-            }
-
-            Collection<Declaration> declarations = rule.getDeclarations().getDeclarations();
             Collection<Property> props = new ArrayList<Property>(declarations.size());
             for (Declaration d : declarations) {
-                //check the declaration
-                if (d.getProperty() != null && d.getPropertyValue() != null) {
-                    props.add(new SingleValueProperty(d));
-                }
+                props.add(new SingleValueProperty(d));
             }
             properties = props.toArray(new Property[]{});
         }
@@ -243,9 +217,8 @@ public class RuleNode extends AbstractNode {
 
             declaration.getPropertyValue().getExpression().setContent(value);
             applyModelChanges();
-            
+
         }
-        
     }
 
     /**
@@ -258,6 +231,4 @@ public class RuleNode extends AbstractNode {
             return new Node[]{};
         }
     }
-        
-    
 }

@@ -172,7 +172,7 @@ public class Utilities {
         ResourceBundle bundle = NbBundle.getBundle(sourcePath);
 
         Enumeration<String> keys = bundle.getKeys();
-        PropertyCategory category = PropertyCategory.OTHER;
+        PropertyCategory category = PropertyCategory.DEFAULT;
         while (keys.hasMoreElements()) {
             String name = keys.nextElement();
             String value = bundle.getString(name);
@@ -182,6 +182,8 @@ public class Utilities {
                 if(CATEGORY_META_PROPERTY_NAME.equalsIgnoreCase(name)) {
                     try {
                         category = PropertyCategory.valueOf(value.toUpperCase());
+                        System.out.println("* set category " + category.name());
+                        
                     } catch (IllegalArgumentException e) {
                         Logger.getAnonymousLogger().log(Level.INFO, 
                                 String.format("Unknown property category name %s in %s properties definition file. Served by %s css module.", value, sourcePath, module.getSpecificationURL()),
@@ -198,7 +200,11 @@ public class Utilities {
                 StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
 
                 while (nameTokenizer.hasMoreTokens()) {
+                    
                     String parsed_name = nameTokenizer.nextToken().trim();
+                    if(category == PropertyCategory.DEFAULT) {
+                        System.out.println("property " + parsed_name + " have default category!!!");
+                    }
                     PropertyDefinition prop = new PropertyDefinition(parsed_name, value, category, module);
                     properties.add(prop);
                 }

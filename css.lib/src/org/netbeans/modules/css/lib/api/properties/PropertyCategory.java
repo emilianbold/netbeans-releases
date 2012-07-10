@@ -60,9 +60,31 @@ import org.netbeans.modules.css.lib.api.CssModule;
 //TODO defined the displaynames and descriptions
 public enum PropertyCategory {
 
+    ANIMATIONS,
     BOX,
     BACKGROUND,
-    OTHER; 
+    COLORS,
+    CONTENT, //generated & repl. content
+    FLEXIBLE_BOX_LAYOUT,
+    FONTS,
+    GRID,
+    HYPERLINKS,
+    IMAGES,
+    LINE,
+    LISTS_AND_COUNTERS,
+    MARQUEE,
+    MULTI_COLUMN_LAYOUT,
+    PAGED_MEDIA,
+    RUBY,
+    SPEECH,
+    TEXT,
+    TRANSFORMATIONS_2D,
+    TRANSFORMATIONS_3D,
+    TRANSITIONS,
+    USER_INTERFACE,
+    WRITING_MODES,
+    
+    DEFAULT; 
     
     private String displayName;
     private String shortDescription;
@@ -71,7 +93,7 @@ public enum PropertyCategory {
     private PropertyCategory() {
         displayName = new StringBuilder()
                 .append(name().charAt(0))
-                .append(name().substring(1).toLowerCase())
+                .append(name().substring(1).toLowerCase().replace('_', ' '))
                 .toString();
         
         shortDescription = new StringBuilder()

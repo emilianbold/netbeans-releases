@@ -42,22 +42,27 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.RuleEditorListener;
 import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.css.visual.filters.FilterSubmenuAction;
+import org.netbeans.modules.css.visual.filters.FiltersManager;
 import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
 import org.netbeans.modules.css.visual.filters.SortActionSupport;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -94,7 +99,15 @@ public class RuleEditorPanel extends JPanel {
         sortMode = SortMode.NATURAL;
         
         filters = new RuleEditorFilters( this );
+        filters.getInstance().hookChangeListener(new FiltersManager.FilterChangeListener() {
 
+            @Override
+            public void filterStateChanged(ChangeEvent e) {
+                updateFiltersPresenters();
+            }
+            
+        });
+        
         actions = new Action[] {            
             new SortActionSupport.NaturalSortAction( filters ),
             new SortActionSupport.AlphabeticalSortAction( filters ),
@@ -108,18 +121,55 @@ public class RuleEditorPanel extends JPanel {
         
         //add the property sheet to the center
         sheet = new PropertySheet();
+        sheet.setPopupEnabled(false);
+        sheet.setDescriptionAreaVisible(false);
+        
         add(sheet, BorderLayout.CENTER);
         
         //add the filters panel
         northPanel.add(filters.getComponent(), BorderLayout.EAST);
+        
+        updateFiltersPresenters();
+    }
+    
+    private void updateFiltersPresenters() {
+        setShowCategories(filters.getInstance().isSelected(RuleEditorFilters.SHOW_CATEGORIES));
+        setShowAllProperties(filters.getInstance().isSelected(RuleEditorFilters.SHOW_ALL_PROPERTIES));
     }
 
     public void setSortMode(SortMode mode) {
         this.sortMode = mode;
+        
+        //update the stylesheet data
     }
 
     public SortMode getSortMode() {
         return sortMode;
+    }
+
+    public void setShowAllProperties(boolean showAllProperties) {
+        if(this.showAllProperties == showAllProperties) {
+            return ; //no change
+        }
+        
+        this.showAllProperties = showAllProperties;
+        
+        System.out.println("show all properties: " + showAllProperties);
+    }
+
+    public void setShowCategories(boolean showCategories) {
+        if(this.showCategories == showCategories) {
+            return ; //no change
+        }
+        
+        this.showCategories = showCategories;
+        
+        System.out.println("show categories: " + showCategories);
+        try {
+            sheet.setSortingMode(showCategories ? PropertySheet.UNSORTED : PropertySheet.SORTED_BY_NAMES);
+        } catch (PropertyVetoException ex) {
+            //no-op
+        }
     }
     
     public void setModel(Model model) {

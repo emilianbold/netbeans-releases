@@ -96,7 +96,6 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
     
     protected abstract void updateMenuItem ();
     
-    
     public static final class NaturalSortAction extends SortActionSupport {
         
         public NaturalSortAction ( RuleEditorFilters filters) {

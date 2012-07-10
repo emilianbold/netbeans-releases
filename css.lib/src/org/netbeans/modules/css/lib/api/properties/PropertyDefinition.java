@@ -89,7 +89,7 @@ public class PropertyDefinition {
      * @param module CssModule serving this property definition
      */
     public PropertyDefinition(String name, String valueGrammar, CssModule module) {
-        this(name, valueGrammar, PropertyCategory.OTHER, module);
+        this(name, valueGrammar, PropertyCategory.DEFAULT, module);
     }
     
     /**
