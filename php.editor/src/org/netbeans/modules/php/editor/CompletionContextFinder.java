@@ -396,21 +396,15 @@ class CompletionContextFinder {
         if (clsIfaceDeclContext != null) {
             return clsIfaceDeclContext;
         }
-        if (acceptTokenChains(tokenSequence, USE_TRAIT_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.USE_TRAITS;
-        } else if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.USE_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS, moveNextSucces)) {
-            return CompletionContext.NAMESPACE_KEYWORD;
-        } else if (acceptTokenChains(tokenSequence, THROW_NEW_TOKEN_CHAINS, moveNextSucces)) {
+        if (acceptTokenChains(tokenSequence, THROW_NEW_TOKEN_CHAINS, moveNextSucces)) {
             return CompletionContext.THROW_CATCH;
-        } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS, moveNextSucces)
-                && !acceptTokenChains(tokenSequence, THROW_NEW_TOKEN_CHAINS, moveNextSucces)) {
+        } else if (acceptTokenChains(tokenSequence, CLASS_NAME_TOKENCHAINS, moveNextSucces)) {
+            // has to be checked AFTER: THROW_NEW_TOKEN_CHAINS
             return CompletionContext.NEW_CLASS;
         } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_IN_STRING_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.CLASS_MEMBER_IN_STRING;
-        } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS, moveNextSucces)
-                && !acceptTokenChains(tokenSequence, CLASS_MEMBER_IN_STRING_TOKENCHAINS, moveNextSucces)) {
+        } else if (acceptTokenChains(tokenSequence, CLASS_MEMBER_TOKENCHAINS, moveNextSucces)) {
+            // has to be checked AFTER: CLASS_MEMBER_IN_STRING_TOKENCHAINS
             return CompletionContext.CLASS_MEMBER;
         } else if (acceptTokenChains(tokenSequence, STATIC_CLASS_MEMBER_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.STATIC_CLASS_MEMBER;
@@ -422,6 +416,12 @@ class CompletionContextFinder {
             return CompletionContext.PHPDOC;
         } else if (acceptTokenChains(tokenSequence, CATCH_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.THROW_CATCH;
+        } else if (acceptTokenChains(tokenSequence, USE_TRAIT_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.USE_TRAITS;
+        } else if (acceptTokenChains(tokenSequence, USE_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.USE_KEYWORD;
+        } else if (acceptTokenChains(tokenSequence, NAMESPACE_KEYWORD_TOKENS, moveNextSucces)) {
+            return CompletionContext.NAMESPACE_KEYWORD;
         } else if (acceptTokenChains(tokenSequence, INSTANCEOF_TOKENCHAINS, moveNextSucces)) {
             return CompletionContext.TYPE_NAME;
         } else if (isInsideInterfaceDeclarationBlock(info, caretOffset, tokenSequence)) {
