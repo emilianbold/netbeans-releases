@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,6 +34,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.support;
@@ -59,7 +57,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.groovy.support.spi.GroovyFeature;
+import org.netbeans.modules.groovy.support.spi.GroovyExtender;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -69,15 +67,11 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 /**
- * Support for extending project with Groovy support
  *
- * @todo now supports only Java SE projects
- *
- * @author Martin Adamek
+ * @author Martin Janicek
  */
-@ProjectServiceProvider(service={GroovyFeature.class, GroovyProjectExtender.class},
-projectType="org-netbeans-modules-java-j2seproject")
-public class GroovyProjectExtender implements GroovyFeature {
+@ProjectServiceProvider(service = GroovyExtender.class, projectType="org-netbeans-modules-java-j2seproject")
+public class J2seProjectGroovyExtender implements GroovyExtender {
 
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N
     private static final String GROOVY_EXTENSION_ID = "groovy"; // NOI18N
@@ -89,35 +83,30 @@ public class GroovyProjectExtender implements GroovyFeature {
 
     private final Project project;
 
-    public GroovyProjectExtender(Project project) {
+
+    public J2seProjectGroovyExtender(Project project) {
         this.project = project;
     }
 
-    /**
-     * Adds groovy-all to poroject classpath, adds groovy files to excludes,
-     * and modifies build script to invoke groovyc
-     *
-     * @return true if all mentioned operations were succesfull
-     */
-    public boolean enableGroovy() {
-        boolean result = addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
-        return result;
-    }
-
-    public boolean disableGroovy() {
-        boolean result = removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
-        return result;
-    }
 
     /**
-     * Checking if groovy has been enabled for the project, checks only
-     * build script extension, not classpath, not excludes
-     * @return true if build script is modified with groovy extendion
+     * Checks only build script extension, not classpath, not excludes
+     * @return true if build script is modified with groovy extension
      */
     @Override
-    public boolean isGroovyEnabled() {
+    public boolean isActive() {
         AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
         return extender != null && extender.getExtension(GROOVY_EXTENSION_ID) != null;
+    }
+
+    @Override
+    public boolean activate() {
+        return addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
+    }
+
+    @Override
+    public boolean deactivate() {
+        return removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
     }
 
     /**

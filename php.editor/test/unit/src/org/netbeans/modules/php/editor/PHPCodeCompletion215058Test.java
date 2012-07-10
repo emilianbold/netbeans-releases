@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor;
 
-package org.netbeans.modules.groovy.support.spi;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Helper used to inform if groovy support is enabled on project.
- * Implementation should be registered in project lookup.
  *
- * @author Martin Adamek
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface GroovyFeature {
+public class PHPCodeCompletion215058Test extends PHPCodeCompletionTestBase {
 
-    boolean isGroovyEnabled();
+    public PHPCodeCompletion215058Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests215058/test215058.php", "use ^First\\Cls1;", false);
+    }
+
+    public void testUseCase2() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests215058/test215058.php", "use F^irst\\Cls1;", false);
+    }
+
+    public void testUseCase3() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests215058/test215058.php", "use First\\^Cls1;", false);
+    }
+
+    public void testUseCase4() throws Exception {
+        checkCompletion("testfiles/completion/lib/tests215058/test215058.php", "use First\\C^ls1;", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/tests215058/"))
+            })
+        );
+    }
 
 }
