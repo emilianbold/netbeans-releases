@@ -108,7 +108,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         nbproject.removePropertyChangeListener(pchl);
         synchronized (resourceUris) {
             for (File fl : resourceUris) {
-                FileUtil.removeFileChangeListener(this, fl);
+                FileUtil.removeRecursiveListener(this, fl);
             }
         }
     }

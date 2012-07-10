@@ -53,12 +53,13 @@ import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
 import org.netbeans.spi.java.hints.*;
+import org.netbeans.spi.java.hints.Hint.Options;
 
 /**XXX: null initializer to a non-null variable!
  *
  * @author lahvac
  */
-@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs")
+@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY)
 public class NPECheck {
 
     @TriggerPattern("$var = $expr")
@@ -133,9 +134,10 @@ public class NPECheck {
         ExecutableElement ee = (ExecutableElement) e;
         int index = 0;
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        List<? extends VariableElement> params = ee.getParameters();
 
-        for (VariableElement param : ee.getParameters()) {
-            if (getStateFromAnnotations(param) == NOT_NULL) {
+        for (VariableElement param : params) {
+            if (getStateFromAnnotations(param) == NOT_NULL && (!ee.isVarArgs() || param != params.get(params.size() - 1))) {
                 switch (paramStates.get(index)) {
                     case NULL:
                         result.add(ErrorDescriptionFactory.forTree(ctx, mit.getArguments().get(index), NbBundle.getMessage(NPECheck.class, "ERR_NULL_TO_NON_NULL_ARG")));
@@ -202,7 +204,7 @@ public class NPECheck {
                 return State.POSSIBLE_NULL_REPORT;
             }
 
-            if ("NotNull".equals(simpleName) || "NonNull".equals(simpleName)) {
+            if ("NotNull".equals(simpleName) || "NonNull".equals(simpleName) || "Nonnull".equals(simpleName)) {
                 return State.NOT_NULL;
             }
         }

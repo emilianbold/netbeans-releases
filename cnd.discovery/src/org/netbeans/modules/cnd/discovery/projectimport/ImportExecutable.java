@@ -229,7 +229,11 @@ public class ImportExecutable implements PropertyChangeListener {
             OpenProjects.getDefault().addPropertyChangeListener(this);
             map.put("DW:buildResult", binaryPath); // NOI18N
             map.put("DW:consolidationLevel", ConsolidationStrategy.FILE_LEVEL); // NOI18N
-            map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+            if (sourcesPath != null && sourcesPath.length()>1) {
+                 map.put("DW:rootFolder", sourcesPath); // NOI18N
+            } else {
+                map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+            }
             OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

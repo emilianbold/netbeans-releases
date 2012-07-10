@@ -82,6 +82,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.api.Bundle.*;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
@@ -115,8 +116,7 @@ public final class NbMavenProject {
     private final RequestProcessor.Task task;
     private static RequestProcessor BINARYRP = new RequestProcessor("Maven projects Binary Downloads", 1);
     private static RequestProcessor NONBINARYRP = new RequestProcessor("Maven projects Source/Javadoc Downloads", 1);
-    
-    
+
     static class AccessorImpl extends NbMavenProjectImpl.WatcherAccessor {
         
         
@@ -182,6 +182,16 @@ public final class NbMavenProject {
         support = new PropertyChangeSupport(proj);
         task = createBinaryDownloadTask(BINARYRP);
     }
+    
+    /**
+     * 
+     * @return 
+     * @since 
+     */
+    public boolean isUnloadable() {
+        return MavenProjectCache.isFallbackproject(getMavenProject());
+    }
+    
 
     @Messages({"Progress_Download=Downloading Maven dependencies", "MSG_Failed=Failed to download - {0}", "MSG_Done=Finished retrieving dependencies from remote repositories."})
     private RequestProcessor.Task createBinaryDownloadTask(RequestProcessor rp) {

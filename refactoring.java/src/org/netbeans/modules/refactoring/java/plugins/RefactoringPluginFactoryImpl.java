@@ -42,6 +42,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.Tree;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -60,7 +61,8 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof RenameRefactoring) {
             TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-            if (handle!=null && handle.getKind()==Tree.Kind.VARIABLE) {
+            if (handle!=null && handle.getElementHandle() != null 
+                    && handle.getElementHandle().getKind()==ElementKind.FIELD) {
                 return new RenamePropertyRefactoringPlugin((RenameRefactoring) refactoring);
             }
         }

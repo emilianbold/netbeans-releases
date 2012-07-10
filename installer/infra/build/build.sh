@@ -210,6 +210,7 @@ run() {
             \"-Dgf-mod.build.type=${GFMOD_BUILD_TYPE}\"\
             \"-Dcommunity.mlbuild=${COMMUNITY_ML_BUILD}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
+            \"-Djdk.builds.host=${JDK_BUILDS_HOST}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
             \"-Dsjsam.builds.host=${SJSAM_BUILDS_HOST}\" \
             \"-Dportalpack.builds.host=${PORTALPACK_BUILDS_HOST}\" \

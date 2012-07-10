@@ -376,7 +376,7 @@
 	</if>
 	
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/3.1.2/promoted/latest/archive/bundles"
+            src="${glassfish.builds.host}/java/re/glassfish/v3.1.2/promoted/p02/b04/bundles/b04-2012-07_03/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -385,19 +385,18 @@
         <!-- product version: ${glassfish-mod.release.number}.${glassfish-mod.milestone.number}.${glassfish-mod.build.number} -->
         <echo message="Property glassfish-mod.release.number: ${glassfish-mod.release.number}"/>
         <echo message="Property glassfish-mod.milestone.number: ${glassfish-mod.milestone.number}"/>
+        <echo message="Property glassfish-mod.milestone.number.real: ${glassfish-mod.milestone.number.real}"/>
         <echo message="Property glassfish-mod.build.number: ${glassfish-mod.build.number}"/>
         
         <!--
 	<set property="glassfish-mod-sun.milestone.number"      value="74"/>
 	<set property="glassfish-mod-sun.milestone.number.real" value="74b"/>
 	<set property="glassfish-mod-sun.build.type"            value=""/>
-	<set property="glassfish-mod-sun.build.number"          value="2"/>
+	<set property="glassfish-mod-sun.build.number"          value="2"/>-->
 
-	<set property="glassfish-mod.milestone.number"      value="74"/>
-	<set property="glassfish-mod.milestone.number.real" value="74b"/>
-	<set property="glassfish-mod.build.type"            value=""/>
+	<!-- XXX - a hack for 3.1.2 patch2-->
+        <set property="glassfish-mod.milestone.number"      value="23"/>
 	<set property="glassfish-mod.build.number"          value="2"/>
-	-->
 
         <!--
         <set property="openesb.build.number" value="2008012302"/>                       
@@ -499,6 +498,7 @@ downloads.cache.dir=${nbi.cache.dir}/raw
 binary.cache.host=${binary.cache.host}
 nb.builds.host=${nb.builds.host}
 glassfish.builds.host=${glassfish.builds.host}
+jdk.builds.host=${jdk.builds.host}
 openesb.builds.host=${openesb.builds.host}
 remote.work.dir=~/.${nb.bundle.files.prefix}
 	</echo>

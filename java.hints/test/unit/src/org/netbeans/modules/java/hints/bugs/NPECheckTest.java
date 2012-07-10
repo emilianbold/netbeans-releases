@@ -339,6 +339,19 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings(/*"3:20-3:28:verifier:Possibly Dereferencing null"*/);
     }
     
+    public void testVarArgs1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void t(String str, @NonNull Object... obj) {\n" +
+                       "        t(\"\");\n" +
+                       "    }\n" +
+                       "    @interface NonNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

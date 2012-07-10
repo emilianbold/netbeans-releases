@@ -477,13 +477,6 @@ public final class MainWindow {
                public void windowClosing(WindowEvent evt) {
                    LifecycleManager.getDefault().exit();
                }
-
-               @Override
-               public void windowActivated (WindowEvent evt) {
-                  // #19685. Cancel foreigner popup when
-                  // activated main window.
-                  org.netbeans.core.windows.RegistryImpl.cancelMenu(frame);
-               }
            }
        );
    }
