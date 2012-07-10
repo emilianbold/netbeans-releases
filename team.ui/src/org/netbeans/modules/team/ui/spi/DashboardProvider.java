@@ -70,21 +70,19 @@ public interface DashboardProvider<S extends TeamServer, P> {
     public Action createLogoutAction();
     public Action createLoginAction();
     public LeafNode createMemberNode(MemberHandle user, TreeListNode parent);
-    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<P> project);
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<P> project);
-    public TreeListNode createMyProjectNode(ProjectHandle<P> p);   
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<S, P> project);
+    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<S, P> project);
+    public TreeListNode createMyProjectNode(ProjectHandle<S, P> p);   
     public TreeListNode createSourceNode(SourceHandle s, SourceListNode sln);    
 
     public ProjectAccessor<S, P> getProjectAccessor();
-    public MessagingAccessor<P> getMessagingAccessor();
-    public MemberAccessor<P> getMemberAccessor();
-    public SourceAccessor<P> getSourceAccessor();
-    public QueryAccessor<P> getQueryAccessor();
-    public BuildAccessor<P> getBuildAccessor();
+    public MessagingAccessor<S, P> getMessagingAccessor();
+    public MemberAccessor<S, P> getMemberAccessor();
+    public SourceAccessor<S, P> getSourceAccessor();
+    public QueryAccessor<S, P> getQueryAccessor();
+    public BuildAccessor<S, P> getBuildAccessor();
 
-    public S getServer(ProjectHandle<P> project);
-    
-    public Collection<ProjectHandle<P>> getMyProjects();
+    public Collection<ProjectHandle<S, P>> getMyProjects();
 
     
 }

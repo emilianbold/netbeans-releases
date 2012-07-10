@@ -17,24 +17,24 @@ import javax.swing.Action;
  *
  * @author S. Aubrecht
  */
-public abstract class BuildAccessor<P> {
+public abstract class BuildAccessor<S extends TeamServer, P> {
 
     public abstract Class<P> type();
     
     /**
      * Checks whether build-related UI should even be shown for this project.
      */
-    public abstract boolean isEnabled(ProjectHandle<P> project);
+    public abstract boolean isEnabled( ProjectHandle<S, P> project);
     
     /**
      * Retrieve the list of builds in given project.
      * @return a list of builds (never null)
      */
-    public abstract List<BuildHandle> getBuilds( ProjectHandle<P> project );
+    public abstract List<BuildHandle> getBuilds( ProjectHandle<S, P> project );
 
     /**
      * @return Action to invoke when user clicks 'New Build...' button, or null to disable
      */
-    public abstract Action getNewBuildAction( ProjectHandle<P> project );
+    public abstract Action getNewBuildAction( ProjectHandle<S, P> project );
 
 }

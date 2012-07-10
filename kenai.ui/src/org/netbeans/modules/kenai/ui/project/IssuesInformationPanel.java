@@ -71,7 +71,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiPopupMenu;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;

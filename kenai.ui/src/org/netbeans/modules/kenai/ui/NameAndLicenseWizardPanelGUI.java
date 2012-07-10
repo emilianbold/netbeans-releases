@@ -98,7 +98,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import static org.netbeans.modules.kenai.ui.Bundle.*;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 

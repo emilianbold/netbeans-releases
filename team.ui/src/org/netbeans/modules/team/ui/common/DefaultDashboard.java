@@ -224,7 +224,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         setServer(server);
     }
 
-    public QueryAccessor<P> getQueryAccessor(Class<P> p) {
+    public QueryAccessor<S, P> getQueryAccessor(Class<P> p) {
         Collection<? extends QueryAccessor> c = Lookup.getDefault().lookupAll(QueryAccessor.class);
         for (QueryAccessor a : c) {
             if(a.type().equals(p)) {
@@ -234,7 +234,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return null;
     }
     
-    public BuildAccessor<P> getBuildAccessor(Class<P> p) {
+    public BuildAccessor<S, P> getBuildAccessor(Class<P> p) {
         Collection<? extends BuildAccessor> c = Lookup.getDefault().lookupAll(BuildAccessor.class);
         for (BuildAccessor a : c) {
             if(a.type().equals(p)) {
@@ -252,7 +252,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return server;
     }
 
-    public ProjectHandle<P>[] getOpenProjects() {
+    public ProjectHandle<S, P>[] getOpenProjects() {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
         s.addAll(memberProjects);
@@ -384,7 +384,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
      * @param isMemberProject
      */
     public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {
-        UIUtils.setSelectedServer(dashboardProvider.getServer(project));
+        UIUtils.setSelectedServer(project.getTeamServer());
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -879,7 +879,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return dashboardProvider;
     }
 
-    Collection<ProjectHandle<P>> getMyProjects() {
+    Collection<ProjectHandle<S, P>> getMyProjects() {
         return dashboardProvider.getMyProjects();
     }
 

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.kenai.ui.impl;
 
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;

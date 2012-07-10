@@ -53,7 +53,7 @@ import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
 import org.netbeans.modules.kenai.ui.OpenNetBeansIDEProjects;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
@@ -114,7 +114,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<KenaiServer, KenaiProject> project) {
         return new ProjectLinksNode(pn, project);
     }
 
@@ -129,7 +129,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public MessagingAccessor<KenaiProject> getMessagingAccessor() {
+    public MessagingAccessor<KenaiServer, KenaiProject> getMessagingAccessor() {
         return MessagingAccessorImpl.getDefault();
     }
 
@@ -144,7 +144,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
+    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<KenaiServer, KenaiProject> project) {
         if (server.getUrl().toString().equals("https://netbeans.org")) { //NOI18N
             return new SourceListNode(pn, this, new OpenNetBeansIDEProjects(server.getKenai(), pn));
         } else {
@@ -153,7 +153,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public QueryAccessor<KenaiProject> getQueryAccessor() {
+    public QueryAccessor<KenaiServer, KenaiProject> getQueryAccessor() {
         return server.getDashboard().getQueryAccessor(KenaiProject.class);
     }            
 
@@ -163,12 +163,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public KenaiServer getServer(ProjectHandle<KenaiProject> project) {
-        return KenaiServer.forKenai((project.getTeamProject()).getKenai());
-    }
-
-    @Override
-    public BuildAccessor<KenaiProject> getBuildAccessor() {
+    public BuildAccessor<KenaiServer, KenaiProject> getBuildAccessor() {
         return new BuildAccessor() {
             public boolean isEnabled(ProjectHandle project) {
                 return false;
@@ -188,7 +183,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public Collection<ProjectHandle<KenaiProject>> getMyProjects() {
+    public Collection<ProjectHandle<KenaiServer, KenaiProject>> getMyProjects() {
         return server.getMyProjects();
     }
     

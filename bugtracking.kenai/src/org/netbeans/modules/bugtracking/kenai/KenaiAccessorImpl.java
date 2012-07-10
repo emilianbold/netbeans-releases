@@ -68,6 +68,7 @@ import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
@@ -181,13 +182,13 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject[] getDashboardProjects() {
-        ProjectHandle<KenaiProject>[] handles = UIUtils.getDashboardProjects();
+        ProjectHandle<KenaiServer, KenaiProject>[] handles = UIUtils.getDashboardProjects();
         if ((handles == null) || (handles.length == 0)) {
             return new KenaiProjectImpl[0];
         }
 
         List<KenaiProjectImpl> kenaiProjects = new LinkedList<KenaiProjectImpl>();
-        for (ProjectHandle<KenaiProject> handle : handles) {
+        for (ProjectHandle<KenaiServer, KenaiProject> handle : handles) {
             KenaiProject project = handle.getTeamProject();
             if (project != null) {
                 kenaiProjects.add(KenaiProjectImpl.getInstance(project));

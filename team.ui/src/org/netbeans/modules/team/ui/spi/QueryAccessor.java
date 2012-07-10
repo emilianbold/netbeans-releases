@@ -17,7 +17,7 @@ import javax.swing.Action;
  *
  * @author S. Aubrecht
  */
-public abstract class QueryAccessor<P> {
+public abstract class QueryAccessor<S extends TeamServer, P> {
 
     public abstract Class<P> type();
     
@@ -28,14 +28,14 @@ public abstract class QueryAccessor<P> {
      * @param project
      * @return a QueryHandle or null if not available
      */
-    public abstract QueryHandle getAllIssuesQuery( ProjectHandle<P> project );
+    public abstract QueryHandle getAllIssuesQuery( ProjectHandle<S, P> project );
 
     /**
      * Retrieve the list of queries defined for given project.
      * @param project
      * @return
      */
-    public abstract List<QueryHandle> getQueries( ProjectHandle<P> project );
+    public abstract List<QueryHandle> getQueries( ProjectHandle<S, P> project );
 
     /**
      * Execute given query and retrieve the results.
@@ -50,14 +50,14 @@ public abstract class QueryAccessor<P> {
      * @param project
      * @return Action to invoke when user clicks 'Find Issue...' button.
      */
-    public abstract Action getFindIssueAction( ProjectHandle<P> project );
+    public abstract Action getFindIssueAction( ProjectHandle<S, P> project );
 
     /**
      *
      * @param project
      * @return Action to invoke when user clicks 'Create Issue...' button.
      */
-    public abstract Action getCreateIssueAction( ProjectHandle<P> project );
+    public abstract Action getCreateIssueAction( ProjectHandle<S, P> project );
 
     /**
      *
@@ -80,7 +80,7 @@ public abstract class QueryAccessor<P> {
      * @param project
      * @param newQueryList
      */
-    protected final void fireQueryListChanged( ProjectHandle<P> project, List<QueryHandle> newQueryList ) {
+    protected final void fireQueryListChanged( ProjectHandle<S, P> project, List<QueryHandle> newQueryList ) {
         project.firePropertyChange(ProjectHandle.PROP_QUERY_LIST, null, newQueryList);
     }
 }

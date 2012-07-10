@@ -59,7 +59,6 @@ import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.team.ui.common.UserNode;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
 import org.netbeans.modules.kenai.ui.impl.LoginUtils;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -190,7 +189,7 @@ public final class UIUtils {
         return result;
     }
 
-    public static ProjectHandle<KenaiProject>[] getDashboardProjects() {
+    public static ProjectHandle<KenaiServer, KenaiProject>[] getDashboardProjects() {
         return KenaiServer.getOpenProjects();
     }
     

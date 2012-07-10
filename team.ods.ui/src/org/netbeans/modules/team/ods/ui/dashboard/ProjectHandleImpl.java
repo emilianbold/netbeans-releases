@@ -41,34 +41,42 @@
  */
 package org.netbeans.modules.team.ods.ui.dashboard;
 
-import org.netbeans.modules.team.ods.ui.api.ODSProject;
+import com.tasktop.c2c.server.profile.domain.project.Project;
+import org.netbeans.modules.team.ods.ui.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class ProjectHandleImpl extends ProjectHandle<ODSProject> {
-    private final ODSProject project;
+public class ProjectHandleImpl extends ProjectHandle<CloudUiServer, Project> {
+    private final Project project;
+    private final CloudUiServer server;
 
-    public ProjectHandleImpl(ODSProject project) {
-        super(String.valueOf(project.getProject().getId()));
+    public ProjectHandleImpl(CloudUiServer server, Project project) {
+        super(String.valueOf(project.getId()));
         this.project = project;
+        this.server = server;
     }
     
     @Override
     public String getDisplayName() {
-        return project.getProject().getName();
+        return project.getName();
     }
 
     @Override
-    public ODSProject getTeamProject() {
+    public Project getTeamProject() {
         return project;
     }
 
     @Override
     public boolean isPrivate() {
         return false;
+    }
+
+    @Override
+    public CloudUiServer getTeamServer() {
+        return server;
     }
     
 }

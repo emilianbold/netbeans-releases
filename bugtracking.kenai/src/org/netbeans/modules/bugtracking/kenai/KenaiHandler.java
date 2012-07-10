@@ -64,6 +64,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.kenai.ui.spi.UIUtils;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
@@ -135,7 +136,7 @@ class KenaiHandler {
         lastLoggedUser = getKenaiUser();
     }
 
-    List<QueryHandle> getQueryHandles(ProjectHandle<KenaiProject> project, Query... queries) {
+    List<QueryHandle> getQueryHandles(ProjectHandle<KenaiServer, KenaiProject> project, Query... queries) {
         return getQueryHandles(project.getTeamProject().getName(), queries);
     }
 
@@ -228,7 +229,7 @@ class KenaiHandler {
         });
     }
 
-    void registerProject(ProjectHandle<KenaiProject> project, List<QueryHandle> queries) {
+    void registerProject(ProjectHandle<KenaiServer, KenaiProject> project, List<QueryHandle> queries) {
         ProjectListener pl;
         synchronized (projectListeners) {
             pl = projectListeners.get(project.getId());
@@ -245,7 +246,7 @@ class KenaiHandler {
         }
     }
 
-    void registerRepository(Repository repo, ProjectHandle<KenaiProject> project) {
+    void registerRepository(Repository repo, ProjectHandle<KenaiServer, KenaiProject> project) {
         KenaiRepositoryListener krl = null;
         synchronized (kenaiRepoListeners) {
             String url = project.getTeamProject().getKenai().getUrl().toString();
@@ -325,7 +326,7 @@ class KenaiHandler {
 
     private class ProjectListener implements PropertyChangeListener {
         private List<QueryHandle> queries;
-        private ProjectHandle<KenaiProject> ph;
+        private ProjectHandle<KenaiServer, KenaiProject> ph;
         public ProjectListener(ProjectHandle ph, List<QueryHandle> queries) {
             this.queries = queries;
             this.ph = ph;

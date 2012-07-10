@@ -51,7 +51,7 @@ import javax.swing.*;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
-import org.netbeans.modules.kenai.ui.impl.KenaiServer;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
@@ -78,7 +78,7 @@ import org.openide.util.RequestProcessor;
 public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements ProjectProvider {
 
     private Notification bugNotification;
-    private final ProjectHandle<KenaiProject> project;
+    private final ProjectHandle<KenaiServer, KenaiProject> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
     private final MessagingAccessor maccessor;
@@ -116,7 +116,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
     private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
 
-    public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
+    public MyProjectNode( final ProjectHandle<KenaiServer, KenaiProject> project ) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N

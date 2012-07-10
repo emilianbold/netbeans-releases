@@ -104,7 +104,7 @@ public class MemberListNode<S extends TeamServer, P> extends SectionNode {
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        MemberAccessor<P> accessor = dashboard.getMemberAccessor();
+        MemberAccessor<S, P> accessor = dashboard.getMemberAccessor();
         List<MemberHandle> sources = accessor.getMembers(project);
         for (MemberHandle s : sources) {
             LeafNode n = dashboard.createMemberNode(s, this);

@@ -59,6 +59,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
@@ -76,14 +77,14 @@ import org.openide.util.NbBundle;
  */
 public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> implements PropertyChangeListener {
 
-    private final ProjectHandle<KenaiProject> project;
+    private final ProjectHandle<KenaiServer, KenaiProject> project;
     private MessagingHandle messaging;
     private JPanel panel;
     private List<JLabel> labels = new ArrayList<JLabel>(5);
     private List<LinkButton> buttons = new ArrayList<LinkButton>(3);
     private final Object LOCK = new Object();
 
-    public ProjectLinksNode( TreeListNode parent, ProjectHandle<KenaiProject> project ) {
+    public ProjectLinksNode( TreeListNode parent, ProjectHandle<KenaiServer, KenaiProject> project ) {
         super( parent, null );
         this.project = project;
         messaging = load();

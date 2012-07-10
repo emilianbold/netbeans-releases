@@ -49,6 +49,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.netbeans.modules.kenai.ui.spi.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -61,7 +62,7 @@ public class DetailsAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<KenaiProject> proj) {
+    public static synchronized AbstractAction forProject(final ProjectHandle<KenaiServer, KenaiProject> proj) {
 
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject")) { //NOI18N
 

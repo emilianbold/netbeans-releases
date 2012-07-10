@@ -58,6 +58,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.Exceptions;
 
 /**
@@ -194,6 +195,11 @@ public class QueryAccessorTest extends NbTestCase {
         @Override
         public KenaiProject getTeamProject() {
             return kp;
+        }
+
+        @Override
+        public TeamServer getTeamServer() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }

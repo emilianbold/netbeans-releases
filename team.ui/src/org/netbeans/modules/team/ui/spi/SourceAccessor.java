@@ -17,7 +17,7 @@ import javax.swing.Action;
  * 
  * @author S. Aubrecht
  */
-public abstract class SourceAccessor<P> {
+public abstract class SourceAccessor<S extends TeamServer, P> {
 
     /**
      * 
@@ -31,7 +31,7 @@ public abstract class SourceAccessor<P> {
      * @param project
      * @return
      */
-    public abstract List<SourceHandle> getSources( ProjectHandle<P> project );
+    public abstract List<SourceHandle> getSources( ProjectHandle<S, P> project );
 
     /**
      *
