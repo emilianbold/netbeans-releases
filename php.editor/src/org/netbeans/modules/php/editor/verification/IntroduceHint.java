@@ -314,13 +314,10 @@ public class IntroduceHint extends AbstractRule {
             if ("self".equals(name) || "parent".equals(name)) {
                 //NOI18N
                 ClassDeclaration classDeclaration = null;
-                List<ASTNode> path = getPath();
-                synchronized (path) {
-                    for (ASTNode aSTNode : path) {
-                        if (aSTNode instanceof ClassDeclaration) {
-                            classDeclaration = (ClassDeclaration) aSTNode;
-                            break;
-                        }
+                for (ASTNode aSTNode : getPath()) {
+                    if (aSTNode instanceof ClassDeclaration) {
+                        classDeclaration = (ClassDeclaration) aSTNode;
+                        break;
                     }
                 }
                 if (classDeclaration != null) {
