@@ -446,6 +446,20 @@ public final class SimpleValueNames {
      * </ul>
      */
     public static final String EDITOR_SEARCH_TYPE = "editor-search-type"; //NOI18N
+    
+    /**
+     * Show brace matching outline in the sidebar of the editor.
+     * Values: Boolean instances.
+     * Default: true
+     */
+    public static final String BRACE_SHOW_OUTLINE = "editor-brace-outline"; // NOI18N
+
+    /**
+     * Show tooltips if the brace start line is hidden (outside the screen).
+     * Values: Boolean instances.
+     * Default: true
+     */
+    public static final String BRACE_FIRST_TOOLTIP = "editor-brace-first-tooltip"; // NOI18N
 
     @PatchedPublic
     private SimpleValueNames() {

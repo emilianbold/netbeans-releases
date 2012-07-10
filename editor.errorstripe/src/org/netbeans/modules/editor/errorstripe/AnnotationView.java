@@ -701,7 +701,7 @@ public class AnnotationView extends JComponent implements FoldHierarchyListener,
     }
 
     public Dimension getPreferredSize() {
-        return new Dimension(THICKNESS, Integer.MAX_VALUE);
+        return new Dimension(THICKNESS, Integer.MIN_VALUE);
     }
 
     public void mouseReleased(MouseEvent e) {
