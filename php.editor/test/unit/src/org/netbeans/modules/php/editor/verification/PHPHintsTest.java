@@ -79,4 +79,8 @@ public class PHPHintsTest extends PHPHintsTestBase {
         checkHintsInStartEndFile(new UnusedUsesHint(), "testUnusedUsesHint.php");
     }
 
+    public void testAmbiguousComparisonHint() throws Exception {
+        checkHintsInStartEndFile(new AmbiguousComparisonHint(), "testAmbiguousComparisonHint.php");
+    }
+
 }
