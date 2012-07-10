@@ -56,6 +56,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -90,6 +91,8 @@ public final class FormatContext {
             regions.add(new Region(region.getStartOffset(), region.getEndOffset()));
         }
 
+        dumpRegions();
+
         this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath())
                 && !JsTokenId.JSON_MIME_TYPE.equals(context.mimePath());
 
@@ -121,7 +124,9 @@ public final class FormatContext {
                             ts.move(embeddedOffset);
                             if (ts.moveNext()) {
                                 Token<? extends JsTokenId> token = ts.token();
-                                if (token.id() == JsTokenId.WHITESPACE) {
+                                // BEWARE whitespace must span across the whole line
+                                if (token.id() == JsTokenId.WHITESPACE
+                                        && (lineOffset + token.length()) == endOffset) {
                                     region.setOriginalEnd(lineOffset);
                                 }
                             }
@@ -131,9 +136,27 @@ public final class FormatContext {
                     LOGGER.log(Level.INFO, null, ex);
                 }
             }
+
+            LOGGER.log(Level.FINE, "Tuned regions");
+            dumpRegions();
         }
     }
 
+    private void dumpRegions() {
+        if (!LOGGER.isLoggable(Level.FINE)) {
+            return;
+        }
+
+        for (Region region : regions) {
+            try {
+                LOGGER.log(Level.FINE, region.getOriginalStart() + ":" + region.getOriginalEnd()
+                        + ":" + getDocument().getText(region.getOriginalStart(), region.getOriginalEnd() - region.getOriginalStart()));
+            } catch (BadLocationException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
+        }
+    }
+    
     private int getDocumentOffset(int offset) {
         return getDocumentOffset(offset, true);
     }
@@ -182,7 +205,27 @@ public final class FormatContext {
         }
         if (start != null) {
             try {
-                return context.lineIndent(context.lineStartOffset(start.getOriginalStart()))
+                /*
+                 * If the lineStart is going to be in different region (this
+                 * might happen) we move to that region and we're getting
+                 * the indent from the start of that region.
+                 */
+                int lineStart = context.lineStartOffset(start.getOriginalStart());
+                while (start != null && lineStart < start.getOriginalStart()) {
+
+                    Region previousStart = null;
+                    for (Region region : regions) {
+                        if (lineStart >= region.getOriginalStart() && lineStart < region.getOriginalEnd()) {
+                            previousStart = region;
+                            break;
+                        }
+                    }
+                    if (previousStart != null) {
+                        lineStart = context.lineStartOffset(previousStart.getOriginalStart());
+                    }
+                    start = previousStart;
+                }
+                return context.lineIndent(lineStart)
                         + IndentUtils.indentLevelSize(getDocument());
             } catch (BadLocationException ex) {
                 LOGGER.log(Level.INFO, null, ex);

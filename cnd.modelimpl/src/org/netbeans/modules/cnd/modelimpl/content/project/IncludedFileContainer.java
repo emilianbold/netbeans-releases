@@ -281,14 +281,14 @@ public final class IncludedFileContainer {
         public Storage(RepositoryDataInput aStream) throws IOException {
             super(aStream);
             fileSystem = PersistentUtils.readFileSystem(aStream);
-            FileContainer.readStringToFileEntryMap(fileSystem, aStream, myFiles);
+            FileContainer.readStringToFileEntryMap(fileSystem, getUnitId(), aStream, myFiles);
         }
 
         @Override
         public void write(RepositoryDataOutput aStream) throws IOException {
             super.write(aStream);
             PersistentUtils.writeFileSystem(fileSystem, aStream);
-            FileContainer.writeStringToFileEntryMap(aStream, myFiles);
+            FileContainer.writeStringToFileEntryMap(getUnitId(), aStream, myFiles);
         }
 
         @Override

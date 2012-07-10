@@ -102,12 +102,9 @@ public class CheckPHPVersionVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ConstantDeclaration statement) {
-        List<ASTNode> path = getPath();
-        synchronized (path) {
-            for (ASTNode node : path) {
-                if (node instanceof TypeDeclaration) {
-                    return;
-                }
+        for (ASTNode node : getPath()) {
+            if (node instanceof TypeDeclaration) {
+                return;
             }
         }
         createError(statement);
