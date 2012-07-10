@@ -143,6 +143,7 @@
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.java.editor</friend>
                 <friend>org.netbeans.modules.java.j2seproject</friend>
+                <friend>org.netbeans.modules.javafx2.editor</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.api.whitelist</package>
                 <package>org.netbeans.api.whitelist.index</package>
