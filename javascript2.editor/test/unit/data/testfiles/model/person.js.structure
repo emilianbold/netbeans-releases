@@ -16,6 +16,11 @@ Person:CONSTRUCTOR:[PUBLIC]:ESCAPED{Person}ESCAPED{(}PARAMETERS{ESCAPED{n}ESCAPE
   myName:VARIABLE:[PRIVATE]:ESCAPED{myName}<font color="#999999">ESCAPED{ : }Object</font>:
   population:FIELD:[PUBLIC, STATIC]:ESCAPED{population}<font color="#999999">ESCAPED{ : }Number</font>:
   prototype:CLASS:[PUBLIC]:ESCAPED{prototype}:
+    amputate:METHOD:[PUBLIC]:ESCAPED{amputate}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    beCool:METHOD:[PUBLIC]:ESCAPED{beCool}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    legs:FIELD:[PUBLIC]:ESCAPED{legs}<font color="#999999">ESCAPED{ : }Number</font>:
+    showLegs:METHOD:[PUBLIC]:ESCAPED{showLegs}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+    shower:METHOD:[PUBLIC]:ESCAPED{shower}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   toString:METHOD:[PROTECTED]:ESCAPED{toString}ESCAPED{(}PARAMETERS{}ESCAPED{)}:
   weigh:METHOD:[PROTECTED]:ESCAPED{weigh}ESCAPED{(}PARAMETERS{}ESCAPED{)}:
   weight:VARIABLE:[PRIVATE]:ESCAPED{weight}<font color="#999999">ESCAPED{ : }Number</font>:

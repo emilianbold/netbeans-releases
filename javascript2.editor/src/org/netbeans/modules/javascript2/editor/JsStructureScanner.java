@@ -88,7 +88,7 @@ public class JsStructureScanner implements StructureScanner {
         Collection<? extends JsObject> properties = jsObject.getProperties().values();
         boolean countFunctionChild = (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                 && !containsFunction(jsObject)) 
-                || ("prototype".equals(jsObject.getName()) && !properties.isEmpty());
+                || ("prototype".equals(jsObject.getName()) && properties.isEmpty());
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
