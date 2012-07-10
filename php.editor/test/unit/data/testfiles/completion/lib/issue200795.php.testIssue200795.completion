@@ -6,12 +6,14 @@ PACKAGE    Admin                           [PUBLIC]   null
 PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Bar                             [PUBLIC]   null
+PACKAGE    Baz                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
 PACKAGE    CNS                             [PUBLIC]   null
 PACKAGE    Core                            [PUBLIC]   null
 PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
+PACKAGE    Fom                             [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
@@ -49,6 +51,8 @@ PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
 PACKAGE    Bar                             [PUBLIC]   Foo
 PACKAGE    Base                            [PUBLIC]   Brite
+PACKAGE    Bat                             [PUBLIC]   Baz
+PACKAGE    Bom                             [PUBLIC]   Fom
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
 PACKAGE    NNS                             [PUBLIC]   CNS
@@ -115,6 +119,7 @@ CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
+CLASS      ClassName                       [PUBLIC]   Fom\Bom
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
 CLASS      Cls1                            [PUBLIC]   TestCase.php

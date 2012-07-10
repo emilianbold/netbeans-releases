@@ -321,6 +321,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
                     autoCompleteAfterUses(completionResult, request, codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED, false);
                     break;
+                case USE_TRAITS:
+                    CodeStyle traitCodeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                    autoCompleteAfterUseTrait(completionResult, request, traitCodeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED);
+                    break;
                 case TYPE_NAME:
                     autoCompleteNamespaces(completionResult, request);
                     autoCompleteTypeNames(completionResult, request);
@@ -583,6 +587,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request) {
         autoCompleteTypeNames(completionResult, request, null, false);
+    }
+
+    private void autoCompleteAfterUseTrait(final PHPCompletionResult completionResult, final PHPCompletionItem.CompletionRequest request, final QualifiedNameKind kind) {
+        Set<NamespaceElement> namespaces = request.index.getNamespaces(
+                NameKind.caseInsensitivePrefix(QualifiedName.create(request.prefix).toNotFullyQualified()));
+        for (NamespaceElement namespace : namespaces) {
+            completionResult.add(new PHPCompletionItem.NamespaceItem(namespace, request, kind));
+        }
+        final NameKind nameQuery = NameKind.caseInsensitivePrefix(request.prefix);
+        for (TraitElement trait : request.index.getTraits(nameQuery)) {
+            completionResult.add(new PHPCompletionItem.TraitItem(trait, request));
+        }
     }
 
     private void autoCompleteAfterUses(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {
