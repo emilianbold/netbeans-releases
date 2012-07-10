@@ -96,6 +96,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                                 || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                             current = current.getParent();
+                            if (current.getName().equals("prototype")) {
+                                current = current.getParent();
+                            }
                             property = current.getProperty(iNode.getName());
                         }
                         if (property == null && current.getParent() == null) {
@@ -127,6 +130,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         // check whether is not a part of method in constructor
                         if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
                             current = current.getParent();
+                            if (current.getName().equals("prototype")) {
+                                current = current.getParent();
+                            }
                         }
                     } 
                     fromAN = (JsObjectImpl)current;
