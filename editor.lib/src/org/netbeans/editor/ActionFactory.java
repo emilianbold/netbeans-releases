@@ -1250,6 +1250,10 @@ public class ActionFactory {
                         revertMap.put(EditorFindSupport.FIND_WHOLE_WORDS, originalValue != null ? originalValue : Boolean.FALSE);
                         props.put(EditorFindSupport.REVERT_MAP, revertMap);
                     }
+                    
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
 
                     EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
                     if (eui.getComponent().getClientProperty("AsTextField") == null) { //NOI18N
