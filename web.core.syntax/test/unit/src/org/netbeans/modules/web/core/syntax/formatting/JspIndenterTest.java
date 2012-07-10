@@ -149,8 +149,7 @@ public class JspIndenterTest extends TestBase2 {
         ExpressionLanguageIndentTaskFactory elReformatFactory = new ExpressionLanguageIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/x-el"), elReformatFactory);
         GsfIndentTaskFactory jsFactory = new GsfIndentTaskFactory();
-        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), jsFactory, GsfParserFactory.create(FileUtil.getConfigRoot().getFileObject("Editors/text/javascript/org-netbeans-modules-csl-core-CslEditorKit-createLexerLanguageInstance.instance")));
-        MockMimeLookup.setInstances(MimePath.EMPTY, new JsEmbeddingProvider.Factory(), new CssEmbeddingProvider.Factory());
+        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), jsFactory);
     }
 
     @Override
@@ -250,10 +249,9 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("testfilesformatting/case010.jsp", new IndentPrefs(4, 4));
     }
 
-// randomly fails; JavaScript formatter related
-//    public void testFormattingCase011() throws Exception {
-//        reformatFileContents("testfilesformatting/case011.jsp", new IndentPrefs(4, 4));
-//    }
+    public void testFormattingCase011() throws Exception {
+        reformatFileContents("testfilesformatting/case011.jsp", new IndentPrefs(4, 4));
+    }
 
     public void testFormattingCase012() throws Exception {
         reformatFileContents("testfilesformatting/case012.jsp", new IndentPrefs(4, 4));
@@ -275,10 +273,9 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("testfilesformatting/issue160098.jsp", new IndentPrefs(4, 4));
     }
 
-// fails in JavaScript section; commenting out for now
-//    public void testFormattingIssue160103() throws Exception {
-//        reformatFileContents("testfilesformatting/issue160103.jsp", new IndentPrefs(4, 4));
-//    }
+    public void testFormattingIssue160103() throws Exception {
+        reformatFileContents("testfilesformatting/issue160103.jsp", new IndentPrefs(4, 4));
+    }
 
     public void testFormattingIssue160527() throws Exception {
         reformatFileContents("testfilesformatting/issue160527.jsp", new IndentPrefs(4, 4));
