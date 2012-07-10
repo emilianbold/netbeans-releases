@@ -62,48 +62,48 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author Petr Hejl
  */
 public final class FormatContext {
-    
+
     private static final Logger LOGGER = Logger.getLogger(FormatContext.class.getName());
 
     private static final Pattern SAFE_DELETE_PATTERN = Pattern.compile("\\s*"); // NOI18N
 
     private final Context context;
-    
+
     private final Snapshot snapshot;
 
     private final int initialStart;
-    
+
     private final int initialEnd;
-    
+
     private final List<Region> regions;
-    
+
     private final boolean embedded;
-    
+
     public FormatContext(Context context, Snapshot snapshot) {
         this.context = context;
         this.snapshot = snapshot;
         this.initialStart = context.startOffset();
         this.initialEnd = context.endOffset();
-    
+
         regions = new ArrayList<Region>(context.indentRegions().size());
         for (Context.Region region : context.indentRegions()) {
             regions.add(new Region(region.getStartOffset(), region.getEndOffset()));
         }
-        
+
         this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath())
                 && !JsTokenId.JSON_MIME_TYPE.equals(context.mimePath());
-        
+
         /*
          * What we do here is fix for case like this:
          * <head>
          *     <script>[REGION_START]
          *         var x = 1;
          *         function test() {
-         *             x ="";    
+         *             x ="";
          *         }
          *     [REGION_END]</script>
          * </head>
-         * 
+         *
          * The last line with REGION_END would be considered empty line and
          * truncated. So we could either avoid that or shift the REGION_END to
          * the line start offset. We do the latter.
@@ -133,11 +133,11 @@ public final class FormatContext {
             }
         }
     }
-    
+
     private int getDocumentOffset(int offset) {
         return getDocumentOffset(offset, true);
     }
-    
+
     private int getDocumentOffset(int offset, boolean check) {
         if (!embedded) {
             if (!check || (offset >= initialStart && offset < initialEnd)) {
@@ -145,12 +145,12 @@ public final class FormatContext {
             }
             return -1;
         }
-        
+
         int docOffset = snapshot.getOriginalOffset(offset);
         if (docOffset < 0) {
             return -1;
         }
-        
+
         for (Region region : regions) {
             if (docOffset >= region.getOriginalStart() && docOffset < region.getOriginalEnd()) {
                 return docOffset;
@@ -162,12 +162,12 @@ public final class FormatContext {
     public boolean isEmbedded() {
         return embedded;
     }
-    
+
     public int getEmbeddingIndent(int offset) {
         if (!embedded) {
             return 0;
         }
-        
+
         int docOffset = snapshot.getOriginalOffset(offset);
         if (docOffset < 0) {
             return 0;
@@ -190,23 +190,23 @@ public final class FormatContext {
         }
         return 0;
     }
-    
+
     public BaseDocument getDocument() {
         return (BaseDocument) context.document();
     }
-    
+
     public int indentLine(int voffset, int indentationSize, int offsetDiff,
-            JsFormatter.Indentation indentationCheck) { 
-        
+            JsFormatter.Indentation indentationCheck) {
+
         if (!indentationCheck.isAllowed()) {
             return offsetDiff;
         }
-        
+
         int offset = getDocumentOffset(voffset, !indentationCheck.isExceedLimits());
         if (offset < 0) {
             return offsetDiff;
         }
-        
+
         try {
             int diff = GsfUtilities.setLineIndentation(getDocument(),
                     offset + offsetDiff, indentationSize);
@@ -216,7 +216,7 @@ public final class FormatContext {
         }
         return offsetDiff;
     }
-    
+
     public int insert(int voffset, String newString, int offsetDiff) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
@@ -242,7 +242,7 @@ public final class FormatContext {
         if (offset < 0) {
             return offsetDiff;
         }
-        
+
         BaseDocument doc = getDocument();
         try {
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, oldString.length())).matches()) {
@@ -265,7 +265,7 @@ public final class FormatContext {
         if (offset < 0) {
             return offsetDiff;
         }
-        
+
         BaseDocument doc = getDocument();
         try {
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
@@ -285,7 +285,7 @@ public final class FormatContext {
     private static class Region {
 
         private final int originalStart;
-        
+
         private int originalEnd;
 
         public Region(int originalStart, int originalEnd) {
