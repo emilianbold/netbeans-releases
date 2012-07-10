@@ -84,6 +84,52 @@ NetBeans.showPageIcon = function(tabId) {
 NetBeans.hidePageIcon = function(tabId) {
     chrome.pageAction.hide(tabId);
 }
+// show infobar
+NetBeans.showInfoBar = function(tabId) {
+    chrome.experimental.infobars.show({
+        tabId : tabId,
+        path: 'html/infobar.html'
+    });
+}
+NetBeans.resetPageSize = function(callback) {
+    chrome.windows.getLastFocused(function(win) {
+        var opt = {};
+        opt.state = 'maximized';
+        chrome.windows.update(win.id, opt);
+        if (callback) {
+            callback();
+        }
+    });
+}
+NetBeans.resizePage = function(preset, callback) {
+    if (preset == null) {
+        this.resetPageSize(callback);
+        return;
+    }
+    var data = NetBeans_Presets.getPreset(preset);
+    if (data == null) {
+        console.error('Preset [' + preset + '] not found.');
+        return;
+    }
+    this._resizePage(data['width'], data['height'], callback);
+}
+// resize actual page
+NetBeans._resizePage = function(width, height, callback) {
+    chrome.windows.getLastFocused(function(win) {
+        var opt = {};
+        opt.state = 'normal';
+        opt.width = parseInt(width);
+        opt.height = parseInt(height);
+        chrome.windows.update(win.id, opt);
+        if (callback) {
+            callback();
+        }
+    });
+}
+// show preset customizer
+NetBeans.showPresetCustomizer = function() {
+    chrome.tabs.create({'url': 'html/options.html'});
+}
 
 NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     if (NetBeans.DEBUG) {
@@ -99,6 +145,18 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
             }
         });
 }
+
+// "fired" when presets changed
+NetBeans_Presets.presetsChanged = function() {
+    // no need to refresh popup, refresh only infobar(s)
+    var views = chrome.extension.getViews({type: "infobar"});
+    console.log('Refreshing ' + views.length +  ' infobars');
+    for (var i in views) {
+        var view = views[i];
+        view.NetBeans_Infobar.redrawPresets();
+    }
+}
+
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});

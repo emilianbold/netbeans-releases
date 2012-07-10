@@ -65,24 +65,15 @@ NetBeans_PresetMenu.hide = function() {
 }
 NetBeans_PresetMenu.resetPage = function() {
     var that = this;
-    chrome.windows.getLastFocused(function(win) {
-        var opt = {};
-        opt.state = 'maximized';
-        chrome.windows.update(win.id, opt);
+    NetBeans.resetPageSize(function() {
         that.hide();
     });
 }
 NetBeans_PresetMenu.resizePage = function(preset) {
-    if (preset == null) {
-        this.resetPage();
-        return;
-    }
-    var data = NetBeans_Presets.getPreset(preset);
-    if (data == null) {
-        console.error('Preset [' + preset + '] not found.');
-        return;
-    }
-    this._resizePage(data['width'], data['height']);
+    var that = this;
+    NetBeans.resizePage(preset, function() {
+        that.hide();
+    });
 }
 /*** ~Private ***/
 // menu init
@@ -159,21 +150,9 @@ NetBeans_PresetMenu._putPresetsInternal = function(showInToolbar) {
         menu.appendChild(document.createElement('hr'));
     }
 }
-// resize page
-NetBeans_PresetMenu._resizePage = function(width, height) {
-    var that = this;
-    chrome.windows.getLastFocused(function(win) {
-        var opt = {};
-        opt.state = 'normal';
-		opt.width = parseInt(width);
-		opt.height = parseInt(height);
-        chrome.windows.update(win.id, opt);
-        that.hide();
-    });
-}
 // show preset customizer
 NetBeans_PresetMenu._showPresetCustomizer = function() {
-    chrome.tabs.create({'url': 'html/options.html'});
+    NetBeans.showPresetCustomizer();
     this.hide();
 }
 

@@ -43,48 +43,20 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
 <!DOCTYPE html>
 <html>
     <head>
-        <title>NetBeans Options</title>
+        <title></title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="stylesheet" type="text/css" href="../css/options.css">
+        <link rel="stylesheet" type="text/css" href="../css/infobar.css">
     </head>
     <body>
-        <div id="main">
 
-            <div id="presetCustomizer">
-                <div class="title">Customize Window Settings<a href="#" id="closePresetCustomizer" title="Close without Saving">X</a></div>
-                <div class="content">
-                    <div class="info">Configure window size options and control which appear in the Preview toolbar.</div>
-                    <p>Display sizes:</p>
-                    <table id="presetCustomizerTable">
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Name</th>
-                                <th>Width</th>
-                                <th>Height</th>
-                                <th>Toolbar</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                    <div class="presetButtons">
-                        <button id="addPreset" title="Add Size">New</button>
-                        <button id="removePreset" disabled="disabled" title="Remove Size">Remove</button>
-                        <button id="moveUpPreset" disabled="disabled" title="Move Size Up">Move Up</button>
-                        <button id="moveDownPreset" disabled="disabled" title="Move Size Down">Move Down</button>
-                    </div>
-                    <div class="clear"></div>
-                    <div class="buttons">
-                        <button id="presetCustomizerOk" title="Save and Close">OK</button>
-                        <button id="presetCustomizerCancel" title="Close without Saving">Cancel</button>
-                        <button id="presetCustomizerHelp" title="Show Help">Help</button>
-                    </div>
-                    <div class="clear"></div>
-                </div>
+        <div id="nbpanel">
+            <div id="preview">
+                <div id="presets">Loading presets...</div>
+                <a href="#" id="autoPresetButton" class="button" title="Actual Window Size">Auto</a>
+                <a href="#" id="presetCustomizerButton" class="button" title="Window Settings Menu">&hellip;</a>
             </div>
-            <script type="text/javascript" src="../js/options.js"></script>
-
         </div>
+        <script type="text/javascript" src="../js/infobar.js"></script>
 
     </body>
 </html>

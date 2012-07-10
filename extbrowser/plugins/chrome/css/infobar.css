@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "NetBeans IDE Support Plugin",
-  "version": "0.4.12",
 
-  "background_page": "html/main.html",
+body {
+    font-family: Tahoma, Helvetica;
+    font-size: 12px;
+}
+a {
+    text-decoration: none;
+}
 
-  "options_page": "html/options.html",
+button, .button {
+    cursor: pointer;
+    font-weight: bold;
+    position: relative;
+    margin-right: 4px;
+    background-color: orange;
+    border: 1px solid orange;
+    border-radius: 3px;
+    color: white;
+    padding: 2px 4px;
+    box-shadow: 1px 1px 5px #1D1D1D;
+}
+button:hover, .button:hover {
+    background-color: darkorange;
+}
+button.disabled, button[disabled=disabled], .button.disabled {
+    cursor: not-allowed;
+    border: 1px solid grey;
+    background-color: grey;
+}
+button.disabled:hover, button[disabled=disabled]:hover, .button.disabled:hover {
+    background-color: grey;
+}
 
-  "page_action": {
-    "default_icon": "img/netbeans16.png",
-    "default_title": "Open NetBeans actions",
-    "default_popup": "html/popup.html"
-  },
-
-  "permissions": [
-    "experimental",
-    "tabs",
-    "<all_urls>",
-    "debugger"
-  ],
-
-  "icons": {
-    "16": "img/netbeans16.png",
-    "48": "img/netbeans48.png",
-    "128": "img/netbeans128.png"
-  }
-
+#preview * {
+    float: left;
 }
