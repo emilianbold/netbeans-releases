@@ -42,37 +42,19 @@
 package org.netbeans.modules.css.visual.api;
 
 /**
- * View modes for the {@link RuleEditorPanel}.
  *
  * @author marekfukala
  */
-public enum ViewMode {
+public enum SortMode {
     
     /**
-     * Standard view mode.
-     * 
-     * Shows only physical properties of the selected rule. 
-     * The properties are shown in natural order.
+     * Elements sorted according to their natural order in the source code.
      */
-    STANDART, 
+    NATURAL,
     
     /**
-     * Alphabetized view mode.
-     * 
-     * Shows physical properties of the selected rule first, then all
-     * of the existing unused properties. All the properties are sorted
-     * alphabetically.
+     * Elements sorted alphabetically.
      */
-    ALPHABETIZED, 
-    
-    /**
-     * Categorized view mode.
-     * 
-     * Shows categories for the css properties. In each category the physical
-     * properties of the selected rule are show first, then the rest of 
-     * existing css properties belonging to the category. All properties sorted 
-     * alphabetically, categories also sorted alphabetically.
-     */
-    CATEGORIZED;
+    ALPHABETICAL;
     
 }

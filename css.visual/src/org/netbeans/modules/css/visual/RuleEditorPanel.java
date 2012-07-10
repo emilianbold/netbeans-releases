@@ -46,12 +46,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.Action;
 import javax.swing.JPanel;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.RuleEditorListener;
-import org.netbeans.modules.css.visual.api.ViewMode;
+import org.netbeans.modules.css.visual.api.SortMode;
+import org.netbeans.modules.css.visual.filters.FilterSubmenuAction;
+import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
+import org.netbeans.modules.css.visual.filters.SortActionSupport;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -74,7 +78,12 @@ public class RuleEditorPanel extends JPanel {
     
     private Model model;
     private Rule rule;
+    private Action[] actions;
+    private RuleEditorFilters filters;
+    private boolean showAllProperties, showCategories;
+    private SortMode sortMode;
     
+            
     private Collection<RuleEditorListener> LISTENERS
             = Collections.synchronizedCollection(new ArrayList<RuleEditorListener>());
     
@@ -82,11 +91,35 @@ public class RuleEditorPanel extends JPanel {
      * Creates new form RuleEditorPanel
      */
     public RuleEditorPanel() {
+        sortMode = SortMode.NATURAL;
+        
+        filters = new RuleEditorFilters( this );
+
+        actions = new Action[] {            
+            new SortActionSupport.NaturalSortAction( filters ),
+            new SortActionSupport.AlphabeticalSortAction( filters ),
+            null,
+            new FilterSubmenuAction(filters)            
+        };
+        
+        //init default components
         initComponents();
         titleLabel.setText(null);
-                
+        
+        //add the property sheet to the center
         sheet = new PropertySheet();
         add(sheet, BorderLayout.CENTER);
+        
+        //add the filters panel
+        northPanel.add(filters.getComponent(), BorderLayout.EAST);
+    }
+
+    public void setSortMode(SortMode mode) {
+        this.sortMode = mode;
+    }
+
+    public SortMode getSortMode() {
+        return sortMode;
     }
     
     public void setModel(Model model) {
@@ -117,10 +150,6 @@ public class RuleEditorPanel extends JPanel {
         //TODO - show some 'no rule selected' message
     }
     
-    public void setViewMode(ViewMode mode) {
-        //TODO
-    }
-    
     /**
      * Registers an instance of {@link RuleEditorListener} to the component.
      * @param listener
@@ -138,6 +167,10 @@ public class RuleEditorPanel extends JPanel {
         return LISTENERS.remove(listener);
     }
     
+    public Action[] getActions() {
+        return actions;
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -149,10 +182,6 @@ public class RuleEditorPanel extends JPanel {
 
         northPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
-        viewControlPanel = new javax.swing.JPanel();
-        categorizedView = new javax.swing.JLabel();
-        alphabetizedView = new javax.swing.JLabel();
-        standartView = new javax.swing.JLabel();
         southPanel = new javax.swing.JPanel();
         addPropertyButton = new javax.swing.JButton();
 
@@ -161,38 +190,6 @@ public class RuleEditorPanel extends JPanel {
         northPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
         northPanel.setLayout(new java.awt.BorderLayout());
         northPanel.add(titleLabel, java.awt.BorderLayout.CENTER);
-
-        categorizedView.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
-        categorizedView.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.categorizedView.text")); // NOI18N
-
-        alphabetizedView.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
-        alphabetizedView.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.alphabetizedView.text")); // NOI18N
-
-        standartView.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
-        standartView.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.standartView.text")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout viewControlPanelLayout = new org.jdesktop.layout.GroupLayout(viewControlPanel);
-        viewControlPanel.setLayout(viewControlPanelLayout);
-        viewControlPanelLayout.setHorizontalGroup(
-            viewControlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(viewControlPanelLayout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(standartView)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(alphabetizedView)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(categorizedView)
-                .addContainerGap())
-        );
-        viewControlPanelLayout.setVerticalGroup(
-            viewControlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(viewControlPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                .add(standartView)
-                .add(alphabetizedView)
-                .add(categorizedView))
-        );
-
-        northPanel.add(viewControlPanel, java.awt.BorderLayout.EAST);
 
         add(northPanel, java.awt.BorderLayout.NORTH);
 
@@ -209,13 +206,9 @@ public class RuleEditorPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPropertyButton;
-    private javax.swing.JLabel alphabetizedView;
-    private javax.swing.JLabel categorizedView;
     private javax.swing.JPanel northPanel;
     private javax.swing.JPanel southPanel;
-    private javax.swing.JLabel standartView;
     private javax.swing.JLabel titleLabel;
-    private javax.swing.JPanel viewControlPanel;
     // End of variables declaration//GEN-END:variables
 
 }
