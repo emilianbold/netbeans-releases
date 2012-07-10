@@ -614,16 +614,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         for (InterfaceElement iface : request.index.getInterfaces(nameQuery)) {
             completionResult.add(new PHPCompletionItem.InterfaceItem(iface, request, kind, false));
         }
-        for (FunctionElement element : request.index.getFunctions(nameQuery)) {
-            for (final PHPCompletionItem.FunctionElementItem functionItem :
-                    PHPCompletionItem.FunctionElementItem.getItems((FunctionElement) element, request)) {
-                completionResult.add(functionItem);
-            }
-
-        }
-        for (ConstantElement element : request.index.getConstants(nameQuery)) {
-            completionResult.add(new PHPCompletionItem.ConstantItem(element, request));
-        }
     }
 
     private void autoCompleteTypeNames(final PHPCompletionResult completionResult, PHPCompletionItem.CompletionRequest request, QualifiedNameKind kind, boolean endWithDoubleColon) {

@@ -13,6 +13,7 @@ PACKAGE    Core                            [PUBLIC]   null
 PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
+PACKAGE    First                           [PUBLIC]   null
 PACKAGE    Fom                             [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
@@ -22,6 +23,7 @@ PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Nette                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
+PACKAGE    Second                          [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
 PACKAGE    ShowMe                          [PUBLIC]   null
 PACKAGE    TC                              [PUBLIC]   null
@@ -123,15 +125,19 @@ CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
 CLASS      C                               [PUBLIC]   test.php
+CLASS      CIface1                         [PUBLIC]   First
+CLASS      CIface2                         [PUBLIC]   Second
 CLASS      CallableClass                   [PUBLIC]   callableTypeHint.php
 CLASS      ChildClass                      [PUBLIC]   class_member_visibility.php
 CLASS      ChildInterface                  [PUBLIC]   interfaces.php
 CLASS      ClassName                       [PUBLIC]   Fom\Bom
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
+CLASS      Cls1                            [PUBLIC]   First
 CLASS      Cls1                            [PUBLIC]   TestCase.php
 CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
+CLASS      Cls2                            [PUBLIC]   Second
 CLASS      Cls2                            [PUBLIC]   TestCase.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
@@ -364,6 +370,7 @@ METHOD     bar()                           [PUBLIC]   issue141999.php
 METHOD     bar()                           [PUBLIC]   issue200178.php
 METHOD     bar(Test &$t)                   [PUBLIC]   issue142024.php
 METHOD     callableTypeHint(callable $arg  [PUBLIC]   callableTypeHint.php
+METHOD     cfnc2()                         [PUBLIC]   Second
 METHOD     f1(&$request1)                  [PUBLIC]   issue136092.php
 METHOD     f2(&$request2)                  [PUBLIC]   issue136092.php
 METHOD     fc142091(cls142091 $p)          [PUBLIC]   issue142091.php
@@ -372,6 +379,7 @@ METHOD     fn1(clsAVarAssignment $aParam)  [PUBLIC]   varAssignment.php
 METHOD     fn2(clsAVarAssignment $cParam)  [PUBLIC]   varAssignment.php
 METHOD     fn3(clsAVarAssignment &$aParam  [PUBLIC]   varAssignment.php
 METHOD     fn4(clsAVarAssignment &$cParam  [PUBLIC]   varAssignment.php
+METHOD     fnc1()                          [PUBLIC]   First
 METHOD     fnc163432()                     [PUBLIC]   test.php
 METHOD     fncA()                          [PUBLIC]   typeinference.php
 METHOD     fncB()                          [PUBLIC]   typeinference.php
@@ -424,6 +432,8 @@ VARIABLE   $argc                                      PHP Platform
 VARIABLE   $argv                                      PHP Platform
 VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
+CONSTANT   CNST1 1                         [PUBLIC]   First
+CONSTANT   CNST2 2                         [PUBLIC]   Second
 CONSTANT   aaa 1                           [PUBLIC]   issue137033.php
 KEYWORD    abstract                                   null
 KEYWORD    and                                        null

@@ -13,6 +13,7 @@ PACKAGE    Core                            [PUBLIC]   null
 PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
+PACKAGE    First                           [PUBLIC]   null
 PACKAGE    Fom                             [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
 PACKAGE    FrontSpace                      [PUBLIC]   null
@@ -22,6 +23,7 @@ PACKAGE    MySpaceThrow                    [PUBLIC]   null
 PACKAGE    Nette                           [PUBLIC]   null
 PACKAGE    Package1                        [PUBLIC]   null
 PACKAGE    Package2                        [PUBLIC]   null
+PACKAGE    Second                          [PUBLIC]   null
 PACKAGE    Shit                            [PUBLIC]   null
 PACKAGE    ShowMe                          [PUBLIC]   null
 PACKAGE    TC                              [PUBLIC]   null
@@ -122,9 +124,11 @@ CLASS      ChildClass                      [PUBLIC]   class_member_visibility.ph
 CLASS      ClassName                       [PUBLIC]   Fom\Bom
 CLASS      ClassName                       [PUBLIC]   issue194300.php
 CLASS      ClassName123                    [PUBLIC]   issue209608.php
+CLASS      Cls1                            [PUBLIC]   First
 CLASS      Cls1                            [PUBLIC]   TestCase.php
 CLASS      Cls136188                       [PUBLIC]   issue136188.php
 CLASS      Cls149519                       [PUBLIC]   issue149519.php
+CLASS      Cls2                            [PUBLIC]   Second
 CLASS      Cls2                            [PUBLIC]   TestCase.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration.php
 CLASS      Cls2DeclarationTest             [PUBLIC]   clsDeclaration02.php
