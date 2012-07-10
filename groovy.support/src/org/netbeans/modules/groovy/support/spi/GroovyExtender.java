@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,19 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.support.spi;
 
 /**
- * Helper used to inform if groovy support is enabled on project.
- * Implementation should be registered in project lookup.
+ * Provides an ability to change project settings when some groovy file is created.
+ * This enables to change build script in Ant based projects, pom.xml in Maven
+ * based projects etc.
  *
- * @author Martin Adamek
+ * @since 1.22
+ * @author Martin Janicek
  */
-public interface GroovyFeature {
+public interface GroovyExtender {
 
-    boolean isGroovyEnabled();
+    /**
+     * Check if groovy has been already activated for the project.
+     *
+     * @return true if the groovy is already active, false if groovy is not active yet
+     */
+    public boolean isActive();
 
+    /**
+     * Called when groovy is activated for the project. (e.g. when new Groovy file
+     * is created). Implementator should change project configuration with respect
+     * to groovy source files (e.g. change the ant build script and use groovyc
+     * instead of javac, update pom.xml in maven etc.)
+     *
+     * @return true if activation were successful, false otherwise
+     */
+    public boolean activate();
+
+    /**
+     * Called when groovy is deactivated for a certain project. This is an inverse
+     * action to the {@code activate} method. Implementator should make opposite steps
+     * in the project configuration (e.g. remove maven-groovy-plugin and related groovy
+     * dependencies from pom.xml, change the ant build script to use javac again etc.)
+     *
+     * @return true if deactivation were successful, false otherwise
+     */
+    public boolean deactivate();
 }
