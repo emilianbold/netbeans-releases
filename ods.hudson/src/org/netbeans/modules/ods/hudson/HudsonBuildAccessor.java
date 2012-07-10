@@ -64,7 +64,7 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
-import org.netbeans.modules.team.ods.ui.api.ODSProject;
+import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
@@ -78,11 +78,11 @@ import org.openide.util.lookup.ServiceProvider;
  * @author jhavlin
  */
 @ServiceProvider(service = BuildAccessor.class)
-public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
+public class HudsonBuildAccessor extends BuildAccessor<CloudUiServer, Project> {
 
     @Override
-    public boolean isEnabled(ProjectHandle<ODSProject> projectHandle) {
-        Project project = projectHandle.getTeamProject().getProject();
+    public boolean isEnabled(ProjectHandle<CloudUiServer, Project> projectHandle) {
+        Project project = projectHandle.getTeamProject();
         List<ProjectService> services = project.getProjectServicesOfType(
                 ServiceType.BUILD); // XXX BUILD_SLAVE
         if (services == null || services.isEmpty()) {
@@ -92,8 +92,8 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
     }
 
     @Override
-    public List<BuildHandle> getBuilds(ProjectHandle<ODSProject> projectHandle) {
-        CloudClient client = projectHandle.getTeamProject().getClient();
+    public List<BuildHandle> getBuilds(ProjectHandle<CloudUiServer, Project> projectHandle) {
+        CloudClient client = projectHandle.getTeamServer().getClient();
 
         HudsonInstance hudsonServer = HudsonManager.addInstance(
                 "Kenai", "http://bugtracking-test.cz.oracle.com:8180/", 1, false); //TODO
@@ -112,7 +112,7 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
     }
 
     @Override
-    public Action getNewBuildAction(ProjectHandle<ODSProject> projectHandle) {
+    public Action getNewBuildAction(ProjectHandle<CloudUiServer, Project> projectHandle) {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -128,8 +128,8 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
     }
 
     @Override
-    public Class<ODSProject> type() {
-        return ODSProject.class;
+    public Class<Project> type() {
+        return Project.class;
     }
 
     private static class HudsonBuildHandle extends BuildHandle {
