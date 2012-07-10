@@ -107,4 +107,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testLiteralObject01() throws Exception {
         checkStructure("testfiles/completion/resolvingThis.js");
     }
+    
+    public void testDisplayPrototypeProperties01() throws Exception {
+        checkStructure("testfiles/coloring/issue215354.js"); 
+    }
 }

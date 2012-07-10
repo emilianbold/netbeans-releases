@@ -60,14 +60,7 @@ import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JEditorPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -230,6 +223,7 @@ public class FmtOptions {
     public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
     public static final String preferMultipleUseStatementsCombined = "preferMultipleUseStatementsCombined"; //NOI18N
     public static final String startUseWithNamespaceSeparator = "startUseWithNamespaceSeparator"; //NOI18N
+    public static final String aliasesCapitalsOfNamespaces = "aliasesCapitalsOfNamespacesNames"; //NOI18N
 
     public static CodeStyleProducer codeStyleProducer;
 
@@ -403,7 +397,8 @@ public class FmtOptions {
 
             { preferFullyQualifiedNames, FALSE},
             { preferMultipleUseStatementsCombined, FALSE},
-            { startUseWithNamespaceSeparator, FALSE}
+            { startUseWithNamespaceSeparator, FALSE},
+            { aliasesCapitalsOfNamespaces, FALSE }
         };
 
         defaults = new HashMap<String,String>();
@@ -693,6 +688,10 @@ public class FmtOptions {
                 cb.setModel(model);
                 ComboItem item = whichItem(value, model);
                 cb.setSelectedItem(item);
+            } else if (jc instanceof JRadioButton) {
+                JRadioButton radioButton = (JRadioButton) jc;
+                boolean df = getDefaultAsBoolean(optionID);
+                radioButton.setSelected( node.getBoolean(optionID, df));
             }
 
         }

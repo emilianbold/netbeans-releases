@@ -42,6 +42,8 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -55,11 +57,14 @@ public class JsParserResult extends ParserResult {
     private final FunctionNode root;
     private List<? extends Error> errors;
     private Model model;
+    private JsDocumentationProvider docProvider;
     
     public JsParserResult(Snapshot snapshot, FunctionNode root) {
         super(snapshot);
         this.root = root;
         this.errors = Collections.<Error>emptyList();
+        this.model = null;
+        this.docProvider = null;
     }
     
     @Override
@@ -87,6 +92,15 @@ public class JsParserResult extends ParserResult {
             }
         }
         return model;
+    }
+    
+    public JsDocumentationProvider getDocumentationProvider() {
+        synchronized(this) {
+            if (docProvider == null) {
+                docProvider = JsDocumentationSupport.getDocumentationProvider(this);
+            }
+        }
+        return docProvider;
     }
 
 }
