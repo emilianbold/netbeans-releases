@@ -66,11 +66,12 @@ import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.groovy.editor.api.Formatter;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * In order to be able to run tests using java.source on Mac, you need to apply patch
@@ -171,7 +172,7 @@ public class GroovyTestBase extends CslTestBase {
             String token = tk.nextToken();
             File f = new File(token);
             try {
-                URL url = f.toURI().toURL();
+                URL url = Utilities.toURI(f).toURL();
                 if (FileUtil.isArchiveFile(url)) {
                     url = FileUtil.getArchiveRoot(url);
                 } else if (!f.exists()) {
