@@ -68,6 +68,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -266,6 +267,7 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                                                          null,                                                            // HelpCtx
                                                          exitComponent                                                    // Action Listener
                                                      );
+                exitDlgDescriptor.setHelpCtx( new HelpCtx( "help_on_exit_dialog" ) ); //NOI18N
                 exitDlgDescriptor.setAdditionalOptions (new Object[] {NotifyDescriptor.CANCEL_OPTION});
                 exitDialog = org.openide.DialogDisplayer.getDefault ().createDialog (exitDlgDescriptor);
             }

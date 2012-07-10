@@ -185,7 +185,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
                     boolean available = externalTerminal.isAvailable(info.getExecutionEnvironment());
 
                     if (!available) {
-                        if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
+                        if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
                             System.err.println(loc("NativeProcessBuilder.processCreation.NoTermianl.text"));
                         } else {
                             DialogDisplayer.getDefault().notify(
@@ -197,7 +197,7 @@ public final class NativeProcessBuilder implements Callable<Process> {
                         if (Utilities.isWindows()) {
                             Shell shell = WindowsSupport.getInstance().getActiveShell();
                             if (shell == null) {
-                                if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
+                                if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
                                     System.err.println(loc("NativeProcessBuilder.processCreation.NoShell.text"));
                                 } else {
                                     DialogDisplayer.getDefault().notify(

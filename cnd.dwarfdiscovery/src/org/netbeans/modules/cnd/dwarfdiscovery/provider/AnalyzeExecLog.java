@@ -263,7 +263,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped.set(false);
         List<Configuration> confs = new ArrayList<Configuration>();
-        setCommpilerSettings(project);
+        init(project);
         this.progress = progress;
         if (!isStoped.get()) {
             Configuration conf = new Configuration() {
@@ -577,20 +577,16 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         }
     }
     
-    private static class ExecSource implements SourceFileProperties {
+    private static class ExecSource extends RelocatableImpl implements SourceFileProperties {
 
-        private String compilePath;
         private String sourceName;
-        private String fullName;
         private String compiler;
         private ItemProperties.LanguageKind language;
         private LanguageStandard standard = LanguageStandard.Unknown;
-        private List<String> userIncludes;
         private List<String> systemIncludes = Collections.<String>emptyList();
         private Map<String, String> userMacros;
         private List<String> undefinedMacros;
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
-        private Set<String> includedFiles = Collections.<String>emptySet();
         private final CompileLineStorage storage;
         private int handler = -1;
 
@@ -617,7 +613,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
         public String getItemName() {
             return sourceName;
         }
-
+        
         @Override
         public List<String> getUserInludePaths() {
             return userIncludes;

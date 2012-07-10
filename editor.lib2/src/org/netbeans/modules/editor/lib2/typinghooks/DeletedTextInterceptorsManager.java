@@ -65,6 +65,20 @@ import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
  * @author vita
  */
 public final class DeletedTextInterceptorsManager {
+    
+    static MimePath getMimePath(final Document doc, final int offset) {
+        final MimePath[] mimePathR = new MimePath[1];
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset, true);
+                TokenSequence<?> seq = seqs.isEmpty() ? null : seqs.get(seqs.size() - 1);
+                seq = seq == null ? TokenHierarchy.get(doc).tokenSequence() : seq;
+                mimePathR[0] = seq == null ? MimePath.parse(DocumentUtilities.getMimeType(doc)) : MimePath.parse(seq.languagePath().mimePath());
+            }
+        });
+        return mimePathR[0];
+    }
 
     public static DeletedTextInterceptorsManager getInstance() {
         if (instance == null) {
@@ -175,11 +189,7 @@ public final class DeletedTextInterceptorsManager {
 
     // XXX: listne on changes in MimeLookup
     private Collection<? extends DeletedTextInterceptor> getInterceptors(Document doc, int offset) {
-        List<TokenSequence<?>> seqs = TokenHierarchy.get(doc).embeddedTokenSequences(offset, true);
-        TokenSequence<?> seq = seqs.isEmpty() ? null : seqs.get(seqs.size() - 1);
-        seq = seq == null ? TokenHierarchy.get(doc).tokenSequence() : seq;
-        MimePath mimePath = seq == null ? MimePath.parse(DocumentUtilities.getMimeType(doc)) : MimePath.parse(seq.languagePath().mimePath());
-        
+        MimePath mimePath = getMimePath(doc, offset);
         synchronized (cache) {
             Reference<Collection<DeletedTextInterceptor>> ref = cache.get(mimePath);
             Collection<DeletedTextInterceptor> interceptors = ref == null ? null : ref.get();

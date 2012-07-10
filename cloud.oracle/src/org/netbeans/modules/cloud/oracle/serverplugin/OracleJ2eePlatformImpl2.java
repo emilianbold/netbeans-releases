@@ -181,7 +181,7 @@ public class OracleJ2eePlatformImpl2 extends J2eePlatformImpl2 implements Change
         List<URL> cp = new ArrayList<URL>();
         
         for (ServerLibraryDependency dep : libraries) {
-            if (dep.getName().equals("jsf") && dep.getSpecificationVersion(). // NOI18N
+            if (dep.getName().equals("jsf") && dep.getSpecificationVersion() != null && dep.getSpecificationVersion(). // NOI18N
                     isAboveOrEqual(Version.fromDottedNotationWithFallback("2.0"))) { // NOI18N
                 Library jsf = LibraryManager.getDefault().getLibrary("jsf20"); // NOI18N
                 if (jsf != null) {

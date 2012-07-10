@@ -117,7 +117,7 @@ public class ConstructorPanel extends JPanel {
         }
         cbGenerateDoc.setSelected(cgsInfo.isGenerateDoc());
         cbGenerateDoc.setVisible(false);
-        fluentSetterCheckBox.setVisible(genType.isFluentSetterComboVisible());
+        fluentSetterCheckBox.setVisible(genType.isFluentSetterVisible());
         fluentSetterCheckBox.setSelected(cgsInfo.isFluentSetter());
     }
 

@@ -232,7 +232,7 @@ final class TreeRootNode extends FilterNode implements PropertyChangeListener {
             FileObject f = n.getLookup().lookup(FileObject.class);
             if (f == fo) {
                 return n;
-            } else if (FileUtil.isParentOf(f, fo)) {
+            } else if (f != null && FileUtil.isParentOf(f, fo)) {
                 for (Node child : n.getChildren().getNodes(true)) {
                     Node found = findPathReduced(fo, child);
                     if (found != null) {

@@ -1095,10 +1095,27 @@ public class UnixNativeUtils extends NativeUtils {
         
         if (args != null && args.length > 0) {
             for(String arg:args) {
-                command.add(arg);
+                command.add(getExistingParent(arg));
             }
         }
         return command.toArray(new String[0]);
+    }
+    
+    /**
+     * Checks if given filename belongs to existing file. 
+     * If not, the closest existing parent filename is returned.
+     * 
+     * @param fileName 
+     * @return Filename of existing parent or file itself.
+     */
+    private String getExistingParent(String fileName) {
+        File file = new File(fileName);
+        
+        if (file.exists()) {
+            return fileName;
+        } else {
+            return getExistingParent(file.getParent());
+        }
     }
         
     @Override

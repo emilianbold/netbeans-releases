@@ -503,11 +503,9 @@ public class Utils {
             startLineNumber = 1;
         }
 
-        int endLineNumber = EditorSupport.getLineForOffset(mostActiveJavaSource, mostActiveTextComponent.getSelectionEnd()) + 1;
-
-        if (endLineNumber == -1) {
-            endLineNumber = 1;
-        }
+        // #211681
+        int endLineNumber = EditorSupport.getLineForOffset(mostActiveJavaSource, mostActiveTextComponent.getSelectionEnd() - 1) + 1;
+        endLineNumber = Math.max(startLineNumber, endLineNumber);
 
         return new CodeProfilingPoint.Location[] {
                    new CodeProfilingPoint.Location(fileName, startLineNumber,

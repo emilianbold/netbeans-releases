@@ -52,6 +52,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.UnmappableCharacterException;
+import java.nio.charset.UnsupportedCharsetException;
 
 import java.util.Collection;
 import javax.swing.Timer;
@@ -386,6 +387,24 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("saveDocument()..."); // NOI18N
         final StyledDocument doc = getDocument();
         String enc = EncodingUtil.detectEncoding(doc);
+        Charset cs;
+        
+        try {
+            if (enc == null) {
+                cs = FileEncodingQuery.getEncoding(this.getDataObject().getPrimaryFile());
+            } else {
+                cs = Charset.forName(enc);
+            }
+            if (!cs.newEncoder().canEncode(doc.getText(0, doc.getLength()))) {
+                handleUnsupportedEncoding(doc, enc);
+            }
+        } catch (BadLocationException ble) {
+            // should not happen
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+        } catch (UnsupportedCharsetException ex) {
+            // handle invalid character set
+            handleUnsupportedEncoding(doc, enc);
+        }
         if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("!!! TextEditorSupport::saveDocument: enc = " + enc);
         try {
             super.saveDocument();

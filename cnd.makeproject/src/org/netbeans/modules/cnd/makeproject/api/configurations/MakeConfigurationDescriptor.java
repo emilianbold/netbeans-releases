@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,40 +66,40 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
-import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
-import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
-import org.netbeans.modules.cnd.makeproject.MakeSources;
-import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
-import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
-import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.FullRemoteExtension;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
+import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.Delta;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
+import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
+import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -1146,14 +1145,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (extraMessage != null) {
                 text.append("\n\n").append(extraMessage); // NOI18N
             }
-            NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
+            if (CndUtils.isStandalone()) {
+                System.err.println(text);
+            } else {
+                NotifyDescriptor d = new NotifyDescriptor.Message(text, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+            }
             return allOk;
         }
 
         // ALl OK
-        FileObject fo = null;
-        fo = getProjectDirFileObject();
+        FileObject fo = getProjectDirFileObject();
         if (fo != null) {
             LOGGER.log(Level.FINE, "Start of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
             try {
@@ -1388,10 +1390,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Configuration[] confs = getConfs().toArray();
         for (int i = 0; i < confs.length; i++) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-            LibrariesConfiguration librariesConfiguration = null;
 
             if (((MakeConfiguration) confs[i]).isLinkerConfiguration()) {
-                librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
+                LibrariesConfiguration librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
                 for (LibraryItem item : librariesConfiguration.getValue()) {
                     if (item instanceof LibraryItem.ProjectItem) {
                         LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem) item;
@@ -1450,7 +1451,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      */
     public void addSourceRoot(String path) {
         String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
-        String canonicalPath = null;
+        String canonicalPath;
         try {
             canonicalPath = FileSystemProvider.getCanonicalPath(baseDirFS, absPath);
         } catch (IOException ioe) {
@@ -1465,7 +1466,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 int canonicalPathLength = canonicalPath.length();
                 for (String sourceRoot : sourceRoots) {
                     String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDir(), sourceRoot);
-                    String canonicalSourceRoot = null;
+                    String canonicalSourceRoot;
                     try {
                         canonicalSourceRoot = FileSystemProvider.getCanonicalPath(baseDirFS, absSourceRoot);
                     } catch (IOException ioe) {
@@ -1777,8 +1778,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
 
         addSourceRoot(dir.getPath());
-
-        return;
     }
 
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
@@ -1868,10 +1867,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         int previousVersion = getVersion();
         int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
         if (previousVersion < currentVersion) {
-            String txt = getString("UPGRADE_TXT");
-            NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
-            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
-                return false;
+            String txt = getString("UPGRADE_TXT"); //NOI18N
+            if (CndUtils.isStandalone()) {
+                System.err.print(txt);
+                System.err.println(getString("UPGRADE_TXT_AUTO")); //NOI18N
+            } else {
+                NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
+                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                    return false;
+                }
             }
             setVersion(currentVersion);
         }

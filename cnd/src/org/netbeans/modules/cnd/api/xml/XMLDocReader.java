@@ -46,23 +46,20 @@ package org.netbeans.modules.cnd.api.xml;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.text.MessageFormat;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.SAXParseException;
-
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
-import org.openide.ErrorManager;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 
 /**
@@ -113,7 +110,7 @@ abstract public class XMLDocReader extends XMLDecoder {
 	SAXParserFactory spf = SAXParserFactory.newInstance();
 	spf.setValidating(false);
 
-	org.xml.sax.XMLReader xmlReader = null;
+	org.xml.sax.XMLReader xmlReader;
 	try {
 	    SAXParser saxParser = spf.newSAXParser();
 	    xmlReader = saxParser.getXMLReader();
@@ -153,11 +150,14 @@ abstract public class XMLDocReader extends XMLDecoder {
                         new Object[] {what,
                                       "" + actualVersion, // NOI18N
                                       "" + expectedVersion}); // NOI18N
+                    if (CndUtils.isStandalone()) {
+                        System.err.println(errmsg);
+                    } else {
+                        NotifyDescriptor.Message msg = new NotifyDescriptor.
+                            Message(errmsg, NotifyDescriptor.ERROR_MESSAGE);
 
-                    NotifyDescriptor.Message msg = new NotifyDescriptor.
-                        Message(errmsg, NotifyDescriptor.ERROR_MESSAGE);
-
-                    DialogDisplayer.getDefault().notify(msg);
+                        DialogDisplayer.getDefault().notify(msg);
+                    }
                 }
 	    } else {
 		ErrorManager.getDefault().annotate(ex, whileMsg);

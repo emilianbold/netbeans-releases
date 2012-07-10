@@ -55,6 +55,7 @@
 class AppLauncher : public NbLauncher {
 
     static const char *OPT_DEFAULT_USER_DIR;
+    static const char *OPT_DEFAULT_CACHE_DIR;
     static const char *OPT_DEFAULT_OPTIONS;
     static const char *OPT_EXTRA_CLUSTERS;
     static const char *OPT_JDK_HOME;
@@ -71,7 +72,9 @@ protected:
     virtual void addSpecificOptions(CmdArgs &args);
     virtual void adjustHeapSize();
     virtual bool findUserDir(const char *str);
+    virtual bool findCacheDir(const char *str);
     virtual const char * getDefUserDirOptName();
+    virtual const char * getDefCacheDirOptName();
     virtual const char * getDefOptionsOptName();
     virtual const char * getExtraClustersOptName();
     virtual const char * getJdkHomeOptName();

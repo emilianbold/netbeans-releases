@@ -467,7 +467,7 @@ public class JFXProjectGenerator {
             // Disable J2SE JAR creation
             ep.setProperty("jar.archive.disabled", "true"); // NOI18N
             ep.setComment("jar.archive.disabled", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_oldjar")}, false); // NOI18N
-            ep.setProperty(ProjectProperties.MAIN_CLASS, type == WizardType.SWING ? mainClass : "com.javafx.main.Main"); // NOI18N
+            ep.setProperty(ProjectProperties.MAIN_CLASS, type == WizardType.SWING ? (mainClass == null ? "" : mainClass) : "com.javafx.main.Main"); // NOI18N
             ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
 
             if (type != WizardType.LIBRARY) {

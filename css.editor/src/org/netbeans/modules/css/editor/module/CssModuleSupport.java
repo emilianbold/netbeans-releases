@@ -45,7 +45,11 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.text.Document;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
@@ -56,6 +60,7 @@ import org.netbeans.modules.css.editor.properties.parser.GrammarParser;
 import org.netbeans.modules.css.editor.properties.parser.PropertyModel;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.Pair;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -227,6 +232,80 @@ public class CssModuleSupport {
         return all;
 
     }
+    
+    //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
+    //o.n.m.javafx2.editor.css.JavaFXCSSModule
+    private static final String JAVA_FX_CSS_EDITOR_MODULE_NAME = "javafx2_css"; //NOI18N
+    
+    private static Collection<Property> NON_JAVA_FX_PROPERTIES;
+    
+    public static boolean isJavaFxCssFile(FileObject file) {
+        if(file == null) {
+            return false;
+        }
+        
+        Project project = FileOwnerQuery.getOwner(file);
+        if(project == null) {
+            return false;
+        }
+        
+        return isJavaFxProject(project);
+    }
+    
+    private static boolean isJavaFxProject(Project project) {
+        //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
+        //http://netbeans.org/bugzilla/show_bug.cgi?id=214819
+        Preferences prefs = ProjectUtils.getPreferences(project, Project.class, false);
+        String isFX = prefs.get("issue214819_fx_enabled", "false"); //NOI18N
+        if(isFX != null && isFX.equals("true")) {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * 
+     * @param filter_out_java_fx if true the returned collection won't contain
+     *                           properties defined by the javafx2.editor module.
+     */
+    public static synchronized Collection<Property> getProperties(boolean filter_out_java_fx) {
+        if(!filter_out_java_fx) {
+            return getProperties();
+        }
+
+        //better cache the non-java fx properties
+        if (NON_JAVA_FX_PROPERTIES == null) {
+            NON_JAVA_FX_PROPERTIES = new ArrayList<Property>();
+            for (Property p : getProperties()) {
+                if (!JAVA_FX_CSS_EDITOR_MODULE_NAME.equals(p.getCssModule().getName())) {
+                    NON_JAVA_FX_PROPERTIES.add(p);
+                }
+            }
+        }
+
+        return NON_JAVA_FX_PROPERTIES;
+    }
+    
+    public static Collection<Property> getProperties(FileObject file) {
+        return getProperties(!isJavaFxCssFile(file));
+    }
+    
+    public static Collection<Property> getProperties(FeatureContext featureContext) {
+        return getProperties(featureContext.getSource().getFileObject());
+    }
+
+    public static PropertyModel getPropertyModel(String name, FileObject file) {
+        PropertyModel pm = getPropertyModel(name);
+        if(pm == null) {
+            return null;
+        }
+        
+        Property p = pm.getProperty();
+        return getProperties(file).contains(p) ? pm : null; 
+    }
+    
+    //eof hotfix
 
     public static Collection<Property> getProperties() {
         synchronized (PROPERTIES) {
@@ -302,7 +381,7 @@ public class CssModuleSupport {
         
         return allowToGetInvisibleProperties && invisibleProperty != null ? invisibleProperty : PROPERTIES_MAP.get().get(propertyName);
     }
-
+    
     public static PropertyModel getPropertyModel(String name) {
         synchronized (PROPERTY_MODELS) {
             PropertyModel model = PROPERTY_MODELS.get(name);

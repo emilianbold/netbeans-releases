@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -120,17 +119,12 @@ public interface NbModuleProvider {
     @CheckForNull FileObject getManifestFile();
     
     /**
-     * add/updates the given dependency to the project
-     * @param codeNameBase 
-     * @param releaseVersion major release version, or null for recommended "current" version
-     * @param version specification version, or null for recommended "current" version; should not move a dependency backward, only forward
-     * @param useInCompiler 
-     * @return true if a dependency was really added
+     * add/updates the given dependencies to the project
+     * @param dependencies list of 
+     * @since 1.55
      * @throws IOException
      */
-    boolean addDependency(
-            final String codeNameBase, final @NullAllowed String releaseVersion,
-            final @NullAllowed SpecificationVersion version, final boolean useInCompiler) throws IOException;
+    void addDependencies(@NonNull ModuleDependency[] dependencies) throws IOException;
     
     /**
      * Checks the version of the given dependency.
@@ -169,5 +163,40 @@ public interface NbModuleProvider {
      * @see PlatformJarProvider
      */
     @NonNull FileSystem getEffectiveSystemFilesystem() throws IOException;
+    
+    /**
+     * simple bean for passing information to <code>addDependencies</code> method
+     * @since 1.55
+     */
+    public static final class ModuleDependency {
+        private final String codeNameBase;
+        private final String releaseVersion;
+        private final SpecificationVersion version;
+        private final boolean useInCompiler;
+
+        public ModuleDependency(String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler) {
+            this.codeNameBase = codeNameBase;
+            this.releaseVersion = releaseVersion;
+            this.version = version;
+            this.useInCompiler = useInCompiler;
+        }
+
+        public String getCodeNameBase() {
+            return codeNameBase;
+        }
+
+        public String getReleaseVersion() {
+            return releaseVersion;
+        }
+
+        public SpecificationVersion getVersion() {
+            return version;
+        }
+
+        public boolean isUseInCompiler() {
+            return useInCompiler;
+        }        
+        
+    }
 
 }

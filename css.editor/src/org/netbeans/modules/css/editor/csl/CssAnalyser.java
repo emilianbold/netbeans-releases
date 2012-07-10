@@ -57,6 +57,7 @@ import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,6 +72,8 @@ public class CssAnalyser {
 
     //returned error offsets are AST offsets
     public static List<Error> checkForErrors(final Snapshot snapshot, final Node node) {
+        final FileObject file = snapshot.getSource().getFileObject();
+        
         List<Error> errors = new ArrayList<Error>();
         NodeVisitor<List<Error>> visitor = new NodeVisitor<List<Error>>(errors) {
 
@@ -101,7 +104,7 @@ public class CssAnalyser {
                         }
 
                         //check for vendor specific properies - ignore them
-                        PropertyModel property = CssModuleSupport.getPropertyModel(propertyName);
+                        PropertyModel property = CssModuleSupport.getPropertyModel(propertyName, file);
                         if (!Css3Utils.containsGeneratedCode(propertyName) && !Css3Utils.isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);

@@ -49,6 +49,31 @@ made subject to such option by the copyright holder.
     <apidef name="plaf">Look And Feel Customization</apidef>
 </apidefs>
 <changes>
+    <change id="lfcustoms-color-functions">
+        <api name="plaf"/>
+        <summary>New functions for getting foreground text color and color shifting</summary>
+        <version major="1" minor="27"/>
+        <date day="26" month="6" year="2012"/>
+        <author login="wbrana"/>
+        <compatibility
+            addition="yes"
+            binary="compatible" deletion="no" deprecation="no"
+            modification="no" semantic="compatible" source="compatible"
+        />
+        <description>
+            <p>
+                new functions:<br/>
+                <code>
+                    static String getHexString(int color)<br/>
+                    static String getTextFgColorHTML()<br/>
+                    static Color getTextFgColor()<br/>
+                    static Color shiftColor(Color color)<br/>
+                    static Color getForeground(AttributeSet a)<br/>
+                </code>
+            </p>
+        </description>
+        <class package="org.netbeans.swing.plaf" name="LFCustoms"/>
+    </change>
     <change id="branding.of.lfcustoms">
         <api name="plaf"/>
         <summary>It is now possible to customize application-specific UIManager keys and values.</summary>

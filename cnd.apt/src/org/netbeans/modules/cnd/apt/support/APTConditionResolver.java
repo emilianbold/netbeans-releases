@@ -44,14 +44,15 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import java.math.BigInteger;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.impl.support.generated.APTBigIntegerExprParser;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.impl.support.generated.APTExprParser;
 import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.structure.APTElif;
-import org.netbeans.modules.cnd.apt.structure.APTIf;
+import org.netbeans.modules.cnd.apt.structure.APTIfCondition;
 import org.netbeans.modules.cnd.apt.structure.APTIfdef;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -61,7 +62,6 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public final class APTConditionResolver {
-    
     private static final boolean APT_EXPR_TRACE = Boolean.getBoolean("aptexpr.trace"); // NOI18N
 
     /**
@@ -86,10 +86,17 @@ public final class APTConditionResolver {
                 }
                 break;
             case APT.Type.IF:
-                res = evaluate(((APTIf)cond).getCondition(), callback);
-                break;
             case APT.Type.ELIF:
-                res = evaluate(((APTElif)cond).getCondition(), callback);
+                Boolean out = evaluate((APTIfCondition)cond, callback, false);
+                if (out == null) {
+                    // #214618: Overflow on macro evalution
+                    out = evaluate((APTIfCondition)cond, callback, true);
+                } else if (APT_EXPR_TRACE) {
+                    // check that BigInteger & long based gives the same result
+                    Boolean val = evaluate((APTIfCondition)cond, callback, true);
+                    assert out.equals(val) : "different values when evaluate " + cond + " " + val.booleanValue() + " vs. " + out.booleanValue();
+                }
+                res = out.booleanValue();
                 break;
             default:
                 assert (false) : "support only #ifdef,#ifndef,#if,#elif"; // NOI18N                
@@ -101,26 +108,41 @@ public final class APTConditionResolver {
         return callback.isDefined(macro);
     }
     
-    private static boolean evaluate(TokenStream expr, APTMacroCallback callback) throws TokenStreamException {
-        boolean res = false;
+    private static Boolean evaluate(APTIfCondition apt, APTMacroCallback callback, boolean bigIntegers) throws TokenStreamException {
+        TokenStream expr = apt.getCondition();
+        Boolean res;
         TokenStream expandedTS = expandTokenStream(expr, callback);
         try {
-            APTExprParser parser = new APTExprParser(expandedTS, callback);
-            long r = parser.expr();
+            if (bigIntegers) {
+                APTBigIntegerExprParser parser = new APTBigIntegerExprParser(expandedTS, callback);
+                BigInteger r = parser.expr();
+                if (APT_EXPR_TRACE) {
+                    System.out.println("Value is " + r); // NOI18N
+                }
+                if (BigInteger.ZERO.equals(r)) {
+                    res = Boolean.FALSE;
+                } else {
+                    res = Boolean.TRUE;
+                }
+            } else {
+                APTExprParser parser = new APTExprParser(expandedTS, callback);
+                long r = parser.expr();
+                if (APT_EXPR_TRACE) {
+                    System.out.println("Value is " + r); // NOI18N
+                }
+                if (parser.areBigValuesUsed()) {
+                    // we don't know the answer due to big integers arithmetics
+                    res = null;
+                } else {
+                    res = (r==0)?Boolean.FALSE:Boolean.TRUE;
+                }
+            }
 
-            if (parser.areBigValuesUsed()) {
-                // #214618: Overflow on macro evalution
-                // we should switch to BigInteger based expression parser
-            }
-            if (APT_EXPR_TRACE) {
-                System.out.println("Value is " + r); // NOI18N
-            }
             if (APTUtils.LOG.isLoggable(Level.FINE)) {
                 APTUtils.LOG.log(Level.FINE,
                         "stream {0} \n was expanded for condition resolving to \n {1} \n with result {2}", // NOI18N
-                        new Object[] { expr, expandedTS, Long.valueOf(r) });
+                        new Object[] { expr, expandedTS, res });
             }
-            res = (r==0)?false:true;
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, 
                     "exception on resolving expression: {0}\n{1}", // NOI18N

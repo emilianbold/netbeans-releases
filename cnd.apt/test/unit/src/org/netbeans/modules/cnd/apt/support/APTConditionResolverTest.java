@@ -109,7 +109,7 @@ public class APTConditionResolverTest {
         doTestSizeof(MAX_LONG_CHECK_CODE, "__LONG_MAX__", Long.toString((1L << 31) - 1L), "SIZEOF_LONG", 4);
     }
 
-//    @Test
+    @Test
     public void test8BytesLong() {
         doTestSizeof(MAX_LONG_CHECK_CODE, "__LONG_MAX__", Long.toString((1L << 63) - 1L), "SIZEOF_LONG", 8);
     }

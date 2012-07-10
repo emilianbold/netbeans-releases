@@ -1972,6 +1972,7 @@ public final class ModuleManager extends Modules {
             Set<String> toEn = null;
             List<String> toWi = null;
             int cnt = -1;
+            char otherChar = File.separatorChar == '/' ? '\\' : '/';
             if (is != null) try {
                 DataInputStream dis = new DataInputStream(is);
                 map = new HashMap<String, byte[]>();
@@ -1979,7 +1980,7 @@ public final class ModuleManager extends Modules {
                 cnbs = new HashMap<String, String>();
                 cnt = dis.readInt();
                 for (;;) {
-                    String path = Stamps.readRelativePath(dis);
+                    String path = Stamps.readRelativePath(dis).replace(otherChar, File.separatorChar);
                     if (path.isEmpty()) {
                         break;
                     }

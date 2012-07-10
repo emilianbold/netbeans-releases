@@ -98,6 +98,7 @@ public class CppFile {
     //private Document doc;
 
     //private int next = 0;
+    private long version = -1;
     /** record of initial comment fold information */
     private CppFoldRecord initialCommentFoldRecord;
     /** record of includes block fold information */
@@ -117,6 +118,9 @@ public class CppFile {
     }
 
     public void startParsing(Document doc) {
+        if (!needsUpdate(doc)) {
+            return;
+        }
 //        int curCount = getCount();
 //        System.out.println("CppFile.startParsing: Parsing " + curCount);
         if (log.isLoggable(Level.FINE)) {
@@ -158,11 +162,11 @@ public class CppFile {
                 @Override
                 public void run() {
                     try {
+                        version = org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentTimestamp(doc);
                         final int length = doc.getLength();
                         char[] buf = new char[length];
                         DocumentUtilities.copyText(doc, 0, length, buf, 0);
                         res[0] = buf;
-
                     } catch( BadLocationException e ) {
                         res[1] = e;
                     }
@@ -201,10 +205,9 @@ public class CppFile {
     }
 
     /** Does the CppFile record need updating? */
-    public boolean needsUpdate() {
-        // in the current model files only asked for needUpdate() if it was
-        // modified. Should be changed after folding refactoring
-        return true;
+    public boolean needsUpdate(final Document doc) {
+        final long documentTimestamp = org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentTimestamp(doc);
+        return documentTimestamp != version;
     }
 
     private String getShortName(Document doc) {

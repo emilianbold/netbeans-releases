@@ -250,10 +250,6 @@ public class OracleInstance {
         synchronized (this) {
             this.password = password;
             this.passwordLoaded = true;
-            if (j2eeInstance != null) {
-                j2eeInstance.getInstanceProperties().setProperty(
-                                    InstanceProperties.PASSWORD_ATTR, password);
-            }
         }
         resetCache();
     }
@@ -262,10 +258,6 @@ public class OracleInstance {
         synchronized (this) {
             this.user = user;
             this.userLoaded = true;
-            if (j2eeInstance != null) {
-                j2eeInstance.getInstanceProperties().setProperty(
-                                    InstanceProperties.USERNAME_ATTR, user);
-            }
         }
         resetCache();
     }

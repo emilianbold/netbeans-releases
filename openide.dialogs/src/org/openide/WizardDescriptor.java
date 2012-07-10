@@ -44,62 +44,19 @@
 
 package org.openide;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.FocusTraversalPolicy;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
-import java.awt.MediaTracker;
-import java.awt.Rectangle;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.HierarchyEvent;
-import java.awt.event.HierarchyListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
@@ -107,19 +64,12 @@ import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
-import org.openide.awt.HtmlBrowser;
-import org.openide.awt.Mnemonics;
-import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.awt.Mnemonics;
+import org.openide.util.*;
 
 /**
  * Implements a basic "wizard" GUI system.
@@ -150,6 +100,7 @@ public class WizardDescriptor extends DialogDescriptor {
     public static final Object PREVIOUS_OPTION = new String("PREVIOUS_OPTION"); // NOI18N
 
     private static final ActionListener CLOSE_PREVENTER = new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent evt) {
             }
 
@@ -520,6 +471,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
         // update buttons when setValid(...) called
         addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_VALID.equals(evt.getPropertyName())) {
                     if (!isValid()) {
@@ -721,6 +673,7 @@ public class WizardDescriptor extends DialogDescriptor {
         if (propListener != null) {
             Mutex.EVENT.readAccess(
                 new Runnable() {
+                @Override
                     public void run() {
                         propListener.propertyChange(new PropertyChangeEvent(this, name, null, null));
                     }
@@ -733,6 +686,7 @@ public class WizardDescriptor extends DialogDescriptor {
             if (init && OK_OPTION.equals (getValue ())) return ; // call getValue() only on initialized WD
             if (wizardPanel != null) {
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         if (nextButton.isEnabled () || finishButton.isEnabled ()) {
                             wizardPanel.setMessage(WizardPanel.MSG_TYPE_WARNING, (String) ((value == null) ? "" : value));
@@ -747,6 +701,7 @@ public class WizardDescriptor extends DialogDescriptor {
         if (PROP_WARNING_MESSAGE.equals(name) || PROP_INFO_MESSAGE.equals(name)) {
             if (wizardPanel != null) {
                 SwingUtilities.invokeLater (new Runnable () {
+                    @Override
                     public void run () {
                         if (PROP_WARNING_MESSAGE.equals(name)) {
                             wizardPanel.setMessage(WizardPanel.MSG_TYPE_WARNING, (String) ((value == null) ? "" : value)); //NOI18N
@@ -844,6 +799,7 @@ public class WizardDescriptor extends DialogDescriptor {
             updateStateOpen (data);
         } else {
             SwingUtilities.invokeLater (new Runnable () {
+                @Override
                 public void run () {
                    updateStateOpen (data);
                 }
@@ -1379,15 +1335,8 @@ public class WizardDescriptor extends DialogDescriptor {
                 err.log(Level.INFO, null, x);
             }
         } else if (FINISH_OPTION.equals(convertedValue) || NEXT_OPTION.equals(convertedValue)) {
-            //Bugfix #25820: make sure that storeSettings
-            //is called before propertyChange.
-            if (data.current != null) {
-                Panel old = data.current;
-                data.current.storeSettings(data.getSettings(this));
-                if (! old.equals (data.current)) {
-                    currentPanelWasChangedWhileStoreSettings = true;
-                }
-            }
+            //do not fire prop change event yet, panel data must be validate and stored first
+            return;
         }
 
         // notify listeners about PROP_VALUE change
@@ -1399,6 +1348,13 @@ public class WizardDescriptor extends DialogDescriptor {
         resetWizardOpen(data);
     }
 
+    private <A> void storeSettingsAndNotify(SettingsAndIterator<A> data) {
+        if (data.current != null) {
+            data.current.storeSettings(data.getSettings(this));
+        }
+        firePropertyChange(PROP_VALUE, null, NEXT_OPTION);
+    }
+    
     private <A> void resetWizardOpen(SettingsAndIterator<A> data) {
         if (data.current != null) {
             data.current.storeSettings(data.getSettings(this));
@@ -1449,6 +1405,7 @@ public class WizardDescriptor extends DialogDescriptor {
     private void lazyValidate(final WizardDescriptor.Panel panel, final Runnable onValidPerformer) {
 
         Runnable validationPeformer = new Runnable() {
+            @Override
             public void run() {
 
                 err.log (Level.FINE, "validationPeformer entry."); // NOI18N
@@ -1472,6 +1429,7 @@ public class WizardDescriptor extends DialogDescriptor {
                     } else {
                         err.log (Level.FINE, "invokeLater onValidPerformer."); // NOI18N
                         SwingUtilities.invokeLater (new Runnable () {
+                            @Override
                             public void run () {
                                 err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
                                 onValidPerformer.run();
@@ -1856,6 +1814,7 @@ public class WizardDescriptor extends DialogDescriptor {
          *
          * @throws WizardValidationException when validation fails
          */
+        @Override
         public void validate() throws WizardValidationException;
     }
 
@@ -2020,11 +1979,13 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /* The current panel.
         */
+        @Override
         public Panel<Data> current() {
             return panels[index];
         }
 
         /* Current name of the panel */
+        @Override
         public String name() {
             return NbBundle.getMessage(WizardDescriptor.class, "CTL_ArrayIteratorName", index + 1, panels.length);
         }
@@ -2032,6 +1993,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /* Is there a next panel?
         * @return true if so
         */
+        @Override
         public boolean hasNext() {
             return index < (panels.length - 1);
         }
@@ -2039,6 +2001,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /* Is there a previous panel?
         * @return true if so
         */
+        @Override
         public boolean hasPrevious() {
             return index > 0;
         }
@@ -2046,6 +2009,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /* Moves to the next panel.
         * @exception NoSuchElementException if the panel does not exist
         */
+        @Override
         public synchronized void nextPanel() {
             if ((index + 1) == panels.length) {
                 throw new java.util.NoSuchElementException();
@@ -2057,6 +2021,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /* Moves to previous panel.
         * @exception NoSuchElementException if the panel does not exist
         */
+        @Override
         public synchronized void previousPanel() {
             if (index == 0) {
                 throw new java.util.NoSuchElementException();
@@ -2067,11 +2032,13 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /* Ignores the listener, there are no changes in order of panels.
         */
+        @Override
         public void addChangeListener(ChangeListener l) {
         }
 
         /* Ignored.
         */
+        @Override
         public void removeChangeListener(ChangeListener l) {
         }
 
@@ -2090,11 +2057,13 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         /** Change in the observed objects */
+        @Override
         public void stateChanged(ChangeEvent ev) {
             updateState();
         }
 
         /** Action listener */
+        @Override
         public void actionPerformed(ActionEvent ev) {
             final Iterator<?> panels = data.getIterator(WizardDescriptor.this);
             if (wizardPanel != null) {
@@ -2108,9 +2077,12 @@ public class WizardDescriptor extends DialogDescriptor {
                 final Dimension previousSize = panels.current().getComponent().getSize();
                 Runnable onValidPerformer = new Runnable() {
 
+                    @Override
                     public void run() {
                         err.log(Level.FINE,
                                 "onValidPerformer on next button entry.");
+                        //#163078 - validate first then store
+                        storeSettingsAndNotify(data);
                         panels.nextPanel();
                         try {
                             // change UI to show next step, show wait cursor during
@@ -2146,6 +2118,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
             if (ev.getSource() == finishButton) {
                 Runnable onValidPerformer = new Runnable() {
+                    @Override
                     public void run() {
                         err.log (Level.FINE, "onValidPerformer on finish button entry."); // NOI18N
 
@@ -2156,6 +2129,7 @@ public class WizardDescriptor extends DialogDescriptor {
                         cancelButton.setEnabled (false);
 
                         Runnable performFinish = new Runnable () {
+                            @Override
                             public void run () {
                                 err.log (Level.FINE, "performFinish entry."); // NOI18N
                                 Object oldValue = getValue();
@@ -2193,6 +2167,7 @@ public class WizardDescriptor extends DialogDescriptor {
                                 firePropertyChange(PROP_VALUE, oldValue, OK_OPTION);
 
                                 SwingUtilities.invokeLater (new Runnable () {
+                                    @Override
                                     public void run () {
                                         // all is OK
                                         // close wizrad
@@ -2258,6 +2233,7 @@ public class WizardDescriptor extends DialogDescriptor {
         }
 
         /** Accepts client property changes of user component */
+        @Override
         public void propertyChange(final PropertyChangeEvent e) {
             if (wizardPanel == null) {
                 return;
@@ -2265,6 +2241,7 @@ public class WizardDescriptor extends DialogDescriptor {
 
             if (! SwingUtilities.isEventDispatchThread()) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         propertyChange(e);
                     }
@@ -2412,6 +2389,7 @@ public class WizardDescriptor extends DialogDescriptor {
         /** Loads image stored in image2Load variable.
          * Then invokes repaint when image is fully loaded.
          */
+        @Override
         public void run() {
             Image localImage;
 
@@ -2499,6 +2477,7 @@ public class WizardDescriptor extends DialogDescriptor {
             setOpaque(false);
         }
 
+        @Override
         public Component getListCellRendererComponent(
             JList list, Object value, int index, boolean isSelected, boolean cellHasFocus
         ) {
@@ -2760,6 +2739,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 if (progressLabel != null) {
                     progressLabel.setText (PROGRESS_BAR_DISPLAY_NAME);
                     progressLabel.addPropertyChangeListener ("text", new PropertyChangeListener () { // NOI18N
+                        @Override
                         public void propertyChange (PropertyChangeEvent evt) {
                             progressLabel.putClientProperty (JComponent.TOOL_TIP_TEXT_KEY, evt.getNewValue ().toString ());
                         }
@@ -2825,6 +2805,7 @@ public class WizardDescriptor extends DialogDescriptor {
             // by other means that runs always in AWT.
             Mutex.EVENT.writeAccess(
                 new Runnable() {
+                @Override
                     public void run() {
                         list.setListData(content);
                         list.revalidate();
@@ -2853,6 +2834,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 // #18055. See previous #18055 comment.
                 Mutex.EVENT.readAccess(
                     new Runnable() {
+                        @Override
                         public void run() {
                             list.ensureIndexIsVisible(index);
 
@@ -3191,49 +3173,62 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private static final class EmptyPanel implements Panel<Void>, Iterator<Void> {
+        @Override
         public Component getComponent() {
             return new JPanel();
         }
 
+        @Override
         public HelpCtx getHelp() {
             return HelpCtx.DEFAULT_HELP;
         }
 
+        @Override
         public void readSettings(Void settings) {
         }
 
+        @Override
         public void storeSettings(Void settings) {
         }
 
+        @Override
         public boolean isValid() {
             return true;
         }
 
+        @Override
         public void addChangeListener(ChangeListener l) {
         }
 
+        @Override
         public void removeChangeListener(ChangeListener l) {
         }
 
+        @Override
         public Panel<Void> current() {
             return this;
         }
 
+        @Override
         public String name() {
             return ""; // NORTH
         }
 
+        @Override
         public boolean hasNext() {
             return false;
         }
 
+        @Override
         public boolean hasPrevious() {
             return false;
         }
 
+        @Override
         public void nextPanel() {
         }
 
+        @Override
         public void previousPanel() {
         }
     } // end of EmptyPanel

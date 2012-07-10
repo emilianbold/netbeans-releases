@@ -152,7 +152,7 @@ public final class EndorsedClassPathImpl implements ClassPathImplementation, Fil
                                         }
                                         if (toScan == null) {
                                             try {
-                                                toScan = new File(System.getProperty("java.io.tmpdir"), RepositoryUtil.calculateSHA1Checksum(jar) + ".jar");
+                                                toScan = FileUtil.normalizeFile(new File(System.getProperty("java.io.tmpdir"), RepositoryUtil.calculateSHA1Checksum(jar) + ".jar"));
                                                 if (!toScan.isFile()) {
                                                     FileUtils.copyFile(jar, toScan);
                                                 }

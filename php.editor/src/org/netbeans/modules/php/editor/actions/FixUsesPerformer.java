@@ -304,7 +304,7 @@ public class FixUsesPerformer {
         }
 
         public String getReplaceName(final UsedNamespaceName usedNamespaceName) {
-            return hasAlias() ? alias + ImportDataCreator.NS_SEPARATOR + usedNamespaceName.getReplaceName() : usedNamespaceName.getReplaceName();
+            return hasAlias() ? alias : usedNamespaceName.getReplaceName();
         }
 
         public boolean shouldBeUsed() {
