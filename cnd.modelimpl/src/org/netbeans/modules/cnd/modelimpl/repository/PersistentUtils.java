@@ -242,22 +242,22 @@ public class PersistentUtils {
     
     ////////////////////////////////////////////////////////////////////////////
     // support file buffers
-    public static void writeBuffer(FileBuffer buffer, RepositoryDataOutput output) throws IOException {
+    public static void writeBuffer(FileBuffer buffer, RepositoryDataOutput output, int unitId) throws IOException {
         assert buffer != null;
         if (buffer instanceof AbstractFileBuffer) {
             // always write as file buffer file
             output.writeInt(FILE_BUFFER_FILE);
-            ((AbstractFileBuffer) buffer).write(output);
+            ((AbstractFileBuffer) buffer).write(output, unitId);
         } else {
             throw new IllegalArgumentException("instance of unknown FileBuffer " + buffer);  //NOI18N
         }
     }
 
-    public static FileBuffer readBuffer(RepositoryDataInput input) throws IOException {
+    public static FileBuffer readBuffer(RepositoryDataInput input, int unitId) throws IOException {
         FileBuffer buffer;
         int handler = input.readInt();
         assert handler == FILE_BUFFER_FILE;
-        buffer = new FileBufferFile(input);
+        buffer = new FileBufferFile(input, unitId);
         return buffer;
     }
 
