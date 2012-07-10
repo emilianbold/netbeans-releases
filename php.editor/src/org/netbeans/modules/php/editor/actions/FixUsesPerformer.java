@@ -125,7 +125,7 @@ public class FixUsesPerformer {
                 if (options.aliasesCapitalsOfNamespaces()) {
                     createAliasStrategy = new CapitalsStrategy(i, useParts, selections);
                 } else {
-                    createAliasStrategy = new NumberedUnqualifiedNameStrategy(i, useParts, selections);
+                    createAliasStrategy = new UnqualifiedNameStrategy(i, useParts, selections);
                 }
                 SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), useParts, createAliasStrategy);
                 if (sanitizedUse.shouldBeUsed()) {
@@ -324,9 +324,9 @@ public class FixUsesPerformer {
 
     }
 
-    private static class NumberedUnqualifiedNameStrategy extends CreateAliasStrategyImpl {
+    private static class UnqualifiedNameStrategy extends CreateAliasStrategyImpl {
 
-        public NumberedUnqualifiedNameStrategy(int selectionIndex, List<String> existingUseParts, String[] selections) {
+        public UnqualifiedNameStrategy(int selectionIndex, List<String> existingUseParts, String[] selections) {
             super(selectionIndex, existingUseParts, selections);
         }
 
