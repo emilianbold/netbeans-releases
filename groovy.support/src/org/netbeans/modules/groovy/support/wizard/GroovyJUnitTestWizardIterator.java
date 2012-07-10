@@ -65,6 +65,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.modules.groovy.support.spi.GroovyExtender;
 import org.netbeans.modules.groovy.support.wizard.ant.AntProjectTypeStrategy;
 import org.netbeans.modules.groovy.support.wizard.maven.MavenProjectTypeStrategy;
 import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
@@ -176,7 +177,7 @@ public class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
 
         FileObject createdFile = dobj.getPrimaryFile();
 
-        initExtender();
+        GroovyExtender extender = Templates.getProject(wiz).getLookup().lookup(GroovyExtender.class);
         if (extender != null && !extender.isActive()) {
             extender.activate();
         }

@@ -110,7 +110,6 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     protected transient WizardDescriptor wiz;
-    protected transient GroovyExtender extender;
     protected transient Project project;
     protected transient ProjectTypeStrategy strategy;
 
@@ -202,7 +201,7 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
 
         FileObject createdFile = dobj.getPrimaryFile();
 
-        initExtender();
+        GroovyExtender extender = Templates.getProject(wiz).getLookup().lookup(GroovyExtender.class);
         if (extender != null && !extender.isActive()) {
             extender.activate();
         }
@@ -306,13 +305,6 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
 
     protected final void fireChangeEvent() {
         changeSupport.fireChange();
-    }
-
-    protected GroovyExtender initExtender() {
-        if (extender == null && project != null) {
-            this.extender = project.getLookup().lookup(GroovyExtender.class);
-        }
-        return extender;
     }
 
     protected static String getPackageName(FileObject targetFolder) {
