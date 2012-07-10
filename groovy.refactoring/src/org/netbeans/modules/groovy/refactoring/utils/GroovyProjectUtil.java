@@ -62,7 +62,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.support.spi.GroovyFeature;
+import org.netbeans.modules.groovy.support.spi.GroovyExtender;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -141,9 +141,9 @@ public class GroovyProjectUtil {
     public static boolean isInGroovyProject(FileObject f) {
         Project project = FileOwnerQuery.getOwner(f);
         if (project != null) {
-            GroovyFeature groovyFeature = project.getLookup().lookup(GroovyFeature.class);
-            if (groovyFeature != null) {
-                return groovyFeature.isGroovyEnabled();
+            GroovyExtender groovyExtender = project.getLookup().lookup(GroovyExtender.class);
+            if (groovyExtender != null) {
+                return groovyExtender.isActive();
             }
         }
         return false;
