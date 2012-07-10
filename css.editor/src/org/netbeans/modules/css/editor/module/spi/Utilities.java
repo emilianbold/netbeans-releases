@@ -51,11 +51,13 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssPropertyElement;
+import org.netbeans.modules.css.editor.module.PropertiesReader;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.Pair;
 import org.openide.util.NbBundle;
 
 /**
@@ -169,21 +171,20 @@ public class Utilities {
      */
     public static Collection<PropertyDefinition> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
         Collection<PropertyDefinition> properties = new ArrayList<PropertyDefinition>();
-        ResourceBundle bundle = NbBundle.getBundle(sourcePath);
+        
+        //why not use NbBundle.getBundle()? - we need the items in the natural source order
+        Collection<Pair<String, String>> parseBundle = PropertiesReader.parseBundle(sourcePath);
 
-        Enumeration<String> keys = bundle.getKeys();
         PropertyCategory category = PropertyCategory.DEFAULT;
-        while (keys.hasMoreElements()) {
-            String name = keys.nextElement();
-            String value = bundle.getString(name);
+        for(Pair<String, String> pair : parseBundle) {
+            String name = pair.getA();
+            String value = pair.getB();
             
             if(name.startsWith("$")) {
                 //property category
                 if(CATEGORY_META_PROPERTY_NAME.equalsIgnoreCase(name)) {
                     try {
                         category = PropertyCategory.valueOf(value.toUpperCase());
-                        System.out.println("* set category " + category.name());
-                        
                     } catch (IllegalArgumentException e) {
                         Logger.getAnonymousLogger().log(Level.INFO, 
                                 String.format("Unknown property category name %s in %s properties definition file. Served by %s css module.", value, sourcePath, module.getSpecificationURL()),
@@ -200,11 +201,7 @@ public class Utilities {
                 StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
 
                 while (nameTokenizer.hasMoreTokens()) {
-                    
                     String parsed_name = nameTokenizer.nextToken().trim();
-                    if(category == PropertyCategory.DEFAULT) {
-                        System.out.println("property " + parsed_name + " have default category!!!");
-                    }
                     PropertyDefinition prop = new PropertyDefinition(parsed_name, value, category, module);
                     properties.add(prop);
                 }
