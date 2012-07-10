@@ -42,56 +42,31 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.EditList;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.UiUtils;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.PHPCompletionItem;
 import org.netbeans.modules.php.editor.PHPCompletionItem.MethodDeclarationItem;
 import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.elements.MethodElementImpl;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.ClassScope;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
-import org.netbeans.modules.php.editor.elements.MethodElementImpl;
-import org.netbeans.modules.php.editor.model.MethodScope;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -529,11 +504,13 @@ public class IntroduceHint extends AbstractRule {
         private ClassScope clz;
         private String templ;
         private String fieldName;
+        private final VariableBase dispatcher;
 
         public IntroduceFieldFix(BaseDocument doc, FieldAccess node, ClassScope clz) {
             super(doc, node);
             this.clz = clz;
-            this.templ = createTemplate();//NOI18N
+            this.dispatcher = node.getDispatcher();
+            this.templ = createTemplate();
         }
 
         @Override
@@ -569,7 +546,17 @@ public class IntroduceHint extends AbstractRule {
             if (!fieldVar.isDollared()) {
                 this.fieldName = "$" + this.fieldName;//NOI18N
             }
-            return String.format("public %s = \"\";", fieldName);
+            return String.format("%s %s;", isInternal() ? "private" : "public", fieldName); //NOI18N
+        }
+
+        private boolean isInternal() {
+            boolean result = false;
+            if (dispatcher instanceof Variable) {
+                Variable variable = (Variable) dispatcher;
+                String dispatcherName = CodeUtils.extractVariableName(variable);
+                result = "$this".equals(dispatcherName) ? true : false; //NOI18N
+            }
+            return result;
         }
     }
 
