@@ -342,6 +342,7 @@ NetBeans.tabUpdated = function(tab) {
             // Navigation in a managed tab => send "urlchange" message
             this.sendUrlChangeMessage(tab.id, tab.url);
             this.showPageIcon(tab.id);
+            this.showInfoBar(tab.id);
         }
     }
 }
@@ -476,6 +477,7 @@ NetBeans_Presets.getPresets = function(copy) {
 NetBeans_Presets.setPresets = function(presets) {
     this._presets = presets;
     this._savePresets();
+    this.presetsChanged();
 }
 // load presets from the central storage
 NetBeans_Presets._loadPresets = function() {

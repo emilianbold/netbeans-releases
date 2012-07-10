@@ -158,7 +158,7 @@ NetBeans_PresetCustomizer._putPresetsInternal = function(presets) {
             if (preset.type === presetType.ident) {
                 option.setAttribute('selected', 'selected');
             }
-            option.appendChild(document.createTextNode(presetType.displayName));
+            option.appendChild(document.createTextNode(presetType.title));
             typeSelect.appendChild(option);
         }
         typeSelect.addEventListener('change', function() {
