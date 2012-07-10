@@ -63,7 +63,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.UIUtils;
 import org.netbeans.modules.team.ui.treelist.TreeListUI;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;

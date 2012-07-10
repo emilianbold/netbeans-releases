@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.kenai.ui.impl;
 
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,7 +60,7 @@ import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.UIUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;

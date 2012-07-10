@@ -53,7 +53,7 @@ import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
 import org.netbeans.modules.kenai.ui.OpenNetBeansIDEProjects;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
@@ -103,7 +103,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                org.netbeans.modules.kenai.ui.spi.UIUtils.showLogin(server.getKenai());
+                org.netbeans.modules.kenai.ui.api.UIUtils.showLogin(server.getKenai());
             }
         };
     }

@@ -48,7 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

@@ -50,7 +50,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.treelist.LeafNode;

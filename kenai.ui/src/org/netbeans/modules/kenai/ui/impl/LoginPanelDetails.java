@@ -51,7 +51,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.UIUtils;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.URLDisplayerAction;
 import org.openide.util.Exceptions;

@@ -64,7 +64,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;

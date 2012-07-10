@@ -104,7 +104,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import static org.netbeans.modules.kenai.ui.Bundle.*;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 
@@ -404,7 +404,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        boolean loginSuccess = org.netbeans.modules.kenai.ui.spi.UIUtils.showLogin(kenai);
+        boolean loginSuccess = org.netbeans.modules.kenai.ui.api.UIUtils.showLogin(kenai);
         if (loginSuccess) {
             refreshUsername();
             UIUtils.activateTeamDashboard();

@@ -44,7 +44,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**

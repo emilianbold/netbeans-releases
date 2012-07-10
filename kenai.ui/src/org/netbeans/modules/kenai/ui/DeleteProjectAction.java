@@ -47,7 +47,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;

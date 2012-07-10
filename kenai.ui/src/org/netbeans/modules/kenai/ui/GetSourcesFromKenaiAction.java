@@ -57,7 +57,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.UIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;

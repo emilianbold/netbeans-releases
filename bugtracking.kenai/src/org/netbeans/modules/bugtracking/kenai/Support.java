@@ -48,7 +48,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.RequestProcessor;
 

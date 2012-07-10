@@ -49,7 +49,7 @@ import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.UIUtils;
 import org.openide.util.NbPreferences;
 import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
 import org.openide.util.NbBundle.Messages;

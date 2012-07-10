@@ -51,7 +51,7 @@ import javax.swing.Action;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.spi.KenaiUserUI;
+import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;

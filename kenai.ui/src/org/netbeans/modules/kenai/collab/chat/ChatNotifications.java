@@ -56,7 +56,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;

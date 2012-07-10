@@ -59,7 +59,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;

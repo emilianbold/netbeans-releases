@@ -51,7 +51,7 @@ import javax.swing.*;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
-import org.netbeans.modules.kenai.ui.spi.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;

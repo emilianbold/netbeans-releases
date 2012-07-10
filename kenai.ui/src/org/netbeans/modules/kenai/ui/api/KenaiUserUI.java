@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.kenai.ui.api;
 
 import java.awt.Component;
 import java.awt.Graphics;

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.ui.spi;
+package org.netbeans.modules.kenai.ui.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -75,7 +75,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Ondrej Vrabec
  */
-public class KenaiServer implements TeamServer {
+public final class KenaiServer implements TeamServer {
     private static final Map<Kenai, KenaiServer> serverMap = new WeakHashMap<Kenai, KenaiServer>(3);
 
     private final Kenai kenai;
