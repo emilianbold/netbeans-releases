@@ -183,41 +183,34 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
     public static class ODSQueryAccessor extends QueryAccessor<CloudUiServer, Project> {
+        private static class ODSQueryHandle extends QueryHandle {
+            private final String display;
+            private final int t;
+            private final int c;
+            private static int seed = 1;
+            public ODSQueryHandle(String display) {
+                this.display = display;
+                Random r = new Random(seed++);
+                t = r.nextInt(100);
+                c = r.nextInt(t);
+            }
+            
+            @Override
+            public String getDisplayName() {
+                return display;
+            }
+            @Override public void addPropertyChangeListener(PropertyChangeListener l) { }
+            @Override public void removePropertyChangeListener(PropertyChangeListener l) { }
+            
+        }
         private final QueryHandle allIssues;
         private final QueryHandle myIssues;
         private final QueryHandle someQuery;
 
         public ODSQueryAccessor() {
-            allIssues = new QueryHandle() {
-                @Override
-                public String getDisplayName() {
-                    return "All Issues";
-                }
-                @Override
-                public void addPropertyChangeListener(PropertyChangeListener l) {}
-                @Override
-                public void removePropertyChangeListener(PropertyChangeListener l) {}
-            };
-            myIssues = new QueryHandle() {
-                @Override
-                public String getDisplayName() {
-                    return "My Issues";
-                }
-                @Override
-                public void addPropertyChangeListener(PropertyChangeListener l) {}
-                @Override
-                public void removePropertyChangeListener(PropertyChangeListener l) {}
-            };
-            someQuery = new QueryHandle() {
-                @Override
-                public String getDisplayName() {
-                    return "Some another query";
-                }
-                @Override
-                public void addPropertyChangeListener(PropertyChangeListener l) {}
-                @Override
-                public void removePropertyChangeListener(PropertyChangeListener l) {}
-            };
+            allIssues = new ODSQueryHandle("All Issues");
+            myIssues = new ODSQueryHandle("My Issues");
+            someQuery = new ODSQueryHandle("Some another query");
         }
         
         @Override
@@ -243,24 +236,23 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
 
         @Override
         public List<QueryResultHandle> getQueryResults(QueryHandle query) {
+            final ODSQueryHandle oq = (ODSQueryHandle) query;
             LinkedList<QueryResultHandle> ret = new LinkedList<QueryResultHandle>();
-            Random r = new Random(System.currentTimeMillis());
-            final int t = r.nextInt(100);
-            final int c = r.nextInt(t);
+            ret.add(new QueryResultHandle() {
+                @Override public String getText() { return oq.t + " total"; }
+                @Override public String getToolTipText() { return oq.t + " total"; }
+                @Override public ResultType getResultType() { return ResultType.NAMED_RESULT; }
+            });
+            ret.add(new QueryResultHandle() {
+                @Override public String getText() { return oq.c + " new or changed"; }
+                @Override public String getToolTipText() { return oq.c + " new or changed tasks"; }
+                @Override public ResultType getResultType() { return ResultType.NAMED_RESULT; }
+            });
+            final int c = ((ODSQueryHandle)allIssues).c + ((ODSQueryHandle)myIssues).c + ((ODSQueryHandle)someQuery).c;
             ret.add(new QueryResultHandle() {
                 @Override public String getText() { return "" + c; }
                 @Override public String getToolTipText() { return c + " changed tasks"; }
                 @Override public ResultType getResultType() { return ResultType.ALL_CHANGES_RESULT; }
-            });
-            ret.add(new QueryResultHandle() {
-                @Override public String getText() { return c + " new or changed"; }
-                @Override public String getToolTipText() { return c + " new or changed tasks"; }
-                @Override public ResultType getResultType() { return ResultType.NAMED_RESULT; }
-            });
-            ret.add(new QueryResultHandle() {
-                @Override public String getText() { return t + ""; }
-                @Override public String getToolTipText() { return t + " total"; }
-                @Override public ResultType getResultType() { return ResultType.NAMED_RESULT; }
             });
             return ret;
         }
