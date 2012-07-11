@@ -110,8 +110,6 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -124,7 +122,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
@@ -161,16 +158,8 @@ public final class PhpProject implements Project {
 
     private final SearchFilterDefinition searchFilterDef = new PhpSearchFilterDef();
 
-    // #165136
-    // @GuardedBy("this")
-    private FileObject sourcesDirectory;
     // ok to read it more times
     volatile FileObject webRootDirectory;
-
-    // true if property src.dir does not exist
-    volatile boolean sourcesDirectoryInvalid = false;
-    // true if project is being deleted; do not warn about invalid sources then
-    private volatile boolean deleting;
 
     volatile String name;
     private final AntProjectListener phpAntProjectListener = new PhpAntProjectListener();
@@ -185,7 +174,7 @@ public final class PhpProject implements Project {
     // frameworks
     private volatile boolean frameworksDirty = true;
     final List<PhpFrameworkProvider> frameworks = new CopyOnWriteArrayList<PhpFrameworkProvider>();
-    private final FileChangeListener sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
+    volatile FileChangeListener sourceDirectoryFileChangeListener = null;
     private final LookupListener frameworksListener = new FrameworksListener();
 
     // project's property changes
@@ -209,6 +198,12 @@ public final class PhpProject implements Project {
 
         addWeakPropertyEvaluatorListener(projectPropertiesListener);
         helper.addAntProjectListener(WeakListeners.create(AntProjectListener.class, phpAntProjectListener, helper));
+        sourceRoots.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                sourceDirectoryFileChangeListener = null;
+            }
+        });
     }
 
     @Override
@@ -291,104 +286,17 @@ public final class PhpProject implements Project {
         return seleniumRoots;
     }
 
-    synchronized FileObject getSourcesDirectory() {
-        if (sourcesDirectory == null) {
-            sourcesDirectory = resolveSourcesDirectory();
-            sourcesDirectory.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, sourcesDirectory));
-        }
-        assert sourcesDirectory != null : "Sources directory cannot be null for " + helper.getProjectDirectory();
-        return sourcesDirectory;
-    }
-
-    public synchronized void resetSourcesDirectory() {
-        sourcesDirectory = null;
-        sourceRoots.fireChange();
-    }
-
-    private FileObject resolveSourcesDirectory() {
-        FileObject sourceDir = resolveDirectory(PhpProjectProperties.SRC_DIR, "MSG_SourcesFolderTemporaryToProjectDirectory"); // NOI18N
-        if (sourceDir != null) {
-            sourcesDirectoryInvalid = false;
-            return sourceDir;
-        }
-        if (deleting) {
-            // project is being deleted, temporarily return project directory (to avoid NPE)
-            return helper.getProjectDirectory();
-        }
-        // source dir not resolved?!
-        String srcDirProperty = eval.getProperty(PhpProjectProperties.SRC_DIR);
-        // #168390, #165494, #213468
-        if (srcDirProperty == null && !sourcesDirectoryInvalid) {
-            sourcesDirectoryInvalid = true;
-            // inform user
-            warnInvalidSourcesDirectory();
-            // diagnostics
-            FileObject projectProps = helper.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            boolean projectPropsFound = projectProps != null;
-
-            StringBuilder buffer = new StringBuilder(2000);
-            buffer.append("Property 'src.dir' was not found in 'nbproject/project.properties' (NB metadata corrupted?)\n"); // NOI18N
-            buffer.append("diagnostics:\n"); // NOI18N
-            buffer.append("project.properties exists: "); // NOI18N
-            buffer.append(projectPropsFound);
-            if (projectPropsFound) {
-                boolean canRead = projectProps.canRead();
-                buffer.append("\nproject.properties valid: "); // NOI18N
-                buffer.append(projectProps.isValid());
-                buffer.append("\nproject.properties can read: "); // NOI18N
-                buffer.append(canRead);
-                if (canRead) {
-                    buffer.append("\nproject.properties content: ["); // NOI18N
-                    try {
-                        buffer.append(projectProps.asText());
-                    } catch (IOException exc) {
-                        buffer.append(exc.getMessage());
-                    }
-                    buffer.append("]"); // NOI18N
-                }
-            } else {
-                // project properties not found
-                FileObject projectDirectory = getProjectDirectory();
-                buffer.append("\nproject directory: "); // NOI18N
-                buffer.append(projectDirectory);
-                buffer.append("\nproject directory children: "); // NOI18N
-                buffer.append(Arrays.asList(projectDirectory.getChildren()));
-
-                FileObject nbproject = projectDirectory.getFileObject("nbproject"); // NOI18N
-                boolean nbprojectFound = nbproject != null;
-                buffer.append("\nnbproject exists: "); // NOI18N
-                buffer.append(nbprojectFound);
-                if (nbprojectFound) {
-                    buffer.append("\nnbproject valid: "); // NOI18N
-                    buffer.append(nbproject.isValid());
-                    buffer.append("\nnbproject children: "); // NOI18N
-                    buffer.append(Arrays.asList(nbproject.getChildren()));
-                }
+    FileObject getSourcesDirectory() {
+        for (FileObject root : sourceRoots.getRoots()) {
+            if (sourceDirectoryFileChangeListener == null) {
+                // no locks here, it is ok if the listener is created and attached more times (gc takes care of it)
+                sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
+                root.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, root));
             }
-            buffer.append("\nsource roots: "); // NOI18N
-            buffer.append(Arrays.asList(getSourceRoots().getRoots()));
-            buffer.append("\nsource roots - fired changes: "); // NOI18N
-            buffer.append(getSourceRoots().getFiredChanges());
-            buffer.append("\nproperties (helper): "); // NOI18N
-            buffer.append(helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH));
-            buffer.append("\nproperties (evaluator): "); // NOI18N
-            buffer.append(eval.getProperties());
-            LOGGER.log(Level.WARNING, null, new IllegalStateException(buffer.toString()));
+            // return the first one
+            return root;
         }
-        // temporarily return project directory (to avoid NPE)
-        return helper.getProjectDirectory();
-    }
-
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "PhpProject.metadata.corrupted=<html><b>Project {0} has corrupted metadata</b>.<br><br>Repair manually \"src.dir\" property in <i>nbproject/project.properties</i> and reopen the project."
-    })
-    public void warnInvalidSourcesDirectory() {
-        warnUser(Bundle.PhpProject_metadata_corrupted(getName()));
-    }
-
-    public boolean isSourcesDirectoryInvalid() {
-        return sourcesDirectoryInvalid;
+        return null;
     }
 
     /**
@@ -413,32 +321,6 @@ public final class PhpProject implements Project {
         return null;
     }
 
-    private FileObject resolveDirectory(final String propertyName, final String messageKey) {
-        assert Thread.holdsLock(this);
-        String property = eval.getProperty(propertyName);
-        if (property == null) {
-            // directory not set
-            return null;
-        }
-        FileObject dirFo = helper.resolveFileObject(property);
-        if (dirFo != null) {
-            return dirFo;
-        }
-        File dir = FileUtil.normalizeFile(new File(helper.resolvePath(property)));
-        warnUser(NbBundle.getMessage(PhpProject.class, messageKey, dir.getAbsolutePath()));
-        return null;
-    }
-
-    private void warnUser(String message) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
-                message,
-                getName(),
-                NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION));
-    }
-
     /**
      * @return web root directory or sources directory if not set
      */
@@ -450,17 +332,22 @@ public final class PhpProject implements Project {
     }
 
     private FileObject resolveWebRootDirectory() {
+        FileObject sources = getSourcesDirectory();
+        if (sources == null) {
+            // corrupted project
+            return null;
+        }
         String webRootProperty = eval.getProperty(PhpProjectProperties.WEB_ROOT);
         if (webRootProperty == null) {
             // web root directory not set, return sources
-            return getSourcesDirectory();
+            return sources;
         }
-        FileObject webRootDir = getSourcesDirectory().getFileObject(webRootProperty);
+        FileObject webRootDir = sources.getFileObject(webRootProperty);
         if (webRootDir != null) {
             return webRootDir;
         }
         // web root directory not found, return sources
-        return getSourcesDirectory();
+        return sources;
     }
 
     public PhpModule getPhpModule() {
@@ -568,6 +455,10 @@ public final class PhpProject implements Project {
     }
 
     public List<PhpFrameworkProvider> getFrameworks() {
+        if (getSourcesDirectory() == null) {
+            // corrupted project
+            return Collections.emptyList();
+        }
         if (frameworksDirty) {
             synchronized (frameworks) {
                 if (frameworksDirty) {
@@ -724,10 +615,6 @@ public final class PhpProject implements Project {
         ignoredFoldersChangeSupport.fireChange();
     }
 
-    void setDeleting() {
-        deleting = true;
-    }
-
     private final class Info implements ProjectInformation {
 
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -812,10 +699,7 @@ public final class PhpProject implements Project {
         @Override
         protected void projectClosed() {
             try {
-                FileObject sources = getSourcesDirectory();
-                assert sources != null;
-                sources.removeFileChangeListener(sourceDirectoryFileChangeListener);
-                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", sources);
+                LOGGER.log(Level.FINE, "Removing frameworks listener for {0}", getName());
                 PhpFrameworks.removeFrameworksListener(frameworksListener);
 
 
@@ -847,14 +731,9 @@ public final class PhpProject implements Project {
         private void reinitFolders() {
             // #165494 - moved from projectClosed() to projectOpened()
             // clear references to ensure that all the dirs are read again
-            sourcesDirectoryInvalid = false;
-            resetSourcesDirectory();
             webRootDirectory = null;
             resetIgnoredFolders();
-
-            // #139159 - we need to hold sources FO to prevent gc
-            getSourcesDirectory();
-            getWebRootDirectory();
+            // read dirs
             getIgnoredFiles();
         }
 
@@ -920,9 +799,6 @@ public final class PhpProject implements Project {
                 webRootDirectory = null;
                 // useful since it fires changes with fileobjects -> client can better use it than "htdocs/web/" values
                 propertyChangeSupport.firePropertyChange(PROP_WEB_ROOT, oldWebRoot, getWebRootDirectory());
-            } else if (sourcesDirectoryInvalid || sourceRoots.getRoots().length == 0) {
-                // nb metadata corrupted -> maybe fixed?
-                sourcesDirectory = null;
             }
         }
     }
