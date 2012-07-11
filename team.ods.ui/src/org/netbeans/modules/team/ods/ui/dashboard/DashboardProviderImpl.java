@@ -156,7 +156,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     @Override
     public SourceAccessorImpl getSourceAccessor() {
         if(sourceAccessor == null) {
-            sourceAccessor = new SourceAccessorImpl(server);
+            sourceAccessor = new SourceAccessorImpl(server, this);
         }
         return sourceAccessor;
     }

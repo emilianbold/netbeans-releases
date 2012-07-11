@@ -59,9 +59,12 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
+// XXX not properly implemented yet
 public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project> {
     
     private final CloudUiServer server;
+    private final Object PROJECT_LOCK = new Object();
+    private ArrayList<ProjectHandle<CloudUiServer, Project>> projects;
 
     ProjectAccessorImpl(CloudUiServer server) {
         this.server = server;
@@ -69,33 +72,39 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
 
     @Override
     public List<ProjectHandle<CloudUiServer, Project>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
-        return new ArrayList<ProjectHandle<CloudUiServer, Project>>(server.getMyProjects());
-//        try {
-//            LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
-//            for (Project prj : server.getKenai().getMyProjects(force)) {
-//                l.add(new ProjectHandleImpl(prj));
-//                for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
-//                    if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
-//                        try {
-//                            Subversion.addRecentUrl(feature.getLocation());
-//                        } catch (MalformedURLException ex) {
-//                            Exceptions.printStackTrace(ex);
-//                        }
-//                    } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
-//                        try {
-//                            Mercurial.addRecentUrl(feature.getLocation());
-//                        } catch (MalformedURLException ex) {
-//                            Exceptions.printStackTrace(ex);
-//                        }
-//                    }
-//
-//                }
-//            }
-//            return l;
-//        } catch (KenaiException ex) {
-//            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getMyProject() failed", ex);
-//            return null;
-//        }
+        synchronized(PROJECT_LOCK) {
+            if(projects == null) {
+                // XXX maybe the whole cahching should be done at one place
+                projects = new ArrayList<ProjectHandle<CloudUiServer, Project>>(server.getMyProjects());
+            }
+        }
+        return projects;
+        //        try {
+        //            LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
+        //            for (Project prj : server.getKenai().getMyProjects(force)) {
+        //                l.add(new ProjectHandleImpl(prj));
+        //                for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
+        //                    if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
+        //                        try {
+        //                            Subversion.addRecentUrl(feature.getLocation());
+        //                        } catch (MalformedURLException ex) {
+        //                            Exceptions.printStackTrace(ex);
+        //                        }
+        //                    } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
+        //                        try {
+        //                            Mercurial.addRecentUrl(feature.getLocation());
+        //                        } catch (MalformedURLException ex) {
+        //                            Exceptions.printStackTrace(ex);
+        //                        }
+        //                    }
+        //
+        //                }
+        //            }
+        //            return l;
+        //        } catch (KenaiException ex) {
+        //            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getMyProject() failed", ex);
+        //            return null;
+        //        }
     }
 
     @Override
@@ -173,6 +182,8 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
 
     @Override
     public Action getOpenWikiAction(ProjectHandle<CloudUiServer, Project> project) {
+        // XXX where is this called from? 
+        
 //        try {
 //            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.WIKI);
 //            if (wiki.length == 1) {

@@ -51,8 +51,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -86,10 +90,13 @@ import org.openide.windows.WindowManager;
 public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> {
     private static CloudUiServer server;
 
-    private Map<SourceHandle,ProjectAndRepository> handlesMap = new HashMap<SourceHandle,ProjectAndRepository>();
+    private final Map<SourceHandleImpl, ProjectAndRepository> handlesMap = new HashMap<SourceHandleImpl, ProjectAndRepository>();
+    private final Set<String> loadedProjects = new HashSet<String>();
+    private final DashboardProviderImpl provider;
 
-    public SourceAccessorImpl(CloudUiServer server) {
+    public SourceAccessorImpl(CloudUiServer server, DashboardProviderImpl provider) {
         this.server = server;
+        this.provider = provider;
     }
 
     @Override
@@ -102,15 +109,24 @@ public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.taskto
         try {
             if (project != null) {
                 
+                synchronized(loadedProjects) {
+                    if(loadedProjects.contains(prjHandle.getId())) {
+                        // XXX dummy caching . at this point project data should be propely cached
+                        // unti next server refresh
+                        return getHandlesFor(prjHandle);
+                    }
+                }
                 // XXX add support for external - see repository.getScmLocation()
                 
+                System.out.println(" SourceAccessorImpl " + project.getIdentifier());
                 List<ProjectService> services = project.getProjectServicesOfType(ServiceType.SCM);
                 if(!services.isEmpty() && services.iterator().next().isAvailable()) { // XXX what if there is more?
                     List<ScmRepository> repositories = client.getScmRepositories(project.getIdentifier());
+                    loadedProjects.add(prjHandle.getId());
                     for (ScmRepository repository : repositories) {
-                        SourceHandle srcHandle = new SourceHandleImpl(prjHandle, repository);
+                        SourceHandleImpl srcHandle = new SourceHandleImpl(prjHandle, repository);
                         handlesList.add(srcHandle);
-                        handlesMap.put(srcHandle, new ProjectAndRepository(prjHandle.getTeamProject(), repository));
+                        handlesMap.put(srcHandle, new ProjectAndRepository(prjHandle, repository));
                     }
                 }
             }
@@ -125,14 +141,12 @@ public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.taskto
 
     @Override
     public Action getOpenSourcesAction(SourceHandle srcHandle) {
-//        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
-        return NotYetAction.instance;
+        return new GetSourcesFromCloudAction(handlesMap.get(srcHandle), srcHandle, provider);
     }
 
     @Override
     public Action getDefaultAction(SourceHandle srcHandle) {
-//        return new GetSourcesFromKenaiAction(handlesMap.get(srcHandle), srcHandle);
-        return NotYetAction.instance;
+        return new GetSourcesFromCloudAction(handlesMap.get(srcHandle), srcHandle, provider);
     }
 
     @Override
@@ -252,11 +266,44 @@ public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.taskto
         Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.FINE, t.getMessage(), t);
     }
 
+    public List<SourceHandle> getHandlesFor(ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
+        List<SourceHandle> ret = new LinkedList<SourceHandle>();
+        synchronized(loadedProjects) {
+            for (Entry<SourceHandleImpl, ProjectAndRepository> e : handlesMap.entrySet()) {
+               if(e.getValue().project.getId().equals(prjHandle.getId())) {
+                   ret.add(e.getKey());
+               } 
+            }
+            return ret;
+        }
+    }
+    
+    public List<ScmRepository> getRepositoriesFor(ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
+        List<ScmRepository> ret = new LinkedList<ScmRepository>();
+        boolean loaded;
+        synchronized(loadedProjects) {
+            loaded = loadedProjects.contains(prjHandle.getId());
+        }    
+        
+        if(!loaded) {
+            getSources(prjHandle);
+        }
+        
+        synchronized(loadedProjects) {
+            for (ProjectAndRepository par : handlesMap.values()) {
+               if(par.project.getId().equals(prjHandle.getId())) {
+                   ret.add(par.repository);
+               } 
+            }
+            return ret;
+        }
+    }
+
     public static class ProjectAndRepository {
-        public com.tasktop.c2c.server.profile.domain.project.Project project;
+        public ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> project;
         public ScmRepository repository;
         public String externalScmType;
-        public ProjectAndRepository(com.tasktop.c2c.server.profile.domain.project.Project project, ScmRepository repository) {
+        public ProjectAndRepository(ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> project, ScmRepository repository) {
             this.project = project;
             this.repository = repository;
         }

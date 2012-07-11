@@ -85,14 +85,8 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     private ProjectHandle projectHandle;
     private static final int MAX_PROJECTS = 5;
     private static final String RECENTPROJECTS_PREFIX = "recent.projects."; // NOI18N
-    private String externalScmType=SCM_TYPE_UNKNOWN;
     public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
-    public static final String SCM_TYPE_CVS = "cvs";//NOI18N
     private RequestProcessor rp = new RequestProcessor(SourceHandleImpl.class);
-
-    public String getExternalScmType() {
-        return externalScmType;
-    }
 
     public SourceHandleImpl(final ProjectHandle projectHandle, ScmRepository repository) {
         this.repository = repository;
@@ -145,6 +139,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         final List<Project> newProjects = getNewProjects((Project[])evt.getOldValue(), (Project[])evt.getNewValue());
         rp.post(new Runnable() {
@@ -241,22 +236,37 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     private boolean isUnder(FileObject projectDirectory) {
-        String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation"); // NOI18N
+        String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation.Team"); // NOI18N
+        if(remoteLocation == null) {
+            return false;
+        }
         String location = repository.getUrl();
         if (!location.endsWith("/")) {//NOI18N
             location+="/";//NOI18N
         }
+        String[] rls = remoteLocation.split(";");
+        for (String rl : rls) {
+            if(isUnder(rl, location)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isUnder(String remoteLocation, String location) {
         if (remoteLocation!=null && !remoteLocation.endsWith("/")) {//NOI18N
             remoteLocation+="/";//NOI18N
         }
 
-        if (location.equals(remoteLocation))
+        if (location.equals(remoteLocation)) {
             return true;
+        }
         try {
             URI uri1 = new URI(location);
             URI uri2 = new URI(remoteLocation);
-            if (location.substring(uri1.getScheme().length()).equals(remoteLocation.substring(uri2.getScheme().length())))
+            if (location.substring(uri1.getScheme().length()).equals(remoteLocation.substring(uri2.getScheme().length()))) {
                 return true;
+            }
         } catch (Exception e) {
             //ignore
             return false;
