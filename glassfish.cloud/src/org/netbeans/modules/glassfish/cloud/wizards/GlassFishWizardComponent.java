@@ -172,6 +172,25 @@ public abstract class GlassFishWizardComponent
     private ChangeListener changeListener;
 
     ////////////////////////////////////////////////////////////////////////////
+    // Abstract methods                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Enable form elements modification.
+     */
+    abstract void enableModifications();
+
+    /**
+     * Disable form elements modification.
+     */
+    abstract void disableModifications();
+
+    /**
+     * Validate component.
+     */
+    abstract boolean valid();
+
+        ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 

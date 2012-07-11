@@ -48,7 +48,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import static org.openide.util.NbBundle.getMessage;
-import org.openide.util.Utilities;
 
 /**
  * GlassFish Cloud Wizard CPAS Panel.
@@ -91,13 +90,6 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public void prepareValidation() {
-        // Lock form before validation.
-        getComponent().setCursor(Utilities.createProgressCursor(getComponent()));
-        component.disableModifications();
-    }
-
     /**
      * Get panel component containing CPAS attributes.
      * <p/>
@@ -106,7 +98,8 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new GlassFishCloudWizardCpasComponent();
+            super.component = component
+                    = new GlassFishCloudWizardCpasComponent();
             component.setChangeListener(this);
         }
         return component;
@@ -148,24 +141,6 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
             settings.putProperty(PROPERTY_CPAS_HOST, component.getHost());
             settings.putProperty(PROPERTY_CPAS_PORT, component.getPortText());
         }
-    }
-
-    /**
-     * Test whether the panel is finished and it is safe to proceed to the next
-     * one.
-     * <p/>
-     * If the panel is valid, the "Next" (or "Finish") button will be
-     * enabled.
-     * <p/>
-     * @retrn <code>true</code> if the user has entered satisfactory information
-     *        or <code>false</code> otherwise.
-     */
-    @Override
-    public boolean isValid() {
-        if (component == null || wizardDescriptor == null || asynchError != null) {
-            return false;
-        }
-        return component.valid();
     }
 
     /**

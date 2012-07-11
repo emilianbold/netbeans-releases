@@ -55,10 +55,10 @@ public class GlassFishCloudWizardCpasComponent
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
     
-    /** Validity of host field. */
+    /** Validity of <code>host</code> field. */
     private boolean hostValid;
     
-    /** Validity of port field. */
+    /** Validity of <code>port</code> field. */
     private boolean portValid;
 
     /** Event listener to validate host field on the fly. */
@@ -147,12 +147,13 @@ public class GlassFishCloudWizardCpasComponent
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Methods                                                                //
+    // Implemented abstract methods                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
      * Enable modification of form elements.
      */
+    @Override
     void enableModifications() {
         hostTextField.setEditable(true);
         portTextField.setEditable(true);
@@ -161,10 +162,23 @@ public class GlassFishCloudWizardCpasComponent
     /**
      * Disable modification of form elements.
      */
+    @Override
     void disableModifications() {
         hostTextField.setEditable(false);
         portTextField.setEditable(false);
     }
+
+    /**
+     * Validate component.
+     */
+    @Override
+    boolean valid() {
+        return hostValid && portValid; 
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
      * Validate host field.
@@ -214,13 +228,6 @@ public class GlassFishCloudWizardCpasComponent
                     getMessage(GlassFishCloudWizardCpasComponent.class,
                     Bundle.CLOUD_PANEL_ERROR_PORT_EMPTY));
         }
-    }
-
-    /**
-     * Validate component.
-     */
-    boolean valid() {
-        return hostValid && portValid; 
     }
 
     ////////////////////////////////////////////////////////////////////////////

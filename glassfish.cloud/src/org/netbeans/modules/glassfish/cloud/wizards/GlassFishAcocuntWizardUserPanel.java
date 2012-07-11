@@ -42,9 +42,12 @@
 package org.netbeans.modules.glassfish.cloud.wizards;
 
 import java.awt.Component;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
+import static org.openide.util.NbBundle.getMessage;
 
 /**
  * GlassFish User Account Wizard User Panel.
@@ -90,11 +93,6 @@ public class GlassFishAcocuntWizardUserPanel extends GlassFishWizardPanel {
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
 
-    @Override
-    public void prepareValidation() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     /**
      * Get panel component containing CPAS attributes.
      * <p/>
@@ -103,7 +101,8 @@ public class GlassFishAcocuntWizardUserPanel extends GlassFishWizardPanel {
     @Override
     public Component getComponent() {
         if (component == null) {
-            component = new GlassFishAccountWizardUserComponent();
+            super.component = component
+                    = new GlassFishAccountWizardUserComponent();
             component.setChangeListener(this);
         }
         return component;
@@ -150,16 +149,66 @@ public class GlassFishAcocuntWizardUserPanel extends GlassFishWizardPanel {
     }
 
     @Override
-    public boolean isValid() {
-        if (asynchError != null) {
-            return false;
+    public void validate() throws WizardValidationException {
+        try {
+            // This should not happen at this stage but let's make sure.
+            if (component == null || wizardDescriptor == null) {
+                throw new WizardValidationException((JComponent)getComponent(), 
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.USER_PANEL_VALIDATION_FAILED),
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.USER_PANEL_ERROR_COMPONENT_UNINITIALIZED));
+            }
+            // Form fields validation.
+            String error = performValidation();
+            if (error != null) {
+                throw new WizardValidationException((JComponent)getComponent(), 
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.USER_PANEL_VALIDATION_FAILED),
+                        error);
+            }
+        // Unlock form after validation.
+        } finally {
+            component.setCursor(null);
+            component.enableModifications();
         }
-        return true;
     }
 
+    /**
+     * Invoked when the target of the listener has changed its state.
+     * <p/>
+     * @param e a ChangeEvent object
+     */
     @Override
-    public void validate() throws WizardValidationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void stateChanged(ChangeEvent e) {
+        super.stateChanged(e);
+        Object source = e.getSource();
+        if (source instanceof GlassFishWizardComponent.ValidationResult) {
+            GlassFishWizardComponent.ValidationResult result
+                    = (GlassFishWizardComponent.ValidationResult)source;
+            setErrorMessage(result.getErrorMessage());
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Validate form elements and return error message when any error was found.
+     * <p/>
+     * Validate all panel component fields and return error message related to
+     * first error found during validation.
+     * <p/>
+     * @return Error message or <code>null</code> when no error was found.
+     */
+    public String performValidation() {
+        if (component == null || wizardDescriptor == null) {
+            return null;
+        }
+        GlassFishWizardComponent.ValidationResult result
+                = null;
+        return null;
     }
 
 }

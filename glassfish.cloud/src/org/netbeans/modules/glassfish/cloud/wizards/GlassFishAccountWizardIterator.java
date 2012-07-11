@@ -94,14 +94,4 @@ public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /** Cleans up this iterator, called when the wizard is being closed,
-     * no matter what closing option invoked.
-     * <p/>
-     * @param wizard Wizard's descriptor.
-     */
-    @Override
-    public void uninitialize(WizardDescriptor wizard) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }

@@ -41,12 +41,76 @@
  */
 package org.netbeans.modules.glassfish.cloud.wizards;
 
+import javax.swing.event.DocumentListener;
+import static org.openide.util.NbBundle.getMessage;
+
 /**
  *
  * @author kratz
  */
 public class GlassFishAccountWizardUserComponent
         extends GlassFishWizardComponent {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /** Validity of <code>account</code> field. */
+    private boolean accountValid;
+
+    /** Validity of <code>userName</code> field. */
+    private boolean userNameValid;
+
+    /** Validity of <code>userPassword</code> field. */
+    private boolean userPasswordValid;
+
+    /** Event listener to validate host field on the fly. */
+    private DocumentListener accountEventListener
+            = new ComponentFieldListener() {
+
+        /**
+         * Process received notification.
+         */
+        @Override
+        void processEvent() {
+            ValidationResult result = accountValid();
+            accountValid = result.isValid();
+            update(result);            
+        }
+
+    };
+
+    /** Event listener to validate user name field on the fly. */
+    private DocumentListener userNameEventListener
+            = new ComponentFieldListener() {
+
+        /**
+         * Process received notification.
+         */
+        @Override
+        void processEvent() {
+            ValidationResult result = userNameValid();
+            userNameValid = result.isValid();
+            update(result);            
+        }
+
+    };
+
+    /** Event listener to validate user password field on the fly. */
+    private DocumentListener userPasswordEventListener
+            = new ComponentFieldListener() {
+
+        /**
+         * Process received notification.
+         */
+        @Override
+        void processEvent() {
+            ValidationResult result = userPasswordValid();
+            userPasswordValid = result.isValid();
+            update(result);            
+        }
+
+    };
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -57,6 +121,15 @@ public class GlassFishAccountWizardUserComponent
      */
     public GlassFishAccountWizardUserComponent() {
         initComponents();
+        accountValid = accountValid().isValid();
+        userNameValid = userNameValid().isValid();
+        userPasswordValid = userPasswordValid().isValid();
+        accountTextField.getDocument()
+                .addDocumentListener(accountEventListener);
+        userNameTextField.getDocument()
+                .addDocumentListener(userNameEventListener);
+        userPasswordTextField.getDocument()
+                .addDocumentListener(userPasswordEventListener);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -86,11 +159,114 @@ public class GlassFishAccountWizardUserComponent
     /**
      * Get user password.
      * <p/>
+     * Password processing should not remove leading and trailing spaces.
+     * <p/>
      * @return User password.
      */
     public String getUserPassword() {
-        String text = userPasswordTextField.getText();
-        return text != null ? text.trim() : null;
+        return userPasswordTextField.getText();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented abstract methods                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Enable modification of form elements.
+     */
+    @Override
+    void enableModifications() {
+        accountTextField.setEditable(true);
+        userNameTextField.setEditable(true);
+        userPasswordTextField.setEditable(true);
+    }
+
+    /**
+     * Disable modification of form elements.
+     */
+    @Override
+    void disableModifications() {
+        accountTextField.setEditable(false);
+        userNameTextField.setEditable(false);
+        userPasswordTextField.setEditable(false);
+    }
+
+    /**
+     * Validate component.
+     */
+    @Override
+    boolean valid() {
+        return accountValid && userNameValid && userPasswordValid; 
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Validate account field.
+     * <p/>
+     * Account field should be non empty string value containing at least one
+     * non-whitespace character.
+     * Value of <code>validationError</code> is set to inform about field
+     * status.
+     * <p/>
+     * @return <code>true</code> when account field is valid
+     *         or <code>false</code> otherwise.
+     */
+    final ValidationResult accountValid() {
+        String account = getAccount();
+        if (account != null && account.length() > 0) {
+            return new ValidationResult(true, null);
+        } else {
+            return new ValidationResult(false,
+                    getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.USER_PANEL_ERROR_ACCOUNT_EMPTY));
+        }
+    }
+
+    /**
+     * Validate userName field.
+     * <p/>
+     * User name field should be non empty string value containing at least one
+     * non-whitespace character.
+     * Value of <code>validationError</code> is set to inform about field
+     * status.
+     * <p/>
+     * @return <code>true</code> when userName field is valid
+     *         or <code>false</code> otherwise.
+     */
+    final ValidationResult userNameValid() {
+        String userName = getUserName();
+        if (userName != null && userName.length() > 0) {
+            return new ValidationResult(true, null);
+        } else {
+            return new ValidationResult(false,
+                    getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.USER_PANEL_ERROR_USER_NAME_EMPTY));
+        }
+    }
+
+    /**
+     * Validate userPassword field.
+     * <p/>
+     * User password  field should be non empty string value containing at least
+     * one character.
+     * Value of <code>validationError</code> is set to inform about field
+     * status.
+     * <p/>
+     * @return <code>true</code> when userPassworde field is valid
+     *         or <code>false</code> otherwise.
+     */
+    final ValidationResult userPasswordValid() {
+        String userPassword = getUserPassword();
+        if (userPassword != null && userPassword.length() > 0) {
+            return new ValidationResult(true, null);
+        } else {
+            return new ValidationResult(false,
+                    getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.USER_PANEL_ERROR_USER_PASSWORD_EMPTY));
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -45,6 +45,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Utilities;
 
 /**
  * GlassFish Cloud Wizard Panel Common Functionality.
@@ -73,6 +74,11 @@ public abstract class GlassFishWizardPanel
     /** Asynchronous error message. */
     String asynchError;
 
+    /** Panel component containing CPAS attributes.
+     *  Child class must initialize this attribute with panel component
+     *  in <code>getComponent</code> method. */
+    GlassFishWizardComponent component;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -87,6 +93,39 @@ public abstract class GlassFishWizardPanel
     ////////////////////////////////////////////////////////////////////////////
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Called synchronously from UI thread when Next or Finish buttons clicked.
+     * <p/>
+     * It allows to lock user input to assure official data for background
+     * validation.
+     * Pointer to <code>GlassFishWizardComponent</code> instance must be
+     * initialized in child class in <code>getComponent</code> method.
+     */
+    @Override
+    public void prepareValidation() {
+        // Lock form before validation.
+        getComponent().setCursor(Utilities.createProgressCursor(getComponent()));
+        component.disableModifications();
+    }
+
+    /**
+     * Test whether the panel is finished and it is safe to proceed to the next
+     * one.
+     * <p/>
+     * If the panel is valid, the "Next" (or "Finish") button will be
+     * enabled.
+     * <p/>
+     * @retrn <code>true</code> if the user has entered satisfactory information
+     *        or <code>false</code> otherwise.
+     */
+    @Override
+    public boolean isValid() {
+        if (component == null || wizardDescriptor == null || asynchError != null) {
+            return false;
+        }
+        return component.valid();
+    }
 
     /**
      * Provides the wizard panel with the current data.

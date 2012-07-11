@@ -93,6 +93,26 @@ public class Bundle {
     static final String ADD_ACCOUNT_WIZARD_DISPLAY_NAME
             = "GlassFish.account.wizard.displayName";
 
+    /** User account panel validation failed. */
+    static final String USER_PANEL_VALIDATION_FAILED
+            = "GlassFishAcocuntWizardUserPanel.validation.failed";
+
+    /** User account panel component was not initialized. */
+    static final String USER_PANEL_ERROR_COMPONENT_UNINITIALIZED
+            = "GlassFishAcocuntWizardUserPanel.error.component.uninitialized";
+    
+    /** User account panel validation error: Account is empty. */
+    static final String USER_PANEL_ERROR_ACCOUNT_EMPTY
+            = "GlassFishAcocuntWizardUserPanel.error.account.empty";
+
+    /** User account panel validation error: User name is empty. */
+    static final String USER_PANEL_ERROR_USER_NAME_EMPTY
+            = "GlassFishAcocuntWizardUserPanel.error.user.name.empty";
+
+    /** User account panel validation error: User password is empty. */
+    static final String USER_PANEL_ERROR_USER_PASSWORD_EMPTY
+            = "GlassFishAcocuntWizardUserPanel.error.user.password.empty";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
