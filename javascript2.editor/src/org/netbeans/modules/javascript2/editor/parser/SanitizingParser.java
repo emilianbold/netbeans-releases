@@ -231,27 +231,25 @@ public abstract class SanitizingParser extends Parser {
                         context.getSnapshot(), 0);
                 if (ts != null) {
                     ts.move(offset);
-                    if (ts.moveNext()) {
-                        int start = -1;
-                        while (ts.movePrevious()) {
-                            if (ts.token().id() != JsTokenId.WHITESPACE
-                                    && ts.token().id() != JsTokenId.EOL
-                                    && ts.token().id() != JsTokenId.DOC_COMMENT
-                                    && ts.token().id() != JsTokenId.LINE_COMMENT
-                                    && ts.token().id() != JsTokenId.BLOCK_COMMENT) {
+                    int start = -1;
+                    while (ts.movePrevious()) {
+                        if (ts.token().id() != JsTokenId.WHITESPACE
+                                && ts.token().id() != JsTokenId.EOL
+                                && ts.token().id() != JsTokenId.DOC_COMMENT
+                                && ts.token().id() != JsTokenId.LINE_COMMENT
+                                && ts.token().id() != JsTokenId.BLOCK_COMMENT) {
 
-                                start = ts.offset();
-                                break;
-                            }
+                            start = ts.offset();
+                            break;
                         }
-                        if (start >= 0 && ts.moveNext()) {
-                            int end = ts.offset();
-                            StringBuilder builder = new StringBuilder(context.getOriginalSource());
-                            erase(builder, start, end);
-                            context.setSanitizedSource(builder.toString());
-                            context.setSanitization(sanitizing);
-                            return true;
-                        }
+                    }
+                    if (start >= 0 && ts.moveNext()) {
+                        int end = ts.offset();
+                        StringBuilder builder = new StringBuilder(context.getOriginalSource());
+                        erase(builder, start, end);
+                        context.setSanitizedSource(builder.toString());
+                        context.setSanitization(sanitizing);
+                        return true;
                     }
                 }
             }
