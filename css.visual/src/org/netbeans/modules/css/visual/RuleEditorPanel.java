@@ -72,6 +72,11 @@ import org.openide.util.NbBundle;
  * It can be controlled and observed via {@link RuleEditorPanelController} 
  * and {@link RuleEditorListener}.
  *
+ * Open questions:
+ * 1) how to change the paint color of the property *keys*? (existing properties should
+ *    be bolded, the unused in plain font.
+ * 
+ * 
  * @author marekfukala
  */
 @NbBundle.Messages(
@@ -154,7 +159,8 @@ public class RuleEditorPanel extends JPanel {
         
         this.showAllProperties = showAllProperties;
         
-        System.out.println("show all properties: " + showAllProperties);
+        //re-set the node
+        sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties)});
     }
 
     public void setShowCategories(boolean showCategories) {
@@ -164,7 +170,6 @@ public class RuleEditorPanel extends JPanel {
         
         this.showCategories = showCategories;
         
-        System.out.println("show categories: " + showCategories);
         try {
             sheet.setSortingMode(showCategories ? PropertySheet.UNSORTED : PropertySheet.SORTED_BY_NAMES);
         } catch (PropertyVetoException ex) {
@@ -183,7 +188,7 @@ public class RuleEditorPanel extends JPanel {
         }
         this.rule = r;
         
-        sheet.setNodes(new Node[]{new RuleNode(model, rule)});
+        sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties)});
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
         model.runReadTask(new Model.ModelTask() {
             @Override
