@@ -12,7 +12,7 @@
                     <run-dependency>
                         <specification-version>1.3</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
@@ -167,7 +167,7 @@
                         <release-version>1</release-version>
                         <specification-version>1.22</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -197,7 +197,9 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.c2c.tasks.spi</package>
+            </public-packages>
         </data>
     </configuration>
 </project>

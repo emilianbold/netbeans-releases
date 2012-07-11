@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.c2c.tasks.spi;
 
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.server.tasks.domain.Component;
 import com.tasktop.c2c.server.tasks.domain.ExternalTaskRelation;
 import com.tasktop.c2c.server.tasks.domain.FieldDescriptor;
@@ -54,7 +53,6 @@ import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
 import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -63,11 +61,15 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class C2CData implements Serializable {
-    private final CfcClientData delegate;
+public final class C2CData {
+    private final Impl<?> delegate;
 
-    C2CData(CfcClientData clientData) {
-        delegate = clientData;
+    static <Data> C2CData create(Data d, C2CExtender<Data> e) {
+        return new C2CData(new Impl<Data>(d, e));
+    }
+
+    C2CData(Impl<?> delegate) {
+        this.delegate = delegate;
     }
     
     public RepositoryConfiguration getRepositoryConfiguration() {
@@ -170,6 +172,7 @@ public final class C2CData implements Serializable {
         return delegate.getValues(value);
     }
 
+    @Override
     public boolean equals(Object o) {
         Object target = o;
         if (o instanceof C2CData) {
@@ -178,8 +181,131 @@ public final class C2CData implements Serializable {
         return this.delegate.equals(target);
     }
 
+    @Override
     public int hashCode() {
         return this.delegate.hashCode();
+    }
+
+    private static class Impl<Data> {
+        private final Data data;
+        private final C2CExtender<Data> extender;
+        
+        public Impl(Data d, C2CExtender<Data> e) {
+            this.data = d;
+            this.extender = e;
+        }
+        
+        public RepositoryConfiguration getRepositoryConfiguration() {
+            return extender.spiDataRepositoryConfiguration(data);
+        }
+
+        public List<TaskStatus> getStatuses() {
+            return extender.spiDataStatuses(data);
+        }
+
+        public List<TaskStatus> computeValidStatuses(TaskStatus originalStatus) {
+            return extender.spiDataValidStatuses(data, originalStatus);
+        }
+
+        public List<TaskResolution> computeValidResolutions(TaskStatus status) {
+            return extender.spiDataValidResolutions(data, status);
+        }
+
+        public List<TaskSeverity> getSeverities() {
+            return extender.spiDataSeverities(data);
+        }
+
+        public List<Priority> getPriorities() {
+            return extender.spiDataPriorities(data);
+        }
+
+        public void update(RepositoryConfiguration repositoryConfiguration) {
+            extender.spiDataupdate(data, repositoryConfiguration);
+        }
+
+        public boolean isInitialized() {
+            return extender.spiDataInitialized(data);
+        }
+
+        public <T> T getValue(String value, Class<T> type) {
+            return extender.<T>spiDataValue(data, value, type);
+        }
+
+        public List<Milestone> getMilestones() {
+            return extender.spiMilestones(data);
+        }
+
+        public List<TaskUserProfile> getUsers() {
+            return extender.spiUsers(data);
+        }
+
+        public List<Product> getProducts() {
+            return extender.spiProducts(data);
+        }
+
+        public List<Component> getComponents() {
+            return extender.spiComponents(data);
+        }
+
+        public List<TaskResolution> getResolutions() {
+            return extender.spiResolutions(data);
+        }
+
+        public List<Milestone> getMilestones(Product product) {
+            return extender.spiMilestones(data, product);
+        }
+
+        public List<Component> getComponents(Product product) {
+            return extender.spiComponents(data, product);
+        }
+
+        public TaskStatus getStatusByValue(String value) {
+            return extender.spiStatusByValue(data, value);
+        }
+
+        public FieldDescriptor getFieldDescriptor(TaskAttribute attribute) {
+            return extender.spiFieldDescriptor(data, attribute);
+        }
+
+        public List<FieldDescriptor> getCustomFields() {
+            return extender.spiCustomFields(data);
+        }
+
+        public Collection<Keyword> getKeywords() {
+            return extender.spiKeywords(data);
+        }
+
+        public Collection<String> getTaskTypes() {
+            return extender.spiTaskTypes(data);
+        }
+
+        public Collection<String> getAllIterations() {
+            return extender.spiAllIterations(data);
+        }
+
+        public Collection<String> getActiveIterations() {
+            return extender.spiActiveIterations(data);
+        }
+
+        public List<ExternalTaskRelation> getValues(String value) {
+            return extender.spiValues(data, value);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            Object target = o;
+            if (o instanceof Impl) {
+                Impl i = (Impl)o;
+                return extender == i.extender && data.equals(i.data);
+            }
+            return data.equals(target);
+        }
+
+        @Override
+        public int hashCode() {
+            return data.hashCode();
+        }
+        
     }
     
 }

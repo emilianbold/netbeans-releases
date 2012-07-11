@@ -41,30 +41,36 @@
  */
 package org.netbeans.modules.c2c.tasks.spi;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
-import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import com.tasktop.c2c.server.tasks.domain.Component;
+import com.tasktop.c2c.server.tasks.domain.ExternalTaskRelation;
+import com.tasktop.c2c.server.tasks.domain.FieldDescriptor;
+import com.tasktop.c2c.server.tasks.domain.Keyword;
+import com.tasktop.c2c.server.tasks.domain.Milestone;
+import com.tasktop.c2c.server.tasks.domain.Priority;
+import com.tasktop.c2c.server.tasks.domain.Product;
+import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
+import com.tasktop.c2c.server.tasks.domain.TaskResolution;
+import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
+import com.tasktop.c2c.server.tasks.domain.TaskStatus;
+import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
+import java.util.Collection;
+import java.util.List;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
-import org.openide.util.Exceptions;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.openide.util.Lookup;
 
 /** Provides access to extended methods not available on {@link AbstractRepositoryConnector}
  * but needed for connecting to C2C instance.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class C2CExtender {
+public abstract class C2CExtender<Data> {
 
-    public static void repositoryRemoved(AbstractRepositoryConnector rc, TaskRepository r) {
-        getDefault().spiRepositoryRemove(rc, r);
+    protected C2CExtender() {
     }
 
-    private C2CExtender() {
-    }
-    
     public static AbstractRepositoryConnector create() {
         return getDefault().spiCreate();
     }
@@ -76,43 +82,58 @@ public final class C2CExtender {
         return getDefault().spiClientData(rc, r);
     }
         
-    // will use Lookup
+    public static void repositoryRemoved(AbstractRepositoryConnector rc, TaskRepository r) {
+        getDefault().spiRepositoryRemove(rc, r);
+    }
+    
     private static C2CExtender getDefault() {
-        return new C2CExtender();
+        return Lookup.getDefault().lookup(C2CExtender.class);
     }
 
+    /** For subclasses to create instance of C2CData data.
+     * All methods are then called back to spiDataXYZ methods of this class.
+     */
+    protected final C2CData createData(Data data) {
+        return C2CData.create(data, this);
+    }
     
     //
-    // impl
-    // will be in separete module(s)
+    // implemented in separate modules
     //
-    private AbstractRepositoryConnector spiCreate() {
-        return new CfcRepositoryConnector();
-    }
-
-    private void spiAssignTaskRepositoryLocationFactory(AbstractRepositoryConnector rc, TaskRepositoryLocationFactory taskRepositoryLocationFactory) {
-        CfcRepositoryConnector cfc = (CfcRepositoryConnector)rc;
-        cfc.getClientManager().setTaskRepositoryLocationFactory(new TaskRepositoryLocationFactory());
-    }
     
-    private synchronized C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository) {
-        CfcRepositoryConnector cfc = (CfcRepositoryConnector)rc;
-        ICfcClient client = cfc.getClientManager().getClient(taskRepository);
-        CfcClientData clientData = client.getCalmClientData();
-
-        if (!clientData.isInitialized()) {
-            try {
-                client.updateRepositoryConfiguration(new NullProgressMonitor());
-            } catch (CoreException ex) {
-                // XXX
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return new C2CData(clientData);
-    }
-
-    private void spiRepositoryRemove(AbstractRepositoryConnector rc, TaskRepository r) {
-        CfcRepositoryConnector cfc = (CfcRepositoryConnector)rc;
-        cfc.getClientManager().repositoryRemoved(r);
-    }
+    
+    
+    protected abstract AbstractRepositoryConnector spiCreate();
+    protected abstract void spiAssignTaskRepositoryLocationFactory(AbstractRepositoryConnector rc, TaskRepositoryLocationFactory f);
+    protected abstract C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository);
+    protected abstract void spiRepositoryRemove(AbstractRepositoryConnector rc, TaskRepository r);
+    
+    //
+    // operations on individual data
+    // 
+    
+    protected abstract RepositoryConfiguration spiDataRepositoryConfiguration(Data d);
+    protected abstract List<TaskStatus> spiDataStatuses(Data d);
+    protected abstract List<TaskStatus> spiDataValidStatuses(Data data, TaskStatus originalStatus);
+    protected abstract List<TaskResolution> spiDataValidResolutions(Data data, TaskStatus status);
+    protected abstract List<TaskSeverity> spiDataSeverities(Data data);
+    protected abstract List<Priority> spiDataPriorities(Data data);
+    protected abstract void spiDataupdate(Data data, RepositoryConfiguration repositoryConfiguration);
+    protected abstract boolean spiDataInitialized(Data data);
+    protected abstract <T> T spiDataValue(Data data, String value, Class<T> type);
+    protected abstract List<Milestone> spiMilestones(Data data);
+    protected abstract List<TaskUserProfile> spiUsers(Data data);
+    protected abstract List<Product> spiProducts(Data data);
+    protected abstract List<Component> spiComponents(Data data);
+    protected abstract List<TaskResolution> spiResolutions(Data data);
+    protected abstract List<Milestone> spiMilestones(Data data, Product product);
+    protected abstract List<Component> spiComponents(Data data, Product product);
+    protected abstract TaskStatus spiStatusByValue(Data data, String value);
+    protected abstract FieldDescriptor spiFieldDescriptor(Data data, TaskAttribute attribute);
+    protected abstract List<FieldDescriptor> spiCustomFields(Data data);
+    protected abstract Collection<Keyword> spiKeywords(Data data);
+    protected abstract Collection<String> spiTaskTypes(Data data);
+    protected abstract Collection<String> spiAllIterations(Data data);
+    protected abstract Collection<String> spiActiveIterations(Data data);
+    protected abstract List<ExternalTaskRelation> spiValues(Data data, String value);
 }
