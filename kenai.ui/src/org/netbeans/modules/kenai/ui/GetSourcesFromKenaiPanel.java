@@ -662,7 +662,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         if (!localFolderPathEdited && selItem != null) {
             String urlString = selItem.feature.getLocation();
             String repoName = urlString.substring(urlString.lastIndexOf("/") + 1); // NOI18N
-            localFolderTextField.setText(Utilities.getDefaultRepoFolder().getPath() + File.separator + repoName);
+            localFolderTextField.setText(UIUtils.getDefaultRepoFolder().getPath() + File.separator + repoName);
         }
     }
 
