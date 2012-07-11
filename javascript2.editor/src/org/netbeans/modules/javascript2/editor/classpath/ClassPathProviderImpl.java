@@ -89,7 +89,7 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         if (jsStubsFileObject == null) {
             // Stubs generated for the "built-in" JavaScript libraries.
             File allstubs = InstalledFileLocator.getDefault().locate(
-                    "jsstubs/allstubs.zip", "org.netbeans.modules.javascript.editing", false); //NOI18N
+                    "jsstubs/allstubs.zip", "org.netbeans.modules.javascript2.editor", false); //NOI18N
             if (allstubs == null) {
                 // Probably inside unit test.
                 try {
