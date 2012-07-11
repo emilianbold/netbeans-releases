@@ -43,6 +43,7 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.net.URL;
 import org.netbeans.modules.css.editor.module.spi.Browser;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 
 /**
  *
@@ -55,13 +56,20 @@ public class DefaultBrowser extends Browser {
     private String iconBase;
     private String name, vendor, vendorSpecificPropertyId, renderingEngineId;
     private URL active, inactive;
+    private PropertyCategory propertyCategory;
 
-    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase) {
+    public DefaultBrowser(String name, String vendor, String renderingEngineId, String vendorSpecificPropertyPrefix, String iconBase, PropertyCategory propertyCategory) {
         this.name = name;
         this.vendor = vendor;
         this.renderingEngineId = renderingEngineId;
         this.vendorSpecificPropertyId = vendorSpecificPropertyPrefix;
         this.iconBase = iconBase;
+        this.propertyCategory = propertyCategory;
+    }
+
+    @Override
+    public PropertyCategory getPropertyCategory() {
+        return propertyCategory;
     }
 
     @Override

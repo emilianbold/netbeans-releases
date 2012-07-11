@@ -51,6 +51,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.lib.api.CssModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
 import org.netbeans.modules.css.lib.api.properties.Properties;
@@ -102,7 +103,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
                 if (propertyName.startsWith(browser.getVendorSpecificPropertyPrefix())) {
                     //vendor specific property
-                    vendorSpecificProperties.add(new PropertyDefinition(propertyName, value, module));
+                    vendorSpecificProperties.add(new PropertyDefinition(propertyName, value, browser.getPropertyCategory(), module));
                     supportedPropertiesNames.add(propertyName);
 
                 } else {
@@ -111,7 +112,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
                         case '!':
                             //experimental property only
                             String vendorSpecificPropertyName = createVendorSpecificPropertyName(browser.getVendorSpecificPropertyPrefix(), propertyName);
-                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, propertyName));
+                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, browser.getPropertyCategory(), propertyName));
                             supportedPropertiesNames.add(vendorSpecificPropertyName);
                             break;
                         case '+':
@@ -121,7 +122,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
                         case '*':
                             //standard + experimental property                            
                             vendorSpecificPropertyName = createVendorSpecificPropertyName(browser.getVendorSpecificPropertyPrefix(), propertyName);
-                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, propertyName));
+                            vendorSpecificProperties.add(new ProxyProperty(vendorSpecificPropertyName, browser.getPropertyCategory(), propertyName));
                             supportedPropertiesNames.add(propertyName);
                             supportedPropertiesNames.add(vendorSpecificPropertyName);
                             break;
@@ -132,7 +133,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
                         default:
                             //even standard property can be vendor specific (zoom for webkit)
-                            vendorSpecificProperties.add(new PropertyDefinition(propertyName, value, module));
+                            vendorSpecificProperties.add(new PropertyDefinition(propertyName, value, browser.getPropertyCategory(), module));
                             supportedPropertiesNames.add(propertyName);
 
                     }
@@ -162,8 +163,8 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
         private String delegateToPropertyName;
 
-        public ProxyProperty(String name, String delegateToPropertyName) {
-            super(name, null, module);
+        public ProxyProperty(String name, PropertyCategory category, String delegateToPropertyName) {
+            super(name, null, category, module);
             this.delegateToPropertyName = delegateToPropertyName;
         }
 
