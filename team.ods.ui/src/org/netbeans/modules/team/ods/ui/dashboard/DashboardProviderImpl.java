@@ -59,13 +59,11 @@ import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
-import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle.ResultType;
-import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.UIUtils;
@@ -138,7 +136,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public ProjectAccessor<CloudUiServer, Project> getProjectAccessor() {
+    public ProjectAccessorImpl getProjectAccessor() {
         if(projectAccessor == null) {
             projectAccessor = new ProjectAccessorImpl(server);
         }
@@ -156,7 +154,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public SourceAccessor<CloudUiServer, Project> getSourceAccessor() {
+    public SourceAccessorImpl getSourceAccessor() {
         if(sourceAccessor == null) {
             sourceAccessor = new SourceAccessorImpl(server);
         }

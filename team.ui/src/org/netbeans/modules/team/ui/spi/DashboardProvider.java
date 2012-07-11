@@ -13,60 +13,12 @@ import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 
 /**
- * Singleton providing access to Team Dashboard window.
+ * Provides Team Dashboard relevant functionality.
  *
- * @author S. Aubrecht
+ * @author Tomas Stupka
  */
 public interface DashboardProvider<S extends TeamServer, P> {
 
-//    /**
-//     * Display given Team user in the Dashboard window, the UI will start querying for
-//     * user's member projects.
-//     * Typically should be called after successful login.
-//     * @param login User login details.
-//     */
-//    public void setUser( LoginHandle login );
-//
-//    /**
-//     * Add a Team project to the Dashboard.
-//     * @param project
-//     * @param isMemberProject True if current team user is project's owner or observer.
-//     * @see ProjectAccessor#getOpenNonMemberProjectAction()
-//     */
-//    public void addProject( ProjectHandle project, boolean isMemberProject, boolean select );
-//
-//    public void removeProject( ProjectHandle project );
-//
-//    /**
-//     * getter for all open projects in Team Dashboard
-//     * @return array of ProjectHandles
-//     */
-//    public ProjectHandle[] getOpenProjects();
-//    
-//    /**
-//     * returns true if given project is member project
-//     */
-//    public boolean isMemberProject(ProjectHandle m);
-//    /**
-//     * Add listener for listening for property changes related to Dashboard
-//     * @param listener listener to be notified about property change
-//     */
-//    public void addPropertyChangeListener(PropertyChangeListener listener);
-//
-//    /**
-//     * Remove listener from list of listeners notified about property changes
-//     * @param listener listener to be removed
-//     */
-//    public void removePropertyChangeListener(PropertyChangeListener listener);
-
-//    /**
-//     * currently visible team
-//     * @return
-//     */
-//    public S getServer();
-//    
-//    protected void setSelectedServer(ProjectHandle<P> project);
-    
     public Action createLogoutAction();
     public Action createLoginAction();
     public LeafNode createMemberNode(MemberHandle user, TreeListNode parent);
@@ -83,6 +35,5 @@ public interface DashboardProvider<S extends TeamServer, P> {
     public BuildAccessor<S, P> getBuildAccessor();
 
     public Collection<ProjectHandle<S, P>> getMyProjects();
-
     
 }

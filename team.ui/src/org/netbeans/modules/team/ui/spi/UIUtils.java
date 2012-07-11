@@ -45,6 +45,7 @@ package org.netbeans.modules.team.ui.spi;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -53,6 +54,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.filechooser.FileSystemView;
 import org.netbeans.modules.team.ui.LoginTask;
 import org.netbeans.modules.team.ui.TeamServerCombo;
 import org.netbeans.modules.team.ui.TeamServerTopComponent;
@@ -62,6 +64,7 @@ import org.netbeans.modules.team.ui.Dashboard;
 import org.netbeans.modules.team.ui.TeamServerManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -186,6 +189,18 @@ public final class UIUtils {
         return Dashboard.getInstance().getTeamServer();
     }
 
+    public static File getDefaultRepoFolder() {
+        File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
+        if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
+            String nbPrjDirName = NbBundle.getMessage(UIUtils.class, "DIR_NetBeansProjects");
+            File nbPrjDir = new File(defaultDir, nbPrjDirName);
+            if (nbPrjDir.exists() && nbPrjDir.canWrite()) {
+                return nbPrjDir;
+            }
+        }
+        return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
+    }    
+    
     private static String getParamString(Object... parameters) {
         if (parameters == null || parameters.length == 0) {
             return ""; // NOI18N

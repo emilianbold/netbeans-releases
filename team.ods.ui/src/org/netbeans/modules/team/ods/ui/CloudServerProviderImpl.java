@@ -64,15 +64,15 @@ import static org.netbeans.modules.team.ods.ui.Bundle.*;
  * @author Ondrej Vrabec
  */
 @ServiceProviders({
-    @ServiceProvider(service=CloudServerProvideImpl.class),
+    @ServiceProvider(service=CloudServerProviderImpl.class),
     @ServiceProvider(service=TeamServerProvider.class)
 })
-public class CloudServerProvideImpl implements TeamServerProvider {
+public class CloudServerProviderImpl implements TeamServerProvider {
 
-    private static CloudServerProvideImpl instance;
+    private static CloudServerProviderImpl instance;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    public CloudServerProvideImpl () {
+    public CloudServerProviderImpl () {
         CloudServerManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange (PropertyChangeEvent pce) {
@@ -92,7 +92,7 @@ public class CloudServerProvideImpl implements TeamServerProvider {
     
     public static synchronized TeamServerProvider getDefault () {
         if (instance == null) {
-            instance = Lookup.getDefault().lookup(CloudServerProvideImpl.class);
+            instance = Lookup.getDefault().lookup(CloudServerProviderImpl.class);
         }
         return instance;
     }
