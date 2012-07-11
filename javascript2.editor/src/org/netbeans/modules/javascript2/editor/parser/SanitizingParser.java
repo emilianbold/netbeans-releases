@@ -77,7 +77,7 @@ public abstract class SanitizingParser extends Parser {
             lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
             lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
-            LOGGER.log (Level.INFO, "Exception during parsing: {0}", ex);
+            LOGGER.log (Level.INFO, "Exception during parsing", ex);
             // TODO create empty result
             lastResult = new JsParserResult(snapshot, null);
         }
@@ -275,11 +275,15 @@ public abstract class SanitizingParser extends Parser {
             int start = offset > 0 ? offset - 1 : offset;
             int end = start + 1;
             // fix until new line or }
+            boolean incPosition = false;
             char c = source.charAt(start);
             while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
                 c = source.charAt(--start);
+                incPosition = true;
             }
-            start++;
+            if (incPosition) {
+                start++;
+            }
             if (end < source.length()) {
                 c = source.charAt(end);
                 while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
