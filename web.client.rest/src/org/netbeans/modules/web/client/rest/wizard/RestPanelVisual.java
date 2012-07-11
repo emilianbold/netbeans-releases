@@ -63,8 +63,16 @@ import org.openide.util.NbBundle;
  */
 public final class RestPanelVisual extends JPanel  {
     
-    private static String REST_CLIENT = "RestClient";       // NOI18N
-    private static String JS          = ".js";              // NOI18N
+    private static final String UNDERSCORE_JS = "underscore.js";   // NOI18N
+    private static final String UNDERSCORE_JS_ = UNDERSCORE_JS+'-';
+    private static final String JQUERY_JS = "jquery";              // NOI18N
+    private static final String JQUERY_JS_ = JQUERY_JS+'-';        
+    
+    private static final String BACKBONE_JS = "backbone.js";    // NOI18N
+    private static final String BACKBONE_JS_ = BACKBONE_JS+'-'; 
+    
+    private static String REST_CLIENT = "RestClient";           // NOI18N
+    private static String JS          = ".js";                  // NOI18N
 
     public RestPanelVisual(RestPanel panel) {
         myPanel = panel;
@@ -177,6 +185,7 @@ public final class RestPanelVisual extends JPanel  {
         descriptor.putProperty(RestPanel.ADD_BACKBONE, backboneCheckBox.isSelected());
         descriptor.putProperty(RestPanel.EXISTED_BACKBONE, myBackbone);
         descriptor.putProperty(RestPanel.EXISTED_UNDERSCORE, myUnderscore);
+        descriptor.putProperty(RestPanel.EXISTED_JQUERY, myJQuery);
     }
     
     void read(WizardDescriptor wizardDescriptor) {
@@ -189,12 +198,29 @@ public final class RestPanelVisual extends JPanel  {
             FileObject[] children = libs.getChildren();
             for (FileObject child : children) {
                 String name = child.getName();
-                if ( name.startsWith( "backbone.js-")){
-                    backboneExists = true;
-                    myBackbone = child;
+                if (child.isFolder()) {
+                    if (name.startsWith(BACKBONE_JS_)) {
+                        backboneExists = true;
+                        myBackbone = getFile(child, BACKBONE_JS);
+                    }
+                    else if (name.startsWith(UNDERSCORE_JS_)) {
+                        myUnderscore = getFile(child, UNDERSCORE_JS);
+                    }
+                    else if (name.startsWith(JQUERY_JS_)) {
+                        myJQuery = getFile(child, JQUERY_JS);
+                    }
                 }
-                else if ( name.startsWith("underscore.js-")){
-                    myUnderscore = child;
+                else {
+                    if (name.startsWith(BACKBONE_JS)) {
+                        backboneExists = true;
+                        myBackbone = child;
+                    }
+                    else if (name.startsWith(UNDERSCORE_JS)) {
+                        myUnderscore = child;
+                    }
+                    else if (name.startsWith(JQUERY_JS)) {
+                        myJQuery = child;
+                    }
                 }
             }
         }
@@ -216,6 +242,17 @@ public final class RestPanelVisual extends JPanel  {
         }
         
         Templates.setTargetName(wizardDescriptor, jsName);
+    }
+    
+    private FileObject getFile(FileObject folder , String prefix){
+        FileObject[] children = folder.getChildren();
+        for (FileObject child : children) {
+            String name = child.getName();
+            if ( name.startsWith(prefix)){
+                return child;
+            }
+        }
+        return null;
     }
 
     private String suggestJsName(  WizardDescriptor descriptor ) {
@@ -267,4 +304,5 @@ public final class RestPanelVisual extends JPanel  {
     private Node myRestNode;
     private FileObject myBackbone;
     private FileObject myUnderscore;
+    private FileObject myJQuery;
 }

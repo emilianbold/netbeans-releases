@@ -65,6 +65,7 @@ public class RestPanel implements WizardDescriptor.FinishablePanel<WizardDescrip
     public static String ADD_BACKBONE = "backbone";                 // NOI18N
     public static String EXISTED_BACKBONE ="existed-backbone";      // NOI18N
     public static String EXISTED_UNDERSCORE ="existed-underscore";  // NOI18N
+    public static String EXISTED_JQUERY ="existed-jquery";          // NOI18N
     
     
     RestPanel(WizardDescriptor descriptor) {
