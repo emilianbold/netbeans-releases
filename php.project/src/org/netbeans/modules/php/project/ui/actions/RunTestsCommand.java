@@ -72,7 +72,7 @@ public class RunTestsCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) {
+    public void invokeActionInternal(Lookup context) {
         FileObject folder = findFolderWithTest(context);
         assert folder != null : "Folder should be found for running tests";
         if (folder == null) {
@@ -82,7 +82,7 @@ public class RunTestsCommand extends Command implements Displayable {
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) {
+    public boolean isActionEnabledInternal(Lookup context) {
         return findFolderWithTest(context) != null;
     }
 
