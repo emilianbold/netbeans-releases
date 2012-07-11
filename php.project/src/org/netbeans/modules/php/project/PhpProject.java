@@ -288,12 +288,12 @@ public final class PhpProject implements Project {
 
     FileObject getSourcesDirectory() {
         for (FileObject root : sourceRoots.getRoots()) {
-            // return the first one
             if (sourceDirectoryFileChangeListener == null) {
                 // no locks here, it is ok if the listener is created and attached more times (gc takes care of it)
                 sourceDirectoryFileChangeListener = new SourceDirectoryFileChangeListener();
                 root.addFileChangeListener(FileUtil.weakFileChangeListener(sourceDirectoryFileChangeListener, root));
             }
+            // return the first one
             return root;
         }
         return null;
