@@ -143,6 +143,7 @@ public final class APTDefineNode extends APTMacroBaseNode
 
     @Override
     public boolean accept(APTFile curFile, APTToken token) {
+        assert stateAndHashCode >= 0 && stateAndHashCode <= ERROR;
         int ttype = token.getType();
         if (APTUtils.isEndDirectiveToken(ttype)) {
             if (bodyTokens != null){
