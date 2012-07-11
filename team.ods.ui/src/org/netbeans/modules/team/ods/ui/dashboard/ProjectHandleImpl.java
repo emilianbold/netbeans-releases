@@ -54,7 +54,7 @@ public class ProjectHandleImpl extends ProjectHandle<CloudUiServer, Project> {
     private final CloudUiServer server;
 
     public ProjectHandleImpl(CloudUiServer server, Project project) {
-        super(String.valueOf(project.getId()));
+        super(String.valueOf(project.getIdentifier()));
         this.project = project;
         this.server = server;
     }
