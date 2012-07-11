@@ -67,6 +67,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 
 /**
@@ -200,7 +201,7 @@ public class C2CTest extends NbTestCase  {
     public TaskData createIssue(TaskRepository repository, String summary, String desc, String typeName) throws CoreException, MalformedURLException {
         TaskData data = C2CUtil.createTaskData(repository);
         
-        CfcClientData clientData = DummyUtils.getClientData(repository);
+        C2CData clientData = DummyUtils.getClientData(repository);
         
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());

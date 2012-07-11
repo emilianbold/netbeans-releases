@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.c2c.tasks.repository;
 
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import java.awt.Image;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -59,7 +58,6 @@ import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
@@ -71,6 +69,7 @@ import org.netbeans.modules.c2c.tasks.C2CExecutor;
 import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.C2CQuery;
+import org.netbeans.modules.c2c.tasks.spi.C2CExtender;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 import org.netbeans.modules.mylyn.PerformQueryCommand;
 import org.openide.util.Lookup;
@@ -159,10 +158,10 @@ public class C2CRepository {
 //            bc = null;
 //        }
         if(getTaskRepository() != null) {
-            C2C.getInstance()
-                    .getRepositoryConnector()
-                    .getClientManager()
-                    .repositoryRemoved(getTaskRepository());
+            C2CExtender.repositoryRemoved(
+                C2C.getInstance().getRepositoryConnector(),
+                getTaskRepository()
+            );
         }
     }
 

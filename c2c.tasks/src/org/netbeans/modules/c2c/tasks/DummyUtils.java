@@ -41,19 +41,17 @@
  */
 package org.netbeans.modules.c2c.tasks;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
-import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
+import org.netbeans.modules.c2c.tasks.spi.C2CExtender;
 import org.openide.util.Exceptions;
 
 /**
@@ -72,27 +70,16 @@ public class DummyUtils {
     private static String proxyPort;
    
     static TaskRepository repository;
-    static CfcRepositoryConnector rc;
+    static AbstractRepositoryConnector rc;
     static {
-        rc = new CfcRepositoryConnector();
-        rc.getClientManager().setTaskRepositoryLocationFactory(new TaskRepositoryLocationFactory());
+        rc = C2CExtender.create();
         repository = new TaskRepository(rc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
+        C2CExtender.assignTaskRepositoryLocationFactory(rc, new TaskRepositoryLocationFactory());
         setup(repository);
     }
     
-    public static synchronized CfcClientData getClientData(TaskRepository taskRepository) {
-        ICfcClient client = rc.getClientManager().getClient(taskRepository);
-        CfcClientData clientData = client.getCalmClientData();       
-        
-        if(!clientData.isInitialized()) {
-            try {
-                client.updateRepositoryConfiguration(new NullProgressMonitor());
-            } catch (CoreException ex) {
-                // XXX
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return client.getCalmClientData();
+    public static synchronized C2CData getClientData(TaskRepository taskRepository) {
+        return C2CExtender.getData(rc, repository);
     }
 
     public static TaskRepository getRepository() {

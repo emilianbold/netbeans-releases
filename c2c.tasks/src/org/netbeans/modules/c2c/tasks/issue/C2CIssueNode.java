@@ -42,11 +42,10 @@
 
 package org.netbeans.modules.c2c.tasks.issue;
 
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
-import java.util.List;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.c2c.tasks.DummyUtils;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
@@ -88,7 +87,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
     }
 
     private Integer getSortKey(String severity, Class clazz) {
-        CfcClientData cd = DummyUtils.getClientData(getC2CIssue().getRepository().getTaskRepository());
+        C2CData cd = DummyUtils.getClientData(getC2CIssue().getRepository().getTaskRepository());
         TaskSeverity ts = cd.getValue(severity, TaskSeverity.class);
         return ts.getSortkey().intValue();
     }

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.c2c.tasks.query;
 
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
@@ -90,6 +89,7 @@ import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.QueryParameter.ComboParameter;
 import org.netbeans.modules.c2c.tasks.query.QueryParameter.ListParameter;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -369,7 +369,7 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
         if(C2C.LOG.isLoggable(Level.FINE)) {
             C2C.LOG.log(Level.FINE, "Starting populate query controller{0}", (query.isSaved() ? " - " + query.getDisplayName() : "")); // NOI18N
         }
-        final CfcClientData clientData = C2C.getInstance().getClientData(repository);
+        final C2CData clientData = C2C.getInstance().getClientData(repository);
         if(clientData == null) {
             // XXX nice errro msg?
             return;
@@ -828,7 +828,7 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
         query.remove();
     }
 
-    private void populateProductDetails(CfcClientData clientData, Collection<Product> products) {
+    private void populateProductDetails(C2CData clientData, Collection<Product> products) {
         Set<com.tasktop.c2c.server.tasks.domain.Component> newComponents = new HashSet<com.tasktop.c2c.server.tasks.domain.Component>();
         Set<String> newIterations = new HashSet<String>();
         Set<Milestone> newMilestones = new HashSet<Milestone>();

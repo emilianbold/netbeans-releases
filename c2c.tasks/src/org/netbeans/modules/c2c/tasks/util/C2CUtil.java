@@ -41,15 +41,10 @@
  */
 package org.netbeans.modules.c2c.tasks.util;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
-import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
 import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
-import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,6 +53,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -71,6 +67,7 @@ import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
 import org.netbeans.modules.mylyn.GetTaskDataCommand;
 import org.openide.util.NbBundle;
 
@@ -84,9 +81,9 @@ public class C2CUtil {
         
         // XXX is this all we need and how we need it?
 
-        CfcClientData clientData = DummyUtils.getClientData(taskRepository);
+         C2CData clientData = DummyUtils.getClientData(taskRepository);
         
-        CfcRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
+        AbstractRepositoryConnector rc = C2C.getInstance().getRepositoryConnector();
         TaskAttributeMapper attributeMapper = rc.getTaskDataHandler().getAttributeMapper(taskRepository);
         TaskData data = new TaskData(attributeMapper, rc.getConnectorKind(), taskRepository.getRepositoryUrl(), "");
         
@@ -140,7 +137,7 @@ public class C2CUtil {
         return data;
     }
      
-    public static RepositoryResponse postTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
+    public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
         C2C.LOG.log(Level.FINE, " dataRoot before post {0}", data.getRoot().toString());
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
         RepositoryResponse rr = cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
@@ -193,7 +190,7 @@ public class C2CUtil {
         return repository;
     }
 
-    public static TaskResolution getResolutionByValue(CfcClientData cd, String value) {
+    public static TaskResolution getResolutionByValue(C2CData cd, String value) {
         List<TaskResolution> resolutions = cd.getResolutions();
         for (TaskResolution r : resolutions) {
             if(r.getValue().equals(value)) {
@@ -210,7 +207,7 @@ public class C2CUtil {
         }
 
         try {
-            CfcClientData cd = DummyUtils.getClientData(repository.getTaskRepository());
+            C2CData cd = DummyUtils.getClientData(repository.getTaskRepository());
             if(cd == null /* XXX */) {
                 return tagsString;
             }
@@ -238,7 +235,7 @@ public class C2CUtil {
         }
 
         try {
-            CfcClientData cd = DummyUtils.getClientData(repository.getTaskRepository());
+            C2CData cd = DummyUtils.getClientData(repository.getTaskRepository());
             if(cd == null /* XXX */) {
                 return usersString;
             }

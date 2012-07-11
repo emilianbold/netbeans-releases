@@ -41,25 +41,15 @@
  */
 package org.netbeans.modules.c2c.tasks;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
-import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.logging.Logger;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
-import org.eclipse.mylyn.commons.net.AuthenticationType;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue;
 import org.netbeans.modules.c2c.tasks.query.C2CQuery;
 import org.netbeans.modules.c2c.tasks.repository.C2CRepository;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
+import org.netbeans.modules.c2c.tasks.spi.C2CExtender;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -71,7 +61,7 @@ public class C2C {
     private static C2C instance;
     public final static Logger LOG = Logger.getLogger("org.netbeans.modules.c2c.tasks"); // NOI18N
     
-    private CfcRepositoryConnector cfcrc;
+    private AbstractRepositoryConnector cfcrc;
     private TaskRepositoryLocationFactory trlf;
     
     private RequestProcessor rp;
@@ -89,26 +79,17 @@ public class C2C {
     private BugtrackingFactory<C2CRepository, C2CQuery, C2CIssue> bf;
 
     private void init() {
-        cfcrc = new CfcRepositoryConnector();
+        AbstractRepositoryConnector rc = C2CExtender.create();
         trlf = new TaskRepositoryLocationFactory();
-        cfcrc.getClientManager().setTaskRepositoryLocationFactory(trlf);
+        C2CExtender.assignTaskRepositoryLocationFactory(rc, trlf);
+        cfcrc = rc;
     }
     
-    public CfcClientData getClientData(C2CRepository repository) {
-        ICfcClient client = cfcrc.getClientManager().getClient(repository.getTaskRepository());
-        CfcClientData clientData = client.getCalmClientData();
-        if(!clientData.isInitialized()) {
-            try {
-                client.updateRepositoryConfiguration(new NullProgressMonitor());
-            } catch (CoreException ex) {
-                // XXX
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return client.getCalmClientData();
+    public C2CData getClientData(C2CRepository repository) {
+        return C2CExtender.getData(cfcrc, repository.getTaskRepository());
     }
     
-    public CfcRepositoryConnector getRepositoryConnector() {
+    public AbstractRepositoryConnector getRepositoryConnector() {
         return cfcrc;
     }
     

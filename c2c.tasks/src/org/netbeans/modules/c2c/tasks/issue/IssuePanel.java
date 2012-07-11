@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.c2c.tasks.issue;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
@@ -109,6 +107,7 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -116,6 +115,7 @@ import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.c2c.tasks.C2C;
 import org.netbeans.modules.c2c.tasks.DummyUtils;
 import org.netbeans.modules.c2c.tasks.issue.C2CIssue.Attachment;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.openide.util.Exceptions;
@@ -325,7 +325,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }    
     
     private void initCombos() {
-        CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
+        C2CData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
         // XXX check if valid
         
         productCombo.setModel(toComboModel(cd.getProducts()));
@@ -699,7 +699,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         // Open -> Open-Unconfirmed-Reopened+Resolved
         // Resolved -> Reopened+Close
         // Close-Resolved -> Reopened+Resolved+(Close with higher index)
-        CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
+        C2CData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
         
         List<TaskStatus> statuses = cd.getStatuses();
         
@@ -1874,7 +1874,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         cancelHighlight(statusLabel);
         resolutionCombo.setVisible(false);
         // Hide/show resolution combo
-        CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
+        C2CData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
         String initialStatus = initialValues.get(IssueField.STATUS.getKey());
         boolean resolvedInitial = RESOLUTION_RESOLVED.equals(initialStatus); // NOI18N
         if (!resolvedInitial) {
@@ -1925,7 +1925,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         Product product = (Product) o;
         
         // Reload componentCombo, versionCombo and targetMilestoneCombo
-        CfcClientData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
+        C2CData cd = DummyUtils.getClientData(issue.getRepository().getTaskRepository());
         
         Object component = componentCombo.getSelectedItem();
         Object version = releaseCombo.getSelectedItem();
@@ -1942,7 +1942,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         if (issue.isNew()) {
             issue.setFieldValue(IssueField.PRODUCT, product.getName());
-            CfcRepositoryConnector connector = C2C.getInstance().getRepositoryConnector();
+            AbstractRepositoryConnector connector = C2C.getInstance().getRepositoryConnector();
             
             TaskData data = issue.getTaskData();
 //            try {

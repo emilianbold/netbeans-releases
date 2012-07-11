@@ -42,8 +42,6 @@
 package org.netbeans.modules.c2c.tasks;
 
 import com.tasktop.c2c.internal.client.tasks.core.CfcConstants;
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
@@ -57,9 +55,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.AbstractTaskAttachmentHandler;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.core.data.TaskHistory;
-import org.eclipse.mylyn.tasks.core.data.TaskRevision;
-import org.eclipse.mylyn.tasks.core.data.TaskRevision.Change;
 
 
 import java.awt.event.ActionEvent;
@@ -75,6 +70,8 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -98,9 +95,9 @@ public final class CreateCloudedIssueAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         try {
 
-            CfcRepositoryConnector rc = DummyUtils.rc;
+            AbstractRepositoryConnector rc = DummyUtils.rc;
             TaskRepository taskRepository = DummyUtils.repository;
-            CfcClientData clientData = DummyUtils.getClientData(taskRepository);
+            C2CData clientData = DummyUtils.getClientData(taskRepository);
             
             // create
             
@@ -228,10 +225,10 @@ public final class CreateCloudedIssueAction implements ActionListener {
     }
     
     public TaskData createIssue(TaskRepository repository, String summary, String desc, String typeName) throws CoreException, MalformedURLException {
-        CfcRepositoryConnector cfcrc = C2C.getInstance().getRepositoryConnector();
+        AbstractRepositoryConnector cfcrc = C2C.getInstance().getRepositoryConnector();
         TaskData data = C2CUtil.createTaskData(repository);
         
-        CfcClientData clientData = DummyUtils.getClientData(repository);
+        C2CData clientData = DummyUtils.getClientData(repository);
         
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.getMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());

@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.c2c.tasks;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
 import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.internal.client.tasks.core.util.CfcQueryUtil;
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
@@ -54,6 +53,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -78,7 +78,7 @@ public final class ListCloudedIssuesAction implements ActionListener {
     
     private void listIssues() {
         TaskRepository taskRepository = DummyUtils.repository;
-        CfcRepositoryConnector rc = DummyUtils.rc;
+        AbstractRepositoryConnector rc = DummyUtils.rc;
         
         System.out.println(" ----------- query 1 ---------------- ");
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");            // NOI18N
