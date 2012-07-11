@@ -98,7 +98,7 @@ public final class RuleEditorController {
     }
     
     public void setSortMode(SortMode sortMode) {
-        //TODO
+        peer.setSortMode(sortMode);
     }
     
     /**
@@ -109,7 +109,7 @@ public final class RuleEditorController {
      * alphabetically.
      */
     public void setShowAllProperties(boolean enabled) {
-        //TODO
+        peer.setShowAllProperties(enabled);
     }
     
      /**
@@ -121,7 +121,7 @@ public final class RuleEditorController {
      * sorted  alphabetically, categories also sorted alphabetically.
      */
     public void setShowCategories(boolean enabled) {
-        //TODO
+        peer.setShowCategories(enabled);
     }
     
     
@@ -133,6 +133,7 @@ public final class RuleEditorController {
     public boolean addRuleEditorListener(RuleEditorListener listener) {
         return peer.addRuleEditorListener(listener);
     }
+    
     /**
      * Unregisters an instance of {@link RuleEditorListener} from the component.
      * @param listener

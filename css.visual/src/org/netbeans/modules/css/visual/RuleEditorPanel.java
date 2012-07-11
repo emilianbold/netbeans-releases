@@ -72,10 +72,16 @@ import org.openide.util.NbBundle;
  * It can be controlled and observed via {@link RuleEditorPanelController} 
  * and {@link RuleEditorListener}.
  *
- * Open questions:
- * 1) how to change the paint color of the property *keys*? (existing properties should
+ * Open questions/todo-s:
+ * -----------------------
+ * 1) (P3) how to change the paint color of the property *keys*? (existing properties should
  *    be bolded, the unused in plain font.
  * 
+ * 2) (P4) related to #1 is how to listen on events happening over the sheet - implementing
+ *    the mouse hover based "disable" action (maybe not necessary since doesn't make
+ *    much sense for the rule editor).
+ * 
+ * 3) (P2) add own (propagate the filters) popup menu to the sheet
  * 
  * @author marekfukala
  */

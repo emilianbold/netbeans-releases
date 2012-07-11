@@ -49,18 +49,25 @@ import org.netbeans.modules.css.model.api.Declaration;
  */
 public interface RuleEditorListener {
     
-    public void declarationSelected(Declaration declaration);
-    
-    public void declarationDisabled(Declaration declaration);
-    
     /**
-     * Not obvious what such action should do. Maybe 
+     * Allows to listen on the disable (hide) functionality over a declaration.
+     * 
+     * @param declaration the focused declaration
+     * @param enabled if true the user enabled (unhid) the declaration, 
+     * false when user hid the declaration.
      */
+    public void declarationDisabled(Declaration declaration, boolean enabled);
+    
+    
+    // Not obvious what such action should do.
     public void declarationRestored(Declaration declaration);
     
-    public void declarationAdded(Declaration declaration);
+    //does anyone need this?
+    public void declarationSelected(Declaration declaration);
     
+    public void declarationAdded(Declaration declaration);
     public void declarationRemoved(Declaration declaration);
+    public void declarationChanged(Declaration declaration);
 
-    //TODO listening on view modes?
+    //xxx listening on view and sorting modes? probably not necessary
 }
