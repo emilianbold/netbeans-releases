@@ -153,6 +153,9 @@ public class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
         JUnit currentJUnit = strategy.findJUnitVersion();
         if (currentJUnit == JUnit.NOT_DECLARED) {
             JUnit jUnitToUse = askUserWhichJUnitToUse();
+            if (jUnitToUse == null) {
+                return Collections.emptySet();
+            }
 
             strategy.setjUnitVersion(jUnitToUse);
             strategy.addJUnitLibrary(jUnitToUse);
