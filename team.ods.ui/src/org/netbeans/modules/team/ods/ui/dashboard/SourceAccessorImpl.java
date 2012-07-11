@@ -88,11 +88,11 @@ import org.openide.windows.WindowManager;
  * @author Milan Kubec, Jan Becicka, Tomas Stupka
  */
 public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> {
-    private static CloudUiServer server;
+    private final CloudUiServer server;
+    private final DashboardProviderImpl provider;
 
     private final Map<SourceHandleImpl, ProjectAndRepository> handlesMap = new HashMap<SourceHandleImpl, ProjectAndRepository>();
     private final Set<String> loadedProjects = new HashSet<String>();
-    private final DashboardProviderImpl provider;
 
     public SourceAccessorImpl(CloudUiServer server, DashboardProviderImpl provider) {
         this.server = server;
