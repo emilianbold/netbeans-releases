@@ -59,6 +59,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -325,6 +327,27 @@ class FilesystemInterceptor extends VCSInterceptor {
     public Object getAttribute(File file, String attrName) {
         if (SearchHistorySupport.PROVIDED_EXTENSIONS_SEARCH_HISTORY.equals(attrName)){
             return new GitSearchHistorySupport(file);
+        } else if("ProvidedExtensions.RemoteLocation.Team".equals(attrName)) { // NOI18N
+            // XXX this implementation is quite questionable
+            // - for the time being overloaded "ProvidedExtensions.RemoteLocation" to work only for team - 
+            // see also VCSFilesystemInterceptor.ATTRIBUTE_REMOTE_LOCATION_TEAM            
+            // - we do not want to run this for all other potential callers in awt.
+            // - should be be resolved because of TeamProjectAnnotator
+            
+            File repoRoot = Git.getInstance().getRepositoryRoot(file);
+            RepositoryInfo info = RepositoryInfo.getInstance(repoRoot);
+            Map<String, GitRemoteConfig> remotes = info.getRemotes();
+            StringBuilder sb = new StringBuilder();
+            for (GitRemoteConfig rc : remotes.values()) {
+                List<String> uris = rc.getUris();
+                for (int i = 0; i < uris.size(); i++) {
+                    sb.append(uris.get(i));
+                    if(i < uris.size() - 1) {
+                        sb.append(';'); 
+                    }
+                }
+            }
+            return sb.toString();
         } else {
             return super.getAttribute(file, attrName);
         }
