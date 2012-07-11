@@ -48,11 +48,17 @@ import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Project;
 
 /**
+ * Add eclipse-compiler-plugin into the pom model.
+ * 
+ * This is necessary for compiling both Java and Groovy files together and also
+ * for running mixed Java/Groovy JUnit tests.
  *
  * @author Martin Janicek
  */
@@ -61,61 +67,151 @@ public class AddEclipseCompilerPluginOperation implements ModelOperation<POMMode
     private static final String MAVEN_COMPILER_ARTIFACT_ID = "maven-compiler-plugin"; // NOI18N
     private static final String MAVEN_COMPILER_VERSION = "2.3.2";                     // NOI18N
 
+    private static final String GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID = "groovy-eclipse-compiler";    // NOI18N
+    private static final String GROOVY_ECLIPSE_COMPILER_GROUP_ID = "org.codehaus.groovy";
+
+    private POMComponentFactory factory;
+    private Project project;
+
+
     @Override
     public void performOperation(final POMModel model) {
-        POMComponentFactory factory = model.getFactory();
-        Project project = model.getProject();
+        factory = model.getFactory();
+        project = model.getProject();
         Build build = project.getBuild();
 
         if (build == null) {
             build = factory.createBuild();
+            project.setBuild(build);
         }
-        if (pluginAlreadyExists(build)) {
-            return;
+        
+        Plugin plugin = mavenCompilerPluginExists(build);
+        if (plugin == null) {
+            build.addPlugin(createMavenEclipseCompilerPlugin());
+        } else {
+            Plugin newPlugin = createMavenEclipseCompilerPlugin(plugin);
+            
+            build.removePlugin(plugin);
+            build.addPlugin(newPlugin);
         }
-
-        // maven-eclipse-compiler doesn't exists --> let's create it
-        build.addPlugin(createMavenEclipseCompilerPlugin(factory));
-        project.setBuild(build);
     }
 
-    private boolean pluginAlreadyExists(final Build build) {
+    private Plugin mavenCompilerPluginExists(final Build build) {
         List<Plugin> plugins = build.getPlugins();
         if (plugins != null) {
             for (Plugin plugin : plugins) {
                 if (MAVEN_COMPILER_ARTIFACT_ID.equals(plugin.getArtifactId()) &&
                     MAVEN_COMPILER_VERSION.equals(plugin.getVersion())) {
-                    return true;
+                    return plugin;
                 }
             }
         }
-        return false;
+        return null;
     }
 
-    private Plugin createMavenEclipseCompilerPlugin(final POMComponentFactory factory) {
+    private Plugin createMavenEclipseCompilerPlugin() {
         Plugin plugin = factory.createPlugin();
         plugin.setArtifactId(MAVEN_COMPILER_ARTIFACT_ID);
         plugin.setVersion(MAVEN_COMPILER_VERSION);
-        plugin.setConfiguration(createConfiguration(factory));
-        plugin.addDependency(createDependency(factory));
+        plugin.setConfiguration(createConfiguration());
+        plugin.addDependency(createDependency());
 
         return plugin;
     }
 
-    private Configuration createConfiguration(final POMComponentFactory factory) {
+    private Configuration createConfiguration() {
         Configuration configuration = factory.createConfiguration();
-        configuration.setSimpleParameter("compilerId", "groovy-eclipse-compiler");  //NOI18N
-        configuration.setSimpleParameter("verbose", "true");                        //NOI18N
+        configuration.setSimpleParameter("compilerId", GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID);  //NOI18N
 
         return configuration;
     }
 
-    private Dependency createDependency(final POMComponentFactory factory) {
+    private Dependency createDependency() {
         Dependency dependency = factory.createDependency();
-        dependency.setGroupId("org.codehaus.groovy");        // NOI18N
-        dependency.setArtifactId("groovy-eclipse-compiler"); // NOI18N
+        dependency.setGroupId(GROOVY_ECLIPSE_COMPILER_GROUP_ID);        // NOI18N
+        dependency.setArtifactId(GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID); // NOI18N
         dependency.setVersion("2.6.0-01");                   // NOI18N
 
         return dependency;
+    }
+
+    private Plugin createMavenEclipseCompilerPlugin(final Plugin plugin) {
+        Plugin newPlugin = factory.createPlugin();
+        newPlugin.setArtifactId(plugin.getArtifactId());
+        newPlugin.setGroupId(plugin.getGroupId());
+        newPlugin.setVersion(plugin.getVersion());
+
+        updateDependency(plugin, newPlugin);
+        updateConfiguration(plugin, newPlugin);
+
+        return newPlugin;
+    }
+
+    /**
+     * Just find out if the groovy-eclipse-compiler dependency is already present
+     * in maven-compiler-plugin and if not, create on and put it into pom.xml.
+     *
+     * @param plugin where we want to update groovy-eclipse-compiler dependency
+     */
+    private void updateDependency(
+        final Plugin oldPlugin,
+        final Plugin newPlugin) {
+        
+        List<Dependency> dependencies = oldPlugin.getDependencies();
+        if (dependencies != null) {
+            for (Dependency dependency : dependencies) {
+                if (GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID.equals(dependency.getArtifactId()) &&
+                    GROOVY_ECLIPSE_COMPILER_GROUP_ID.equals(dependency.getGroupId())) {
+
+                    // Reuse already existing dependency
+                    Dependency newDependency = factory.createDependency();
+                    newDependency.setArtifactId(dependency.getArtifactId());
+                    newDependency.setGroupId(dependency.getGroupId());
+                    newDependency.setVersion(dependency.getVersion());
+                    newPlugin.addDependency(newDependency);
+                    
+                    return;
+                }
+            }
+        }
+
+        // groovy-eclipse-compiler dependency doesn't exist at the moment, let's create it
+        newPlugin.addDependency(createDependency());
+    }
+
+    private void updateConfiguration(
+        final Plugin oldPlugin,
+        final Plugin newPlugin) {
+        
+        PluginExecution compileExecution = factory.createExecution();
+        Configuration compileConfiguration = factory.createConfiguration();
+
+        Configuration currentConfiguration = oldPlugin.getConfiguration();
+        if (currentConfiguration != null) {
+            for (POMExtensibilityElement element : currentConfiguration.getConfigurationElements()) {
+                POMExtensibilityElement newElement = factory.createPOMExtensibilityElement(element.getQName());
+                newElement.setElementText(element.getElementText());
+
+                int position = 0;
+                for (POMExtensibilityElement childElement : element.getAnyElements()) {
+                    POMExtensibilityElement newChildElement = factory.createPOMExtensibilityElement(childElement.getQName());
+                    newChildElement.setElementText(childElement.getElementText());
+                    newElement.addAnyElement(newChildElement, position++);
+                }
+
+                compileConfiguration.addExtensibilityElement(newElement);
+            }
+        }
+
+        compileExecution.addGoal("compile");                                // NOI18N
+        compileExecution.setId("compileId");                                // NOI18N
+        compileExecution.setConfiguration(compileConfiguration);
+        newPlugin.addExecution(compileExecution);
+
+        PluginExecution testCompileExecution = factory.createExecution();
+        testCompileExecution.addGoal("testCompile");                        // NOI18N
+        testCompileExecution.setId("testCompileId");                        // NOI18N
+        testCompileExecution.setConfiguration(createConfiguration());
+        newPlugin.addExecution(testCompileExecution);
     }
 }
