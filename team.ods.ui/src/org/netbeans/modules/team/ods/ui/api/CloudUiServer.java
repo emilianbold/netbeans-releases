@@ -82,6 +82,7 @@ public class CloudUiServer implements TeamServer {
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private final DefaultDashboard<CloudUiServer, Project> dashboard;
+    private CloudClient client;
 
     private CloudUiServer (CloudServer server) {
         this.impl = new WeakReference<CloudServer>(server);
@@ -130,6 +131,7 @@ public class CloudUiServer implements TeamServer {
     @Override
     public void logout () {
         getImpl(true).logout();
+        client = null;
     }
 
     @Override
@@ -206,7 +208,10 @@ public class CloudUiServer implements TeamServer {
 
     public CloudClient getClient() {
         assert getImpl(true).isLoggedIn();
-        return ClientFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        if(client == null) {
+            client = ClientFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        }
+        return client;
     }
     
 }
