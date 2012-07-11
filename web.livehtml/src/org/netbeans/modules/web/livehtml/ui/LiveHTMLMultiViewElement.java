@@ -39,13 +39,10 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.livehtml.ui;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JToolBar;
-import javax.swing.border.EmptyBorder;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
@@ -53,40 +50,30 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-/*@MultiViewElement.Registration(
-        displayName="#CTL_SourceTabCaption", // NOI18N
-        // no icon
-        persistenceType=TopComponent.PERSISTENCE_NEVER,
-        preferredID=LiveHTMLComponent.PREFERRED_ID, 
-        mimeType="text/html",
-        position=1000000
-)*/
-public class LiveHTMLMultiViewElement implements MultiViewElement {
+@MultiViewElement.Registration(
+        displayName = "#CTL_SourceTabCaption", // NOI18N
+// no icon
+persistenceType = TopComponent.PERSISTENCE_NEVER,
+preferredID = LiveHTMLTopComponent.PREFERRED_ID,
+mimeType = "text/html",
+position = 1000000)
+public class LiveHTMLMultiViewElement extends AnalysisPanel implements MultiViewElement {
 
-    private FileObject fo;
-    private LiveHTMLComponent component;
-    private LiveHTMLToolbar toolbar;
-    
     public LiveHTMLMultiViewElement(Lookup lookup) {
-        fo = lookup.lookup(FileObject.class);
+        final FileObject fileObject = lookup.lookup(FileObject.class);
+        if (fileObject != null) {
+            updateSourceUrl(fileObject.toURL());
+        }
     }
 
-    
     @Override
     public JComponent getVisualRepresentation() {
-        if (component == null) {
-            component = new LiveHTMLComponent(fo);
-            ((LiveHTMLComponent)component).setToolbar((LiveHTMLToolbar)getToolbarRepresentation());
-        }
-        return component;
+        return getMainPanel();
     }
 
     @Override
     public JComponent getToolbarRepresentation() {
-        if (toolbar == null) {
-            toolbar = new LiveHTMLToolbar(component);
-        }
-        return toolbar;
+        return getTooBarPanel();
     }
 
     @Override
@@ -136,5 +123,4 @@ public class LiveHTMLMultiViewElement implements MultiViewElement {
     public CloseOperationState canCloseElement() {
         return CloseOperationState.STATE_OK;
     }
-    
 }

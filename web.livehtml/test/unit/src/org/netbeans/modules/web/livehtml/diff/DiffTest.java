@@ -42,11 +42,9 @@
 package org.netbeans.modules.web.livehtml.diff;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -54,8 +52,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.livehtml.diff.Diff;
-import org.netbeans.modules.html.editor.lib.XmlSyntaxTreeBuilder;
 import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlParser;
 import org.netbeans.modules.html.editor.lib.api.HtmlParserFactory;
@@ -63,23 +59,19 @@ import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementsIterator;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.web.livehtml.AnalysisStorage;
 import org.netbeans.modules.web.livehtml.Change;
-import org.netbeans.modules.web.livehtml.Model;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -117,7 +109,7 @@ public class DiffTest extends NbTestCase {
         assertEquals(6, l.size());
         assertRemoveChange(34, "<table>", s1, l.get(0));
         assertRemoveChange(146, "<div>", s1, l.get(5));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
         String res =
             "<html>\n" +
             "        <head></head><body><table>\n" +
@@ -144,7 +136,7 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(9, "1", s1, l.get(1));
         assertAddChange(9, 1, "5", s2, l.get(2));
         assertAddChange(18, 5, "d=\"4\"", s2, l.get(3));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
         String res =
             "<html c=\"3\"a=\"15\" b=\"2\" d=\"4\">\n" +
             "</html>\n";
@@ -181,7 +173,7 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(250, "<span>", s1, l.get(2));
         assertRemoveChange(312, "id=\"new-form-placeholder\"", s1, l.get(3));
         assertRemoveChange(332, "<p>", s1, l.get(4));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
         String res = 
                 "<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -219,7 +211,7 @@ public class DiffTest extends NbTestCase {
 //        assertEquals(17, l.get(0).getOffset());
 //        assertEquals("<div data-role=\"page\"><div data-role=\"header\">", l.get(0).getRemovedText());
         // test that removed text was added properly:
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
         String val = 
                 "<html>\n" +
                 "    <body><div data-role=\"page\"><div data-role=\"header\">\n" +
@@ -258,7 +250,7 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(255, "<p>", s1, l.get(0));
         assertRemoveChange(335, "<span>", s1, l.get(1));
         assertRemoveChange(394, "<table id=\"aa\">", s1, l.get(2));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
     }
     
     public static void assertAddChange(int offset, int len, String text, HtmlSource s, Change ch) {
@@ -305,7 +297,7 @@ public class DiffTest extends NbTestCase {
     
     private OpenTag parse(HtmlSource source) throws ParseException {
         HtmlParser parser = HtmlParserFactory.findParser(HtmlVersion.getDefaultVersion());
-        HtmlParseResult result = parser.parse(source, HtmlVersion.getDefaultVersion(), Model.getParserLookup());
+        HtmlParseResult result = parser.parse(source, HtmlVersion.getDefaultVersion(), AnalysisStorage.getParserLookup());
 //        HtmlParseResult result = SyntaxAnalyzer.create(source).analyze().parseHtml();
 //        ElementUtils.dumpTree(result.root());
         return (OpenTag)result.root().children().iterator().next();

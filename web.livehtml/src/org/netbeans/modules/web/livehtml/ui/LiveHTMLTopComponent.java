@@ -41,45 +41,52 @@
  */
 package org.netbeans.modules.web.livehtml.ui;
 
-import java.awt.BorderLayout;
+import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
 
 /**
  * Top component which displays something.
  */
+@ConvertAsProperties(
+    dtd = "-//org.netbeans.modules.web.livehtml.ui//LiveHTML//EN",
+autostore = false)
 @TopComponent.Description(
-    preferredID = "LiveHTMLTopComponent",
+    preferredID = LiveHTMLTopComponent.PREFERRED_ID,
+//iconBase="SET/PATH/TO/ICON/HERE", 
 persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
+//@ActionID(category = "Window", id = "org.netbeans.modules.web.livehtml.ui.LiveHTMLTopComponent")
+//@ActionReference(path = "Menu/Window" /*, position = 333 */)
+//@TopComponent.OpenActionRegistration(
+//    displayName = "#CTL_LiveHTMLAction",
+//preferredID = LiveHTMLTopComponent.PREFERRED_ID)
 @Messages({
     "CTL_LiveHTMLAction=LiveHTML",
     "CTL_LiveHTMLTopComponent=LiveHTML Window",
     "HINT_LiveHTMLTopComponent=This is a LiveHTML window"
 })
 public final class LiveHTMLTopComponent extends TopComponent {
-
-    private LiveHTMLToolbar toolbar;
-    private LiveHTMLComponent component;
     
-    public LiveHTMLTopComponent() {
+    public static final String PREFERRED_ID = "LiveHTMLTopComponent";
+    
+    private static LiveHTMLTopComponent instance;
+
+    private LiveHTMLTopComponent() {
         initComponents();
         setName(Bundle.CTL_LiveHTMLTopComponent());
         setToolTipText(Bundle.HINT_LiveHTMLTopComponent());
-        component = new LiveHTMLComponent(null);
-        toolbar = new LiveHTMLToolbar(component);
-        component.setToolbar(toolbar);
-        add(toolbar, BorderLayout.NORTH);
-        add(component, BorderLayout.CENTER);
+
     }
 
-    public static void showLiveHTML() {
-        LiveHTMLTopComponent p;
-        p = new LiveHTMLTopComponent();
-        p.open();
-        p.requestActive();
+    public synchronized static LiveHTMLTopComponent getInstance() {
+        if (instance == null) {
+            instance = new LiveHTMLTopComponent();
+        }
+        return instance;
     }
-    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -89,10 +96,22 @@ public final class LiveHTMLTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setLayout(new java.awt.BorderLayout());
+        analysisPanel1 = new org.netbeans.modules.web.livehtml.ui.AnalysisPanel();
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(analysisPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(analysisPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private org.netbeans.modules.web.livehtml.ui.AnalysisPanel analysisPanel1;
     // End of variables declaration//GEN-END:variables
     @Override
     public void componentOpened() {
@@ -102,6 +121,18 @@ public final class LiveHTMLTopComponent extends TopComponent {
     @Override
     public void componentClosed() {
         // TODO add custom code on component closing
+        analysisPanel1 = null;
     }
 
+    void writeProperties(java.util.Properties p) {
+        // better to version settings since initial version as advocated at
+        // http://wiki.apidesign.org/wiki/PropertyFiles
+        p.setProperty("version", "1.0");
+        // TODO store your settings
+    }
+
+    void readProperties(java.util.Properties p) {
+        String version = p.getProperty("version");
+        // TODO read your settings according to their version
+    }
 }
