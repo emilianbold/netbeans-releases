@@ -101,7 +101,7 @@ public class JsParsingPerformanceTest extends JellyTestCase {
 
     public void testParsingTime() throws Exception {
         openDataProjects(projectName);
-        wait(5000);
+        Thread.sleep(5000);
     }
 
     public void summariseParsingTimeResults() {
