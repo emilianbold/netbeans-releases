@@ -71,7 +71,6 @@ public abstract class SanitizingParser extends Parser {
 
     @Override
     public final void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        long startTime = System.currentTimeMillis();
         try {
             JsErrorManager errorManager = new JsErrorManager(snapshot.getSource().getFileObject());
             lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
@@ -81,8 +80,6 @@ public abstract class SanitizingParser extends Parser {
             // TODO create empty result
             lastResult = new JsParserResult(snapshot, null);
         }
-        long endTime = System.currentTimeMillis();
-        LOGGER.log(Level.FINE, "Parsing took: {0} ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
     }
 
     private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
