@@ -67,7 +67,7 @@ import org.openide.util.WeakListeners;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.util.ArrayList;
 import java.util.Collections;
-import org.netbeans.modules.team.ods.ui.CloudServerProvideImpl;
+import org.netbeans.modules.team.ods.ui.CloudServerProviderImpl;
 import org.netbeans.modules.team.ods.ui.LoginPanelSupportImpl;
 import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
 
@@ -154,7 +154,7 @@ public class CloudUiServer implements TeamServer {
 
     @Override
     public TeamServerProvider getProvider () {
-        return CloudServerProvideImpl.getDefault();
+        return CloudServerProviderImpl.getDefault();
     }
 
     @Override
