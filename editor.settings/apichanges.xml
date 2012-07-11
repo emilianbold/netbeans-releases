@@ -108,6 +108,22 @@ is the proper place.
 
     <changes>
         
+        <change id="added.SimpleValueNames.EDITOR_BRACES">
+            <summary>Adding BRACE_SHOW_OUTLINE and BRACE_FIRST_TOOLTIP</summary>
+            <version major="1" minor="43"/>
+            <date day="5" month="7" year="2012"/>
+            <author login="sdedic"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes" deprecation="no" deletion="no" modification="no" />
+            <description>
+            <p>
+                Adding new constants 
+                <code>SimpleValueNames.BRACE_SHOW_OUTLINE</code> and 
+                <code>SimpleValueNames.BRACE_FIRST_TOOLTIP</code> which control brace outline
+                behaviour
+            </p>
+            </description>
+            <issue number="214755"/>
+        </change>
         <change id="added.SimpleValueNames.EDITOR_SEARCH_TYPE">
             <summary>Adding SimpleValueNames.EDITOR_SEARCH_TYPE</summary>
             <version major="1" minor="40"/>

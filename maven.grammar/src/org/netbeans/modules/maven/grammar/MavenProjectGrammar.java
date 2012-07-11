@@ -59,6 +59,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
@@ -76,6 +77,9 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.filter.Filter;
 import org.jdom.input.SAXBuilder;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.grammar.spi.AbstractSchemaBasedGrammar;
@@ -300,6 +304,45 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
 
     @Override
     protected Enumeration<GrammarResult> getDynamicValueCompletion(String path, HintContext virtualTextCtx, Element el) {
+        if (virtualTextCtx.getCurrentPrefix().length() > 0) {
+            String prefix = virtualTextCtx.getCurrentPrefix();
+            if (prefix.lastIndexOf("${") > prefix.lastIndexOf("}")) {
+                String propPrefix = prefix.substring(prefix.lastIndexOf("${") + 2);
+                FileObject fo = getEnvironment().getFileObject();
+                if (fo != null) {
+                    List<String> set = new ArrayList<String>();
+                    set.add("basedir");
+                    set.add("project.build.finalName");
+                    set.add("project.version");
+                    set.add("project.groupId");
+                    Project p;
+                    try {
+                        p = ProjectManager.getDefault().findProject(fo.getParent());
+                        if (p != null) {
+                            NbMavenProject nbprj = p.getLookup().lookup(NbMavenProject.class);
+                            if (nbprj != null) {
+                                Properties props = nbprj.getMavenProject().getProperties();
+                                if (props != null) {
+                                    set.addAll(props.stringPropertyNames());
+                                }
+                            }
+                        }
+                    } catch (IOException ex) {
+                        //Exceptions.printStackTrace(ex);
+                    } catch (IllegalArgumentException ex) {
+                        //Exceptions.printStackTrace(ex);
+                    }
+                    Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
+                    Collections.sort(set);
+                    for (String pr : set) {
+                        if (pr.startsWith(propPrefix)) {
+                            elems.add(new ExpressionValueTextElement(pr, propPrefix));
+                        }
+                    }
+                    return Collections.enumeration(elems);
+                }
+            }
+        }
         if (path.endsWith("executions/execution/goals/goal")) { //NOI18N
             Node previous;
             // HACK.. if currentPrefix is zero length, the context is th element, otherwise it's the content inside

@@ -9,7 +9,7 @@
         <script language="javascript">
             function foo() {
                 alert('foo');
-        }</script>
+            }</script>
 
     </head>
     <body>

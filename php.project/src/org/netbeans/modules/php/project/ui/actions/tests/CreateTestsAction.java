@@ -61,6 +61,7 @@ import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
@@ -171,6 +172,9 @@ public final class CreateTestsAction extends NodeAction {
 
             PhpProject phpProject = PhpProjectUtils.getPhpProject(fileObj);
             if (phpProject == null) {
+                return false;
+            }
+            if (PhpProjectValidator.isFatallyBroken(phpProject)) {
                 return false;
             }
             if (onlyOneProjectAllowed == null) {

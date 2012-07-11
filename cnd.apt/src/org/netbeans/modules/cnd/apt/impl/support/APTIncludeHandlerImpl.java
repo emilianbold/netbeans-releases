@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -175,8 +176,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return inclStack == null || inclStack.isEmpty();
     }
     
-    /** immutable state object of include handler */ 
-    public final static class StateImpl implements State, Persistent, SelfPersistent {
+    /** immutable state object of include handler */
+    // Not SelfPersistent any more because I have to pass unitIndex into write() method
+    // It is private, so I don't think it's a problem. VK.
+    public final static class StateImpl implements State, Persistent  {
         private static final List<IncludeDirEntry> CLEANED_MARKER = Collections.unmodifiableList(new ArrayList<IncludeDirEntry>(0));
         // for now just remember lists
         private final List<IncludeDirEntry> systemIncludePaths;
@@ -252,8 +255,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return APTIncludeHandlerImpl.toString(startFile.getStartFile(), systemIncludePaths, userIncludePaths, userIncludeFilePaths, Arrays.asList(inclStack));
         }
         
-        @Override
-        public void write(RepositoryDataOutput output) throws IOException {
+        public void write(RepositoryDataOutput output, int unitIndex) throws IOException {
             assert output != null;
             startFile.write(output);
             
@@ -263,21 +265,21 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             int size = systemIncludePaths.size();
             output.writeInt(size);
             for (int i = 0; i < size; i++) {
-                output.writeCharSequenceUTF(systemIncludePaths.get(i).getAsSharedCharSequence());
+                APTSerializeUtils.writeFileNameIndex(systemIncludePaths.get(i).getAsSharedCharSequence(), output, unitIndex);
             }
             
             size = userIncludePaths.size();
             output.writeInt(size);
             
             for (int i = 0; i < size; i++) {
-                output.writeCharSequenceUTF(userIncludePaths.get(i).getAsSharedCharSequence());
+                APTSerializeUtils.writeFileNameIndex(userIncludePaths.get(i).getAsSharedCharSequence(), output, unitIndex);
             }
             
             size = userIncludeFilePaths.size();
             output.writeInt(size);
             
             for (int i = 0; i < size; i++) {
-                output.writeCharSequenceUTF(userIncludeFilePaths.get(i).getAsSharedCharSequence());
+                APTSerializeUtils.writeFileNameIndex(userIncludeFilePaths.get(i).getAsSharedCharSequence(), output, unitIndex);
             }
 
             output.writeInt(inclStack.length);
@@ -294,11 +296,11 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                             inclInfo.getIncludedDirIndex());
                 }
                 assert inclInfoImpl != null;
-                inclInfoImpl.write(output);
+                inclInfoImpl.write(output, unitIndex);
             }
         }
         
-        public StateImpl(FileSystem fs, final RepositoryDataInput input) throws IOException {
+        public StateImpl(FileSystem fs, final RepositoryDataInput input, int unitIndex) throws IOException {
             assert input != null;
             
             startFile = new StartEntry(fs, input);
@@ -306,21 +308,21 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             int size = input.readInt();
             systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, APTSerializeUtils.readFileNameIndex(input, unitIndex).toString());
                 systemIncludePaths.add(i, path);
             }
             
             size = input.readInt();
             userIncludePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, APTSerializeUtils.readFileNameIndex(input, unitIndex).toString());
                 userIncludePaths.add(i, path);                
             }
 
             size = input.readInt();
             userIncludeFilePaths = new ArrayList<IncludeDirEntry>(size);
             for (int i = 0; i < size; i++) {
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readUTF());
+                IncludeDirEntry path = IncludeDirEntry.get(fs, APTSerializeUtils.readFileNameIndex(input, unitIndex).toString());
                 userIncludeFilePaths.add(i, path);
             }
             
@@ -331,7 +333,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             } else {
                 inclStack = new IncludeInfo[size];
                 for (int i = 0; i < size; i++) {
-                    final IncludeInfo impl = new IncludeInfoImpl(input);
+                    final IncludeInfo impl = new IncludeInfoImpl(input, unitIndex);
                     assert impl != null;
                     inclStack[i] = impl;
                 }
@@ -454,8 +456,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return IncludeState.Recursive;
         }
     }    
-    
-    private static final class IncludeInfoImpl implements IncludeInfo, SelfPersistent, Persistent {
+
+    // Not SelfPersistent any more since I have to pass unitIndex into write method
+    // It is private, so I don't think it's a problem. VK.
+    private static final class IncludeInfoImpl implements IncludeInfo, Persistent {
         private final CharSequence path;
         private final int directiveLine;
         private final int directiveOffset;
@@ -471,9 +475,9 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             this.resolvedDirIndex = resolvedDirIndex;
         }
         
-        public IncludeInfoImpl(final RepositoryDataInput input) throws IOException {
+        public IncludeInfoImpl(final RepositoryDataInput input, int unitIndex) throws IOException {
             assert input != null;
-            this.path = FilePathCache.getManager().getString(input.readCharSequenceUTF());
+            this.path = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), unitIndex);
             directiveLine = input.readInt();
             directiveOffset = input.readInt();
             resolvedDirIndex = input.readInt();
@@ -523,11 +527,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return hash;
         }
 
-        @Override
-        public void write(final RepositoryDataOutput output) throws IOException {
+        public void write(final RepositoryDataOutput output, int unitIndex) throws IOException {
             assert output != null;
             
-            output.writeCharSequenceUTF(path.toString());
+            APTSerializeUtils.writeFileNameIndex(path, output, unitIndex);
             output.writeInt(directiveLine);
             output.writeInt(directiveOffset);
             output.writeInt(resolvedDirIndex);

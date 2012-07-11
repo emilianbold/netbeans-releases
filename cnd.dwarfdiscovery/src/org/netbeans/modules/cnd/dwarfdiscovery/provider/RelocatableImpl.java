@@ -67,7 +67,7 @@ public class RelocatableImpl implements Relocatable {
             if (resolverCompilePath != null) {
                 compilePath = PathCache.getString(resolverCompilePath.getPath());
             }
-            resolveIncludePaths(path, mapper, fs);
+            resolveIncludePaths(resolved.getRoot(), mapper, fs);
             fullName = PathCache.getString(path);
         }
 
@@ -87,12 +87,14 @@ public class RelocatableImpl implements Relocatable {
             for(String incl : userIncludes) {
                 String newIncl = null;
                 if (incl.startsWith("/")) { //NOI18N
-                    ResolvedPath resolvedIncluded = mapper.getPath(incl);
-                    if (resolvedIncluded != null) {
-                        newIncl = PathCache.getString(resolvedIncluded.getPath());
-                    } else {
-                        if (mapper.init(fs, root, incl)) {
-                            newIncl = PathCache.getString(mapper.getPath(incl).getPath());
+                    if (!incl.startsWith(root)) {
+                        ResolvedPath resolvedIncluded = mapper.getPath(incl);
+                        if (resolvedIncluded != null) {
+                            newIncl = PathCache.getString(resolvedIncluded.getPath());
+                        } else {
+                            if (mapper.init(fs, root, incl)) {
+                                newIncl = PathCache.getString(mapper.getPath(incl).getPath());
+                            }
                         }
                     }
                 }

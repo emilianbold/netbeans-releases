@@ -179,8 +179,8 @@ public class FileBufferFile extends AbstractFileBuffer {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
-    public FileBufferFile(RepositoryDataInput input) throws IOException {
-        super(input);
+    public FileBufferFile(RepositoryDataInput input, int unitId) throws IOException {
+        super(input, unitId);
     }
 
     @Override

@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.repository.sfs;
 
 import java.io.*;
+import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.util.CharSequences;
 
 /**
@@ -76,6 +77,9 @@ public class UTF {
      * @exception  IOException  if an I/O error occurs.
      */
     public static int writeUTF(CharSequence str, DataOutput out) throws IOException {
+        if (Stats.writeStatistics) {
+            WriteStatistics.instance().updateOnWriteUTF(str);
+        }
         int strlen = str.length();
 	int utflen = 0;
 	int c, count = 0;
