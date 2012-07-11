@@ -42,7 +42,9 @@
 package org.netbeans.modules.web.clientproject;
 
 import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
+import org.netbeans.modules.web.clientproject.spi.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -73,17 +75,15 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        ProxyLookup lkp = new ProxyLookup(Lookups.fixed(p), context);
-
         ClientSideConfigurationProvider provider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
         final ClientProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
         //TODO: hack for default
         String type = activeConfiguration == null ? "browser" : activeConfiguration.getType();
 
-        Lookup providers = Lookups.forPath("Projects/" + ClientSideProjectType.TYPE + "/ActionProviders/" + type);
+        Lookup providers = LookupProviderSupport.createCompositeLookup(Lookups.fixed(p), "Projects/" + ProjectConfigurationCustomizer.PATH + "/"+ type + "/Lookup");
         ActionProvider action = providers.lookup(ActionProvider.class);
         if (action != null) {
-            action.invokeAction(command, lkp);
+            action.invokeAction(command, context);
             return;
         }
         NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration",

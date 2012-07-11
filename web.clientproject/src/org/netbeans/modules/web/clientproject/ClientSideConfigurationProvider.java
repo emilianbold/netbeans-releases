@@ -116,6 +116,7 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
                 LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs});
                 pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
                 // XXX also fire PROP_ACTIVE_CONFIGURATION?
+                fireContentsChanged(this, 0, newConfigs.size()-1);
             }
         }
     };
