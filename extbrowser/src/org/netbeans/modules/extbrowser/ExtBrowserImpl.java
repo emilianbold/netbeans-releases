@@ -225,6 +225,15 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     public URL getURL() {
         return url;
     }
+
+    public void close(boolean closeTab) {
+        if (hasEnhancedMode()) {
+            BrowserTabDescriptor tab = getBrowserTabDescriptor();
+            if (tab != null) {
+                ExternalBrowserPlugin.getInstance().close(tab, closeTab);
+            }
+        }
+    }
     
     /** 
      *  Sets current URL. Descendants of this class will implement it and they can call this

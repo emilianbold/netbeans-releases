@@ -192,6 +192,8 @@ NetBeans.processMessage = function(message) {
         this.processInitMessage(message);
     } else if (type === 'reload') {
         this.processReloadMessage(message);
+    } else if (type === 'close') {
+        this.processCloseMessage(message);
     } else if (type === 'attach_debugger') {
         this.processAttachDebuggerMessage(message);
     } else if (type === 'detach_debugger') {
@@ -257,6 +259,18 @@ NetBeans.processReloadMessage = function(message) {
             this.browserReloadCallback(tabId, message.url);
         } else {
             console.log('Refusing to reload tab that is not managed: '+tabId);
+        }
+    }
+}
+
+NetBeans.processCloseMessage = function(message) {
+    var tabId = this.tabIdFromMessage(message);
+    if (tabId !== undefined) {
+        var status = this.tabStatus(tabId);
+        if (status === this.STATUS_MANAGED) {
+            this.browserCloseCallback(tabId);
+        } else {
+            console.log('Refusing to close tab that is not managed: '+tabId);
         }
     }
 }
