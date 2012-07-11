@@ -579,7 +579,7 @@ public class EditorOperator extends TopComponentOperator {
     public void setCaretPositionToEndOfLine(int lineNumber) {
         // getText returns contents of line plus \n, that's why we use length()-1; -1 is substracted only if it's not end of file
         txtEditorPane().setCaretPosition(getLineOffset(lineNumber)
-                + getText(lineNumber).length() - (getText(lineNumber).contains(System.getProperty("line.separator"))?1:0));
+                + getText(lineNumber).length() - (getText(lineNumber).contains("\n") ? 1 : 0));
     }
 
     /** Sets caret position to specified line and column
