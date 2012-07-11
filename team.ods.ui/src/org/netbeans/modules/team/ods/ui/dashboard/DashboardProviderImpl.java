@@ -136,7 +136,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public ProjectAccessor<CloudUiServer, Project> getProjectAccessor() {
+    public ProjectAccessorImpl getProjectAccessor() {
         if(projectAccessor == null) {
             projectAccessor = new ProjectAccessorImpl(server);
         }
@@ -154,7 +154,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public SourceAccessor<CloudUiServer, Project> getSourceAccessor() {
+    public SourceAccessorImpl getSourceAccessor() {
         if(sourceAccessor == null) {
             sourceAccessor = new SourceAccessorImpl(server);
         }
