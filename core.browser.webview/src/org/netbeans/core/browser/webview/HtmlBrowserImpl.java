@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.core.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.EnhancedBrowser;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
@@ -62,12 +63,15 @@ import org.openide.util.RequestProcessor;
  *
  * @author S. Aubrecht
  */
-public class HtmlBrowserImpl extends HtmlBrowser.Impl {
+public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser {
     private static RequestProcessor RP = new RequestProcessor(HtmlBrowserImpl.class);
 
     private WebBrowser browser;
     private final Object LOCK = new Object();
     private Session session;
+    private boolean enhancedMode;
+    private boolean disablePageInspector = false;
+
 
     public HtmlBrowserImpl() {
         super();
@@ -128,7 +132,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl {
                 session = debuggerFactory.createDebuggingSession(webkitDebugger);
 
                 PageInspector inspector = PageInspector.getDefault();
-                if (inspector != null) {
+                if (inspector != null && !disablePageInspector) {
                     inspector.inspectPage(getLookup());
                 }
             }
@@ -258,6 +262,33 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl {
                 browser.dispose();
             }
             browser = null;
+        }
+    }
+
+    @Override
+    public boolean hasEnhancedMode() {
+        return this.enhancedMode;
+    }
+
+    @Override
+    public void setEnhancedMode(boolean mode) {
+        this.enhancedMode = mode;
+    }
+
+    @Override
+    public void disablePageInspector() {
+        disablePageInspector = true;
+    }
+
+    @Override
+    public void enableLiveHTML() {
+    }
+
+    @Override
+    public void close(boolean closeTab) {
+        destroy();
+        if (closeTab) {
+            // TBD
         }
     }
 }

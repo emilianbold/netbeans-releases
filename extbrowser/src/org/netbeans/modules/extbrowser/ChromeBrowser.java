@@ -130,7 +130,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
         
         //Windows
         if (Utilities.isWindows()) {
-            params += "--remote-debugging-port=9222 {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";  // NOI18N
+            params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";  // NOI18N
             String localFiles = System.getenv("LOCALAPPDATA");
             b = localFiles+"\\Google\\Chrome\\Application\\chrome.exe";  // NOI18N
             
@@ -166,7 +166,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
             }
          // Mac
         } else if (Utilities.isMac()) {
-            params += "-b com.google.chrome {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "} --args --remote-debugging-port=9222"; // NOI18N
+            params += "-b com.google.chrome {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}"; // NOI18N
             retValue = new NbProcessDescriptor ("/usr/bin/open", params, // NOI18N
                     ExtWebBrowser.UnixBrowserFormat.getHint());
             return retValue;
@@ -197,7 +197,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
                 b = f.getAbsolutePath();
             }
             retValue = new NbProcessDescriptor (
-                b, "--remote-debugging-port=9222 {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", // NOI18N
+                b, "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", // NOI18N
                 NbBundle.getMessage (ChromeBrowser.class, "MSG_BrowserExecutorHint")
             );                
         }

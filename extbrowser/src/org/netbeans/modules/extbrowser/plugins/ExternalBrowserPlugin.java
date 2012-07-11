@@ -143,6 +143,13 @@ public final class ExternalBrowserPlugin {
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createReloadMessage(tab.tabID, url));
     }
 
+    public void close(BrowserTabDescriptor tab, boolean closeTab) {
+        tab.deinitialize();
+        if (closeTab) {
+            server.sendMessage(tab.keyForFeature(FEATURE_ROS), createCloseTabMessage(tab.tabID));
+        }
+    }
+    
     public void attachWebKitDebugger(BrowserTabDescriptor tab) {
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createAttachDebuggerMessage(tab.tabID));
     }
@@ -411,6 +418,9 @@ public final class ExternalBrowserPlugin {
                         protected void loadURLInBrowser(URL url) {
                             throw new UnsupportedOperationException();
                         }
+                        @Override
+                        public void close(boolean closeTab) {
+                        }
                     };
                     browserTab = new BrowserTabDescriptor(tabId, impl);
                     knownBrowserTabs.add(browserTab);
@@ -512,6 +522,13 @@ public final class ExternalBrowserPlugin {
         return "file:///"+url;
     }
     
+    private String createCloseTabMessage(int tabId) {
+        Map params = new HashMap();
+        params.put( Message.TAB_ID, tabId );
+        Message msg = new Message( Message.MessageType.CLOSE, params);
+        return msg.toStringValue();
+    }
+
     private String createAttachDebuggerMessage(int tabId) {
         Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );

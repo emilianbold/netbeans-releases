@@ -217,7 +217,7 @@ public final class WebBrowsers {
             browsers.add(
                 new WebBrowserFactoryDescriptor(
                     item.getId(), 
-                    browserSetting.getNodeDelegate().getDisplayName(), 
+                    browserSetting, 
                     IDESettings.getWWWBrowser().equals(fact),
                     fact));
         }

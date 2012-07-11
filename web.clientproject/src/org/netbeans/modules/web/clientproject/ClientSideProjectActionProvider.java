@@ -77,8 +77,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         ClientSideConfigurationProvider provider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
         final ClientProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
-        //TODO: hack for default
-        String type = activeConfiguration == null ? "browser" : activeConfiguration.getType();
+        String type = activeConfiguration == null || activeConfiguration.getBrowser() != null ? "browser" : activeConfiguration.getType();
 
         Lookup providers = LookupProviderSupport.createCompositeLookup(Lookups.fixed(p), "Projects/" + ProjectConfigurationCustomizer.PATH + "/"+ type + "/Lookup");
         ActionProvider action = providers.lookup(ActionProvider.class);

@@ -58,7 +58,7 @@ public class ClientSideProjectPanelProvider implements ProjectCustomizer.Composi
     public Category createCategory(Lookup context) {
             return ProjectCustomizer.Category.create(
                     "buildConfig",
-                    "Configurations",
+                    "Run",
                     null);
     }
 

@@ -117,7 +117,7 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
             File file = new java.io.File (CHROMIUM_PATH); // NOI18N
             if (file.exists()) {
                 return new NbProcessDescriptor (
-                        file.getAbsolutePath(), "--remote-debugging-port=9222 {" + 
+                        file.getAbsolutePath(), "{" + 
                         ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", 
                         NbBundle.getMessage (ChromiumBrowser.class, 
                                 "MSG_BrowserExecutorHint")          // NOI18N

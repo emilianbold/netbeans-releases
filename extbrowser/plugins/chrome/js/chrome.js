@@ -58,6 +58,10 @@ NetBeans.browserReloadCallback = function(tabId, newUrl) {
     }
 }
 
+NetBeans.browserCloseCallback = function(tabId) {
+    chrome.tabs.remove(tabId);
+}
+
 NetBeans.browserAttachDebugger = function(tabId) {
     if (NetBeans.DEBUG) {
         console.log('debugger attach for tab ' + tabId);

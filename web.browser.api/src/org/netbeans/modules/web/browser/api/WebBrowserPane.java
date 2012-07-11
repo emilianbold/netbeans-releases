@@ -141,6 +141,13 @@ public final class WebBrowserPane {
         }
     }
     
+    public void close(boolean closeTab) {
+        assert impl instanceof EnhancedBrowser;
+        if ( impl instanceof EnhancedBrowser ){
+            ((EnhancedBrowser) impl).close(closeTab);
+        }
+    }
+    
     private synchronized HtmlBrowserComponent getTopComponent() {
         if (topComponent == null && createTopComponent) {
             devToolbar = DeveloperToolbar.create();

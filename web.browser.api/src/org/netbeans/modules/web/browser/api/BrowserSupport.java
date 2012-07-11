@@ -234,5 +234,9 @@ public final class BrowserSupport {
         }
         return null;
     }
+
+    public void close(boolean closeTab) {
+        getWebBrowserPane().close(closeTab);
+    }
     
 }
