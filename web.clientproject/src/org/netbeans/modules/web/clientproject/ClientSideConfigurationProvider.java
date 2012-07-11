@@ -59,6 +59,8 @@ import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -158,7 +160,17 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
                 configs.put(conf.getName(), conf);
             }
         }
+        addBrowsers(configs);
         LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
+    }
+    
+    private void addBrowsers(Map<String,ClientProjectConfiguration> cfgs) {
+        for (WebBrowser browser : WebBrowsers.getInstance().getAll()) {
+            ClientProjectConfiguration c = ClientProjectConfiguration.create(browser);
+            if (c != null) {
+                cfgs.put(c.getName(), c);
+            }
+        }
     }
 
     @Override
@@ -167,12 +179,7 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
             calculateConfigs();
         List<ClientProjectConfiguration> l = new ArrayList<ClientProjectConfiguration>();
         l.addAll(configs.values());
-        Collections.sort(l, new Comparator<ClientProjectConfiguration>() {
-            Collator c = Collator.getInstance();
-            public int compare(ClientProjectConfiguration c1, ClientProjectConfiguration c2) {
-                return c.compare(c1.getDisplayName(), c2.getDisplayName());
-            }
-        });
+        Collections.sort(l, ClientProjectConfiguration.COMPARATOR);
         return l;
     }
 
@@ -181,15 +188,23 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
         if (configs == null)
             calculateConfigs();
         String config = p.getEvaluator().getProperty(PROP_CONFIG);
-        //TODO: hack for default
-        if(config==null)
-            config="browser";
+        if(config==null) {
+            // return first in the list:
+            List<ClientProjectConfiguration> l = new ArrayList<ClientProjectConfiguration>();
+            l.addAll(configs.values());
+            if (l.isEmpty()) {
+                return null;
+            }
+            Collections.sort(l, ClientProjectConfiguration.COMPARATOR);
+            return l.get(0);
+        }
         if (configs.containsKey(config)) {
             return configs.get(config);
         }
         return null;
     }
 
+    @Override
     public void setActiveConfiguration(ClientProjectConfiguration c) throws IllegalArgumentException, IOException {
         if ( !configs.values().contains(c)) {
             throw new IllegalArgumentException();
@@ -210,14 +225,17 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
         assert p.getProjectDirectory().getFileObject(CONFIG_PROPS_PATH) != null;
     }
 
+    @Override
     public boolean hasCustomizer() {
         return true;
     }
 
+    @Override
     public void customize() {
         p.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer();
     }
 
+    @Override
     public boolean configurationsAffectAction(String command) {
         return command.equals(ActionProvider.COMMAND_RUN)
                 || command.equals(ActionProvider.COMMAND_BUILD)
@@ -225,10 +243,12 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
                 || command.equals(ActionProvider.COMMAND_RUN_SINGLE);
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener lst) {
         pcs.addPropertyChangeListener(lst);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener lst) {
         pcs.removePropertyChangeListener(lst);
     }

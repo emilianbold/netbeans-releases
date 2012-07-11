@@ -77,8 +77,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
         ClientSideConfigurationProvider provider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
         final ClientProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
-        //TODO: hack for default
-        String type = activeConfiguration == null ? "browser" : activeConfiguration.getType();
+        String type = activeConfiguration == null || activeConfiguration.getBrowser() != null ? "browser" : activeConfiguration.getType();
 
         Lookup providers = Lookups.forPath("Projects/" + ClientSideProjectType.TYPE + "/ActionProviders/" + type);
         ActionProvider action = providers.lookup(ActionProvider.class);

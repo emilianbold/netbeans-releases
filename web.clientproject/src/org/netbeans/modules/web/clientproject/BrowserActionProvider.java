@@ -71,6 +71,7 @@ public class BrowserActionProvider implements ActionProvider {
         ClientSideProject p = context.lookup(ClientSideProject.class);
         FileObject fo = null;
         if (COMMAND_RUN.equals(command)) {
+// TODO: this needs to be configurable
             fo = p.getProjectDirectory().getFileObject("index.html");
         } else if (COMMAND_RUN_SINGLE.equals(command)) {
             fo = getFile(context);
@@ -85,7 +86,7 @@ public class BrowserActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         Project prj = context.lookup(Project.class);
         ClientSideConfigurationProvider provider = prj.getLookup().lookup(ClientSideConfigurationProvider.class);
-        if (provider.getActiveConfiguration()==null || "browser".equals(provider.getActiveConfiguration().getType())) {
+        if (provider.getActiveConfiguration().getBrowser() != null) {
             return true;
         }
         return false;
