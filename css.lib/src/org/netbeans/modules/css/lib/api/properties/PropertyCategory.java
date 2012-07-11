@@ -84,6 +84,14 @@ public enum PropertyCategory {
     USER_INTERFACE,
     WRITING_MODES,
     
+    //browsers
+    CHROME,
+    FIREFOX,
+    INTERNET_EXPLORER,
+    OPERA,
+    SAFARI,
+    
+    //default, the rest
     DEFAULT; 
     
     private String displayName;
