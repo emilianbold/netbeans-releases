@@ -152,7 +152,7 @@ public abstract class ProjectTypeStrategy {
         FileObject childFolder = parentFolder.getFileObject(folderName, null);
         if (childFolder == null || !childFolder.isValid()) {
             try {
-                parentFolder.createFolder(folderName);
+                return parentFolder.createFolder(folderName);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
