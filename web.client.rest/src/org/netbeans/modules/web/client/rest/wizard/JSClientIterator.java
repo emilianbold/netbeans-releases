@@ -185,16 +185,21 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
                 RestPanel.EXISTED_BACKBONE);
         FileObject existedUnderscore = (FileObject)myWizard.getProperty(
                 RestPanel.EXISTED_UNDERSCORE);
+        FileObject existedJQuery = (FileObject)myWizard.getProperty(
+                RestPanel.EXISTED_JQUERY);
         
         if ( existedBackbone == null ){
             if ( addBackbone!=null && addBackbone ){
                 FileObject libs = FileUtil.createFolder(project.
                         getProjectDirectory(),WebClientLibraryManager.LIBS);
                 handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
-                        "TXT_CreateLibs"));                         // NOI18N
-                existedBackbone = addLibrary( libs , "backbone.js");
+                        "TXT_CreateLibs"));                                 // NOI18N
+                existedBackbone = addLibrary( libs , "backbone.js");        // NOI18N
                 if ( existedUnderscore == null ){
-                    existedUnderscore = addLibrary(libs, "underscore.js");
+                    existedUnderscore = addLibrary(libs, "underscore.js");  // NOI18N
+                }
+                if ( existedJQuery == null ){
+                    existedJQuery = addLibrary(libs, "jquery");  // NOI18N
                 }
             }
         }
@@ -219,7 +224,8 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         if ( htmlFile != null ){
             handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                     "TXT_GenerateHtml"));                         // NOI18N
-            createHtml( htmlFile , jsFile, existedBackbone , existedBackbone );
+            createHtml( htmlFile , jsFile, existedBackbone , existedUnderscore, 
+                    existedJQuery );
         }
 
         handle.finish();
@@ -243,7 +249,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
     }
     
     private void createHtml( File htmlFile, FileObject appFile, 
-            FileObject backbone , FileObject underscore) 
+            FileObject backbone , FileObject underscore, FileObject jQuery) 
         throws IOException 
     {
         File parentFile = htmlFile.getParentFile();
@@ -270,13 +276,22 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append("'></script>\n");    // NOI18N
         }
         if ( backbone == null ){
-            builder.append("<script src='http://backbonejs.org/backbone-min.js'></script>");// NOI18N
+            builder.append("<script src='http://backbonejs.org/backbone-min.js'></script>\n");// NOI18N
         }
         else {
             String relativePath = FileUtil.getRelativePath(folder, backbone);
             builder.append("<script src='");// NOI18N
             builder.append(relativePath);
-            builder.append("'></script>");  // NOI18N
+            builder.append("'></script>\n");  // NOI18N
+        }
+        if ( jQuery == null ){
+            builder.append("<script src='http://code.jquery.com/jquery-1.7.2.min.js'></script>\n");// NOI18N
+        }
+        else {
+            String relativePath = FileUtil.getRelativePath(folder, jQuery);
+            builder.append("<script src='");// NOI18N
+            builder.append(relativePath);
+            builder.append("'></script>\n");  // NOI18N
         }
         
         String relativePath = FileUtil.getRelativePath(folder, appFile );

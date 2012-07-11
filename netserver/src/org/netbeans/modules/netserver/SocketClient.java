@@ -45,49 +45,36 @@ package org.netbeans.modules.netserver;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.logging.Level;
 
 
 /**
  * @author ads
  *
  */
-public class SocketServer extends SocketFramework {
-    
-    public SocketServer(SocketAddress address ) throws IOException {
+public class SocketClient extends SocketFramework {
+
+    public SocketClient(SocketAddress address ) throws IOException {
         super();
-        serverChannel = ServerSocketChannel.open();
-        serverChannel.configureBlocking(false);
-        serverChannel.socket().bind(address);
-        
-        serverChannel.register(getSelector(), SelectionKey.OP_ACCEPT);
+        socketChannel = SocketChannel.open();
+        socketChannel.configureBlocking( false );
+        socketChannel.connect( address );
+        socketChannel.register( getSelector(), SelectionKey.OP_CONNECT );
     }
 
     /* (non-Javadoc)
-     * @see java.lang.Runnable#run()
+     * @see org.netbeans.modules.netserver.SocketFramework#chanelClosed(java.nio.channels.SelectionKey)
      */
     @Override
-    public void run() {
-        try {
-            doRun();
-        }
-        catch (IOException e) {
-            LOG.log(Level.WARNING, null, e);
-        }
-        finally {
-            try {
-                serverChannel.close();
-            }
-            catch (IOException e) {
-                LOG.log(Level.WARNING, null, e);
-            }
-        }
+    protected void chanelClosed( SelectionKey key ) {
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.SocketFramework#getAddress()
+     */
+    @Override
     protected SocketAddress getAddress(){
-        return serverChannel.socket().getLocalSocketAddress();
+        return socketChannel.socket().getRemoteSocketAddress();
     }
     
     /* (non-Javadoc)
@@ -95,29 +82,18 @@ public class SocketServer extends SocketFramework {
      */
     @Override
     protected void process( SelectionKey key ) throws IOException {
-        if ( key.isAcceptable() ){
-            acceptConnection(key);
+        if ( key.isConnectable()){
+            finishConnect();
         }
-        else {
-            super.process(key);
-        }
+        super.process(key);
     }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#chanelClosed(java.nio.channels.SelectionKey)
-     */
-    @Override
-    protected void chanelClosed( SelectionKey key ) {
-    } 
-    
-    private void acceptConnection( SelectionKey key ) throws IOException {
-        ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
 
-        SocketChannel socketChannel = serverSocketChannel.accept();
-        socketChannel.configureBlocking(false);
+    protected void finishConnect() throws IOException {
+        if ( socketChannel.isConnectionPending() ){
+            socketChannel.finishConnect();
+        }
         socketChannel.register(getSelector(), SelectionKey.OP_READ);
     }
 
-    private ServerSocketChannel serverChannel;
-
+    private SocketChannel socketChannel;
 }

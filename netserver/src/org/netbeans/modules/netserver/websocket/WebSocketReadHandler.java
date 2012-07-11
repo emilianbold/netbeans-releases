@@ -57,6 +57,8 @@ public interface WebSocketReadHandler {
     /**
      * Invoked when a new connection is accepted.
      * 
+     * TODO : this method should be moved out of this interface
+     * 
      * @param key selection key corresponding to the connected channel/socket.
      */
     void accepted(SelectionKey key);
