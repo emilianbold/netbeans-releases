@@ -55,16 +55,27 @@ public final class Revision {
     private JSONArray stacktrace;
     private List<Change> changes;
     private StringBuilder data;
+    
+    private String timeStamp = null;
 
-    public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data) {
+    public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data, String timeStamp) {
         this.content = content;
-        this.stacktrace = (JSONArray) JSONValue.parse(stacktrace.toString());
+        
+        if (stacktrace != null) {
+            this.stacktrace = (JSONArray) JSONValue.parse(stacktrace.toString());
+        }
+        
         this.changes = changes;
         this.data = data;
+        this.timeStamp = timeStamp;
+        
         addRemovedContent();
     }
 
     public String getContent() {
+        if (content == null) {
+            return null;
+        }
         return content.toString();
     }
 
@@ -93,6 +104,32 @@ public final class Revision {
                 increment += ch.getRemovedText().length();
             }
         }
+    }
+    
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + (this.timeStamp != null ? this.timeStamp.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Revision other = (Revision) obj;
+        if ((this.timeStamp == null) ? (other.timeStamp != null) : !this.timeStamp.equals(other.timeStamp)) {
+            return false;
+        }
+        return true;
     }
 
 }

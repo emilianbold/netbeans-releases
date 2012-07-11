@@ -39,63 +39,59 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.livehtml.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
-import javax.swing.border.EmptyBorder;
+import java.text.DateFormat;
+import org.netbeans.modules.web.livehtml.Analysis;
 
 /**
  *
+ * @author petr-podzimek
  */
-public class LiveHTMLToolbar extends JToolBar implements ActionListener {
+public class AnalysisItem implements Comparable<AnalysisItem> {
     
-    private JButton goButton;
-    private JButton beautifyButton;
-    private JTextField address;
-    private LiveHTMLComponent component;
+    private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance();
+    
+    private Analysis analysis;
 
-    public LiveHTMLToolbar(LiveHTMLComponent component) {
-        this.component = component;
-        setOpaque(false);
-        setFloatable(false);
-        initContent();
+    public AnalysisItem(Analysis analysis) {
+        this.analysis = analysis;
     }
 
-    
+    public Analysis getAnalysis() {
+        return analysis;
+    }
+
     @Override
-    public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == goButton) {
-            component.go(address.getText());
-        } else if(e.getSource() == beautifyButton) {
-            component.beautify();
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        
+        if (analysis.getFinished() == null) {
+            sb.append(" * ");
         }
+        
+        if (analysis.getSourceUrl() != null) {
+            String sourceUrl = analysis.getSourceUrl().toExternalForm();
+            if (sourceUrl.length() > 25) {
+                sourceUrl = "..." + sourceUrl.substring(25);
+            }
+            sb.append(sourceUrl);
+        }
+        
+        if (analysis.getCreated() != null) {
+            sb.append(" - ");
+            sb.append(DATE_FORMAT.format(analysis.getCreated()));
+        }
+        
+        return sb.toString();
     }
 
-    private void initContent() {
-        goButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/go.png"))); // NOI18N
-        goButton.addActionListener(this);
-        goButton.setEnabled(true);
-        goButton.setBorder(new EmptyBorder(0, 5, 0, 5));
-        
-        beautifyButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/pretty.png"))); // NOI18N
-        beautifyButton.addActionListener(this);
-        beautifyButton.setEnabled(true);
-        beautifyButton.setBorder(new EmptyBorder(0, 5, 0, 5));
-
-        address = new JTextField();
-        address.setBorder(new EmptyBorder(0, 5, 0, 5));
-        
-        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-        add(address);
-        add(goButton); 
-        add(beautifyButton);
+    @Override
+    public int compareTo(AnalysisItem o) {
+        if (o == null || getAnalysis() == null) {
+            return -1;
+        }
+        return -getAnalysis().compareTo(o.getAnalysis());
     }
-    
+
 }

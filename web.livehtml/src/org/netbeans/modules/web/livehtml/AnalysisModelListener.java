@@ -39,29 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.ui;
+package org.netbeans.modules.web.livehtml;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionID;
-import org.openide.util.NbBundle.Messages;
-
-@ActionID(
-    category = "View",
-id = "org.netbeans.modules.web.livehtml.ui.ShowGlobalLiveHTML")
-@ActionRegistration(
-    displayName = "#CTL_ShowGlobalLiveHTML")
-@ActionReferences({
-    @ActionReference(path = "Menu/View", position = 1100, separatorBefore = 1050)
-})
-@Messages("CTL_ShowGlobalLiveHTML=Live HTML")
-public final class ShowGlobalLiveHTML implements ActionListener {
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        LiveHTMLTopComponent.showLiveHTML();
-    }
+/**
+ *
+ * @author petr-podzimek
+ */
+public interface AnalysisModelListener {
+    
+    void analysisAdded(Analysis analysis);
+    
 }
