@@ -84,13 +84,14 @@ public class RuleNode extends AbstractNode {
     private PropertySet[] propertySets;
     private Model model;
     private Rule rule;
-    private boolean showAllProperties;
+    private boolean showAllProperties, showCategories;
 
-    public RuleNode(Model model, Rule rule, boolean showAllProperties) {
+    public RuleNode(Model model, Rule rule, boolean showAllProperties, boolean showCategories) {
         super(new RuleChildren(), Lookups.fixed(rule));
         this.model = model;
         this.rule = rule;
         this.showAllProperties = showAllProperties;
+        this.showCategories = showCategories;
     }
 
     @Override
@@ -149,8 +150,10 @@ public class RuleNode extends AbstractNode {
                     propertySet = new PropertyCategoryPropertySet(cat, Collections.<Declaration>emptyList());
                     sets.add(propertySet);
                 } else {
-                    //hack: add a separator
-                    propertySet.properties.add(new SeparatorHackProperty());
+                    //hack: add a separator - but only in categorized view
+                    if(showCategories) {
+                        propertySet.properties.add(new SeparatorHackProperty());
+                    }
                 }
                 //now add all the remaining properties
                 List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(cat.getProperties());

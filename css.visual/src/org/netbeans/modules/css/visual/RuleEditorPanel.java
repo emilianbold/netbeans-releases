@@ -158,8 +158,10 @@ public class RuleEditorPanel extends JPanel {
         
         this.showAllProperties = showAllProperties;
         
-        //re-set the node
-        sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties)});
+        if(rule != null) {
+            //re-set the node
+            sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties, showCategories)});
+        }
     }
 
     public void setShowCategories(boolean showCategories) {
@@ -174,6 +176,11 @@ public class RuleEditorPanel extends JPanel {
         } catch (PropertyVetoException ex) {
             //no-op
         }
+        
+        if(rule != null) {
+            //re-set the node
+             sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties, showCategories)});
+        }
     }
     
     public void setModel(Model model) {
@@ -187,7 +194,7 @@ public class RuleEditorPanel extends JPanel {
         }
         this.rule = r;
         
-        sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties)});
+        sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties, showCategories)});
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
         model.runReadTask(new Model.ModelTask() {
             @Override
