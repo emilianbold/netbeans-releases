@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
+import org.netbeans.modules.cnd.apt.impl.support.APTLiteIdToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
@@ -177,7 +178,7 @@ public class APTUtils {
     }
 
     public static void setTokenText(APTToken _token, char buf[], int start, int count) {
-        if (_token instanceof APTBaseToken) {
+        if (_token instanceof APTBaseToken || _token instanceof APTLiteIdToken) {
             _token.setTextID(CharSequences.create(buf, start, count));
         } else if (_token instanceof APTCommentToken) {
             // no need to set text in comment token, but set text len
@@ -240,6 +241,8 @@ public class APTUtils {
         // TODO: optimize factory
         if (APTLiteConstTextToken.isApplicable(type, startOffset, startColumn, startLine)){
             return new APTLiteConstTextToken(type, startOffset, startColumn, startLine);
+        } else if (APTLiteIdToken.isApplicable(type, startOffset, startColumn, startLine)){
+            return new APTLiteIdToken(startOffset, startColumn, startLine);
         }
         APTToken out = createAPTToken(type);
         out.setType(type);

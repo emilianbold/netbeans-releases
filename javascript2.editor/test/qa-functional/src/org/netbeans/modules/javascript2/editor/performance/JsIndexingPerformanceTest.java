@@ -96,7 +96,7 @@ public class JsIndexingPerformanceTest extends JellyTestCase {
 
     public void testIndexingTime() throws Exception {
         openDataProjects(projectName);
-        wait(5000);
+        Thread.sleep(5000);
     }
 
     public void summariseIndexingTimeResults() {
