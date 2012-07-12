@@ -42,6 +42,9 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Image;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +52,9 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Model;
@@ -63,6 +69,7 @@ import org.netbeans.modules.css.visual.filters.SortActionSupport;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,11 +102,20 @@ import org.openide.util.NbBundle;
  * 
  * @author marekfukala
  */
-@NbBundle.Messages(
-        "titleLabel.text={0} properties"
-)
+@NbBundle.Messages({
+        "titleLabel.text={0} properties",
+        "label.rule.error.tooltip=The selected rule contains error(s), the lister properties are read only"
+})
 public class RuleEditorPanel extends JPanel {
 
+    private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
+    private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
+    static {
+        ERROR_LABEL.setToolTipText(Bundle.label_rule_error_tooltip());
+    }
+    
+    private static final Color defaultPanelBackground = javax.swing.UIManager.getDefaults().getColor("Panel.background"); //NOI18N
+    
     private PropertySheet sheet;
     
     private Model model;
@@ -108,7 +124,7 @@ public class RuleEditorPanel extends JPanel {
     private RuleEditorFilters filters;
     private boolean showAllProperties, showCategories;
     private SortMode sortMode;
-            
+    
     private Collection<RuleEditorListener> LISTENERS
             = Collections.synchronizedCollection(new ArrayList<RuleEditorListener>());
     
@@ -211,6 +227,21 @@ public class RuleEditorPanel extends JPanel {
             throw new IllegalStateException("you must call setModel(Model model) beforehand!"); //NOI18N
         }
         this.rule = r;
+        
+        //check if the rule is valid
+        if(!rule.isValid()) {
+            northPanel.add(ERROR_LABEL, BorderLayout.WEST);
+            //the component returns different RGB color that is really pained, at least on motif
+            Color npc = northPanel.getBackground();
+            Color bitMoreRed = new Color(
+                Math.min(255, npc.getRed() + 6), 
+                Math.max(0, npc.getGreen() - 3), 
+                Math.max(0, npc.getBlue() - 3));
+            northPanel.setBackground(bitMoreRed);
+        } else {
+            northPanel.remove(ERROR_LABEL);
+            northPanel.setBackground(defaultPanelBackground);
+        }
         
         resetSheetNode();
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
