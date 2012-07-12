@@ -54,34 +54,14 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionSimpleMethodChainTest extends JsTestBase {
+public class JsCodeCompletionGeneral extends JsTestBase {
     
-    public JsCodeCompletionSimpleMethodChainTest(String testName) {
+    public JsCodeCompletionGeneral(String testName) {
         super(testName);
     }
     
-   public void testMethodChainSimple01() throws Exception {
-        checkCompletion("testfiles/completion/simpleMethodChain/methodChainSimple.js", "MyObj.^create().getInfo().big();", false);
-    }
-    
-    public void testMethodChainSimple02() throws Exception {
-        checkCompletion("testfiles/completion/simpleMethodChain/methodChainSimple.js", "MyObj.cr^eate().getInfo().big();", false);
-    }
-    
-    public void testMethodChainSimple03() throws Exception {
-        checkCompletion("testfiles/completion/simpleMethodChain/methodChainSimple.js", "MyObj.create().^getInfo().big();", false);
-    }
-    
-    public void testMethodChainSimple04() throws Exception {
-        checkCompletion("testfiles/completion/simpleMethodChain/methodChainSimple.js", "MyObj.create().get^Info().big();", false);
-    }
-    
-    public void testMethodChainSimple05() throws Exception {
-        checkCompletion("testfiles/completion/simpleMethodChain/methodChainSimple.js", "MyObj.create().getInfo().^big();", false);
-    }
-    
-    public void testMethodChainSimple06() throws Exception {
-        checkCompletion("testfiles/completion/simpleMethodChain/methodChainSimple.js", "MyObj.create().getInfo().b^ig();", false);
+    public void testIssue215353() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215353.js", "f.^call({msg:\"Ahoj\"});", false);
     }
     
     @Override
@@ -90,7 +70,7 @@ public class JsCodeCompletionSimpleMethodChainTest extends JsTestBase {
             JS_SOURCE_ID,
             ClassPathSupport.createClassPath(new FileObject[] {
                 ClasspathProviderImplAccessor.getJsStubs(),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/simpleMethodChain/"))
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/general/"))
             })
         );
     }

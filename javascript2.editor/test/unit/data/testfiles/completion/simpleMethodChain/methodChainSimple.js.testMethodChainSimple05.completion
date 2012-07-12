@@ -2,44 +2,64 @@ Code completion result for source line:
 MyObj.create().getInfo().|big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     anchor(nameAttribute): String   [PUBLIC]   stub_core_String.js
-METHOD     big(): String                   [PUBLIC]   stub_core_String.js
-METHOD     blink(): String                 [PUBLIC]   stub_core_String.js
-METHOD     bold(): String                  [PUBLIC]   stub_core_String.js
-METHOD     charAt(index): String           [PUBLIC]   stub_core_String.js
-METHOD     charCodeAt(index): Number       [PUBLIC]   stub_core_String.js
-METHOD     concat(string2, string3, strin  [PUBLIC]   stub_core_String.js
-METHOD     eval(string): undefined         [PUBLIC]   stub_core_Object.js
-METHOD     fixed(): String                 [PUBLIC]   stub_core_String.js
-METHOD     fontcolor(color): String        [PUBLIC]   stub_core_String.js
-METHOD     fontsize(size): String          [PUBLIC]   stub_core_String.js
-METHOD     fromCharCode(num1, numN): Stri  [PUBLIC]   stub_core_String.js
-METHOD     hasOwnProperty(prop): Boolean   [PUBLIC]   stub_core_Object.js
-METHOD     indexOf(searchValue, fromIndex  [PUBLIC]   stub_core_String.js
-METHOD     isPrototypeOf(object): Boolean  [PUBLIC]   stub_core_Object.js
-METHOD     italics(): String               [PUBLIC]   stub_core_String.js
-METHOD     lastIndexOf(searchValue, fromI  [PUBLIC]   stub_core_String.js
-METHOD     link(hrefAttribute): String     [PUBLIC]   stub_core_String.js
-METHOD     match(regexp): String[]         [PUBLIC]   stub_core_String.js
-METHOD     propertyIsEnumerable(prop): Bo  [PUBLIC]   stub_core_Object.js
-METHOD     replace(regexp_or_substr, newS  [PUBLIC]   stub_core_String.js
-METHOD     search(regexp): Number          [PUBLIC]   stub_core_String.js
-METHOD     slice(beginslice, endSlice): S  [PUBLIC]   stub_core_String.js
-METHOD     small(): String                 [PUBLIC]   stub_core_String.js
-METHOD     split(separator, limit): Strin  [PUBLIC]   stub_core_String.js
-METHOD     strike(): String                [PUBLIC]   stub_core_String.js
-METHOD     sub(): String                   [PUBLIC]   stub_core_String.js
-METHOD     substr(start, length): String   [PUBLIC]   stub_core_String.js
-METHOD     substring(indexA, indexB): Str  [PUBLIC]   stub_core_String.js
-METHOD     sup(): String                   [PUBLIC]   stub_core_String.js
-METHOD     toLocaleString(): String        [PUBLIC]   stub_core_Object.js
-METHOD     toLowerCase(): String           [PUBLIC]   stub_core_String.js
-METHOD     toSource(): undefined           [PUBLIC]   stub_core_Object.js
-METHOD     toString(): String              [PUBLIC]   stub_core_Object.js
-METHOD     toUpperCase(): String           [PUBLIC]   stub_core_String.js
-METHOD     unwatch(prop): undefined        [PUBLIC]   stub_core_Object.js
-METHOD     valueOf(): undefined            [PUBLIC]   stub_core_Object.js
-METHOD     watch(prop, handler): undefine  [PUBLIC]   stub_core_Object.js
-FIELD      constructor                     [PUBLIC]   stub_core_Object.js
-FIELD      length                          [PUBLIC]   stub_core_String.js
-FIELD      prototype                       [PUBLIC]   stub_core_Object.js
+CLASS      prototype                       [PUBLIC]   stub_CORE_String.js
+METHOD     anchor(): String                [PUBLIC]   stub_CORE_String.js
+METHOD     big(): String                   [PUBLIC]   stub_CORE_String.js
+METHOD     blink(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     bold(): String                  [PUBLIC]   stub_CORE_String.js
+METHOD     charAt(): String                [PUBLIC]   stub_CORE_String.js
+METHOD     charCodeAt(): Number            [PUBLIC]   stub_CORE_String.js
+METHOD     concat(): String                [PUBLIC]   stub_CORE_String.js
+METHOD     create(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     eval(): Object                  [PUBLIC]   stub_CORE_Object.js
+METHOD     fixed(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     fontcolor(): String             [PUBLIC]   stub_CORE_String.js
+METHOD     fontsize(): Number              [PUBLIC]   stub_CORE_String.js
+METHOD     freeze(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     fromCharCode(): String          [PUBLIC,   stub_CORE_String.js
+METHOD     getOwnPropertyDescriptor(): Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(): Array    [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(): Boolean       [PUBLIC]   stub_CORE_Object.js
+METHOD     indexOf(): Number               [PUBLIC]   stub_CORE_String.js
+METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(): Boolean        [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     italics(): String               [PUBLIC]   stub_CORE_String.js
+METHOD     keys(): Array                   [PUBLIC,   stub_CORE_Object.js
+METHOD     lastIndexOf(): Number           [PUBLIC]   stub_CORE_String.js
+METHOD     link(): String                  [PUBLIC]   stub_CORE_String.js
+METHOD     localeCompare(): Number         [PUBLIC]   stub_CORE_String.js
+METHOD     match(): Array                  [PUBLIC]   stub_CORE_String.js
+METHOD     preventExtensions(): Object     [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(): Boolea  [PUBLIC]   stub_CORE_Object.js
+METHOD     quote(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     replace(): String               [PUBLIC]   stub_CORE_String.js
+METHOD     seal(): Object                  [PUBLIC,   stub_CORE_Object.js
+METHOD     search(): Number                [PUBLIC]   stub_CORE_String.js
+METHOD     slice(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     small(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     split(): Array                  [PUBLIC]   stub_CORE_String.js
+METHOD     strike(): String                [PUBLIC]   stub_CORE_String.js
+METHOD     sub(): String                   [PUBLIC]   stub_CORE_String.js
+METHOD     substr(): String                [PUBLIC]   stub_CORE_String.js
+METHOD     substring(): String             [PUBLIC]   stub_CORE_String.js
+METHOD     sup(): String                   [PUBLIC]   stub_CORE_String.js
+METHOD     toLocaleLowerCase(): String     [PUBLIC]   stub_CORE_String.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
+METHOD     toLocaleUpperCase(): String     [PUBLIC]   stub_CORE_String.js
+METHOD     toLowerCase(): String           [PUBLIC]   stub_CORE_String.js
+METHOD     toSource(): String              [PUBLIC]   stub_CORE_String.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_String.js
+METHOD     toUpperCase(): String           [PUBLIC]   stub_CORE_String.js
+METHOD     trim(): String                  [PUBLIC]   stub_CORE_String.js
+METHOD     trimLeft(): String              [PUBLIC]   stub_CORE_String.js
+METHOD     trimRight(): String             [PUBLIC]   stub_CORE_String.js
+METHOD     unwatch(): undefined            [PUBLIC]   stub_CORE_Object.js
+METHOD     valueOf(): String               [PUBLIC]   stub_CORE_String.js
+METHOD     watch(): undefined              [PUBLIC]   stub_CORE_Object.js
+FIELD      constructor                     [PUBLIC]   stub_CORE_String.js
+FIELD      length                          [PUBLIC]   stub_CORE_String.js
