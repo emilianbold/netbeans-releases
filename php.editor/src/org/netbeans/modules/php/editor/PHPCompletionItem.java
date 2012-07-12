@@ -1295,9 +1295,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getInsertPrefix() {
-            final String insertPrefix = super.getInsertPrefix();
-            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
-            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+            return getName();
         }
 
         @Override
@@ -1375,9 +1373,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getInsertPrefix() {
-            final String insertPrefix = super.getInsertPrefix();
-            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
-            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+            return getName();
         }
 
         @Override
