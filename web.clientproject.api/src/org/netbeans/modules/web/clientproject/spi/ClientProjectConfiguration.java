@@ -47,6 +47,7 @@ import java.io.OutputStream;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.Properties;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.filesystems.FileObject;
@@ -158,9 +159,9 @@ public final class ClientProjectConfiguration implements ProjectConfiguration {
     public static ClientProjectConfiguration create(WebBrowser browser) {
         if (browser.getId().endsWith("webviewBrowser")) {
             return new ClientProjectConfiguration(browser, 1);
-        } else if (browser.getId().endsWith("ChromeBrowser")) {
+        } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) {
             return new ClientProjectConfiguration(browser, 2);
-        } else if (browser.getId().endsWith("ChromiumBrowser")) {
+        } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) {
             return new ClientProjectConfiguration(browser, 3);
         } else {
             return null;
@@ -175,7 +176,13 @@ public final class ClientProjectConfiguration implements ProjectConfiguration {
                 return o1.importance - o2.importance;
             } else {
                 Collator c = Collator.getInstance();
-                return c.compare(o1.getDisplayName(), o2.getDisplayName());
+                if (o1.importance <= 3) {
+                    // TODO: do not sort browsers by their displayName otherwise you get
+                    //       "IllegalStateException: Should not acquire Children.MUTEX while holding ProjectManager.mutex()"
+                    return c.compare(o1.getName(), o2.getName());
+                } else {
+                    return c.compare(o1.getDisplayName(), o2.getDisplayName());
+                }
             }
         }
         
