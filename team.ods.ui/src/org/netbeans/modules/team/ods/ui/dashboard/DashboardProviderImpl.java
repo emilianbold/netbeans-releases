@@ -121,12 +121,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<CloudUiServer, Project> project) {
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<Project> project) {
         return new ProjectLinksNode(pn, project, this);
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle<CloudUiServer, Project> p) {
+    public TreeListNode createMyProjectNode(ProjectHandle<Project> p) {
         return new MyProjectNode(p, server.getDashboard(), this);
     }
 
@@ -144,12 +144,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public MessagingAccessor<CloudUiServer, Project> getMessagingAccessor() {
+    public MessagingAccessor<Project> getMessagingAccessor() {
         return null;
     }
 
     @Override
-    public MemberAccessor<CloudUiServer, Project> getMemberAccessor() {
+    public MemberAccessor<Project> getMemberAccessor() {
         return null;
     }
 
@@ -162,27 +162,33 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public QueryAccessor<CloudUiServer, Project> getQueryAccessor() {
+    public QueryAccessor<Project> getQueryAccessor() {
         return server.getDashboard().getQueryAccessor(Project.class);
     }
     
     @Override
-    public BuildAccessor<CloudUiServer, Project> getBuildAccessor() {
+    public BuildAccessor<Project> getBuildAccessor() {
         return server.getDashboard().getBuildAccessor(Project.class);
     }
 
     @Override
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<CloudUiServer, Project> project) {
+    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<Project> project) {
         return new SourceListNode(pn, this, (LeafNode[]) null);
     }
 
     @Override
-    public Collection<ProjectHandle<CloudUiServer, Project>> getMyProjects() {
+    public Collection<ProjectHandle<Project>> getMyProjects() {
         return server.getMyProjects();
+    }
+
+    @Override
+    public CloudUiServer forProject(ProjectHandle<Project> project) {
+//        return server; // should be save as long as there is one dashboardprovider for each dashboard
+        return ((ProjectHandleImpl) project).getTeamServer();
     }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
-    public static class ODSQueryAccessor extends QueryAccessor<CloudUiServer, Project> {
+    public static class ODSQueryAccessor extends QueryAccessor<Project> {
         private static class ODSQueryHandle extends QueryHandle {
             private final String display;
             private final int t;
@@ -219,12 +225,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
         }
             
         @Override
-        public QueryHandle getAllIssuesQuery(ProjectHandle<CloudUiServer, Project> project) {
+        public QueryHandle getAllIssuesQuery(ProjectHandle<Project> project) {
             return allIssues;
         }
 
         @Override
-        public List<QueryHandle> getQueries(ProjectHandle<CloudUiServer, Project> project) {
+        public List<QueryHandle> getQueries(ProjectHandle<Project> project) {
             try {
                 // XXX emulate network latency
                 Thread.currentThread().sleep(3000);
@@ -258,12 +264,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
         }
         
         @Override
-        public Action getFindIssueAction(ProjectHandle<CloudUiServer, Project> project) {
+        public Action getFindIssueAction(ProjectHandle<Project> project) {
             return NotYetAction.instance;
         }
 
         @Override
-        public Action getCreateIssueAction(ProjectHandle<CloudUiServer, Project> project) {
+        public Action getCreateIssueAction(ProjectHandle<Project> project) {
             return NotYetAction.instance;
         }
 

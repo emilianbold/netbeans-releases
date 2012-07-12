@@ -331,8 +331,8 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    ProjectHandle[] openedProjects = getOpenProjects();
-                        for (final ProjectHandle<CloudUiServer, Project> prjHandle : openedProjects) {
+                    ProjectHandleImpl[] openedProjects = getOpenProjects();
+                        for (final ProjectHandleImpl prjHandle : openedProjects) {
                             if(prjHandle == null) {
                                 continue;
                             }
@@ -363,15 +363,15 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     }
                 }
 
-                private ProjectHandle<CloudUiServer, Project>[] getOpenProjects() {
+                private ProjectHandleImpl[] getOpenProjects() {
                     if (server==null) {
-                        return new ProjectHandle[0];
+                        return new ProjectHandleImpl[0];
                     }
                     String cloudName = server.getUrl().getHost();
                     // XXX define a different place for preferences. here as well as at all other places.
                     Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DefaultDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(cloudName) ? "" : "-" + cloudName)); //NOI18N
                     int count = prefs.getInt(DefaultDashboard.PREF_COUNT, 0); //NOI18N
-                    ProjectHandle[] handles = new ProjectHandle[count];
+                    ProjectHandleImpl[] handles = new ProjectHandleImpl[count];
                     ArrayList<String> ids = new ArrayList<String>(count);
                     for (int i = 0; i < count; i++) {
                         String id = prefs.get(DefaultDashboard.PREF_ID + i, null); //NOI18N
@@ -380,10 +380,10 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                         }
                     }
 
-                    HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
+                    HashSet<ProjectHandleImpl> projects = new HashSet<ProjectHandleImpl>(ids.size());
                     ProjectAccessorImpl accessor = dashboardProvider.getProjectAccessor();
                     for (String id : ids) {
-                        ProjectHandle handle = accessor.getNonMemberProject(server, id, false);
+                        ProjectHandleImpl handle = accessor.getNonMemberProject(server, id, false);
                         if (handle != null) {
                             projects.add(handle);
                         } else {
@@ -392,7 +392,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     }
                     PasswordAuthentication pa = server.getPasswordAuthentication();
                     if (pa!=null) {
-                        projects.addAll(accessor.getMemberProjects(server, new LoginHandleImpl(pa.getUserName()), false));
+                        projects.addAll(accessor.getMemberProjectsImpls(server, new LoginHandleImpl(pa.getUserName()), false));
                     }
                     return projects.toArray(handles);
                 }
@@ -402,10 +402,10 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
 
     public static class ScmRepositoryListItem {
 
-        ProjectHandle<CloudUiServer, Project> projectHandle;
+        ProjectHandleImpl projectHandle;
         ScmRepository repository;
 
-        public ScmRepositoryListItem(ProjectHandle<CloudUiServer, Project> prj, ScmRepository repo) {
+        public ScmRepositoryListItem(ProjectHandleImpl prj, ScmRepository repo) {
             projectHandle = prj;
             repository = repo;
         }
@@ -419,10 +419,10 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
 
     public static class GetSourcesInfo {
 
-        public ProjectHandle<CloudUiServer, Project> projectHandle;
+        public ProjectHandleImpl projectHandle;
         public ScmRepository repository;
 
-        public GetSourcesInfo(ProjectHandle<CloudUiServer, Project> projectHandle, ScmRepository repo) {
+        public GetSourcesInfo(ProjectHandleImpl projectHandle, ScmRepository repo) {
             this.projectHandle = projectHandle;
             repository = repo;
         }

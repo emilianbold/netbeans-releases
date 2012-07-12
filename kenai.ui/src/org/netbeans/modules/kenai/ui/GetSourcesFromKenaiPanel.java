@@ -534,7 +534,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ProjectHandle[] openedProjects = getOpenProjects();
-                        for (ProjectHandle<KenaiServer, KenaiProject> prjHandle : openedProjects) {
+                        for (ProjectHandle<KenaiProject> prjHandle : openedProjects) {
                             KenaiProject kProject = null;
                             if (prjHandle != null) {
                                 kProject = prjHandle.getTeamProject();
@@ -566,7 +566,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                     }
                 }
 
-                private ProjectHandle<KenaiServer, KenaiProject>[] getOpenProjects() {
+                private ProjectHandle<KenaiProject>[] getOpenProjects() {
                     if (kenai==null) {
                         return new ProjectHandle[0];
                     }

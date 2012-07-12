@@ -87,7 +87,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Milan Kubec, Jan Becicka, Tomas Stupka
  */
-public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> {
+public class SourceAccessorImpl extends SourceAccessor<com.tasktop.c2c.server.profile.domain.project.Project> {
     private final CloudUiServer server;
     private final DashboardProviderImpl provider;
 
@@ -100,7 +100,7 @@ public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.taskto
     }
 
     @Override
-    public List<SourceHandle> getSources(ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
+    public List<SourceHandle> getSources(ProjectHandle<com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
         
         com.tasktop.c2c.server.profile.domain.project.Project project = prjHandle.getTeamProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();
@@ -126,7 +126,7 @@ public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.taskto
                     for (ScmRepository repository : repositories) {
                         SourceHandleImpl srcHandle = new SourceHandleImpl(prjHandle, repository);
                         handlesList.add(srcHandle);
-                        handlesMap.put(srcHandle, new ProjectAndRepository(prjHandle, repository));
+                        handlesMap.put(srcHandle, new ProjectAndRepository((ProjectHandleImpl)prjHandle, repository));
                     }
                 }
             }
@@ -266,7 +266,7 @@ public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.taskto
         Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.FINE, t.getMessage(), t);
     }
 
-    public List<SourceHandle> getHandlesFor(ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
+    public List<SourceHandle> getHandlesFor(ProjectHandle<com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
         List<SourceHandle> ret = new LinkedList<SourceHandle>();
         synchronized(loadedProjects) {
             for (Entry<SourceHandleImpl, ProjectAndRepository> e : handlesMap.entrySet()) {
@@ -278,7 +278,7 @@ public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.taskto
         }
     }
     
-    public List<ScmRepository> getRepositoriesFor(ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
+    public List<ScmRepository> getRepositoriesFor(ProjectHandle<com.tasktop.c2c.server.profile.domain.project.Project> prjHandle) {
         List<ScmRepository> ret = new LinkedList<ScmRepository>();
         boolean loaded;
         synchronized(loadedProjects) {
@@ -300,10 +300,10 @@ public class SourceAccessorImpl extends SourceAccessor<CloudUiServer, com.taskto
     }
 
     public static class ProjectAndRepository {
-        public ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> project;
+        public ProjectHandleImpl project;
         public ScmRepository repository;
         public String externalScmType;
-        public ProjectAndRepository(ProjectHandle<CloudUiServer, com.tasktop.c2c.server.profile.domain.project.Project> project, ScmRepository repository) {
+        public ProjectAndRepository(ProjectHandleImpl project, ScmRepository repository) {
             this.project = project;
             this.repository = repository;
         }

@@ -64,18 +64,28 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     
     private final CloudUiServer server;
     private final Object PROJECT_LOCK = new Object();
-    private ArrayList<ProjectHandle<CloudUiServer, Project>> projects;
+    private ArrayList<ProjectHandle<Project>> projects;
 
     ProjectAccessorImpl(CloudUiServer server) {
         this.server = server;
     }
 
+    
+    public List<ProjectHandleImpl> getMemberProjectsImpls(CloudUiServer server, LoginHandle login, boolean force) {
+        List<ProjectHandle<Project>> prjs = getMemberProjects(server, login, force);
+        ArrayList<ProjectHandleImpl> ret = new ArrayList<ProjectHandleImpl>(prjs.size());
+        for (ProjectHandle<Project> ph : prjs) {
+            ret.add((ProjectHandleImpl)ph);
+        }
+        return ret;
+    }
+    
     @Override
-    public List<ProjectHandle<CloudUiServer, Project>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
+    public List<ProjectHandle<Project>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
         synchronized(PROJECT_LOCK) {
             if(projects == null) {
                 // XXX maybe the whole cahching should be done at one place
-                projects = new ArrayList<ProjectHandle<CloudUiServer, Project>>(server.getMyProjects());
+                projects = new ArrayList<ProjectHandle<Project>>(server.getMyProjects());
             }
         }
         return projects;
@@ -108,7 +118,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public ProjectHandle<CloudUiServer, Project> getNonMemberProject(CloudUiServer server, String projectId, boolean force) {
+    public ProjectHandleImpl getNonMemberProject(CloudUiServer server, String projectId, boolean force) {
 //        try {
 //            return new ProjectHandleImpl(server.getKenai().getProject(projectId,force));
 //        } catch (KenaiException ex) {
@@ -131,12 +141,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getDetailsAction(final ProjectHandle<CloudUiServer, Project> project) {
+    public Action getDetailsAction(final ProjectHandle<Project> project) {
         return DetailsAction.forProject(project);    
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
     }
 
-    private Action getOpenAction(final ProjectHandle<CloudUiServer, Project> project) {
+    private Action getOpenAction(final ProjectHandle<Project> project) {
         // this action is supposed to be used for openenig a project from My Projects
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
@@ -147,12 +157,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getDefaultAction(ProjectHandle<CloudUiServer, Project> project, boolean opened) {
+    public Action getDefaultAction(ProjectHandle<Project> project, boolean opened) {
         return opened ? getDetailsAction(project) : getOpenAction(project);
     }
 
     @Override
-    public Action[] getPopupActions(final ProjectHandle<CloudUiServer, Project> project, boolean opened) {
+    public Action[] getPopupActions(final ProjectHandle<Project> project, boolean opened) {
         return new Action[0];
 //        PasswordAuthentication pa = project.getProject().getKenai().getPasswordAuthentication();
 //        if (!opened) {
@@ -181,7 +191,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getOpenWikiAction(ProjectHandle<CloudUiServer, Project> project) {
+    public Action getOpenWikiAction(ProjectHandle<Project> project) {
         // XXX where is this called from? 
         
 //        try {
@@ -196,7 +206,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getOpenDownloadsAction(ProjectHandle<CloudUiServer, Project> project) {
+    public Action getOpenDownloadsAction(ProjectHandle<Project> project) {
 //        try {
 //            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.DOWNLOADS);
 //            if (wiki.length == 1) {
@@ -209,7 +219,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getBookmarkAction(final ProjectHandle<CloudUiServer, Project> project) {
+    public Action getBookmarkAction(final ProjectHandle<Project> project) {
 //        return new AbstractAction() {
 //            public void actionPerformed(ActionEvent e) {
 //                Kenai kenai = project.getProject().getKenai();

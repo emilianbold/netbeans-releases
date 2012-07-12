@@ -137,7 +137,7 @@ public class CloudServiceCellRenderer extends JPanel implements ListCellRenderer
         if (value == null) {
             return new JLabel();
         }
-        ProjectHandle<CloudUiServer, Project> projectHandle = ((ScmRepositoryListItem) value).projectHandle;
+        ProjectHandle<Project> projectHandle = ((ScmRepositoryListItem) value).projectHandle;
         ScmRepository repository = ((ScmRepositoryListItem) value).repository;
 
         if (repository != null) {

@@ -66,7 +66,7 @@ public class WikiAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<CloudUiServer, Project> project) {
+    public static synchronized AbstractAction forProject(final ProjectHandle<Project> project) {
         List<ProjectService> services = project.getTeamProject().getProjectServicesOfType(ServiceType.WIKI);
         if(services == null) {
             return null;

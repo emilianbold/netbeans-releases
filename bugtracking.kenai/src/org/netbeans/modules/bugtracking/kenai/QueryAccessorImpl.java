@@ -65,7 +65,7 @@ import org.netbeans.modules.team.ui.spi.QueryResultHandle;
  * @author Tomas Stupka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
-public class QueryAccessorImpl extends QueryAccessor<KenaiServer, KenaiProject> {
+public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
 
     public QueryAccessorImpl() {
     }
@@ -76,7 +76,7 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiServer, KenaiProject> 
     }
     
     @Override
-    public QueryHandle getAllIssuesQuery(ProjectHandle<KenaiServer, KenaiProject> projectHandle) {
+    public QueryHandle getAllIssuesQuery(ProjectHandle<KenaiProject> projectHandle) {
         Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
         if(repo == null) {
             FakeJiraSupport jira = FakeJiraSupport.get(projectHandle);
@@ -105,7 +105,7 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiServer, KenaiProject> 
     }
 
     @Override
-    public List<QueryHandle> getQueries(ProjectHandle<KenaiServer, KenaiProject> projectHandle) {
+    public List<QueryHandle> getQueries(ProjectHandle<KenaiProject> projectHandle) {
         Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
         if(repo == null) {
             return getQueriesForNoRepo(projectHandle);
@@ -136,7 +136,7 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiServer, KenaiProject> 
     }
 
     @Override
-    public Action getFindIssueAction(ProjectHandle<KenaiServer, KenaiProject> projectHandle) {
+    public Action getFindIssueAction(ProjectHandle<KenaiProject> projectHandle) {
         final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
@@ -150,7 +150,7 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiServer, KenaiProject> 
     }
 
     @Override
-    public Action getCreateIssueAction(ProjectHandle<KenaiServer, KenaiProject> projectHandle) {
+    public Action getCreateIssueAction(ProjectHandle<KenaiProject> projectHandle) {
         final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser

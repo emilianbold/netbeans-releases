@@ -49,7 +49,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
  *
  * @author Tomas Stupka
  */
-public class ProjectHandleImpl extends ProjectHandle<CloudUiServer, Project> {
+public class ProjectHandleImpl extends ProjectHandle<Project> {
     private final Project project;
     private final CloudUiServer server;
 
@@ -74,7 +74,6 @@ public class ProjectHandleImpl extends ProjectHandle<CloudUiServer, Project> {
         return false;
     }
 
-    @Override
     public CloudUiServer getTeamServer() {
         return server;
     }

@@ -64,7 +64,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Becicka
  */
 @ServiceProvider(service=MessagingAccessor.class)
-public class MessagingAccessorImpl extends MessagingAccessor<KenaiServer, KenaiProject> {
+public class MessagingAccessorImpl extends MessagingAccessor<KenaiProject> {
 
     private static MessagingAccessor instance;
     
@@ -76,7 +76,7 @@ public class MessagingAccessorImpl extends MessagingAccessor<KenaiServer, KenaiP
     }
 
     @Override
-    public MessagingHandle getMessaging(ProjectHandle<KenaiServer, KenaiProject> project) {
+    public MessagingHandle getMessaging(ProjectHandle<KenaiProject> project) {
         Kenai k = project.getTeamProject().getKenai();
         KenaiConnection kc = KenaiConnection.getDefault(k);
         //synchronized (kc) {
@@ -114,7 +114,7 @@ public class MessagingAccessorImpl extends MessagingAccessor<KenaiServer, KenaiP
 
 
     @Override
-    public Action getOpenMessagesAction(final ProjectHandle<KenaiServer, KenaiProject> project) {
+    public Action getOpenMessagesAction(final ProjectHandle<KenaiProject> project) {
         return new AbstractAction() {
             public void actionPerformed(ActionEvent arg0) {
                 final ChatTopComponent chatTC = ChatTopComponent.findInstance();
@@ -126,12 +126,12 @@ public class MessagingAccessorImpl extends MessagingAccessor<KenaiServer, KenaiP
     }
 
     @Override
-    public Action getCreateChatAction(final ProjectHandle<KenaiServer, KenaiProject> project) {
+    public Action getCreateChatAction(final ProjectHandle<KenaiProject> project) {
         return new CreateChatAction(project.getTeamProject());
     }
 
     @Override
-    public Action getReconnectAction(final ProjectHandle<KenaiServer, KenaiProject> project) {
+    public Action getReconnectAction(final ProjectHandle<KenaiProject> project) {
         return new AbstractAction() {
 
             public void actionPerformed(ActionEvent e) {

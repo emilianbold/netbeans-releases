@@ -62,7 +62,7 @@ public class DetailsAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<CloudUiServer, Project> proj) {
+    public static synchronized AbstractAction forProject(final ProjectHandle<Project> proj) {
 
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Details")) { //NOI18N
             @Override

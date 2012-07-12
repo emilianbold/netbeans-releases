@@ -78,10 +78,10 @@ import org.openide.util.lookup.ServiceProvider;
  * @author jhavlin
  */
 @ServiceProvider(service = BuildAccessor.class)
-public class HudsonBuildAccessor extends BuildAccessor<CloudUiServer, Project> {
+public class HudsonBuildAccessor extends BuildAccessor<Project> {
 
     @Override
-    public boolean isEnabled(ProjectHandle<CloudUiServer, Project> projectHandle) {
+    public boolean isEnabled(ProjectHandle<Project> projectHandle) {
         Project project = projectHandle.getTeamProject();
         List<ProjectService> services = project.getProjectServicesOfType(
                 ServiceType.BUILD); // XXX BUILD_SLAVE
@@ -92,8 +92,8 @@ public class HudsonBuildAccessor extends BuildAccessor<CloudUiServer, Project> {
     }
 
     @Override
-    public List<BuildHandle> getBuilds(ProjectHandle<CloudUiServer, Project> projectHandle) {
-        CloudClient client = projectHandle.getTeamServer().getClient();
+    public List<BuildHandle> getBuilds(ProjectHandle<Project> projectHandle) {
+//        CloudClient client = projectHandle.getTeamServer().getClient();
 
         HudsonInstance hudsonServer = HudsonManager.addInstance(
                 "Kenai", "http://bugtracking-test.cz.oracle.com:8180/", 1, false); //TODO
@@ -112,7 +112,7 @@ public class HudsonBuildAccessor extends BuildAccessor<CloudUiServer, Project> {
     }
 
     @Override
-    public Action getNewBuildAction(ProjectHandle<CloudUiServer, Project> projectHandle) {
+    public Action getNewBuildAction(ProjectHandle<Project> projectHandle) {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {

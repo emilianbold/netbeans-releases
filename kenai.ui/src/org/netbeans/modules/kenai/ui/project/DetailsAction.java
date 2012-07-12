@@ -62,7 +62,7 @@ public class DetailsAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<KenaiServer, KenaiProject> proj) {
+    public static synchronized AbstractAction forProject(final ProjectHandle<KenaiProject> proj) {
 
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject")) { //NOI18N
 

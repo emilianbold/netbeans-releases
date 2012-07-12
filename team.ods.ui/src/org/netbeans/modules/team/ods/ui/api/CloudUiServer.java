@@ -187,7 +187,7 @@ public class CloudUiServer implements TeamServer {
     }
 
     // XXX no need to have this implemented in the TeamServer
-    public Collection<ProjectHandle<CloudUiServer, Project>> getMyProjects() {
+    public Collection<ProjectHandle<Project>> getMyProjects() {
         CloudClient client = getClient();
         List<Project> projects;
         try {
@@ -199,7 +199,7 @@ public class CloudUiServer implements TeamServer {
         if(projects == null) {
             return Collections.emptyList();
         }
-        Collection<ProjectHandle<CloudUiServer, Project>> ret = new ArrayList<ProjectHandle<CloudUiServer, Project>>(projects.size());
+        Collection<ProjectHandle<Project>> ret = new ArrayList<ProjectHandle<Project>>(projects.size());
         for (Project project : projects) {
             ret.add(new ProjectHandleImpl(this, project));
         }

@@ -224,7 +224,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         setServer(server);
     }
 
-    public QueryAccessor<S, P> getQueryAccessor(Class<P> p) {
+    public QueryAccessor<P> getQueryAccessor(Class<P> p) {
         Collection<? extends QueryAccessor> c = Lookup.getDefault().lookupAll(QueryAccessor.class);
         for (QueryAccessor a : c) {
             if(a.type().equals(p)) {
@@ -234,7 +234,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return null;
     }
     
-    public BuildAccessor<S, P> getBuildAccessor(Class<P> p) {
+    public BuildAccessor<P> getBuildAccessor(Class<P> p) {
         Collection<? extends BuildAccessor> c = Lookup.getDefault().lookupAll(BuildAccessor.class);
         for (BuildAccessor a : c) {
             if(a.type().equals(p)) {
@@ -252,7 +252,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return server;
     }
 
-    public ProjectHandle<S, P>[] getOpenProjects() {
+    public ProjectHandle<P>[] getOpenProjects() {
         TreeSet<ProjectHandle> s = new TreeSet();
         s.addAll(openProjects);
         s.addAll(memberProjects);
@@ -387,7 +387,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         
         // XXX this is the only usecase of .getTeamServer!
         // maybe if we could get rid of it the whole spi would get significantly simplier to deal with!
-        UIUtils.setSelectedServer(project.getTeamServer());
+        UIUtils.setSelectedServer(dashboardProvider.forProject(project));
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -882,7 +882,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return dashboardProvider;
     }
 
-    Collection<ProjectHandle<S, P>> getMyProjects() {
+    Collection<ProjectHandle<P>> getMyProjects() {
         return dashboardProvider.getMyProjects();
     }
 

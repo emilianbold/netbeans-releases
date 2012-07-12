@@ -182,13 +182,13 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject[] getDashboardProjects() {
-        ProjectHandle<KenaiServer, KenaiProject>[] handles = UIUtils.getDashboardProjects();
+        ProjectHandle<KenaiProject>[] handles = UIUtils.getDashboardProjects();
         if ((handles == null) || (handles.length == 0)) {
             return new KenaiProjectImpl[0];
         }
 
         List<KenaiProjectImpl> kenaiProjects = new LinkedList<KenaiProjectImpl>();
-        for (ProjectHandle<KenaiServer, KenaiProject> handle : handles) {
+        for (ProjectHandle<KenaiProject> handle : handles) {
             KenaiProject project = handle.getTeamProject();
             if (project != null) {
                 kenaiProjects.add(KenaiProjectImpl.getInstance(project));

@@ -197,10 +197,5 @@ public class QueryAccessorTest extends NbTestCase {
             return kp;
         }
 
-        @Override
-        public TeamServer getTeamServer() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
     }
 }

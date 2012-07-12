@@ -136,7 +136,7 @@ class KenaiHandler {
         lastLoggedUser = getKenaiUser();
     }
 
-    List<QueryHandle> getQueryHandles(ProjectHandle<KenaiServer, KenaiProject> project, Query... queries) {
+    List<QueryHandle> getQueryHandles(ProjectHandle<KenaiProject> project, Query... queries) {
         return getQueryHandles(project.getTeamProject().getName(), queries);
     }
 
@@ -229,7 +229,7 @@ class KenaiHandler {
         });
     }
 
-    void registerProject(ProjectHandle<KenaiServer, KenaiProject> project, List<QueryHandle> queries) {
+    void registerProject(ProjectHandle<KenaiProject> project, List<QueryHandle> queries) {
         ProjectListener pl;
         synchronized (projectListeners) {
             pl = projectListeners.get(project.getId());
@@ -246,7 +246,7 @@ class KenaiHandler {
         }
     }
 
-    void registerRepository(Repository repo, ProjectHandle<KenaiServer, KenaiProject> project) {
+    void registerRepository(Repository repo, ProjectHandle<KenaiProject> project) {
         KenaiRepositoryListener krl = null;
         synchronized (kenaiRepoListeners) {
             String url = project.getTeamProject().getKenai().getUrl().toString();
@@ -326,7 +326,7 @@ class KenaiHandler {
 
     private class ProjectListener implements PropertyChangeListener {
         private List<QueryHandle> queries;
-        private ProjectHandle<KenaiServer, KenaiProject> ph;
+        private ProjectHandle<KenaiProject> ph;
         public ProjectListener(ProjectHandle ph, List<QueryHandle> queries) {
             this.queries = queries;
             this.ph = ph;

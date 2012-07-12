@@ -145,7 +145,7 @@ public final class KenaiServer implements TeamServer {
         return serverUi;
     }
     
-    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(ProjectHandle<KenaiServer, KenaiProject> pHandle) {
+    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
         return getDashboard(pHandle.getTeamProject().getKenai());
     }
     
@@ -154,14 +154,14 @@ public final class KenaiServer implements TeamServer {
         return server.getDashboard();
     }
     
-    public static ProjectHandle<KenaiServer, KenaiProject>[] getOpenProjects() {
+    public static ProjectHandle<KenaiProject>[] getOpenProjects() {
         ArrayList<KenaiServer> servers;
         synchronized (serverMap) {
             servers = new ArrayList<KenaiServer>(serverMap.values());
         }
-        LinkedList<ProjectHandle<KenaiServer, KenaiProject>> ret = new LinkedList<ProjectHandle<KenaiServer, KenaiProject>>();
+        LinkedList<ProjectHandle<KenaiProject>> ret = new LinkedList<ProjectHandle<KenaiProject>>();
         for (KenaiServer s : servers) {
-            ProjectHandle<KenaiServer, KenaiProject>[] projects = s.getDashboard().getOpenProjects();
+            ProjectHandle<KenaiProject>[] projects = s.getDashboard().getOpenProjects();
             if(projects != null) {
                 ret.addAll(Arrays.asList(projects));
             }
@@ -228,10 +228,10 @@ public final class KenaiServer implements TeamServer {
         return kenai.getPasswordAuthentication();
     }
 
-    public Collection<ProjectHandle<KenaiServer, KenaiProject>> getMyProjects() {
+    public Collection<ProjectHandle<KenaiProject>> getMyProjects() {
         try {
             Collection<KenaiProject> projects = kenai.getMyProjects();
-            List<ProjectHandle<KenaiServer, KenaiProject>> ret = new ArrayList<ProjectHandle<KenaiServer, KenaiProject>>(projects.size());
+            List<ProjectHandle<KenaiProject>> ret = new ArrayList<ProjectHandle<KenaiProject>>(projects.size());
             for (KenaiProject p : projects) {
                 ret.add(new ProjectHandleImpl(p));
             }
