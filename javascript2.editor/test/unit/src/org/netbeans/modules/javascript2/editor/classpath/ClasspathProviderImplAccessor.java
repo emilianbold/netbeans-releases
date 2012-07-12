@@ -39,49 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.editor.classpath;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Pisl
+ * @author Peter Pisl
  */
-public class JsCodeCompletionArgumentsTest extends JsTestBase {
+public class ClasspathProviderImplAccessor {
     
-    public JsCodeCompletionArgumentsTest(String testName) {
-        super(testName);
+    public static FileObject getJsStubs() {
+        return ClassPathProviderImpl.getJsStubs();
     }
-    
-    public void testFunctionObjectProperties01() throws Exception {
-        checkCompletion("testfiles/completion/arguments/argumentsTestFile.js", "formatter.print(ArgumentsContext.testFunction.^name);", false);
-    }
-    
-    public void testFunctionObjectProperties02() throws Exception {
-        checkCompletion("testfiles/completion/arguments/arguments.js", "+ ArgumentsContext.testFunction.^length + \" arguments.\");", false);
-    }
-
-    public void testFunctionObjectProperties03() throws Exception {
-        checkCompletion("testfiles/completion/arguments/arguments.js", "+ ArgumentsContext.testFunction(1, 2).^toString());", false);
-    }
-    
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                ClasspathProviderImplAccessor.getJsStubs(),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/arguments")),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib"))
-            })
-        );
-    }
-    
 }
