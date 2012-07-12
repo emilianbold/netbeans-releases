@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.css.visual/3
+OpenIDE-Module-Layer: org/netbeans/modules/css/visual/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/css/visual/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
 AutoUpdate-Show-In-Client: true
