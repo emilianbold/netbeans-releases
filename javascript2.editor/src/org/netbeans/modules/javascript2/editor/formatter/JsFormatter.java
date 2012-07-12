@@ -133,12 +133,8 @@ public class JsFormatter implements Formatter {
                     }
                 }
 
-                // stores whether the last operation was indentation of the line
-                boolean indented = false;
-
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
-                    indented = false;
 
                     // FIXME optimize performance
                     if (token.getOffset() >= 0) {
@@ -366,27 +362,9 @@ public class JsFormatter implements Formatter {
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces
-                            FormatToken start = null;
-                            for (int j = i - 1; j >= 0; j--) {
-                                FormatToken nextToken = tokens.get(j);
-                                if (!nextToken.isVirtual()
-                                        && nextToken.getKind() != FormatToken.Kind.WHITESPACE) {
-                                    break;
-                                } else {
-                                    start = tokens.get(j);
-                                }
-                            }
-                            while (start != null
-                                    && start.getKind() != FormatToken.Kind.EOL) {
-                                if (!start.isVirtual()) {
-                                    offsetDiff = formatContext.remove(start.getOffset(),
-                                            start.getText().length(), offsetDiff);
-                                }
-                                start = start.next();
-                            }
-                            // following code handles the indentation
-                            indented = true;
+                            offsetDiff = removeTrailingSpaces(tokens, i, formatContext, token, offsetDiff);
 
+                            // following code handles the indentation
                             // do not do indentation for line comments starting
                             // at the beginning of the line to support comment/uncomment
                             FormatToken next = getNextNonVirtual(token);
@@ -440,6 +418,29 @@ public class JsFormatter implements Formatter {
         });
     }
 
+    private int removeTrailingSpaces(List<FormatToken> tokens, int index,
+            FormatContext formatContext, FormatToken limit, int offsetDiff) {
+
+        int value = offsetDiff;
+        FormatToken start = null;
+        for (int j = index - 1; j >= 0; j--) {
+            FormatToken nextToken = tokens.get(j);
+            if (!nextToken.isVirtual()
+                    && nextToken.getKind() != FormatToken.Kind.WHITESPACE) {
+                break;
+            } else {
+                start = tokens.get(j);
+            }
+        }
+        while (start != null && start != limit) {
+            if (!start.isVirtual()) {
+                value = formatContext.remove(start.getOffset(),
+                        start.getText().length(), value);
+            }
+            start = start.next();
+        }
+        return value;
+    }
     private int handleSpaceAfter(List<FormatToken> tokens, int index,
             FormatContext formatContext, int offsetDiff, boolean remove) {
 
