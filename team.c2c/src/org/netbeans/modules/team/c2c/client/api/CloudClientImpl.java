@@ -72,7 +72,7 @@ import org.springframework.security.core.userdetails.User;
  *
  * @author ondra
  */
-public final class CloudClient {
+public final class CloudClientImpl implements CloudClient {
     private final ProfileWebServiceClient profileClient;
     private static final String PROFILE_SERVICE = "/alm/api"; //NOI18N
     private static final String HUDSON_SERVICE = "/alm/s/%s/hudson"; //NOI18N
@@ -82,7 +82,7 @@ public final class CloudClient {
     private final HudsonServiceClient hudsonClient;
     private final ScmServiceClient scmClient;
 
-    CloudClient (ProfileWebServiceClient profileClient,
+    CloudClientImpl (ProfileWebServiceClient profileClient,
             ActivityServiceClient activityClient,
             HudsonServiceClient hudsonClient,
             ScmServiceClient scmClient,
@@ -94,6 +94,7 @@ public final class CloudClient {
         this.scmClient = scmClient;
     }
 
+    @Override
     public Profile getCurrentProfile () throws CloudException {
         return run(new Callable<Profile> () {
             @Override
@@ -103,6 +104,7 @@ public final class CloudClient {
         }, profileClient, PROFILE_SERVICE);
     }
 
+    @Override
     public Project getProjectById (final String projectId) throws CloudException {
         return run(new Callable<Project> () {
             @Override
@@ -112,6 +114,7 @@ public final class CloudClient {
         }, profileClient, PROFILE_SERVICE);
     }
 
+    @Override
     public List<Project> getMyProjects () throws CloudException {
         return run(new Callable<List<Project>> () {
             @Override
@@ -123,6 +126,7 @@ public final class CloudClient {
         }, profileClient, PROFILE_SERVICE);
     }
 
+    @Override
     public boolean isWatchingProject (final String projectId) throws CloudException {
         return Boolean.TRUE.equals(run(new Callable<Boolean> () {
             @Override
@@ -132,6 +136,7 @@ public final class CloudClient {
         }, profileClient, PROFILE_SERVICE));
     }
 
+    @Override
     public List<Project> searchProjects (final String pattern) throws CloudException {
         return run(new Callable<List<Project>> () {
             @Override
@@ -143,6 +148,7 @@ public final class CloudClient {
         }, profileClient, PROFILE_SERVICE);
     }
 
+    @Override
     public void unwatchProject (final String projectId) throws CloudException {
         run(new Callable<Void> () {
             @Override
@@ -153,6 +159,7 @@ public final class CloudClient {
         }, profileClient, PROFILE_SERVICE);
     }
 
+    @Override
     public void watchProject (final String projectId) throws CloudException {
         run(new Callable<Void> () {
             @Override
@@ -163,6 +170,7 @@ public final class CloudClient {
         }, profileClient, PROFILE_SERVICE);
     }
 
+    @Override
     public List<ProjectActivity> getRecentActivities (final String projectId) throws CloudException {
         return run(new Callable<List<ProjectActivity>> () {
             @Override
@@ -172,6 +180,7 @@ public final class CloudClient {
         }, activityClient, PROFILE_SERVICE);
     }
 
+    @Override
     public List<ProjectActivity> getRecentShortActivities (final String projectId) throws CloudException {
         return run(new Callable<List<ProjectActivity>> () {
             @Override
@@ -181,6 +190,7 @@ public final class CloudClient {
         }, activityClient, PROFILE_SERVICE);
     }
 
+    @Override
     public HudsonStatus getHudsonStatus (String projectId) throws CloudException {
         return run(new Callable<HudsonStatus> () {
             @Override
@@ -190,6 +200,7 @@ public final class CloudClient {
         }, hudsonClient, buildUrl(HUDSON_SERVICE, projectId));
     }
 
+    @Override
     public JobDetails getJobDetails (String projectId, final String jobName) throws CloudException {
         return run(new Callable<JobDetails> () {
             @Override
@@ -199,6 +210,7 @@ public final class CloudClient {
         }, hudsonClient, buildUrl(HUDSON_SERVICE, projectId));
     }
 
+    @Override
     public BuildDetails getBuildDetails (String projectId, final String jobName, final int buildNumber) throws CloudException {
         return run(new Callable<BuildDetails> () {
             @Override
@@ -208,6 +220,7 @@ public final class CloudClient {
         }, hudsonClient, buildUrl(HUDSON_SERVICE, projectId));
     }
     
+    @Override
     public List<ScmRepository> getScmRepositories (String projectId) throws CloudException {
         return run(new Callable<List<ScmRepository>> () {
             @Override

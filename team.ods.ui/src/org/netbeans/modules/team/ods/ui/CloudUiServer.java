@@ -54,7 +54,6 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.c2c.api.CloudServer;
 import org.netbeans.modules.team.c2c.client.api.ClientFactory;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ods.ui.dashboard.DashboardProviderImpl;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
@@ -67,6 +66,7 @@ import org.openide.util.WeakListeners;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.ods.ui.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.impl.ProjectHandleImpl;
 

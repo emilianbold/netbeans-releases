@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.team.c2c;
 
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.c2c.client.api.ClientFactory;
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
@@ -66,6 +65,7 @@ import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.team.c2c.client.api.CloudClient;
 
 
 /**

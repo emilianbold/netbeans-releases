@@ -58,6 +58,7 @@ import org.eclipse.mylyn.commons.net.IProxyProvider;
 import org.eclipse.mylyn.commons.net.WebLocation;
 import org.eclipse.mylyn.internal.commons.net.AuthenticatedProxy;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.team.c2c.client.mock.CloudClientMock;
 import org.openide.util.NetworkSettings;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.client.RestTemplate;
@@ -83,6 +84,11 @@ public final class ClientFactory {
     }
     
     public CloudClient createClient (String url, PasswordAuthentication auth) {
+        if (System.getProperty("cloud-client-mock", Boolean.FALSE.toString()).equalsIgnoreCase(Boolean.TRUE.toString())) {
+            System.setProperty("cloud-client-mock", Boolean.FALSE.toString());
+            return new CloudClientMock(url);
+        }
+
         if (!url.endsWith("/")) { //NOI18N
             url = url + '/';
         }
@@ -97,7 +103,7 @@ public final class ClientFactory {
         HudsonServiceClient hudsonClient = context.getBean(HudsonServiceClient.class);
         ScmServiceClient scmClient = context.getBean(ScmServiceClient.class);
         CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
-        return new CloudClient(profileClient, activityClient, hudsonClient, scmClient, location);
+        return new CloudClientImpl(profileClient, activityClient, hudsonClient, scmClient, location);
     }
     
     private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {
