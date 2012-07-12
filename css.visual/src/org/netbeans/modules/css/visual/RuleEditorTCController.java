@@ -57,19 +57,19 @@ import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
 /**
- * 
+ *
  * @author mfukala@netbeans.org
  */
 public class RuleEditorTCController implements PropertyChangeListener {
 
     private static RuleEditorTCController STATIC_INSTANCE;
-    
+
+    //called from CssCaretAwareSourceTask constructor
     public static synchronized void init() {
-        if(STATIC_INSTANCE == null) {
+        if (STATIC_INSTANCE == null) {
             STATIC_INSTANCE = new RuleEditorTCController();
         }
     }
-    
     private TopComponent activeCssContentTC = null;
 
     public RuleEditorTCController() {
@@ -79,32 +79,38 @@ public class RuleEditorTCController implements PropertyChangeListener {
         reg.addPropertyChangeListener(
                 WeakListeners.propertyChange(this, reg));
 
+        //called from CssCaretAwareSourceTask constructor when the caret is set to a css source code
+        //for the first time, which means if we initialize the window listener now, we won't get the component
+        //activated event since it happened just before the caret was set.
+    
+        //fire an artificial even so the rule editor possibly opens
+        //the active TC should be the editor which triggered the css caret event
+        propertyChange(new PropertyChangeEvent(this, TopComponent.Registry.PROP_ACTIVATED, null,
+                TopComponent.getRegistry().getActivated()));
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
+    public final void propertyChange(PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-            
+
             final TopComponent activated = (TopComponent) evt.getNewValue();
-            
-            if(!WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
-                return ; //not editor TC, ignore
+
+            if (!WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
+                return; //not editor TC, ignore
             }
-            
-            if (activated instanceof RuleEditorTC ) {
+
+            if (activated instanceof RuleEditorTC) {
                 return; //ignore if its me
             }
-            
-            RequestProcessor.getDefault().post(new Runnable() {
 
+            RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
-                    
+
                     //slow IO, do not run in EDT
                     final boolean cssContent = isCssContentTC(activated);
-                    
-                    SwingUtilities.invokeLater(new Runnable() {
 
+                    SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             if (cssContent) {
@@ -118,11 +124,10 @@ public class RuleEditorTCController implements PropertyChangeListener {
                             }
                         }
                     });
-                    
+
                 }
-                
             });
-            
+
         } else if (activeCssContentTC != null && TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
             TopComponent closedTC = (TopComponent) evt.getNewValue();
             if (closedTC == activeCssContentTC) {
@@ -157,5 +162,4 @@ public class RuleEditorTCController implements PropertyChangeListener {
     private TopComponentGroup getRuleEditorTopComponent() {
         return WindowManager.getDefault().findTopComponentGroup("RuleEditor"); //NOI18N
     }
-    
 }
