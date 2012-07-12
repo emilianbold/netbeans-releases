@@ -48,6 +48,8 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -127,7 +129,7 @@ public final class Composer extends PhpProgram {
     private void runCommand(PhpModule phpModule, String command, String title) {
         ExternalProcessBuilder processBuilder = getBuilder(phpModule, command);
         if (processBuilder == null) {
-            // XXX warn user?
+            warnNoSources(phpModule.getDisplayName());
             return;
         }
         PhpProgram.executeLater(processBuilder, getDescriptor(), title);
@@ -161,6 +163,15 @@ public final class Composer extends PhpProgram {
     private ExecutionDescriptor getDescriptor() {
         return getExecutionDescriptor()
                 .inputVisible(false);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "Composer.project.noSources=Project {0} has no Source Files."
+    })
+    public static void warnNoSources(String projectName) {
+        DialogDisplayer.getDefault().notifyLater(
+                new NotifyDescriptor.Message(Bundle.Composer_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
     }
 
 }
