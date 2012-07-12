@@ -50,17 +50,19 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
  */
-public final class ElementGrip {
+public final class ElementGrip implements Openable {
     private TreePathHandle delegateElementHandle;
     /** used to speed up resolving, TreePathHandle runs lexer; see issue 171652 */
     private ElementHandle handle;
@@ -135,6 +137,13 @@ public final class ElementGrip {
     
     public TreePathHandle getHandle() {
         return delegateElementHandle;
+    }
+
+    @Override
+    public void open() {
+        if(fileObject != null && handle != null) {
+            ElementOpen.open(fileObject, handle);
+        }
     }
     
 }
