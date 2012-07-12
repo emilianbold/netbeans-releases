@@ -40,9 +40,9 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.support.wizard.maven;
+package org.netbeans.modules.maven.groovy.extender;
 
-import org.netbeans.modules.groovy.support.wizard.JUnit;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -51,21 +51,23 @@ import org.netbeans.modules.maven.model.pom.POMModel;
  *
  * @author Martin Janicek
  */
-public class AddJUnitDependencyOperation implements ModelOperation<POMModel> {
+public class AddGroovyDependencyOperation implements ModelOperation<POMModel> {
 
-    private JUnit jUnit;
-
-
-    public AddJUnitDependencyOperation(JUnit jUnit) {
-        this.jUnit = jUnit;
-    }
+    private static final String GROOVY_GROUP_ID = "org.codehaus.groovy"; // NOI18N
+    private static final String GROOVY_ARTIFACT_ID = "groovy-all";       // NOI18N
+    private static final String GROOVY_VERSION = "1.8.6";                // NOI18N
 
     @Override
     public void performOperation(final POMModel model) {
+        model.refresh();
+        if (ModelUtils.hasModelDependency(model, GROOVY_GROUP_ID, GROOVY_ARTIFACT_ID)) {
+            return;
+        }
+
         Dependency dependency = model.getFactory().createDependency();
-        dependency.setArtifactId(JUnitConstants.ARTIFACT_ID);
-        dependency.setGroupId(JUnitConstants.GROUP_ID);
-        dependency.setVersion(jUnit.getVersion());
+        dependency.setArtifactId(GROOVY_ARTIFACT_ID);
+        dependency.setGroupId(GROOVY_GROUP_ID);
+        dependency.setVersion(GROOVY_VERSION);
 
         model.getProject().addDependency(dependency);
     }

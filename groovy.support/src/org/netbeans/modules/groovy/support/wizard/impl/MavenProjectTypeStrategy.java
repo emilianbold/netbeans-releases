@@ -40,10 +40,9 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.support.wizard.maven;
+package org.netbeans.modules.groovy.support.wizard.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
@@ -65,23 +64,16 @@ import org.openide.util.Exceptions;
  */
 public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
 
-    private final List<ModelOperation<POMModel>> operations;
+    private static final String JUNIT_GROUP_ID = "junit";     // NOI18N
+    private static final String JUNIT_ARTIFACT_ID = "junit";  // NOI18N
     private final FileObject pom;
 
 
     public MavenProjectTypeStrategy(Project project) {
         super(project);
         pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-        operations = new ArrayList<ModelOperation<POMModel>>();
-        operations.add(new AddEclipseCompilerPluginOperation());
-        operations.add(new AddGroovyDependencyOperation());
     }
     
-    @Override
-    public void finish() {
-        performOperations(operations);
-    }
-
     @Override
     public JUnit findJUnitVersion() {
         performOperation(new FindJUnitDependencyVersion());
@@ -90,21 +82,15 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
 
     @Override
     public void addJUnitLibrary(final JUnit jUnit) {
-        performOperation(new AddJUnitDependencyOperation(jUnit));
+        performOperation(new AddJUnitDependency(jUnit));
     }
 
-    
-
-    private void performOperation(ModelOperation<POMModel> operation) {
-        performOperations(Collections.singletonList(operation));
-    }
-
-    private void performOperations(final List<ModelOperation<POMModel>> operations) {
+    private void performOperation(final ModelOperation<POMModel> operation) {
         try {
             pom.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 @Override
                 public void run() throws IOException {
-                    Utilities.performPOMModelOperations(pom, operations);
+                    Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
                 }
             });
         } catch (IOException ex) {
@@ -187,7 +173,7 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
 
         @Override
         public void performOperation(POMModel model) {
-            Dependency jUnitDependency = ModelUtils.checkModelDependency(model, JUnitConstants.GROUP_ID, JUnitConstants.ARTIFACT_ID, false);
+            Dependency jUnitDependency = ModelUtils.checkModelDependency(model, JUNIT_GROUP_ID, JUNIT_ARTIFACT_ID, false);
             if (jUnitDependency == null) {
                 jUnitVersion = JUnit.NOT_DECLARED;
             } else {
@@ -208,6 +194,26 @@ public class MavenProjectTypeStrategy extends ProjectTypeStrategy {
                     jUnitVersion = JUnit.NOT_DECLARED;
                 }
             }
+        }
+    }
+
+    private class AddJUnitDependency implements ModelOperation<POMModel> {
+
+        private JUnit jUnit;
+
+
+        public AddJUnitDependency(JUnit jUnit) {
+            this.jUnit = jUnit;
+        }
+
+        @Override
+        public void performOperation(final POMModel model) {
+            Dependency dependency = model.getFactory().createDependency();
+            dependency.setArtifactId(JUNIT_ARTIFACT_ID);
+            dependency.setGroupId(JUNIT_GROUP_ID);
+            dependency.setVersion(jUnit.getVersion());
+
+            model.getProject().addDependency(dependency);
         }
     }
 }

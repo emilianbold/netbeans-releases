@@ -104,8 +104,6 @@ public abstract class ProjectTypeStrategy {
         return reorderedGroup;
     }
 
-    public abstract void finish();
-
     public abstract JUnit findJUnitVersion();
 
     public abstract void addJUnitLibrary(JUnit jUnit);

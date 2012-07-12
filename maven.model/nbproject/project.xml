@@ -160,6 +160,7 @@
                 <friend>org.netbeans.modules.maven.checkstyle</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
                 <friend>org.netbeans.modules.maven.graph</friend>
+                <friend>org.netbeans.modules.maven.groovy</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>

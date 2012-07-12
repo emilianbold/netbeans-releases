@@ -66,8 +66,8 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.api.templates.TemplateRegistrations;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.groovy.support.spi.GroovyExtender;
-import org.netbeans.modules.groovy.support.wizard.ant.AntProjectTypeStrategy;
-import org.netbeans.modules.groovy.support.wizard.maven.MavenProjectTypeStrategy;
+import org.netbeans.modules.groovy.support.wizard.impl.AntProjectTypeStrategy;
+import org.netbeans.modules.groovy.support.wizard.impl.MavenProjectTypeStrategy;
 import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDescriptor;
@@ -185,7 +185,6 @@ public class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
             extender.activate();
         }
 
-        strategy.finish();
         handle.finish();
 
         return Collections.singleton(createdFile);

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.support.wizard.maven;
+package org.netbeans.modules.maven.groovy.extender;
 
 import java.util.List;
 import org.netbeans.modules.maven.model.ModelOperation;

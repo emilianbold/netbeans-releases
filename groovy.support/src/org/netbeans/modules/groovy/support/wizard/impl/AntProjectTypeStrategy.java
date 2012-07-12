@@ -40,8 +40,9 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.support.wizard.ant;
+package org.netbeans.modules.groovy.support.wizard.impl;
 
+import org.netbeans.modules.groovy.support.wizard.JUnit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,9 +62,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.groovy.support.wizard.JUnit;
 import org.netbeans.modules.groovy.support.wizard.ProjectTypeStrategy;
-import static org.netbeans.modules.groovy.support.wizard.ant.Bundle.*;
+import static org.netbeans.modules.groovy.support.wizard.impl.Bundle.*;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.openide.DialogDisplayer;
@@ -95,11 +95,6 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
         super(project);
     }
 
-
-    @Override
-    public void finish() {
-        // No need to do anything
-    }
 
     @Override
     public void addJUnitLibrary(JUnit jUnit) {
