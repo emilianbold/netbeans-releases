@@ -55,20 +55,21 @@ import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Project;
 
 /**
- * Add eclipse-compiler-plugin into the pom model.
+ * Add maven-compiler-plugin into the pom model.
  * 
  * This is necessary for compiling both Java and Groovy files together and also
  * for running mixed Java/Groovy JUnit tests.
  *
  * @author Martin Janicek
  */
-public class AddEclipseCompilerPluginOperation implements ModelOperation<POMModel> {
+public class AddMavenCompilerPlugin implements ModelOperation<POMModel> {
 
     private static final String MAVEN_COMPILER_ARTIFACT_ID = "maven-compiler-plugin"; // NOI18N
     private static final String MAVEN_COMPILER_VERSION = "2.3.2";                     // NOI18N
 
     private static final String GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID = "groovy-eclipse-compiler";    // NOI18N
-    private static final String GROOVY_ECLIPSE_COMPILER_GROUP_ID = "org.codehaus.groovy";
+    private static final String GROOVY_ECLIPSE_COMPILER_GROUP_ID = "org.codehaus.groovy";           // NOI18N
+    private static final String GROOVY_ECLIPSE_COMPILER_VERSION = "2.6.0-01";                       // NOI18N
 
     private POMComponentFactory factory;
     private Project project;
@@ -79,7 +80,6 @@ public class AddEclipseCompilerPluginOperation implements ModelOperation<POMMode
         factory = model.getFactory();
         project = model.getProject();
         Build build = project.getBuild();
-
         if (build == null) {
             build = factory.createBuild();
             project.setBuild(build);
@@ -130,7 +130,7 @@ public class AddEclipseCompilerPluginOperation implements ModelOperation<POMMode
         Dependency dependency = factory.createDependency();
         dependency.setGroupId(GROOVY_ECLIPSE_COMPILER_GROUP_ID);        // NOI18N
         dependency.setArtifactId(GROOVY_ECLIPSE_COMPILER_ARTIFACT_ID); // NOI18N
-        dependency.setVersion("2.6.0-01");                   // NOI18N
+        dependency.setVersion(GROOVY_ECLIPSE_COMPILER_VERSION);                   // NOI18N
 
         return dependency;
     }

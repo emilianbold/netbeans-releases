@@ -51,7 +51,7 @@ import org.netbeans.modules.maven.model.pom.POMModel;
  *
  * @author Martin Janicek
  */
-public class AddGroovyDependencyOperation implements ModelOperation<POMModel> {
+public class AddGroovyDependency implements ModelOperation<POMModel> {
 
     private static final String GROOVY_GROUP_ID = "org.codehaus.groovy"; // NOI18N
     private static final String GROOVY_ARTIFACT_ID = "groovy-all";       // NOI18N
