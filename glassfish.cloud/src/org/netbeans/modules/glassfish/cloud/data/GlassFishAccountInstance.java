@@ -42,7 +42,7 @@
 package org.netbeans.modules.glassfish.cloud.data;
 
 import javax.swing.JComponent;
-import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
+import org.glassfish.tools.ide.data.cloud.GlassFishAccountEntity;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
@@ -50,16 +50,17 @@ import org.openide.nodes.Node;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
- * GlassFish Cloud instance extended to contain NetBeans related attributes.
+ * GlassFish User Account instance extended to contain NetBeans related
+ * attributes.
  * <p/>
- * GlassFish cloud instance represents CPAS interface. Based on Tooling SDK
- * entity object.
+ * GlassFish user account instance represents user on cloud account. Based
+ * on Tooling SDK entity object.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudInstance extends GlassFishCloudEntity
-        implements ServerInstanceImplementation {
-
+public class GlassFishAccountInstance extends GlassFishAccountEntity
+    implements ServerInstanceImplementation {
+    
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -80,13 +81,15 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     /**
      * Constructs GlassFish Cloud class instance with ALL values set.
      * <p/>
-     * @param name GlassFish cloud name to set.
-     * @param host GlassFish cloud host to set.
-     * @param port GlassFish server port to set.
+     * @param name GlassFish user account name to set.
+     * @param account GlassFish cloud account name to set.
+     * @param userName GlassFish cloud account user name to set.
+     * @param userPassword GlassFish cloud account user password to set.
      */
     @SuppressWarnings("LeakingThisInConstructor")
-    public GlassFishCloudInstance(String name, String host, int port) {
-        super(name, host, port);
+    public GlassFishAccountInstance(String name, String account, String userName,
+            String userPassword) {
+        super(name, account, userName, userPassword);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);
@@ -157,7 +160,7 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
         }
         synchronized(this) {
             if (basicNode == null) {
-                basicNode = new GlassFishCloudInstanceNode(this);
+                basicNode = new GlassFishAccountInstanceNode(this);
             }
         }
         return basicNode;

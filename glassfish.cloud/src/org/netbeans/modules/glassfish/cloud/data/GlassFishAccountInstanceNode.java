@@ -42,25 +42,25 @@
 package org.netbeans.modules.glassfish.cloud.data;
 
 /**
- * GlassFish Cloud GUI Node.
+ * GlassFish User Account GUI Node.
  * <p>
- * this class represents cloud (CPAS) instance in GUI.
+ * this class represents server (user account) instance in GUI.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudInstanceNode extends GlassFishInstanceNode {
-
+public class GlassFishAccountInstanceNode extends GlassFishInstanceNode {
+    
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
     /** Cloud instance object. */
-    GlassFishCloudInstance instance;
+    GlassFishAccountInstance instance;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
-    public GlassFishCloudInstanceNode(GlassFishCloudInstance instance) {
+    public GlassFishAccountInstanceNode(GlassFishAccountInstance instance) {
         super(instance.getName(), instance);
         this.instance = instance;
     }

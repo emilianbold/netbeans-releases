@@ -42,8 +42,11 @@
 package org.netbeans.modules.glassfish.cloud.wizards;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
-import org.openide.WizardDescriptor;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -89,9 +92,22 @@ public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
      * @return A set of objects created (the exact type is at the discretion
      *         of the caller).
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable") // String name
     @Override
-    public Set<String> instantiate() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Set<ServerInstance> instantiate() throws IOException {
+        String name = (String)wizard.getProperty(
+                GlassFishWizardIterator.PROPERTY_WIZARD_DISPLAY_NAME);
+        String account = (String)wizard.getProperty(
+                GlassFishAcocuntWizardUserPanel.PROPERTY_ACCOUNT);
+        String userName = (String)wizard.getProperty(
+                GlassFishAcocuntWizardUserPanel.PROPERTY_USER_NAME);
+        String userPassword = (String)wizard.getProperty(
+                GlassFishAcocuntWizardUserPanel.PROPERTY_USER_PASSWORD);
+        GlassFishAccountInstance accountInstance
+                = new GlassFishAccountInstance(
+                name, account, userName, userPassword);
+        GlassFishAccountInstanceProvider.addAccountInstance(accountInstance);
+        return Collections.singleton(accountInstance.getServerInstance());
     }
 
 }

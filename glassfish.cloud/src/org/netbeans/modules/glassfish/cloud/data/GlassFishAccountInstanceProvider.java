@@ -51,21 +51,22 @@ import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
 
 /**
- * GlassFish Cloud Instances Provider.
+ * GlassFish User Account Instances Provider.
  * <p>
- * Handles all registered glassFish cloud instances. Implemented as singleton.
+ * Handles all registered glassFish user account instances. Implemented
+ * as singleton.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudInstanceProvider
+public class GlassFishAccountInstanceProvider
     implements ServerInstanceProvider {
-
+    
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
     /** Singleton object instance. */
-    private static volatile GlassFishCloudInstanceProvider instance;
+    private static volatile GlassFishAccountInstanceProvider instance;
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -77,33 +78,34 @@ public class GlassFishCloudInstanceProvider
      * <p>
      * @return <code>AdminFactoryHttp</code> singleton instance.
      */
-    public static GlassFishCloudInstanceProvider getInstance() {
+    public static GlassFishAccountInstanceProvider getInstance() {
         if (instance != null) {
             return instance;
         }
-        synchronized (GlassFishCloudInstanceProvider.class) {
+        synchronized (GlassFishAccountInstanceProvider.class) {
             if (instance == null) {
-                instance = new GlassFishCloudInstanceProvider();
+                instance = new GlassFishAccountInstanceProvider();
             }
         }
         return instance;
     }
 
     /**
-     * Add new GlassFish cloud instance into this provider.
+     * Add new GlassFish user account instance into this provider.
      * <p/>
-     * @param instance GlassFish cloud instance to be added.
+     * @param instance GlassFish user account instance to be added.
      */
-    public static void addCloudInstance(GlassFishCloudInstance instance) {
+    public static void addAccountInstance(GlassFishAccountInstance instance) {
         getInstance().addInstance(instance);
     }
 
     /**
-     * Remove GlassFish cloud instance from this provider.
+     * Remove GlassFish user account instance from this provider.
      * <p/>
-     * @param instance GlassFish cloud instance to be removed.
+     * @param instance GlassFish user account instance to be removed.
      */
-    public static void removeCloudInstance(GlassFishCloudInstance instance) {
+    public static void removeAccountInstance(
+            GlassFishAccountInstance instance) {
         getInstance().removeInstance(instance);
     }
 
@@ -111,11 +113,12 @@ public class GlassFishCloudInstanceProvider
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
+
     /** Stored NEtBeans server instances. */
     private List<ServerInstance> serverInstances;
 
-    /** Stored GlassFish cloud instances. */
-    private Map<String, GlassFishCloudInstance> cloudInstances;
+    /** Stored GlassFish user account instances. */
+    private Map<String, GlassFishAccountInstance> cloudInstances;
 
     /** Change listeners. */
     private ChangeSupport changeListeners;
@@ -124,10 +127,10 @@ public class GlassFishCloudInstanceProvider
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
-    private GlassFishCloudInstanceProvider() {
+    private GlassFishAccountInstanceProvider() {
         changeListeners = new ChangeSupport(this);
         serverInstances = new LinkedList<ServerInstance>();
-        cloudInstances = new HashMap<String, GlassFishCloudInstance>();
+        cloudInstances = new HashMap<String, GlassFishAccountInstance>();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -135,9 +138,9 @@ public class GlassFishCloudInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Returns list of known cloud instances.
+     * Returns list of known user account instances.
      * <p/>
-     * @return <code>List</code> of known cloud instances.
+     * @return <code>List</code> of known user account instances.
      */
     @Override
     public List<ServerInstance> getInstances() {
@@ -175,11 +178,11 @@ public class GlassFishCloudInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Add new GlassFish cloud instance into this provider.
+     * Add new GlassFish user account instance into this provider.
      * <p/>
-     * @param instance GlassFish cloud instance to be added.
+     * @param instance GlassFish user account instance to be added.
      */
-    public void addInstance(GlassFishCloudInstance instance) {
+    public void addInstance(GlassFishAccountInstance instance) {
         serverInstances.add(instance.getServerInstance());
         // TODO: name is not unique key
         cloudInstances.put(instance.getName(), instance);
@@ -187,11 +190,11 @@ public class GlassFishCloudInstanceProvider
     }
 
     /**
-     * Remove GlassFish cloud instance from this provider.
+     * Remove GlassFish user account instance from this provider.
      * <p/>
-     * @param instance GlassFish cloud instance to be removed.
+     * @param instance GlassFish user account instance to be removed.
      */
-    public void removeInstance(GlassFishCloudInstance instance) {
+    public void removeInstance(GlassFishAccountInstance instance) {
         serverInstances.remove(instance.getServerInstance());
         // TODO: name is not unique key
         cloudInstances.remove(instance.getName());

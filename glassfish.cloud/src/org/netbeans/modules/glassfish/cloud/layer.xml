@@ -7,7 +7,6 @@
             <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
         </file>
-        <!-- org-netbeans.modules-glassfish-cloud-wizards-GlassFishCloudWizardProvider.instance -->
         <file name="GlassFishCloudWizardProvider.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.wizards.GlassFishCloudWizardProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
@@ -16,6 +15,11 @@
     </folder>
 
     <folder name="Servers">
+        <file name="GlassFishAccountInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider.getInstance"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
         <file name="GlassFishAccountWizardProvider.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.wizards.GlassFishAccountWizardProvider"/>
             <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>

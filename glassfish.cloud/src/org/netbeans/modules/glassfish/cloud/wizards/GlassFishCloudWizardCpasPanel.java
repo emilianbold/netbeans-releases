@@ -73,6 +73,7 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
     ////////////////////////////////////////////////////////////////////////////
 
     /** Panel component containing CPAS attributes. */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     GlassFishCloudWizardCpasComponent component;
 
     ////////////////////////////////////////////////////////////////////////////

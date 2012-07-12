@@ -63,19 +63,20 @@ public class GlassFishAcocuntWizardUserPanel extends GlassFishWizardPanel {
     ////////////////////////////////////////////////////////////////////////////
 
     /** User name property name. */
-    private static final String PROPERTY_USER_NAME = "user";
+    static final String PROPERTY_USER_NAME = "userName";
 
     /** User password host property name. */
-    private static final String PROPERTY_USER_PASSWORD = "password";
+    static final String PROPERTY_USER_PASSWORD = "userPassword";
 
     /** Account property name. */
-    private static final String PROPERTY_ACCOUNT = "account";
+    static final String PROPERTY_ACCOUNT = "account";
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
     /** Panel component containing CPAS attributes. */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     GlassFishAccountWizardUserComponent component;
 
     ////////////////////////////////////////////////////////////////////////////

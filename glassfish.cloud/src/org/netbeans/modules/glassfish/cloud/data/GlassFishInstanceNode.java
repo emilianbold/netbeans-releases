@@ -41,28 +41,44 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.lookup.Lookups;
+
 /**
- * GlassFish Cloud GUI Node.
+ * GlassFish GUI Node.
  * <p>
- * this class represents cloud (CPAS) instance in GUI.
+ * this class represents cloud or server instance in GUI.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudInstanceNode extends GlassFishInstanceNode {
-
+public abstract class GlassFishInstanceNode extends AbstractNode {
+    
     ////////////////////////////////////////////////////////////////////////////
-    // Instance attributes                                                    //
+    // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
-    /** Cloud instance object. */
-    GlassFishCloudInstance instance;
+    /** Cloud instance icon. */
+    private static final String GLASSFISH_ICON
+            = "org/netbeans/modules/glassfish/cloud/resources/gf-16x16.jpeg";
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
-    public GlassFishCloudInstanceNode(GlassFishCloudInstance instance) {
-        super(instance.getName(), instance);
-        this.instance = instance;
+
+    /**
+     * Creates an instance of GlassFish GUI node.
+     * @param instance Instance entity object to be added into lookup.
+     * @param displayName 
+     */
+    GlassFishInstanceNode(String displayName, Object instance) {
+        super(Children.LEAF, Lookups.fixed(instance));
+        setName("");
+        setDisplayName(displayName);
+        setIconBaseWithExtension(GLASSFISH_ICON);
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
 }
