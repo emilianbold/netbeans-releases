@@ -450,6 +450,10 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
     }
     
     void setAllocationHeight(float height) {
+        if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
+            ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DV.setAllocationHeight(): " + // NOI18N
+                    allocation.height + " to " + height + '\n'); // NOI18N
+        }
         allocation.height = height;
         updateBaseY();
     }
@@ -515,15 +519,21 @@ public final class DocumentView extends EditorView implements EditorView.Parent 
         float newHeight = children.height();
         if (newHeight != preferredHeight) {
             preferredHeight = newHeight;
+            updateBaseY();
             return true;
         }
         return false;
     }
 
     void updateBaseY() {
-        children.setBaseY(op.asTextField
+        float baseY = op.asTextField
                 ? (float) Math.floor((allocation.height - preferredHeight) / 2.0f)
-                : 0f);
+                : 0f;
+        if (ViewHierarchyImpl.SPAN_LOG.isLoggable(Level.FINE)) {
+            ViewUtils.log(ViewHierarchyImpl.SPAN_LOG, "DV.updateBaseY(): " + // NOI18N
+                    children.getBaseY() + " to " + baseY + ", asTextField=" + op.asTextField + '\n'); // NOI18N
+        }
+        children.setBaseY(baseY);
     }
             
     void markChildrenLayoutInvalid() {

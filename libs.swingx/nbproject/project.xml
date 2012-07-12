@@ -94,8 +94,8 @@ made subject to such option by the copyright holder.
                 <package>org.jdesktop.swingx.util</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/swingx-0.9.5.jar</runtime-relative-path>
-                <binary-origin>external/swingx-0.9.5.jar</binary-origin>
+                <runtime-relative-path>ext/swingx-1.0.jar</runtime-relative-path>
+                <binary-origin>external/swingx-1.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

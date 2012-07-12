@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -236,21 +237,27 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {
             final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectDirectory.getPath()); // NOI18N
-            Runnable warning = new Runnable() {
+            if (CndUtils.isStandalone()) {
+                System.err.print(message);
+                System.err.println(NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING_AUTO"));
+                configurationDescriptor.setModified();
+            } else {
+                Runnable warning = new Runnable() {
 
-                @Override
-                public void run() {
-                    NotifyDescriptor nd = new NotifyDescriptor(message,
-                            NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
-                            NotifyDescriptor.QUESTION_MESSAGE,
-                            null, NotifyDescriptor.YES_OPTION);
-                    Object ret = DialogDisplayer.getDefault().notify(nd);
-                    if (ret == NotifyDescriptor.YES_OPTION) {
-                        configurationDescriptor.setModified();
+                    @Override
+                    public void run() {
+                        NotifyDescriptor nd = new NotifyDescriptor(message,
+                                NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
+                                NotifyDescriptor.QUESTION_MESSAGE,
+                                null, NotifyDescriptor.YES_OPTION);
+                        Object ret = DialogDisplayer.getDefault().notify(nd);
+                        if (ret == NotifyDescriptor.YES_OPTION) {
+                            configurationDescriptor.setModified();
+                        }
                     }
-                }
-            };
-            SwingUtilities.invokeLater(warning);
+                };
+                SwingUtilities.invokeLater(warning);
+            }
         }
 
         if (configurationDescriptor.isModified()) {

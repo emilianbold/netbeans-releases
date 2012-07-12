@@ -42,25 +42,19 @@
 package org.netbeans.modules.javafx2.scenebuilder;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.javafx2.editor.spi.FXMLOpener;
 import org.openide.loaders.DataObject;
 
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputListener;
-import org.openide.windows.OutputWriter;
 
 @ServiceProvider(service=FXMLOpener.class)
 /**
@@ -68,137 +62,6 @@ import org.openide.windows.OutputWriter;
  */
 public final class SceneBuilderFXMLOpener extends FXMLOpener {
     final private static Logger LOG = Logger.getLogger(SceneBuilderFXMLOpener.class.getName());
-    final private static OutputWriter EMPTY_WRITER = new OutputWriter(new Writer(){
-        @Override
-        public void close() throws IOException {
-            // ignore
-        }
-
-        @Override
-        public void flush() throws IOException {
-            // ignore
-        }
-
-        @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
-            // ignore
-        }
-    }) {
-      @Override
-        public void println(String s, OutputListener l) throws IOException {
-            // ignore
-        }
-
-        @Override
-        public void reset() throws IOException {
-            // ignore
-        }  
-    };
-    
-    final private static Reader EMPTY_READER = new Reader() {
-
-        @Override
-        public int read(char[] cbuf, int off, int len) throws IOException {
-            return -1;
-        }
-
-        @Override
-        public void close() throws IOException {
-            // ignore
-        }
-    };
-    
-    final private InputOutput NULL_IO = new InputOutput() {
-        private boolean closed = true;
-        
-        @Override
-        public OutputWriter getOut() {
-            closed = false;
-            return EMPTY_WRITER;
-        }
-
-        @Override
-        public Reader getIn() {
-            return EMPTY_READER;
-        }
-
-        @Override
-        public OutputWriter getErr() {
-            return EMPTY_WRITER;
-        }
-
-        @Override
-        public void closeInputOutput() {
-            closed = true;
-        }
-
-        @Override
-        public boolean isClosed() {
-            return closed;
-        }
-
-        @Override
-        public void setOutputVisible(boolean value) {
-            // ignore
-        }
-
-        @Override
-        public void setErrVisible(boolean value) {
-            // ignore
-        }
-
-        @Override
-        public void setInputVisible(boolean value) {
-            // ignore
-        }
-
-        @Override
-        public void select() {
-            // ignore
-        }
-
-        @Override
-        public boolean isErrSeparated() {
-            return false;
-        }
-
-        @Override
-        public void setErrSeparated(boolean value) {
-            // ignore
-        }
-
-        @Override
-        public boolean isFocusTaken() {
-            return false;
-        }
-
-        @Override
-        public void setFocusTaken(boolean value) {
-            // ignore
-        }
-
-        @Override
-        public Reader flushReader() {
-            return EMPTY_READER;
-        }
-    };
-    
-    final private ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).controllable(false).inputOutput(NULL_IO).rerunCondition(new ExecutionDescriptor.RerunCondition() {
-
-        @Override
-        public void addChangeListener(ChangeListener listener) {
-        }
-
-        @Override
-        public void removeChangeListener(ChangeListener listener) {
-        }
-
-        @Override
-        public boolean isRerunPossible() {
-            return false;
-        }
-    });
-    
     private Settings settings = Settings.getInstance();
  
     @Override
@@ -213,8 +76,10 @@ public final class SceneBuilderFXMLOpener extends FXMLOpener {
         if (execPath == null) {
             return false;
         }
-        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(getExecutablePath());
-
+        
+        List<String> cmdList = new ArrayList<String>();
+        cmdList.add(getExecutablePath());
+        
         boolean allSaved = true;
         Collection<? extends DataObject> dobjs = context.lookupAll(DataObject.class);
         for (DataObject dataObject : dobjs) {
@@ -235,20 +100,39 @@ public final class SceneBuilderFXMLOpener extends FXMLOpener {
                 if (firstPath == null) {
                     firstPath = dataObject.getPrimaryFile().getPath();
                 }
-                processBuilder = processBuilder.addArgument(dataObject.getPrimaryFile().getPath());
+                cmdList.add(dataObject.getPrimaryFile().getPath());
             }
             if (firstPath != null) {
-                ExecutionService service = ExecutionService.newService(processBuilder, descriptor, firstPath);
-                service.run();
+                try {
+                    ProcessBuilder pb = new ProcessBuilder(cmdList);
+                    pb.start();
+                } catch (IOException e) {
+                    return false;
+                }
             }
         }
         return true;
     }
     
+    @NbBundle.Messages({
+        "LOG_NO_HOME=SceneBuilder home is not set",
+        "# {0} - SceneBuilder home path",
+        "LOG_HOME_INVALID=SceneBuilder home \"{0}\" is not valid. Please, repair the SceneBuilder installation or choose another one"
+    })
     private String getExecutablePath() {
         Home home = settings.getSelectedHome();
         if (home != null && home.isValid()) {
             return home.getLauncherPath();
+        } else {
+            if (home == null) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.finest(Bundle.LOG_NO_HOME());
+                }
+            } else {
+                if (LOG.isLoggable(Level.WARNING)) {
+                    LOG.log(Level.WARNING, Bundle.LOG_HOME_INVALID(home));
+                }
+            }
         }
         return null;
     }

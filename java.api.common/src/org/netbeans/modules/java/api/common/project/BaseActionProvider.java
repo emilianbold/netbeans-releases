@@ -62,6 +62,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -159,6 +160,16 @@ public abstract class BaseActionProvider implements ActionProvider {
     private static final Logger LOG = Logger.getLogger(BaseActionProvider.class.getName());
 
     public static final String PROPERTY_RUN_SINGLE_ON_SERVER = "run.single.on.server";
+
+    private static final Set<String> NO_SYNC_COMMANDS = Collections.unmodifiableSet(
+        new HashSet<String>(
+            Arrays.asList(new String[]{
+                COMMAND_BUILD,
+                COMMAND_CLEAN,
+                COMMAND_REBUILD,
+                COMMAND_COMPILE_SINGLE,
+                JavaProjectConstants.COMMAND_JAVADOC
+            })));
 
     // Project
     final private Project project;
@@ -579,6 +590,9 @@ public abstract class BaseActionProvider implements ActionProvider {
                 collectStartupExtenderArgs(p, command);
                 if (targetNames.length == 0) {
                     targetNames = null;
+                }
+                if (isCompileOnSaveEnabled && !NO_SYNC_COMMANDS.contains(command)) {
+                    p.put("nb.wait.for.caches", "true");
                 }
                 if (p.keySet().isEmpty()) {
                     p = null;

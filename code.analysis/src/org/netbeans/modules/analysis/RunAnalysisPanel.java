@@ -265,6 +265,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 Object tempItem = inspectionCombo.getSelectedItem();
                 if (!(tempItem instanceof AnalyzerAndWarning)) {
                     inspectionCombo.setSelectedItem(currentItem);
+                    updatePlugins();
                 } else {
                     currentItem = tempItem;
                 }
@@ -376,10 +377,20 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     private void updatePlugins() {
         Collection<? extends AnalyzerFactory> toRun;
 
-        if (!(configurationCombo.getSelectedItem() instanceof AnalyzerFactory)) {
-            toRun = analyzers;
+        if (singleInspectionRadio.isSelected()) {
+            Object selectedInspection = inspectionCombo.getSelectedItem();
+            
+            if (selectedInspection instanceof AnalyzerAndWarning) {
+                toRun = Collections.singleton(((AnalyzerAndWarning) selectedInspection).analyzer);
+            } else {
+                toRun = Collections.emptyList();
+            }
         } else {
-            toRun = Collections.singleton((AnalyzerFactory) configurationCombo.getSelectedItem());
+            if (!(configurationCombo.getSelectedItem() instanceof AnalyzerFactory)) {
+                toRun = analyzers;
+            } else {
+                toRun = Collections.singleton((AnalyzerFactory) configurationCombo.getSelectedItem());
+            }
         }
 
         Context ctx = SPIAccessor.ACCESSOR.createContext(null, null, null, null, -1, -1);
@@ -407,6 +418,15 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     }
     
     public AnalyzerFactory getSelectedAnalyzer() {
+        if (singleInspectionRadio.isSelected()) {
+            Object singleInspection = inspectionCombo.getSelectedItem();
+            
+            if (singleInspection instanceof AnalyzerAndWarning) {
+                return ((AnalyzerAndWarning) singleInspection).analyzer;
+            }
+            
+            return null;
+        }
         if (!(configurationCombo.getSelectedItem() instanceof AnalyzerFactory)) return null;
         return (AnalyzerFactory) configurationCombo.getSelectedItem();
     }
@@ -613,6 +633,8 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         manage.setEnabled(configuration);
         inspectionCombo.setEnabled(!configuration);
         browse.setEnabled(!configuration);
+        
+        updatePlugins();
     }
 
     String getSingleWarningId() {
@@ -900,6 +922,10 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                                    prefs.get("selectedAnalyzer", null),
                                    prefs.get("selectedConfiguration", null),
                                    prefs.get("selectedInspection", null));
+        }
+        
+        public static DialogState from(WarningDescription wd) {
+            return new DialogState(false, null, null, SPIAccessor.ACCESSOR.getWarningId(wd));
         }
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="80">
+<configurationDescriptor version="82">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -42,6 +42,7 @@
           <architecture>1</architecture>
           <commandLine>-mno-cygwin</commandLine>
           <preprocessorList>
+            <Elem>ARCHITECTURE=32</Elem>
             <Elem>NBEXEC_DLL="/lib/nbexec.dll"</Elem>
           </preprocessorList>
         </ccTool>
@@ -71,6 +72,7 @@
           <architecture>2</architecture>
           <commandLine>-mno-cygwin -static-libgcc -static-libstdc++</commandLine>
           <preprocessorList>
+            <Elem>ARCHITECTURE=64</Elem>
             <Elem>NBEXEC_DLL="/lib/nbexec64.dll"</Elem>
           </preprocessorList>
         </ccTool>

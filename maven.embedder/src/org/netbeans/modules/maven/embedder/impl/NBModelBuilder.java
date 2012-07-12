@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.maven.embedder.impl;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
@@ -52,6 +55,9 @@ import org.apache.maven.model.building.DefaultModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder.ModelDescription;
+import org.openide.filesystems.FileUtil;
 
 /**
  * take the results from the default implementation of ModelBuild and record the 
@@ -61,6 +67,7 @@ import org.apache.maven.model.building.ModelBuildingResult;
 public class NBModelBuilder extends DefaultModelBuilder {
 
     private static final String NETBEANS_PROFILES = "____netbeans.profiles";
+    private static final String NETBEANS_MODELDESCS = "____netbeans.model.descriptions";
     
     @Override
     public ModelBuildingResult build(ModelBuildingRequest request) throws ModelBuildingException {
@@ -79,6 +86,53 @@ public class NBModelBuilder extends DefaultModelBuilder {
         return toRet;
     }
     
+    private static class ModelInputSource extends InputSource {
+
+        final List<ModelDescription> rawModels;
+
+        public ModelInputSource(List<ModelDescription> rawModels) {
+            this.rawModels = rawModels;
+            setLocation("");
+        }
+    }
+
+    @Override
+    public ModelBuildingResult build(ModelBuildingRequest request, ModelBuildingResult result) throws ModelBuildingException {
+        ModelBuildingResult toRet = super.build(request, result);
+        if (request.getPomFile() != null) {
+            List<ModelDescription> rawModels = new ArrayList<ModelDescription>();
+            for (String id : toRet.getModelIds()) {
+                if (id != null && id.trim().length() > 0) {
+                    //skip the default super pom
+                    Model m = toRet.getRawModel(id);
+                    List<String> modules = new ArrayList<String>();
+                    for (String module : m.getModules()) {
+                        modules.add(module);
+                    }
+                    String name = m.getName();
+                    List<String> profiles = new ArrayList<String>();
+                    for (Profile p : m.getProfiles()) {
+                        profiles.add(p.getId());
+                        //TODO for activated profiles, not entirely correct.
+                        //profiles can also be not explicitly activated (based on <activation>
+                        if (request.getActiveProfileIds().contains(p.getId())) {
+                            for (String module : p.getModules()) {
+                                if (!modules.contains(module)) {
+                                    modules.add(module);
+                                }
+                            }
+                        }
+                    }
+                    File loc = m.getPomFile() != null ? FileUtil.normalizeFile(m.getPomFile()) : null;
+                    rawModels.add(new ModelDescImpl(id, loc, name, profiles, modules));
+                }
+            }
+            toRet.getEffectiveModel().setLocation(NETBEANS_MODELDESCS, new InputLocation(-1, -1, new ModelInputSource(rawModels)));
+        }
+        return toRet;
+    }
+
+    
     public static Set<String> getAllProfiles(Model mdl) {
         InputLocation location = mdl.getLocation(NETBEANS_PROFILES);
         HashSet<String> toRet = new HashSet<String>();
@@ -92,5 +146,82 @@ public class NBModelBuilder extends DefaultModelBuilder {
         }
         return null;
     }
-    
+    /**
+     *
+     * @param effective model created by Project Maven Embedder.
+     * @return 
+     */
+    public static List<ModelDescription> getModelDescriptors(Model effective) {
+        InputLocation loc = effective.getLocation(NETBEANS_MODELDESCS);
+        if (loc != null && loc.getSource() instanceof ModelInputSource) {
+            ModelInputSource mis = (ModelInputSource) loc.getSource();
+            return mis.rawModels;
+        }
+        return null;
+    }
+
+    private static class ModelDescImpl implements MavenEmbedder.ModelDescription {
+        
+        final String id;
+        final String artifactId;
+        final String groupId;
+        final String version;
+        final File location;
+        final String name;
+        final List<String> profileNames;
+        final List<String> modules;
+
+        ModelDescImpl(String id, File location, String name, List<String> profileNames, List<String> modules) {
+            this.id = id;
+            String[] arr = id.split(":");
+            assert arr != null && arr.length == 3;
+            groupId = arr[0];
+            artifactId = arr[1];
+            version = arr[2];
+            this.location = location;
+            this.name = name;
+            this.profileNames = profileNames;
+            this.modules = modules;
+        }
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public File getLocation() {
+            return location;
+        }
+
+        @Override
+        public List<String> getProfiles() {
+            return profileNames;
+        }
+
+        @Override
+        public String getArtifactId() {
+            return artifactId;
+        }
+
+        @Override
+        public String getVersion() {
+            return version;
+        }
+
+        @Override
+        public String getGroupId() {
+            return groupId;
+        }
+
+        @Override
+        public List<String> getModules() {
+            return modules;
+        }
+    }
 }

@@ -105,10 +105,10 @@ public enum ServerDetails {
      */
     GLASSFISH_SERVER_3_1_2(NbBundle.getMessage(ServerDetails.class, "STR_312_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.2"}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-3.1.2(?:\\.[0-9]+|)"}, // NOI18N
         new String[0],
         312,
-        "http://download.java.net/glassfish/3.1.2/release/glassfish-3.1.2-ml.zip?nbretriever=fallback", // NOI18N
+        "http://download.java.net/glassfish/3.1.2.2/release/glassfish-3.1.2.2-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v3-1-2.txt" // NOI18N
     ),
     /**

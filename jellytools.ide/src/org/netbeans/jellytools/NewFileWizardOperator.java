@@ -155,8 +155,6 @@ public class NewFileWizardOperator extends WizardOperator {
             }).waitAction(null);
         } catch (InterruptedException e) {
             throw new JemmyException("Interrupted.", e);
-        } catch (TimeoutExpiredException tee) {
-            // ignore it because sometimes can happen that no category is selected by default
         }
         // wait for UI is refreshed to prevent wrong selection
         new EventTool().waitNoEvent(500);

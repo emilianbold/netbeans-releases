@@ -178,11 +178,16 @@ public class JavaEditorWarmUpTask implements Runnable {
                 lexerDoc = javaKit.createDefaultDocument();
                 try {
                     lexerDoc.insertString(0, "'c'\"s\"/**d*/", null);
-                    TokenHierarchy<?> th = TokenHierarchy.get(lexerDoc);
-                    TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
-                    while (ts != null && ts.moveNext()) {
-                        ts.embedded(); // Pre-init embedded tokens
-                    }
+                    lexerDoc.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            TokenHierarchy<?> th = TokenHierarchy.get(lexerDoc);
+                            TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
+                            while (ts != null && ts.moveNext()) {
+                                ts.embedded(); // Pre-init embedded tokens
+                            }
+                        }
+                    });
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }

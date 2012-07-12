@@ -54,6 +54,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.bookmarks.ui.BookmarkHistoryPopupAction;
 import org.netbeans.lib.editor.bookmarks.actions.ClearDocumentBookmarksAction;
 import org.netbeans.lib.editor.bookmarks.actions.GotoBookmarkAction;
+import org.openide.awt.ActionID;
 import org.openide.awt.Actions;
 import org.openide.util.ImageUtilities;
 
@@ -116,6 +117,8 @@ public class WrapperBookmarkAction extends AbstractAction implements PropertyCha
 
     }
 
+    // Action ID corresponds to current layer registration
+    @ActionID(id = "bookmark.history.popup.next", category = "Edit")
     public static final class PopupNext extends WrapperBookmarkAction {
         
         public PopupNext() {
@@ -130,6 +133,8 @@ public class WrapperBookmarkAction extends AbstractAction implements PropertyCha
         
     }
 
+    // Action ID corresponds to current layer registration
+    @ActionID(id = "bookmark.history.popup.previous", category = "Edit")
     public static final class PopupPrevious extends WrapperBookmarkAction {
         
         public PopupPrevious() {
