@@ -123,7 +123,7 @@ public class WriteStatistics {
         List<StackTraceElement> result = new ArrayList<StackTraceElement>();
         boolean wasFound = false;
         for (int i = 3; i < stack.length; i++) {
-            boolean isFound = stack[i].getClassName().contains(".cnd.modelimpl.");
+            boolean isFound = stack[i].getClassName().contains(".cnd.modelimpl."); // NOI18N
             if (wasFound) {
                 if (isFound) {
                     result.add(stack[i]);

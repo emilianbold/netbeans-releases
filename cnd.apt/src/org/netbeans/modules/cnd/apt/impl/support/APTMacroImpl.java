@@ -142,6 +142,7 @@ public final class APTMacroImpl implements APTMacro {
             retValue = 31*retValue + (file == null ? 0 : file.hashCode());
             retValue = 31*retValue + defineNode.hashCode();
             hashCode = APTUtils.hash(retValue);
+            retValue = hashCode;
         }
         return retValue;
     }       

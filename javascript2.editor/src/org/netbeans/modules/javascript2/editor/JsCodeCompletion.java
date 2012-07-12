@@ -581,6 +581,19 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             JsIndex jsIndex = JsIndex.get(fo);
+            
+            // resolving prototpe chains
+            Collection<String> prototypeChain = new ArrayList<String>();
+            for (TypeUsage typeUsage : lastResolvedTypes) {
+                prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+            }
+            for(JsObject jsObject : lastResolvedObjects) {
+                prototypeChain.addAll(findPrototypeChain(ModelUtils.createFQN(jsObject), jsIndex));
+            }
+            for (String string : prototypeChain) {
+                lastResolvedTypes.add(new TypeUsageImpl(string));
+            }
+            
             HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
             boolean isFunction = false; // addding Function to the prototype chain?
             List<IndexedElement> indexedElements = new ArrayList<IndexedElement>();
@@ -620,6 +633,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         if (startsWith(indexedElement.getName(), request.prefix) 
                                 && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
                             indexedElements.add(indexedElement);
+                        }
+                        if ("prototype".equals(indexedElement.getName())) {
+                            Collection<IndexedElement> prototypeProperties = jsIndex.getProperties(indexedElement.getFQN());
+                            indexedElements.addAll(prototypeProperties);
                         }
                     }
                 }
@@ -808,6 +825,26 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
+    }
+    
+    private Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex) {
+        Collection<String> result = new ArrayList<String>();
+        Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+        for (IndexedElement property : properties) {
+            if("prototype".equals(property.getName())) {
+                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
+                for (IndexResult indexResult : indexResults) {
+                    Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                    for (TypeUsage typeUsage : assignments) {
+                        result.add(typeUsage.getType());
+                    }
+                    for (TypeUsage typeUsage : assignments) {
+                        result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                    }
+                }
+            }
+        }
+        return result;
     }
     
     private Collection<JsObject> getLibrariesGlobalObjects() {

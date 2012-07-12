@@ -37,18 +37,14 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.javascript2.editor.jsdoc.JsDocParser;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -75,18 +71,15 @@ public abstract class SanitizingParser extends Parser {
 
     @Override
     public final void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        long startTime = System.currentTimeMillis();
         try {
             JsErrorManager errorManager = new JsErrorManager(snapshot.getSource().getFileObject());
             lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
             lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
-            LOGGER.log (Level.INFO, "Exception during parsing: {0}", ex);
+            LOGGER.log (Level.INFO, "Exception during parsing", ex);
             // TODO create empty result
             lastResult = new JsParserResult(snapshot, null);
         }
-        long endTime = System.currentTimeMillis();
-        LOGGER.log(Level.FINE, "Parsing took: {0} ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
     }
 
     private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
@@ -235,27 +228,25 @@ public abstract class SanitizingParser extends Parser {
                         context.getSnapshot(), 0);
                 if (ts != null) {
                     ts.move(offset);
-                    if (ts.moveNext()) {
-                        int start = -1;
-                        while (ts.movePrevious()) {
-                            if (ts.token().id() != JsTokenId.WHITESPACE
-                                    && ts.token().id() != JsTokenId.EOL
-                                    && ts.token().id() != JsTokenId.DOC_COMMENT
-                                    && ts.token().id() != JsTokenId.LINE_COMMENT
-                                    && ts.token().id() != JsTokenId.BLOCK_COMMENT) {
+                    int start = -1;
+                    while (ts.movePrevious()) {
+                        if (ts.token().id() != JsTokenId.WHITESPACE
+                                && ts.token().id() != JsTokenId.EOL
+                                && ts.token().id() != JsTokenId.DOC_COMMENT
+                                && ts.token().id() != JsTokenId.LINE_COMMENT
+                                && ts.token().id() != JsTokenId.BLOCK_COMMENT) {
 
-                                start = ts.offset();
-                                break;
-                            }
+                            start = ts.offset();
+                            break;
                         }
-                        if (start >= 0 && ts.moveNext()) {
-                            int end = ts.offset();
-                            StringBuilder builder = new StringBuilder(context.getOriginalSource());
-                            erase(builder, start, end);
-                            context.setSanitizedSource(builder.toString());
-                            context.setSanitization(sanitizing);
-                            return true;
-                        }
+                    }
+                    if (start >= 0 && ts.moveNext()) {
+                        int end = ts.offset();
+                        StringBuilder builder = new StringBuilder(context.getOriginalSource());
+                        erase(builder, start, end);
+                        context.setSanitizedSource(builder.toString());
+                        context.setSanitization(sanitizing);
+                        return true;
                     }
                 }
             }
@@ -279,11 +270,15 @@ public abstract class SanitizingParser extends Parser {
             int start = offset > 0 ? offset - 1 : offset;
             int end = start + 1;
             // fix until new line or }
+            boolean incPosition = false;
             char c = source.charAt(start);
             while (start > 0 && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
                 c = source.charAt(--start);
+                incPosition = true;
             }
-            start++;
+            if (incPosition) {
+                start++;
+            }
             if (end < source.length()) {
                 c = source.charAt(end);
                 while (end < source.length() && c != '\n' && c != '\r' && c != '{' && c != '}') { // NOI18N
