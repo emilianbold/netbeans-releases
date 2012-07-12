@@ -44,6 +44,7 @@ package org.netbeans.modules.php.composer.ui.actions;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.netbeans.modules.php.spi.actions.BaseAction;
 import org.openide.util.NbBundle;
 
@@ -70,8 +71,7 @@ abstract class BaseComposerAction extends BaseAction {
         try {
             runCommand(phpModule);
         } catch (InvalidPhpProgramException ex) {
-            // XXX
-            UiUtils.invalidScriptProvided(Bundle.BaseComposerAction_error_composer_notValid(), "Composer"); // NOI18N
+            UiUtils.invalidScriptProvided(Bundle.BaseComposerAction_error_composer_notValid(), ComposerOptionsPanelController.OPTIONS_SUBPATH);
         }
     }
 

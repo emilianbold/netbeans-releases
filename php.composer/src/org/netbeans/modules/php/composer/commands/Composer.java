@@ -48,6 +48,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
+import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -162,6 +163,7 @@ public final class Composer extends PhpProgram {
 
     private ExecutionDescriptor getDescriptor() {
         return getExecutionDescriptor()
+                .optionsPath(ComposerOptionsPanelController.getOptionsPath())
                 .inputVisible(false);
     }
 
