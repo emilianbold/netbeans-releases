@@ -307,13 +307,13 @@ public class RuleNode extends AbstractNode {
         }
     }
 
-    private class PropertyDefinitionProperty extends PropertySupport.ReadWrite<String> {
+    private class PropertyDefinitionProperty extends PropertySupport<String> {
 
         private PropertyDefinition def;
         private static final String EMPTY = "";
 
         public PropertyDefinitionProperty(PropertyDefinition def) {
-            super(def.getName(), String.class, def.getName(), Bundle.rule_properties_add_declaration_tooltip());
+            super(def.getName(), String.class, def.getName(), Bundle.rule_properties_add_declaration_tooltip(), true, rule.isValid());
             this.def = def;
         }
 
@@ -341,7 +341,7 @@ public class RuleNode extends AbstractNode {
         }
     }
 
-    private class DeclarationProperty extends PropertySupport.ReadWrite<String> {
+    private class DeclarationProperty extends PropertySupport<String> {
 
         private Declaration declaration;
 
@@ -349,7 +349,7 @@ public class RuleNode extends AbstractNode {
             super(declaration.getProperty().getContent().toString(),
                     String.class,
                     declaration.getProperty().getContent().toString(),
-                    null);
+                    null, true, rule.isValid());
             this.declaration = declaration;
         }
 
