@@ -143,6 +143,7 @@ public final class Composer extends PhpProgram {
             ExternalProcessBuilder processBuilder = PhpInterpreter.getDefault()
                     .getProcessBuilder()
                     .workingDirectory(FileUtil.toFile(sourceDirectory))
+                    .redirectErrorStream(true)
                     .addArgument(getProgram());
             for (String param : getParameters()) {
                 processBuilder = processBuilder.addArgument(param);
@@ -150,7 +151,7 @@ public final class Composer extends PhpProgram {
             for (String param : DEFAULT_PARAMS) {
                 processBuilder = processBuilder.addArgument(param);
             }
-            return processBuilder;
+            return processBuilder.addArgument(command);
         } catch (InvalidPhpProgramException ex) {
             // ignored
         }
