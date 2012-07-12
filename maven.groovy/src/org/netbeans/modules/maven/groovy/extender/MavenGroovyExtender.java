@@ -107,6 +107,7 @@ public class MavenGroovyExtender implements GroovyExtender {
                     List<ModelOperation<POMModel>> operations = new ArrayList<ModelOperation<POMModel>>();
                     operations.add(new AddGroovyDependency());
                     operations.add(new AddMavenCompilerPlugin());
+                    operations.add(new AddGroovyEclipseCompiler());
                     Utilities.performPOMModelOperations(pom, operations);
                 }
             });
