@@ -189,7 +189,7 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
         if (configs == null)
             calculateConfigs();
         String config = p.getEvaluator().getProperty(PROP_CONFIG);
-        if(config==null) {
+        if(config==null || !configs.containsKey(config)) {
             // return first in the list:
             List<ClientProjectConfiguration> l = new ArrayList<ClientProjectConfiguration>();
             l.addAll(configs.values());
