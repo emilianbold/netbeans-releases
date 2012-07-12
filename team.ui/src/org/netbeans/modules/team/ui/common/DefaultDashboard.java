@@ -384,6 +384,9 @@ public final class DefaultDashboard<S extends TeamServer, P> {
      * @param isMemberProject
      */
     public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {
+        
+        // XXX this is the only usecase of .getTeamServer!
+        // maybe if we could get rid of it the whole spi would get significantly simplier to deal with!
         UIUtils.setSelectedServer(project.getTeamServer());
         requestProcessor.post(new Runnable() {
             @Override
