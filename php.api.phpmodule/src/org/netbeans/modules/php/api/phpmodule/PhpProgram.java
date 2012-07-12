@@ -179,6 +179,8 @@ public abstract class PhpProgram {
      * @since 1.10
      */
     public ExternalProcessBuilder getProcessBuilder() {
+        // XXX possibility to run via php interpreter
+        // XXX possibility to set work dir
         ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(program);
         for (String param : parameters) {
             processBuilder = processBuilder.addArgument(param);
@@ -199,6 +201,8 @@ public abstract class PhpProgram {
      * @since 1.10
      */
     public static ExecutionDescriptor getExecutionDescriptor() {
+        // XXX not static
+        // XXX input not visible by default?
         return DEFAULT_DESCRIPTOR;
     }
 

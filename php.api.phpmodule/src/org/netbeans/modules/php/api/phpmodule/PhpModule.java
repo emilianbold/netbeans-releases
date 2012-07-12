@@ -59,6 +59,8 @@ import org.openide.windows.WindowManager;
  * Note: For public API, this should likely be final class using accessor pattern.
  * @author Tomas Mysik
  */
+// XXX add isBroken() method
+// XXX add @NonNull etc.
 public abstract class PhpModule {
 
     /**
