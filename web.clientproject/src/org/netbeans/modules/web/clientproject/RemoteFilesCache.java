@@ -81,8 +81,12 @@ public class RemoteFilesCache {
 //    }
     
     public URL isRemoteFile(FileObject fo){
+        String remoteUrl = (String) fo.getAttribute(REMOTE_URL);
+        if (remoteUrl == null) {
+            return null;
+        }
         try {
-            return new URL((String)fo.getAttribute(REMOTE_URL));
+            return new URL(remoteUrl);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
             return null;
