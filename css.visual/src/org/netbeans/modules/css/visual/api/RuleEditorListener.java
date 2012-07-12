@@ -44,6 +44,10 @@ package org.netbeans.modules.css.visual.api;
 import org.netbeans.modules.css.model.api.Declaration;
 
 /**
+ * Rule editor listening support.
+ * 
+ * <b>Just a sketch up - not yet finalized!</b>
+ * <b>Events firing not yet implemented!</b>
  *
  * @author marekfukala
  */
