@@ -25,7 +25,6 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
- *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -41,76 +40,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.web.browser.api;
 
-package org.netbeans.modules.extbrowser;
-
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.openide.awt.HtmlBrowser;
-import org.openide.execution.NbProcessDescriptor;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
- * @author Petr Jiricka
+ * Ids browser with available plugin 
+ * 
+ * @author ads
+ *
  */
-public class SafariBrowser extends ExtWebBrowser {
+public enum BrowserFamilyId {
 
-    private static final long serialVersionUID = -1L;
-
-    /** Creates new ExtWebBrowser */
-    public SafariBrowser() {
-    }
-
-    /** Determines whether the browser should be visible or not
-     *  @return true when OS is Windows.
-     *          false in all other cases.
-     */
-    public static Boolean isHidden () {
-        return (Utilities.isMac()) ? Boolean.FALSE : Boolean.TRUE;
-    }
-    
-    /** Getter for browser name
-     *  @return name of browser
-     */
-    public String getName () {
-        if (name == null) {
-            this.name = NbBundle.getMessage(SafariBrowser.class, "CTL_SafariBrowserName");
-        }
-        return name;
-    }
-    
-    /**
-     * Returns a new instance of BrowserImpl implementation.
-     * @throws UnsupportedOperationException when method is called and OS is not Windows.
-     * @return browserImpl implementation of browser.
-     */
-    public HtmlBrowser.Impl createHtmlBrowserImpl() {
-        ExtBrowserImpl impl = null;
-
-        if (Utilities.isMac()) {
-            impl = new MacBrowserImpl(this);
-        } else {
-            throw new UnsupportedOperationException (NbBundle.getMessage(SafariBrowser.class, "MSG_CannotUseBrowser"));
-        }
-        
-        return impl;
-    }
-    
-    /** Default command for browser execution.
-     * Can be overriden to return browser that suits to platform and settings.
-     *
-     * @return process descriptor that allows to start browser.
-     */
-    protected NbProcessDescriptor defaultBrowserExecutable () {
-
-        return new NbProcessDescriptor ("/usr/bin/open", // NOI18N
-                "-a safari {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}",
-                ExtWebBrowser.UnixBrowserFormat.getHint()); // NOI18N
-    }
-
-    @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.SAFARI;
-    }
-
+    FIREFOX,
+    MOZILLA,
+    CHROME,
+    CHROMIUM,
+    SAFARI,
+    IE,
+    JAVAFX_WEBVIEW,
+    UNKNOWN
 }

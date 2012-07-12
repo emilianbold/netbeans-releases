@@ -55,12 +55,18 @@ final class WebBrowserFactoryDescriptor {
     private DataObject dob;
     private boolean def;
     private HtmlBrowser.Factory factory;
+    private BrowserFamilyId browserFamily;
 
     public WebBrowserFactoryDescriptor(String id, DataObject dob, boolean def, Factory factory) {
         this.id = id;
         this.dob = dob;
         this.def = def;
         this.factory = factory;
+        if (factory instanceof EnhancedBrowserFactory) {
+            browserFamily = ((EnhancedBrowserFactory)factory).getBrowserFamilyId();
+        } else {
+            browserFamily = BrowserFamilyId.UNKNOWN;
+        }
     }
     
     
@@ -98,6 +104,10 @@ final class WebBrowserFactoryDescriptor {
      */
     public HtmlBrowser.Factory getFactory() {
         return factory;
+    }
+
+    public BrowserFamilyId getBrowserFamily() {
+        return browserFamily;
     }
 
     @Override

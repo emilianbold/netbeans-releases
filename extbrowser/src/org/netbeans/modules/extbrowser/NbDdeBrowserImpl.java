@@ -66,8 +66,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extbrowser.plugins.BrowserId;
-import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.openide.util.Exceptions;
 
 
@@ -175,19 +174,19 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     }
     
     @Override
-    protected BrowserId getDefaultBrowserFamilyId(){
-        BrowserId id = super.getDefaultBrowserFamilyId();
-        if (id != BrowserId.UNKNOWN && id != BrowserId.OTHER){
+    protected BrowserFamilyId getDefaultBrowserFamilyId(){
+        BrowserFamilyId id = super.getDefaultBrowserFamilyId();
+        if (id != BrowserFamilyId.UNKNOWN){
             return id;
         }
         String ddeServer = realDDEServer();
         if ( ExtWebBrowser.FIREFOX.equals( ddeServer ) ){
-            return BrowserId.FIREFOX;
+            return BrowserFamilyId.FIREFOX;
         }
         else if ( ExtWebBrowser.CHROME.equals( ddeServer)){
-            return BrowserId.CHROME;
+            return BrowserFamilyId.CHROME;
         }
-        return BrowserId.UNKNOWN;
+        return BrowserFamilyId.UNKNOWN;
     }
     
     /** Finds the name of DDE server. 

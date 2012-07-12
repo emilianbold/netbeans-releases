@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -56,10 +55,10 @@ import java.util.List;
 import org.netbeans.modules.extbrowser.plugins.*;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -70,7 +69,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Radim Kubacki
  */
-public abstract class ExtBrowserImpl extends HtmlBrowser.Impl 
+public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     implements EnhancedBrowser 
 {
     /** Lookup of this {@code HtmlBrowser.Impl}.  */
@@ -142,8 +141,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                     new MessageDispatcherImpl(),
                     new RemoteScriptExecutor(this)
                 ));
-        if (extBrowserFactory.getBrowserFamilyId() == BrowserId.CHROME || 
-                extBrowserFactory.getBrowserFamilyId() == BrowserId.CHROMIUM) {
+        if (extBrowserFactory.getBrowserFamilyId() == BrowserFamilyId.CHROME || 
+                extBrowserFactory.getBrowserFamilyId() == BrowserFamilyId.CHROMIUM) {
             WebKitDebuggingTransport transport = new WebKitDebuggingTransport(this);
             lookups.add(Lookups.fixed(transport, Factory.createWebKitDebugging(transport)));
         }
@@ -151,8 +150,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
     }
     
-    protected BrowserId getDefaultBrowserFamilyId(){
-        return BrowserId.UNKNOWN;
+    protected BrowserFamilyId getDefaultBrowserFamilyId(){
+        return BrowserFamilyId.UNKNOWN;
     }
     
     
@@ -246,7 +245,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         if (hasEnhancedMode()) {
             BrowserTabDescriptor tab = getBrowserTabDescriptor();
             if (tab == null) {
-                BrowserId pluginId = extBrowserFactory.getBrowserFamilyId();
+                BrowserFamilyId pluginId = extBrowserFactory.getBrowserFamilyId();
                 ExtensionManager.ExtensitionStatus status = ExtensionManager
                         .isInstalled(pluginId);
                 if (status == ExtensionManager.ExtensitionStatus.MISSING || 
