@@ -563,6 +563,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         private String propertyInsertPrefix;
         private PropertyDefinition property;
+        private boolean vendorProperty;
         
         private PropertyCompletionItem(CssElement element,
                 PropertyDefinition property,
@@ -573,6 +574,13 @@ public abstract class CssCompletionItem implements CompletionProposal {
             super(element, property.getName(), anchorOffset, addSemicolon);
             this.property = property;
             this.propertyInsertPrefix = propertyInsertPrefix;
+            this.vendorProperty = Css3Utils.isVendorSpecificProperty(property.getName());
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            //list the vendor specific properties after the standard properties
+            return vendorProperty ? super.getSortPrioOverride() + 50 : super.getSortPrioOverride();
         }
 
         @Override
@@ -582,7 +590,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            if (Css3Utils.isVendorSpecificProperty(getName())) {
+            if (vendorProperty) {
                 formatter.appendHtml("<i>"); //NOI18N
                 formatter.appendText(getName());
                 formatter.appendHtml("</i>"); //NOI18N
