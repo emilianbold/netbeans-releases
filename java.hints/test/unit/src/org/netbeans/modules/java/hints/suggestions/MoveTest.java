@@ -64,8 +64,8 @@ public class MoveTest extends NbTestCase {
                 + "    }\n"
                 + "}\n")
                 .run(Move.class)
-                .findWarning("2:23-2:23:hint:Move initilizer to constructor(s)")
-                .applyFix("Move initilizer to constructor(s)")
+                .findWarning("2:23-2:23:hint:Move initializer to constructor(s)")
+                .applyFix("Move initializer to constructor(s)")
                 .assertCompilable()
                 .assertOutput("package test;\n"
                 + "public class Test {\n"
@@ -94,8 +94,8 @@ public class MoveTest extends NbTestCase {
                 + "    }\n"
                 + "}\n")
                 .run(Move.class)
-                .findWarning("2:23-2:23:hint:Move initilizer to constructor(s)")
-                .applyFix("Move initilizer to constructor(s)")
+                .findWarning("2:23-2:23:hint:Move initializer to constructor(s)")
+                .applyFix("Move initializer to constructor(s)")
                 .assertCompilable()
                 .assertOutput("package test;\n"
                 + "public class Test {\n"
@@ -124,8 +124,8 @@ public class MoveTest extends NbTestCase {
                 + "    private String mess|age = \"Hello World!\";\n"
                 + "}\n")
                 .run(Move.class)
-                .findWarning("2:23-2:23:hint:Move initilizer to constructor(s)")
-                .applyFix("Move initilizer to constructor(s)")
+                .findWarning("2:23-2:23:hint:Move initializer to constructor(s)")
+                .applyFix("Move initializer to constructor(s)")
                 .assertCompilable()
                 .assertOutput("package test;\n"
                 + "public class Test {\n"
