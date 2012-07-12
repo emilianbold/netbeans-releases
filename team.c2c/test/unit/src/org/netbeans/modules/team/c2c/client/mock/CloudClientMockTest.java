@@ -39,47 +39,33 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.client.api;
+package org.netbeans.modules.team.c2c.client.mock;
 
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobDetails;
-import com.tasktop.c2c.server.profile.domain.project.Profile;
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import java.util.List;
+import java.util.logging.Level;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.team.c2c.client.api.ClientFactory;
+import org.netbeans.modules.team.c2c.client.api.CloudClient;
 
 /**
  *
  * @author jpeska
  */
-public interface CloudClient {
+public class CloudClientMockTest extends NbTestCase {
 
-    BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws CloudException;
+    private CloudClient client;
 
-    Profile getCurrentProfile() throws CloudException;
+    public CloudClientMockTest(String arg0) {
+        super(arg0);
+    }
 
-    HudsonStatus getHudsonStatus(String projectId) throws CloudException;
+    @Override
+    protected Level logLevel() {
+        return Level.ALL;
+    }
 
-    JobDetails getJobDetails(String projectId, final String jobName) throws CloudException;
-
-    List<Project> getMyProjects() throws CloudException;
-
-    Project getProjectById(final String projectId) throws CloudException;
-
-    List<ProjectActivity> getRecentActivities(final String projectId) throws CloudException;
-
-    List<ProjectActivity> getRecentShortActivities(final String projectId) throws CloudException;
-
-    List<ScmRepository> getScmRepositories(String projectId) throws CloudException;
-
-    boolean isWatchingProject(final String projectId) throws CloudException;
-
-    List<Project> searchProjects(final String pattern) throws CloudException;
-
-    void unwatchProject(final String projectId) throws CloudException;
-
-    void watchProject(final String projectId) throws CloudException;
-
+    public void testMockClient() throws Exception {
+        System.setProperty("cloud-client-mock", Boolean.TRUE.toString());
+        client = ClientFactory.getInstance().createClient("C:/Projects/ods-json", null);
+        assertTrue(client instanceof CloudClientMock);
+    }
 }

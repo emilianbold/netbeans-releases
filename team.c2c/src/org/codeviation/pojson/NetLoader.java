@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,52 +40,58 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.client.api;
 
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobDetails;
-import com.tasktop.c2c.server.profile.domain.project.Profile;
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import java.util.List;
+package org.codeviation.pojson;
 
-/**
+import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
+import org.codeviation.commons.utils.UrlUriUtil;
+
+/** Utility method for reading Json objects from URLs/URIs
  *
- * @author jpeska
+ * @author Petr Hrebejk
  */
-public interface CloudClient {
+public class NetLoader {
 
-    BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws CloudException;
+    private PojsonLoad loader;
+    
+    public NetLoader() {
+        this.loader = PojsonLoad.create();
+    }
+    
+    public <T> T load(Class<T> clazz, URI uri ) throws IOException{
+        return loader.load( UrlUriUtil.getInputStream(uri), clazz );
+    }
 
-    Profile getCurrentProfile() throws CloudException;
+    public <T> T load(Class<T> clazz, URL url ) throws IOException{
+        return loader.load( UrlUriUtil.getInputStream(url), clazz );
+    }
 
-    HudsonStatus getHudsonStatus(String projectId) throws CloudException;
+    public Object toCollections(URL url) throws IOException {
+        return loader.toCollections( UrlUriUtil.getInputStream(url) ) ;
+    }
 
-    JobDetails getJobDetails(String projectId, final String jobName) throws CloudException;
+    public Object toCollections(URI uri) throws IOException {
+        return loader.toCollections( UrlUriUtil.getInputStream(uri) ) ;
+    }
 
-    List<Project> getMyProjects() throws CloudException;
 
-    Project getProjectById(final String projectId) throws CloudException;
+//  maybe add later
 
-    List<ProjectActivity> getRecentActivities(final String projectId) throws CloudException;
-
-    List<ProjectActivity> getRecentShortActivities(final String projectId) throws CloudException;
-
-    List<ScmRepository> getScmRepositories(String projectId) throws CloudException;
-
-    boolean isWatchingProject(final String projectId) throws CloudException;
-
-    List<Project> searchProjects(final String pattern) throws CloudException;
-
-    void unwatchProject(final String projectId) throws CloudException;
-
-    void watchProject(final String projectId) throws CloudException;
-
+//    @SuppressWarnings("unchecked")
+//    public <T> T[] load(Class<T> clazz, File... files ) throws IOException{
+//
+//        T[] a = (T[]) Array.newInstance(clazz, files.length);
+//
+//        for (int i = 0; i < files.length; i++) {
+//
+//            a[i] = load.load(FileUtil.TO_INPUT_STREAM.create(files[i]), clazz);
+//        }
+//
+//        return a;
+//
+//    }
+    
 }

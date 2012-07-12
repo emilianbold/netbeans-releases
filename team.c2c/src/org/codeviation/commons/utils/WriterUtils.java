@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,52 +40,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.client.api;
+package org.codeviation.commons.utils;
 
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobDetails;
-import com.tasktop.c2c.server.profile.domain.project.Profile;
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import java.util.List;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import org.codeviation.commons.patterns.Factory;
 
 /**
  *
- * @author jpeska
+ * @author phrebejk
  */
-public interface CloudClient {
+public class WriterUtils {
 
-    BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws CloudException;
+    /** Creates a writer from a file, if the file does not exist
+     * it will try to create it.
+     * Will throw IllegalArgumentException on IO Error
+     */
+    public static final Factory<Writer,File> FILE = new FileWriterFactory(false, true);
+    public static final Factory<Writer,File> FILE_DONT_OVERRIDE = new FileWriterFactory(false, false);
+    public static final Factory<Writer,File> FILE_APPEND = new FileWriterFactory(true, false);
+        
+    private WriterUtils() {
+    }
+    
+    private static class FileWriterFactory implements Factory<Writer,File> {
 
-    Profile getCurrentProfile() throws CloudException;
+        private boolean append;
+        private boolean override;
 
-    HudsonStatus getHudsonStatus(String projectId) throws CloudException;
-
-    JobDetails getJobDetails(String projectId, final String jobName) throws CloudException;
-
-    List<Project> getMyProjects() throws CloudException;
-
-    Project getProjectById(final String projectId) throws CloudException;
-
-    List<ProjectActivity> getRecentActivities(final String projectId) throws CloudException;
-
-    List<ProjectActivity> getRecentShortActivities(final String projectId) throws CloudException;
-
-    List<ScmRepository> getScmRepositories(String projectId) throws CloudException;
-
-    boolean isWatchingProject(final String projectId) throws CloudException;
-
-    List<Project> searchProjects(final String pattern) throws CloudException;
-
-    void unwatchProject(final String projectId) throws CloudException;
-
-    void watchProject(final String projectId) throws CloudException;
-
+        public FileWriterFactory(boolean append, boolean override) {
+            this.append = append;
+            this.override = override;
+        }
+        
+        public Writer create(File file) {
+            try {
+            
+                if (!file.exists() ) {
+                    file.getParentFile().mkdirs();
+                    file.createNewFile();
+                }
+                else if (!override && !append ) {
+                    throw new IllegalArgumentException( "File " + file.getPath() + " already exists.");
+                }
+                return new FileWriter(file, append);                            
+            } catch (IOException ex) {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
+       
 }

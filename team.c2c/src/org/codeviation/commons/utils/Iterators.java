@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,52 +40,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.client.api;
 
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobDetails;
-import com.tasktop.c2c.server.profile.domain.project.Profile;
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import java.util.List;
+package org.codeviation.commons.utils;
+
+import java.util.Iterator;
+import org.codeviation.commons.patterns.Factory;
 
 /**
  *
- * @author jpeska
+ * @author phrebejk
  */
-public interface CloudClient {
+public class Iterators {
 
-    BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws CloudException;
+    private Iterators() {}
+    
+    public static <T,P> Iterator<T> translating(Iterator<P> iterator, Factory<T,P> factory) {
+        return new TranslatingIterator<T, P>(iterator, factory);
+    }
+    
+    public static <T,P> Iterator<T> translating(Iterable<P> iterable, Factory<T,P> factory) {
+        return new TranslatingIterator<T, P>(iterable.iterator(), factory);
+    }
+    
+    public static class TranslatingIterator<T,P> implements Iterator<T> {
 
-    Profile getCurrentProfile() throws CloudException;
+        private Iterator<P> iterator;
+        private Factory <T,P> factory;
 
-    HudsonStatus getHudsonStatus(String projectId) throws CloudException;
+        public TranslatingIterator(Iterator<P> iterator, Factory<T,P> factory) {
+            this.iterator = iterator;
+            this.factory = factory;
+        }
+                        
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
 
-    JobDetails getJobDetails(String projectId, final String jobName) throws CloudException;
+        public T next() {
+            return factory.create(iterator.next());
+        }
 
-    List<Project> getMyProjects() throws CloudException;
-
-    Project getProjectById(final String projectId) throws CloudException;
-
-    List<ProjectActivity> getRecentActivities(final String projectId) throws CloudException;
-
-    List<ProjectActivity> getRecentShortActivities(final String projectId) throws CloudException;
-
-    List<ScmRepository> getScmRepositories(String projectId) throws CloudException;
-
-    boolean isWatchingProject(final String projectId) throws CloudException;
-
-    List<Project> searchProjects(final String pattern) throws CloudException;
-
-    void unwatchProject(final String projectId) throws CloudException;
-
-    void watchProject(final String projectId) throws CloudException;
-
+        public void remove() {
+            iterator.remove();
+        }
+        
+    }
+    
 }
