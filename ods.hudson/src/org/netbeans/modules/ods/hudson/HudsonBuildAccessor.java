@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.ods.hudson;
 
-import com.tasktop.c2c.server.cloud.domain.ServiceType;
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -63,7 +60,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
-import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
@@ -77,30 +74,20 @@ import org.openide.util.lookup.ServiceProvider;
  * @author jhavlin
  */
 @ServiceProvider(service = BuildAccessor.class)
-public class HudsonBuildAccessor extends BuildAccessor<CloudUiServer, Project> {
+public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
 
     @Override
-    public boolean isEnabled(ProjectHandle<CloudUiServer, Project> projectHandle) {
-        Project project = projectHandle.getTeamProject();
-        List<ProjectService> services = project.getProjectServicesOfType(
-                ServiceType.BUILD); // XXX BUILD_SLAVE
-        if (services == null || services.isEmpty()) {
-            return false;
-        }
-        return services.iterator().next().isAvailable(); // XXX what if more then 1 returned?
+    public boolean isEnabled(ProjectHandle<ODSProject> projectHandle) {
+        return projectHandle.getTeamProject().hasBuild(); 
     }
 
     @Override
-    public List<BuildHandle> getBuilds(ProjectHandle<CloudUiServer, Project> projectHandle) {
-        Project project = projectHandle.getTeamProject();
-        String projectId = project.getIdentifier();
-
-        ODSBuilderConnector odsBuilderConnector = new ODSBuilderConnector(
-                projectHandle.getTeamServer(), project);
+    public List<BuildHandle> getBuilds(ProjectHandle<ODSProject> projectHandle) {
+        ODSBuilderConnector odsBuilderConnector = new ODSBuilderConnector(projectHandle);
         HudsonInstance hi = HudsonManager.addInstance(
-                project.getName(),
-                projectHandle.getTeamServer().getUrl()
-                + "/" + projectId + "/", //NOI18N
+                projectHandle.getDisplayName(),
+                projectHandle.getTeamProject().getServer().getUrl()
+                + "/" + projectHandle.getId() + "/", //NOI18N
                 1, odsBuilderConnector);
         if (hi == null) {
             return Collections.emptyList();
@@ -114,7 +101,7 @@ public class HudsonBuildAccessor extends BuildAccessor<CloudUiServer, Project> {
     }
 
     @Override
-    public Action getNewBuildAction(ProjectHandle<CloudUiServer, Project> projectHandle) {
+    public Action getNewBuildAction(ProjectHandle<ODSProject> projectHandle) {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -130,8 +117,8 @@ public class HudsonBuildAccessor extends BuildAccessor<CloudUiServer, Project> {
     }
 
     @Override
-    public Class<Project> type() {
-        return Project.class;
+    public Class<ODSProject> type() {
+        return ODSProject.class;
     }
 
     private static class HudsonBuildHandle extends BuildHandle {

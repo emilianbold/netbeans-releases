@@ -86,7 +86,7 @@ class FakeJiraSupport {
         this.openIssueUrl = openIssueUrl;
     }
 
-    public static synchronized FakeJiraSupport get(ProjectHandle<KenaiServer, KenaiProject> handle) {
+    public static synchronized FakeJiraSupport get(ProjectHandle<KenaiProject> handle) {
         KenaiProject project = handle.getTeamProject();
         if(project == null) {
             return null;

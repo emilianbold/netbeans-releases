@@ -55,14 +55,12 @@ import org.openide.util.WeakListeners;
  *
  * @author Jan Becicka
  */
-public class ProjectHandleImpl extends ProjectHandle<KenaiServer, KenaiProject> implements PropertyChangeListener {
+public class ProjectHandleImpl extends ProjectHandle<KenaiProject> implements PropertyChangeListener {
 
     private KenaiProject prj;
-    private KenaiServer server;
     public ProjectHandleImpl(KenaiProject prj) {
         super( prj.getName() );
         this.prj=prj;
-        server = KenaiServer.forKenai(prj.getKenai());
         prj.addPropertyChangeListener(WeakListeners.propertyChange(this, prj));
     }
 
@@ -71,6 +69,7 @@ public class ProjectHandleImpl extends ProjectHandle<KenaiServer, KenaiProject> 
         return prj.getDisplayName();
     }
 
+    @Override
     public KenaiProject getTeamProject() {
         return prj;
     }
@@ -85,12 +84,8 @@ public class ProjectHandleImpl extends ProjectHandle<KenaiServer, KenaiProject> 
         return false;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         firePropertyChange(PROP_CONTENT, evt.getOldValue(), evt.getNewValue());
-    }
-
-    @Override
-    public KenaiServer getTeamServer() {
-        return server;
     }
 }

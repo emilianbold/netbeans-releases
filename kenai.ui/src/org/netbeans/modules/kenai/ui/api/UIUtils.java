@@ -189,7 +189,7 @@ public final class UIUtils {
         return result;
     }
 
-    public static ProjectHandle<KenaiServer, KenaiProject>[] getDashboardProjects() {
+    public static ProjectHandle<KenaiProject>[] getDashboardProjects() {
         return KenaiServer.getOpenProjects();
     }
     

@@ -11,11 +11,6 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>com.tasktop.c2c.server.cloud.api</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>com.tasktop.c2c.server.common.api</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>

@@ -43,6 +43,7 @@ package org.netbeans.modules.team.ods.ui.project;
 
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.windows.TopComponent;
@@ -72,7 +73,7 @@ preferredID = "ProjectDetailsTopComponent")
 public final class ProjectDetailsTopComponent extends TopComponent {
     private static ProjectDetailsTopComponent inst;
 
-    static ProjectDetailsTopComponent getInstance(Project project) {
+    static ProjectDetailsTopComponent getInstance(ODSProject project) {
         if (inst == null){
             inst = new ProjectDetailsTopComponent(project);
         }
@@ -87,7 +88,7 @@ public final class ProjectDetailsTopComponent extends TopComponent {
 
     }
 
-    private ProjectDetailsTopComponent(Project project) {
+    private ProjectDetailsTopComponent(ODSProject project) {
         this();
     }
 

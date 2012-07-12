@@ -84,7 +84,7 @@ import org.openide.windows.WindowManager;
  * @author Milan Kubec, Jan Becicka
  */
 @ServiceProvider(service=SourceAccessor.class)
-public class SourceAccessorImpl extends SourceAccessor<KenaiServer, KenaiProject> {
+public class SourceAccessorImpl extends SourceAccessor<KenaiProject> {
     private static SourceAccessor instance;
 
     public static SourceAccessor getDefault() {
@@ -97,7 +97,7 @@ public class SourceAccessorImpl extends SourceAccessor<KenaiServer, KenaiProject
     private Map<SourceHandle,ProjectAndFeature> handlesMap = new HashMap<SourceHandle,ProjectAndFeature>();
 
     @Override
-    public List<SourceHandle> getSources(ProjectHandle<KenaiServer, KenaiProject> prjHandle) {
+    public List<SourceHandle> getSources(ProjectHandle<KenaiProject> prjHandle) {
 
         KenaiProject project = prjHandle.getTeamProject();
         List<SourceHandle> handlesList = new ArrayList<SourceHandle>();

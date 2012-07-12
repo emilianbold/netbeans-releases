@@ -48,7 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.dashboard.ProjectAccessorImpl;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
@@ -62,7 +62,7 @@ public class DetailsAction {
 
     static RequestProcessor.Task t = null;
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<CloudUiServer, Project> proj) {
+    public static synchronized AbstractAction forProject(final ProjectHandle<ODSProject> proj) {
 
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Details")) { //NOI18N
             @Override
@@ -76,7 +76,7 @@ public class DetailsAction {
                 t = RequestProcessor.getDefault().post(new Runnable() {
                     @Override
                     public void run() {
-                        final Project project = proj.getTeamProject();
+                        final ODSProject project = proj.getTeamProject();
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {

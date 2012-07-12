@@ -77,14 +77,14 @@ import org.openide.util.NbBundle;
  */
 public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> implements PropertyChangeListener {
 
-    private final ProjectHandle<KenaiServer, KenaiProject> project;
+    private final ProjectHandle<KenaiProject> project;
     private MessagingHandle messaging;
     private JPanel panel;
     private List<JLabel> labels = new ArrayList<JLabel>(5);
     private List<LinkButton> buttons = new ArrayList<LinkButton>(3);
     private final Object LOCK = new Object();
 
-    public ProjectLinksNode( TreeListNode parent, ProjectHandle<KenaiServer, KenaiProject> project ) {
+    public ProjectLinksNode( TreeListNode parent, ProjectHandle<KenaiProject> project ) {
         super( parent, null );
         this.project = project;
         messaging = load();

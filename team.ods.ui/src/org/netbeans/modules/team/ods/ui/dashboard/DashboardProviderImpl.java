@@ -51,6 +51,8 @@ import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
@@ -76,7 +78,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, Project> {
+public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, ODSProject> {
 
     private final CloudUiServer server;
     private ProjectAccessorImpl projectAccessor;
@@ -121,12 +123,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<CloudUiServer, Project> project) {
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<ODSProject> project) {
         return new ProjectLinksNode(pn, project, this);
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle<CloudUiServer, Project> p) {
+    public TreeListNode createMyProjectNode(ProjectHandle<ODSProject> p) {
         return new MyProjectNode(p, server.getDashboard(), this);
     }
 
@@ -144,12 +146,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public MessagingAccessor<CloudUiServer, Project> getMessagingAccessor() {
+    public MessagingAccessor<ODSProject> getMessagingAccessor() {
         return null;
     }
 
     @Override
-    public MemberAccessor<CloudUiServer, Project> getMemberAccessor() {
+    public MemberAccessor<ODSProject> getMemberAccessor() {
         return null;
     }
 
@@ -162,27 +164,38 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
     }
 
     @Override
-    public QueryAccessor<CloudUiServer, Project> getQueryAccessor() {
-        return server.getDashboard().getQueryAccessor(Project.class);
+    public QueryAccessor<ODSProject> getQueryAccessor() {
+        return server.getDashboard().getQueryAccessor(ODSProject.class);
     }
     
     @Override
-    public BuildAccessor<CloudUiServer, Project> getBuildAccessor() {
-        return server.getDashboard().getBuildAccessor(Project.class);
+    public BuildAccessor<ODSProject> getBuildAccessor() {
+        return server.getDashboard().getBuildAccessor(ODSProject.class);
     }
 
     @Override
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<CloudUiServer, Project> project) {
+    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<ODSProject> project) {
         return new SourceListNode(pn, this, (LeafNode[]) null);
     }
 
     @Override
-    public Collection<ProjectHandle<CloudUiServer, Project>> getMyProjects() {
-        return server.getMyProjects();
+    public Collection<ProjectHandle<ODSProject>> getMyProjects() {
+        try {
+            return server.getMyProjects();
+        } catch (CloudException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    @Override
+    public CloudUiServer forProject(ProjectHandle<ODSProject> project) {
+//        return server; // should be save as long as there is one dashboardprovider for each dashboard
+        return ((ProjectHandleImpl) project).getTeamServer();
     }
     
     @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
-    public static class ODSQueryAccessor extends QueryAccessor<CloudUiServer, Project> {
+    public static class ODSQueryAccessor extends QueryAccessor<ODSProject> {
         private static class ODSQueryHandle extends QueryHandle {
             private final String display;
             private final int t;
@@ -214,17 +227,17 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
         }
         
         @Override
-        public Class<Project> type() {
-            return Project.class;
+        public Class<ODSProject> type() {
+            return ODSProject.class;
         }
             
         @Override
-        public QueryHandle getAllIssuesQuery(ProjectHandle<CloudUiServer, Project> project) {
+        public QueryHandle getAllIssuesQuery(ProjectHandle<ODSProject> project) {
             return allIssues;
         }
 
         @Override
-        public List<QueryHandle> getQueries(ProjectHandle<CloudUiServer, Project> project) {
+        public List<QueryHandle> getQueries(ProjectHandle<ODSProject> project) {
             try {
                 // XXX emulate network latency
                 Thread.currentThread().sleep(3000);
@@ -258,12 +271,12 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, P
         }
         
         @Override
-        public Action getFindIssueAction(ProjectHandle<CloudUiServer, Project> project) {
+        public Action getFindIssueAction(ProjectHandle<ODSProject> project) {
             return NotYetAction.instance;
         }
 
         @Override
-        public Action getCreateIssueAction(ProjectHandle<CloudUiServer, Project> project) {
+        public Action getCreateIssueAction(ProjectHandle<ODSProject> project) {
             return NotYetAction.instance;
         }
 

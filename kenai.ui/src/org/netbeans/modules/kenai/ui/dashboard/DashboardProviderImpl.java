@@ -114,7 +114,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<KenaiServer, KenaiProject> project) {
+    public TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
         return new ProjectLinksNode(pn, project);
     }
 
@@ -129,7 +129,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public MessagingAccessor<KenaiServer, KenaiProject> getMessagingAccessor() {
+    public MessagingAccessor<KenaiProject> getMessagingAccessor() {
         return MessagingAccessorImpl.getDefault();
     }
 
@@ -144,7 +144,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<KenaiServer, KenaiProject> project) {
+    public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
         if (server.getUrl().toString().equals("https://netbeans.org")) { //NOI18N
             return new SourceListNode(pn, this, new OpenNetBeansIDEProjects(server.getKenai(), pn));
         } else {
@@ -153,7 +153,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public QueryAccessor<KenaiServer, KenaiProject> getQueryAccessor() {
+    public QueryAccessor<KenaiProject> getQueryAccessor() {
         return server.getDashboard().getQueryAccessor(KenaiProject.class);
     }            
 
@@ -163,7 +163,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public BuildAccessor<KenaiServer, KenaiProject> getBuildAccessor() {
+    public BuildAccessor<KenaiProject> getBuildAccessor() {
         return new BuildAccessor() {
             public boolean isEnabled(ProjectHandle project) {
                 return false;
@@ -183,8 +183,13 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
     }
 
     @Override
-    public Collection<ProjectHandle<KenaiServer, KenaiProject>> getMyProjects() {
+    public Collection<ProjectHandle<KenaiProject>> getMyProjects() {
         return server.getMyProjects();
+    }
+
+    @Override
+    public KenaiServer forProject(ProjectHandle<KenaiProject> project) {
+        return KenaiServer.forKenai(project.getTeamProject().getKenai());
     }
     
 }

@@ -73,7 +73,7 @@ public class SourceListNode<S extends TeamServer, P> extends SectionNode {
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        SourceAccessor<S, P> accessor = dashboard.getSourceAccessor();
+        SourceAccessor<P> accessor = dashboard.getSourceAccessor();
         List<SourceHandle> sources = accessor.getSources(project);
         if(sources.isEmpty() && nodes != null) {
             res.addAll(Arrays.asList(nodes));

@@ -51,6 +51,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -100,11 +101,13 @@ public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
         }
         this.dashboard = dashboard;
         this.projectListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
                     refreshChildren();
                     if (evt.getNewValue() != null || evt.getOldValue() !=null) {
-                        boolean m = dashboard.getMyProjects().contains(project);
+                        Collection<ProjectHandle<P>> myProjects = dashboard.getMyProjects();
+                        boolean m = myProjects != null ? myProjects.contains(project) : false;
                         if (m != isMemberProject) {
                             dashboard.refreshMemberProjects(false);
                         }

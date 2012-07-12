@@ -43,14 +43,12 @@ package org.netbeans.modules.ods.hudson;
 
 import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
 import com.tasktop.c2c.server.profile.domain.build.JobSummary;
-import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -59,8 +57,8 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
-import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
@@ -72,8 +70,7 @@ public class ODSBuilderConnector extends BuilderConnector {
 
     private static final Logger LOG = Logger.getLogger(
             ODSBuilderConnector.class.getName());
-    private CloudUiServer server;
-    private Project project;
+    private ProjectHandle<ODSProject> projectHandle;
     private HudsonInstance hudsonInstance;
 
     public HudsonInstance getHudsonInstance() {
@@ -84,16 +81,17 @@ public class ODSBuilderConnector extends BuilderConnector {
         this.hudsonInstance = hudsonInstance;
     }
 
-    public ODSBuilderConnector(CloudUiServer server, Project project) {
-        this.server = server;
-        this.project = project;
+    public ODSBuilderConnector(ProjectHandle<ODSProject> projectHandle) {
+        this.projectHandle = projectHandle;
     }
 
     @Override
     public InstanceData getInstanceData(boolean authentication) {
-        try {
-            HudsonStatus hudsonStatus = server.getClient().getHudsonStatus(
-                    project.getIdentifier());
+//        try {
+            HudsonStatus hudsonStatus = null; //projectHandle.getTeamProject().getHudsonStatus();
+            if(hudsonStatus == null) {
+                return null;
+            }
             List<JobData> jobs = new ArrayList<JobData>();
             String url = null;
             for (JobSummary job : hudsonStatus.getJobs()) {
@@ -118,11 +116,11 @@ public class ODSBuilderConnector extends BuilderConnector {
             List<ViewData> viewsData = new ArrayList<ViewData>();
             viewsData.add(new ViewData("All", url, true));
             return new InstanceData(jobs, viewsData);
-        } catch (CloudException ex) {
-            LOG.log(Level.INFO, null, ex);
-            return new InstanceData(Collections.<JobData>emptyList(),
-                    Collections.<ViewData>emptyList());
-        }
+//        } catch (CloudException ex) {
+//            LOG.log(Level.INFO, null, ex);
+//            return new InstanceData(Collections.<JobData>emptyList(),
+//                    Collections.<ViewData>emptyList());
+//        }
     }
 
     @Override

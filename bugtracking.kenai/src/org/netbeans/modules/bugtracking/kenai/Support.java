@@ -85,7 +85,7 @@ class Support {
     void post(Runnable r) {
         getRequestProcessor().post(r);
     }
-    KenaiHandler getKenaiHandler(ProjectHandle<KenaiServer, KenaiProject> ph, QueryAccessorImpl accessor) {
+    KenaiHandler getKenaiHandler(ProjectHandle<KenaiProject> ph, QueryAccessorImpl accessor) {
         return getKenaiHandler(ph.getTeamProject().getKenai(), accessor);
     }
     KenaiHandler getKenaiHandler(Kenai kenai) {

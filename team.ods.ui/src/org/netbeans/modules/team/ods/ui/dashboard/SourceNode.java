@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class SourceNode<CloudUIServer, Project> extends LeafNode {
+public class SourceNode<CloudUIServer, ODSProject> extends LeafNode {
 
     private final SourceHandle source;
     private final DashboardProviderImpl provider;

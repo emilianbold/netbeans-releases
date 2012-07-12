@@ -78,7 +78,7 @@ import org.openide.util.RequestProcessor;
 public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements ProjectProvider {
 
     private Notification bugNotification;
-    private final ProjectHandle<KenaiServer, KenaiProject> project;
+    private final ProjectHandle<KenaiProject> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
     private final MessagingAccessor maccessor;
@@ -116,7 +116,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
     private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
 
-    public MyProjectNode( final ProjectHandle<KenaiServer, KenaiProject> project ) {
+    public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N

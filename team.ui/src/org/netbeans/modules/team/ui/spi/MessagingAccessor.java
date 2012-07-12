@@ -16,33 +16,33 @@ import javax.swing.Action;
  *
  * @author S. Aubrecht
  */
-public abstract class MessagingAccessor<S extends TeamServer, P> {
+public abstract class MessagingAccessor<P> {
 
     /**
      * Retrieve messaging info associated with given project.
      * @param project
      * @return
      */
-    public abstract MessagingHandle getMessaging( ProjectHandle<S, P> project );
+    public abstract MessagingHandle getMessaging( ProjectHandle<P> project );
 
     /**
      * @param project
      * @return Show messages for given project
      */
-    public abstract Action getOpenMessagesAction( ProjectHandle<S, P> project );
+    public abstract Action getOpenMessagesAction( ProjectHandle<P> project );
 
     /**
      * Action, which creates chat room on server
      * @param project
      * @return
      */
-    public abstract Action getCreateChatAction(ProjectHandle<S, P> project);
+    public abstract Action getCreateChatAction(ProjectHandle<P> project);
 
     /**
      * Action, which retries connecting to server
      * @param project
      * @return
      */
-    public abstract Action getReconnectAction(ProjectHandle<S, P> project);
+    public abstract Action getReconnectAction(ProjectHandle<P> project);
 
 }

@@ -26,7 +26,7 @@ public abstract class ProjectAccessor<S extends TeamServer, P> {
      * @return list of member projects or null, if member projects
      * are not accessible
      */
-    public abstract List<ProjectHandle<S, P>> getMemberProjects(S server, LoginHandle login, boolean forceRefresh );
+    public abstract List<ProjectHandle<P>> getMemberProjects(S server, LoginHandle login, boolean forceRefresh );
 
     /**
      * Load details for given project.
@@ -34,7 +34,7 @@ public abstract class ProjectAccessor<S extends TeamServer, P> {
      * @param forceRefresh force reload from server
      * @return projectHandle or null, if project handle not accessible
      */
-    public abstract ProjectHandle<S, P> getNonMemberProject(S server, String projectId, boolean forceRefresh);
+    public abstract ProjectHandle<P> getNonMemberProject(S server, String projectId, boolean forceRefresh);
 
     /**
      * @return Adds a Team project into given Dashboard window.
@@ -47,7 +47,7 @@ public abstract class ProjectAccessor<S extends TeamServer, P> {
      * @param project
      * @return Show details of given project
      */
-    public abstract Action getDetailsAction( ProjectHandle<S, P> project );
+    public abstract Action getDetailsAction( ProjectHandle<P> project );
     /**
      *
      * @param project 
@@ -55,17 +55,17 @@ public abstract class ProjectAccessor<S extends TeamServer, P> {
      * for given project.
      */
     //maybe same as 'details'?
-    public abstract Action getDefaultAction( ProjectHandle<S, P> project, boolean opened );
+    public abstract Action getDefaultAction( ProjectHandle<P> project, boolean opened );
     /**
      *
      * @param project
      * @return Action for project's popup menu, null entries represent menu separator.
      */
-    public abstract Action[] getPopupActions( ProjectHandle<S, P> project, boolean opened );
+    public abstract Action[] getPopupActions( ProjectHandle<P> project, boolean opened );
 
-    public abstract Action getOpenWikiAction( ProjectHandle<S, P> project );
+    public abstract Action getOpenWikiAction( ProjectHandle<P> project );
 
-    public abstract Action getOpenDownloadsAction( ProjectHandle<S, P> project );
+    public abstract Action getOpenDownloadsAction( ProjectHandle<P> project );
 
-    public abstract Action getBookmarkAction(ProjectHandle<S, P> project);
+    public abstract Action getBookmarkAction(ProjectHandle<P> project);
 }
