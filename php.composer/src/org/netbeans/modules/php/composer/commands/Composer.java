@@ -39,55 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.composer.options;
+package org.netbeans.modules.php.composer.commands;
 
-import java.util.List;
-import java.util.prefs.Preferences;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.composer.commands.Composer;
-import org.openide.util.NbPreferences;
+import org.netbeans.modules.php.composer.options.ComposerOptions;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author gapon
+ * Represents <a href="http://getcomposer.org/">Composer</a> command line tool.
  */
-public class ComposerOptions {
+public final class Composer extends PhpProgram {
 
-    // Do not change arbitrary - consult with layer's folder OptionsExport
-    // Path to Preferences node for storing these preferences
-    private static final String PREFERENCES_PATH = "composer"; // NOI18N
-
-    private static final ComposerOptions INSTANCE = new ComposerOptions();
-
-    // composer
-    private static final String COMPOSER_PATH = "composer.path"; // NOI18N
-
-    private volatile boolean composerSearched = false;
+    public static final String NAME = "composer"; // NOI18N
+    public static final String LONG_NAME = NAME + ".phar"; // NOI18N
 
 
-    public static ComposerOptions getInstance() {
-        return INSTANCE;
+    public Composer(String command) {
+        super(command);
     }
 
-    public String getComposerPath() {
-        String composerPath = getPreferences().get(COMPOSER_PATH, null);
-        if (composerPath == null && !composerSearched) {
-            composerSearched = true;
-            List<String> paths = FileUtils.findFileOnUsersPath(Composer.NAME, Composer.LONG_NAME);
-            if (!paths.isEmpty()) {
-                composerPath = paths.get(0);
-                setComposerPath(composerPath);
-            }
+    /**
+     * Get the default, <b>valid only</b> Composer.
+     * @return the default, <b>valid only</b> Composer.
+     * @throws InvalidPhpProgramException if Composer is not valid.
+     */
+    public static Composer getDefault() throws InvalidPhpProgramException {
+        String composerPath = ComposerOptions.getInstance().getComposerPath();
+        String error = validate(composerPath);
+        if (error != null) {
+            throw new InvalidPhpProgramException(error);
         }
-        return composerPath;
+        return new Composer(composerPath);
     }
 
-    public void setComposerPath(String composerPath) {
-        getPreferences().put(COMPOSER_PATH, composerPath);
+    public static String validate(String command) {
+        return new Composer(command).validate();
     }
 
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(ComposerOptions.class).node(PREFERENCES_PATH);
+    @NbBundle.Messages("Composer.script.label=Composer")
+    @Override
+    public String validate() {
+        return FileUtils.validateFile(Bundle.Composer_script_label(), getProgram(), false);
     }
 
 }
