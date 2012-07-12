@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.repository.translator;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
@@ -111,6 +112,14 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
     @Override
     public CharSequence getFileNameById(final int unitId, final int fileId) {
         final IntToStringCache fileNames = getUnitFileNames(unitId);
+        // #215449 - IndexOutOfBoundsException in RepositoryTranslatorImpl.getFileNameById
+        if (fileNames.size() <= fileId) {
+            StringBuilder message = new StringBuilder();
+            message.append("Unit: ").append(getUnitName(unitId)); //NOI18N
+            message.append(" FileIndex: ").append(fileId); //NOI18N
+            message.append(" CacheSize: ").append(fileNames.size()); //NOI18N
+            throw new IndexOutOfBoundsException(message.toString());
+        }
         final CharSequence fileName = fileNames.getValueById(fileId);
         return fileName;
     }
