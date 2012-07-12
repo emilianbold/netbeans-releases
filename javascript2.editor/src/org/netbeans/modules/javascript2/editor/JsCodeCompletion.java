@@ -673,6 +673,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         addedProperties.put(indexedElement.getName(), indexedElement);
                     }
                 }
+                for (IndexedElement indexedElement : jsIndex.getProperties("Function.prototype")) { //NOI18N
+                    if (startsWith(indexedElement.getName(), request.prefix)) {
+                        addedProperties.put(indexedElement.getName(), indexedElement);
+                    }
+                }
             }
             
             
