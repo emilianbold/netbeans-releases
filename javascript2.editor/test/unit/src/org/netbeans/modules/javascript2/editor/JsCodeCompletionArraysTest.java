@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -76,7 +77,7 @@ public class JsCodeCompletionArraysTest extends JsTestBase {
         return Collections.singletonMap(
             JS_SOURCE_ID,
             ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/runtime")),
+                ClasspathProviderImplAccessor.getJsStubs(),
                 FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/arrays")),
             })
         );
