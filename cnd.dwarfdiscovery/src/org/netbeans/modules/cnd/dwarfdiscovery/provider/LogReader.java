@@ -141,7 +141,7 @@ public class LogReader {
                                     return false;
                                 }
                             };
-                            if (localMapper.init(fs, root, path)) {
+                            if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
                                 if (fo != null && fo.isValid() && fo.isData()) {
@@ -870,12 +870,7 @@ public class LogReader {
                     out.append(pkg.substring(1, pkg.length()-1));
                 } else {
                     StringTokenizer st = new StringTokenizer(pkg);
-                    boolean first = true;
                     if (st.hasMoreTokens()) {
-                        if (!first) {
-                            out.append(" "); //NOI18N
-                        }
-                        first = false;
                         out.append(st.nextToken());
                     }
                 }
@@ -885,12 +880,7 @@ public class LogReader {
                     out.append(pkg.substring(1, pkg.length()-1)); //NOI18N
                 } else {
                     StringTokenizer st = new StringTokenizer(pkg);
-                    boolean first = true;
                     if (st.hasMoreTokens()) {
-                        if (!first) {
-                            out.append(" "); //NOI18N
-                        }
-                        first = false;
                         out.append(st.nextToken());
                     }
                 }

@@ -430,7 +430,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         ts.move(request.anchor);
-        if (ts.movePrevious() && ts.moveNext()) {
+        if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
             if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();
             }
