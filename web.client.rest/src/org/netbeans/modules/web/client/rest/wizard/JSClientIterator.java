@@ -275,20 +275,20 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             builder.append(relativePath);
             builder.append("'></script>\n");    // NOI18N
         }
-        if ( backbone == null ){
-            builder.append("<script src='http://backbonejs.org/backbone-min.js'></script>\n");// NOI18N
-        }
-        else {
-            String relativePath = FileUtil.getRelativePath(folder, backbone);
-            builder.append("<script src='");// NOI18N
-            builder.append(relativePath);
-            builder.append("'></script>\n");  // NOI18N
-        }
         if ( jQuery == null ){
             builder.append("<script src='http://code.jquery.com/jquery-1.7.2.min.js'></script>\n");// NOI18N
         }
         else {
             String relativePath = FileUtil.getRelativePath(folder, jQuery);
+            builder.append("<script src='");// NOI18N
+            builder.append(relativePath);
+            builder.append("'></script>\n");  // NOI18N
+        }
+        if ( backbone == null ){
+            builder.append("<script src='http://backbonejs.org/backbone-min.js'></script>\n");// NOI18N
+        }
+        else {
+            String relativePath = FileUtil.getRelativePath(folder, backbone);
             builder.append("<script src='");// NOI18N
             builder.append(relativePath);
             builder.append("'></script>\n");  // NOI18N
