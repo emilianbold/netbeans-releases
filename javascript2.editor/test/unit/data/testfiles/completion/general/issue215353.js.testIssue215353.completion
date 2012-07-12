@@ -1,40 +1,31 @@
 Code completion result for source line:
-formatter.print("a.say(): " + a.|help());
+f.|call({msg:"Ahoj"});
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      prototype                       [PUBLIC]   issue214556.js
+CLASS      prototype                       [PUBLIC]   stub_CORE_Function.js
 METHOD     apply(): Array                  [PUBLIC]   stub_CORE_Function.js
 METHOD     bind(): String                  [PUBLIC]   stub_CORE_Function.js
 METHOD     call(): String                  [PUBLIC]   stub_CORE_Function.js
 METHOD     create(): Object                [PUBLIC,   stub_CORE_Object.js
 METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
 METHOD     defineProperty(): Object        [PUBLIC,   stub_CORE_Object.js
-METHOD     eval(): Object                  [PUBLIC]   stub_CORE_Object.js
 METHOD     freeze(): Object                [PUBLIC,   stub_CORE_Object.js
 METHOD     getOwnPropertyDescriptor(): Ob  [PUBLIC,   stub_CORE_Object.js
 METHOD     getOwnPropertyNames(): Array    [PUBLIC,   stub_CORE_Object.js
 METHOD     getPrototypeOf(): Object        [PUBLIC,   stub_CORE_Object.js
-METHOD     hasOwnProperty(): Boolean       [PUBLIC]   stub_CORE_Object.js
-METHOD     help(): String                  [PUBLIC]   issue214556.js
 METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
 METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
 METHOD     isGenerator(): Boolean          [PUBLIC]   stub_CORE_Function.js
-METHOD     isPrototypeOf(): Boolean        [PUBLIC]   stub_CORE_Object.js
 METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
 METHOD     keys(): Array                   [PUBLIC,   stub_CORE_Object.js
 METHOD     preventExtensions(): Object     [PUBLIC,   stub_CORE_Object.js
-METHOD     propertyIsEnumerable(): Boolea  [PUBLIC]   stub_CORE_Object.js
-METHOD     say(): String                   [PUBLIC]   issue214556.js
 METHOD     seal(): Object                  [PUBLIC,   stub_CORE_Object.js
-METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
 METHOD     toSource(): String              [PUBLIC]   stub_CORE_Function.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Function.js
-METHOD     unwatch(): undefined            [PUBLIC]   stub_CORE_Object.js
-METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-METHOD     watch(): undefined              [PUBLIC]   stub_CORE_Object.js
 FIELD      arguments                       [PUBLIC]   stub_CORE_Function.js
 FIELD      arity                           [PUBLIC]   stub_CORE_Function.js
 FIELD      caller                          [PUBLIC]   stub_CORE_Function.js
 FIELD      constructor                     [PUBLIC]   stub_CORE_Function.js
 FIELD      length                          [PUBLIC]   stub_CORE_Function.js
+FIELD      msg                             [PUBLIC]   issue215353.js
 FIELD      name                            [PUBLIC]   stub_CORE_Function.js

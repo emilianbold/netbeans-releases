@@ -2,37 +2,49 @@ Code completion result for source line:
 arr01.|pop();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     concat(value1, value2, valueN)  [PUBLIC]   stub_core_Array.js
-METHOD     eval(string): undefined         [PUBLIC]   stub_core_Object.js
-METHOD     every(callback, thisObject): u  [PUBLIC]   stub_core_Array.js
-METHOD     forEach(callback, thisObject):  [PUBLIC]   stub_core_Array.js
-METHOD     hasOwnProperty(prop): Boolean   [PUBLIC]   stub_core_Object.js
-METHOD     indexOf(searchElement, fromInd  [PUBLIC]   stub_core_Array.js
-METHOD     isPrototypeOf(object): Boolean  [PUBLIC]   stub_core_Object.js
-METHOD     join(separator): String         [PUBLIC]   stub_core_Array.js
-METHOD     lastIndexOf(searchElement, fro  [PUBLIC]   stub_core_Array.js
-METHOD     pop(): undefined                [PUBLIC]   stub_core_Array.js
-METHOD     propertyIsEnumerable(prop): Bo  [PUBLIC]   stub_core_Object.js
-METHOD     push(element1, elementN): unde  [PUBLIC]   stub_core_Array.js
-METHOD     reduce(callback, initialValue)  [PUBLIC]   stub_core_Array.js
-METHOD     reduceRight(callback, initialV  [PUBLIC]   stub_core_Array.js
-METHOD     reverse(): void                 [PUBLIC]   stub_core_Array.js
-METHOD     shift(): void                   [PUBLIC]   stub_core_Array.js
-METHOD     slice(begin, end): Array        [PUBLIC]   stub_core_Array.js
-METHOD     sort(compareFunction): Array    [PUBLIC]   stub_core_Array.js
-METHOD     splice(index, howMany, element  [PUBLIC]   stub_core_Array.js
-METHOD     toLocaleString(): String        [PUBLIC]   stub_core_Object.js
-METHOD     toSource(): undefined           [PUBLIC]   stub_core_Object.js
-METHOD     toString(): String              [PUBLIC]   stub_core_Object.js
-METHOD     unshift(element1, elementN): N  [PUBLIC]   stub_core_Array.js
-METHOD     unwatch(prop): undefined        [PUBLIC]   stub_core_Object.js
-METHOD     valueOf(): undefined            [PUBLIC]   stub_core_Object.js
-METHOD     watch(prop, handler): undefine  [PUBLIC]   stub_core_Object.js
-FIELD      constructor                     [PUBLIC]   stub_core_Object.js
-FIELD      filter                          [PUBLIC]   stub_core_Array.js
-FIELD      index                           [PUBLIC]   stub_core_Array.js
-FIELD      input                           [PUBLIC]   stub_core_Array.js
-FIELD      length                          [PUBLIC]   stub_core_Array.js
-FIELD      map                             [PUBLIC]   stub_core_Array.js
-FIELD      prototype                       [PUBLIC]   stub_core_Object.js
-FIELD      some                            [PUBLIC]   stub_core_Array.js
+CLASS      prototype                       [PUBLIC]   stub_CORE_Array.js
+METHOD     concat(): Array                 [PUBLIC]   stub_CORE_Array.js
+METHOD     create(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     eval(): Object                  [PUBLIC]   stub_CORE_Object.js
+METHOD     every(): Boolean                [PUBLIC]   stub_CORE_Array.js
+METHOD     filter(): Array                 [PUBLIC]   stub_CORE_Array.js
+METHOD     forEach(): undefined            [PUBLIC]   stub_CORE_Array.js
+METHOD     freeze(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(): Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(): Array    [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(): Boolean       [PUBLIC]   stub_CORE_Object.js
+METHOD     indexOf(): Number               [PUBLIC]   stub_CORE_Array.js
+METHOD     isArray(): Boolean              [PUBLIC,   stub_CORE_Array.js
+METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(): Boolean        [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     join(): String                  [PUBLIC]   stub_CORE_Array.js
+METHOD     keys(): Array                   [PUBLIC,   stub_CORE_Object.js
+METHOD     lastIndexOf(): Number           [PUBLIC]   stub_CORE_Array.js
+METHOD     map(): Array                    [PUBLIC]   stub_CORE_Array.js
+METHOD     pop(): Object                   [PUBLIC]   stub_CORE_Array.js
+METHOD     preventExtensions(): Object     [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(): Boolea  [PUBLIC]   stub_CORE_Object.js
+METHOD     push(): Number                  [PUBLIC]   stub_CORE_Array.js
+METHOD     reduce(): Object                [PUBLIC]   stub_CORE_Array.js
+METHOD     reduceRight(): Object           [PUBLIC]   stub_CORE_Array.js
+METHOD     reverse(): Array                [PUBLIC]   stub_CORE_Array.js
+METHOD     seal(): Object                  [PUBLIC,   stub_CORE_Object.js
+METHOD     shift(): Object                 [PUBLIC]   stub_CORE_Array.js
+METHOD     slice(): Array                  [PUBLIC]   stub_CORE_Array.js
+METHOD     some(): Boolean                 [PUBLIC]   stub_CORE_Array.js
+METHOD     sort(): Array                   [PUBLIC]   stub_CORE_Array.js
+METHOD     splice(): Array                 [PUBLIC]   stub_CORE_Array.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
+METHOD     toSource(): String              [PUBLIC]   stub_CORE_Array.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Array.js
+METHOD     unshift(): Number               [PUBLIC]   stub_CORE_Array.js
+METHOD     unwatch(): undefined            [PUBLIC]   stub_CORE_Object.js
+METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
+METHOD     watch(): undefined              [PUBLIC]   stub_CORE_Object.js
+FIELD      constructor                     [PUBLIC]   stub_CORE_Array.js
+FIELD      length                          [PUBLIC]   stub_CORE_Array.js
