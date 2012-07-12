@@ -83,6 +83,10 @@ import org.openide.util.NbBundle;
  * 
  * 3) (P2) add own (propagate the filters) popup menu to the sheet
  * 
+ * Enhancements:
+ * --------------
+ * a) if categorized view enabled, the category name containing a physical properties could be in bold font
+ * 
  * @author marekfukala
  */
 @NbBundle.Messages(
@@ -131,6 +135,11 @@ public class RuleEditorPanel extends JPanel {
         
         //add the property sheet to the center
         sheet = new PropertySheet();
+        try {
+            sheet.setSortingMode(PropertySheet.UNSORTED);
+        } catch (PropertyVetoException ex) {
+            //no-op
+        }
         sheet.setPopupEnabled(false);
         sheet.setDescriptionAreaVisible(false);
         
@@ -147,10 +156,14 @@ public class RuleEditorPanel extends JPanel {
         setShowAllProperties(filters.getInstance().isSelected(RuleEditorFilters.SHOW_ALL_PROPERTIES));
     }
 
+    private void resetSheetNode() {
+        sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties, showCategories, sortMode)});
+    }
+    
     public void setSortMode(SortMode mode) {
         this.sortMode = mode;
         
-        //update the stylesheet data
+        resetSheetNode();
     }
 
     public SortMode getSortMode() {
@@ -165,8 +178,7 @@ public class RuleEditorPanel extends JPanel {
         this.showAllProperties = showAllProperties;
         
         if(rule != null) {
-            //re-set the node
-            sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties, showCategories)});
+            resetSheetNode();
         }
     }
 
@@ -177,15 +189,9 @@ public class RuleEditorPanel extends JPanel {
         
         this.showCategories = showCategories;
         
-        try {
-            sheet.setSortingMode(showCategories ? PropertySheet.UNSORTED : PropertySheet.SORTED_BY_NAMES);
-        } catch (PropertyVetoException ex) {
-            //no-op
-        }
-        
         if(rule != null) {
             //re-set the node
-             sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties, showCategories)});
+             resetSheetNode();
         }
     }
     
@@ -200,7 +206,7 @@ public class RuleEditorPanel extends JPanel {
         }
         this.rule = r;
         
-        sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties, showCategories)});
+        resetSheetNode();
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
         model.runReadTask(new Model.ModelTask() {
             @Override
