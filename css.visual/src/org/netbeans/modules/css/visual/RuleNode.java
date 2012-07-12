@@ -79,7 +79,10 @@ import org.openide.util.lookup.Lookups;
 @NbBundle.Messages({
     "rule.properties=Properties",
     "rule.properties.description=Properties of the css rule",
-    "rule.properties.add.declaration.tooltip=Enter a value to add this property to the selected rule"
+    "rule.properties.add.declaration.tooltip=Enter a value to add this property to the selected rule",
+    "rule.global.set.displayname=All Categories",
+    "rule.global.set.tooltip=Properties from All Categories"
+    
 })
 public class RuleNode extends AbstractNode {
 
@@ -196,6 +199,10 @@ public class RuleNode extends AbstractNode {
 
             //just create one top level property set for virtual category (the items actually doesn't belong to the category)
             PropertyCategoryPropertySet set = new PropertyCategoryPropertySet(PropertyCategory.DEFAULT, filtered);
+            //overrride the default descriptions
+            set.setDisplayName(Bundle.rule_global_set_displayname());
+            set.setShortDescription(Bundle.rule_global_set_tooltip());
+            
             sets.add(set);
 
             propertySetsMap = Collections.singletonMap(PropertyCategory.DEFAULT, set);
@@ -262,7 +269,7 @@ public class RuleNode extends AbstractNode {
             }
         });
     }
-
+    
     private class PropertyCategoryPropertySet extends PropertySet {
 
         private List<Property> properties;

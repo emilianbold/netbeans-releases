@@ -83,9 +83,15 @@ import org.openide.util.NbBundle;
  * 
  * 3) (P2) add own (propagate the filters) popup menu to the sheet
  * 
+ * 4) (P4) (#EA) can property categories be programmatically collapsed/expanded?
+ * 
+ * 5) (P3) in the unsorted mode, can be the categories disabled? They seem to disappear only 
+ *    in the "sort by alpha" mode
+ * 
  * Enhancements:
  * --------------
- * a) if categorized view enabled, the category name containing a physical properties could be in bold font
+ * A) if categorized view enabled, the category name containing a physical properties could be in bold font
+ *    and the rest is collapsed (possibly configurable by a toolbar toggle)
  * 
  * @author marekfukala
  */
