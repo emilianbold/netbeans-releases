@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
  */
 public interface RelocatablePathMapper {
     ResolvedPath getPath(String path);
-    boolean init(FS fs, String root, String unknown);
+    boolean discover(FS fs, String root, String unknown);
     boolean add(String from, String to);
     public interface ResolvedPath {
         String getPath();

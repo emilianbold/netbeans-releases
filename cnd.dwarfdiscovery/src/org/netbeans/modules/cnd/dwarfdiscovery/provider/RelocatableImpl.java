@@ -92,7 +92,7 @@ public class RelocatableImpl implements Relocatable {
                         if (resolvedIncluded != null) {
                             newIncl = PathCache.getString(resolvedIncluded.getPath());
                         } else {
-                            if (mapper.init(fs, root, incl)) {
+                            if (mapper.discover(fs, root, incl)) {
                                 newIncl = PathCache.getString(mapper.getPath(incl).getPath());
                             }
                         }

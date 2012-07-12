@@ -189,7 +189,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             ResolvedPath resolvedPath = mapper.getPath(name);
             if (resolvedPath == null) {
                 if (sourceRoot != null) {
-                    if (mapper.init(fs, sourceRoot, name)) {
+                    if (mapper.discover(fs, sourceRoot, name)) {
                         resolvedPath = mapper.getPath(name);
                         fo = fileSystem.findResource(resolvedPath.getPath());
                         if (fo != null && fo.isValid() && fo.isData()) {
@@ -212,7 +212,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             if (resolvedPath == null) {
                 if (sourceRoot != null) {
                     if (!name.startsWith(sourceRoot)) {
-                        if (mapper.init(fs, sourceRoot, name)) {
+                        if (mapper.discover(fs, sourceRoot, name)) {
                             resolvedPath = mapper.getPath(name);
                             FileObject resolved = fileSystem.findResource(resolvedPath.getPath());
                             if (resolved != null && resolved.isValid() && resolved.isData()) {
