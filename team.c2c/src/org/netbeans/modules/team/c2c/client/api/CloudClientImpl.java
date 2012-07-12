@@ -72,7 +72,7 @@ import org.springframework.security.core.userdetails.User;
  *
  * @author ondra
  */
-public final class CloudClientImpl implements CloudClient {
+final class CloudClientImpl implements CloudClient {
     private final ProfileWebServiceClient profileClient;
     private static final String PROFILE_SERVICE = "/alm/api"; //NOI18N
     private static final String HUDSON_SERVICE = "/alm/s/%s/hudson"; //NOI18N
