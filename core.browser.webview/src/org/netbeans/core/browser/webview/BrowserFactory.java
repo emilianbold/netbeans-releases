@@ -44,6 +44,8 @@ package org.netbeans.core.browser.webview;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.core.IDESettings;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Lookup;
@@ -54,7 +56,7 @@ import org.openide.util.NbPreferences;
  *
  * @author S. Aubrecht
  */
-public class BrowserFactory implements HtmlBrowser.Factory {
+public class BrowserFactory implements HtmlBrowser.Factory, EnhancedBrowserFactory {
     
     static String PROP_EXTRA_BROWSER = "ExtraBrowser"; //NOI18N
 
@@ -112,5 +114,10 @@ public class BrowserFactory implements HtmlBrowser.Factory {
         String wwwBrowser = idePrefs.get(IDESettings.PROP_WWWBROWSER, null);
         idePrefs.put(IDESettings.PROP_WWWBROWSER, "");
         idePrefs.put(IDESettings.PROP_WWWBROWSER, wwwBrowser);
+    }
+
+    @Override
+    public BrowserFamilyId getBrowserFamilyId() {
+        return BrowserFamilyId.JAVAFX_WEBVIEW;
     }
 }

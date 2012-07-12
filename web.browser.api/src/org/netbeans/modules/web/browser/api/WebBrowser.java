@@ -69,6 +69,10 @@ public final class WebBrowser {
         return factoryDesc.getName();
     }
     
+    public BrowserFamilyId getBrowserFamily() {
+        return factoryDesc.getBrowserFamily();
+    }
+
     /**
      * Is IDE embedded browser or external browser.
      */

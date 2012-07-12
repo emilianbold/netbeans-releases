@@ -47,7 +47,7 @@ import java.util.Map;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor.BrowserExtensionManager;
 import org.netbeans.modules.extbrowser.plugins.chrome.ChromeManagerAccessor;
 import org.netbeans.modules.extbrowser.plugins.chrome.ChromiumManagerAccessor;
-import org.netbeans.modules.extbrowser.plugins.firefox.FFManagerAccessor;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 
 
 
@@ -67,7 +67,7 @@ public final class ExtensionManager {
     private ExtensionManager(){
     }
     
-    public static ExtensitionStatus isInstalled( BrowserId id ){
+    public static ExtensitionStatus isInstalled( BrowserFamilyId id ){
         if ( id == null ){
             // TODO : show browser chooser
         }
@@ -85,7 +85,7 @@ public final class ExtensionManager {
     /**
      * @return true if extension is available
      */
-    public static boolean installExtension(  BrowserId id , PluginLoader loader, 
+    public static boolean installExtension(  BrowserFamilyId id , PluginLoader loader, 
             ExtensionManager.ExtensitionStatus currentStatus){
         if ( id == null ){
             // TODO : show browser chooser
@@ -101,11 +101,11 @@ public final class ExtensionManager {
         return false;
     }
     
-    private static Map<BrowserId, ExtensionManagerAccessor> ACCESSORS = 
-        new HashMap<BrowserId, ExtensionManagerAccessor>();
+    private static Map<BrowserFamilyId, ExtensionManagerAccessor> ACCESSORS = 
+        new HashMap<BrowserFamilyId, ExtensionManagerAccessor>();
     
     static {
-        ACCESSORS.put( BrowserId.CHROME , new ChromeManagerAccessor());
-        ACCESSORS.put( BrowserId.CHROMIUM , new ChromiumManagerAccessor());
+        ACCESSORS.put( BrowserFamilyId.CHROME , new ChromeManagerAccessor());
+        ACCESSORS.put( BrowserFamilyId.CHROMIUM , new ChromiumManagerAccessor());
     }
 }
