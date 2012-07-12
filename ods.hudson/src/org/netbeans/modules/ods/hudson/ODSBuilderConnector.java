@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.ods.hudson;
 
+import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
+import com.tasktop.c2c.server.profile.domain.build.BuildDetails.BuildResult;
+import com.tasktop.c2c.server.profile.domain.build.BuildSummary;
 import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
+import com.tasktop.c2c.server.profile.domain.build.JobDetails;
 import com.tasktop.c2c.server.profile.domain.build.JobSummary;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
@@ -57,7 +62,11 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
+import org.netbeans.modules.team.c2c.api.CloudServer;
 import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.c2c.client.api.ClientFactory;
+import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -87,8 +96,8 @@ public class ODSBuilderConnector extends BuilderConnector {
 
     @Override
     public InstanceData getInstanceData(boolean authentication) {
-//        try {
-            HudsonStatus hudsonStatus = null; //projectHandle.getTeamProject().getHudsonStatus();
+        try {
+            HudsonStatus hudsonStatus = getClient().getHudsonStatus(projectHandle.getId());
             if(hudsonStatus == null) {
                 return null;
             }
@@ -116,21 +125,44 @@ public class ODSBuilderConnector extends BuilderConnector {
             List<ViewData> viewsData = new ArrayList<ViewData>();
             viewsData.add(new ViewData("All", url, true));
             return new InstanceData(jobs, viewsData);
-//        } catch (CloudException ex) {
-//            LOG.log(Level.INFO, null, ex);
-//            return new InstanceData(Collections.<JobData>emptyList(),
-//                    Collections.<ViewData>emptyList());
-//        }
+        } catch (CloudException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return new InstanceData(Collections.<JobData>emptyList(),
+                    Collections.<ViewData>emptyList());
+        }
     }
 
     @Override
     public Collection<BuildData> getJobBuildsData(HudsonJob job) {
-        return Collections.emptyList(); //TODO
+        try {
+            CloudClient client = getClient();
+            JobDetails jds = client.getJobDetails(projectHandle.getId(), job.getName());
+            List<BuildSummary> builds = jds.getBuilds();
+            ArrayList<BuildData> ret = new ArrayList<BuildData>(builds.size());
+            for (BuildSummary b : builds) {
+                BuildDetails bds = client.getBuildDetails(projectHandle.getId(), job.getName(), b.getNumber());
+                if(bds == null) {
+                    continue;
+                }
+                BuildResult result = bds.getResult();
+                ret.add(new BuildData(bds.getNumber(), result == null ? null : Result.valueOf(result.name()), bds.getBuilding()));
+            }
+            return ret;
+        } catch (CloudException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return Collections.emptyList(); 
+        }
     }
 
     @Override
     public void getJobBuildResult(HudsonJobBuild build, AtomicBoolean building, AtomicReference<Result> result) {
-        //TODO
+        try {
+            BuildDetails bds = getClient().getBuildDetails(projectHandle.getId(), build.getJob().getName(), build.getNumber());
+            building.set(bds.getBuilding());
+            result.set(Result.valueOf(bds.getResult().name()));
+        } catch (CloudException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
     }
 
     @Override
@@ -167,4 +199,10 @@ public class ODSBuilderConnector extends BuilderConnector {
     public FailureDisplayer getFailureDisplayer() {
         return null;
     }
+    
+    private CloudClient getClient() {
+        CloudServer server = projectHandle.getTeamProject().getServer();
+        return ClientFactory.getInstance().createClient(server.getUrl().toString(), server.getPasswordAuthentication());        
+    }
+
 }
