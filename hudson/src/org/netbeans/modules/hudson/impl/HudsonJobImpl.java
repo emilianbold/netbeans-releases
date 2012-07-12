@@ -46,14 +46,17 @@ package org.netbeans.modules.hudson.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonView;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
+import org.netbeans.modules.hudson.spi.BuilderConnector;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.filesystems.FileSystem;
@@ -62,6 +65,8 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 /**
  * Implementation of the HudsonJob
@@ -146,7 +151,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
     
     @Override public void start() {
-        instance.getConnector().startJob(this);
+        instance.getBuilderClient().startJob(this);
     }
 
     @Messages({
@@ -248,9 +253,25 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     private Collection<? extends HudsonJobBuild> builds;
     @Override public synchronized Collection<? extends HudsonJobBuild> getBuilds() {
         if (builds == null) {
-            builds = instance.getConnector().getBuilds(this);
+            builds = createBuilds(
+                    instance.getBuilderClient().getJobBuildsData(this));
         }
         return builds;
+    }
+
+    private Collection<? extends HudsonJobBuild> createBuilds(
+            Collection<BuilderConnector.BuildData> data) {
+
+        if (data == null) {
+            return Collections.emptySet();
+        }
+        List<HudsonJobBuildImpl> buildList = new ArrayList<HudsonJobBuildImpl>();
+        for (BuilderConnector.BuildData bd : data) {
+            buildList.add(new HudsonJobBuildImpl(
+                    this.getInstance().getBuilderClient(), this,
+                    bd.getNumber(), bd.isBuilding(), bd.getResult()));
+        }
+        return buildList;
     }
 
     @Override public HudsonInstanceImpl getInstance() {

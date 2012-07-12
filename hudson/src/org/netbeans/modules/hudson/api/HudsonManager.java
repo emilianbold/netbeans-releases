@@ -45,6 +45,7 @@ package org.netbeans.modules.hudson.api;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonInstanceProperties;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
+import org.netbeans.modules.hudson.spi.BuilderConnector;
 
 /**
  * Manages the list of Hudson instances.
@@ -76,4 +77,23 @@ public class HudsonManager {
         return nue;
     }
 
+    /**
+     * Add a temporary instance with a custom {@link BuilderConnector}.
+     *
+     * @param name a name by which the instance will be identified (e.g.
+     * {@code Deadlock})
+     * @param url the master URL (e.g.
+     * {@code http://deadlock.netbeans.org/hudson/})
+     * @param sync interval (in minutes) between refreshes, or 0 to disable
+     * @param builderConnector Connector for retrieving builder data.
+     *
+     * @since 1.22
+     */
+    public static HudsonInstance addInstance(String name, String url, int sync,
+            BuilderConnector builderConnector) {
+        HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(
+                name, url, builderConnector, sync);
+        HudsonManagerImpl.getDefault().addInstance(nue);
+        return nue;
+    }
 }

@@ -67,6 +67,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
+import org.netbeans.modules.hudson.spi.BuilderConnector;
 import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
@@ -80,9 +81,9 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
     private final int build;
     private boolean building;
     private Result result;
-    private final HudsonConnector connector;
+    private final BuilderConnector connector;
 
-    HudsonJobBuildImpl(HudsonConnector connector, HudsonJobImpl job, int build, boolean building, Result result) {
+    HudsonJobBuildImpl(BuilderConnector connector, HudsonJobImpl job, int build, boolean building, Result result) {
         this.connector = connector;
         this.job = job;
         this.build = build;
@@ -115,7 +116,7 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
         if (result == null && !building) {
             AtomicBoolean _building = new AtomicBoolean();
             AtomicReference<Result> _result = new AtomicReference<Result>(Result.NOT_BUILT);
-            connector.loadResult(this, _building, _result);
+            connector.getJobBuildResult(this, _building, _result);
             building = _building.get();
             result = _result.get();
         }
