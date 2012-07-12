@@ -41,9 +41,15 @@
  */
 package org.netbeans.modules.php.composer.commands;
 
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -53,6 +59,16 @@ public final class Composer extends PhpProgram {
 
     public static final String NAME = "composer"; // NOI18N
     public static final String LONG_NAME = NAME + ".phar"; // NOI18N
+
+    private static final String[] DEFAULT_PARAMS = {
+        "--ansi", // NOI18N
+        "--no-interaction", // NOI18N
+    };
+    private static final String INIT_COMMAND = "init"; // NOI18N
+    private static final String INSTALL_COMMAND = "install"; // NOI18N
+    private static final String UPDATE_COMMAND = "update"; // NOI18N
+    private static final String VALIDATE_COMMAND = "validate"; // NOI18N
+    private static final String SELF_UPDATE_COMMAND = "self-update"; // NOI18N
 
 
     public Composer(String command) {
@@ -81,6 +97,69 @@ public final class Composer extends PhpProgram {
     @Override
     public String validate() {
         return FileUtils.validateFile(Bundle.Composer_script_label(), getProgram(), false);
+    }
+
+    @NbBundle.Messages("Composer.run.init=Composer init")
+    public void init(PhpModule phpModule) {
+        runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init());
+    }
+
+    @NbBundle.Messages("Composer.run.install=Composer install")
+    public void install(PhpModule phpModule) {
+        runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_install());
+    }
+
+    @NbBundle.Messages("Composer.run.update=Composer update")
+    public void update(PhpModule phpModule) {
+        runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_update());
+    }
+
+    @NbBundle.Messages("Composer.run.validate=Composer validate")
+    public void validate(PhpModule phpModule) {
+        runCommand(phpModule, VALIDATE_COMMAND, Bundle.Composer_run_validate());
+    }
+
+    @NbBundle.Messages("Composer.run.selfUpdate=Composer self-update")
+    public void selfUpdate(PhpModule phpModule) {
+        runCommand(phpModule, SELF_UPDATE_COMMAND, Bundle.Composer_run_selfUpdate());
+    }
+
+    private void runCommand(PhpModule phpModule, String command, String title) {
+        ExternalProcessBuilder processBuilder = getBuilder(phpModule, command);
+        if (processBuilder == null) {
+            // XXX warn user?
+            return;
+        }
+        PhpProgram.executeLater(processBuilder, getDescriptor(), title);
+    }
+
+    private ExternalProcessBuilder getBuilder(PhpModule phpModule, String command) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            return null;
+        }
+        // run file via php interpreter
+        try {
+            ExternalProcessBuilder processBuilder = PhpInterpreter.getDefault()
+                    .getProcessBuilder()
+                    .workingDirectory(FileUtil.toFile(sourceDirectory))
+                    .addArgument(getProgram());
+            for (String param : getParameters()) {
+                processBuilder = processBuilder.addArgument(param);
+            }
+            for (String param : DEFAULT_PARAMS) {
+                processBuilder = processBuilder.addArgument(param);
+            }
+            return processBuilder;
+        } catch (InvalidPhpProgramException ex) {
+            // ignored
+        }
+        return super.getProcessBuilder();
+    }
+
+    private ExecutionDescriptor getDescriptor() {
+        return getExecutionDescriptor()
+                .inputVisible(false);
     }
 
 }
