@@ -43,16 +43,18 @@
 package org.netbeans.modules.team.ods.ui.dashboard;
 
 import org.netbeans.modules.team.ods.ui.project.DetailsAction;
-import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,35 +62,31 @@ import org.openide.util.NbBundle;
  * @author Jan Becicka
  */
 // XXX not properly implemented yet
-public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project> {
+public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProject> {
     
     private final CloudUiServer server;
-    private final Object PROJECT_LOCK = new Object();
-    private ArrayList<ProjectHandle<Project>> projects;
 
     ProjectAccessorImpl(CloudUiServer server) {
         this.server = server;
     }
-
     
     public List<ProjectHandleImpl> getMemberProjectsImpls(CloudUiServer server, LoginHandle login, boolean force) {
-        List<ProjectHandle<Project>> prjs = getMemberProjects(server, login, force);
+        List<ProjectHandle<ODSProject>> prjs = getMemberProjects(server, login, force);
         ArrayList<ProjectHandleImpl> ret = new ArrayList<ProjectHandleImpl>(prjs.size());
-        for (ProjectHandle<Project> ph : prjs) {
+        for (ProjectHandle<ODSProject> ph : prjs) {
             ret.add((ProjectHandleImpl)ph);
         }
         return ret;
     }
     
     @Override
-    public List<ProjectHandle<Project>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
-        synchronized(PROJECT_LOCK) {
-            if(projects == null) {
-                // XXX maybe the whole cahching should be done at one place
-                projects = new ArrayList<ProjectHandle<Project>>(server.getMyProjects());
-            }
+    public List<ProjectHandle<ODSProject>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
+        try {
+            return new ArrayList<ProjectHandle<ODSProject>>(server.getMyProjects(force));
+        } catch (CloudException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return projects;
+        return null;
         //        try {
         //            LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
         //            for (Project prj : server.getKenai().getMyProjects(force)) {
@@ -141,12 +139,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getDetailsAction(final ProjectHandle<Project> project) {
+    public Action getDetailsAction(final ProjectHandle<ODSProject> project) {
         return DetailsAction.forProject(project);    
 //        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
     }
 
-    private Action getOpenAction(final ProjectHandle<Project> project) {
+    private Action getOpenAction(final ProjectHandle<ODSProject> project) {
         // this action is supposed to be used for openenig a project from My Projects
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
@@ -157,12 +155,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getDefaultAction(ProjectHandle<Project> project, boolean opened) {
+    public Action getDefaultAction(ProjectHandle<ODSProject> project, boolean opened) {
         return opened ? getDetailsAction(project) : getOpenAction(project);
     }
 
     @Override
-    public Action[] getPopupActions(final ProjectHandle<Project> project, boolean opened) {
+    public Action[] getPopupActions(final ProjectHandle<ODSProject> project, boolean opened) {
         return new Action[0];
 //        PasswordAuthentication pa = project.getProject().getKenai().getPasswordAuthentication();
 //        if (!opened) {
@@ -191,7 +189,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getOpenWikiAction(ProjectHandle<Project> project) {
+    public Action getOpenWikiAction(ProjectHandle<ODSProject> project) {
         // XXX where is this called from? 
         
 //        try {
@@ -206,7 +204,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getOpenDownloadsAction(ProjectHandle<Project> project) {
+    public Action getOpenDownloadsAction(ProjectHandle<ODSProject> project) {
 //        try {
 //            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.DOWNLOADS);
 //            if (wiki.length == 1) {
@@ -219,7 +217,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
     }
 
     @Override
-    public Action getBookmarkAction(final ProjectHandle<Project> project) {
+    public Action getBookmarkAction(final ProjectHandle<ODSProject> project) {
 //        return new AbstractAction() {
 //            public void actionPerformed(ActionEvent e) {
 //                Kenai kenai = project.getProject().getKenai();
@@ -295,9 +293,9 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, Project>
 
 //    private static class RefreshAction extends AbstractAction {
 //
-//        private final ProjectHandle<Project> project;
+//        private final ProjectHandle<ODSProject> project;
 //
-//        public RefreshAction(ProjectHandle<Project> project) {
+//        public RefreshAction(ProjectHandle<ODSProject> project) {
 //            super( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject"));
 //            this.project = project;
 //        }

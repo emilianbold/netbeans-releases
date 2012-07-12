@@ -48,8 +48,6 @@
 
 package org.netbeans.modules.team.ods.ui.dashboard;
 
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import org.netbeans.modules.team.ods.ui.dashboard.GetSourcesFromCloudPanel.ScmRepositoryListItem;
 import java.awt.Component;
@@ -60,7 +58,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
@@ -137,7 +135,7 @@ public class CloudServiceCellRenderer extends JPanel implements ListCellRenderer
         if (value == null) {
             return new JLabel();
         }
-        ProjectHandle<Project> projectHandle = ((ScmRepositoryListItem) value).projectHandle;
+        ProjectHandle<ODSProject> projectHandle = ((ScmRepositoryListItem) value).projectHandle;
         ScmRepository repository = ((ScmRepositoryListItem) value).repository;
 
         if (repository != null) {

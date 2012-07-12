@@ -48,8 +48,6 @@
 
 package org.netbeans.modules.team.ods.ui.dashboard;
 
-import com.tasktop.c2c.server.cloud.domain.ServiceType;
-import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.domain.ScmType;
@@ -61,11 +59,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.UIUtils;
@@ -76,10 +77,11 @@ import org.openide.util.WeakListeners;
 import static org.netbeans.modules.team.ods.ui.dashboard.Bundle.*;
 import org.netbeans.modules.team.ods.ui.CloudServerProviderImpl;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ods.ui.dashboard.SourceAccessorImpl.ProjectAndRepository;
 import org.netbeans.modules.team.ui.common.LoginHandleImpl;
+import org.openide.ServiceType;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -336,29 +338,31 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                             if(prjHandle == null) {
                                 continue;
                             }
-                            final Project project = prjHandle.getTeamProject();
-                            List<ProjectService> services = project.getProjectServicesOfType(ServiceType.SCM);
-                            if(services == null || services.isEmpty()) {
-                                continue;
-                            }
-                            List<ScmRepository> repositories = dashboardProvider.getSourceAccessor().getRepositoriesFor(prjHandle);
-
-                            for (final ScmRepository repository : repositories) {
-                                if(repository.getType() == ScmType.GIT) {
-                                    final ScmRepositoryListItem item = new ScmRepositoryListItem(prjHandle, repository);
-                                    EventQueue.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            addElement(item);
-                                            if (prjAndRepository != null &&
-                                                prjAndRepository.project.getId().equals(prjHandle.getId()) &&
-                                                prjAndRepository.repository.getUrl().equals(repository.getUrl())) 
-                                            {
-                                                setSelectedItem(item);
-                                            }
-                                        }
-                                    });
+                            final ODSProject project = prjHandle.getTeamProject();
+                            try {
+                                Collection<ScmRepository> repositories = project.getRepositories();
+                                if(repositories == null) {
+                                    continue;
                                 }
+                                for (final ScmRepository repository : repositories) {
+                                    if(repository.getType() == ScmType.GIT) {
+                                        final ScmRepositoryListItem item = new ScmRepositoryListItem(prjHandle, repository);
+                                        EventQueue.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                addElement(item);
+                                                if (prjAndRepository != null &&
+                                                    prjAndRepository.project.getId().equals(prjHandle.getId()) &&
+                                                    prjAndRepository.repository.getUrl().equals(repository.getUrl())) 
+                                                {
+                                                    setSelectedItem(item);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            } catch (CloudException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
                     }
                 }

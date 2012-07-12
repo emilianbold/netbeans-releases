@@ -24,7 +24,12 @@
                     <code-name-base>com.tasktop.c2c.server.scm.api</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>
+                </dependency>                
+                <dependency>
+                    <code-name-base>com.tasktop.c2c.server.cloud.api</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>                
                 <dependency>
                     <code-name-base>org.codehaus.jackson.core</code-name-base>
                     <compile-dependency/>

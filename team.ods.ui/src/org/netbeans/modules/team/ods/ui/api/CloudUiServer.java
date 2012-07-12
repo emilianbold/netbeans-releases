@@ -53,7 +53,6 @@ import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.c2c.api.CloudServer;
-import org.netbeans.modules.team.c2c.client.api.ClientFactory;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ods.ui.dashboard.DashboardProviderImpl;
@@ -67,6 +66,7 @@ import org.openide.util.WeakListeners;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.CloudServerProviderImpl;
 import org.netbeans.modules.team.ods.ui.LoginPanelSupportImpl;
 import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
@@ -81,12 +81,11 @@ public class CloudUiServer implements TeamServer {
     private final WeakReference<CloudServer> impl;
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-    private final DefaultDashboard<CloudUiServer, Project> dashboard;
-    private CloudClient client;
+    private final DefaultDashboard<CloudUiServer, ODSProject> dashboard;
 
     private CloudUiServer (CloudServer server) {
         this.impl = new WeakReference<CloudServer>(server);
-        dashboard = new DefaultDashboard<CloudUiServer, Project>(this, new DashboardProviderImpl(this));
+        dashboard = new DefaultDashboard<CloudUiServer, ODSProject>(this, new DashboardProviderImpl(this));
         server.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -131,7 +130,6 @@ public class CloudUiServer implements TeamServer {
     @Override
     public void logout () {
         getImpl(true).logout();
-        client = null;
     }
 
     @Override
@@ -187,31 +185,23 @@ public class CloudUiServer implements TeamServer {
     }
 
     // XXX no need to have this implemented in the TeamServer
-    public Collection<ProjectHandle<Project>> getMyProjects() {
-        CloudClient client = getClient();
-        List<Project> projects;
-        try {
-            projects = client.getMyProjects();
-        } catch (CloudException ex) {
-            Exceptions.printStackTrace(ex); // XXX
-            return Collections.emptyList();
-        }
+    public Collection<ProjectHandle<ODSProject>> getMyProjects(boolean force) throws CloudException {
+        return toODSProjects(getServer().getMyProjects(force));
+    }
+
+    public Collection<ProjectHandle<ODSProject>> getMyProjects() throws CloudException {
+        return toODSProjects(getServer().getMyProjects());
+    }
+
+    private Collection<ProjectHandle<ODSProject>> toODSProjects(Collection<ODSProject> projects) {
         if(projects == null) {
             return Collections.emptyList();
         }
-        Collection<ProjectHandle<Project>> ret = new ArrayList<ProjectHandle<Project>>(projects.size());
-        for (Project project : projects) {
+        Collection<ProjectHandle<ODSProject>> ret = new ArrayList<ProjectHandle<ODSProject>>(projects.size());
+        for (ODSProject project : projects) {
             ret.add(new ProjectHandleImpl(this, project));
         }
         return ret;
     }
 
-    public CloudClient getClient() {
-        assert getImpl(true).isLoggedIn();
-        if(client == null) {
-            client = ClientFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
-        }
-        return client;
-    }
-    
 }

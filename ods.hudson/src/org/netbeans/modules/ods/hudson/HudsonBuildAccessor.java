@@ -63,8 +63,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
-import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
@@ -78,21 +77,15 @@ import org.openide.util.lookup.ServiceProvider;
  * @author jhavlin
  */
 @ServiceProvider(service = BuildAccessor.class)
-public class HudsonBuildAccessor extends BuildAccessor<Project> {
+public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
 
     @Override
-    public boolean isEnabled(ProjectHandle<Project> projectHandle) {
-        Project project = projectHandle.getTeamProject();
-        List<ProjectService> services = project.getProjectServicesOfType(
-                ServiceType.BUILD); // XXX BUILD_SLAVE
-        if (services == null || services.isEmpty()) {
-            return false;
-        }
-        return services.iterator().next().isAvailable(); // XXX what if more then 1 returned?
+    public boolean isEnabled(ProjectHandle<ODSProject> projectHandle) {
+        return projectHandle.getTeamProject().hasBuild(); 
     }
 
     @Override
-    public List<BuildHandle> getBuilds(ProjectHandle<Project> projectHandle) {
+    public List<BuildHandle> getBuilds(ProjectHandle<ODSProject> projectHandle) {
 //        CloudClient client = projectHandle.getTeamServer().getClient();
 
         HudsonInstance hudsonServer = HudsonManager.addInstance(
@@ -112,7 +105,7 @@ public class HudsonBuildAccessor extends BuildAccessor<Project> {
     }
 
     @Override
-    public Action getNewBuildAction(ProjectHandle<Project> projectHandle) {
+    public Action getNewBuildAction(ProjectHandle<ODSProject> projectHandle) {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -128,8 +121,8 @@ public class HudsonBuildAccessor extends BuildAccessor<Project> {
     }
 
     @Override
-    public Class<Project> type() {
-        return Project.class;
+    public Class<ODSProject> type() {
+        return ODSProject.class;
     }
 
     private static class HudsonBuildHandle extends BuildHandle {

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.team.ods.ui.dashboard;
 
-import com.tasktop.c2c.server.profile.domain.project.ProjectService;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -62,6 +61,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
@@ -70,7 +70,6 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -82,13 +81,13 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     private ScmRepository repository;
     private Preferences prefs;
-    private ProjectHandle projectHandle;
+    private ProjectHandleImpl projectHandle;
     private static final int MAX_PROJECTS = 5;
     private static final String RECENTPROJECTS_PREFIX = "recent.projects."; // NOI18N
     public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
     private RequestProcessor rp = new RequestProcessor(SourceHandleImpl.class);
 
-    public SourceHandleImpl(final ProjectHandle projectHandle, ScmRepository repository) {
+    public SourceHandleImpl(final ProjectHandleImpl projectHandle, ScmRepository repository) {
         this.repository = repository;
         // XXX after git api was implemented prefs = NbPreferences.forModule(Git.class);
         this.projectHandle = projectHandle;
@@ -96,6 +95,14 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         initRecent();
     }
 
+    public ScmRepository getRepository() {
+        return repository;
+    }
+
+    public ProjectHandleImpl getProjectHandle() {
+        return projectHandle;
+    }
+    
     @Override
     public String getDisplayName() {
         return repository.getName();

@@ -34,7 +34,7 @@ public interface DashboardProvider<S extends TeamServer, P> {
     public QueryAccessor<P> getQueryAccessor();
     public BuildAccessor<P> getBuildAccessor();
 
-    public Collection<ProjectHandle<P>> getMyProjects();
+    public Collection<ProjectHandle<P>> getMyProjects(); // XXX move to accessor
     public S forProject(ProjectHandle<P> project);
     
 }
