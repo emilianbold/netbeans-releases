@@ -63,7 +63,6 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
@@ -93,22 +92,25 @@ public class HudsonBuildAccessor extends BuildAccessor<CloudUiServer, Project> {
 
     @Override
     public List<BuildHandle> getBuilds(ProjectHandle<CloudUiServer, Project> projectHandle) {
-        CloudClient client = projectHandle.getTeamServer().getClient();
+        Project project = projectHandle.getTeamProject();
+        String projectId = project.getIdentifier();
 
-        HudsonInstance hudsonServer = HudsonManager.addInstance(
-                "Kenai", "http://bugtracking-test.cz.oracle.com:8180/", 1, false); //TODO
-
-        if (hudsonServer != null) {
-            Collection<HudsonJob> jobs = hudsonServer.getJobs();
-            List<BuildHandle> buildHandles = new LinkedList<BuildHandle>();
-            for (HudsonJob job : jobs) {
-                buildHandles.add(new HudsonBuildHandle(hudsonServer,
-                        job.getName(), job));
-            }
-            return buildHandles;
-        } else {
+        ODSBuilderConnector odsBuilderConnector = new ODSBuilderConnector(
+                projectHandle.getTeamServer(), project);
+        HudsonInstance hi = HudsonManager.addInstance(
+                project.getName(),
+                projectHandle.getTeamServer().getUrl()
+                + "/" + projectId + "/", //NOI18N
+                1, odsBuilderConnector);
+        if (hi == null) {
             return Collections.emptyList();
         }
+        odsBuilderConnector.setHudsonInstance(hi);
+        List<BuildHandle> buildHandles = new LinkedList<BuildHandle>();
+        for (HudsonJob job : hi.getJobs()) {
+            buildHandles.add(new HudsonBuildHandle(hi, job.getName(), job));
+        }
+        return buildHandles;
     }
 
     @Override
