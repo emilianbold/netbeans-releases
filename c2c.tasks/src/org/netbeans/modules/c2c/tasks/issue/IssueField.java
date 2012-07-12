@@ -42,7 +42,8 @@
 
 package org.netbeans.modules.c2c.tasks.issue;
 
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,43 +53,43 @@ import org.openide.util.NbBundle;
  */
 public class IssueField {
     
-    public static final IssueField SUMMARY = new IssueField(CfcTaskAttribute.SUMMARY, "LBL_SUMMARY"); // NOI18N
-    public static final IssueField CC = new IssueField(CfcTaskAttribute.CC, "LBL_CC"); // NOI18N
-    public static final IssueField COMPONENT = new IssueField(CfcTaskAttribute.COMPONENT, "LBL_COMPONENT"); // NOI18N
-    public static final IssueField DESCRIPTION = new IssueField(CfcTaskAttribute.DESCRIPTION, "LBL_DESCRIPTION"); // NOI18N
-    public static final IssueField DUEDATE = new IssueField(CfcTaskAttribute.DUEDATE, "LBL_DUEDATE"); // NOI18N
-    public static final IssueField ITERATION = new IssueField(CfcTaskAttribute.ITERATION, "LBL_ITERATION"); // NOI18N
-    public static final IssueField MILESTONE = new IssueField(CfcTaskAttribute.MILESTONE, "LBL_MILESTONE"); // NOI18N
-    public static final IssueField PRIORITY = new IssueField(CfcTaskAttribute.PRIORITY, "LBL_PRIORITY"); // NOI18N
-    public static final IssueField PRODUCT = new IssueField(CfcTaskAttribute.PRODUCT, "LBL_PRODUCT"); // NOI18N
-    public static final IssueField STATUS = new IssueField(CfcTaskAttribute.STATUS, "LBL_STATUS"); // NOI18N
-    public static final IssueField RESOLUTION = new IssueField(CfcTaskAttribute.RESOLUTION, "LBL_RESOLUTION"); // NOI18N
-    public static final IssueField SEVERITY = new IssueField(CfcTaskAttribute.SEVERITY, "LBL_SEVERITY"); // NOI18N
-    public static final IssueField VERSION = new IssueField(CfcTaskAttribute.VERSION, "LBL_VERSION"); // NOI18N
-    public static final IssueField TASK_TYPE = new IssueField(CfcTaskAttribute.TASK_TYPE, "LBL_TASK_TYPE"); // NOI18N
-    public static final IssueField REPORTER = new IssueField(CfcTaskAttribute.REPORTER, "LBL_REPORTER"); // NOI18N
-    public static final IssueField OWNER = new IssueField(CfcTaskAttribute.OWNER, "LBL_OWNER"); // NOI18N
-    public static final IssueField TAGS = new IssueField(CfcTaskAttribute.TAGS, "LBL_TAGS"); // NOI18N
-    public static final IssueField PARENT = new IssueField(CfcTaskAttribute.PARENT, "LBL_PARENT"); // NOI18N
-    public static final IssueField SUBTASK = new IssueField(CfcTaskAttribute.SUBTASK, "LBL_SUBTASK"); // NOI18N
+    public static final IssueField SUMMARY = new IssueField(TaskAttribute.SUMMARY, "LBL_SUMMARY"); // NOI18N
+    public static final IssueField CC = new IssueField(C2CData.ATTR_CC, "LBL_CC"); // NOI18N
+    public static final IssueField COMPONENT = new IssueField(TaskAttribute.COMPONENT, "LBL_COMPONENT"); // NOI18N
+    public static final IssueField DESCRIPTION = new IssueField(TaskAttribute.DESCRIPTION, "LBL_DESCRIPTION"); // NOI18N
+    public static final IssueField DUEDATE = new IssueField(C2CData.ATTR_DUEDATE, "LBL_DUEDATE"); // NOI18N
+    public static final IssueField ITERATION = new IssueField(C2CData.ATTR_ITERATION, "LBL_ITERATION"); // NOI18N
+    public static final IssueField MILESTONE = new IssueField(C2CData.ATTR_MILESTONE, "LBL_MILESTONE"); // NOI18N
+    public static final IssueField PRIORITY = new IssueField(TaskAttribute.PRIORITY, "LBL_PRIORITY"); // NOI18N
+    public static final IssueField PRODUCT = new IssueField(TaskAttribute.PRODUCT, "LBL_PRODUCT"); // NOI18N
+    public static final IssueField STATUS = new IssueField(TaskAttribute.STATUS, "LBL_STATUS"); // NOI18N
+    public static final IssueField RESOLUTION = new IssueField(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"); // NOI18N
+    public static final IssueField SEVERITY = new IssueField(TaskAttribute.SEVERITY, "LBL_SEVERITY"); // NOI18N
+    public static final IssueField VERSION = new IssueField(C2CData.ATTR_VERSION, "LBL_VERSION"); // NOI18N
+    public static final IssueField TASK_TYPE = new IssueField(C2CData.ATTR_TASK_TYPE, "LBL_TASK_TYPE"); // NOI18N
+    public static final IssueField REPORTER = new IssueField(C2CData.ATTR_REPORTER, "LBL_REPORTER"); // NOI18N
+    public static final IssueField OWNER = new IssueField(C2CData.ATTR_OWNER, "LBL_OWNER"); // NOI18N
+    public static final IssueField TAGS = new IssueField(C2CData.ATTR_TAGS, "LBL_TAGS"); // NOI18N
+    public static final IssueField PARENT = new IssueField(C2CData.ATTR_PARENT, "LBL_PARENT"); // NOI18N
+    public static final IssueField SUBTASK = new IssueField(C2CData.ATTR_SUBTASK, "LBL_SUBTASK"); // NOI18N
     
-    public static final IssueField CREATED = new IssueField(CfcTaskAttribute.MODIFIED, "LBL_CREATED"); // NOI18N
+    public static final IssueField CREATED = new IssueField(C2CData.ATTR_MODIFIED, "LBL_CREATED"); // NOI18N
     
-    public static final IssueField NEWCC = new IssueField(CfcTaskAttribute.NEWCC, null); // NOI18N
-    public static final IssueField MODIFIED = new IssueField(CfcTaskAttribute.MODIFIED, null); // NOI18N
+    public static final IssueField NEWCC = new IssueField(C2CData.ATTR_NEWCC, null); // NOI18N
+    public static final IssueField MODIFIED = new IssueField(C2CData.ATTR_MODIFIED, null); // NOI18N
 
-    private final CfcTaskAttribute attribute;
+    private final String attribute;
     private final String displayNameKey;
     private boolean singleFieldAttribute;
 
-    IssueField(CfcTaskAttribute attribute, String displayNameKey) {
+    IssueField(String attribute, String displayNameKey) {
         this.attribute = attribute;
         this.displayNameKey = displayNameKey;
         this.singleFieldAttribute = true;
     }
 
     public String getKey() {
-        return attribute.getKey();
+        return attribute;
     }
 
     public String getDisplayName() {

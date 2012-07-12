@@ -46,6 +46,7 @@ import com.tasktop.c2c.server.tasks.domain.ExternalTaskRelation;
 import com.tasktop.c2c.server.tasks.domain.FieldDescriptor;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
@@ -56,6 +57,7 @@ import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.util.Collection;
 import java.util.List;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -86,6 +88,19 @@ public abstract class C2CExtender<Data> {
         getDefault().spiRepositoryRemove(rc, r);
     }
     
+    public static IRepositoryQuery getQuery(
+        AbstractRepositoryConnector rc,
+        PredefinedTaskQuery predefinedTaskQuery,
+        String string,
+        String connectorKind) {
+        return getDefault().spiQuery(rc, predefinedTaskQuery, string, connectorKind);
+    }
+
+    static String getProductKey(String component, String product) {
+        return getDefault().spiProductKey(component, product);
+    }
+
+
     private static C2CExtender getDefault() {
         return Lookup.getDefault().lookup(C2CExtender.class);
     }
@@ -107,6 +122,7 @@ public abstract class C2CExtender<Data> {
     protected abstract void spiAssignTaskRepositoryLocationFactory(AbstractRepositoryConnector rc, TaskRepositoryLocationFactory f);
     protected abstract C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository);
     protected abstract void spiRepositoryRemove(AbstractRepositoryConnector rc, TaskRepository r);
+    protected abstract IRepositoryQuery spiQuery(AbstractRepositoryConnector rc, PredefinedTaskQuery predefinedTaskQuery, String string, String connectorKind);
     
     //
     // operations on individual data
@@ -136,4 +152,5 @@ public abstract class C2CExtender<Data> {
     protected abstract Collection<String> spiAllIterations(Data data);
     protected abstract Collection<String> spiActiveIterations(Data data);
     protected abstract List<ExternalTaskRelation> spiValues(Data data, String value);
+    protected abstract String spiProductKey(String component, String product);
 }

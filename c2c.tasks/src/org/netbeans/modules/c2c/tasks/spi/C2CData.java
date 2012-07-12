@@ -62,6 +62,28 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public final class C2CData {
+    public static final String ATTR_OWNER = "task.common.user.assigned";
+    public static final String ATTR_PARENT = "blocks";
+    public static final String ATTR_SUBTASK = "dependson";
+    public static final String ATTR_MILESTONE = "milestone";
+    public static final String ATTR_ITERATION = "iteration";
+    public static final String ATTR_TASK_TYPE = "task_type";
+    public static final String ATTR_DUPLICATE_OF = "duplicate_of";
+    public static final String ATTR_DUEDATE = "task.common.date.due";
+    public static final String ATTR_FOUND_IN_RELEASE = "softwareVersion";
+    public static final String ATTR_TAGS = "keywords";
+    public static final String ATTR_EXTERNAL_LINKS = "task_relations";
+    public static final String ATTR_ESTIMATE_WITH_UNITS = "estimate_with_units";
+    public static final String ATTR_REPORTER = "task.common.user.reporter";
+    public static final String ATTR_CC = "cc";
+    public static final String ATTR_NEWCC = "newcc";
+    public static final String ATTR_NEWCOMMENT = "task.common.comment.new";
+    public static final String ATTR_MODIFIED = "task.common.date.modified";
+    public static final String ATTR_VERSION = "version";
+    
+    public static final String CUSTOM_FIELD_PREFIX = "cf.";
+    
+    
     private final Impl<?> delegate;
 
     static <Data> C2CData create(Data d, C2CExtender<Data> e) {
@@ -109,7 +131,7 @@ public final class C2CData {
     }
 
     public static String getProductKey(String component, String product) {
-        return com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData.getProductKey(component, product);
+        return C2CExtender.getProductKey(component, product);
     }
 
     public List<Milestone> getMilestones() {

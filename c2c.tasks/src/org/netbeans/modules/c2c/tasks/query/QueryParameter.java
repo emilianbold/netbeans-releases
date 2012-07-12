@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.c2c.tasks.query;
 
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
@@ -61,12 +60,12 @@ public abstract class QueryParameter {
     
 
     protected boolean alwaysDisabled = false;
-    private final CfcTaskAttribute attribute;
+    private final String attribute;
     
-    public QueryParameter(CfcTaskAttribute attribute) {
+    public QueryParameter(String attribute) {
         this.attribute = attribute;
     }
-    public CfcTaskAttribute getAttribute() {
+    public String getAttribute() {
         return attribute;
     }
     
@@ -115,16 +114,14 @@ public abstract class QueryParameter {
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("["); // NOI18N
-        sb.append(getAttribute().getKey());
-        sb.append(":");
-        sb.append(getAttribute().getLabel());
+        sb.append(getAttribute());
         sb.append("]"); // NOI18N
         return sb.toString();
     }
 
     static class ComboParameter extends QueryParameter {
         private final JComboBox combo;
-        public ComboParameter(JComboBox combo, CfcTaskAttribute attribute) {
+        public ComboParameter(JComboBox combo, String attribute) {
             super(attribute);
             this.combo = combo;
             combo.setModel(new DefaultComboBoxModel());
@@ -168,7 +165,7 @@ public abstract class QueryParameter {
 
     static class ListParameter extends QueryParameter {
         private final JList list;
-        public ListParameter(JList list, CfcTaskAttribute attribute) {
+        public ListParameter(JList list, String attribute) {
             super(attribute);
             this.list = list;
             list.setModel(new DefaultListModel());
@@ -236,7 +233,7 @@ public abstract class QueryParameter {
 
     static class TextFieldParameter extends QueryParameter {
         private final JTextField txt;
-        public TextFieldParameter(JTextField txt, CfcTaskAttribute attribute) {
+        public TextFieldParameter(JTextField txt, String attribute) {
             super(attribute);
             this.txt = txt;
         }
@@ -264,7 +261,7 @@ public abstract class QueryParameter {
     static class CheckBoxParameter extends QueryParameter {
         private String selected = "true"; // NOI18N
         private final JCheckBox chk;
-        public CheckBoxParameter(JCheckBox chk, CfcTaskAttribute attribute) {
+        public CheckBoxParameter(JCheckBox chk, String attribute) {
             super(attribute);
             this.chk = chk;
         }

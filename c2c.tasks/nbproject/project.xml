@@ -22,18 +22,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>com.tasktop.c2c.client.commons</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>com.tasktop.c2c.client.tasks.core</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>com.tasktop.c2c.server.tasks.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.c2c.tasks.query;
 
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
@@ -76,6 +75,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
@@ -183,19 +183,19 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
 
         // setup parameters
         parameters = new LinkedHashMap<String, QueryParameter>();
-        productParameter = createQueryParameter(ListParameter.class, panel.productList, CfcTaskAttribute.PRODUCT);              // NOI18N
-        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, CfcTaskAttribute.COMPONENT);        // NOI18N
-        releasesParameter = createQueryParameter(ListParameter.class, panel.releaseList, CfcTaskAttribute.MILESTONE);           // NOI18N
-        iterationsParameter = createQueryParameter(ListParameter.class, panel.iterationList, CfcTaskAttribute.ITERATION);       // NOI18N
+        productParameter = createQueryParameter(ListParameter.class, panel.productList, TaskAttribute.PRODUCT);              // NOI18N
+        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, TaskAttribute.COMPONENT);        // NOI18N
+        releasesParameter = createQueryParameter(ListParameter.class, panel.releaseList, C2CData.ATTR_MILESTONE);           // NOI18N
+        iterationsParameter = createQueryParameter(ListParameter.class, panel.iterationList, C2CData.ATTR_ITERATION);       // NOI18N
            
-        issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, CfcTaskAttribute.TASK_TYPE);        // NOI18N
-        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, CfcTaskAttribute.PRIORITY);           // NOI18N
-        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, CfcTaskAttribute.SEVERITY);           // NOI18N
+        issueTypeParameter = createQueryParameter(ListParameter.class, panel.issueTypeList, C2CData.ATTR_TASK_TYPE);        // NOI18N
+        priorityParameter = createQueryParameter(ListParameter.class, panel.priorityList, TaskAttribute.PRIORITY);           // NOI18N
+        severityParameter = createQueryParameter(ListParameter.class, panel.severityList, TaskAttribute.SEVERITY);           // NOI18N
         
-        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, CfcTaskAttribute.STATUS);                 // NOI18N
-        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, CfcTaskAttribute.RESOLUTION);     // NOI18N
+        statusParameter = createQueryParameter(ListParameter.class, panel.statusList, TaskAttribute.STATUS);                 // NOI18N
+        resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, TaskAttribute.RESOLUTION);     // NOI18N
         
-        tagsParameter = createQueryParameter(ComboParameter.class, panel.tagsComboBox, CfcTaskAttribute.TAGS);                  // NOI18N
+        tagsParameter = createQueryParameter(ComboParameter.class, panel.tagsComboBox, C2CData.ATTR_TAGS);                  // NOI18N
 //        nameParameter = createQueryParameter(ComboParameter.class, panel.tagsComboBox, CfcTaskAttribute.ggg);                  // NOI18N
         
 //        versionParameter = createQueryParameter(ListParameter.class, panel.List, CfcTaskAttribute.VERSION);                 // NOI18N
@@ -267,14 +267,14 @@ public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.Que
 //        }
     }
 
-    private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, CfcTaskAttribute attribute) {
+    private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String attribute) {
         try {
-            Constructor<T> constructor = clazz.getConstructor(c.getClass(), CfcTaskAttribute.class);
+            Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
             T t = constructor.newInstance(c, attribute);
-            parameters.put(attribute.getKey(), t);
+            parameters.put(attribute, t);
             return t;
         } catch (Exception ex) {
-            C2C.LOG.log(Level.SEVERE, attribute.getKey(), ex);
+            C2C.LOG.log(Level.SEVERE, attribute, ex);
         }
         return null;
     }

@@ -44,11 +44,13 @@ package org.netbeans.modules.c2c.tasks.tasktop;
 import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
 import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
 import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
+import com.tasktop.c2c.internal.client.tasks.core.util.CfcQueryUtil;
 import com.tasktop.c2c.server.tasks.domain.Component;
 import com.tasktop.c2c.server.tasks.domain.ExternalTaskRelation;
 import com.tasktop.c2c.server.tasks.domain.FieldDescriptor;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
@@ -61,6 +63,7 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -108,6 +111,20 @@ public final class TaskTopExtender extends C2CExtender<CfcClientData> {
     protected void spiRepositoryRemove(AbstractRepositoryConnector rc, TaskRepository r) {
         CfcRepositoryConnector cfc = (CfcRepositoryConnector)rc;
         cfc.getClientManager().repositoryRemoved(r);
+    }
+
+    @Override
+    protected IRepositoryQuery spiQuery(
+        AbstractRepositoryConnector rc,
+        PredefinedTaskQuery predefinedTaskQuery,
+        String name, String connectorKind
+    ) {
+        return CfcQueryUtil.getQuery(predefinedTaskQuery, name, connectorKind);
+    }
+
+    @Override
+    protected String spiProductKey(String component, String product) {
+        return CfcClientData.getProductKey(component, product);
     }
 
     @Override

@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.c2c.tasks.util;
 
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
@@ -89,32 +88,32 @@ public class C2CUtil {
         
         TaskAttribute rta = data.getRoot();
         TaskAttribute ta = rta.createMappedAttribute(TaskAttribute.USER_ASSIGNED);
-        ta = rta.createMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.DESCRIPTION.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.TASK_TYPE.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.PRODUCT.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.COMPONENT.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.MILESTONE.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.ITERATION.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.PRIORITY.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.SEVERITY.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.STATUS.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.RESOLUTION.getKey());
+        ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);
+        ta = rta.createMappedAttribute(TaskAttribute.DESCRIPTION);
+        ta = rta.createMappedAttribute(C2CData.ATTR_TASK_TYPE);
+        ta = rta.createMappedAttribute(TaskAttribute.PRODUCT);
+        ta = rta.createMappedAttribute(TaskAttribute.COMPONENT);
+        ta = rta.createMappedAttribute(C2CData.ATTR_MILESTONE);
+        ta = rta.createMappedAttribute(C2CData.ATTR_ITERATION);
+        ta = rta.createMappedAttribute(TaskAttribute.PRIORITY);
+        ta = rta.createMappedAttribute(TaskAttribute.SEVERITY);
+        ta = rta.createMappedAttribute(TaskAttribute.STATUS);
+        ta = rta.createMappedAttribute(TaskAttribute.RESOLUTION);
 //        ta.setValue(clientData.getResolutions("UNCONFIRMED").getValue());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.DUPLICATE_OF.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.DUEDATE.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.FOUND_IN_RELEASE.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.TAGS.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.EXTERNAL_LINKS.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.OWNER.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.VERSION.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.ESTIMATE_WITH_UNITS.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.REPORTER.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.CC.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.NEWCC.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.PARENT.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.SUBTASK.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.NEWCOMMENT.getKey());
+        ta = rta.createMappedAttribute(C2CData.ATTR_DUPLICATE_OF);
+        ta = rta.createMappedAttribute(C2CData.ATTR_DUEDATE);
+        ta = rta.createMappedAttribute(C2CData.ATTR_FOUND_IN_RELEASE);
+        ta = rta.createMappedAttribute(C2CData.ATTR_TAGS);
+        ta = rta.createMappedAttribute(C2CData.ATTR_EXTERNAL_LINKS);
+        ta = rta.createMappedAttribute(C2CData.ATTR_OWNER);
+        ta = rta.createMappedAttribute(C2CData.ATTR_VERSION);
+        ta = rta.createMappedAttribute(C2CData.ATTR_ESTIMATE_WITH_UNITS);
+        ta = rta.createMappedAttribute(C2CData.ATTR_REPORTER);
+        ta = rta.createMappedAttribute(C2CData.ATTR_CC);
+        ta = rta.createMappedAttribute(C2CData.ATTR_NEWCC);
+        ta = rta.createMappedAttribute(C2CData.ATTR_PARENT);
+        ta = rta.createMappedAttribute(C2CData.ATTR_SUBTASK);
+        ta = rta.createMappedAttribute(C2CData.ATTR_NEWCOMMENT);
         
         
 //        ta.setValue(clientData.get().get(0).getValue());

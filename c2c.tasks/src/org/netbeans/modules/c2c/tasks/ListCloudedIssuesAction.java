@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.c2c.tasks;
 
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
-import com.tasktop.c2c.internal.client.tasks.core.util.CfcQueryUtil;
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
@@ -54,11 +52,14 @@ import java.awt.event.ActionListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.c2c.tasks.spi.C2CData;
+import org.netbeans.modules.c2c.tasks.spi.C2CExtender;
 
 @ActionID(
     category = "Versioning",
@@ -82,13 +83,13 @@ public final class ListCloudedIssuesAction implements ActionListener {
         
         System.out.println(" ----------- query 1 ---------------- ");
         IRepositoryQuery query = new RepositoryQuery(taskRepository.getConnectorKind(), "");            // NOI18N
-        query.setAttribute(CfcTaskAttribute.TASK_TYPE.getKey(), "Defect,Feature");
+        query.setAttribute(C2CData.ATTR_TASK_TYPE, "Defect,Feature");
         query.setAttribute("task.common.summary", "test");
         query.setAttribute("task.common.description", "test");
         TaskDataCollector collector = new TaskDataCollector() {
             @Override
             public void accept(TaskData td) {
-                System.out.println(" issue " + td.getTaskId() + " " + td.getRoot().getMappedAttribute(CfcTaskAttribute.SUMMARY.getKey()).getValue());
+                System.out.println(" issue " + td.getTaskId() + " " + td.getRoot().getMappedAttribute(TaskAttribute.SUMMARY).getValue());
             }
         };
         IStatus status = rc.performQuery(taskRepository, query, collector, null, new NullProgressMonitor());
@@ -97,7 +98,7 @@ public final class ListCloudedIssuesAction implements ActionListener {
         System.out.println(" ++++ Query URL : " + query.getUrl());
         
         query = new RepositoryQuery(taskRepository.getConnectorKind(), "");            // NOI18N
-        query.setAttribute(CfcTaskAttribute.TASK_TYPE.getKey(), "Defect,Feature");
+        query.setAttribute(C2CData.ATTR_TASK_TYPE, "Defect,Feature");
         query.setAttribute("task.common.summary", "test");
         query.setAttribute("task.common.description", "test");
         
@@ -106,7 +107,7 @@ public final class ListCloudedIssuesAction implements ActionListener {
         System.out.println(" ++++ Query URL : " + query.getUrl());        
         
         System.out.println(" ----------- predefined query  ---------------- ");
-        IRepositoryQuery q = CfcQueryUtil.getQuery(PredefinedTaskQuery.ALL, "", rc.getConnectorKind());
+        IRepositoryQuery q = C2CExtender.getQuery(rc, PredefinedTaskQuery.ALL, "", rc.getConnectorKind());
         status = rc.performQuery(taskRepository, q, collector, null, new NullProgressMonitor());
         
 //        System.out.println(" ----------- mutitaskdata query  ---------------- ");

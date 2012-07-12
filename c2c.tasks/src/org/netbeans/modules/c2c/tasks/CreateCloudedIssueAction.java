@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.c2c.tasks;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcConstants;
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 
@@ -107,7 +105,7 @@ public final class CreateCloudedIssueAction implements ActionListener {
             
             // change
             TaskAttribute rta = taskData.getRoot();
-            TaskAttribute ta = rta.getMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());
+            TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
             ta.setValue(ta.getValue() + ".2");
             
             RepositoryResponse rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
@@ -118,7 +116,7 @@ public final class CreateCloudedIssueAction implements ActionListener {
             
             // change custom field            
             rta = taskData.getRoot();
-            ta = rta.getMappedAttribute(CfcConstants.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName());
+            ta = rta.getMappedAttribute(C2CData.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName());
             ta.setValue("custom value");
             
             rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
@@ -126,11 +124,11 @@ public final class CreateCloudedIssueAction implements ActionListener {
 
             printTaskData(taskData); 
             C2C.LOG.log(Level.FINE, "   custom field name : " + clientData.getCustomFields().get(0).getName());
-            C2C.LOG.log(Level.FINE, "   custom field value : " + taskData.getRoot().getAttribute(CfcConstants.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName()).getValue());
+            C2C.LOG.log(Level.FINE, "   custom field value : " + taskData.getRoot().getAttribute(C2CData.CUSTOM_FIELD_PREFIX + clientData.getCustomFields().get(0).getName()).getValue());
             
             // reassign
             rta = taskData.getRoot();
-            ta = rta.getMappedAttribute(CfcTaskAttribute.OWNER.getKey());
+            ta = rta.getMappedAttribute(C2CData.ATTR_OWNER);
             ta.setValue(getDifferentUser(ta.getValue(), clientData.getUsers()));
             
             rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
@@ -171,7 +169,7 @@ public final class CreateCloudedIssueAction implements ActionListener {
             
             // resolve
             rta = taskData.getRoot();
-            ta = rta.getMappedAttribute(CfcTaskAttribute.STATUS.getKey());
+            ta = rta.getMappedAttribute(TaskAttribute.STATUS);
             ta.setValue("RESOLVED");
             
             rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
@@ -185,7 +183,7 @@ public final class CreateCloudedIssueAction implements ActionListener {
             printTaskData(taskData2); 
             
             rta = taskData.getRoot();
-            ta = rta.getMappedAttribute(CfcTaskAttribute.SUBTASK.getKey());
+            ta = rta.getMappedAttribute(C2CData.ATTR_SUBTASK);
             ta.setValue(taskData2.getTaskId());
             rr = C2CUtil.postTaskData(rc, taskRepository, taskData);
             
@@ -231,37 +229,37 @@ public final class CreateCloudedIssueAction implements ActionListener {
         C2CData clientData = DummyUtils.getClientData(repository);
         
         TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
         ta.setValue(summary);
-        ta = rta.getMappedAttribute(CfcTaskAttribute.DESCRIPTION.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.DESCRIPTION);
         ta.setValue(desc);
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.TASK_TYPE.getKey());
+        ta = rta.getMappedAttribute(C2CData.ATTR_TASK_TYPE);
         ta.setValue(clientData.getTaskTypes().iterator().next());
         
         Product product = clientData.getProducts().get(0);
-        ta = rta.getMappedAttribute(CfcTaskAttribute.PRODUCT.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.PRODUCT);
         ta.setValue(product.getName());
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.COMPONENT.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.COMPONENT);
         ta.setValue(product.getComponents().get(0).getName());
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.MILESTONE.getKey());
+        ta = rta.getMappedAttribute(C2CData.ATTR_MILESTONE);
         ta.setValue(product.getMilestones().get(0).getValue());
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.ITERATION.getKey());
+        ta = rta.getMappedAttribute(C2CData.ATTR_ITERATION);
         Collection<String> c = clientData.getActiveIterations();
         if(!c.isEmpty()) {
             ta.setValue(c.iterator().next());
         }
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.PRIORITY.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.PRIORITY);
         ta.setValue(clientData.getPriorities().get(0).getValue());
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.SEVERITY.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.SEVERITY);
         ta.setValue(clientData.getSeverities().get(0).getValue());
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.STATUS.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.STATUS);
         ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
         
         RepositoryResponse rr = C2CUtil.postTaskData(cfcrc, repository, data);
@@ -284,11 +282,11 @@ public final class CreateCloudedIssueAction implements ActionListener {
     private void printTaskData(TaskData data) {
         C2C.LOG.log(Level.INFO, " *************************************************** ");
         C2C.LOG.log(Level.INFO, " id : " + data.getTaskId());
-        C2C.LOG.log(Level.INFO, "   summary : " + data.getRoot().getAttribute(CfcTaskAttribute.SUMMARY.getKey()).getValue());
-        C2C.LOG.log(Level.INFO, "   owner : " + data.getRoot().getAttribute(CfcTaskAttribute.OWNER.getKey()).getValue());
-        C2C.LOG.log(Level.INFO, "   status : " + data.getRoot().getAttribute(CfcTaskAttribute.STATUS.getKey()).getValue());
-        C2C.LOG.log(Level.INFO, "   parent : " + data.getRoot().getAttribute(CfcTaskAttribute.PARENT.getKey()).getValue());
-        C2C.LOG.log(Level.INFO, "   subtask : " + data.getRoot().getAttribute(CfcTaskAttribute.SUBTASK.getKey()).getValue());
+        C2C.LOG.log(Level.INFO, "   summary : " + data.getRoot().getAttribute(TaskAttribute.SUMMARY).getValue());
+        C2C.LOG.log(Level.INFO, "   owner : " + data.getRoot().getAttribute(C2CData.ATTR_OWNER).getValue());
+        C2C.LOG.log(Level.INFO, "   status : " + data.getRoot().getAttribute(TaskAttribute.STATUS).getValue());
+        C2C.LOG.log(Level.INFO, "   parent : " + data.getRoot().getAttribute(C2CData.ATTR_PARENT).getValue());
+        C2C.LOG.log(Level.INFO, "   subtask : " + data.getRoot().getAttribute(C2CData.ATTR_SUBTASK).getValue());
         
         List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
         C2C.LOG.log(Level.INFO, "   attachmnets : " + (attrs != null ? attrs.size() : "null"));
