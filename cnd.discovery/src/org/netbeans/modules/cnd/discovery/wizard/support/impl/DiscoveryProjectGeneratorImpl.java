@@ -88,7 +88,16 @@ import org.openide.util.Utilities;
 public class DiscoveryProjectGeneratorImpl {
     private static boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
     private static boolean TRUNCATE_BEGINNING_PATH = true;
-    private static boolean TRUE_PATHS_ORDER = true;
+    
+    /**
+     * Old IDE behavior is random user include paths after consolidation.
+     * Since 7.3 consolidation preserve paths order.
+     * It can enlarge project's metadata. To forbid preserving use flag:
+     * <pre>
+     * -J-Dcnd.discovery.can_violate_paths_order=true
+     * </pre>
+     */
+    private static boolean VIOLATE_PATHS_ORDER = Boolean.getBoolean("cnd.discovery.can_violate_paths_order"); // NOI18N
     private ProjectBridge projectBridge;
     private DiscoveryDescriptor wizard;
     private String baseFolder;
@@ -468,7 +477,9 @@ public class DiscoveryProjectGeneratorImpl {
                 if (commonFoldersIncludes.size() > 0) {
                     CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
                     if (cccc != null) {
-                        if (TRUE_PATHS_ORDER) {
+                        if (VIOLATE_PATHS_ORDER) {
+                            commonFoldersIncludes.retainAll(cccc.getIncludeDirectories().getValue());
+                        } else {
                             List<String> itemPaths = cccc.getIncludeDirectories().getValue();
                             int min = Math.min(commonFoldersIncludes.size(), itemPaths.size());
                             Iterator<String> it1 = commonFoldersIncludes.iterator();
@@ -488,8 +499,6 @@ public class DiscoveryProjectGeneratorImpl {
                                     commonFoldersIncludes.add(itemPaths.get(i));
                                 }
                             }
-                        } else {
-                            commonFoldersIncludes.retainAll(cccc.getIncludeDirectories().getValue());
                         }
                     }
                 }
@@ -540,7 +549,9 @@ public class DiscoveryProjectGeneratorImpl {
                 first = false;
             } else {
                 if (commonFilesIncludes.size() > 0) {
-                    if (TRUE_PATHS_ORDER) {
+                    if (VIOLATE_PATHS_ORDER) {
+                        commonFilesIncludes.retainAll(cccc.getIncludeDirectories().getValue());
+                    } else {
                         List<String> itemPaths = cccc.getIncludeDirectories().getValue();
                         int min = Math.min(commonFilesIncludes.size(), itemPaths.size());
                         Iterator<String> it1 = commonFilesIncludes.iterator();
@@ -560,8 +571,6 @@ public class DiscoveryProjectGeneratorImpl {
                                 commonFilesIncludes.add(itemPaths.get(i));
                             }
                         }
-                    } else {
-                        commonFilesIncludes.retainAll(cccc.getIncludeDirectories().getValue());
                     }
                 }
                 if (commonFilesMacroMap.size() > 0) {
