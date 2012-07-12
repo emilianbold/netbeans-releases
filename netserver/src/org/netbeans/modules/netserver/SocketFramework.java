@@ -62,6 +62,8 @@ import java.util.logging.Logger;
  */
 public abstract class SocketFramework implements Runnable {
     
+    public static final int BYTES = 1000;
+    
     protected static final Logger LOG = Logger.getLogger( 
             SocketServer.class.getCanonicalName());
     

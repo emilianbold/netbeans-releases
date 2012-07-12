@@ -52,14 +52,13 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 
 import javax.xml.bind.DatatypeConverter;
-import org.netbeans.modules.netserver.SocketServer;
 
 
 /**
  * @author ads
  *
  */
-class WebSocketHandler7 implements WebSocketChanelHandler {
+class WebSocketHandler7 extends AbstractWSHandler7 {
     
     private static final String SALT = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";     // NOI18N
     
@@ -109,7 +108,10 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
         builder.append(CONN_UPGRADE);
         builder.append(CRLF);
         builder.append("Sec-WebSocket-Origin: ");           // NOI18N
-        String origin = server.getContext(key).getHeaders().get("Origin");  // NOI18N
+        String origin = server.getContext(key).getHeaders().get("Sec-WebSocket-Origin");  // NOI18N
+        if ( origin == null ){
+            origin = server.getContext(key).getHeaders().get("Origin");  // NOI18N
+        }
         if ( origin != null ){
             builder.append( origin);
         }
