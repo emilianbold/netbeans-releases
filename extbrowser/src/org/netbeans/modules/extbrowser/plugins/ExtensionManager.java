@@ -57,28 +57,36 @@ import org.netbeans.modules.extbrowser.plugins.firefox.FFManagerAccessor;
  */
 public final class ExtensionManager {
 
+    public static enum ExtensitionStatus {
+        INSTALLED,
+        MISSING,
+        NEEDS_UPGRADE,
+        UNKNOWN
+    }
+    
     private ExtensionManager(){
     }
     
-    public static boolean isInstalled( BrowserId id ){
+    public static ExtensitionStatus isInstalled( BrowserId id ){
         if ( id == null ){
             // TODO : show browser chooser
         }
         else {
             ExtensionManagerAccessor accessor = ACCESSORS.get(id);
             if ( accessor == null ){
-                return false;
+                return ExtensitionStatus.UNKNOWN;
             }
             BrowserExtensionManager manager = accessor.getManager();
             return manager.isInstalled();
         }
-        return false;
+        return ExtensitionStatus.UNKNOWN;
     }
     
     /**
      * @return true if extension is available
      */
-    public static boolean installExtension(  BrowserId id , PluginLoader loader ){
+    public static boolean installExtension(  BrowserId id , PluginLoader loader, 
+            ExtensionManager.ExtensitionStatus currentStatus){
         if ( id == null ){
             // TODO : show browser chooser
         }
@@ -88,7 +96,7 @@ public final class ExtensionManager {
                 return false ;
             }
             BrowserExtensionManager manager = accessor.getManager();
-            return manager.install( loader );
+            return manager.install( loader , currentStatus );
         }
         return false;
     }

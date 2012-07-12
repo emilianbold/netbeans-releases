@@ -247,9 +247,10 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
             BrowserTabDescriptor tab = getBrowserTabDescriptor();
             if (tab == null) {
                 BrowserId pluginId = extBrowserFactory.getBrowserFamilyId();
-                boolean pluginAvailable = ExtensionManager
+                ExtensionManager.ExtensitionStatus status = ExtensionManager
                         .isInstalled(pluginId);
-                if (!pluginAvailable) {
+                if (status == ExtensionManager.ExtensitionStatus.MISSING || 
+                        status == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE) {
                     ExtensionManager.installExtension(pluginId,
                             new PluginLoader() {
 
@@ -257,7 +258,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                                 public void requestPluginLoad( URL url ) {
                                     loadURLInBrowser(url);
                                 }
-                            });
+                            }, status);
                 }
                 
                 // instead of using real URL to open a new tab in the browser
@@ -269,7 +270,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                 // even when the URL is loaded for the first time.
                 URL tempUrl = createBlankHTMLPage();
                 assert tempUrl != null;
-                if (pluginAvailable) {
+                if (status == ExtensionManager.ExtensitionStatus.INSTALLED) {
                     ExternalBrowserPlugin.getInstance().register(tempUrl, url, this);
                 }
                 loadURLInBrowser(tempUrl);

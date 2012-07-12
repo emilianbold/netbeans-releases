@@ -90,8 +90,9 @@ public interface ExtensionManagerAccessor {
     
     static interface BrowserExtensionManager {
         
-        boolean isInstalled();
+        ExtensionManager.ExtensitionStatus isInstalled();
         
-        boolean install( PluginLoader loader );
+        boolean install( PluginLoader loader, ExtensionManager.ExtensitionStatus currentStatus);
     }
+    
 }
