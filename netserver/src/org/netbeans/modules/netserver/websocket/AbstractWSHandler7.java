@@ -40,64 +40,35 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.netserver;
+package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
-import java.net.SocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
+import java.nio.ByteBuffer;
 
 
 /**
  * @author ads
  *
  */
-public class SocketClient extends SocketFramework {
+abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
 
-    public SocketClient(SocketAddress address ) throws IOException {
-        super();
-        socketChannel = SocketChannel.open();
-        socketChannel.configureBlocking( false );
-        socketChannel.connect( address );
-        socketChannel.register( getSelector(), SelectionKey.OP_CONNECT );
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
+     */
+    @Override
+    public void read( ByteBuffer byteBuffer ) throws IOException {
+        // TODO Auto-generated method stub
+
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#chanelClosed(java.nio.channels.SelectionKey)
+     * @see org.netbeans.modules.netserver.websocket.WebSocketChanelHandler#createTextFrame(java.lang.String)
      */
     @Override
-    protected void chanelClosed( SelectionKey key ) {
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#getAddress()
-     */
-    @Override
-    protected SocketAddress getAddress(){
-        return socketChannel.socket().getRemoteSocketAddress();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#process(java.nio.channels.SelectionKey)
-     */
-    @Override
-    protected void process( SelectionKey key ) throws IOException {
-        if ( key.isConnectable()){
-            finishConnect( key );
-        }
-        super.process(key);
-    }
-    
-    protected SocketChannel getChanel(){
-        return socketChannel;
+    public byte[] createTextFrame( String message ) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
-    protected void finishConnect( SelectionKey key) throws IOException {
-        if ( socketChannel.isConnectionPending() ){
-            socketChannel.finishConnect();
-        }
-        socketChannel.register(getSelector(), SelectionKey.OP_READ);
-    }
-
-    private SocketChannel socketChannel;
 }

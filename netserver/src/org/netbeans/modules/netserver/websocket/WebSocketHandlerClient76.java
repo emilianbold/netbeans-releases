@@ -40,64 +40,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.netserver;
-
-import java.io.IOException;
-import java.net.SocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
+package org.netbeans.modules.netserver.websocket;
 
 
 /**
  * @author ads
  *
  */
-public class SocketClient extends SocketFramework {
+class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
 
-    public SocketClient(SocketAddress address ) throws IOException {
-        super();
-        socketChannel = SocketChannel.open();
-        socketChannel.configureBlocking( false );
-        socketChannel.connect( address );
-        socketChannel.register( getSelector(), SelectionKey.OP_CONNECT );
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#chanelClosed(java.nio.channels.SelectionKey)
-     */
-    @Override
-    protected void chanelClosed( SelectionKey key ) {
+    WebSocketHandlerClient76( WebSocketClient webSocketClient ) {
+        super(webSocketClient);
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#getAddress()
+     * @see org.netbeans.modules.netserver.websocket.WebSocketHandlerClient75#sendHandshake()
      */
     @Override
-    protected SocketAddress getAddress(){
-        return socketChannel.socket().getRemoteSocketAddress();
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#process(java.nio.channels.SelectionKey)
-     */
-    @Override
-    protected void process( SelectionKey key ) throws IOException {
-        if ( key.isConnectable()){
-            finishConnect( key );
-        }
-        super.process(key);
-    }
-    
-    protected SocketChannel getChanel(){
-        return socketChannel;
+    public void sendHandshake() {
+        // TODO Auto-generated method stub
     }
 
-    protected void finishConnect( SelectionKey key) throws IOException {
-        if ( socketChannel.isConnectionPending() ){
-            socketChannel.finishConnect();
-        }
-        socketChannel.register(getSelector(), SelectionKey.OP_READ);
-    }
-
-    private SocketChannel socketChannel;
 }

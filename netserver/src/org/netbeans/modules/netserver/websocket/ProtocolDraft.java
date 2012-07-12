@@ -40,64 +40,91 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.netserver;
-
-import java.io.IOException;
-import java.net.SocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
+package org.netbeans.modules.netserver.websocket;
 
 
 /**
  * @author ads
  *
  */
-public class SocketClient extends SocketFramework {
-
-    public SocketClient(SocketAddress address ) throws IOException {
-        super();
-        socketChannel = SocketChannel.open();
-        socketChannel.configureBlocking( false );
-        socketChannel.connect( address );
-        socketChannel.register( getSelector(), SelectionKey.OP_CONNECT );
+public final class ProtocolDraft {
+    
+    public enum Draft {
+        Draft75,
+        Draft76,
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#chanelClosed(java.nio.channels.SelectionKey)
-     */
-    @Override
-    protected void chanelClosed( SelectionKey key ) {
+    private ProtocolDraft( Draft draft ){
+        this.draft = draft;
+        version = 0;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#getAddress()
-     */
-    @Override
-    protected SocketAddress getAddress(){
-        return socketChannel.socket().getRemoteSocketAddress();
+    private ProtocolDraft( int version){
+        draft = null;
+        this.version = version;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.SocketFramework#process(java.nio.channels.SelectionKey)
-     */
-    @Override
-    protected void process( SelectionKey key ) throws IOException {
-        if ( key.isConnectable()){
-            finishConnect( key );
+    private ProtocolDraft( ){
+        draft = null;
+        version = 0;
+    }
+    
+    public ProtocolDraft getProtocol( int number ){
+        if ( number == 75 ){
+            return new ProtocolDraft( Draft.Draft75 );
         }
-        super.process(key);
+        else if ( number == 76 ){
+            return new ProtocolDraft( Draft.Draft76 );
+        }
+        else if ( number >=7 && number < 13){
+            return new ProtocolDraft(number);
+        }
+        else if (number >=13 && number <=17){
+            return new ProtocolDraft();
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
     }
     
-    protected SocketChannel getChanel(){
-        return socketChannel;
+    public ProtocolDraft getRFC(){
+        return new ProtocolDraft();
     }
-
-    protected void finishConnect( SelectionKey key) throws IOException {
-        if ( socketChannel.isConnectionPending() ){
-            socketChannel.finishConnect();
+    
+    @Override
+    public boolean equals(Object obj) {
+        if ( obj instanceof ProtocolDraft){
+            ProtocolDraft protocol = (ProtocolDraft)obj;
+            return draft == protocol.draft && version == protocol.version;
         }
-        socketChannel.register(getSelector(), SelectionKey.OP_READ);
+        return false;
     }
-
-    private SocketChannel socketChannel;
+    
+    @Override
+    public int hashCode() {
+        if ( draft == Draft.Draft75){
+            return 75;
+        }
+        else if ( draft == Draft.Draft76){
+            return 76; 
+        }
+        else {
+            return version;
+        }
+    }
+    
+    Draft getDraft(){
+        return draft;
+    }
+    
+    int getVersion(){
+        return version;
+    }
+    
+    boolean isRfc(){
+        return draft == null && version ==0;
+    }
+    
+    private final Draft draft;
+    private final int version;
 }

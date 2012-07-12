@@ -53,12 +53,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 
+import org.netbeans.modules.netserver.SocketFramework;
+
 
 /**
  * @author ads
  *
  */
-class WebSocketHandler75 implements WebSocketChanelHandler {
+class WebSocketHandler75 extends AbstractWSHandler75 {
     
     private static final String WS_PROTOCOL = "WebSocket-Protocol";     // NOI18N
     
@@ -126,7 +128,7 @@ class WebSocketHandler75 implements WebSocketChanelHandler {
     @Override
     public void read( ByteBuffer byteBuffer ) throws IOException {
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        byte[] bytes = new byte[WebSocketServer.BYTES];
+        byte[] bytes = new byte[SocketFramework.BYTES];
         List<List<Byte>> messages = new LinkedList<List<Byte>>();
         List<Byte> message = new LinkedList<Byte>();
         boolean newMessage = false;

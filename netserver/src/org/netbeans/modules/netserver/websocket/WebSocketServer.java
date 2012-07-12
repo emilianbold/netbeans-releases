@@ -67,7 +67,6 @@ import org.netbeans.modules.netserver.SocketServer;
 public class WebSocketServer extends SocketServer {
     
     public static final String UTF_8 = "UTF-8";                    // NOI18N
-    static final int BYTES = 1000;  
     private static final char NEW_LINE = '\n';
     
     protected static final Logger LOG = SocketServer.LOG;
