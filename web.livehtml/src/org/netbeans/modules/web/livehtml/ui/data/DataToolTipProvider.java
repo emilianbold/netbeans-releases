@@ -39,38 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.livehtml.ui.data;
 
-package org.netbeans.modules.web.livehtml;
-
-import java.net.URL;
-import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
+import javax.swing.JTextPane;
+import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
 import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service=LiveHTMLImplementation.class)
-public class LiveHTMLImpl implements LiveHTMLImplementation {
+/**
+ *
+ * @author petr-podzimek
+ */
+@ServiceProvider(service=RevisionToolTipService.class)
+public class DataToolTipProvider extends RevisionToolTipService<JTextPane> {
+    
+    private static final String NAME = "Revision Data";
 
     @Override
-    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(timeStamp, content, callStack, true);
+    public JTextPane getComponent(Revision revision) {
+        return new JTextPane();
+    }
+
+    @Override
+    public void update(JTextPane textPane, Revision revision) {
+        if (canProcess(revision)) {
+            textPane.setText(revision.getData().toString());
+        } else {
+            textPane.setText(null);
         }
     }
 
     @Override
-    public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(timeStamp, content, null, false);
-        }
+    public boolean canProcess(Revision revision) {
+        return revision.getData() != null;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
     }
     
-    @Override
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDataEvent(timeStamp, data, request, mime);
-        }
-    }
-
 }

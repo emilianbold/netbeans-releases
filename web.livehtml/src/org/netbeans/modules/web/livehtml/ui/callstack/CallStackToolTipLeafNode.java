@@ -39,38 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.livehtml.ui.callstack;
 
-package org.netbeans.modules.web.livehtml;
+import org.json.simple.JSONObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
-import java.net.URL;
-import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
-import org.openide.util.lookup.ServiceProvider;
+/**
+ *
+ * @author petr-podzimek
+ */
+public class CallStackToolTipLeafNode extends AbstractNode {
 
-@ServiceProvider(service=LiveHTMLImplementation.class)
-public class LiveHTMLImpl implements LiveHTMLImplementation {
-
-    @Override
-    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(timeStamp, content, callStack, true);
+    public CallStackToolTipLeafNode(Object object) {
+        super(Children.LEAF);
+        
+        if (object instanceof JSONObject) {
+            JSONObject jSONObject = (JSONObject) object;
+            final Object function = jSONObject.get("function");
+            final Object lineNumber = jSONObject.get("lineNumber");
+            final Object columnNumber = jSONObject.get("columnNumber");
+            final Object script = jSONObject.get("script");
+            
+            StringBuilder sb = new StringBuilder();
+            
+            if (function != null) {
+                sb.append(function);
+            }
+            
+            if (lineNumber != null) {
+                sb.append(" ");
+                sb.append(lineNumber);
+            }
+            
+            if (columnNumber != null) {
+                sb.append(":");
+                sb.append(columnNumber);
+            }
+            
+            setDisplayName(sb.toString());
+            
+            if (script != null) {
+                setShortDescription("Script: " + script.toString());
+            }
         }
-    }
-
-    @Override
-    public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(timeStamp, content, null, false);
-        }
+        
     }
     
-    @Override
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDataEvent(timeStamp, data, request, mime);
-        }
-    }
-
 }

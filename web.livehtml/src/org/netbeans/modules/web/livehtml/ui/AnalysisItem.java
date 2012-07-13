@@ -41,27 +41,57 @@
  */
 package org.netbeans.modules.web.livehtml.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionID;
-import org.openide.util.NbBundle.Messages;
+import java.text.DateFormat;
+import org.netbeans.modules.web.livehtml.Analysis;
 
-@ActionID(
-    category = "View",
-id = "org.netbeans.modules.web.livehtml.ui.ShowGlobalLiveHTML")
-@ActionRegistration(
-    displayName = "#CTL_ShowGlobalLiveHTML")
-@ActionReferences({
-    @ActionReference(path = "Menu/View", position = 1090, separatorBefore = 1070)
-})
-@Messages("CTL_ShowGlobalLiveHTML=Live HTML")
-public final class ShowGlobalLiveHTML implements ActionListener {
+/**
+ *
+ * @author petr-podzimek
+ */
+public class AnalysisItem implements Comparable<AnalysisItem> {
+    
+    private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance();
+    
+    private Analysis analysis;
+
+    public AnalysisItem(Analysis analysis) {
+        this.analysis = analysis;
+    }
+
+    public Analysis getAnalysis() {
+        return analysis;
+    }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        LiveHTMLTopComponent.showLiveHTML();
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        
+        if (analysis.getFinished() == null) {
+            sb.append(" * ");
+        }
+        
+        if (analysis.getSourceUrl() != null) {
+            String sourceUrl = analysis.getSourceUrl().toExternalForm();
+            if (sourceUrl.length() > 25) {
+                sourceUrl = "..." + sourceUrl.substring(25);
+            }
+            sb.append(sourceUrl);
+        }
+        
+        if (analysis.getCreated() != null) {
+            sb.append(" - ");
+            sb.append(DATE_FORMAT.format(analysis.getCreated()));
+        }
+        
+        return sb.toString();
     }
+
+    @Override
+    public int compareTo(AnalysisItem o) {
+        if (o == null || getAnalysis() == null) {
+            return -1;
+        }
+        return -getAnalysis().compareTo(o.getAnalysis());
+    }
+
 }

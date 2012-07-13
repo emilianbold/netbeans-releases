@@ -39,63 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.livehtml.ui.callstack;
 
-package org.netbeans.modules.web.livehtml.ui;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JTextField;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
-import javax.swing.border.EmptyBorder;
+import org.json.simple.JSONArray;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
  *
+ * @author petr-podzimek
  */
-public class LiveHTMLToolbar extends JToolBar implements ActionListener {
-    
-    private JButton goButton;
-    private JButton beautifyButton;
-    private JTextField address;
-    private LiveHTMLComponent component;
+public class CallStackToolTipRootNode extends AbstractNode {
 
-    public LiveHTMLToolbar(LiveHTMLComponent component) {
-        this.component = component;
-        setOpaque(false);
-        setFloatable(false);
-        initContent();
-    }
-
-    
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        if(e.getSource() == goButton) {
-            component.go(address.getText());
-        } else if(e.getSource() == beautifyButton) {
-            component.beautify();
-        }
-    }
-
-    private void initContent() {
-        goButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/go.png"))); // NOI18N
-        goButton.addActionListener(this);
-        goButton.setEnabled(true);
-        goButton.setBorder(new EmptyBorder(0, 5, 0, 5));
-        
-        beautifyButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/pretty.png"))); // NOI18N
-        beautifyButton.addActionListener(this);
-        beautifyButton.setEnabled(true);
-        beautifyButton.setBorder(new EmptyBorder(0, 5, 0, 5));
-
-        address = new JTextField();
-        address.setBorder(new EmptyBorder(0, 5, 0, 5));
-        
-        setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-        add(address);
-        add(goButton); 
-        add(beautifyButton);
+    public CallStackToolTipRootNode(JSONArray callStack) {
+        super(new CallStackToolTipNodeContainer(callStack));
+        setDisplayName("Root");
     }
     
 }

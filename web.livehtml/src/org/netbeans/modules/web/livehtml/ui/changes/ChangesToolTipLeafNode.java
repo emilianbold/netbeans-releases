@@ -39,38 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.livehtml.ui.changes;
 
-package org.netbeans.modules.web.livehtml;
+import org.netbeans.modules.web.livehtml.Change;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
-import java.net.URL;
-import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
-import org.openide.util.lookup.ServiceProvider;
+/**
+ *
+ * @author petr-podzimek
+ */
+public class ChangesToolTipLeafNode extends AbstractNode {
 
-@ServiceProvider(service=LiveHTMLImplementation.class)
-public class LiveHTMLImpl implements LiveHTMLImplementation {
-
-    @Override
-    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(timeStamp, content, callStack, true);
+    public ChangesToolTipLeafNode(Change change) {
+        super(Children.LEAF);
+        
+        String changeStr = null;
+        
+        if (change.isAdd()) {
+            changeStr = "Added text '" + change.getAddedText() + "' at " + change.getOffset();
+        } else if (change.getRevisionIndex() != -1) {
+            changeStr = change.toString();
+        } else {
+            changeStr = "Removed text '" + change.getRemovedText() + "'(" + change.getRemovedText().length() + ") at " + change.getOffset() + " from " + change.getOriginalOffset();
         }
-    }
-
-    @Override
-    public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(timeStamp, content, null, false);
-        }
+        
+        setDisplayName(changeStr);
     }
     
-    @Override
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDataEvent(timeStamp, data, request, mime);
-        }
-    }
-
 }
