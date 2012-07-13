@@ -120,8 +120,15 @@ public class ClientSideProject implements Project {
     public synchronized BrowserSupport getBrowserSupport() {
         if (browserSupport == null) {
             ClientProjectConfiguration cfg = configurationProvider.getActiveConfiguration();
-            assert cfg.getBrowser() != null : "cannot call getBrowserSupport on configuration which does not have browser";
-            browserSupport = BrowserSupport.create(cfg.getBrowser());
+            
+            //TODO: this is wrong. Get browser should not be on configuration at all
+            //assert cfg.getBrowser() != null : "cannot call getBrowserSupport on configuration which does not have browser";
+
+            if (cfg.getBrowser() == null) {
+                browserSupport = BrowserSupport.create();
+            } else {
+                browserSupport = BrowserSupport.create(cfg.getBrowser());
+            }
         }
         return browserSupport;
     }
