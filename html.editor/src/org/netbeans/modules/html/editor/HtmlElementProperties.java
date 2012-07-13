@@ -44,6 +44,10 @@ package org.netbeans.modules.html.editor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -53,6 +57,10 @@ import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -65,11 +73,16 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
+@NbBundle.Messages({
+    "edit.attribute.tooltip=You can edit the value or delete the attribute by setting an empty value",
+    "new.attribute.tooltip=You can add the attribute by setting its value"
+})
 public class HtmlElementProperties {
 
     static void parsed(HtmlParserResult result, SchedulerEvent event) {
@@ -91,7 +104,7 @@ public class HtmlElementProperties {
             if (node != null) {
                 if (node.type() == ElementType.OPEN_TAG) { //may be root node!
                     OpenTag ot = (OpenTag) node;
-                    org.openide.nodes.Node elementNode = new OpenTagNode(result.getSnapshot(), ot);
+                    org.openide.nodes.Node elementNode = new OpenTagNode(result, ot);
                     control.setNode(elementNode);
                 }
             }
@@ -104,11 +117,11 @@ public class HtmlElementProperties {
     private static class OpenTagNode extends AbstractNode {
 
         private OpenTag openTag;
-        private Snapshot snap;
+        private HtmlParserResult res;
 
-        public OpenTagNode(Snapshot snap, OpenTag openTag) {
+        public OpenTagNode(HtmlParserResult res, OpenTag openTag) {
             super(Children.LEAF);
-            this.snap = snap;
+            this.res = res;
             this.openTag = openTag;
 
             setDisplayName(openTag.name().toString());
@@ -116,7 +129,7 @@ public class HtmlElementProperties {
 
         @Override
         public PropertySet[] getPropertySets() {
-            PropertySet[] sets = new PropertySet[]{new OpenTagPropertySet(snap, openTag)};
+            PropertySet[] sets = new PropertySet[]{new OpenTagPropertySet(res, openTag)};
             return sets;
         }
     }
@@ -124,20 +137,58 @@ public class HtmlElementProperties {
     private static class OpenTagPropertySet extends PropertySet {
 
         private OpenTag openTag;
-        private Snapshot snap;
+        private HtmlParserResult res;
 
-        public OpenTagPropertySet(Snapshot snap, OpenTag openTag) {
-            this.snap = snap;
+        public OpenTagPropertySet(HtmlParserResult res, OpenTag openTag) {
+            this.res = res;
             this.openTag = openTag;
         }
 
         @Override
         public Property<String>[] getProperties() {
+            Snapshot s = res.getSnapshot();
+            Document doc = s.getSource().getDocument(false);
             Collection<Property> props = new ArrayList<Property>();
+            Collection<String> existingAttrNames = new HashSet<String>();
             for (Attribute a : openTag.attributes()) {
-                props.add(new AttributeProperty(snap.getSource().getDocument(false), snap, a));
+                existingAttrNames.add(a.name().toString().toLowerCase(Locale.ENGLISH));
+                props.add(new AttributeProperty(doc, s, a));
             }
+            if(!existingAttrNames.isEmpty()) {
+                props.add(new SeparatorHackProperty());
+            }
+            HtmlModel model = HtmlModelFactory.getModel(res.getHtmlVersion());
+            HtmlTag tagModel = model.getTag(openTag.name().toString());
+            if (tagModel != null) {
+                List<String> attrNames = new ArrayList<String>();
+                for (HtmlTagAttribute htmlTagAttr : tagModel.getAttributes()) {
+                    String name = htmlTagAttr.getName().toLowerCase();
+                    if (!existingAttrNames.contains(name)) {
+                        attrNames.add(name);
+                    }
+                }
+                
+                Collections.sort(attrNames);
+                for(String attrName : attrNames) {
+                    props.add(new NewAttributeProperty(doc, s, attrName, openTag));
+                }
+            }
+
             return props.toArray(new Property[]{});
+        }
+    }
+
+    private static class SeparatorHackProperty extends PropertySupport.ReadOnly<String> {
+
+        private static final String EMPTY = ""; //huh that's really nice :-)
+
+        public SeparatorHackProperty() {
+            super(EMPTY, String.class, EMPTY, "All the properties below are not declared in the selected rule"); //XXX no i18n since the is likely to be removed
+        }
+
+        @Override
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
+            return EMPTY;
         }
     }
 
@@ -148,7 +199,7 @@ public class HtmlElementProperties {
         private Snapshot snap;
 
         public AttributeProperty(Document doc, Snapshot snap, Attribute attr) {
-            super(attr.name().toString(), String.class, attr.name().toString(), null, true, doc != null);
+            super(attr.name().toString(), String.class, attr.name().toString(), Bundle.edit_attribute_tooltip(), true, doc != null);
             this.doc = doc;
             this.snap = snap;
             this.attr = attr;
@@ -161,8 +212,16 @@ public class HtmlElementProperties {
 
         @Override
         public void setValue(final String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            int astFrom = attr.valueOffset() + (attr.isValueQuoted() ? 1 : 0);
-            int astTo = astFrom + attr.unquotedValue().length();
+            int astFrom, astTo;
+            if (val.length() == 0) {
+                //remove the whole attribute=value pair
+                astFrom = attr.nameOffset() - 1; //there must be a WS before so lets remove it
+                astTo = attr.valueOffset() + attr.value().length();
+            } else {
+                //modify
+                astFrom = attr.valueOffset() + (attr.isValueQuoted() ? 1 : 0);
+                astTo = astFrom + attr.unquotedValue().length();
+            }
 
             final int docFrom = snap.getOriginalOffset(astFrom);
             final int docTo = snap.getOriginalOffset(astTo);
@@ -173,7 +232,68 @@ public class HtmlElementProperties {
                     public void run() {
                         try {
                             doc.remove(docFrom, docTo - docFrom);
-                            doc.insertString(docFrom, val, null);
+                            if (val.length() > 0) {
+                                doc.insertString(docFrom, val, null);
+                            }
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private static class NewAttributeProperty extends PropertySupport<String> {
+
+        private static final String EMPTY = "";
+        private String attrName;
+        private Document doc;
+        private Snapshot snap;
+        private OpenTag ot;
+
+        public NewAttributeProperty(Document doc, Snapshot snap, String attrName, OpenTag ot) {
+            super(attrName, String.class, attrName, Bundle.new_attribute_tooltip(), true, doc != null);
+            this.doc = doc;
+            this.snap = snap;
+            this.ot = ot;
+            this.attrName = attrName;
+        }
+
+        @Override
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
+            return EMPTY;
+        }
+
+        @Override
+        public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            if (val.length() == 0) {
+                return;
+            }
+            //remove the whole attribute=value pair
+            int astFrom = ot.from() + 1 /* "<".length() */ + ot.name().length(); //just after the attribute name
+
+            final int docFrom = snap.getOriginalOffset(astFrom);
+            if (docFrom != -1) {
+                final StringBuilder insertBuilder = new StringBuilder()
+                        .append(' ')
+                        .append(attrName)
+                        .append('=')
+                        .append('"')
+                        .append(val)
+                        .append('"');
+                        
+                ((BaseDocument) doc).runAtomicAsUser(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if(doc.getText(docFrom, 1).trim().length() == 0) {
+                                //there's already a WS after the insertion place
+                            } else {
+                                //lets add one more WS
+                                insertBuilder.append(' ');
+                            }
+                            doc.insertString(docFrom, insertBuilder.toString(), null);
                         } catch (BadLocationException ex) {
                             Exceptions.printStackTrace(ex);
                         }
