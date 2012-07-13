@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.c2c.client.mock;
 
+import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.team.c2c.client.api.ClientFactory;
@@ -65,7 +66,7 @@ public class CloudClientMockTest extends NbTestCase {
 
     public void testMockClient() throws Exception {
         System.setProperty("cloud-client-mock", Boolean.TRUE.toString());
-        client = ClientFactory.getInstance().createClient("C:/Projects/ods-json", null);
+        client = ClientFactory.getInstance().createClient(new File(getDataDir(), "ods-json").getAbsolutePath(), null);
         assertTrue(client instanceof CloudClientMock);
     }
 }
