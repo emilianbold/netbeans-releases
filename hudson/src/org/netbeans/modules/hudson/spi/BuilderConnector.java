@@ -143,6 +143,11 @@ public abstract class BuilderConnector {
     public abstract @CheckForNull FailureDisplayer getFailureDisplayer();
 
     /**
+     * Get a collection of changes that have triggered the build.
+     */
+    public abstract Collection<? extends HudsonJobChangeItem> getJobBuildChanges(HudsonJobBuild build);
+
+    /**
      * A displayer that can show console output of builds to the user. They can
      * be shown in output window, external browser, etc.
      */

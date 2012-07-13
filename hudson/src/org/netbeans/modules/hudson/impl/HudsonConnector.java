@@ -74,8 +74,12 @@ import org.netbeans.modules.hudson.api.Utilities;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
+import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -505,5 +509,88 @@ public class HudsonConnector extends BuilderConnector {
     @Override
     public FailureDisplayer getFailureDisplayer() {
         return HUDSON_FAILURE_DISPLAYER;
+    }
+
+    @Override
+    public Collection<? extends HudsonJobChangeItem> getJobBuildChanges(HudsonJobBuild build) {
+        Collection<? extends HudsonJobChangeItem> changes = null;
+        for (HudsonSCM scm : Lookup.getDefault().lookupAll(HudsonSCM.class)) {
+            changes = scm.parseChangeSet(build);
+            if (changes != null) {
+                break;
+            }
+        }
+        if (changes == null) {
+            changes = parseChangeSetGeneric(build);
+        }
+        return changes;
+    }
+
+    private Collection<? extends HudsonJobChangeItem> parseChangeSetGeneric(HudsonJobBuild build) {
+        final Element changeSet;
+        try {
+            changeSet = XMLUtil.findElement(new ConnectionBuilder().job(build.getJob()).url(build.getUrl() + "api/xml?tree=changeSet[items[author[fullName],msg,affectedFile[path,editType]]]").parseXML().getDocumentElement(), "changeSet", null);
+        } catch (IOException x) {
+            LOG.log(Level.WARNING, "could not parse changelog for {0}: {1}", new Object[]{this, x});
+            return Collections.emptyList();
+        }
+        class Item implements HudsonJobChangeItem {
+
+            final Element itemXML;
+
+            Item(Element itemXML) {
+                this.itemXML = itemXML;
+            }
+
+            @Override
+            public String getUser() {
+                return Utilities.xpath("author/fullName", itemXML);
+            }
+
+            @Override
+            public String getMessage() {
+                return Utilities.xpath("msg", itemXML);
+            }
+
+            @Override
+            public Collection<? extends HudsonJobChangeItem.HudsonJobChangeFile> getFiles() {
+                class AffectedFile implements HudsonJobChangeItem.HudsonJobChangeFile {
+
+                    final Element fileXML;
+
+                    AffectedFile(Element fileXML) {
+                        this.fileXML = fileXML;
+                    }
+
+                    @Override
+                    public String getName() {
+                        return Utilities.xpath("path", fileXML);
+                    }
+
+                    @Override
+                    public HudsonJobChangeItem.HudsonJobChangeFile.EditType getEditType() {
+                        return HudsonJobChangeItem.HudsonJobChangeFile.EditType.valueOf(Utilities.xpath("editType", fileXML));
+                    }
+
+                    @Override
+                    public OutputListener hyperlink() {
+                        return null;
+                    }
+                }
+                List<AffectedFile> files = new ArrayList<AffectedFile>();
+                // XXX this is not typically @Exported, in which case no file changes will be shown
+                NodeList nl = itemXML.getElementsByTagName("affectedFile");
+                for (int i = 0; i < nl.getLength(); i++) {
+                    files.add(new AffectedFile((Element) nl.item(i)));
+                }
+                return files;
+            }
+        }
+        List<Item> items = new ArrayList<Item>();
+        NodeList nl = changeSet.getElementsByTagName("item");
+        for (int i = 0; i < nl.getLength(); i++) {
+            items.add(new Item(((Element) nl.item(i))));
+        }
+        return items;
     }
 }
