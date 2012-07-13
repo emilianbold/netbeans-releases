@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="PathFinder">
+            <api name="general"/>
+            <summary>Extracted <code>findPath</code> method into a new interface <code>PathFinder</code></summary>
+            <version major="1" minor="59"/>
+            <date day="13" month="7" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Extracted <code>findPath</code> method from <code>LogicalViewProvider</code> into a new interface <code>PathFinder</code>.
+                    A new <code>PathFinder</code> simplifies delegation of <code>findPath</code> method.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui" name="PathFinder"/>
+            <issue number="208241"/>
+        </change>
         <change id="setAsMain">
             <api name="general"/>
             <summary>Programmatically setting main project deprecated</summary>
