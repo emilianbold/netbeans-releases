@@ -70,7 +70,7 @@ public class TestCC extends GeneralJavaScript {
                 "testSimplePrototype",
                 "testObjectFunction",
                 "testObjectLiteral",
-                //                "testPrototypeInheritance",
+                "testPrototypeInheritance",
                 "testObjectLiteral",
                 "testIssue215394",
                 "testIssue215393",

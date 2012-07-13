@@ -65,7 +65,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_ImplementMethods", description = "#DESC_ImplementMethods", category = "general", hintKind=Hint.Kind.ACTION)
+@Hint(displayName = "#DN_ImplementMethods", description = "#DESC_ImplementMethods", category = "suggestions", hintKind=Hint.Kind.ACTION)
 @Messages({
     "DN_ImplementMethods=Implement Abstract Methods",
     "DESC_ImplementMethods=Implement Abstract Methods."

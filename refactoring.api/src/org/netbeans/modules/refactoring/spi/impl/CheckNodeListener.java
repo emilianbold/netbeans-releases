@@ -106,6 +106,8 @@ class CheckNodeListener implements MouseListener, KeyListener {
                         o = ((TreeElement) o).getUserObject();
                         if (o instanceof RefactoringElement || o instanceof FileObject) {
                             findInSource(node);
+                        } else if (o instanceof Openable) {
+                            ((Openable) o).open();
                         }
                     } else if (o instanceof Openable) {
                         ((Openable) o).open();

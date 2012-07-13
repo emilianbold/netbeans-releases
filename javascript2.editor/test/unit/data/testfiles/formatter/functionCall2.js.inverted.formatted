@@ -16,6 +16,6 @@ function myFunction() {
 }).test();
 
 x( myFoo( a ) )
-;
+        ;
 call1().call2( x ).call3();
 (myFoo())

@@ -184,7 +184,7 @@ public class JQueryCodeCompletion {
         return (lastToken.id() == JsTokenId.IDENTIFIER 
                 && ("$".equals(lastToken.text().toString()) || "jQuery".equals(lastToken.text().toString()))
                 || (!ts.movePrevious() 
-                && ("$".equals(token.text().toString()) || "jQuery".equals(lastToken.text().toString()))));
+                && ("$".equals(token.text().toString()) || "jQuery".equals(token.text().toString()))));
     }
 
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {

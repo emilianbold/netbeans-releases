@@ -590,8 +590,9 @@ public class RefactoringPanel extends JPanel {
      * This is the reason of lazy initialization.
      */
     private ButtonL getButtonListener() {
-        if (buttonListener == null)
+        if (buttonListener == null) {
             buttonListener = new ButtonL();
+        }
         
         return buttonListener;
     }
