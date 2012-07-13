@@ -41,27 +41,9 @@
  */
 package org.netbeans.modules.team.c2c.client.api;
 
-import com.tasktop.c2c.client.commons.client.CredentialsInjector;
-import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
-import com.tasktop.c2c.server.profile.service.HudsonServiceClient;
-import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
-import com.tasktop.c2c.server.scm.service.ScmServiceClient;
 import java.net.PasswordAuthentication;
-import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
-import org.eclipse.core.net.proxy.IProxyData;
-import org.eclipse.mylyn.commons.net.IProxyProvider;
-import org.eclipse.mylyn.commons.net.WebLocation;
-import org.eclipse.mylyn.internal.commons.net.AuthenticatedProxy;
-import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.team.c2c.CloudClientImpl;
 import org.netbeans.modules.team.c2c.client.mock.CloudClientMock;
-import org.openide.util.NetworkSettings;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.web.client.RestTemplate;
 
 /**
  *
@@ -70,7 +52,6 @@ import org.springframework.web.client.RestTemplate;
 public final class ClientFactory {
 
     private static ClientFactory instance;
-    private ClassPathXmlApplicationContext appContext;
     
     private ClientFactory () {
         
@@ -83,80 +64,16 @@ public final class ClientFactory {
         return instance;
     }
     
-    public CloudClient createClient (String url, PasswordAuthentication auth) {
+    public synchronized CloudClient createClient (String url, PasswordAuthentication auth) {
         if (System.getProperty("cloud-client-mock", Boolean.FALSE.toString()).equalsIgnoreCase(Boolean.TRUE.toString())) {
             System.setProperty("cloud-client-mock", Boolean.FALSE.toString());
             return new CloudClientMock(url);
         }
-
-        if (!url.endsWith("/")) { //NOI18N
-            url = url + '/';
-        }
-        WebLocation location = new WebLocation(url, 
-                auth.getUserName(), 
-                auth.getPassword() == null ? "" : new String(auth.getPassword()), 
-                new ClientFactory.ProxyProvider());
-        // maybe proxy credentials weel need to be provided somehow
-        ClassPathXmlApplicationContext context = getContext();
-        ProfileWebServiceClient profileClient = context.getBean(ProfileWebServiceClient.class);
-        ActivityServiceClient activityClient = context.getBean(ActivityServiceClient.class);
-        HudsonServiceClient hudsonClient = context.getBean(HudsonServiceClient.class);
-        ScmServiceClient scmClient = context.getBean(ScmServiceClient.class);
-        CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
-        return new CloudClientImpl(profileClient, activityClient, hudsonClient, scmClient, location);
+        CloudClientImpl impl = new CloudClientImpl();
+        impl.initialize(url, auth);
+        return impl;
     }
     
-    private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
-        context.setClassLoader(classLoader);
-        context.setConfigLocations(resourceNames);
-        context.refresh();
-        return context;
-    }
-
-    private ClassPathXmlApplicationContext getContext () {
-        if (appContext == null) {
-            appContext = createContext(new String[] { 
-                "org/netbeans/modules/team/c2c/defs-clients.xml" }, Thread.currentThread().getContextClassLoader());
-        }
-        return appContext;
-    }
     
-    private static class ProxyProvider implements IProxyProvider {
-
-	@Override
-	public Proxy getProxyForHost(String host, String proxyType) {
-            try {
-                String scheme = null;
-                if (IProxyData.HTTPS_PROXY_TYPE.equals(proxyType)) {
-                    scheme = "https://"; //NOI18N
-                } else if (IProxyData.HTTP_PROXY_TYPE.equals(proxyType)) {
-                    scheme = "http://"; //NOI18N
-                }
-                if (scheme != null) {
-                    URI uri = new URI(scheme + host);
-                    List<Proxy> select = ProxySelector.getDefault().select(uri);
-                    if (select.size() > 0) {
-                        Proxy p = select.get(0);
-                        String uname = NetworkSettings.getAuthenticationUsername(uri);
-                        if (uname != null && !uname.trim().isEmpty()) {
-                            String pwdkey = NetworkSettings.getKeyForAuthenticationPassword(uri);
-                            char[] pwd = null;
-                            if (pwdkey != null && !pwdkey.trim().isEmpty()) {
-                                pwd = Keyring.read(pwdkey);
-                            }
-                            if (pwd != null) {
-                                p = new AuthenticatedProxy(p.type(), p.address(), uname, new String(pwd));
-                                Arrays.fill(pwd, (char) 0);
-                            }
-                        }
-                        return p;
-                    }
-                }
-            } catch (URISyntaxException ex) {
-            }
-            return Proxy.NO_PROXY;
-	}
-    }
     
 }

@@ -54,6 +54,7 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -255,5 +256,10 @@ public final class CloudClientMock implements CloudClient {
             hudsonStatuses.put(project.getIdentifier(), hudsonStatus);
             i++;
         }
+    }
+
+    @Override
+    public void initialize(String url, PasswordAuthentication pa) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

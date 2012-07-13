@@ -113,6 +113,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.team.ods.ui</friend>
                 <friend>org.netbeans.modules.ods.hudson</friend>
+                <friend>org.netbeans.libs.team.c2c.jersey</friend>
                 <package>org.netbeans.modules.team.c2c.api</package>
                 <package>org.netbeans.modules.team.c2c.client.api</package>
             </friend-packages>

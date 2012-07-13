@@ -48,6 +48,7 @@ import com.tasktop.c2c.server.profile.domain.build.JobDetails;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import java.net.PasswordAuthentication;
 import java.util.List;
 
 /**
@@ -56,6 +57,8 @@ import java.util.List;
  */
 public interface CloudClient {
 
+    void initialize(String url, PasswordAuthentication pa);
+    
     BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws CloudException;
 
     Profile getCurrentProfile() throws CloudException;

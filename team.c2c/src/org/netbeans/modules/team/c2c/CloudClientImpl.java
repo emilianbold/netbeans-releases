@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.client.api;
+package org.netbeans.modules.team.c2c;
 
+import com.tasktop.c2c.client.commons.client.CredentialsInjector;
 import com.tasktop.c2c.server.common.service.domain.QueryRequest;
 import com.tasktop.c2c.server.common.service.domain.QueryResult;
 import com.tasktop.c2c.server.common.service.web.AbstractRestServiceClient;
@@ -57,42 +58,50 @@ import com.tasktop.c2c.server.profile.service.HudsonServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.service.ScmServiceClient;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.eclipse.core.net.proxy.IProxyData;
 import org.eclipse.mylyn.commons.net.AbstractWebLocation;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
+import org.eclipse.mylyn.commons.net.IProxyProvider;
+import org.eclipse.mylyn.commons.net.WebLocation;
+import org.eclipse.mylyn.internal.commons.net.AuthenticatedProxy;
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.openide.util.NetworkSettings;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.web.client.RestTemplate;
 
 /**
  *
  * @author ondra
  */
-final class CloudClientImpl implements CloudClient {
-    private final ProfileWebServiceClient profileClient;
+public final class CloudClientImpl implements CloudClient {
+    private ProfileWebServiceClient profileClient;
     private static final String PROFILE_SERVICE = "/alm/api"; //NOI18N
     private static final String HUDSON_SERVICE = "/alm/s/%s/hudson"; //NOI18N
     private static final String SCM_SERVICE = "/alm/s/%s/scm/api"; //NOI18N
-    private final AbstractWebLocation location;
-    private final ActivityServiceClient activityClient;
-    private final HudsonServiceClient hudsonClient;
-    private final ScmServiceClient scmClient;
+    private AbstractWebLocation location;
+    private ActivityServiceClient activityClient;
+    private HudsonServiceClient hudsonClient;
+    private ScmServiceClient scmClient;
 
-    CloudClientImpl (ProfileWebServiceClient profileClient,
-            ActivityServiceClient activityClient,
-            HudsonServiceClient hudsonClient,
-            ScmServiceClient scmClient,
-            AbstractWebLocation location) {
-        this.profileClient = profileClient;
-        this.activityClient = activityClient;
-        this.hudsonClient = hudsonClient;
-        this.location = location;
-        this.scmClient = scmClient;
-    }
+    private static ClassPathXmlApplicationContext appContext;
+    
+    public CloudClientImpl() { }
 
     @Override
     public Profile getCurrentProfile () throws CloudException {
@@ -255,4 +264,76 @@ final class CloudClientImpl implements CloudClient {
     private static String buildUrl (String urlTemplate, String projectName) {
         return String.format(urlTemplate, projectName);
     }
+
+    @Override
+    public void initialize(String url, PasswordAuthentication auth) {
+        if (!url.endsWith("/")) { //NOI18N
+            url = url + '/';
+        }
+        location = new WebLocation(url, 
+                auth.getUserName(), 
+                auth.getPassword() == null ? "" : new String(auth.getPassword()), 
+                new ProxyProvider());
+        // maybe proxy credentials weel need to be provided somehow
+        ClassPathXmlApplicationContext context = getContext();
+        profileClient = context.getBean(ProfileWebServiceClient.class);
+        activityClient = context.getBean(ActivityServiceClient.class);
+        hudsonClient = context.getBean(HudsonServiceClient.class);
+        scmClient = context.getBean(ScmServiceClient.class);
+        CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
+        
+    }
+
+    private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext();
+        context.setClassLoader(classLoader);
+        context.setConfigLocations(resourceNames);
+        context.refresh();
+        return context;
+    }
+
+    private static ClassPathXmlApplicationContext getContext () {
+        if (appContext == null) {
+            appContext = createContext(new String[] { 
+                "org/netbeans/modules/team/c2c/defs-clients.xml" }, Thread.currentThread().getContextClassLoader());
+        }
+        return appContext;
+    }
+    
+    private static class ProxyProvider implements IProxyProvider {
+
+	@Override
+	public Proxy getProxyForHost(String host, String proxyType) {
+            try {
+                String scheme = null;
+                if (IProxyData.HTTPS_PROXY_TYPE.equals(proxyType)) {
+                    scheme = "https://"; //NOI18N
+                } else if (IProxyData.HTTP_PROXY_TYPE.equals(proxyType)) {
+                    scheme = "http://"; //NOI18N
+                }
+                if (scheme != null) {
+                    URI uri = new URI(scheme + host);
+                    List<Proxy> select = ProxySelector.getDefault().select(uri);
+                    if (select.size() > 0) {
+                        Proxy p = select.get(0);
+                        String uname = NetworkSettings.getAuthenticationUsername(uri);
+                        if (uname != null && !uname.trim().isEmpty()) {
+                            String pwdkey = NetworkSettings.getKeyForAuthenticationPassword(uri);
+                            char[] pwd = null;
+                            if (pwdkey != null && !pwdkey.trim().isEmpty()) {
+                                pwd = Keyring.read(pwdkey);
+                            }
+                            if (pwd != null) {
+                                p = new AuthenticatedProxy(p.type(), p.address(), uname, new String(pwd));
+                                Arrays.fill(pwd, (char) 0);
+                            }
+                        }
+                        return p;
+                    }
+                }
+            } catch (URISyntaxException ex) {
+            }
+            return Proxy.NO_PROXY;
+	}
+    }    
 }
