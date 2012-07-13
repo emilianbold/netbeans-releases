@@ -147,7 +147,7 @@ public class APTDefineNode extends APTMacroBaseNode implements APTDefine, Serial
 
     @Override
     public boolean accept(APTFile curFile, APTToken token) {
-        throw new IllegalStateException("Do not call accept on APTDefineNode directly, use APTDefineNode.Builder");
+        throw new IllegalStateException("Do not call accept on APTDefineNode directly, use APTDefineNode.Builder"); //NOI18N
     }
     
     private boolean superAccept(APTFile curFile, APTToken token) {
