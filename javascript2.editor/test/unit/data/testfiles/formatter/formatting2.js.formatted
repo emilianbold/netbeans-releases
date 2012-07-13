@@ -13,7 +13,10 @@ adad = /sdsdsd/
 // nice and simple function
 function println(text) {
     document.writeln(text + "<br/>");
-    ;;;;
+    ;
+    ;
+    ;
+    ;
 }
 
 /*
