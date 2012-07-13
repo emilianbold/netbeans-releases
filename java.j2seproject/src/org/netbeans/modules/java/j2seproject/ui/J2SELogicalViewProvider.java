@@ -64,11 +64,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -221,6 +223,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         return helper;
     }
     
+    @Override
     public Node findPath(Node root, Object target) {
         Project prj = root.getLookup().lookup(Project.class);
         if (prj == null) {
@@ -229,9 +232,8 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         
         if (target instanceof FileObject) {
             FileObject fo = (FileObject) target;
-            Project owner = FileOwnerQuery.getOwner(fo);
-            if (!prj.equals(owner)) {
-                return null; // Don't waste time if project does not own the fo
+            if (isOtherProjectSource(fo, prj)) {
+                return null; // Don't waste time if project does not own the fo among sources
             }
             
             for (Node n : root.getChildren().getNodes(true)) {
@@ -243,6 +245,24 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         }
         
         return null;
+    }
+
+    private static boolean isOtherProjectSource(
+            @NonNull final FileObject fo,
+            @NonNull final Project me) {
+        final Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return false;
+        }
+        if (me.equals(owner)) {
+            return false;
+        }
+        for (SourceGroup sg : ProjectUtils.getSources(owner).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (FileUtil.isParentOf(sg.getRootFolder(), fo)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     

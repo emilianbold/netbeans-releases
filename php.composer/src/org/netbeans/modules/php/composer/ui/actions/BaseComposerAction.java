@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,38 +34,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.composer.ui.actions;
 
-package org.netbeans.spi.project.ui;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
+import org.netbeans.modules.php.spi.actions.BaseAction;
+import org.openide.util.NbBundle;
 
-import org.netbeans.spi.project.ProjectIconAnnotator;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.openide.nodes.Node;
+abstract class BaseComposerAction extends BaseAction {
 
-/**
- * Ability for a {@link org.netbeans.api.project.Project} to supply
- * a logical view of itself.
- * @see org.netbeans.api.project.Project#getLookup
- * @see ProjectIconAnnotator
- * @author Jesse Glick
- */
-public interface LogicalViewProvider extends PathFinder {
+    protected abstract String getName();
 
-    /**
-     * Create a logical view node.
-     * Projects should not attempt to cache this node in any way;
-     * this call should always create a fresh node with no parent.
-     * The node's lookup should contain the project object.
-     * <p>
-     * The node need not bother implementing {@linkplain org.openide.filesystems.FileSystem.Status badging}
-     * for the root node; any files {@linkplain org.netbeans.api.project.Sources contained} in the project will
-     * be considered as badging sources automatically. Other subnodes representing
-     * various collections of files may still need explicit badging logic.
-     * <em>As of <code>org.netbeans.modules.projectuiapi/1 1.31</code></em>
-     * </p>
-     * @return a node displaying the contents of the project in an intuitive way
-     * @see CommonProjectActions#forType
-     */
-    Node createLogicalView();        
-    
+    protected abstract void runCommand(PhpModule phpModule) throws InvalidPhpProgramException;
+
+
+    @Override
+    protected String getFullName() {
+        return getName();
+    }
+
+    @Override
+    protected String getPureName() {
+        return getName();
+    }
+
+    @NbBundle.Messages("BaseComposerAction.error.composer.notValid=Composer is not valid.")
+    @Override
+    protected void actionPerformed(PhpModule phpModule) {
+        try {
+            runCommand(phpModule);
+        } catch (InvalidPhpProgramException ex) {
+            UiUtils.invalidScriptProvided(Bundle.BaseComposerAction_error_composer_notValid(), ComposerOptionsPanelController.OPTIONS_SUBPATH);
+        }
+    }
+
 }
