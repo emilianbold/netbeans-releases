@@ -133,7 +133,9 @@ public class RuleNode extends AbstractNode {
      */
     private PropertySet[] createPropertySets() {
         Collection<PropertySet> sets = new ArrayList<PropertySet>();
-        List<Declaration> declarations = rule.getDeclarations().getDeclarations();
+        List<Declaration> declarations = rule.getDeclarations() == null 
+                ? Collections.<Declaration>emptyList()
+                : rule.getDeclarations().getDeclarations();
         Map<PropertyCategory, PropertyCategoryPropertySet> propertySetsMap;
         
         if (showCategories) {
