@@ -195,6 +195,9 @@ public final class WebBrowsers {
         // force object creation:
         Lookup.getDefault ().lookupAll(HtmlBrowser.Factory.class).toArray();
         for (DataObject browserSetting : folder.getChildren()) {
+            if (Boolean.TRUE.equals(browserSetting.getPrimaryFile().getAttribute("hidden"))) {
+                continue;
+            }
             InstanceCookie cookie = browserSetting.getCookie(InstanceCookie.class);
             HtmlBrowser.Factory fact;
             try {
@@ -217,7 +220,7 @@ public final class WebBrowsers {
             browsers.add(
                 new WebBrowserFactoryDescriptor(
                     item.getId(), 
-                    browserSetting.getNodeDelegate().getDisplayName(), 
+                    browserSetting, 
                     IDESettings.getWWWBrowser().equals(fact),
                     fact));
         }

@@ -83,12 +83,16 @@ public class SocketClient extends SocketFramework {
     @Override
     protected void process( SelectionKey key ) throws IOException {
         if ( key.isConnectable()){
-            finishConnect();
+            finishConnect( key );
         }
         super.process(key);
     }
+    
+    protected SocketChannel getChanel(){
+        return socketChannel;
+    }
 
-    protected void finishConnect() throws IOException {
+    protected void finishConnect( SelectionKey key) throws IOException {
         if ( socketChannel.isConnectionPending() ){
             socketChannel.finishConnect();
         }

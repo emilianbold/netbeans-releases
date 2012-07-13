@@ -48,6 +48,41 @@ import org.netbeans.modules.css.visual.RuleEditorPanel;
 import org.openide.util.Parameters;
 
 /**
+ * Rule editor panel controller.
+ * 
+ * Allows to control and listen on the Rule Editor UI.
+ * 
+ * An example of the usage:
+ * <pre>
+ * RuleEditorController controller = RuleEditorController.createInstance();
+ * JComponent ruleEditor = controller.getRuleEditorController();
+ * 
+ * yourContainer.add(ruleEditor);
+ * 
+ * Model cssModel = ...;
+ * Rule cssModelRule = ...;
+ * 
+ * //setup the content
+ * controller.setModel(cssModel);
+ * controller.setRule(cssModelRule);
+ * 
+ * //listen on changed
+ * controller.addRuleEditorListener(yourListener);
+ * 
+ * //modify the UI
+ * controller.setSortMode(SortMode.NATURAL);
+ * controller.setShowCategorie(true);
+ * 
+ * ...
+ * 
+ * </pre>
+ * 
+ * All the {@link RuleEditorController} methods may be called from a non AWT thread.
+ * 
+ * TODO:
+ * 1) consider an ability to get the filters panel and place it to a component outside
+ *    of the RuleEditorPanel. Possibly configure the filters themselves.
+ * 
  *
  * @author marekfukala
  */
@@ -55,6 +90,13 @@ public final class RuleEditorController {
     
     private RuleEditorPanel peer;
 
+    /**
+     * Creates a new instance of the controller. 
+     * 
+     * One controller is paired with one rule editor UI component.
+     * 
+     * @return non null value
+     */
     public static RuleEditorController createInstance() {
         return new RuleEditorController(new RuleEditorPanel());
     }
@@ -63,6 +105,10 @@ public final class RuleEditorController {
         this.peer = peer;
     }
     
+    /**
+     * Gets the rule editor UI component.
+     * @return non null value
+     */
     public JComponent getRuleEditorComponent() {
         return peer;
     }
@@ -97,8 +143,13 @@ public final class RuleEditorController {
         peer.setNoRuleState();
     }
     
+    /**
+     * Sets the sort mode of the rule editor. 
+     * @see SortMode
+     * @param sortMode 
+     */
     public void setSortMode(SortMode sortMode) {
-        //TODO
+        peer.setSortMode(sortMode);
     }
     
     /**
@@ -109,7 +160,7 @@ public final class RuleEditorController {
      * alphabetically.
      */
     public void setShowAllProperties(boolean enabled) {
-        //TODO
+        peer.setShowAllProperties(enabled);
     }
     
      /**
@@ -121,7 +172,7 @@ public final class RuleEditorController {
      * sorted  alphabetically, categories also sorted alphabetically.
      */
     public void setShowCategories(boolean enabled) {
-        //TODO
+        peer.setShowCategories(enabled);
     }
     
     
@@ -133,6 +184,7 @@ public final class RuleEditorController {
     public boolean addRuleEditorListener(RuleEditorListener listener) {
         return peer.addRuleEditorListener(listener);
     }
+    
     /**
      * Unregisters an instance of {@link RuleEditorListener} from the component.
      * @param listener

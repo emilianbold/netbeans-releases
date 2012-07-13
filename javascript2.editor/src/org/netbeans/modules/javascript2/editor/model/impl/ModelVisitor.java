@@ -48,11 +48,9 @@ import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.jsdoc.JsDocDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
@@ -98,6 +96,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                                 || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
                             current = current.getParent();
+                            if (current.getName().equals("prototype")) {
+                                current = current.getParent();
+                            }
                             property = current.getProperty(iNode.getName());
                         }
                         if (property == null && current.getParent() == null) {
@@ -129,6 +130,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         // check whether is not a part of method in constructor
                         if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
                             current = current.getParent();
+                            if (current.getName().equals("prototype")) {
+                                current = current.getParent();
+                            }
                         }
                     } 
                     fromAN = (JsObjectImpl)current;

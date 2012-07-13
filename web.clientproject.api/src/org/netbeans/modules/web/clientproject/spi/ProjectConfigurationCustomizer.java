@@ -48,6 +48,6 @@ import javax.swing.JPanel;
  * @author Jan Becicka
  */
 public interface ProjectConfigurationCustomizer {
-    public static final String PATH = "Projects/org.netbeans.modules.web.clientproject/ConfigurationCustomizer/";
+    public static final String PATH = "org.netbeans.modules.web.clientproject/platforms";
     JPanel createPanel(ClientProjectConfiguration config);
 }

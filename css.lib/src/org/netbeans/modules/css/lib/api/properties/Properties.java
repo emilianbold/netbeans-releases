@@ -75,6 +75,14 @@ public class Properties {
         }
     }
 
+    //return first found, to be changed!
+    public static PropertyDefinition getProperty(String propertyName) {
+        Collection<PropertyDefinition> found = getProperties(propertyName);
+        return found != null && !found.isEmpty() 
+                ? found.iterator().next()
+                : null;
+    }
+    
     /**
      * Returns a collection of property definitions for the given property name.
      */

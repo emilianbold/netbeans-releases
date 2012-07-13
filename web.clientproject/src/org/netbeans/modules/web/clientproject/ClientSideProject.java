@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Collections;
@@ -53,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -60,6 +62,7 @@ import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
@@ -91,19 +94,41 @@ public class ClientSideProject implements Project {
     private BrowserSupport browserSupport;
     private ClassPath sourcePath;
     private RemoteFiles remoteFiles;
+    private ClientSideConfigurationProvider configurationProvider;
     
     public ClientSideProject(AntProjectHelper helper) {
         this.helper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         refHelper = new ReferenceHelper(helper, configuration, getEvaluator());
+        configurationProvider = new ClientSideConfigurationProvider(this);
         lookup = createLookup(configuration);
         remoteFiles = new RemoteFiles(this);
+        configurationProvider.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName())) {
+                    if (browserSupport != null) {
+                        browserSupport.close(true);
+                    }
+                    browserSupport = null;
+                }
+            }
+        });
     }
 
     public synchronized BrowserSupport getBrowserSupport() {
         if (browserSupport == null) {
-            browserSupport = BrowserSupport.getDefault();
+            ClientProjectConfiguration cfg = configurationProvider.getActiveConfiguration();
+            
+            //TODO: this is wrong. Get browser should not be on configuration at all
+            //assert cfg.getBrowser() != null : "cannot call getBrowserSupport on configuration which does not have browser";
+
+            if (cfg.getBrowser() == null) {
+                browserSupport = BrowserSupport.create();
+            } else {
+                browserSupport = BrowserSupport.create(cfg.getBrowser());
+            }
         }
         return browserSupport;
     }
@@ -154,8 +179,8 @@ public class ClientSideProject implements Project {
                new ClientSideProjectActionProvider(this),
                new OpenHookImpl(this),
                new CustomizerProviderImpl(this),        
-               new ClientSideConfigurationProvider(this),
-               getBrowserSupport(),
+               configurationProvider,
+               //getBrowserSupport(),
                new ClassPathProviderImpl(this),
                GenericSources.genericOnly(this)
        });
@@ -236,7 +261,7 @@ public class ClientSideProject implements Project {
         
         @Override
         protected void projectOpened() {
-            projectFileChangesListener = new ProjectFilesListener(p.getBrowserSupport());
+            projectFileChangesListener = new ProjectFilesListener(p);
             FileUtil.addRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
             GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{p.getSourceClassPath()});
         }
@@ -251,10 +276,10 @@ public class ClientSideProject implements Project {
     
     private static class ProjectFilesListener implements FileChangeListener {
 
-        private BrowserSupport bs;
+        private final ClientSideProject p;
         
-        ProjectFilesListener(BrowserSupport bs) {
-            this.bs = bs;
+        ProjectFilesListener(ClientSideProject p) {
+            this.p = p;
         }
         
         @Override
@@ -273,9 +298,12 @@ public class ClientSideProject implements Project {
         @Override
         public void fileDeleted(FileEvent fe) {
             FileObject fo = fe.getFile();
-            URL u = bs.getBrowserURL(fo, false);
-            if (u != null) {
-                // XXX: close browser's tab ???
+            BrowserSupport bs = p.getBrowserSupport();
+            if (bs != null) {
+                URL u = bs.getBrowserURL(fo, false);
+                if (u != null) {
+                    // XXX: close browser's tab ???
+                }
             }
         }
 
@@ -289,10 +317,13 @@ public class ClientSideProject implements Project {
         }
 
         private void refreshInBrowser(FileObject fo) {
-            URL u = bs.getBrowserURL(fo, true);
-            if (u != null) {
-                assert bs.canReload(u) : u;
-                bs.reload(u);
+            BrowserSupport bs = p.getBrowserSupport();
+            if (bs != null) {
+                URL u = bs.getBrowserURL(fo, true);
+                if (u != null) {
+                    assert bs.canReload(u) : u;
+                    bs.reload(u);
+                }
             }
         }
     }

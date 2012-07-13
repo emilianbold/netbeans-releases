@@ -65,6 +65,7 @@ import javax.swing.JButton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.extbrowser.plugins.ExtensionManager;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
 import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.netbeans.modules.extbrowser.plugins.Utils;
@@ -130,7 +131,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()
          */
         @Override
-        public boolean isInstalled() {
+        public ExtensionManager.ExtensitionStatus isInstalled() {
             File defaultProfile = getDefaultProfile();
             File extensionDir = new File(defaultProfile, "extensions" +    // NOI18N 
                     File.separator + EXTENSION_ID);                  
@@ -144,7 +145,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                 // presses 'Continue'
                 // without waiting for Firefox to restart)
                 if (isInstalling) {
-                    return false;
+                    return ExtensionManager.ExtensitionStatus.MISSING;
                 }
             }
             else {
@@ -161,10 +162,14 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                     //|| !checkExtensionChecksum(defaultProfile) )
             {
                 // return false if extension is not initialized
-                return !checkExtensionInstall(defaultProfile);
+                if (!checkExtensionInstall(defaultProfile)) {
+                    return ExtensionManager.ExtensitionStatus.INSTALLED;
+                } else {
+                    return ExtensionManager.ExtensitionStatus.MISSING;
+                }
             } 
             else {
-                return true;
+                return ExtensionManager.ExtensitionStatus.INSTALLED;
             }
         }
 
@@ -172,7 +177,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#install(org.netbeans.modules.web.plugins.PluginLoader)
          */
         @Override
-        public boolean install( PluginLoader loader) {
+        public boolean install(PluginLoader loader, ExtensionManager.ExtensitionStatus state) {
             File defaultProfile = getDefaultProfile();
             File extensionDir = new File(defaultProfile, "extensions" +    // NOI18N 
                     File.separator + EXTENSION_ID);

@@ -1215,13 +1215,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertFalse ("Created source should be valid", SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
         RepositoryUpdater.getDefault().waitUntilFinished(-1);
         RepositoryUpdater.unitTestActiveSource = src;
+        TransientUpdateSupport.setTransientUpdate(true);
         try {
-            IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),
-                    Collections.singleton(f1.toURL()));
+            RepositoryUpdater.getDefault().enforcedFileListUpdate(this.srcRootWithFiles1.toURL(),Collections.singleton(f1.toURL()));
             assertFalse("Active shource should not be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
-            
         } finally {
             RepositoryUpdater.unitTestActiveSource=null;
+            TransientUpdateSupport.setTransientUpdate(false);
         }
         IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),
                     Collections.singleton(f1.toURL()));

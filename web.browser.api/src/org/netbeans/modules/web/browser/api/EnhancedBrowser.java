@@ -56,4 +56,6 @@ public interface EnhancedBrowser {
     void disablePageInspector();
     
     void enableLiveHTML();
+    
+    void close(boolean closeTab);
 }

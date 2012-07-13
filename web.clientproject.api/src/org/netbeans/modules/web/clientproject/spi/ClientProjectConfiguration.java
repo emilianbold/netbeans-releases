@@ -44,7 +44,11 @@ package org.netbeans.modules.web.clientproject.spi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.Collator;
+import java.util.Comparator;
 import java.util.Properties;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.util.EditableProperties;
@@ -58,38 +62,63 @@ import org.openide.util.Utilities;
 public final class ClientProjectConfiguration implements ProjectConfiguration {
 
     private final String name;
-    private final String displayName;
+    private String displayName;
     private final String type;
     private final EditableProperties props;
     private final FileObject file;
+    private final int importance;
+    private WebBrowser browser;
     
+    public static final Comparator COMPARATOR = new ConfigurationComparator();
 
-    private ClientProjectConfiguration(FileObject kid, String name, String displayName, String type) {
+    private ClientProjectConfiguration(FileObject kid, String name, String displayName, String type, EditableProperties ep) {
         this.name = name;
         this.displayName = displayName;
         this.type = type;
-        props = new EditableProperties(true);
-        props.put("type", type);
-        props.put("display.name", displayName);
+        props = ep;
         this.file = kid;
+        this.importance = 999;
+    }
+    
+    private ClientProjectConfiguration(WebBrowser browser, int importance) {
+        this.name = browser.getId();
+        this.type = browser.getId();
+        this.importance = importance;
+        this.file = null;
+        this.props = null;
+        this.browser = browser;
     }
 
+    @Override
     public String getDisplayName() {
+        if (displayName == null) {
+            assert browser != null;
+            // delay retrieving browser's name; it is accessed via DataObject.getNodeDelegate
+            // and if retrieved too early it will cause "IllegalStateException: Should not acquire Children.MUTEX while holding ProjectManager.mutex()"
+            displayName = browser.getName();
+        }
         return displayName;
     }
 
+    @Override
     public int hashCode() {
         return name != null ? name.hashCode() : 0;
     }
 
+    @Override
     public boolean equals(Object o) {
         return (o instanceof ClientProjectConfiguration) && Utilities.compareObjects(name, ((ClientProjectConfiguration) o).name);
     }
 
+    @Override
     public String toString() {
         return "ClientProjectConfiguration[" + name + "," + displayName + "]"; // NOI18N
     }
 
+    public WebBrowser getBrowser() {
+        return browser;
+    }
+    
     public String getType() {
         return type;
     }
@@ -111,12 +140,12 @@ public final class ClientProjectConfiguration implements ProjectConfiguration {
         try {
             InputStream is = configFile.getInputStream();
             try {
-                Properties p = new Properties();
+                EditableProperties p = new EditableProperties(true);
                 p.load(is);
                 String name = configFile.getName();
                 String label = p.getProperty("display.name"); // NOI18N
                 String type = p.getProperty("type");
-                return new ClientProjectConfiguration(configFile, name, label != null ? label : name, type);
+                return new ClientProjectConfiguration(configFile, name, label != null ? label : name, type, p);
             } finally {
                 is.close();
             }
@@ -124,8 +153,43 @@ public final class ClientProjectConfiguration implements ProjectConfiguration {
             throw new IllegalStateException(x);
         }
     }
+    
+    public static ClientProjectConfiguration create(WebBrowser browser) {
+        if (browser.getId().endsWith("webviewBrowser")) {
+            return new ClientProjectConfiguration(browser, 1);
+        } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) {
+            return new ClientProjectConfiguration(browser, 2);
+        } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) {
+            return new ClientProjectConfiguration(browser, 3);
+        } else {
+            return null;
+        }
+    }
+    
+    private static class ConfigurationComparator implements Comparator<ClientProjectConfiguration> {
+
+        @Override
+        public int compare(ClientProjectConfiguration o1, ClientProjectConfiguration o2) {
+            if (o1.importance != o2.importance) {
+                return o1.importance - o2.importance;
+            } else {
+                Collator c = Collator.getInstance();
+                if (o1.importance <= 3) {
+                    // TODO: do not sort browsers by their displayName otherwise you get
+                    //       "IllegalStateException: Should not acquire Children.MUTEX while holding ProjectManager.mutex()"
+                    return c.compare(o1.getName(), o2.getName());
+                } else {
+                    return c.compare(o1.getDisplayName(), o2.getDisplayName());
+                }
+            }
+        }
+        
+    }
 
     public void save() {
+        if (file == null) {
+            return;
+        }
         OutputStream os = null;
         try {
             os = file.getOutputStream();

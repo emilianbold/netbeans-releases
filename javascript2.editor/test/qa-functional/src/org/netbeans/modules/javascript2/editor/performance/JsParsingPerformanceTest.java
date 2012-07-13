@@ -101,7 +101,7 @@ public class JsParsingPerformanceTest extends JellyTestCase {
 
     public void testParsingTime() throws Exception {
         openDataProjects(projectName);
-        wait(5000);
+        Thread.sleep(5000);
     }
 
     public void summariseParsingTimeResults() {
@@ -127,7 +127,7 @@ public class JsParsingPerformanceTest extends JellyTestCase {
         public void publish(LogRecord record) {
             String message = record.getMessage();
             if (message != null && message.startsWith(MSG_PARSING_ALL)) {
-                message = ((FileObject)record.getParameters()[1]).getName();
+                message = ((String)record.getParameters()[1]);
                 if (message.contains("real2k")) {
                     JsParsingPerformanceTest.parsingReal2k += getLongFromLogRecord(record);
                 } else if (message.contains("real500")) {

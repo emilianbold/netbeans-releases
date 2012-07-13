@@ -42,7 +42,8 @@
 package org.netbeans.modules.css.visual.api;
 
 /**
- *
+ * Sorting modes for the rule editor UI component.
+ * 
  * @author marekfukala
  */
 public enum SortMode {

@@ -45,7 +45,9 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.clientproject.spi.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -55,12 +57,18 @@ import org.openide.util.lookup.ServiceProvider;
  * @david
  * @author Jan Becicka
  */
-@ServiceProvider(
+@ProjectServiceProvider(
         service=ActionProvider.class,
-        path="Projects/" + ClientSideProjectType.TYPE + "/ActionProviders/browser")
+        projectType=ProjectConfigurationCustomizer.PATH + "/browser")
 
 public class BrowserActionProvider implements ActionProvider {
 
+    private final ClientSideProject p;
+
+    public BrowserActionProvider(Project p) {
+        this.p = (ClientSideProject) p;
+    }
+    
     @Override
     public String[] getSupportedActions() {
         return new String[] {COMMAND_RUN};
@@ -68,9 +76,9 @@ public class BrowserActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        ClientSideProject p = context.lookup(ClientSideProject.class);
         FileObject fo = null;
         if (COMMAND_RUN.equals(command)) {
+// TODO: this needs to be configurable
             fo = p.getProjectDirectory().getFileObject("index.html");
         } else if (COMMAND_RUN_SINGLE.equals(command)) {
             fo = getFile(context);
@@ -85,7 +93,7 @@ public class BrowserActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         Project prj = context.lookup(Project.class);
         ClientSideConfigurationProvider provider = prj.getLookup().lookup(ClientSideConfigurationProvider.class);
-        if (provider.getActiveConfiguration()==null || "browser".equals(provider.getActiveConfiguration().getType())) {
+        if (provider.getActiveConfiguration().getBrowser() != null) {
             return true;
         }
         return false;
