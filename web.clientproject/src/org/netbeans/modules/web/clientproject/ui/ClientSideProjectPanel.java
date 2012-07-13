@@ -162,7 +162,6 @@ public class ClientSideProjectPanel extends javax.swing.JPanel {
         customizerArea.setLayout(new java.awt.BorderLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(newButton, org.openide.util.NbBundle.getMessage(ClientSideProjectPanel.class, "ClientSideProjectPanel.newButton.text")); // NOI18N
-        newButton.setEnabled(false);
         newButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newButtonActionPerformed(evt);
@@ -170,7 +169,6 @@ public class ClientSideProjectPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(deleteButton, org.openide.util.NbBundle.getMessage(ClientSideProjectPanel.class, "ClientSideProjectPanel.deleteButton.text")); // NOI18N
-        deleteButton.setEnabled(false);
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
