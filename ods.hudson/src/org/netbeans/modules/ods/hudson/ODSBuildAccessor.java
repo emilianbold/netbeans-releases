@@ -41,16 +41,17 @@
  */
 package org.netbeans.modules.ods.hudson;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -68,6 +69,7 @@ import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -76,10 +78,14 @@ import org.openide.util.lookup.ServiceProvider;
  * @author jhavlin
  */
 @ServiceProvider(service = BuildAccessor.class)
-public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
+public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
+
+    private static final Logger LOG = Logger.getLogger(
+            ODSBuildAccessor.class.getName());
 
     @Override
     public boolean isEnabled(ProjectHandle<ODSProject> projectHandle) {
+        projectHandle.getTeamProject().getServer().addPropertyChangeListener(null);
         return projectHandle.getTeamProject().hasBuild(); 
     }
 
@@ -96,7 +102,8 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
         }
         odsBuilderConnector.setHudsonInstance(hi);
         List<BuildHandle> buildHandles = new LinkedList<BuildHandle>();
-        for (HudsonJob job : hi.getJobs()) {
+        Collection<HudsonJob> jobs = waitForJobs(hi);
+        for (HudsonJob job : jobs) {
             buildHandles.add(new HudsonBuildHandle(hi, job.getName(), job));
         }
         return buildHandles;
@@ -104,16 +111,12 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
 
     @Override
     public Action getNewBuildAction(ProjectHandle<ODSProject> projectHandle) {
+        // TODO Use project URL rather than server URL>
+        final URL url = projectHandle.getTeamProject().getServer().getUrl();
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(
-                            new URL("http://bugtracking-test.cz.oracle.com:8180/")); //TODO
-                } catch (MalformedURLException ex) {
-                    Logger.getLogger(HudsonBuildAccessor.class.getName()).log(
-                            Level.SEVERE, null, ex);
-                }
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             }
         };
     }
@@ -121,6 +124,34 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
     @Override
     public Class<ODSProject> type() {
         return ODSProject.class;
+    }
+
+    /**
+     * If the HudsonInstance.getJobs is called right after initialization of the
+     * hudson instance, jobs can be uninitialized. This method ensures that jobs
+     * are loaded.
+     */
+    private Collection<HudsonJob> waitForJobs(HudsonInstance hi) {
+        LOG.log(Level.INFO, "waiting for jobs in {0}", Thread.currentThread().getName());
+        Collection<HudsonJob> jobs = hi.getJobs();
+        if (jobs == null || jobs.isEmpty()) {
+            final Semaphore semaphore = new Semaphore(0);
+            HudsonChangeListener listener = new HudsonChangeAdapter() {
+                @Override
+                public void contentChanged() {
+                    semaphore.release();
+                }
+            };
+            hi.addHudsonChangeListener(listener);
+            try {
+                semaphore.tryAcquire(30, TimeUnit.SECONDS); // loop, prodluzovat interval, 3sec az 5min, koef 3
+            } catch (InterruptedException ex) {
+                LOG.log(Level.FINE, null, ex);
+            }
+            hi.removeHudsonChangeListener(listener);
+            jobs = hi.getJobs();
+        }
+        return jobs;
     }
 
     private static class HudsonBuildHandle extends BuildHandle {
@@ -131,7 +162,8 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
         private HudsonChangeAdapter hudsonChangeListener;
         private PropertyChangeSupport propertyChangeSupport;
         private final Object listenerLock = new Object();
-        private Status currentStatus = null;
+        private volatile Status currentStatus = null;
+        private volatile boolean updateStatusScheduled = false;
 
         public HudsonBuildHandle(HudsonInstance hudsonInstance,
                 String jobName, HudsonJob initialJob) {
@@ -157,7 +189,32 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
             }
         }
 
+        private void scheduleUpdateStatus() {
+            if (!updateStatusScheduled) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateStatus();
+                    }
+                });
+                updateStatusScheduled = true;
+            }
+        }
+
+        private void updateStatus() {
+            assert !EventQueue.isDispatchThread();
+            Status oldStatus = currentStatus;
+            Status newStatus = readStatus();
+            updateStatusScheduled = false;
+            if (oldStatus != newStatus) {
+                currentStatus = newStatus;
+                propertyChangeSupport.firePropertyChange(
+                        PROP_STATUS, oldStatus, newStatus);
+            }
+        }
+
         private Status readStatus() {
+            assert !EventQueue.isDispatchThread();
             int lastBuildNumber = hudsonJob.getLastBuild();
             for (HudsonJobBuild build : hudsonJob.getBuilds()) {
                 if (build.getNumber() == lastBuildNumber) {
@@ -187,7 +244,8 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
         @Override
         public Status getStatus() {
             if (currentStatus == null) {
-                currentStatus = readStatus();
+                scheduleUpdateStatus();
+                return Status.UNKNOWN;
             }
             return currentStatus;
         }
@@ -231,14 +289,8 @@ public class HudsonBuildAccessor extends BuildAccessor<ODSProject> {
 
             @Override
             public void stateChanged() {
-                Status oldStatus = currentStatus;
                 updateJob();
-                Status newStatus = readStatus();
-                if (oldStatus != newStatus) {
-                    currentStatus = newStatus;
-                    propertyChangeSupport.firePropertyChange(
-                            PROP_STATUS, oldStatus, newStatus);
-                }
+                scheduleUpdateStatus();
             }
 
             @Override

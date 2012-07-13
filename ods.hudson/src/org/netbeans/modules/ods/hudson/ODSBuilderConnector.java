@@ -77,6 +77,10 @@ import org.openide.filesystems.FileUtil;
  */
 public class ODSBuilderConnector extends BuilderConnector {
 
+    /**
+     * Number of build details used for statistical job values.
+     */
+    private static final int MAX_RETRIEVED_BUILD_DETAILS = 5;
     private static final Logger LOG = Logger.getLogger(
             ODSBuilderConnector.class.getName());
     private ProjectHandle<ODSProject> projectHandle;
@@ -97,9 +101,11 @@ public class ODSBuilderConnector extends BuilderConnector {
     @Override
     public InstanceData getInstanceData(boolean authentication) {
         try {
-            HudsonStatus hudsonStatus = getClient().getHudsonStatus(projectHandle.getId());
+            HudsonStatus hudsonStatus = getClient().getHudsonStatus(
+                    projectHandle.getId());
             if(hudsonStatus == null) {
-                return null;
+                return new InstanceData(Collections.<JobData>emptyList(),
+                        Collections.<ViewData>emptyList());
             }
             List<JobData> jobs = new ArrayList<JobData>();
             String url = null;
@@ -112,6 +118,9 @@ public class ODSBuilderConnector extends BuilderConnector {
                 jd.setBuildable(true); //TODO
                 jd.setInQueue(false); //TODO
                 jd.setSecured(false); //TODO
+                JobDetails jobDetails = getClient().getJobDetails(
+                        projectHandle.getId(), job.getName());
+                updateJobDataBuildNumbers(jobDetails.getBuilds(), jd);
                 jd.addView("All"); //NOI18N
                 jobs.add(jd);
                 if (url == null) {
@@ -205,4 +214,48 @@ public class ODSBuilderConnector extends BuilderConnector {
         return ClientFactory.getInstance().createClient(server.getUrl().toString(), server.getPasswordAuthentication());        
     }
 
+    private void updateJobDataBuildNumbers(List<BuildSummary> bss, JobData jd)
+            throws CloudException {
+
+        boolean first = true;
+        boolean failDone = false;
+        boolean stableDone = false;
+        boolean successDone = false;
+        boolean complDone = false;
+        int count = 0;
+
+        for (BuildSummary buildSummary : bss) {
+            BuildDetails buildDetails = getClient().getBuildDetails(
+                    projectHandle.getId(), jd.getJobName(),
+                    buildSummary.getNumber());
+            int num = buildDetails.getNumber();
+            BuildResult res = buildDetails.getResult();
+
+            if (first) {
+                first = false;
+                jd.setLastBuild(num);
+            }
+            if (!stableDone && res == BuildResult.SUCCESS) {
+                jd.setLastStableBuild(num);
+                stableDone = true;
+            }
+            if (!successDone && (res == BuildResult.SUCCESS
+                    || res == BuildResult.UNSTABLE)) {
+                jd.setLastSuccessfulBuild(num);
+                successDone = true;
+            }
+            if (!failDone && res == BuildResult.FAILURE) {
+                jd.setLastFailedBuild(num);
+                failDone = true;
+            }
+            if (!complDone && (stableDone || failDone || successDone)) {
+                jd.setLastCompletedBuild(num);
+                complDone = true;
+            }
+            if (stableDone && successDone && failDone && complDone
+                    || ++count >= MAX_RETRIEVED_BUILD_DETAILS) {
+                break;
+            }
+        }
+    }
 }
