@@ -257,6 +257,7 @@ public class GlassFishCloudInstanceProvider
      * @param instance GlassFish cloud instance to be removed.
      */
     public void removeInstance(GlassFishCloudInstance instance) {
+        // TODO: Remove from persistence properties.
         serverInstances.remove(instance.getServerInstance());
         cloudInstances.remove(instance.getDisplayName());
         changeListeners.fireChange();

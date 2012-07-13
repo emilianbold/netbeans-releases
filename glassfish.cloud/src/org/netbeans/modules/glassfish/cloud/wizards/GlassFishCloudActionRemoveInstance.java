@@ -39,56 +39,46 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.glassfish.cloud.data;
+package org.netbeans.modules.glassfish.cloud.wizards;
 
-import org.netbeans.modules.glassfish.cloud.wizards.GlassFishCloudActionRemoveInstance;
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 /**
- * GlassFish GUI Node.
- * <p>
- * this class represents cloud or server instance in GUI.
+ * GUI action to remove GlassFish cloud instance.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public abstract class GlassFishInstanceNode extends AbstractNode {
-    
-    ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /** Cloud instance icon. */
-    private static final String GLASSFISH_ICON
-            = "org/netbeans/modules/glassfish/cloud/resources/gf-16x16.jpeg";
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Constructors                                                           //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Creates an instance of GlassFish GUI node.
-     * @param instance Instance entity object to be added into lookup.
-     * @param displayName 
-     */
-    GlassFishInstanceNode(String displayName, Object instance) {
-        super(Children.LEAF, Lookups.fixed(instance));
-        setName("");
-        setDisplayName(displayName);
-        setIconBaseWithExtension(GLASSFISH_ICON);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Methods                                                                //
-    ////////////////////////////////////////////////////////////////////////////
+public class GlassFishCloudActionRemoveInstance extends NodeAction {
 
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(GlassFishCloudActionRemoveInstance.class)
-        };
+    protected void performAction(Node[] activatedNodes) {
+        GlassFishCloudInstance instance
+                = activatedNodes[0].getLookup().lookup(
+                GlassFishCloudInstance.class);
+        GlassFishCloudInstanceProvider.getInstance().removeInstance(instance);
     }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        return activatedNodes.length > 0 && activatedNodes[0].getLookup()
+                .lookup(GlassFishCloudInstance.class) != null;
+    }
+
+    @Override
+    public String getName() {
+        return "Remove";
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+    
 }
