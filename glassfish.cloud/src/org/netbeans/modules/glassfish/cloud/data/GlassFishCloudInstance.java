@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
@@ -59,6 +62,24 @@ import static org.openide.util.NbBundle.getMessage;
  */
 public class GlassFishCloudInstance extends GlassFishCloudEntity
         implements ServerInstanceImplementation {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Logger. */
+    private static final Logger LOG = Logger.getLogger(
+            GlassFishCloudInstance.class.getSimpleName());
+
+    /** Name property name. */
+    public static final String PROPERTY_NAME = "name";
+
+    /** Host property name. */
+    public static final String PROPERTY_HOST = "host";
+
+    /** CPort property name. */
+    public static final String PROPERTY_PORT = "port";
+
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -199,4 +220,46 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Persistency methods                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Store content of GlassFish Cloud instance object into given properties.
+     * <p/>
+     * @param props Set of properties to persist.
+     */
+    void store(InstanceProperties props) {
+        props.putString(PROPERTY_NAME, name);
+        props.putString(PROPERTY_HOST, host);
+        props.putInt(PROPERTY_PORT, port);
+        LOG.log(Level.FINER,
+                "Stored GlassFishCloudInstance({0}, {1}, {2})",
+                new Object[]{name, host, port});
+
+    }
+
+    /**
+     * Load content of GlassFish Cloud instance object from given properties.
+     * <p/>
+     * @param props Set of properties to convert into GlassFish Cloud instance.
+     * @return Newly created instance of <code>GlassFishCloudInstance</code>
+     *         reconstructed from properties.
+     */
+    static GlassFishCloudInstance load(InstanceProperties props) {
+        String name = props.getString(PROPERTY_NAME, null);
+        if (name != null) {
+            String host = props.getString(PROPERTY_HOST, null);
+            int port = props.getInt(PROPERTY_PORT, -1);
+            LOG.log(Level.FINER,
+                    "Loaded GlassFishCloudInstance({0}, {1}, {2})",
+                    new Object[]{name, host, port});
+            return new GlassFishCloudInstance(name, host, port);
+        } else {
+            LOG.log(Level.WARNING,
+                    "Stored GlassFishCloudInstance name is null, skipping");
+            return null;
+        }
+    }
+
 }

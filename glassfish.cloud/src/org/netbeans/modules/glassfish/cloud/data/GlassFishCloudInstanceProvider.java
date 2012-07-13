@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.api.server.properties.InstancePropertiesManager;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
 
@@ -63,6 +63,12 @@ public class GlassFishCloudInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish cloud instance properties name space. */
+    static final String PROPERTIES_NAME_SPACE="GlassFish.cloud.cpas";
+
+    /** GlassFish cloud instance key ring name space. */
+    static final String KEYRING_NAME_SPACE="GlassFish.cloud.cpas";
 
     /** Singleton object instance. */
     private static volatile GlassFishCloudInstanceProvider instance;
@@ -128,6 +134,7 @@ public class GlassFishCloudInstanceProvider
         changeListeners = new ChangeSupport(this);
         serverInstances = new LinkedList<ServerInstance>();
         cloudInstances = new HashMap<String, GlassFishCloudInstance>();
+        load();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -136,6 +143,11 @@ public class GlassFishCloudInstanceProvider
 
     /**
      * Returns list of known cloud instances.
+     * <p/>
+     * Changing content of this <code>List</code> without doing equivalent
+     * changes in <code>Map</code> of <code>GlassFishCloudInstance</code>s
+     * returned by <code>getCloudInstances</code> method will corrupt
+     * this provider.
      * <p/>
      * @return <code>List</code> of known cloud instances.
      */
@@ -175,15 +187,68 @@ public class GlassFishCloudInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Get stored GlassFish cloud instances.
+     * <p/>
+     * Changing content of this <code>Map</code> without doing equivalent
+     * changes in <code>List</code> of <code>ServerInstance</code>s returned
+     * by <code>getInstances</code> method will corrupt this provider.
+     * <p/>
+     * @return Stored GlassFish cloud instances
+     */
+    public Map<String, GlassFishCloudInstance> getCloudInstances() {
+        return cloudInstances;
+    } 
+
+    /**
+     * Create copy of stored GlassFish cloud instances.
+     * <p/>
+     * Changing content of returned list will not change content
+     * of this provider.
+     * <p/>
+     * @return Cloned <code>List</code> of cloned
+     *         <code>GlassFishCloudEntity</code> objects.
+     */
+    @SuppressWarnings(value={"rawtypes", "unchecked"})
+    public List<GlassFishCloudEntity> cloneCloudInstances() {
+        List<GlassFishCloudEntity> clonedCloudInstances
+                = new ArrayList(cloudInstances.size());
+        for (Iterator<String> i =  cloudInstances.keySet().iterator();
+                i.hasNext(); ) {
+            String key = i.next();
+            GlassFishCloudInstance value = cloudInstances.get(key);
+            GlassFishCloudEntity copyOfValue
+                    = new GlassFishCloudEntity(value.getName(), value.getHost(),
+                    value.getPort());
+            clonedCloudInstances.add(copyOfValue);
+        }
+        return clonedCloudInstances;
+    }
+
+    /**
      * Add new GlassFish cloud instance into this provider.
+     * <p/>
+     * Instance is registered in this provider without being stored into
+     * persistence properties.
+     * <p/>
+     * @param instance GlassFish cloud instance to be added.
+     */
+    private void addInstanceWithoutStoring(GlassFishCloudInstance instance) {
+        serverInstances.add(instance.getServerInstance());
+        cloudInstances.put(instance.getDisplayName(), instance);
+        changeListeners.fireChange();
+    }
+
+    /**
+     * Add new GlassFish cloud instance into this provider.
+     * <p/>
+     * Instance is registered in this provider and stored into persistence
+     * properties.
      * <p/>
      * @param instance GlassFish cloud instance to be added.
      */
     public void addInstance(GlassFishCloudInstance instance) {
-        serverInstances.add(instance.getServerInstance());
-        // TODO: name is not unique key
-        cloudInstances.put(instance.getName(), instance);
-        changeListeners.fireChange();
+        store(instance);
+        addInstanceWithoutStoring(instance);
     }
 
     /**
@@ -193,9 +258,41 @@ public class GlassFishCloudInstanceProvider
      */
     public void removeInstance(GlassFishCloudInstance instance) {
         serverInstances.remove(instance.getServerInstance());
-        // TODO: name is not unique key
-        cloudInstances.remove(instance.getName());
+        cloudInstances.remove(instance.getDisplayName());
         changeListeners.fireChange();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Persistency methods                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Store given GlassFish Cloud Instance into properties to persist.
+     * <p/>
+     * @param instance GlassFish Cloud Instance to be stored.
+     */
+    private void store(GlassFishCloudInstance instance) {
+        InstanceProperties props = InstancePropertiesManager.getInstance()
+                .createProperties(
+                PROPERTIES_NAME_SPACE);
+        instance.store(props);
+    }
+
+    /**
+     * Load all stored GlassFish Cloud Instances into this provider from
+     * persistent properties.
+     */
+    private void load() {
+        for(InstanceProperties props
+                : InstancePropertiesManager.getInstance()
+                .getProperties(
+                PROPERTIES_NAME_SPACE)) {
+            GlassFishCloudInstance cloudInstance
+                    = GlassFishCloudInstance.load(props);
+            if (cloudInstance != null) {
+                addInstanceWithoutStoring(cloudInstance);
+            }
+        }
+    }
+    
 }

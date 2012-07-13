@@ -44,6 +44,7 @@ package org.netbeans.modules.glassfish.cloud.wizards;
 import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -61,12 +62,6 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
-
-    /** CPAS host property name. */
-    static final String PROPERTY_CPAS_HOST = "host";
-
-    /** CPAS port property name. */
-    static final String PROPERTY_CPAS_PORT = "port";
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -103,6 +98,10 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
                     = new GlassFishCloudWizardCpasComponent();
             component.setChangeListener(this);
         }
+        GlassFishWizardComponent.ValidationResult result
+                = component.setNameTextField((String)wizardDescriptor.getProperty(
+                GlassFishWizardIterator.PROPERTY_WIZARD_DISPLAY_NAME));
+        setErrorMessage(result.getErrorMessage());
         return component;
     }
 
@@ -117,7 +116,6 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
     public HelpCtx getHelp() {
         return new HelpCtx(GlassFishCloudWizardCpasPanel.class.getName());
     }
-
 
     /**
      * Provides the wizard panel with the opportunity to update the settings
@@ -139,8 +137,10 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
     @Override
     public void storeSettings(WizardDescriptor settings) {
         if (component != null) {
-            settings.putProperty(PROPERTY_CPAS_HOST, component.getHost());
-            settings.putProperty(PROPERTY_CPAS_PORT, component.getPortText());
+            settings.putProperty(GlassFishCloudInstance.PROPERTY_HOST,
+                    component.getHost());
+            settings.putProperty(GlassFishCloudInstance.PROPERTY_PORT,
+                    component.getPortText());
         }
     }
 

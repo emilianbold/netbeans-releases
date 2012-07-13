@@ -97,9 +97,9 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
         String name = (String)wizard.getProperty(
                 GlassFishWizardIterator.PROPERTY_WIZARD_DISPLAY_NAME);
         String host = (String)wizard.getProperty(
-                GlassFishCloudWizardCpasPanel.PROPERTY_CPAS_HOST);
+                GlassFishCloudInstance.PROPERTY_HOST);
         String portStr = (String)wizard.getProperty(
-                GlassFishCloudWizardCpasPanel.PROPERTY_CPAS_PORT);
+                GlassFishCloudInstance.PROPERTY_PORT);
         int port;
         try {
             port = Integer.parseInt(portStr);

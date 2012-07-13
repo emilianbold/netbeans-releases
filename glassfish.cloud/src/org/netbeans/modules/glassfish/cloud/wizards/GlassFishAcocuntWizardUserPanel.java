@@ -44,6 +44,7 @@ package org.netbeans.modules.glassfish.cloud.wizards;
 import java.awt.Component;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -58,19 +59,6 @@ import static org.openide.util.NbBundle.getMessage;
  */
 public class GlassFishAcocuntWizardUserPanel extends GlassFishWizardPanel {
     
-    ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /** User name property name. */
-    static final String PROPERTY_USER_NAME = "userName";
-
-    /** User password host property name. */
-    static final String PROPERTY_USER_PASSWORD = "userPassword";
-
-    /** Account property name. */
-    static final String PROPERTY_ACCOUNT = "account";
-
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -106,6 +94,10 @@ public class GlassFishAcocuntWizardUserPanel extends GlassFishWizardPanel {
                     = new GlassFishAccountWizardUserComponent();
             component.setChangeListener(this);
         }
+        GlassFishWizardComponent.ValidationResult result
+                = component.setNameTextField((String)wizardDescriptor.getProperty(
+                GlassFishWizardIterator.PROPERTY_WIZARD_DISPLAY_NAME));
+        setErrorMessage(result.getErrorMessage());
         return component;
     }
 
@@ -142,10 +134,13 @@ public class GlassFishAcocuntWizardUserPanel extends GlassFishWizardPanel {
     @Override
     public void storeSettings(WizardDescriptor settings) {
         if (component != null) {
-            settings.putProperty(PROPERTY_ACCOUNT, component.getAccount());
-            settings.putProperty(PROPERTY_USER_NAME, component.getUserName());
+            settings.putProperty(GlassFishAccountInstance.PROPERTY_ACCOUNT,
+                    component.getAccount());
+            settings.putProperty(GlassFishAccountInstance.PROPERTY_USER_NAME,
+                    component.getUserName());
             settings.putProperty(
-                    PROPERTY_USER_PASSWORD, component.getUserPassword());
+                    GlassFishAccountInstance.PROPERTY_USER_PASSWORD,
+                    component.getUserPassword());
         }
     }
 

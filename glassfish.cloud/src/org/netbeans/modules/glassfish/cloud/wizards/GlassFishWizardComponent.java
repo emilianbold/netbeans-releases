@@ -65,6 +65,10 @@ public abstract class GlassFishWizardComponent
      */
     class ValidationResult {
 
+        ////////////////////////////////////////////////////////////////////////
+        // Instance attributes                                                //
+        ////////////////////////////////////////////////////////////////////////
+
         /** Validation result. */
         private final boolean valid;
 

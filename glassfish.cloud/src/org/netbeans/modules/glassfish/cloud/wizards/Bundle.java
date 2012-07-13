@@ -73,6 +73,14 @@ public class Bundle {
     static final String CLOUD_PANEL_ERROR_COMPONENT_UNINITIALIZED
             = "GlassFishCloudWizardCpasPanel.error.component.uninitialized";
 
+    /** Cloud panel validation error: Display name name is empty. */
+    static final String CLOUD_PANEL_ERROR_DISPLAY_NAME_EMPTY
+            = "GlassFishCloudWizardCpasPanel.error.displayName.empty";
+
+    /** Cloud panel validation error: Display name is duplicated. */
+    static final String CLOUD_PANEL_ERROR_DISPLAY_NAME_DUPLICATED
+            = "GlassFishCloudWizardCpasPanel.error.displayName.duplicated";
+
     /** Cloud panel validation error: Host name is empty. */
     static final String CLOUD_PANEL_ERROR_HOST_EMPTY
             = "GlassFishCloudWizardCpasPanel.error.host.empty";
@@ -101,6 +109,14 @@ public class Bundle {
     static final String USER_PANEL_ERROR_COMPONENT_UNINITIALIZED
             = "GlassFishAcocuntWizardUserPanel.error.component.uninitialized";
     
+    /** Cloud panel validation error: Display name name is empty. */
+    static final String USER_PANEL_ERROR_DISPLAY_NAME_EMPTY
+            = "GlassFishAcocuntWizardUserPanel.error.displayName.empty";
+
+    /** Cloud panel validation error: Display name is duplicated. */
+    static final String USER_PANEL_ERROR_DISPLAY_NAME_DUPLICATED
+            = "GlassFishAcocuntWizardUserPanel.error.displayName.duplicated";
+
     /** User account panel validation error: Account is empty. */
     static final String USER_PANEL_ERROR_ACCOUNT_EMPTY
             = "GlassFishAcocuntWizardUserPanel.error.account.empty";

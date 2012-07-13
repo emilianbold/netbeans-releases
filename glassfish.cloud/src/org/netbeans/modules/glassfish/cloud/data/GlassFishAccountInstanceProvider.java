@@ -47,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.api.server.properties.InstancePropertiesManager;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
 
@@ -64,6 +66,30 @@ public class GlassFishAccountInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish user account instance properties name space. */
+    static final String PROPERTIES_NAME_SPACE="GlassFish.cloud.userAccount";
+
+    /** GlassFish user account instance key ring name space. */
+    static final String KEYRING_NAME_SPACE="GlassFish.cloud.userAccount";
+
+    /**
+     * GlassFish user account instance key ring field separator.
+     * <p/>
+     * Key ring name is constructed in following form:
+     * <field>{'.'<field>}':'<identifier>
+     * e.g. "GlassFish.cloud.userAccount.userPassword:someUser".
+     */
+    static final String KEYRING_NAME_SEPARATOR=".";
+
+    /**
+     * GlassFish user account instance key ring identifier separator.
+     * <p/>
+     * Key ring name is constructed in following form:
+     * <field>{'.'<field>}':'<identifier>
+     * e.g. "GlassFish.cloud.userAccount.userPassword:someUser".
+     */
+    static final String KEYRING_IDENT_SEPARATOR=":";
 
     /** Singleton object instance. */
     private static volatile GlassFishAccountInstanceProvider instance;
@@ -131,6 +157,7 @@ public class GlassFishAccountInstanceProvider
         changeListeners = new ChangeSupport(this);
         serverInstances = new LinkedList<ServerInstance>();
         cloudInstances = new HashMap<String, GlassFishAccountInstance>();
+        load();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -180,13 +207,28 @@ public class GlassFishAccountInstanceProvider
     /**
      * Add new GlassFish user account instance into this provider.
      * <p/>
+     * Instance is registered in this provider without being stored into
+     * persistence properties.
+     * <p/>
+     * @param instance GlassFish user account instance to be added.
+     */
+    private void addInstanceWithoutStoring(GlassFishAccountInstance instance) {
+        serverInstances.add(instance.getServerInstance());
+        cloudInstances.put(instance.getDisplayName(), instance);
+        changeListeners.fireChange();
+    }
+
+    /**
+     * Add new GlassFish user account instance into this provider.
+     * <p/>
+     * Instance is registered in this provider and stored into persistence
+     * properties.
+     * <p/>
      * @param instance GlassFish user account instance to be added.
      */
     public void addInstance(GlassFishAccountInstance instance) {
-        serverInstances.add(instance.getServerInstance());
-        // TODO: name is not unique key
-        cloudInstances.put(instance.getName(), instance);
-        changeListeners.fireChange();
+        store(instance);
+        addInstanceWithoutStoring(instance);
     }
 
     /**
@@ -196,9 +238,41 @@ public class GlassFishAccountInstanceProvider
      */
     public void removeInstance(GlassFishAccountInstance instance) {
         serverInstances.remove(instance.getServerInstance());
-        // TODO: name is not unique key
-        cloudInstances.remove(instance.getName());
+        cloudInstances.remove(instance.getDisplayName());
         changeListeners.fireChange();
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Persistency methods                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Store given GlassFish Cloud Instance into properties to persist.
+     * <p/>
+     * @param instance GlassFish Cloud Instance to be stored.
+     */
+    private void store(GlassFishAccountInstance instance) {
+        InstanceProperties props = InstancePropertiesManager.getInstance()
+                .createProperties(
+                PROPERTIES_NAME_SPACE);
+        instance.store(props);
+    }
+
+    /**
+     * Load all stored GlassFish Cloud Instances into this provider from
+     * persistent properties.
+     */
+    private void load() {
+        for(InstanceProperties props
+                : InstancePropertiesManager.getInstance()
+                .getProperties(
+                PROPERTIES_NAME_SPACE)) {
+            GlassFishAccountInstance cloudInstance
+                    = GlassFishAccountInstance.load(props);
+            if (cloudInstance != null) {
+                addInstanceWithoutStoring(cloudInstance);
+            }
+        }
+    }
+    
 }

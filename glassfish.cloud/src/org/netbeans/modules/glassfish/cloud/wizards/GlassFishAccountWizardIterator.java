@@ -98,11 +98,11 @@ public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
         String name = (String)wizard.getProperty(
                 GlassFishWizardIterator.PROPERTY_WIZARD_DISPLAY_NAME);
         String account = (String)wizard.getProperty(
-                GlassFishAcocuntWizardUserPanel.PROPERTY_ACCOUNT);
+                GlassFishAccountInstance.PROPERTY_ACCOUNT);
         String userName = (String)wizard.getProperty(
-                GlassFishAcocuntWizardUserPanel.PROPERTY_USER_NAME);
+                GlassFishAccountInstance.PROPERTY_USER_NAME);
         String userPassword = (String)wizard.getProperty(
-                GlassFishAcocuntWizardUserPanel.PROPERTY_USER_PASSWORD);
+                GlassFishAccountInstance.PROPERTY_USER_PASSWORD);
         GlassFishAccountInstance accountInstance
                 = new GlassFishAccountInstance(
                 name, account, userName, userPassword);

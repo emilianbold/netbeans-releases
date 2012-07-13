@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.cloud.wizards;
 
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -54,14 +55,17 @@ public class GlassFishCloudWizardCpasComponent
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
-    
-    /** Validity of <code>host</code> field. */
+
+    /** Validity of <code>displayName</code> field. */
+    private boolean displayNameValid;
+
+    /** Validity of <code>displayName</code> field. */
     private boolean hostValid;
     
     /** Validity of <code>port</code> field. */
     private boolean portValid;
 
-    /** Event listener to validate host field on the fly. */
+    /** Event listener to validate displayName field on the fly. */
     private DocumentListener hostEventListener = new ComponentFieldListener() {
 
         /**
@@ -102,6 +106,7 @@ public class GlassFishCloudWizardCpasComponent
         initComponents();
         hostValid = hostValid().isValid();
         portValid = portValid().isValid();
+        displayNameValid = displayNameValid().isValid();
         hostTextField.getDocument().addDocumentListener(hostEventListener);
         portTextField.getDocument().addDocumentListener(portEventListener);
     }
@@ -111,9 +116,19 @@ public class GlassFishCloudWizardCpasComponent
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Get CPAS host name.
+     * Get CPAS display name.
      * <p/>
-     * @return CPAS host name.
+     * @return CPAS display name.
+     */
+    public String getDisplayName() {
+        String text = nameTextField.getText();
+        return text != null ? text.trim() : null;
+    }
+
+    /**
+     * Get CPAS displayName name.
+     * <p/>
+     * @return CPAS displayName name.
      */
     public String getHost() {
         String text = hostTextField.getText();
@@ -173,7 +188,7 @@ public class GlassFishCloudWizardCpasComponent
      */
     @Override
     boolean valid() {
-        return hostValid && portValid; 
+        return displayNameValid && hostValid && portValid;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -181,14 +196,55 @@ public class GlassFishCloudWizardCpasComponent
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Validate host field.
+     * Set value of display name text field.
+     * <p/>
+     * @param name Display name text field to be set.
+     */
+    ValidationResult setNameTextField(String name) {
+        nameTextField.setText(name);
+        ValidationResult result = displayNameValid();
+        displayNameValid = result.isValid();
+        return result;
+    }
+
+    /**
+     * Validate display name field.
+     * <p/>
+     * Display name field should be non empty string value containing at least
+     * one non-whitespace character. Display name must be unique among
+     * all registered GlassFish cloud instances.
+     * Value of <code>validationError</code> is set to inform about field
+     * status.
+     * <p/>
+     * @return <code>true</code> when displayName field is valid
+     *         or <code>false</code> otherwise.
+     */
+    final ValidationResult displayNameValid() {
+        String displayName = getDisplayName();
+        if (displayName != null && displayName.length() > 0) {
+            if (GlassFishCloudInstanceProvider.getInstance().getCloudInstances()
+                    .containsKey(displayName)) {
+                return new ValidationResult(false,
+                        getMessage(GlassFishCloudWizardCpasComponent.class,
+                        Bundle.CLOUD_PANEL_ERROR_DISPLAY_NAME_DUPLICATED));
+            }
+            return new ValidationResult(true, null);
+        } else {
+            return new ValidationResult(false,
+                    getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.CLOUD_PANEL_ERROR_DISPLAY_NAME_EMPTY));
+        }
+    }
+
+    /**
+     * Validate displayName field.
      * <p/>
      * Host field should be non empty string value containing at least one
      * non-whitespace character.
      * Value of <code>validationError</code> is set to inform about field
      * status.
      * <p/>
-     * @return <code>true</code> when host field is valid or <code>false</code>
+     * @return <code>true</code> when displayName field is valid or <code>false</code>
      *         otherwise.
      */
     final ValidationResult hostValid() {
@@ -209,7 +265,7 @@ public class GlassFishCloudWizardCpasComponent
      * non-whitespace character. It's content must be also valid decimal
      * number.
      * <p/>
-     * @return <code>true</code> when host field is valid or <code>false</code>
+     * @return <code>true</code> when displayName field is valid or <code>false</code>
      *         otherwise.
      */
     final ValidationResult portValid() {
@@ -247,6 +303,8 @@ public class GlassFishCloudWizardCpasComponent
         hostTextField = new javax.swing.JTextField();
         portLabel = new javax.swing.JLabel();
         portTextField = new javax.swing.JTextField();
+        nameLabel = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
 
         hostLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.hostLabel.text")); // NOI18N
 
@@ -256,6 +314,12 @@ public class GlassFishCloudWizardCpasComponent
 
         portTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.portTextField.text")); // NOI18N
 
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.nameLabel.text")); // NOI18N
+
+        nameTextField.setBackground(new java.awt.Color(238, 238, 238));
+        nameTextField.setEditable(false);
+        nameTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.nameTextField.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -263,17 +327,23 @@ public class GlassFishCloudWizardCpasComponent
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(hostLabel)
-                    .addComponent(portLabel))
+                    .addComponent(portLabel)
+                    .addComponent(nameLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hostTextField)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 266, Short.MAX_VALUE))))
+                        .addContainerGap())
+                    .addComponent(hostTextField)
+                    .addComponent(nameTextField)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(nameLabel)
+                    .addComponent(nameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(hostLabel)
                     .addComponent(hostTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -286,6 +356,8 @@ public class GlassFishCloudWizardCpasComponent
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel hostLabel;
     private javax.swing.JTextField hostTextField;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JTextField nameTextField;
     private javax.swing.JLabel portLabel;
     private javax.swing.JTextField portTextField;
     // End of variables declaration//GEN-END:variables

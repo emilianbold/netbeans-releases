@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.glassfish.tools.ide.data.cloud.GlassFishAccountEntity;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
@@ -61,6 +65,46 @@ import static org.openide.util.NbBundle.getMessage;
 public class GlassFishAccountInstance extends GlassFishAccountEntity
     implements ServerInstanceImplementation {
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Logger. */
+    private static final Logger LOG = Logger.getLogger(
+            GlassFishCloudInstance.class.getSimpleName());
+
+    /** Name property name. */
+    public static final String PROPERTY_NAME = "name";
+
+    /** User name property name. */
+    public static final String PROPERTY_USER_NAME = "userName";
+
+    /** User password host property name. */
+    public static final String PROPERTY_USER_PASSWORD = "userPassword";
+
+    /** Account property name. */
+    public static final String PROPERTY_ACCOUNT = "account";
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Build key ring identifier for password related to given user name.
+     * <p/>
+     * @param userName User name of account user who's password will be stored.
+     * @return Key ring identifier for password related to given user name
+     */
+    private static String passwordKey(String userName) {
+        StringBuilder pwKey = new StringBuilder();
+        pwKey.append(GlassFishAccountInstanceProvider.KEYRING_NAME_SPACE);
+        pwKey.append(GlassFishAccountInstanceProvider.KEYRING_NAME_SEPARATOR);
+        pwKey.append(PROPERTY_USER_PASSWORD);
+        pwKey.append(GlassFishAccountInstanceProvider.KEYRING_IDENT_SEPARATOR);
+        pwKey.append(userName);
+        return pwKey.toString();
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -202,4 +246,54 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Persistency methods                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Store content of GlassFish Cloud instance object into given properties.
+     * <p/>
+     * @param props Set of properties to persist.
+     */
+    void store(InstanceProperties props) {
+        props.putString(PROPERTY_NAME, name);
+        props.putString(PROPERTY_ACCOUNT, account);
+        props.putString(PROPERTY_USER_NAME, userName);
+        Keyring.save(passwordKey(userName), userPassword.toCharArray(),
+                "GlassFish cloud account user password");
+        LOG.log(Level.FINER,
+                "Stored GlassFishCloudInstance({0}, {1}, {2}, <password>)",
+                new Object[]{name, account, userName});
+    }
+
+    /**
+     * Load content of GlassFish Cloud instance object from given properties.
+     * <p/>
+     * @param props Set of properties to convert into GlassFish Cloud instance.
+     * @return Newly created instance of <code>GlassFishCloudInstance</code>
+     *         reconstructed from properties.
+     */
+    static GlassFishAccountInstance load(InstanceProperties props) {
+        String name = props.getString(PROPERTY_NAME, null);
+        if (name != null) {
+            String account = props.getString(PROPERTY_ACCOUNT, null);
+            String userName = props.getString(PROPERTY_USER_NAME, null);
+            String userPassword;
+            if (userName != null) {
+                char[] password = Keyring.read(passwordKey(userName));
+                userPassword = password != null ? new String(password) : null;
+            } else {
+                userPassword = null;
+            }
+            LOG.log(Level.FINER,
+                    "Loaded GlassFishCloudInstance({0}, {1}, {2}, <password>)",
+                    new Object[]{name, account, userName});
+            return new GlassFishAccountInstance(name, account, userName,
+                    userPassword);
+        } else {
+            LOG.log(Level.WARNING,
+                    "Stored GlassFishCloudInstance name is null, skipping");
+            return null;
+        }
+    }
 }
