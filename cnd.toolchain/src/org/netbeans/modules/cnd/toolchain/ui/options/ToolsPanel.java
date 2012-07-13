@@ -119,11 +119,14 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private ToolsCacheManagerImpl tcm = (ToolsCacheManagerImpl) ToolsPanelSupport.getToolsCacheManager();
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
+    //See Bug #215447
+    private static final boolean ENABLED_EDIT_HOST = false;
 
     /** Creates new form ToolsPanel */
     public ToolsPanel(String helpContext) {
         initComponents();
         setName("TAB_ToolsTab"); // NOI18N (used as a pattern...)
+        btEditDevHost.setVisible(ENABLED_EDIT_HOST);
         changed = false;
         currentCompilerSet = null;
         execEnv = ServerList.getDefaultRecord().getExecutionEnvironment();
@@ -163,7 +166,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         } else {
             this.cbDevHost.setEnabled(false);
         }
-        btEditDevHost.setEnabled(show);
+        btEditDevHost.setEnabled(ENABLED_EDIT_HOST && show);
+        btEditDevHost.setVisible(ENABLED_EDIT_HOST);
         buttomPanel.setVisible(show);
         buttonPanel.setVisible(show);
         toolCollectionPanel.setVisible(show);
@@ -204,7 +208,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
         cbDevHost.addItemListener(this);
         cbDevHost.setEnabled(model.getEnableDevelopmentHostChange());
-        btEditDevHost.setEnabled(model.getEnableDevelopmentHostChange());
+        btEditDevHost.setEnabled(ENABLED_EDIT_HOST && model.getEnableDevelopmentHostChange());
+        btEditDevHost.setVisible(ENABLED_EDIT_HOST);
         execEnv = getSelectedRecord().getExecutionEnvironment();
         btVersions.setEnabled(false);
         initCustomizableDebugger();
@@ -931,7 +936,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(cbDevHost, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(btEditDevHost, org.openide.util.NbBundle.getMessage(ToolsPanel.class, "Lbl_AddDevHost")); // NOI18N
@@ -939,7 +944,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(btEditDevHost, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
