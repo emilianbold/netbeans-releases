@@ -50,7 +50,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -106,7 +105,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             }
         });
 
-        scrollPane.setBorder(new DelegatingBorder(referenceTextField.getBorder(), borderInsets));
+        scrollPane.setBorder(new EmptyBorder(borderInsets));
         scrollPane.setFont(referenceTextField.getFont());
         scrollPane.setBackground(referenceTextField.getBackground());
         int preferredHeight = referenceTextField.getPreferredSize().height;
@@ -166,14 +165,16 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
                     @Override
                     public void insertString(DocumentFilter.FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-                        if (string != null)
+                        if (string != null) {
                             fb.insertString(offset, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
+                        }
                     }
 
                     @Override
                     public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String string, AttributeSet attr) throws BadLocationException {
-                        if (string != null)
+                        if (string != null) {
                             fb.replace(offset, length, string.replaceAll("\\t", "").replaceAll("\\n", ""), attr);
+                        }
                     }
                 }); 
         editorPane.setBorder (
@@ -280,31 +281,6 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         }
     }
 
-    private static final class DelegatingBorder implements Border {
-
-        private Border delegate;
-        private Insets insets;
-
-        public DelegatingBorder(Border delegate, Insets insets) {
-            this.delegate = delegate;
-            this.insets = insets;
-        }
-
-        @Override
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            delegate.paintBorder(c, g, x, y, width, height);
-        }
-
-        @Override
-        public Insets getBorderInsets(Component c) {
-            return insets;
-        }
-
-        @Override
-        public boolean isBorderOpaque() {
-            return delegate.isBorderOpaque();
-        }
-    }
     private static final String NO_ACTION = "no-action"; //NOI18N
 
 
