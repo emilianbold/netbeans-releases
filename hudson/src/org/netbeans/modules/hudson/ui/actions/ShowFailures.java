@@ -86,7 +86,7 @@ public class ShowFailures extends AbstractAction {
         if (hudsonInstance instanceof HudsonInstanceImpl) {
             HudsonInstanceImpl hudsonInstanceImpl =
                     (HudsonInstanceImpl) hudsonInstance;
-            BuilderConnector builderClient = hudsonInstanceImpl.getBuilderClient();
+            BuilderConnector builderClient = hudsonInstanceImpl.getBuilderConnector();
             if (moduleBuild != null) {
                 builderClient.getFailureDisplayer().showFailures(moduleBuild);
             } else {
@@ -100,7 +100,7 @@ public class ShowFailures extends AbstractAction {
         HudsonInstance instance = build.getJob().getInstance();
         if (instance instanceof HudsonInstanceImpl) {
             BuilderConnector builderClient =
-                    ((HudsonInstanceImpl) instance).getBuilderClient();
+                    ((HudsonInstanceImpl) instance).getBuilderConnector();
             return builderClient.getFailureDisplayer() != null;
         }
         return false;

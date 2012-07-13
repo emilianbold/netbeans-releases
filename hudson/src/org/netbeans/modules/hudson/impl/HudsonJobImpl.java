@@ -49,7 +49,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -65,8 +64,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 
 /**
  * Implementation of the HudsonJob
@@ -151,7 +148,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     }
     
     @Override public void start() {
-        instance.getBuilderClient().startJob(this);
+        instance.getBuilderConnector().startJob(this);
     }
 
     @Messages({
@@ -254,7 +251,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     @Override public synchronized Collection<? extends HudsonJobBuild> getBuilds() {
         if (builds == null) {
             builds = createBuilds(
-                    instance.getBuilderClient().getJobBuildsData(this));
+                    instance.getBuilderConnector().getJobBuildsData(this));
         }
         return builds;
     }
@@ -268,7 +265,7 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         List<HudsonJobBuildImpl> buildList = new ArrayList<HudsonJobBuildImpl>();
         for (BuilderConnector.BuildData bd : data) {
             buildList.add(new HudsonJobBuildImpl(
-                    this.getInstance().getBuilderClient(), this,
+                    this.getInstance().getBuilderConnector(), this,
                     bd.getNumber(), bd.isBuilding(), bd.getResult()));
         }
         return buildList;

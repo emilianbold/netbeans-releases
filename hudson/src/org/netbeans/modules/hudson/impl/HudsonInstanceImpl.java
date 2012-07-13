@@ -93,7 +93,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private static final Logger LOG = Logger.getLogger(HudsonInstanceImpl.class.getName());
 
     private HudsonInstanceProperties properties;
-    private BuilderConnector builderClient;
+    private BuilderConnector builderConnector;
     
     private HudsonVersion version;
     private boolean connected;
@@ -115,8 +115,8 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private final Map<String,Reference<RemoteFileSystem>> workspaces = new HashMap<String,Reference<RemoteFileSystem>>();
     private final Map<String,Reference<RemoteFileSystem>> artifacts = new HashMap<String,Reference<RemoteFileSystem>>();
     
-    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive, BuilderConnector builderClient) {
-        this.builderClient = builderClient;
+    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive, BuilderConnector builderConnector) {
+        this.builderConnector = builderConnector;
         this.properties = properties;
 
         RP = new RequestProcessor(getUrl(), 1, true);
@@ -200,7 +200,12 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     public static HudsonInstanceImpl createHudsonInstance(String name, String url, BuilderConnector client, int sync) {
         HudsonInstanceProperties hudsonInstanceProperties =
                 new HudsonInstanceProperties(name, url,
-                Integer.toBinaryString(sync));                          //NOI18N
+                Integer.toBinaryString(sync)) {
+                    @Override
+                    public boolean isPersisted() {
+                        return false;
+                    }
+                };
         HudsonInstanceImpl instance = new HudsonInstanceImpl(
                 hudsonInstanceProperties, true, client);
         if (null == HudsonManagerImpl.getDefault().addInstance(instance)) {
@@ -245,10 +250,18 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         fireContentChanges();
     }
     
-    public BuilderConnector getBuilderClient() {
-        return builderClient;
+    public BuilderConnector getBuilderConnector() {
+        return builderConnector;
     }
     
+    public void changeBuilderConnector(BuilderConnector connector) {
+        assert !(connector instanceof HudsonConnector);
+        this.builderConnector = connector;
+        this.jobs.clear();
+        this.views.clear();
+        synchronize(false);
+    }
+
     @Override public HudsonVersion getVersion() {
         return version;
     }
@@ -365,7 +378,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                         
                         // Retrieve jobs
                         BuilderConnector.InstanceData instanceData =
-                                getBuilderClient().getInstanceData(
+                                getBuilderConnector().getInstanceData(
                                 authentication);
                         configureViews(instanceData.getViewsData());
                         Collection<HudsonJob> retrieved = createJobs(
@@ -377,9 +390,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                         }
                         
                         // Set connected and version
-                        connected = getBuilderClient().isConnected();
-                        version = getBuilderClient().getHudsonVersion(authentication);
-                        forbidden = getBuilderClient().isForbidden();
+                        connected = getBuilderConnector().isConnected();
+                        version = getBuilderConnector().getHudsonVersion(authentication);
+                        forbidden = getBuilderConnector().isForbidden();
                         
                         // Update state
                         fireStateChanges();

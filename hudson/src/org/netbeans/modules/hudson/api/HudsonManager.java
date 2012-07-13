@@ -78,7 +78,9 @@ public class HudsonManager {
     }
 
     /**
-     * Add a temporary instance with a custom {@link BuilderConnector}.
+     * Add a temporary instance with a custom {@link BuilderConnector}. If an
+     * instance with the same url is already registered, its connector will be
+     * replaced.
      *
      * @param name a name by which the instance will be identified (e.g.
      * {@code Deadlock})
@@ -88,12 +90,20 @@ public class HudsonManager {
      * @param builderConnector Connector for retrieving builder data.
      *
      * @since 1.22
+     *
+     * @return A new or existing connector.
      */
     public static HudsonInstance addInstance(String name, String url, int sync,
             BuilderConnector builderConnector) {
-        HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(
-                name, url, builderConnector, sync);
-        HudsonManagerImpl.getDefault().addInstance(nue);
-        return nue;
+        HudsonInstanceImpl hi = HudsonManagerImpl.getDefault().getInstance(url);
+        if (hi != null) {
+            hi.changeBuilderConnector(builderConnector);
+            return hi;
+        } else {
+            HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(
+                    name, url, builderConnector, sync);
+            HudsonManagerImpl.getDefault().addInstance(nue);
+            return nue;
+        }
     }
 }

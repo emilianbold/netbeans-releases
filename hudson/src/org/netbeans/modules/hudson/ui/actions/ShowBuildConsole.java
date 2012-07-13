@@ -79,7 +79,7 @@ public class ShowBuildConsole extends AbstractAction {
         HudsonInstance instance = build.getJob().getInstance();
         if (instance instanceof HudsonInstanceImpl) {
             BuilderConnector builderClient =
-                    ((HudsonInstanceImpl) instance).getBuilderClient();
+                    ((HudsonInstanceImpl) instance).getBuilderConnector();
             if (moduleBuild != null) {
                 builderClient.getConsoleDisplayer().showConsole(moduleBuild);
             } else {
@@ -93,7 +93,7 @@ public class ShowBuildConsole extends AbstractAction {
         HudsonInstance instance = build.getJob().getInstance();
         if (instance instanceof HudsonInstanceImpl) {
             BuilderConnector builderClient =
-                    ((HudsonInstanceImpl) instance).getBuilderClient();
+                    ((HudsonInstanceImpl) instance).getBuilderConnector();
             return builderClient.getConsoleDisplayer() != null;
         }
         return false;
