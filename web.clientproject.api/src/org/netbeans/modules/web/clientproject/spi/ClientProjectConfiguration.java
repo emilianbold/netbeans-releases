@@ -71,13 +71,11 @@ public final class ClientProjectConfiguration implements ProjectConfiguration {
     
     public static final Comparator COMPARATOR = new ConfigurationComparator();
 
-    private ClientProjectConfiguration(FileObject kid, String name, String displayName, String type) {
+    private ClientProjectConfiguration(FileObject kid, String name, String displayName, String type, EditableProperties ep) {
         this.name = name;
         this.displayName = displayName;
         this.type = type;
-        props = new EditableProperties(true);
-        props.put("type", type);
-        props.put("display.name", displayName);
+        props = ep;
         this.file = kid;
         this.importance = 999;
     }
@@ -142,12 +140,12 @@ public final class ClientProjectConfiguration implements ProjectConfiguration {
         try {
             InputStream is = configFile.getInputStream();
             try {
-                Properties p = new Properties();
+                EditableProperties p = new EditableProperties(true);
                 p.load(is);
                 String name = configFile.getName();
                 String label = p.getProperty("display.name"); // NOI18N
                 String type = p.getProperty("type");
-                return new ClientProjectConfiguration(configFile, name, label != null ? label : name, type);
+                return new ClientProjectConfiguration(configFile, name, label != null ? label : name, type, p);
             } finally {
                 is.close();
             }
