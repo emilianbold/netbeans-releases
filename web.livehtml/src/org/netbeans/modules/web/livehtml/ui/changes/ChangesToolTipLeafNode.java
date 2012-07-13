@@ -39,14 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.livehtml.ui.changes;
+
+import org.netbeans.modules.web.livehtml.Change;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface AnalysisListener {
-    
-    void revisionAdded(Analysis analysis, long timeStamp);
+public class ChangesToolTipLeafNode extends AbstractNode {
+
+    public ChangesToolTipLeafNode(Change change) {
+        super(Children.LEAF);
+        
+        String changeStr = null;
+        
+        if (change.isAdd()) {
+            changeStr = "Added text '" + change.getAddedText() + "' at " + change.getOffset();
+        } else if (change.getRevisionIndex() != -1) {
+            changeStr = change.toString();
+        } else {
+            changeStr = "Removed text '" + change.getRemovedText() + "'(" + change.getRemovedText().length() + ") at " + change.getOffset() + " from " + change.getOriginalOffset();
+        }
+        
+        setDisplayName(changeStr);
+    }
     
 }

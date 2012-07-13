@@ -39,14 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.livehtml.ui.callstack;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.json.simple.JSONArray;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface AnalysisListener {
+public class CallStackToolTipNodeContainer extends Children.Keys<JSONArray> {
     
-    void revisionAdded(Analysis analysis, long timeStamp);
-    
+    private final JSONArray callStack;
+
+    public CallStackToolTipNodeContainer(JSONArray callStack) {
+        this.callStack = callStack;
+    }
+
+    @Override
+    protected void addNotify() {
+        setKeys(new JSONArray[] {callStack});
+    }
+
+    @Override
+    protected Node[] createNodes(JSONArray key) {
+        List<Node> nodes = new ArrayList<Node>();
+        
+        for (Object object : key) {
+            nodes.add(new CallStackToolTipLeafNode(object));
+        }
+        
+        return nodes.toArray(new Node[nodes.size()]);
+    }
+
 }

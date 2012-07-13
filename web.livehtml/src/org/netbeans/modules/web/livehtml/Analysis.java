@@ -86,7 +86,7 @@ public final class Analysis implements Comparable<Analysis> {
     private boolean lastChangeWasNotReal = false;
     
     private List<AnalysisListener> analysisListeners = new CopyOnWriteArrayList<AnalysisListener>();
-    private RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("Live HTML Model", 1);
+    private static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("Live HTML Model", 1);
     
     public Analysis(File root, String initialContent) {
         this.root = root;
@@ -141,7 +141,7 @@ public final class Analysis implements Comparable<Analysis> {
             editorContent = content;
             changes = Change.decodeFromJSON(diff == null ? null : diff.toString());
         }
-        Revision rev = new Revision(editorContent, stacktrace, changes, data, timeStamp);
+        Revision rev = new Revision(editorContent, stacktrace, changes, data, timeStamp, changeIndex);
         
         return rev;
     }
@@ -290,7 +290,7 @@ public final class Analysis implements Comparable<Analysis> {
     
     private void fireRevisionAdded(long timeStamp) {
         for (AnalysisListener analysisListener : analysisListeners) {
-            analysisListener.revisionAdded(timeStamp);
+            analysisListener.revisionAdded(this, timeStamp);
         }
     }
 
@@ -363,6 +363,32 @@ public final class Analysis implements Comparable<Analysis> {
         } catch (Throwable t) {
             throw new RuntimeException("Cannot parse " + getRoot().getAbsolutePath() + " [" + timestamp + "," + previousTimestamp + "]", t);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (this.sourceUrl != null ? this.sourceUrl.hashCode() : 0);
+        hash = 37 * hash + (this.created != null ? this.created.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Analysis other = (Analysis) obj;
+        if (this.sourceUrl != other.sourceUrl && (this.sourceUrl == null || !this.sourceUrl.equals(other.sourceUrl))) {
+            return false;
+        }
+        if (this.created != other.created && (this.created == null || !this.created.equals(other.created))) {
+            return false;
+        }
+        return true;
     }
     
     @Override

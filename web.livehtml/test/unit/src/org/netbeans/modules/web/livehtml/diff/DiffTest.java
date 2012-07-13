@@ -109,7 +109,7 @@ public class DiffTest extends NbTestCase {
         assertEquals(6, l.size());
         assertRemoveChange(34, "<table>", s1, l.get(0));
         assertRemoveChange(146, "<div>", s1, l.get(5));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
         String res =
             "<html>\n" +
             "        <head></head><body><table>\n" +
@@ -136,7 +136,7 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(9, "1", s1, l.get(1));
         assertAddChange(9, 1, "5", s2, l.get(2));
         assertAddChange(18, 5, "d=\"4\"", s2, l.get(3));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
         String res =
             "<html c=\"3\"a=\"15\" b=\"2\" d=\"4\">\n" +
             "</html>\n";
@@ -173,7 +173,7 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(250, "<span>", s1, l.get(2));
         assertRemoveChange(312, "id=\"new-form-placeholder\"", s1, l.get(3));
         assertRemoveChange(332, "<p>", s1, l.get(4));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
         String res = 
                 "<!DOCTYPE html>\n" +
                 "<html>\n" +
@@ -211,7 +211,7 @@ public class DiffTest extends NbTestCase {
 //        assertEquals(17, l.get(0).getOffset());
 //        assertEquals("<div data-role=\"page\"><div data-role=\"header\">", l.get(0).getRemovedText());
         // test that removed text was added properly:
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
         String val = 
                 "<html>\n" +
                 "    <body><div data-role=\"page\"><div data-role=\"header\">\n" +
@@ -250,7 +250,7 @@ public class DiffTest extends NbTestCase {
         assertRemoveChange(255, "<p>", s1, l.get(0));
         assertRemoveChange(335, "<span>", s1, l.get(1));
         assertRemoveChange(394, "<table id=\"aa\">", s1, l.get(2));
-        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()));
+        Revision r = new Revision(new StringBuilder(s2.getSourceCode()), new StringBuilder(""), l, new StringBuilder(""), String.valueOf(System.currentTimeMillis()), 0);
     }
     
     public static void assertAddChange(int offset, int len, String text, HtmlSource s, Change ch) {

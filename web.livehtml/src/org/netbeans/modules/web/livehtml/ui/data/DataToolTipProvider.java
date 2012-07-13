@@ -39,14 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.livehtml.ui.data;
+
+import javax.swing.JTextPane;
+import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface AnalysisListener {
+@ServiceProvider(service=RevisionToolTipService.class)
+public class DataToolTipProvider extends RevisionToolTipService<JTextPane> {
     
-    void revisionAdded(Analysis analysis, long timeStamp);
+    private static final String NAME = "Revision Data";
+
+    @Override
+    public JTextPane getComponent(Revision revision) {
+        return new JTextPane();
+    }
+
+    @Override
+    public void update(JTextPane textPane, Revision revision) {
+        if (canProcess(revision)) {
+            textPane.setText(revision.getData().toString());
+        } else {
+            textPane.setText(null);
+        }
+    }
+
+    @Override
+    public boolean canProcess(Revision revision) {
+        return revision.getData() != null;
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
     
 }

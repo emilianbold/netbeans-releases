@@ -39,14 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.livehtml.ui.changes;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.json.simple.JSONArray;
+import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.livehtml.ui.callstack.CallStackToolTipLeafNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface AnalysisListener {
+public class ChangesToolTipNodeContainer extends Children.Keys<List<Change>> {
     
-    void revisionAdded(Analysis analysis, long timeStamp);
-    
+    private final List<Change> changes;
+
+    public ChangesToolTipNodeContainer(List<Change> changes) {
+        this.changes = changes;
+    }
+
+    @Override
+    protected void addNotify() {
+        setKeys(new List[] {changes});
+    }
+
+    @Override
+    protected Node[] createNodes(List<Change> key) {
+        List<Node> nodes = new ArrayList<Node>();
+        
+        for (Change change : key) {
+            nodes.add(new ChangesToolTipLeafNode(change));
+        }
+        
+        return nodes.toArray(new Node[nodes.size()]);
+    }
+
 }

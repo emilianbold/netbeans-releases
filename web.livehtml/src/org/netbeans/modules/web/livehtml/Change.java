@@ -147,6 +147,10 @@ public class Change {
         return offset + removedText.length();
     }
 
+    public String getAddedText() {
+        return addedText;
+    }
+
     void increment(int inc) {
         offset += inc;
     }

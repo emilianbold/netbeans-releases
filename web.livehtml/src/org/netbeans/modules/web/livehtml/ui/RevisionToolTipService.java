@@ -39,14 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.livehtml.ui;
+
+import java.awt.Component;
+import org.netbeans.modules.web.livehtml.Revision;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface AnalysisListener {
+public abstract class RevisionToolTipService<C extends Component> {
     
-    void revisionAdded(Analysis analysis, long timeStamp);
+    protected abstract C getComponent(Revision revision);
+    protected abstract void update(C component, Revision revision);
+    protected abstract boolean canProcess(Revision revision);
+    protected abstract String getName();
+    
+    public final C createToolTip(Revision revision) {
+        C c = getComponent(revision);
+        update(c, revision);
+        return c;
+    }
     
 }

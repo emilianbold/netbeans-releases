@@ -39,14 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.livehtml.ui.callstack;
+
+import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface AnalysisListener {
+@ServiceProvider(service=RevisionToolTipService.class)
+public class CallStackToolTipProvider extends RevisionToolTipService<CallStackToolTipPanel> {
     
-    void revisionAdded(Analysis analysis, long timeStamp);
+    private static final String NAME = "Call Stack";
+
+    @Override
+    protected CallStackToolTipPanel getComponent(Revision revision) {
+        return new CallStackToolTipPanel();
+    }
+
+    @Override
+    protected void update(CallStackToolTipPanel component, Revision revision) {
+        if (revision != null && revision.getStacktrace() != null) {
+           component.setCallStack(revision.getStacktrace());
+        }
+    }
+
+    @Override
+    protected boolean canProcess(Revision revision) {
+        return revision.getStacktrace() != null;
+    }
+
+    @Override
+    protected String getName() {
+        return NAME;
+    }
     
 }

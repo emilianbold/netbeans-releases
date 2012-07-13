@@ -39,14 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.livehtml.ui.callstack;
+
+import org.json.simple.JSONObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface AnalysisListener {
-    
-    void revisionAdded(Analysis analysis, long timeStamp);
+public class CallStackToolTipLeafNode extends AbstractNode {
+
+    public CallStackToolTipLeafNode(Object object) {
+        super(Children.LEAF);
+        
+        if (object instanceof JSONObject) {
+            JSONObject jSONObject = (JSONObject) object;
+            final Object function = jSONObject.get("function");
+            final Object lineNumber = jSONObject.get("lineNumber");
+            final Object columnNumber = jSONObject.get("columnNumber");
+            final Object script = jSONObject.get("script");
+            
+            StringBuilder sb = new StringBuilder();
+            
+            if (function != null) {
+                sb.append(function);
+            }
+            
+            if (lineNumber != null) {
+                sb.append(" ");
+                sb.append(lineNumber);
+            }
+            
+            if (columnNumber != null) {
+                sb.append(":");
+                sb.append(columnNumber);
+            }
+            
+            setDisplayName(sb.toString());
+            
+            if (script != null) {
+                setShortDescription("Script: " + script.toString());
+            }
+        }
+        
+    }
     
 }

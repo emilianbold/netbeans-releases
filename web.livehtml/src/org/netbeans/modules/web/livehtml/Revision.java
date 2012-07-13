@@ -51,6 +51,8 @@ import org.json.simple.JSONValue;
  */
 public final class Revision {
     
+    private int index = -1;
+    
     private StringBuilder content;
     private JSONArray stacktrace;
     private List<Change> changes;
@@ -58,7 +60,7 @@ public final class Revision {
     
     private String timeStamp = null;
 
-    public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data, String timeStamp) {
+    public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data, String timeStamp, int index) {
         this.content = content;
         
         if (stacktrace != null) {
@@ -68,6 +70,7 @@ public final class Revision {
         this.changes = changes;
         this.data = data;
         this.timeStamp = timeStamp;
+        this.index = index;
         
         addRemovedContent();
     }
@@ -89,6 +92,10 @@ public final class Revision {
 
     public StringBuilder getData() {
         return data;
+    }
+
+    public int getIndex() {
+        return index;
     }
 
     private void addRemovedContent() {

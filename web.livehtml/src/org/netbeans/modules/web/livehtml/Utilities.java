@@ -82,24 +82,24 @@ public class Utilities {
         }
     }
     
-    public static int getRevisionIndex(Revision sourceRevision, List<Revision> revisions) {
-        if (revisions == null || sourceRevision == null) {
-            return -1;
-        }
-        for (Revision revision : revisions) {
-            if (revision.getTimeStamp() != null && revision.getTimeStamp().equals(sourceRevision.getTimeStamp())) {
-                return revisions.indexOf(revision);
-            }
-        }
-        return -1;
-    }
+//    public static int getRevisionIndex(Revision sourceRevision, List<Revision> revisions) {
+//        if (revisions == null || sourceRevision == null) {
+//            return -1;
+//        }
+//        for (Revision revision : revisions) {
+//            if (revision.getTimeStamp() != null && revision.getTimeStamp().equals(sourceRevision.getTimeStamp())) {
+//                return revisions.indexOf(revision);
+//            }
+//        }
+//        return -1;
+//    }
 
-    public static int getRevisionIndex(Revision sourceRevision, Analysis analysis) {
-        if (analysis == null || sourceRevision == null) {
-            return -1;
-        }
-        return analysis.getTimeStamps().indexOf(sourceRevision.getTimeStamp());
-    }
+//    public static int getRevisionIndex(Revision sourceRevision, Analysis analysis) {
+//        if (analysis == null || sourceRevision == null) {
+//            return -1;
+//        }
+//        return analysis.getTimeStamps().indexOf(sourceRevision.getTimeStamp());
+//    }
 
     public static StringBuilder convertCallStack(JSONArray arr) {
         StringBuilder sb = new StringBuilder();
@@ -119,7 +119,7 @@ public class Utilities {
         }
         return sb;
     }
-        
+    
     public static StringBuilder fetchFileContent(InputStream is) {
         BufferedReader br = null;
         try {

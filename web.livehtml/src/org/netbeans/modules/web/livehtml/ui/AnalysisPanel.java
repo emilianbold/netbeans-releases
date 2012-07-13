@@ -42,8 +42,6 @@
 package org.netbeans.modules.web.livehtml.ui;
 
 import java.awt.Rectangle;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -53,12 +51,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import org.json.simple.JSONArray;
 import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.ext.ToolTipSupport;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.livehtml.Analysis;
@@ -86,10 +87,15 @@ import org.openide.util.RequestProcessor;
     "CTL_AnalysisComboBox_ToolTip=Select existing analysis of enter URL for analysis"})
 public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelListener, AnalysisListener {
     
+    public static final String PROP_SHORT_DESCRIPTION = "shortDescription"; // NOI18N
+    
     private AnalysisModel analysisModel = new AnalysisModel();
+    private RevisionToolTipPanel revisionToolTipPanel = null;
     
     private Map<Analysis, Revision> lastSelectedRevisions = new HashMap<Analysis, Revision>();
     private ToolTipSupport toolTipSupport = null;
+    
+    private int lastRevisionIndex = -1;
     
     /**
      * Creates new form AnalysisPanel
@@ -101,14 +107,14 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
         revisionEditorPane.getDocument().putProperty(JEditorPane.class, revisionEditorPane);
         ToolTipManager.sharedInstance().registerComponent(revisionEditorPane);
 
+        updateSourceUrl(analysisModel.getSourceUrl());
         updateAnalysis(null);
         updateRevisions(null);
-        updateSourceUrl(analysisModel.getSourceUrl());
         EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(revisionEditorPane);
         if (editorUI != null) {
             toolTipSupport = editorUI.getToolTipSupport();
-            toolTipSupport.setEnabled(true);
-            toolTipSupport.setToolTipText("XXX XXX XXX");
+//            toolTipSupport.setEnabled(true);
+//            toolTipSupport.setToolTipText("XXX XXX XXX");
         }
         
     }
@@ -150,7 +156,7 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
     private void updateRevision(Revision revision) {
         final Analysis selectedAnalysis = getSelectedAnalysis();
         if (selectedAnalysis != null && revision != null) {
-            int index = Utilities.getRevisionIndex(revision, selectedAnalysis);
+            int index = revision.getIndex();
             revisionLabel.setText(index + " / " + (selectedAnalysis.getRevisionsCount()));
             
             revisionSlider.setValue(index);
@@ -237,7 +243,7 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
         Revision selectedRevision = null;
         Revision lastSelectedRevision = lastSelectedRevisions.get(selectedAnalysis);
         if (selectedAnalysis != null && lastSelectedRevision != null && 
-                Utilities.getRevisionIndex(lastSelectedRevision, selectedAnalysis) <= (selectedAnalysis.getRevisionsCount()) &&
+                lastSelectedRevision.getIndex() <= (selectedAnalysis.getRevisionsCount()) &&
                 revisionSlider.getValue() > 0 && 
                 revisionSlider.getValue() <= selectedAnalysis.getRevisionsCount()) {
             selectedRevision = selectedAnalysis.getRevision(revisionSlider.getValue(), reformatRevisionButton.isSelected());
@@ -267,7 +273,7 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
             final Object item = analysisComboBox.getItemAt(i);
             if (item instanceof AnalysisItem) {
                 AnalysisItem analysisItem = (AnalysisItem) item;
-                if (analysis == analysisItem.getAnalysis()) {
+                if (analysis.equals(analysisItem.getAnalysis())) {
                     return analysisItem;
                 }
             }
@@ -291,8 +297,11 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
     }
 
     @Override
-    public void revisionAdded(long timeStamp) {
-        updateRevisions(getSelectedAnalysis());
+    public void revisionAdded(Analysis analysis, long timeStamp) {
+        final Analysis selectedAnalysis = getSelectedAnalysis();
+        if (analysis == selectedAnalysis) {
+            updateRevisions(selectedAnalysis);
+        }
     }
 
     private static BrowserSupport bs;
@@ -313,13 +322,55 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
     
     private void updateCallStack(JSONArray callStack) {
         System.out.println("Adding Revision callStack=" + Utilities.convertCallStack(callStack));
+        System.out.println("--- callStack");
+    }
+    
+    private void updateChanges(List<Change> changes) {
+        System.out.println("Adding Revision changes=" + changes.toString());
+        System.out.println("--- changes");
     }
     
     private void updateData(StringBuilder data) {
         if (data != null && data.length() != 0) {
             System.out.println("Adding Revision data=" + data);
-            System.out.println("---");
+            System.out.println("--- data");
         }
+    }
+    
+    private void updateRevisionEditorToolTip(final Revision revision) {
+        
+        updateCallStack(revision.getStacktrace());
+        updateData(revision.getData());
+        updateChanges(revision.getChanges());
+        
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                if (toolTipSupport != null) {
+                    toolTipSupport.setToolTipVisible(true);
+                    getRevisionToolTipPanel().setRevision(revision);
+                    toolTipSupport.setToolTip(
+                            getRevisionToolTipPanel(), 
+                            PopupManager.ViewPortBounds, 
+                            PopupManager.BelowPreferred, 
+                            0, 
+                            0, 
+                            ToolTipSupport.FLAGS_LIGHTWEIGHT_TOOLTIP);
+                } else {
+                    firePropertyChange(PROP_SHORT_DESCRIPTION, null, "NONONO");
+                }
+            }
+
+        });
+    }
+    
+    private synchronized RevisionToolTipPanel getRevisionToolTipPanel() {
+        if (revisionToolTipPanel == null) {
+            revisionToolTipPanel = new RevisionToolTipPanel();
+            revisionToolTipPanel.setBorder(BorderFactory.createLineBorder(revisionToolTipPanel.getForeground()));
+        }
+        return revisionToolTipPanel;
     }
     
     /**
@@ -387,6 +438,11 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
         revisionEditorPane.setEditable(false);
         revisionEditorPane.setEditorKit(CloneableEditorSupport.getEditorKit("text/html"));
         revisionEditorPane.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "CTL_Clear_analyses_Label")); // NOI18N
+        revisionEditorPane.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                revisionEditorPaneMouseExited(evt);
+            }
+        });
         revisionEditorPane.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseMoved(java.awt.event.MouseEvent evt) {
                 revisionEditorPaneMouseMoved(evt);
@@ -455,35 +511,48 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
 
     private void revisionEditorPaneMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_revisionEditorPaneMouseMoved
             final int index = revisionEditorPane.viewToModel(evt.getPoint());
-
+            
+            if (lastRevisionIndex == index) {
+                return;
+            }
+            
+            lastRevisionIndex = index;
+            
             final boolean reformat = reformatRevisionButton.isSelected();
             final Analysis selectedAnalysis = getSelectedAnalysis();
             if (selectedAnalysis != null && selectedAnalysis.getTimeStampsCount() > 0) {
-                for (int i = revisionSlider.getValue(); i > 0; i--) {
+//                for (int i = 0; i <= revisionSlider.getValue(); i++) {
+                Revision revisionFound = null;
+                for (int i = revisionSlider.getValue(); i >= 0; i--) {
                     final Revision revision = selectedAnalysis.getRevision(i, reformat);
+                    
+                    
                     if (revision != null) {
                         for (Change o : revision.getChanges()) {
-                            if (index >= o.getOffset() && index <= o.getOffset()+o.getLength() && o.getRevisionIndex() != -1) {
-                                updateCallStack(revision.getStacktrace());
-                                updateData(revision.getData());
-                                return;
+                            if (index >= o.getOffset() && index <= o.getOffset()+o.getLength() 
+//                                    && o.getRevisionIndex() != -1
+                                    ) {
+                                revisionFound = revision;
                             }
                         }
                     }
                 }
-            }
-        final Revision selectedRevision = getSelectedRevision();
-        
-        if (selectedRevision != null) {
-            updateCallStack(selectedRevision.getStacktrace());
-            updateData(selectedRevision.getData());
+                if (revisionFound != null) {
+                    updateRevisionEditorToolTip(revisionFound);
+                    return;
+                }
+//            final Revision revision = selectedAnalysis.getRevision(1, reformat);
+//            updateRevisionEditorToolTip(revision);
         }
             
     }//GEN-LAST:event_revisionEditorPaneMouseMoved
 
     private void startAnalysisButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startAnalysisButtonActionPerformed
         // TODO add your handling code here:
-        analysisComboBox.actionPerformed(evt);
+        
+        if (getSelectedAnalysis() == null) {
+            analysisComboBox.actionPerformed(evt);
+        }
         
         URL url_;
         
@@ -541,6 +610,16 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
     private void analysisComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_analysisComboBoxItemStateChanged
         updateAnalysis(getSelectedAnalysis());
     }//GEN-LAST:event_analysisComboBoxItemStateChanged
+
+    private void revisionEditorPaneMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_revisionEditorPaneMouseExited
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+//                toolTipSupport.setToolTipVisible(false);
+            }
+        });
+    }//GEN-LAST:event_revisionEditorPaneMouseExited
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox analysisComboBox;

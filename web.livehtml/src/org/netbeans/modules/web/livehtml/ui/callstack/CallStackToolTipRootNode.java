@@ -39,14 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml;
+package org.netbeans.modules.web.livehtml.ui.callstack;
+
+import org.json.simple.JSONArray;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface AnalysisListener {
-    
-    void revisionAdded(Analysis analysis, long timeStamp);
+public class CallStackToolTipRootNode extends AbstractNode {
+
+    public CallStackToolTipRootNode(JSONArray callStack) {
+        super(new CallStackToolTipNodeContainer(callStack));
+        setDisplayName("Root");
+    }
     
 }
