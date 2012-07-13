@@ -609,10 +609,46 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         // statements
-        for (Node statement : block.getStatements()) {
+        List<Node> statements = block.getStatements();
+        for (int i = 0; i < statements.size(); i++) {
+            Node statement = statements.get(i);
+            statement.accept(this);
+
             int start = getStart(statement);
             int finish = getFinish(statement);
-            statement.accept(this);
+
+            /*
+             * What do we solve here? Unfortunately nashorn parses single
+             * var statement as (possibly) multiple VarNodes. For example:
+             * var a=1,b=2; is parsed to two VarNodes. The first covering a=1,
+             * the second b=2. So we iterate subsequent VarNodes searching the
+             * last one and the proper finish token.
+             */
+            if (statement instanceof VarNode) {
+                Node lastVarNode = statement;
+
+                while (i + 1 < statements.size()) {
+                    Node next = statements.get(++i);
+                    if (!(next instanceof VarNode)) {
+                        i--;
+                        break;
+                    } else {
+                        Token token = getPreviousNonEmptyToken(getStart(next));
+                        if (token != null && JsTokenId.KEYWORD_VAR == token.id()) {
+                            i--;
+                            break;
+                        }
+                    }
+                    lastVarNode = next;
+                }
+
+                Token token = getNextNonEmptyToken(getFinish(lastVarNode) - 1);
+                if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
+                    finish = ts.offset() + 1;
+                } else {
+                    finish = getFinish(lastVarNode);
+                }
+            }
 
             // empty statement has start == finish
             FormatToken formatToken = getPreviousToken(start < finish ? finish - 1 : finish, null);
@@ -755,6 +791,26 @@ public class FormatVisitor extends NodeVisitor {
 
         Token ret = null;
         while (ts.movePrevious()) {
+            Token token = ts.token();
+            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
+                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
+                && token.id() != JsTokenId.WHITESPACE)) {
+                ret = token;
+                break;
+            }
+        }
+        return ret;
+    }
+
+    private Token getNextNonEmptyToken(int offset) {
+        ts.move(offset);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+
+        Token ret = null;
+        while (ts.moveNext()) {
             Token token = ts.token();
             if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
                 && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
