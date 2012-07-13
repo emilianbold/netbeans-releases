@@ -62,6 +62,7 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.team.c2c.api.CloudServer;
 import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.netbeans.modules.team.c2c.client.api.ClientFactory;
@@ -70,6 +71,7 @@ import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -256,6 +258,20 @@ public class ODSBuilderConnector extends BuilderConnector {
                     || ++count >= MAX_RETRIEVED_BUILD_DETAILS) {
                 break;
             }
+        }
+    }
+
+    @Override
+    public Collection<? extends HudsonJobChangeItem> getJobBuildChanges(
+            HudsonJobBuild build) {
+        try {
+            BuildDetails buildDetails = getClient().getBuildDetails(
+                    projectHandle.getDisplayName(),
+                    build.getJob().getName(), build.getNumber());
+            return Collections.emptySet();
+        } catch (CloudException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return Collections.emptyList();
         }
     }
 }
