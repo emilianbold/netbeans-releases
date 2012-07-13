@@ -535,6 +535,7 @@ public class TaskPresenter implements TaskChooser.Item {
 
         public SmallTaskPresenter(String title, Icon icon) {
             initComponents(title, icon);
+            setName(title);
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------

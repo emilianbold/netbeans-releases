@@ -112,7 +112,7 @@ public class HyperlinkLabel extends HTMLLabel {
         if (d != null) {
             String accesibleName = value;
             try {
-                accesibleName = d.getText(0, d.getLength());
+                accesibleName = d.getText(1, d.getLength() - 1); // Skip leading LF
             } catch (BadLocationException ex) {}
             getAccessibleContext().setAccessibleName(accesibleName);
         }
