@@ -46,8 +46,12 @@ package org.netbeans.modules.web.javascript.debugger;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.Models;
@@ -58,7 +62,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public final class MiscEditorUtil {
 
@@ -73,6 +79,8 @@ public final class MiscEditorUtil {
     public static final String CURRENT_LINE_ANNOTATION_TYPE =  "CurrentPC"; //NOI18N
     public static final String CALL_STACK_FRAME_ANNOTATION_TYPE =  "CallSite"; //NOI18N
     public static final String PROP_LINE_NUMBER = "lineNumber"; //NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(MiscEditorUtil.class.getName());
     
     public static String getAnnotationTooltip(String annotationType) {
         return getMessage("TOOLTIP_"+ annotationType);
@@ -107,18 +115,33 @@ public final class MiscEditorUtil {
             return null;
         }
 
-        File file = new File(filePath);
-        if (filePath.startsWith("file:/")) {
-            file = new File(URI.create(filePath));
+        FileObject fileObject = null;
+        if (filePath.startsWith("http:") || filePath.startsWith("https:")) {    // NOI18N
+            try {
+                fileObject = RemoteFileCache.getRemoteFile(URI.create(filePath).toURL());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            File file;
+            if (filePath.startsWith("file:/")) {                                // NOI18N
+                file = Utilities.toFile(URI.create(filePath));
+            } else {
+                file = new File(filePath);
+            }
+            fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         }
-        FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fileObject == null) {
-            //NbJSUtil.info("Cannot resolve \"" + filePath + '"');
+            LOG.log(Level.INFO, "Cannot resolve \"{0}\"", filePath);
             return null;
         }
 
         LineCookie lineCookie = getLineCookie(fileObject);
         assert lineCookie != null : "no line for: "+fileObject;
+        if (lineCookie == null) {
+            LOG.log(Level.INFO, "No line cookie for \"{0}\"", fileObject);
+            return null;
+        }
         return lineCookie.getLineSet().getCurrent(lineNumber);
     }
 

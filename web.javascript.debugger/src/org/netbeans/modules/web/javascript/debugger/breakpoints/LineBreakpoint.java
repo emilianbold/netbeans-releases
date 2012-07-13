@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
+import java.net.URL;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -121,6 +123,18 @@ public class LineBreakpoint extends AbstractBreakpoint {
             return null;
         }
         return FileOwnerQuery.getOwner( fileObject );
+    }
+
+    String getURLString() {
+        FileObject fo = getLine().getLookup().lookup(FileObject.class);
+        String url;
+        URL remoteURL = RemoteFileCache.isRemoteFile(fo);
+        if (remoteURL == null) {
+            url = fo.toURL().toExternalForm();
+        } else {
+            url = remoteURL.toExternalForm();
+        }
+        return url;
     }
     
     private class FileRemoveListener extends FileChangeAdapter {

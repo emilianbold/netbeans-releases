@@ -49,6 +49,8 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Properties;
+import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -85,7 +87,7 @@ public class BreakpointsReader implements Properties.Reader {
     @Override
     public Object read( String typeID, Properties properties ) {
         if (typeID.equals(LineBreakpoint.class.getName())) {
-            Line line = getLine(properties.getString(URL, null), properties
+            Line line = MiscEditorUtil.getLine(properties.getString(URL, null), properties
                     .getInt(LINE_NUMBER, 1));
 
             if (line == null) {
@@ -120,14 +122,11 @@ public class BreakpointsReader implements Properties.Reader {
     public void write(Object object, Properties properties) {
         if (object instanceof LineBreakpoint) {
             LineBreakpoint breakpoint = (LineBreakpoint) object;
-            FileObject fileObject = breakpoint.getLine().getLookup().lookup(
-                    FileObject.class);
-
-                properties.setString(URL, fileObject.toURL().toString());
-                properties.setInt(LINE_NUMBER, breakpoint.getLine()
-                        .getLineNumber());
-                properties.setBoolean(ENABED, breakpoint.isEnabled());
-                properties.setString(GROUP_NAME, breakpoint.getGroupName());
+            
+            properties.setString(URL, breakpoint.getURLString());
+            properties.setInt(LINE_NUMBER, breakpoint.getLine().getLineNumber());
+            properties.setBoolean(ENABED, breakpoint.isEnabled());
+            properties.setString(GROUP_NAME, breakpoint.getGroupName());
         }
 /*        else if ( object instanceof FunctionBreakpoint ) {
             FunctionBreakpoint breakpoint = (FunctionBreakpoint)object;
@@ -139,49 +138,4 @@ public class BreakpointsReader implements Properties.Reader {
         }*/
     }
 
-
-    private Line getLine(String url, int lineNumber) {
-        FileObject file = getFileObject(url);
-        if ( file == null ){
-            return null;
-        }
-
-        DataObject dataObject = null;
-        try {
-            dataObject = DataObject.find(file);
-        } catch (DataObjectNotFoundException ex) {
-            return null;
-        }
-
-        if (dataObject == null) {
-            return null;
-        }
-
-        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
-        if (lineCookie == null) {
-            return null;
-        }
-
-        Line.Set ls = lineCookie.getLineSet();
-        if (ls == null) {
-            return null;
-        }
-
-        try {
-            return ls.getCurrent(lineNumber);
-        } catch (IndexOutOfBoundsException e) {
-            return null;
-        } 
-    }
-
-    private FileObject getFileObject( String url ) {
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject(new URL(url));
-        } catch (MalformedURLException e) {
-            return null;
-        }
-
-        return file;
-    }
 }

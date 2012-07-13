@@ -44,7 +44,9 @@
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;
+import java.net.URL;
 import org.netbeans.api.debugger.*;
+import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
@@ -95,10 +97,10 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
         }
     }
     public static void addBreakpoint(Debugger d, LineBreakpoint lb) {
-        FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
-        String file = reformatFileURL(fo.toURL().toExternalForm());
+        String url = lb.getURLString();
+        url = reformatFileURL(url);
         org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
-                d.addLineBreakpoint(file, lb.getLine().getLineNumber(), 0);
+                d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
         lb.setWebkitBreakpoint(b);
     }
 
