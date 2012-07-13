@@ -206,7 +206,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     
     private synchronized HtmlEditorSupport getHtmlEditorSupport() {
         if (htmlEditorSupport == null) {
-            htmlEditorSupport = new HtmlEditorSupport(this);
+            htmlEditorSupport = HtmlEditorSupport.createInstance(this);
         }
         return htmlEditorSupport;
     }
