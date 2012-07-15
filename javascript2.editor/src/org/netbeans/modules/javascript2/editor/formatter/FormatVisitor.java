@@ -299,7 +299,7 @@ public class FormatVisitor extends NodeVisitor {
                 appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
 
                 // mark the within parenthesis places
-                
+
                 // remove original paren marks
                 FormatToken mark = leftBrace.next();
                 assert mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark.getKind();
@@ -641,6 +641,8 @@ public class FormatVisitor extends NodeVisitor {
                     }
                     lastVarNode = next;
                 }
+
+                assert lastVarNode instanceof VarNode;
 
                 Token token = getNextNonEmptyToken(getFinish(lastVarNode) - 1);
                 if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
