@@ -81,7 +81,9 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
     "edit.attribute.tooltip=You can edit the value or delete the attribute by setting an empty value",
-    "new.attribute.tooltip=You can add the attribute by setting its value"
+    "new.attribute.tooltip=You can add the attribute by setting its value",
+    "element.existing.attributes.title=Existing Attributes",
+    "element.possible.attributes.title=Possible Attributes"
 })
 public class HtmlElementProperties {
 
@@ -129,19 +131,46 @@ public class HtmlElementProperties {
 
         @Override
         public PropertySet[] getPropertySets() {
-            PropertySet[] sets = new PropertySet[]{new OpenTagPropertySet(res, openTag)};
+            PropertySet[] sets = new PropertySet[]{
+                new ExistingPropertiesPropertySet(res, openTag),
+                new PossiblePropertiesPropertySet(res, openTag)
+            };
             return sets;
         }
     }
 
-    private static class OpenTagPropertySet extends PropertySet {
+    private static class ExistingPropertiesPropertySet extends PropertySet {
 
         private OpenTag openTag;
         private HtmlParserResult res;
 
-        public OpenTagPropertySet(HtmlParserResult res, OpenTag openTag) {
+        public ExistingPropertiesPropertySet(HtmlParserResult res, OpenTag openTag) {
             this.res = res;
             this.openTag = openTag;
+            setName(Bundle.element_existing_attributes_title());
+        }
+
+        @Override
+        public Property<String>[] getProperties() {
+            Snapshot s = res.getSnapshot();
+            Document doc = s.getSource().getDocument(false);
+            Collection<Property> props = new ArrayList<Property>();
+            for (Attribute a : openTag.attributes()) {
+                props.add(new AttributeProperty(doc, s, a));
+            }
+            return props.toArray(new Property[]{});
+        }
+    }
+    
+    private static class PossiblePropertiesPropertySet extends PropertySet {
+
+        private OpenTag openTag;
+        private HtmlParserResult res;
+
+        public PossiblePropertiesPropertySet(HtmlParserResult res, OpenTag openTag) {
+            this.res = res;
+            this.openTag = openTag;
+            setName(Bundle.element_possible_attributes_title());
         }
 
         @Override
@@ -152,10 +181,6 @@ public class HtmlElementProperties {
             Collection<String> existingAttrNames = new HashSet<String>();
             for (Attribute a : openTag.attributes()) {
                 existingAttrNames.add(a.name().toString().toLowerCase(Locale.ENGLISH));
-                props.add(new AttributeProperty(doc, s, a));
-            }
-            if(!existingAttrNames.isEmpty()) {
-                props.add(new SeparatorHackProperty());
             }
             HtmlModel model = HtmlModelFactory.getModel(res.getHtmlVersion());
             HtmlTag tagModel = model.getTag(openTag.name().toString());
@@ -175,20 +200,6 @@ public class HtmlElementProperties {
             }
 
             return props.toArray(new Property[]{});
-        }
-    }
-
-    private static class SeparatorHackProperty extends PropertySupport.ReadOnly<String> {
-
-        private static final String EMPTY = ""; //huh that's really nice :-)
-
-        public SeparatorHackProperty() {
-            super(EMPTY, String.class, EMPTY, "All the properties below are not declared in the selected rule"); //XXX no i18n since the is likely to be removed
-        }
-
-        @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return EMPTY;
         }
     }
 
