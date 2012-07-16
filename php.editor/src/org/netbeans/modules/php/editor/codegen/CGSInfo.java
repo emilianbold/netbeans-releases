@@ -274,10 +274,15 @@ public class CGSInfo {
                     Variable variable = singleFieldDeclaration.getName();
                     if (variable != null && variable.getName() instanceof Identifier) {
                         String name = ((Identifier) variable.getName()).getName();
-                        getProperties().add(new Property(name, node.getModifier()));
+                        getProperties().add(new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration)));
                     }
                 }
             }
+        }
+
+        private String getPropertyType(final ASTNode node) {
+            String result = ""; //NOI18N
+            return result;
         }
 
         @Override
