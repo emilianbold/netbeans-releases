@@ -42,9 +42,6 @@
 
 package org.netbeans.modules.c2c.tasks;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,6 +57,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
@@ -68,6 +66,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.c2c.tasks.spi.C2CData;
+import org.netbeans.modules.c2c.tasks.spi.C2CExtender;
 import org.netbeans.modules.c2c.tasks.util.C2CUtil;
 
 /**
@@ -84,7 +83,7 @@ public class C2CTest extends NbTestCase  {
     
     static NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
     private TaskRepository repository;
-    private CfcRepositoryConnector cfcrc;
+    private AbstractRepositoryConnector cfcrc;
     private TaskRepositoryManager trm;
 
     public static Test suite() {
@@ -106,9 +105,9 @@ public class C2CTest extends NbTestCase  {
         super.setUp();
         
         trm = new TaskRepositoryManager();
-        cfcrc = new CfcRepositoryConnector();
+        cfcrc = C2CExtender.create();
         trlf = new TaskRepositoryLocationFactory();
-        cfcrc.getClientManager().setTaskRepositoryLocationFactory(trlf);
+        C2CExtender.assignTaskRepositoryLocationFactory(cfcrc, trlf);
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         repository = new TaskRepository(cfcrc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
@@ -204,38 +203,17 @@ public class C2CTest extends NbTestCase  {
         C2CData clientData = DummyUtils.getClientData(repository);
         
         TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.getMappedAttribute(CfcTaskAttribute.SUMMARY.getKey());
+        TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.SUMMARY);
         ta.setValue(summary);
-        ta = rta.getMappedAttribute(CfcTaskAttribute.DESCRIPTION.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.DESCRIPTION);
         ta.setValue(desc);
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.TASK_TYPE.getKey());
-        ta.setValue(clientData.getTaskTypes().iterator().next());
-        
         Product product = clientData.getProducts().get(0);
-        ta = rta.getMappedAttribute(CfcTaskAttribute.PRODUCT.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.PRODUCT);
         ta.setValue(product.getName());
         
-        ta = rta.getMappedAttribute(CfcTaskAttribute.COMPONENT.getKey());
+        ta = rta.getMappedAttribute(TaskAttribute.COMPONENT);
         ta.setValue(product.getComponents().get(0).getName());
-        
-        ta = rta.getMappedAttribute(CfcTaskAttribute.MILESTONE.getKey());
-        ta.setValue(product.getMilestones().get(0).getValue());
-        
-        ta = rta.getMappedAttribute(CfcTaskAttribute.ITERATION.getKey());
-        Collection<String> c = clientData.getActiveIterations();
-        if(!c.isEmpty()) {
-            ta.setValue(c.iterator().next());
-        }
-        
-        ta = rta.getMappedAttribute(CfcTaskAttribute.PRIORITY.getKey());
-        ta.setValue(clientData.getPriorities().get(0).getValue());
-        
-        ta = rta.getMappedAttribute(CfcTaskAttribute.SEVERITY.getKey());
-        ta.setValue(clientData.getSeverities().get(0).getValue());
-        
-        ta = rta.getMappedAttribute(CfcTaskAttribute.STATUS.getKey());
-        ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
         
         RepositoryResponse rr = C2CUtil.postTaskData(cfcrc, repository, data);
         String taskId = rr.getTaskId();

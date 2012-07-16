@@ -42,24 +42,16 @@
 
 package org.netbeans.modules.c2c.tasks;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcExtensions;
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
-import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
-import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
-import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
-import com.tasktop.c2c.server.tasks.domain.Product;
-import java.util.Collection;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 
 /**
@@ -89,93 +81,12 @@ public class TestUtil {
         throw exception;
     }
 
-    public static TaskData createTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, String summary, String desc, String typeName) throws MalformedURLException, CoreException {
-        TaskAttributeMapper attributeMapper = cfcrc.getTaskDataHandler().getAttributeMapper(repository);
-        TaskData data = new TaskData(attributeMapper, repository.getConnectorKind(), repository.getRepositoryUrl(), "");
-        
-        ICfcClient client = cfcrc.getClientManager().getClient(repository);
-        client.updateRepositoryConfiguration(new NullProgressMonitor());
-        CfcClientData clientData = client.getCalmClientData();
-        
-        TaskAttribute rta = data.getRoot();
-        TaskAttribute ta = rta.createMappedAttribute(TaskAttribute.USER_ASSIGNED);
-        ta = rta.createMappedAttribute(TaskAttribute.SUMMARY);
-        ta.setValue(summary);
-        ta = rta.createMappedAttribute(TaskAttribute.DESCRIPTION);
-        ta.setValue(desc);
-        
-        ta = rta.createMappedAttribute(CfcTaskAttribute.TASK_TYPE.getKey());
-        ta.setValue(clientData.getTaskTypes().iterator().next());
-        
-        Product product = clientData.getProducts().get(0);
-        ta = rta.createMappedAttribute(CfcTaskAttribute.PRODUCT.getKey());
-        ta.setValue(product.getName());
-        
-        ta = rta.createMappedAttribute(CfcTaskAttribute.COMPONENT.getKey());
-        ta.setValue(product.getComponents().get(0).getName());
-        
-        ta = rta.createMappedAttribute(CfcTaskAttribute.MILESTONE.getKey());
-        ta.setValue(product.getMilestones().get(0).getValue());
-        
-        ta = rta.createMappedAttribute(CfcTaskAttribute.ITERATION.getKey());
-        Collection<String> c = clientData.getActiveIterations();
-        if(!c.isEmpty()) {
-            ta.setValue(c.iterator().next());
-        }
-        
-        ta = rta.createMappedAttribute(CfcTaskAttribute.PRIORITY.getKey());
-        ta.setValue(clientData.getPriorities().get(0).getValue());
-        
-        ta = rta.createMappedAttribute(CfcTaskAttribute.SEVERITY.getKey());
-        ta.setValue(clientData.getSeverities().get(0).getValue());
-        
-        ta = rta.createMappedAttribute(CfcTaskAttribute.STATUS.getKey());
-        ta.setValue(clientData.getStatusByValue("UNCONFIRMED").getValue());
-        
-        ta = rta.createMappedAttribute(CfcTaskAttribute.RESOLUTION.getKey());
-//        ta.setValue(clientData.getResolutions("UNCONFIRMED").getValue());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.DUPLICATE_OF.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.DUEDATE.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.FOUND_IN_RELEASE.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.TAGS.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.EXTERNAL_LINKS.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.OWNER.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.VERSION.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.ESTIMATE_WITH_UNITS.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.REPORTER.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.CC.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.NEWCC.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.PARENT.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.SUBTASK.getKey());
-        ta = rta.createMappedAttribute(CfcTaskAttribute.NEWCOMMENT.getKey());
-        
-        
-//        ta.setValue(clientData.get().get(0).getValue());
-        
-//        ta = rta.createMappedAttribute(BugzillaAttribute.PRODUCT.getKey());
-//        ta.setValue(TEST_PROJECT);
-//
-//        String platform = client.getRepositoryConfiguration().getPlatforms().get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.REP_PLATFORM.getKey());
-//        ta.setValue(platform);
-//
-//        String version = client.getRepositoryConfiguration().getVersions(TEST_PROJECT).get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.VERSION.getKey());
-//        ta.setValue(version);
-//
-//        String component = client.getRepositoryConfiguration().getComponents(TEST_PROJECT).get(0);
-//        ta = rta.createMappedAttribute(BugzillaAttribute.COMPONENT.getKey());
-//        ta.setValue(component);
-
-        return data;
-    }
-
-    public static RepositoryResponse postTaskData(CfcRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
+    public static RepositoryResponse postTaskData(AbstractRepositoryConnector cfcrc, TaskRepository repository, TaskData data) throws CoreException {
         Set<TaskAttribute> attrs = new HashSet<TaskAttribute>(); // XXX what is this for
         return  cfcrc.getTaskDataHandler().postTaskData(repository, data, attrs, new NullProgressMonitor());
     }
 
-    public static TaskData getTaskData(CfcRepositoryConnector cfcrc, TaskRepository taskRepository, String id) throws CoreException {
+    public static TaskData getTaskData(AbstractRepositoryConnector cfcrc, TaskRepository taskRepository, String id) throws CoreException {
         return cfcrc.getTaskData(taskRepository, id, new NullProgressMonitor());
     }
 
