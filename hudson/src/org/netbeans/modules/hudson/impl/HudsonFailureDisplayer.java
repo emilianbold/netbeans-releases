@@ -168,10 +168,13 @@ public class HudsonFailureDisplayer extends BuilderConnector.FailureDisplayer {
         StringBuilder buf;
         Hyperlinker hyperlinker;
         TestSession session;
+        Project project;
 
         private TestSession createTestSession(String displayName) {
 
-            Project project = new Project() {
+            // Store reference to project here, as reference in test session
+            // is weak.
+            this.project = new Project() {
                 public @Override
                 FileObject getProjectDirectory() {
                     return FileUtil.createMemoryFileSystem().getRoot();
