@@ -160,6 +160,7 @@
                 <friend>org.cakephp.netbeans</friend>
                 <friend>org.netbeans.modules.hudson.php</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
+                <friend>org.netbeans.modules.php.composer</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.doctrine2</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
