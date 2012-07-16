@@ -529,71 +529,95 @@ public class DOM {
         }
     }
 
-    synchronized void handleSetChildNodes(JSONObject params) {
-        int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
-        Node parent = nodes.get(parentId);
-        JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
-        for (Object child : children) {
-            Node node = new Node((JSONObject)child);
-            parent.addChild(node);
+    void handleSetChildNodes(JSONObject params) {
+        Node parent;
+        synchronized (this) {
+            int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
+            parent = nodes.get(parentId);
+            JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
+            for (Object child : children) {
+                Node node = new Node((JSONObject)child);
+                parent.addChild(node);
+            }
+            updateNodesMap(parent);
         }
-        updateNodesMap(parent);
         notifyChildNodesSet(parent);
     }
 
-    synchronized void handleChildNodeInserted(JSONObject params) {
-        int parentId = ((Number)params.get("parentNodeId")).intValue(); // NOI18N
-        Node parent = nodes.get(parentId);
-        int previousNodeId = ((Number)params.get("previousNodeId")).intValue(); // NOI18N
-        Node previousNode = nodes.get(previousNodeId);
-        JSONObject childData = (JSONObject)params.get("node"); // NOI18N
-        Node child = new Node(childData);
-        updateNodesMap(child);
-        parent.insertChild(child, previousNode);
+    void handleChildNodeInserted(JSONObject params) {
+        Node parent;
+        Node child;
+        synchronized (this) {
+            int parentId = ((Number)params.get("parentNodeId")).intValue(); // NOI18N
+            parent = nodes.get(parentId);
+            int previousNodeId = ((Number)params.get("previousNodeId")).intValue(); // NOI18N
+            Node previousNode = nodes.get(previousNodeId);
+            JSONObject childData = (JSONObject)params.get("node"); // NOI18N
+            child = new Node(childData);
+            updateNodesMap(child);
+            parent.insertChild(child, previousNode);
+        }
         notifyChildNodeInserted(parent, child);
     }
 
-    synchronized void handleChildNodeRemoved(JSONObject params) {
-        int parentId = ((Number)params.get("parentNodeId")).intValue(); // NOI18N
-        Node parent = nodes.get(parentId);
-        int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
-        Node child = nodes.get(nodeId);
-        parent.removeChild(child);
-        nodes.remove(nodeId);
+    void handleChildNodeRemoved(JSONObject params) {
+        Node parent;
+        Node child;
+        synchronized (this) {
+            int parentId = ((Number)params.get("parentNodeId")).intValue(); // NOI18N
+            parent = nodes.get(parentId);
+            int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
+            child = nodes.get(nodeId);
+            parent.removeChild(child);
+            nodes.remove(nodeId);
+        }
         notifyChildNodeRemoved(parent, child);
     }
 
-    synchronized void handleDocumentUpdated() {
-        nodes.clear();
-        documentNode = null;
+    void handleDocumentUpdated() {
+        synchronized (this) {
+            nodes.clear();
+            documentNode = null;
+        }
         notifyDocumentUpdated();
     }
 
-    synchronized void handleAttributeModified(JSONObject params) {
-        int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
-        Node node = nodes.get(nodeId);
-        if (node == null) {
-            return;
+    void handleAttributeModified(JSONObject params) {
+        Node node;
+        String name;
+        synchronized (this) {
+            int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
+            node = nodes.get(nodeId);
+            if (node == null) {
+                return;
+            }
+            name = (String)params.get("name"); // NOI18N
+            String value = (String)params.get("value"); // NOI18N
+            node.setAttribute(name, value);
         }
-        String name = (String)params.get("name"); // NOI18N
-        String value = (String)params.get("value"); // NOI18N
-        node.setAttribute(name, value);
         notifyAttributeModified(node, name);
     }
 
-    synchronized void handleAttributeRemoved(JSONObject params) {
-        int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
-        Node node = nodes.get(nodeId);
-        String name = (String)params.get("name"); // NOI18N
-        node.removeAttribute(name);
+    void handleAttributeRemoved(JSONObject params) {
+        Node node;
+        String name;
+        synchronized (this) {
+            int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
+            node = nodes.get(nodeId);
+            name = (String)params.get("name"); // NOI18N
+            node.removeAttribute(name);
+        }
         notifyAttributeRemoved(node, name);
     }
 
-    synchronized void handleCharacterDataModified(JSONObject params) {
-        int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
-        Node node = nodes.get(nodeId);
-        String characterData = (String)params.get("characterData"); // NOI18N
-        node.setNodeValue(characterData);
+    void handleCharacterDataModified(JSONObject params) {
+        Node node;
+        synchronized (this) {
+            int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
+            node = nodes.get(nodeId);
+            String characterData = (String)params.get("characterData"); // NOI18N
+            node.setNodeValue(characterData);
+        }
         notifyCharacterDataModified(node);
     }
 
