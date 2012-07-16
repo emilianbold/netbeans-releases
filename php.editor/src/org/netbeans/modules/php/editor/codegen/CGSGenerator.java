@@ -222,7 +222,7 @@ public class CGSGenerator implements CodeGenerator {
                         setters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName)
                                 .replace(UP_FIRST_LETTER_PROPERTY, methodName)
                                 .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
-                                .replace(PARAM_TYPE, type));
+                                .replace(PARAM_TYPE, type.isEmpty() ? type : property.getTypeForTemplate()));
                         setters.append(NEW_LINE);
                     }
                 }
@@ -273,7 +273,7 @@ public class CGSGenerator implements CodeGenerator {
                         gettersAndSetters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName)
                                 .replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName))
                                 .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
-                                .replace(PARAM_TYPE, type));
+                                .replace(PARAM_TYPE, type.isEmpty() ? type : property.getTypeForTemplate()));
                         gettersAndSetters.append(NEW_LINE);
                     }
                 }

@@ -78,6 +78,10 @@ public class Property {
         return type;
     }
 
+    public String getTypeForTemplate() {
+        return getType() + " "; //NOI18N
+    }
+
     public boolean isSelected() {
         return selected;
     }
