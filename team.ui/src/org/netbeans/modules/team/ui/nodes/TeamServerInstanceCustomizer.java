@@ -269,6 +269,10 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
 
 
     private static String urlValid(String s) {
+        if(Boolean.getBoolean("team.c2c.mockClient")) {
+            // for mock accept whatever is provided
+            return null;
+        }
         if (!s.startsWith("https://")) { //NOI18N
             return NbBundle.getMessage(TeamServerInstanceCustomizer.class, "ERR_NotHttps");
         }
