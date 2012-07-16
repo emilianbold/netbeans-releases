@@ -242,10 +242,7 @@ public class RuleNode extends AbstractNode {
                     if (propertySet == null) {
                         propertySet = new PropertyCategoryPropertySet(cat, Collections.<Declaration>emptyList());
                         sets.add(propertySet);
-                    } else {
-                        //hack: add a separator - but only in categorized view
-                        propertySet.properties.add(new SeparatorHackProperty());
-                    }
+                    } 
                     //now add all the remaining properties
                     List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(cat.getProperties());
 
@@ -318,20 +315,6 @@ public class RuleNode extends AbstractNode {
         }
     }
 
-    private static class SeparatorHackProperty extends PropertySupport.ReadOnly<String> {
-
-        private static final String EMPTY = ""; //huh that's really nice :-)
-
-        public SeparatorHackProperty() {
-            super(EMPTY, String.class, EMPTY, "All the properties below are not declared in the selected rule"); //XXX no i18n since the is likely to be removed
-        }
-
-        @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return EMPTY;
-        }
-    }
-
     private class PropertyDefinitionProperty extends PropertySupport<String> {
 
         private PropertyDefinition def;
@@ -376,6 +359,15 @@ public class RuleNode extends AbstractNode {
                     declaration.getProperty().getContent().toString(),
                     null, true, getRule().isValid());
             this.declaration = declaration;
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return new StringBuilder()
+                    .append("<b>")
+                    .append(declaration.getProperty().getContent())
+                    .append("</b>")
+                    .toString();
         }
 
         @Override
