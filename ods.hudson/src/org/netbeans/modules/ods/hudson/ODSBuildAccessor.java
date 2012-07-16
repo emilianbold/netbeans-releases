@@ -100,7 +100,6 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         if (hi == null) {
             return Collections.emptyList();
         }
-        odsBuilderConnector.setHudsonInstance(hi);
         List<BuildHandle> buildHandles = new LinkedList<BuildHandle>();
         Collection<HudsonJob> jobs = waitForJobs(hi);
         for (HudsonJob job : jobs) {

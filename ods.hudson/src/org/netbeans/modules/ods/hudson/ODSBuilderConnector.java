@@ -55,7 +55,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -71,7 +70,6 @@ import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -86,15 +84,6 @@ public class ODSBuilderConnector extends BuilderConnector {
     private static final Logger LOG = Logger.getLogger(
             ODSBuilderConnector.class.getName());
     private ProjectHandle<ODSProject> projectHandle;
-    private HudsonInstance hudsonInstance;
-
-    public HudsonInstance getHudsonInstance() {
-        return hudsonInstance;
-    }
-
-    public void setHudsonInstance(HudsonInstance hudsonInstance) {
-        this.hudsonInstance = hudsonInstance;
-    }
 
     public ODSBuilderConnector(ProjectHandle<ODSProject> projectHandle) {
         this.projectHandle = projectHandle;
