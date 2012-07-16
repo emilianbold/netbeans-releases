@@ -362,6 +362,14 @@ public final class DiscoveryManagerImpl {
         }
     }
 
+    public static void writeDefaultVersionedConfigurations(Project lastSelectedProject) {
+        ConfigurationDescriptorProvider pdp = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        if (makeConfigurationDescriptor != null) {
+            makeConfigurationDescriptor.writeDefaultVersionedConfigurations();
+        }
+    }
+
     public static HashMap<String, Item> initNormalizedNames(Project makeProject) {
         HashMap<String, Item> normalizedItems = new HashMap<String, Item>();
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
