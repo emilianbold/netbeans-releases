@@ -43,15 +43,12 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
-import java.awt.Image;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -68,7 +65,6 @@ import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
 import org.netbeans.modules.css.visual.filters.SortActionSupport;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -125,6 +121,8 @@ public class RuleEditorPanel extends JPanel {
     private boolean showAllProperties, showCategories;
     private SortMode sortMode;
     
+    private RuleNode node;
+    
     private Collection<RuleEditorListener> LISTENERS
             = Collections.synchronizedCollection(new ArrayList<RuleEditorListener>());
     
@@ -132,6 +130,8 @@ public class RuleEditorPanel extends JPanel {
      * Creates new form RuleEditorPanel
      */
     public RuleEditorPanel() {
+        node = new RuleNode(this);
+        
         sortMode = SortMode.NATURAL;
         
         filters = new RuleEditorFilters( this );
@@ -164,6 +164,7 @@ public class RuleEditorPanel extends JPanel {
         }
         sheet.setPopupEnabled(false);
         sheet.setDescriptionAreaVisible(false);
+        sheet.setNodes(new Node[]{node});
         
         add(sheet, BorderLayout.CENTER);
         
@@ -178,55 +179,70 @@ public class RuleEditorPanel extends JPanel {
         setShowAllProperties(filters.getInstance().isSelected(RuleEditorFilters.SHOW_ALL_PROPERTIES));
     }
 
-    private void resetSheetNode() {
-        sheet.setNodes(new Node[]{new RuleNode(model, rule, showAllProperties, showCategories, sortMode)});
-    }
-    
-    public void setSortMode(SortMode mode) {
-        this.sortMode = mode;
-        
-        resetSheetNode();
-    }
-
     public SortMode getSortMode() {
         return sortMode;
+    }
+
+    public void setSortMode(SortMode mode) {
+        if(this.sortMode == mode) {
+            return ; //no change
+        }
+        this.sortMode = mode;
+        node.fireContextChanged();
+    }
+
+    public boolean isShowAllProperties() {
+        return showAllProperties;
     }
 
     public void setShowAllProperties(boolean showAllProperties) {
         if(this.showAllProperties == showAllProperties) {
             return ; //no change
         }
-        
         this.showAllProperties = showAllProperties;
-        
-        if(rule != null) {
-            resetSheetNode();
-        }
+        node.fireContextChanged();
+    }
+
+    public boolean isShowCategories() {
+        return showCategories;
     }
 
     public void setShowCategories(boolean showCategories) {
         if(this.showCategories == showCategories) {
             return ; //no change
         }
-        
         this.showCategories = showCategories;
-        
-        if(rule != null) {
-            //re-set the node
-             resetSheetNode();
-        }
+        node.fireContextChanged();
+    }
+
+    public Model getModel() {
+        return model;
     }
     
     public void setModel(Model model) {
+        if(this.model == model) {
+            return ; //no change
+        }
         this.model = model;
         this.rule = null;
+        
+        //do not fire change event since it is required
+        //to call setRule(...) subsequently which will 
+        //fire the change even
+    }
+
+    public Rule getRule() {
+        return rule;
     }
     
-    public void setRule(Rule r) {
+    public void setRule(final Rule rule) {
         if(model == null) {
             throw new IllegalStateException("you must call setModel(Model model) beforehand!"); //NOI18N
         }
-        this.rule = r;
+        if(this.rule == rule) {
+            return; //no change
+        }
+        this.rule = rule;
         
         //check if the rule is valid
         if(!rule.isValid()) {
@@ -243,7 +259,8 @@ public class RuleEditorPanel extends JPanel {
             northPanel.setBackground(defaultPanelBackground);
         }
         
-        resetSheetNode();
+        node.fireContextChanged();
+        
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
         model.runReadTask(new Model.ModelTask() {
             @Override
@@ -256,8 +273,8 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setNoRuleState() {
-        sheet.setNodes(null);
-        //TODO - show some 'no rule selected' message
+        this.rule = null;
+        node.fireContextChanged();
     }
     
     /**

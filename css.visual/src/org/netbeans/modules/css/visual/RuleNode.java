@@ -48,12 +48,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.properties.Properties;
@@ -68,7 +67,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  * A node representing a CSS rule with no children. The node properties
@@ -104,20 +102,41 @@ public class RuleNode extends AbstractNode {
     };
     
     private PropertySet[] propertySets;
-    private Model model;
-    private Rule rule;
-    private boolean showAllProperties, showCategories;
-    private SortMode sortMode;
-
-    public RuleNode(Model model, Rule rule, boolean showAllProperties, boolean showCategories, SortMode sortMode) {
-        super(new RuleChildren(), Lookups.fixed(rule));
-        this.model = model;
-        this.rule = rule;
-        this.showAllProperties = showAllProperties;
-        this.showCategories = showCategories;
-        this.sortMode = sortMode;
+    private RuleEditorPanel panel;
+    
+    public RuleNode(RuleEditorPanel panel) {
+        super(new RuleChildren());
+        this.panel = panel;
     }
 
+    public Model getModel() {
+        return panel.getModel();
+    }
+
+    public Rule getRule() {
+        return panel.getRule();
+    }
+
+    public boolean isShowAllProperties() {
+        return panel.isShowAllProperties();
+    }
+
+    public boolean isShowCategories() {
+        return panel.isShowCategories();
+    }
+
+    public SortMode getSortMode() {
+        return panel.getSortMode();
+    }
+
+    //called by the RuleEditorPanel when any of the properties affecting 
+    //the PropertySet-s generation changes.
+    void fireContextChanged() {
+        final PropertySet[] old = getPropertySets();
+        propertySets = createPropertySets();
+        firePropertySetsChange(old, propertySets);
+    }
+    
     @Override
     public synchronized PropertySet[] getPropertySets() {
         if (propertySets == null) {
@@ -132,13 +151,16 @@ public class RuleNode extends AbstractNode {
      * @return property sets of the node.
      */
     private PropertySet[] createPropertySets() {
+        if(getModel() == null || getRule() == null) {
+            return new PropertySet[]{};
+        }
         Collection<PropertySet> sets = new ArrayList<PropertySet>();
-        List<Declaration> declarations = rule.getDeclarations() == null 
+        List<Declaration> declarations = getRule().getDeclarations() == null 
                 ? Collections.<Declaration>emptyList()
-                : rule.getDeclarations().getDeclarations();
+                : getRule().getDeclarations().getDeclarations();
         Map<PropertyCategory, PropertyCategoryPropertySet> propertySetsMap;
         
-        if (showCategories) {
+        if (isShowCategories()) {
             //create property sets for property categories
 
             Map<PropertyCategory, List<Declaration>> categoryToDeclarationsMap = new EnumMap<PropertyCategory, List<Declaration>>(PropertyCategory.class);
@@ -165,7 +187,7 @@ public class RuleNode extends AbstractNode {
             for (Entry<PropertyCategory, List<Declaration>> entry : categoryToDeclarationsMap.entrySet()) {
                 
                 List<Declaration> categoryDeclarations = entry.getValue();
-                if (sortMode == SortMode.ALPHABETICAL) {
+                if (getSortMode() == SortMode.ALPHABETICAL) {
                     Collections.sort(categoryDeclarations, DECLARATIONS_COMPARATOR);
                 }
                 
@@ -195,7 +217,7 @@ public class RuleNode extends AbstractNode {
                 }
             }
 
-            if (sortMode == SortMode.ALPHABETICAL) {
+            if (getSortMode() == SortMode.ALPHABETICAL) {
                 Collections.sort(filtered, DECLARATIONS_COMPARATOR);
             }
 
@@ -210,7 +232,7 @@ public class RuleNode extends AbstractNode {
             propertySetsMap = Collections.singletonMap(PropertyCategory.DEFAULT, set);
         }
         
-        if (showAllProperties) {
+        if (isShowAllProperties()) {
                 //Show all properties
                 //
                 //add the existing - unused properties separator to the already added caregories
@@ -248,6 +270,7 @@ public class RuleNode extends AbstractNode {
     }
 
     public void applyModelChanges() {
+        final Model model = getModel();
         final NbEditorDocument doc = (NbEditorDocument) model.getLookup().lookup(Document.class);
         if (doc == null) {
             return;
@@ -315,7 +338,7 @@ public class RuleNode extends AbstractNode {
         private static final String EMPTY = "";
 
         public PropertyDefinitionProperty(PropertyDefinition def) {
-            super(def.getName(), String.class, def.getName(), Bundle.rule_properties_add_declaration_tooltip(), true, rule.isValid());
+            super(def.getName(), String.class, def.getName(), Bundle.rule_properties_add_declaration_tooltip(), true, getRule().isValid());
             this.def = def;
         }
 
@@ -327,14 +350,14 @@ public class RuleNode extends AbstractNode {
         @Override
         public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             //add a new declaration to the rule
-            Declarations declarations = rule.getDeclarations();
+            Declarations declarations = getRule().getDeclarations();
 
-            ElementFactory factory = model.getElementFactory();
+            ElementFactory factory = getModel().getElementFactory();
 
             org.netbeans.modules.css.model.api.Property property = factory.createProperty(def.getName());
             Expression expr = factory.createExpression(val);
             PropertyValue value = factory.createPropertyValue(expr);
-            Declaration newDeclaration = model.getElementFactory().createDeclaration(property, value, false);
+            Declaration newDeclaration = factory.createDeclaration(property, value, false);
 
             declarations.addDeclaration(newDeclaration);
 
@@ -351,7 +374,7 @@ public class RuleNode extends AbstractNode {
             super(declaration.getProperty().getContent().toString(),
                     String.class,
                     declaration.getProperty().getContent().toString(),
-                    null, true, rule.isValid());
+                    null, true, getRule().isValid());
             this.declaration = declaration;
         }
 
