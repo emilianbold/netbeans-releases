@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.css.visual;
 
-import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +55,7 @@ import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
+import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.*;
 import org.openide.util.RequestProcessor;
@@ -137,7 +137,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         if (cancelled) {
             return;
         }
-
+        
         final RuleEditorController controller = ruleEditorTC.getRuleEditorController();
 
         final int astOffset = result.getSnapshot().getEmbeddedOffset(documentOffset);

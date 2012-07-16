@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual.api;
 
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
@@ -87,6 +88,22 @@ import org.openide.util.Parameters;
  * @author marekfukala
  */
 public final class RuleEditorController {
+    
+    /**
+     * Property change support event keys.
+     */
+    public enum PropertyNames {
+        /**
+         * Fired when one calls {@link RuleEditorController#setModel(org.netbeans.modules.css.model.api.Model)}
+         */
+        MODEL_SET,
+        /**
+         * Fired when one calls {@link RuleEditorController#setRule(org.netbeans.modules.css.model.api.Rule)}
+         */
+        RULE_SET
+        
+        //TODO add more
+    }
     
     private RuleEditorPanel peer;
 
@@ -175,23 +192,20 @@ public final class RuleEditorController {
         peer.setShowCategories(enabled);
     }
     
-    
     /**
-     * Registers an instance of {@link RuleEditorListener} to the component.
+     * Registers an instance of {@link PropertyChangeListener} to the component.
      * @param listener
-     * @return true if the listeners list changed
      */
-    public boolean addRuleEditorListener(RuleEditorListener listener) {
-        return peer.addRuleEditorListener(listener);
+    public void addRuleEditorListener(PropertyChangeListener listener) {
+        peer.addRuleEditorListener(listener);
     }
     
     /**
-     * Unregisters an instance of {@link RuleEditorListener} from the component.
+     * Unregisters an instance of {@link PropertyChangeListener} from the component.
      * @param listener
-     * @return true if the listeners list changed (listener removed)
      */
-    public boolean removeRuleEditorListener(RuleEditorListener listener) {
-        return peer.removeRuleEditorListener(listener);
+    public void removeRuleEditorListener(PropertyChangeListener listener) {
+        peer.removeRuleEditorListener(listener);
     }
     
     

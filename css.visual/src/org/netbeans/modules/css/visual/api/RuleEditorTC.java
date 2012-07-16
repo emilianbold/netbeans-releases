@@ -42,46 +42,60 @@
 package org.netbeans.modules.css.visual.api;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.css.model.api.Model;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
  * Css Rule Editor {@link TopComponent}.
- * 
- * One may manipulate the content of this component by obtaining an instance
- * of {@link RuleEditorController} via {@link #getRuleEditorController() } method.
- * 
+ *
+ * One may manipulate the content of this component by obtaining an instance of
+ * {@link RuleEditorController} via {@link #getRuleEditorController() } method.
+ *
  * @see RuleEditorController
- * 
+ *
  * @author mfukala@netbeans.org
  */
 @TopComponent.Description(
         preferredID = RuleEditorTC.ID,
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS,
-        iconBase="org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
+persistenceType = TopComponent.PERSISTENCE_ALWAYS,
+iconBase = "org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
 @TopComponent.Registration(
         mode = "properties", // NOI18N
-        openAtStartup = false)
+openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
-        id = "org.netbeans.modules.css.visual.api.RuleEditorTC.OpenAction") // NOI18N
+id = "org.netbeans.modules.css.visual.api.RuleEditorTC.OpenAction") // NOI18N
 @ActionReference(
         path = "Menu/Window/Navigator", // NOI18N
-        position = 900)
+position = 900)
 @TopComponent.OpenActionRegistration(
         displayName = "#CTL_RuleEditorAction", // NOI18N
-        preferredID = RuleEditorTC.ID)
+preferredID = RuleEditorTC.ID)
 @NbBundle.Messages({
     "CTL_RuleEditorAction=Rule Editor", // NOI18N
     "CTL_RuleEditorTC=Rule Editor", // NOI18N
     "HINT_RuleEditorTC=This window is an editor of CSS rule properties" // NOI18N
-}) 
-public final class RuleEditorTC extends TopComponent {
-    /** TopComponent ID. */
+})
+public final class RuleEditorTC extends TopComponent implements PropertyChangeListener {
+
+    /**
+     * TopComponent ID.
+     */
     public static final String ID = "RuleEditorTC"; // NOI18N
-    /** Panel shown in this {@code TopComponent}. */
+    /**
+     * Panel shown in this {@code TopComponent}.
+     */
     private RuleEditorController controller;
 
     public RuleEditorTC() {
@@ -91,19 +105,48 @@ public final class RuleEditorTC extends TopComponent {
     }
 
     /**
-     * Returns the default {@link RuleEditorController} associated with this rule editor top component.
+     * Returns the default {@link RuleEditorController} associated with this
+     * rule editor top component.
      */
     public RuleEditorController getRuleEditorController() {
         return controller;
     }
-    
+
     /**
      * Initializes the components in this {@code TopComponent}.
      */
     private void initComponents() {
         setLayout(new BorderLayout());
         controller = RuleEditorController.createInstance();
+        controller.addRuleEditorListener(this);
         add(controller.getRuleEditorComponent(), BorderLayout.CENTER);
     }
 
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        //XXX activated nodes workaround: if one sets the model, the top component
+        //sets the activated node from the peer dataobject.
+        if (RuleEditorController.PropertyNames.MODEL_SET.name().equals(evt.getPropertyName())) {
+            Model model = (Model) evt.getNewValue();
+            if (model != null) {
+                FileObject file = model.getLookup().lookup(FileObject.class);
+                if (file != null) {
+                    try {
+                        DataObject dobj = DataObject.find(file);
+                        final Node node = dobj.getLookup().lookup(Node.class);
+                        if (node != null) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setActivatedNodes(new Node[]{node});
+                                }
+                            });
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+    }
 }

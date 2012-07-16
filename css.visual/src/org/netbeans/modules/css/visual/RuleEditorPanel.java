@@ -43,10 +43,9 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -57,7 +56,7 @@ import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.css.visual.api.RuleEditorListener;
+import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.css.visual.filters.FilterSubmenuAction;
 import org.netbeans.modules.css.visual.filters.FiltersManager;
@@ -73,7 +72,7 @@ import org.openide.util.NbBundle;
  * the client's UI.
  * 
  * It can be controlled and observed via {@link RuleEditorPanelController} 
- * and {@link RuleEditorListener}.
+ * and {@link PropertyChangeListener}.
  *
  * Open questions/todo-s:
  * -----------------------
@@ -123,9 +122,7 @@ public class RuleEditorPanel extends JPanel {
     
     private RuleNode node;
     
-    private Collection<RuleEditorListener> LISTENERS
-            = Collections.synchronizedCollection(new ArrayList<RuleEditorListener>());
-    
+    private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     /**
      * Creates new form RuleEditorPanel
      */
@@ -223,8 +220,14 @@ public class RuleEditorPanel extends JPanel {
         if(this.model == model) {
             return ; //no change
         }
+        Model oldModel = this.model;
+        Rule oldRule = this.rule;
+        
         this.model = model;
         this.rule = null;
+        
+        CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
+        CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, this.rule);
         
         //do not fire change event since it is required
         //to call setRule(...) subsequently which will 
@@ -242,7 +245,10 @@ public class RuleEditorPanel extends JPanel {
         if(this.rule == rule) {
             return; //no change
         }
+        Rule old = this.rule;
         this.rule = rule;
+        
+        CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, this.rule);
         
         //check if the rule is valid
         if(!rule.isValid()) {
@@ -278,20 +284,18 @@ public class RuleEditorPanel extends JPanel {
     }
     
     /**
-     * Registers an instance of {@link RuleEditorListener} to the component.
+     * Registers an instance of {@link PropertyChangeListener} to the component.
      * @param listener
-     * @return true if the listeners list changed
      */
-    public boolean addRuleEditorListener(RuleEditorListener listener) {
-        return LISTENERS.add(listener);
+    public void addRuleEditorListener(PropertyChangeListener listener) {
+        CHANGE_SUPPORT.addPropertyChangeListener(listener);
     }
     /**
-     * Unregisters an instance of {@link RuleEditorListener} from the component.
+     * Unregisters an instance of {@link PropertyChangeListener} from the component.
      * @param listener
-     * @return true if the listeners list changed (listener removed)
      */
-    public boolean removeRuleEditorListener(RuleEditorListener listener) {
-        return LISTENERS.remove(listener);
+    public void removeRuleEditorListener(PropertyChangeListener listener) {
+        CHANGE_SUPPORT.removePropertyChangeListener(listener);
     }
     
     public Action[] getActions() {
