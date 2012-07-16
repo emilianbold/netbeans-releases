@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -68,25 +67,25 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
      * @see org.netbeans.modules.web.common.websocket.WebSocketHandler75#sendHandshake()
      */
     @Override
-    public void sendHandshake( ) {
-        byte[] lastEightBytes = readRequestContent( getKey() );
+    public void sendHandshake( ) throws IOException {
+        byte[] lastEightBytes = readRequestContent( );
         if ( lastEightBytes == null ){
             return;
         }
-        StringBuilder builder = new StringBuilder(HTTP_RESPONSE);
-        builder.append(CRLF);
-        builder.append(WS_UPGRADE);
-        builder.append(CRLF);
-        builder.append(CONN_UPGRADE);
-        builder.append(CRLF);
+        StringBuilder builder = new StringBuilder(Utils.HTTP_RESPONSE);
+        builder.append(Utils.CRLF);
+        builder.append(Utils.WS_UPGRADE);
+        builder.append(Utils.CRLF);
+        builder.append(Utils.CONN_UPGRADE);
+        builder.append(Utils.CRLF);
         builder.append("Sec-WebSocket-Origin: ");           // NOI18N
         String origin = getServer().getContext(getKey()).getHeaders().get("Origin");  // NOI18N
         if ( origin != null ){
             builder.append( origin);
         }
-        builder.append(CRLF);
+        builder.append(Utils.CRLF);
         builder.append("Sec-WebSocket-Location: ws://");    // NOI18N
-        String host = getServer().getContext(getKey()).getHeaders().get(HOST);                
+        String host = getServer().getContext(getKey()).getHeaders().get(Utils.HOST);                
         if ( host != null) {
             builder.append( host );
         }
@@ -108,13 +107,13 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
             url ="/";                                       // NOI18N
         }
         builder.append( url );
-        builder.append( CRLF );
-        builder.append( CRLF );
+        builder.append( Utils.CRLF );
+        builder.append( Utils.CRLF );
         byte[] headers = builder.toString().getBytes( 
-                Charset.forName(WebSocketServer.UTF_8));
+                Charset.forName(Utils.UTF_8));
         byte[] responseContent = createResponseContent(getKey(), lastEightBytes);
         if ( responseContent == null ){
-            close( getKey() );
+            close( );
         }
         byte[] response = new byte[ headers.length + responseContent.length ];
         System.arraycopy(headers, 0, response, 0, headers.length);
@@ -125,8 +124,8 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
 
     private byte[] createResponseContent(SelectionKey key,  byte[] lastEightBytes ) {
         Map<String, String> headers = getServer().getContext(key).getHeaders();
-        String key1 = headers.get(WebSocketServer.KEY1);
-        String key2 = headers.get(WebSocketServer.KEY2);
+        String key1 = headers.get(Utils.KEY1);
+        String key2 = headers.get(Utils.KEY2);
         ByteBuffer buffer = ByteBuffer.allocate(16).putInt(decodeNumber(key1)).
             putInt(decodeNumber(key2)).put(lastEightBytes);
         byte[] bytes = new byte[ buffer.capacity()];
@@ -140,24 +139,8 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
         }
     }
 
-    private byte[] readRequestContent( SelectionKey key ) {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
-        SocketChannel socketChannel = (SocketChannel) key.channel();
-        try {
-            while ( buffer.hasRemaining() ){
-                if ( socketChannel.read( buffer ) == -1){
-                    close( key );
-                }
-            }
-            byte[] bytes = new byte[buffer.capacity()];
-            buffer.flip();
-            buffer.get( bytes );
-            return bytes;
-        }
-        catch( IOException e ){
-            close( key );
-        }
-        return null;
+    private byte[] readRequestContent(  ) throws IOException {
+        return readRequestContent( 8 );
     }
     
     private int decodeNumber(String code) {

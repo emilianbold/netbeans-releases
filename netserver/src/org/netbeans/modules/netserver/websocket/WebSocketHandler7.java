@@ -60,31 +60,6 @@ import javax.xml.bind.DatatypeConverter;
  */
 class WebSocketHandler7 extends AbstractWSHandler7 {
     
-    private static final String SALT = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";     // NOI18N
-    
-    /**
-     * FIN bit is set and opcode is text ( equals 1 )
-     */
-    private static final byte FIRST_BYTE_MESSAGE = Integer.valueOf("10000001",     // NOI18N
-            2).byteValue();
-    
-    /**
-     * FIN bit is set and opcode is close connection ( equals 8 )
-     */
-    private static final byte CLOSE_CONNECTION_BYTE = Integer.valueOf("10001000",     // NOI18N
-            2).byteValue();
-    
-    /**
-     * FIN bit is set and opcode is binary ( equals 2 )
-     */
-    private static final byte FIRST_BYTE_BINARY = Integer.valueOf("10000010",     // NOI18N
-            2).byteValue();
-    
-    /*
-     * Message max length which is marked in the message with 126 code in the 
-     * "Extended payload length" section 
-     */
-    private static final int LENGTH_LEVEL  = 0x10000;                              
     
     public WebSocketHandler7( WebSocketServer webSocketServer, SelectionKey key ) {
         server = webSocketServer;
@@ -95,18 +70,18 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
      * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#sendHandshake()
      */
     @Override
-    public void sendHandshake( ) {
-        String acceptKey = createAcceptKey( key );
+    public void sendHandshake( ) throws IOException {
+        String acceptKey = createAcceptKey( getKey() );
         if ( acceptKey == null ){
-            close( key );
+            close( );
             return;
         }
-        StringBuilder builder = new StringBuilder(HTTP_RESPONSE);
-        builder.append(CRLF);
-        builder.append(WS_UPGRADE);
-        builder.append(CRLF);
-        builder.append(CONN_UPGRADE);
-        builder.append(CRLF);
+        StringBuilder builder = new StringBuilder(Utils.HTTP_RESPONSE);
+        builder.append(Utils.CRLF);
+        builder.append(Utils.WS_UPGRADE);
+        builder.append(Utils.CRLF);
+        builder.append(Utils.CONN_UPGRADE);
+        builder.append(Utils.CRLF);
         builder.append("Sec-WebSocket-Origin: ");           // NOI18N
         String origin = server.getContext(key).getHeaders().get("Sec-WebSocket-Origin");  // NOI18N
         if ( origin == null ){
@@ -115,13 +90,14 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         if ( origin != null ){
             builder.append( origin);
         }
-        builder.append(CRLF);
-        builder.append("Sec-WebSocket-Accept: ");
+        builder.append(Utils.CRLF);
+        builder.append(Utils.ACCEPT);
+        builder.append(": ");
         builder.append(acceptKey);
-        builder.append( CRLF );
-        builder.append( CRLF );
+        builder.append( Utils.CRLF );
+        builder.append( Utils.CRLF );
         server.send(builder.toString().getBytes(
-                Charset.forName(WebSocketServer.UTF_8)), key );
+                Charset.forName(Utils.UTF_8)), key );
     }
     
     /* (non-Javadoc)
@@ -135,7 +111,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
             byteBuffer.limit(1);
             int size = socketChannel.read(byteBuffer);
             if (size == -1) {
-                close(key);
+                close();
                 return;
             }
             else if (size == 0) {
@@ -145,13 +121,13 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
             byte leadingByte = byteBuffer.get();
             if (leadingByte == CLOSE_CONNECTION_BYTE) {
                 // connection close
-                close(key);
+                close();
                 return;
             }
             else if (leadingByte == FIRST_BYTE_MESSAGE
                     || leadingByte == FIRST_BYTE_BINARY)
             {
-                if (!readFinalFrame(key, byteBuffer, socketChannel, leadingByte))
+                if (!readFinalFrame( byteBuffer, socketChannel, leadingByte))
                 {
                     return;
                 }
@@ -166,9 +142,12 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         }
     }
 
+    /**
+     * TODO: Remove this method ( superclass method should be used )
+     */
     @Override
     public byte[] createTextFrame( String message ) {
-        byte[] data = message.getBytes( Charset.forName( WebSocketServer.UTF_8));
+        byte[] data = message.getBytes( Charset.forName( Utils.UTF_8));
         int length = data.length;
         byte[] lengthBytes;
         if ( length< 126){
@@ -203,7 +182,15 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         return result;
     }
     
-    private boolean readFinalFrame( SelectionKey key, ByteBuffer byteBuffer,
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#isClient()
+     */
+    @Override
+    protected boolean isClient() {
+        return false;
+    }
+    
+    private boolean readFinalFrame( ByteBuffer byteBuffer,
             SocketChannel socketChannel, byte leadingByte) throws IOException
     {
         int frameType = leadingByte == FIRST_BYTE_MESSAGE? 1:2;
@@ -213,7 +200,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         do {
             size = socketChannel.read(byteBuffer);
             if (  size==-1 ){
-                close( key);
+                close( );
                 return false;
             }
         }
@@ -223,12 +210,12 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         if ( masknLength>=0 ){   // first bit is not set
             WebSocketServer.LOG.log(Level.WARNING, 
                     "Unexpected client data. Frame is not masked"); // NOI18N
-            close( key );
+            close( );
             return false;
         }
         int length = masknLength&0x7F;
         if ( length <126 ){
-            return readData(key, byteBuffer, socketChannel, frameType, length);
+            return readData(byteBuffer, socketChannel, frameType, length);
         }
         else if ( length ==126 ){
             byteBuffer.clear();
@@ -236,14 +223,14 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
             do {
                 size = socketChannel.read(byteBuffer);
                 if (  size==-1 ){
-                    close( key);
+                    close( );
                     return false;
                 }
             }
             while(size<2);
             byteBuffer.flip();
             length = byteBuffer.getShort()&0xFFFF;
-            return readData(key, byteBuffer, socketChannel, frameType, length);
+            return readData(byteBuffer, socketChannel, frameType, length);
         }
         else if ( length ==127 ){
             byteBuffer.clear();
@@ -251,37 +238,37 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
             do {
                 size = socketChannel.read(byteBuffer);
                 if (  size==-1 ){
-                    close( key);
+                    close( );
                     return false;
                 }
             }
             while(size<8);
             byteBuffer.flip();
             long longLength = byteBuffer.getLong();
-            return readData(key, byteBuffer, socketChannel, frameType, longLength );
+            return readData(byteBuffer, socketChannel, frameType, longLength );
         }
         return true;
     }
 
-    private boolean readData( SelectionKey key, ByteBuffer byteBuffer,
+    private boolean readData( ByteBuffer byteBuffer,
             SocketChannel socketChannel, int frameType, int length )
             throws IOException
     {
         byteBuffer.clear();
         int frameSize = length +4;
         if ( frameSize <0 ){
-            readData(key, byteBuffer, socketChannel, frameType, (long)length);
+            readData(byteBuffer, socketChannel, frameType, (long)length);
         }
-        byte[] result = readData(key, byteBuffer, socketChannel, frameSize);
+        byte[] result = readData( byteBuffer, socketChannel, frameSize);
         if ( result == null ){
             return false;
         }
-        server.getWebSocketReadHandler().read(key, mask( result), frameType);
+        server.getWebSocketReadHandler().read(getKey(), mask( result, true), frameType);
         
         return true;
     }
 
-    private byte[] readData( SelectionKey key, ByteBuffer byteBuffer,
+    private byte[] readData( ByteBuffer byteBuffer,
             SocketChannel socketChannel, int size ) throws IOException
     {
         int redBytes =0;
@@ -293,7 +280,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         while( redBytes <size ){
             int red = socketChannel.read( byteBuffer );
             if ( red == -1){
-                close(key);
+                close();
                 return null;
             }
             if ( red ==0 ){
@@ -318,7 +305,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         return result;
     }
     
-    private boolean readData( SelectionKey key, ByteBuffer byteBuffer,
+    private boolean readData(ByteBuffer byteBuffer,
             SocketChannel socketChannel, int frameType, long length )
             throws IOException
     {
@@ -328,22 +315,13 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
             		"Cannot handle it. Implementation should be rewritten.");
         }
         else {
-            readData(key, byteBuffer, socketChannel, frameType, (int)length);
+            readData(byteBuffer, socketChannel, frameType, (int)length);
         }
         return true;
     }
     
-    private byte[] mask( byte[] maskedMessage ) {
-        byte[] result = new byte[ maskedMessage.length -4 ];
-        for( int i=4; i< maskedMessage.length;i++){
-            byte unsignedMask = (byte)(maskedMessage[i%4]&0xFF);
-            result[i-4] = (byte)(unsignedMask^maskedMessage[i]);
-        }
-        return result;
-    }
-    
     private String createAcceptKey(SelectionKey key ){
-        String originalKey = server.getContext(key).getHeaders().get(WebSocketServer.KEY);
+        String originalKey = server.getContext(key).getHeaders().get(Utils.KEY);
         if ( originalKey == null ){
             return null;
         }
@@ -352,7 +330,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         try {
             return DatatypeConverter.printBase64Binary( MessageDigest.getInstance(
                     "SHA").digest(builder.toString().getBytes(  // NOI18N
-                            Charset.forName(WebSocketServer.UTF_8))));
+                            Charset.forName(Utils.UTF_8))));
         }
         catch (NoSuchAlgorithmException e) {
             WebSocketServer.LOG.log(Level.WARNING, null , e);
@@ -360,13 +338,47 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         } 
     }
     
-    private void close( SelectionKey key ){
-        try {
-            server.close(key);
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#getKey()
+     */
+    @Override
+    protected SelectionKey getKey() {
+        return key;
+    }
+    
+    @Override
+    protected void close( ) throws IOException {
+        server.close(getKey());
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#readDelegate(byte[], int)
+     */
+    @Override
+    protected void readDelegate( byte[] bytes, int dataType ) {
+        server.getWebSocketReadHandler().read(getKey(), mask( bytes, true), dataType);        
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#onHasMask(boolean)
+     */
+    @Override
+    protected boolean verifyMask( boolean hasMask ) throws IOException {
+        if ( !hasMask ){
+            WebSocketServer.LOG.log(Level.WARNING, 
+                    "Unexpected client data. Frame is not masked"); // NOI18N
+            close();
+            return false;
         }
-        catch( IOException e ){
-            WebSocketServer.LOG.log( Level.WARNING , null , e);
-        }
+        return true;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#isStopped()
+     */
+    @Override
+    protected boolean isStopped() {
+        return server.isStopped();
     }
 
     private WebSocketServer server;

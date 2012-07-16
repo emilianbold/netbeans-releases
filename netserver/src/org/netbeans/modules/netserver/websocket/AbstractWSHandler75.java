@@ -44,6 +44,12 @@ package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -53,30 +59,97 @@ import java.nio.ByteBuffer;
 abstract class AbstractWSHandler75 implements WebSocketChanelHandler {
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.WebSocketChanelHandler#sendHandshake()
-     */
-    @Override
-    public void sendHandshake() {
-        // TODO Auto-generated method stub
-
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
+     * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
      */
     @Override
     public void read( ByteBuffer byteBuffer ) throws IOException {
-        // TODO Auto-generated method stub
-
+        SocketChannel socketChannel = (SocketChannel) getKey().channel();
+        byte[] bytes = new byte[Utils.BYTES];
+        List<List<Byte>> messages = new LinkedList<List<Byte>>();
+        List<Byte> message = new LinkedList<Byte>();
+        boolean newMessage = false;
+        while (true || !isStopped()) {
+            byteBuffer.clear();
+            if (socketChannel.read(byteBuffer) == -1) {
+                close();
+            }
+            byteBuffer.flip();
+            byteBuffer.get(bytes);
+            if (bytes[0] == 0 && !newMessage) {
+                newMessage = true;
+                if (!message.isEmpty()) {
+                    messages.add(new ArrayList<Byte>(message));
+                }
+                message.clear();
+            }
+            int i;
+            for (i = 1; i < byteBuffer.limit(); i++) {
+                if (bytes[i] == (byte) 255) {
+                    messages.add(new ArrayList<Byte>(message));
+                    message.clear();
+                    newMessage = false;
+                }
+                else {
+                    message.add(bytes[i]);
+                }
+            }
+            if (message.isEmpty()) {
+                break;
+            }
+        }
+        if ( isStopped() ){
+            close();
+            return ;
+        }
+        for (List<Byte> list : messages) {
+            bytes = new byte[list.size()];
+            int i = 0;
+            for (Byte byt : list) {
+                bytes[i] = byt;
+                i++;
+            }
+            readDelegate(bytes);
+        }
     }
-
+    
     /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.WebSocketChanelHandler#createTextFrame(java.lang.String)
+     * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#createTextFrame(java.lang.String)
      */
     @Override
     public byte[] createTextFrame( String message ) {
-        // TODO Auto-generated method stub
+        byte[] data = message.getBytes( Charset.forName( Utils.UTF_8));
+        byte[] result = new byte[ data.length +2 ];
+        result[0] = 0;
+        result[ data.length +1 ]=(byte)255;
+        System.arraycopy(data, 0, result, 1, data.length);
+        return result;
+    }
+    
+    protected byte[] readRequestContent(  int size ) throws IOException {
+        ByteBuffer buffer = ByteBuffer.allocate(size);
+        SocketChannel socketChannel = (SocketChannel) getKey().channel();
+        try {
+            while ( buffer.hasRemaining() ){
+                if ( socketChannel.read( buffer ) == -1){
+                    close();
+                }
+            }
+            byte[] bytes = new byte[buffer.capacity()];
+            buffer.flip();
+            buffer.get( bytes );
+            return bytes;
+        }
+        catch( IOException e ){
+            close();
+        }
         return null;
     }
-
+    
+    protected abstract SelectionKey getKey();
+    
+    protected abstract void close() throws IOException;
+    
+    protected abstract void readDelegate( byte[] bytes );
+    
+    protected abstract boolean isStopped();
 }

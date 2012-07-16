@@ -44,17 +44,20 @@ package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.charset.Charset;
+import java.util.List;
 
 
 /**
  * @author ads
  *
  */
-class WebSocketHandlerClient7 implements WebSocketChanelHandler {
+class WebSocketHandlerClient7 extends AbstractWSHandler7 {
 
-    WebSocketHandlerClient7( WebSocketClient webSocketClient, int version )
-    {
-        // TODO Auto-generated constructor stub
+    WebSocketHandlerClient7( WebSocketClient webSocketClient, int version ){
+        client = webSocketClient;
+        this.version = version;
     }
 
     /* (non-Javadoc)
@@ -62,8 +65,54 @@ class WebSocketHandlerClient7 implements WebSocketChanelHandler {
      */
     @Override
     public void sendHandshake() {
-        // TODO Auto-generated method stub
-
+        StringBuilder builder = new StringBuilder(Utils.GET);
+        builder.append(' ');
+        builder.append(getClient().getUri().getPath());
+        builder.append(' ');
+        builder.append( Utils.HTTP_11);
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.WS_UPGRADE);
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.HOST);
+        builder.append(": ");                               // NOI18N
+        builder.append(getClient().getUri().getHost());
+        builder.append(Utils.CRLF);
+        
+        if ( version >= 7 && version<= 10){
+            builder.append("Sec-WebSocket-Origin: ");
+        }
+        else {
+            builder.append("Origin: ");
+        }
+        builder.append( Utils.getOrigin(getClient().getUri()));
+        
+        builder.append("Sec-WebSocket-Protocol: chat");     // NOI18N
+        builder.append( Utils.CRLF );
+        
+        builder.append("Sec-WebSocket-Version: ");          // NOI18N
+        if ( version == 7 ){
+            builder.append( version );
+        }
+        else if ( version > 7 && version <13){
+            builder.append( 8 );
+        }
+        else {
+            builder.append( 13 );
+        }
+        builder.append( Utils.CRLF );
+        
+        builder.append( Utils.KEY);
+        builder.append(": ");
+        builder.append( generateKey());
+        
+        builder.append( Utils.CRLF );
+        builder.append( Utils.CRLF );
+        
+        
+        getClient().send(builder.toString().getBytes( 
+                Charset.forName(Utils.UTF_8)), client.getKey() );
     }
 
     /* (non-Javadoc)
@@ -71,17 +120,92 @@ class WebSocketHandlerClient7 implements WebSocketChanelHandler {
      */
     @Override
     public void read( ByteBuffer byteBuffer ) throws IOException {
-        // TODO Auto-generated method stub
-
+        if ( handshakeRed ){
+            super.read(byteBuffer);
+        }
+        else {
+            readHandshake( byteBuffer );
+            handshakeRed = true;
+            getClient().getWebSocketReadHandler().accepted(getKey());
+        }
     }
 
     /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.WebSocketChanelHandler#createTextFrame(java.lang.String)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#isClient()
      */
     @Override
-    public byte[] createTextFrame( String message ) {
-        // TODO Auto-generated method stub
-        return null;
+    protected boolean isClient() {
+        return true;
     }
+    
+    protected WebSocketClient getClient(){
+        return client;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#close()
+     */
+    @Override
+    protected void close() throws IOException {
+        getClient().close( getKey());
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#readDelegate(byte[], int)
+     */
+    @Override
+    protected void readDelegate( byte[] bytes, int dataType ) {
+        getClient().getWebSocketReadHandler().read(getKey(), bytes, dataType);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#getKey()
+     */
+    @Override
+    protected SelectionKey getKey() {
+        return getClient().getKey();
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#verifyMask(boolean)
+     */
+    @Override
+    protected boolean verifyMask( boolean hasMask ) throws IOException {
+        return true;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#isStopped()
+     */
+    @Override
+    protected boolean isStopped() {
+        return getClient().isStopped();
+    }
+    
+    private void readHandshake( ByteBuffer buffer ) throws IOException {
+        List<String> headers = Utils.readHttpRequest(getClient().getChannel(), 
+                buffer);
+        String acceptKey =null;
+        String accept = Utils.ACCEPT+':';
+        for (String header : headers) {
+            if ( header.startsWith(accept))
+            {
+                acceptKey = header.substring(accept.length()).trim();
+            }
+        }
+        // TODO : check acceptKey against provided generatedKey at initial handshake 
+        if ( acceptKey == null ){
+            throw new IOException("Wrong accept key on handshake received");    // NOI18N
+        }
+    }
+    
+    private String generateKey() {
+        // TODO write generation of random key 
+        return "dGhlIHNhbXBsZSBub25jZQ==";
+    }
+    
+    private boolean handshakeRed;
+    private WebSocketClient client;
+    private int version;
 
 }

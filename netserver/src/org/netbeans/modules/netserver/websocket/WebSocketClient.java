@@ -48,9 +48,12 @@ import java.net.SocketAddress;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.netserver.ReadHandler;
 import org.netbeans.modules.netserver.SocketClient;
+import org.netbeans.modules.netserver.SocketFramework;
 import org.netbeans.modules.netserver.websocket.ProtocolDraft.Draft;
 
 
@@ -60,9 +63,15 @@ import org.netbeans.modules.netserver.websocket.ProtocolDraft.Draft;
  */
 public class WebSocketClient extends SocketClient {
     
+    static final Logger LOG = SocketFramework.LOG; 
+    
     public WebSocketClient( URI uri , ProtocolDraft draft) throws IOException {
         this(new InetSocketAddress( uri.getHost() , uri.getPort()), draft);
         this.uri = uri;
+    }
+    
+    public WebSocketClient( URI uri ) throws IOException {
+        this( uri , ProtocolDraft.getRFC());
     }
 
     private WebSocketClient( SocketAddress address , ProtocolDraft draft) throws IOException {
@@ -82,7 +91,7 @@ public class WebSocketClient extends SocketClient {
     
     public void sendMessage( String message){
         byte[] bytes = getHandler().createTextFrame( message);
-        send(bytes , getChanel().keyFor( getSelector())); 
+        send(bytes , getKey()); 
     }
     
     public void setWebSocketReadHandler( WebSocketReadHandler handler ){
@@ -95,6 +104,21 @@ public class WebSocketClient extends SocketClient {
     
     public URI getUri(){
         return uri;
+    }
+    
+    @Override
+    public void close( SelectionKey key ) throws IOException {
+        super.close(key);
+        stop();
+    }
+    
+    protected SelectionKey getKey(){
+        return getChannel().keyFor( getSelector());
+    }
+    
+    @Override
+    protected SocketChannel getChannel(){
+        return super.getChannel();
     }
     
     protected void setHandler( WebSocketChanelHandler handler ){
@@ -118,7 +142,7 @@ public class WebSocketClient extends SocketClient {
     protected class WebSocketClientHandler implements ReadHandler {
         
         public WebSocketClientHandler() {
-            byteBuffer = ByteBuffer.allocate(BYTES);
+            byteBuffer = ByteBuffer.allocate(Utils.BYTES);
         }
 
         /* (non-Javadoc)

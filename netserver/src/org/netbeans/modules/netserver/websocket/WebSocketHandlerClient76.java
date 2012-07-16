@@ -42,6 +42,10 @@
  */
 package org.netbeans.modules.netserver.websocket;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+
 
 /**
  * @author ads
@@ -58,7 +62,91 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
      */
     @Override
     public void sendHandshake() {
-        // TODO Auto-generated method stub
+        StringBuilder builder = new StringBuilder(Utils.GET);
+        builder.append(' ');
+        builder.append(getClient().getUri().getPath());
+        builder.append(' ');
+        builder.append( Utils.HTTP_11);
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.WS_UPGRADE);
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.HOST);
+        builder.append(": ");                               // NOI18N
+        builder.append(getClient().getUri().getHost());
+        builder.append(Utils.CRLF);
+        
+        builder.append("Origin: ");
+        builder.append( Utils.getOrigin(getClient().getUri()));
+        
+        builder.append(Utils.KEY1);
+        builder.append(": ");                               // NOI18N
+        builder.append( generateKey());
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.KEY2);
+        builder.append(": ");                               // NOI18N
+        builder.append( generateKey());
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.WS_PROTOCOL);
+        builder.append(": chat");                             // NOI18N
+        
+        builder.append( Utils.CRLF );
+        builder.append( Utils.CRLF );
+        
+        byte[] bytes = builder.toString().getBytes( 
+                Charset.forName(Utils.UTF_8));
+        byte[] generated = generateContent();
+        byte[] toSend = new byte[ bytes.length +generated.length];
+        System.arraycopy(bytes, 0, toSend, 0, bytes.length);
+        System.arraycopy(generated, 0, toSend, bytes.length, generated.length);
+        getClient().send( toSend, getKey() );
     }
+    
+    private String generateKey() {
+        // TODO : random challenge code generation should be used
+        if ( tempKey ){
+            return "4 @1  46546xW%0l 1 5";
+        }
+        tempKey = true;
+        return "12998 5 Y3 1  .P00";
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.WebSocketHandlerClient75#readHandshakeResponse(java.nio.ByteBuffer)
+     */
+    @Override
+    protected void readHandshakeResponse( ByteBuffer buffer )
+            throws IOException
+    {
+        Utils.readHttpRequest(getClient().getChannel(), buffer);
+        byte[] md5Challenge = readRequestContent(16);
+        /*
+         *  TODO : check md5Challenge against initial data in the handshake
+         *  
+         *  if ( md5Challenge is no correct ) {
+         *      throws IOException("wrong handshake data");
+         *  }
+         */
+    }
+    
+    private byte[] generateContent(){
+        byte[] bytes = new byte[8];
+        // TODO : random bytes challenge code generation should be used
+        bytes[0]=0x47;
+        bytes[1]=0x30;
+        bytes[2]=0x22;
+        bytes[3]=0x2D;
+        bytes[4]=0x5A;
+        bytes[5]=0x3F;
+        bytes[6]=0x47;
+        bytes[7]=0x58;
+        return bytes;
+    }
+    
+    // TODO: delete
+    private boolean tempKey;
 
 }
