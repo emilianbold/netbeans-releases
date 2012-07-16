@@ -266,7 +266,7 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
      * Compare if given properties represents this cloud instance.
      * <p/>
      * @param props Set of properties to compare with this
-     *        GlassFish Cloud instance.
+     *        GlassFish cloud instance.
      * @return Returns <code>true</code> when both name stored in properties
      *         and this instance are equal <code>String</codse> objects
      *         or both are <code>null</code>. Otherwise <code>false</code>

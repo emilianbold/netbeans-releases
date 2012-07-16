@@ -351,6 +351,17 @@ public class GlassFishAccountWizardUserComponent
     public String getUserPassword() {
         return new String(userPasswordTextField.getPassword());
     }
+    /**
+     * Get selected GlassFish cloud entity name (unique identifier).
+     * <p/>
+     * @return Selected GlassFish cloud entity name or <code>null</code>
+     *         if there is no entity selected.
+     */
+    public String getGlassFishCloudName() {
+        GlassFishCloudEntity selected
+                = (GlassFishCloudEntity)cloudComboBox.getSelectedItem();
+        return selected != null ? selected.getName() : null;
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Implemented abstract methods                                           //

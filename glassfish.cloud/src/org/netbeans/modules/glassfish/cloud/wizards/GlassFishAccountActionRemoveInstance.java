@@ -39,60 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.glassfish.cloud.data;
+package org.netbeans.modules.glassfish.cloud.wizards;
 
-import javax.swing.Action;
-import org.netbeans.modules.glassfish.cloud.wizards.GlassFishCloudActionRemoveInstance;
-import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import static org.openide.util.NbBundle.getMessage;
+import org.openide.util.actions.NodeAction;
 
 /**
- * GlassFish Cloud GUI Node.
- * <p>
- * this class represents cloud (CPAS) instance in GUI.
+ * GUI action to remove GlassFish cloud user account instance.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudInstanceNode extends GlassFishInstanceNode {
+public class GlassFishAccountActionRemoveInstance extends NodeAction {
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance attributes                                                    //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /** Cloud instance object holding this node. */
-    GlassFishCloudInstance instance;
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Constructors                                                           //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Creates an instance of GlassFish cloud GUI node (Cloud item
-     * in Services tab).
-     * <p/>
-     * @param instance GlassFish cloud instance holding this node.
-     */
-    public GlassFishCloudInstanceNode(GlassFishCloudInstance instance) {
-        super(instance.getName(), instance);
-        this.instance = instance;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Methods                                                                //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Get the set of actions that are associated with this node.
-     * <p/>
-     * @param context Whether to find actions for context meaning or for the
-     *                node itself (ignored).
-     * @return <code>List</code> of actions (you may include nulls
-     *         for separators).
-     */
     @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(GlassFishCloudActionRemoveInstance.class)
-        };
+    protected void performAction(Node[] activatedNodes) {
+        GlassFishAccountInstance instance
+                = activatedNodes[0].getLookup().lookup(
+                GlassFishAccountInstance.class);
+        GlassFishAccountInstanceProvider.getInstance().removeInstance(instance);
     }
 
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length != 1) {
+            return false;
+        }
+        return activatedNodes.length > 0 && activatedNodes[0].getLookup()
+                .lookup(GlassFishAccountInstance.class) != null;
+    }
+
+    @Override
+    public String getName() {
+        return getMessage(GlassFishAccountActionRemoveInstance.class,
+                Bundle.USER_ACTION_REMOVE_NAME);
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+    
 }

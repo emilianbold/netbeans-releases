@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
@@ -237,6 +234,7 @@ public class GlassFishAccountInstanceProvider
      * @param instance GlassFish user account instance to be removed.
      */
     public void removeInstance(GlassFishAccountInstance instance) {
+        remove(instance);
         serverInstances.remove(instance.getServerInstance());
         cloudInstances.remove(instance.getDisplayName());
         changeListeners.fireChange();
@@ -275,4 +273,23 @@ public class GlassFishAccountInstanceProvider
         }
     }
     
+    /**
+     * Remove given GlassFish Cloud Instance from properties to persist.
+     * <p/>
+     * @param instance GlassFish Cloud Instance to be removed.
+     */
+    private void remove(GlassFishAccountInstance instance) {
+        List<InstanceProperties> propsList = InstancePropertiesManager
+                .getInstance().getProperties(PROPERTIES_NAME_SPACE);
+        synchronized (this) {
+            for (Iterator<InstanceProperties> i = propsList.iterator();
+                    i.hasNext(); ) {
+                InstanceProperties props = i.next();
+                if (instance.equalProps(props)) {
+                    props.remove();
+                }
+            }
+        }
+    }
+
 }

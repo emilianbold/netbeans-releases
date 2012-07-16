@@ -44,9 +44,13 @@ package org.netbeans.modules.glassfish.cloud.wizards;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -62,6 +66,9 @@ public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
+    /** Logger. */
+    private static final Logger LOG = Logger.getLogger(
+            GlassFishAccountWizardIterator.class.getSimpleName());
 
     /** Total panels count. */
     private static final int PANELS_COUNT = 1;
@@ -103,10 +110,19 @@ public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
                 GlassFishAccountInstance.PROPERTY_USER_NAME);
         String userPassword = (String)wizard.getProperty(
                 GlassFishAccountInstance.PROPERTY_USER_PASSWORD);
+        String cloudName = (String)wizard.getProperty(
+                GlassFishAccountInstance.PROPERTY_CLOUD_NAME);
+        GlassFishCloud cloudEntity = cloudName != null
+                    ? GlassFishCloudInstanceProvider.getCloudInstance(cloudName)
+                    : null;
         GlassFishAccountInstance accountInstance
                 = new GlassFishAccountInstance(
-                name, account, userName, userPassword);
+                name, account, userName, userPassword, cloudEntity);
         GlassFishAccountInstanceProvider.addAccountInstance(accountInstance);
+        LOG.log(Level.FINER,
+                "Added GlassFishCloudInstance({0}, {1}, {2}, <password>, {4})",
+                new Object[]{name, account, userName, cloudEntity != null
+                ? cloudEntity.getName() : "null"});
         return Collections.singleton(accountInstance.getServerInstance());
     }
 

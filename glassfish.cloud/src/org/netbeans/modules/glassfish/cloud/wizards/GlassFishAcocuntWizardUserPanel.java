@@ -141,6 +141,8 @@ public class GlassFishAcocuntWizardUserPanel extends GlassFishWizardPanel {
             settings.putProperty(
                     GlassFishAccountInstance.PROPERTY_USER_PASSWORD,
                     component.getUserPassword());
+            settings.putProperty(GlassFishAccountInstance.PROPERTY_CLOUD_NAME,
+                    component.getGlassFishCloudName());
         }
     }
 

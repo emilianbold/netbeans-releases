@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.glassfish.tools.ide.data.cloud.GlassFishAccountEntity;
+import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
@@ -85,6 +86,9 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     /** Account property name. */
     public static final String PROPERTY_ACCOUNT = "account";
 
+    /** Related GlassFish cloud entity name (selected from combo box). */
+    public static final String PROPERTY_CLOUD_NAME="cloudName";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -123,17 +127,18 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Constructs GlassFish Cloud class instance with ALL values set.
+     * Constructs GlassFish user account instance with ALL values set.
      * <p/>
      * @param name GlassFish user account name to set.
      * @param account GlassFish cloud account name to set.
      * @param userName GlassFish cloud account user name to set.
      * @param userPassword GlassFish cloud account user password to set.
+     * @param cloudEntity  GlassFish cloud entity reference to set.
      */
     @SuppressWarnings("LeakingThisInConstructor")
     public GlassFishAccountInstance(String name, String account, String userName,
-            String userPassword) {
-        super(name, account, userName, userPassword);
+            String userPassword, GlassFishCloud cloudEntity) {
+        super(name, account, userName, userPassword, cloudEntity);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);
@@ -259,11 +264,14 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
         props.putString(PROPERTY_NAME, name);
         props.putString(PROPERTY_ACCOUNT, account);
         props.putString(PROPERTY_USER_NAME, userName);
+        props.putString(PROPERTY_CLOUD_NAME,
+                cloudEntity != null ? cloudEntity.getName() : null);
         Keyring.save(passwordKey(userName), userPassword.toCharArray(),
                 "GlassFish cloud account user password");
         LOG.log(Level.FINER,
-                "Stored GlassFishCloudInstance({0}, {1}, {2}, <password>)",
-                new Object[]{name, account, userName});
+                "Stored GlassFishCloudInstance({0}, {1}, {2}, <password>, {4})",
+                new Object[]{name, account, userName, cloudEntity != null
+                    ? cloudEntity.getName() : "null"});
     }
 
     /**
@@ -278,6 +286,7 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
         if (name != null) {
             String account = props.getString(PROPERTY_ACCOUNT, null);
             String userName = props.getString(PROPERTY_USER_NAME, null);
+            String cloudName = props.getString(PROPERTY_CLOUD_NAME, null);
             String userPassword;
             if (userName != null) {
                 char[] password = Keyring.read(passwordKey(userName));
@@ -285,15 +294,37 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
             } else {
                 userPassword = null;
             }
+            GlassFishCloud cloudEntity = cloudName != null
+                    ? GlassFishCloudInstanceProvider.getCloudInstance(cloudName)
+                    : null;
             LOG.log(Level.FINER,
-                    "Loaded GlassFishCloudInstance({0}, {1}, {2}, <password>)",
-                    new Object[]{name, account, userName});
+                    "Loaded GlassFishCloudInstance({0}, {1}, {2}, <password>, {4})",
+                    new Object[]{name, account, userName, cloudEntity != null
+                    ? cloudEntity.getName() : "null"});
             return new GlassFishAccountInstance(name, account, userName,
-                    userPassword);
+                    userPassword, cloudEntity);
         } else {
             LOG.log(Level.WARNING,
                     "Stored GlassFishCloudInstance name is null, skipping");
             return null;
         }
     }
+
+    /**
+     * Compare if given properties represents this user account instance.
+     * <p/>
+     * @param props Set of properties to compare with this
+     *        GlassFish user account instance.
+     * @return Returns <code>true</code> when both name stored in properties
+     *         and this instance are equal <code>String</codse> objects
+     *         or both are <code>null</code>. Otherwise <code>false</code>
+     *         is returned.
+     */
+    boolean equalProps(InstanceProperties props) {
+        String propsName = props.getString(PROPERTY_NAME, null);
+        return propsName != null
+                ? propsName.equals(name)
+                : name == null;
+    }
+
 }

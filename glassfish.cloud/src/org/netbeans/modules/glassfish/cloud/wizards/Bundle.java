@@ -105,7 +105,7 @@ public class Bundle {
     // Class attributes - cloud wizard actions                                //
     ////////////////////////////////////////////////////////////////////////////
 
-    /** Cloud instance popup menu: remove action display name. */
+    /** Cloud instance pop up menu: remove action display name. */
     static final String CLOUD_ACTION_REMOVE_NAME
             = "GlassFishCloudActionRemoveInstance.name";
 
@@ -144,6 +144,15 @@ public class Bundle {
     /** User account panel validation error: User password is empty. */
     static final String USER_PANEL_ERROR_USER_PASSWORD_EMPTY
             = "GlassFishAcocuntWizardUserPanel.error.user.password.empty";
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes - cloud wizard actions                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** User account instance pop up menu: remove action display name. */
+    static final String USER_ACTION_REMOVE_NAME
+            = "GlassFishAccountActionRemoveInstance.name";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////

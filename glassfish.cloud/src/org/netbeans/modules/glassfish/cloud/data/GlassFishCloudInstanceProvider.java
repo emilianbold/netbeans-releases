@@ -113,6 +113,14 @@ public class GlassFishCloudInstanceProvider
         getInstance().removeInstance(instance);
     }
 
+    /**
+     * Get GlassFish cloud instance from this provider.
+     * <p/>
+     * @param name GlassFish cloud instance display name used as key.
+     */
+    public static GlassFishCloudInstance getCloudInstance(String name) {
+        return getInstance().getCloudInstances().get(name);
+    }
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////

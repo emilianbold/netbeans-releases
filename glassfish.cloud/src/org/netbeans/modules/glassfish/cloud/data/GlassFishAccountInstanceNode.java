@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
+import javax.swing.Action;
+import org.netbeans.modules.glassfish.cloud.wizards.GlassFishAccountActionRemoveInstance;
+import org.openide.util.actions.SystemAction;
+
 /**
  * GlassFish User Account GUI Node.
  * <p>
@@ -54,15 +58,41 @@ public class GlassFishAccountInstanceNode extends GlassFishInstanceNode {
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
-    /** Cloud instance object. */
+    /** GlassFish user account instance object holding this node. */
     GlassFishAccountInstance instance;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates an instance of GlassFish user account GUI node (Server item
+     * in Services tab).
+     * <p/>
+     * @param instance GlassFish user account instance holding this node.
+     */
     public GlassFishAccountInstanceNode(GlassFishAccountInstance instance) {
         super(instance.getName(), instance);
         this.instance = instance;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Get the set of actions that are associated with this node.
+     * <p/>
+     * @param context Whether to find actions for context meaning or for the
+     *                node itself (ignored).
+     * @return <code>List</code> of actions (you may include nulls
+     *         for separators).
+     */
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SystemAction.get(GlassFishAccountActionRemoveInstance.class)
+        };
     }
 
 }

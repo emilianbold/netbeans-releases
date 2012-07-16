@@ -41,11 +41,8 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
-import org.netbeans.modules.glassfish.cloud.wizards.GlassFishCloudActionRemoveInstance;
-import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -71,6 +68,7 @@ public abstract class GlassFishInstanceNode extends AbstractNode {
 
     /**
      * Creates an instance of GlassFish GUI node.
+     * <p/>
      * @param instance Instance entity object to be added into lookup.
      * @param displayName 
      */
