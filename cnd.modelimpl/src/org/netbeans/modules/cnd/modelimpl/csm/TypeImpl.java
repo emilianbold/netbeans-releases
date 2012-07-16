@@ -46,6 +46,8 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,7 +113,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private CharSequence classifierText;
     private volatile CachePair lastCache = EMPTY_CACHE_PAIR;
 
-    final ArrayList<CsmSpecializationParameter> instantiationParams = new ArrayList<CsmSpecializationParameter>();
+    // lazy initialization here, add new params only with addInstantiationParam method
+    private ArrayList<CsmSpecializationParameter> instantiationParams = null;
 
     // FIX for lazy resolver calls
     private CharSequence[] qname = null;
@@ -143,7 +146,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             CndUtils.assertTrueInConsole(false, "why null classifierText?"+classifier);
             this.classifierText = NON_INITIALIZED_CLASSIFIER_TEXT;
         }
-        instantiationParams.trimToSize();
+        trimInstantiationParams();
     }
 
     // package-local - for facory only
@@ -154,7 +157,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         setFlags(FLAGS_REFERENCE, reference);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
-        instantiationParams.trimToSize();
+        trimInstantiationParams();
     }
 
     // package-local - for factory only
@@ -170,10 +173,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         this.classifierUID = type.classifierUID;
         this.qname = type.qname;
         this.classifierText = type.classifierText;
-        if (!type.instantiationParams.isEmpty()) {
-            this.instantiationParams.addAll(type.instantiationParams);
-        }
-        instantiationParams.trimToSize();
+        addAllInstantiationParams(type.instantiationParams);
+        trimInstantiationParams();
     }
 
     public void setTypeOfTypedef() {
@@ -216,10 +217,8 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         this.classifierUID = type.classifierUID;
         this.qname = type.qname;
         this.classifierText = type.classifierText;
-        if (!instantiationParams.isEmpty()) {
-            this.instantiationParams.addAll(instantiationParams);
-        }
-        this.instantiationParams.trimToSize();
+        addAllInstantiationParams(instantiationParams);
+        trimInstantiationParams();
     }
 
 
@@ -239,11 +238,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             this.classifierUID = ti.classifierUID;
             this.qname = ti.qname;
             this.classifierText = ti.classifierText;
-            if (!ti.instantiationParams.isEmpty()) {
-                this.instantiationParams.addAll(ti.instantiationParams);
-            }
+            addAllInstantiationParams(ti.instantiationParams);
         }
-        instantiationParams.trimToSize();
+        trimInstantiationParams();
     }
 
      /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
@@ -303,17 +300,40 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     @Override
     public List<CsmSpecializationParameter> getInstantiationParams() {
-        return instantiationParams;
+        return instantiationParams == null ? Collections.<CsmSpecializationParameter>emptyList() : instantiationParams;
     }
 
     @Override
     public boolean isInstantiation() {
-        return !instantiationParams.isEmpty();
+        return instantiationParams != null;
     }
 
     /** Though it returns the same for now, it's better if its name differs */
     protected boolean isInstantiationOrSpecialization() {
-        return !instantiationParams.isEmpty();
+        return instantiationParams != null;
+    }
+    
+    final void trimInstantiationParams() {
+        if (instantiationParams != null) {
+            instantiationParams.trimToSize();
+        }
+    }
+    
+    final void addAllInstantiationParams(Collection<CsmSpecializationParameter> params) {
+        if (params == null || params.isEmpty()) {
+            return;
+        }
+        if (instantiationParams == null) {
+            instantiationParams = new ArrayList<CsmSpecializationParameter>();
+        }
+        instantiationParams.addAll(params);
+    }
+    
+    final void addInstantiationParam(CsmSpecializationParameter param) {
+        if (instantiationParams == null) {
+            instantiationParams = new ArrayList<CsmSpecializationParameter>();
+        }
+        instantiationParams.add(param);
     }
 
     @Override
@@ -733,10 +753,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                                     || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                     || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
                                 CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true);
-                                instantiationParams.add(new TypeBasedSpecializationParameterImpl(type));
+                                addInstantiationParam(new TypeBasedSpecializationParameterImpl(type));
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                                instantiationParams.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, getContainingFile(), null),
+                                addInstantiationParam(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, getContainingFile(), null),
                                         getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                             }
                         }
@@ -865,7 +885,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());
         PersistentUtils.readSpecializationParameters(this.instantiationParams, input);
-        instantiationParams.trimToSize();
+        trimInstantiationParams();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
     

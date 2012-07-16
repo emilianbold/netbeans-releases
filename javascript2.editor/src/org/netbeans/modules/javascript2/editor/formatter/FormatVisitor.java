@@ -311,6 +311,10 @@ public class FormatVisitor extends NodeVisitor {
                         JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
                 if (rightBrace != null) {
                     previous = rightBrace.previous();
+                    while (previous != null && previous.isVirtual()
+                            && previous.getKind() != FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS) {
+                        previous = previous.previous();
+                    }
                     assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
                     tokenStream.removeToken(previous);
                 }
@@ -452,15 +456,15 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(TernaryNode ternaryNode, boolean onset) {
         if (onset) {
-            int start = getStart(ternaryNode);
-            FormatToken question = getNextToken(start, JsTokenId.OPERATOR_TERNARY);
+            int start = getStart(ternaryNode.rhs());
+            FormatToken question = getPreviousToken(start, JsTokenId.OPERATOR_TERNARY);
             if (question != null) {
                 FormatToken previous = question.previous();
                 if (previous != null) {
                     appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
                 }
                 appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
-                FormatToken colon = getNextToken(question.getOffset(), JsTokenId.OPERATOR_COLON);
+                FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
                 if (colon != null) {
                     previous = colon.previous();
                     if (previous != null) {
@@ -538,10 +542,11 @@ public class FormatVisitor extends NodeVisitor {
     private void handleStandardBlock(Block block) {
         handleBlockContent(block);
 
-        // indentation mark
+        // indentation mark & block start
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null && !isScript(block)) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark after non white token preceeding curly bracket
@@ -555,10 +560,11 @@ public class FormatVisitor extends NodeVisitor {
     private void handleCaseBlock(Block block) {
         handleBlockContent(block);
 
-        // indentation mark
+        // indentation mark & block start
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark
@@ -579,8 +585,17 @@ public class FormatVisitor extends NodeVisitor {
 
         Node statement = block.getStatements().get(0);
         
-        // indentation mark
+        // indentation mark & block start
         Token token = getPreviousNonEmptyToken(getStart(statement));
+        
+        /*
+         * If its VarNode it does not contain var keyword so we have to search
+         * for it.
+         */
+        if (statement instanceof VarNode && token.id() == JsTokenId.KEYWORD_VAR) {
+            token = getPreviousNonEmptyToken(ts.offset());
+        }
+        
         if (token != null) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
             if (!isScript(block)) {
@@ -588,6 +603,7 @@ public class FormatVisitor extends NodeVisitor {
                     formatToken = tokenStream.getTokens().get(0);
                 }
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
             }
         }
 

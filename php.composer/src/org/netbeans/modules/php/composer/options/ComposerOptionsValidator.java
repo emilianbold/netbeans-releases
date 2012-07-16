@@ -41,70 +41,86 @@
  */
 package org.netbeans.modules.php.composer.options;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.composer.commands.Composer;
-import org.openide.util.NbPreferences;
+import org.openide.util.NbBundle;
 
 /**
- * Composer options.
+ * Validator for Composer options.
  */
-public class ComposerOptions {
+public final class ComposerOptionsValidator {
 
-    // Do not change arbitrary - consult with layer's folder OptionsExport
-    // Path to Preferences node for storing these preferences
-    private static final String PREFERENCES_PATH = "composer"; // NOI18N
-
-    private static final ComposerOptions INSTANCE = new ComposerOptions();
-
-    // composer
-    private static final String COMPOSER_PATH = "composer.path"; // NOI18N
-    private static final String AUTHOR_NAME = "author.name"; // NOI18N
-    private static final String AUTHOR_EMAIL = "author.email"; // NOI18N
-
-    private volatile boolean composerSearched = false;
+    private final List<Message> errors = new LinkedList<Message>();
+    private final List<Message> warnings = new LinkedList<Message>();
 
 
-    public static ComposerOptions getInstance() {
-        return INSTANCE;
+    public void validate(String composerPath, String authorName, String authorEmail) {
+        validateComposer(composerPath);
+        validateAuthor(authorName, authorEmail);
     }
 
-    public String getComposerPath() {
-        String composerPath = getPreferences().get(COMPOSER_PATH, null);
-        if (composerPath == null && !composerSearched) {
-            composerSearched = true;
-            List<String> paths = FileUtils.findFileOnUsersPath(Composer.NAME, Composer.LONG_NAME);
-            if (!paths.isEmpty()) {
-                composerPath = paths.get(0);
-                setComposerPath(composerPath);
-            }
+    public boolean hasErrors() {
+        return !errors.isEmpty();
+    }
+
+    public List<Message> getErrors() {
+        return new ArrayList<Message>(errors);
+    }
+
+    public boolean hasWarnings() {
+        return !warnings.isEmpty();
+    }
+
+    public List<Message> getWarnings() {
+        return new ArrayList<Message>(warnings);
+    }
+
+    private void validateComposer(String composerPath) {
+        String warning = Composer.validate(composerPath);
+        if (warning != null) {
+            warnings.add(new Message("composerPath", warning)); // NOI18N
         }
-        return composerPath;
     }
 
-    public void setComposerPath(String composerPath) {
-        getPreferences().put(COMPOSER_PATH, composerPath);
+    @NbBundle.Messages({
+        "ComposerOptionsValidator.error.noAuthorName=Author name cannot be empty.",
+        "ComposerOptionsValidator.error.invalidAuthorEmail=Author e-mail is not valid."
+    })
+    private void validateAuthor(String authorName, String authorEmail) {
+        // author
+        if (!StringUtils.hasText(authorName)) {
+            errors.add(new Message("authorName", Bundle.ComposerOptionsValidator_error_noAuthorName()));
+        }
+        // email
+        if (!StringUtils.hasText(authorEmail)
+                || !authorEmail.contains("@")) { // NOI18N
+            errors.add(new Message("authorName", Bundle.ComposerOptionsValidator_error_invalidAuthorEmail()));
+        }
     }
 
-    public String getAuthorName() {
-        return getPreferences().get(AUTHOR_NAME, System.getProperty("user.name")); // NOI18N
-    }
+    //~ Inner classes
 
-    public void setAuthorName(String authorName) {
-        getPreferences().put(AUTHOR_NAME, authorName);
-    }
+    public static final class Message {
 
-    public String getAuthorEmail() {
-        return getPreferences().get(AUTHOR_EMAIL, "your@email.here"); // NOI18N
-    }
+        private final String source;
+        private final String message;
 
-    public void setAuthorEmail(String authorEmail) {
-        getPreferences().put(AUTHOR_EMAIL, authorEmail);
-    }
+        public Message(String source, String message) {
+            this.source = source;
+            this.message = message;
+        }
 
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(ComposerOptions.class).node(PREFERENCES_PATH);
+        public String getSource() {
+            return source;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
     }
 
 }

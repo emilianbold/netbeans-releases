@@ -11,7 +11,8 @@ try {
 
 try {
     "hello"
-} catch (error) { {
+} catch (error) {
+    {
         println(error);
     }
 }
@@ -20,11 +21,17 @@ try {
     "hello"
 } catch (error) {
     println(error);
-} finally {}
+} finally {
+}
 
-try {     {"inner"
+try {
+    {
+        "inner"
     }
-} catch (error) {}
+} catch (error) {
+}
 
 try
-{} catch (error) {}
+{
+} catch (error) {
+}

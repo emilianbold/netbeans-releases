@@ -3,7 +3,9 @@ if (x)
 else
     "neco"
 
-if (x){{}
+if (x){
+    {
+    }
     "hello"
 }
 else{
@@ -11,16 +13,21 @@ else{
 
 }
 
-if (done());
-else{ {"ok"
+if (done())
+    ;
+else{
+    {
+        "ok"
     }
 }
 
 if (true)
     a = 7
 
-if ((e || b));
-else{}
+if ((e || b))
+    ;
+else{
+}
 ;
 
 if (element.select && (element.tagName.toLowerCase() != 'input' ||

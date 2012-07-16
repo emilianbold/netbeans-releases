@@ -896,20 +896,6 @@ public class DiscoveryProjectGeneratorImpl {
         projectBridge.convertIncludePaths(set, file.getUserInludePaths(), file.getCompilePath(), file.getFilePath());
     }
 
-    private boolean isDifferentCompilePath(String name, String path){
-        if (Utilities.isWindows()) {
-            name = name.replace('\\', '/'); // NOI18N
-        }
-        int i = name.lastIndexOf('/'); // NOI18N
-        if (i > 0) {
-            name = name.substring(0,i);
-            if (!name.equals(path)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void createFolderStructure(List<ProjectConfiguration> projectConfigurations, Folder sourceRoot ){
         Map<String,Set<Pair>> configurationStructure = new HashMap<String,Set<Pair>>();
         for (ProjectConfiguration config: projectConfigurations){
