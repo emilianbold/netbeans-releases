@@ -45,7 +45,6 @@
 package org.netbeans.modules.groovy.support;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.spi.project.ActionProvider;
@@ -72,10 +71,12 @@ public final class LookupMergerSupport {
 
     private static class ActionProviderMerger implements LookupMerger<ActionProvider> {
 
+        @Override
         public Class<ActionProvider> getMergeableClass() {
             return ActionProvider.class;
         }
 
+        @Override
         public ActionProvider merge(Lookup lookup) {
             return new MergedActionProvider(lookup);
         }
@@ -93,11 +94,11 @@ public final class LookupMergerSupport {
          * Merges all supported actions from all providers.
          * Does not preserve order of actions.
          */
+        @Override
         public String[] getSupportedActions() {
             Set<String> resultSet = new HashSet<String>();
-            Collection<? extends ActionProvider> providers = lookup.lookupAll(ActionProvider.class);
             // merge all supported actions from all providers
-            for (ActionProvider impl : providers) {
+            for (ActionProvider impl : lookup.lookupAll(ActionProvider.class)) {
                 resultSet.addAll(Arrays.asList(impl.getSupportedActions()));
             }
             return resultSet.toArray(new String[resultSet.size()]);
@@ -107,9 +108,9 @@ public final class LookupMergerSupport {
          * Iterates over providers and calls invokeAction on first found provider
          * that has this action enabled.
          */
+        @Override
         public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-            Collection<? extends ActionProvider> providers = lookup.lookupAll(ActionProvider.class);
-            for (ActionProvider impl : providers) {
+            for (ActionProvider impl : lookup.lookupAll(ActionProvider.class)) {
                 if (impl.isActionEnabled(command, context)) {
                     impl.invokeAction(command, context);
                     return;
@@ -120,16 +121,14 @@ public final class LookupMergerSupport {
         /*
          * Returns true if at least one provider returns true.
          */
+        @Override
         public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-            Collection<? extends ActionProvider> providers = lookup.lookupAll(ActionProvider.class);
-            for (ActionProvider impl : providers) {
+            for (ActionProvider impl : lookup.lookupAll(ActionProvider.class)) {
                 if (impl.isActionEnabled(command, context)) {
                     return true;
                 }
             }
             return false;
         }
-        
     }
-
 }
