@@ -311,6 +311,10 @@ public class FormatVisitor extends NodeVisitor {
                         JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
                 if (rightBrace != null) {
                     previous = rightBrace.previous();
+                    while (previous != null && previous.isVirtual()
+                            && previous.getKind() != FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS) {
+                        previous = previous.previous();
+                    }
                     assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
                     tokenStream.removeToken(previous);
                 }
