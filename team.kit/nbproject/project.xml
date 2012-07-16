@@ -148,7 +148,12 @@
                     <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
-                
+                <dependency>
+                    <code-name-base>javax.servlet</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency/>
+                </dependency>
+                                
                 <dependency>
                     <code-name-base>org.netbeans.libs.smack</code-name-base>
                     <run-dependency>
