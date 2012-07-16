@@ -363,11 +363,13 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public String getHtmlDisplayName() {
-            return new StringBuilder()
+            return isShowAllProperties() 
+                    ? new StringBuilder()
                     .append("<b>")
                     .append(declaration.getProperty().getContent())
                     .append("</b>")
-                    .toString();
+                    .toString()
+                    : super.getHtmlDisplayName();
         }
 
         @Override
