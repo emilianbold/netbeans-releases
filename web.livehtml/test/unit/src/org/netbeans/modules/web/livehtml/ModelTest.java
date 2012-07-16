@@ -90,13 +90,13 @@ public class ModelTest extends NbTestCase{
         f.mkdir();
         Analysis m = new Analysis(f, null);
         HtmlSource source = DiffTest.getHtmlSource(getDataDir(), "model/test001-v1.html");
-        m.storeDocumentVersion(0, source.getSourceCode().toString(), "[{}]", true);
+        m.storeDocumentVersion("0", source.getSourceCode().toString(), "[{}]", true);
         HtmlSource source2 = DiffTest.getHtmlSource(getDataDir(), "model/test001-v2.html");
-        m.storeDocumentVersion(1, source2.getSourceCode().toString(), "[{}]", true);
+        m.storeDocumentVersion("1", source2.getSourceCode().toString(), "[{}]", true);
         HtmlSource source3 = DiffTest.getHtmlSource(getDataDir(), "model/test001-v3.html");
-        m.storeDocumentVersion(2, source3.getSourceCode().toString(), "[{}]", true);
+        m.storeDocumentVersion("2", source3.getSourceCode().toString(), "[{}]", true);
         HtmlSource source4 = DiffTest.getHtmlSource(getDataDir(), "model/test001-v4.html");
-        m.storeDocumentVersion(3, source4.getSourceCode().toString(), "[{}]", true);
+        m.storeDocumentVersion("3", source4.getSourceCode().toString(), "[{}]", true);
         
         Revision r = m.getRevision(1, false);
         DiffTest.assertAddChange(192, 8, "id=\"new\"", source2, r.getChanges().get(0));
