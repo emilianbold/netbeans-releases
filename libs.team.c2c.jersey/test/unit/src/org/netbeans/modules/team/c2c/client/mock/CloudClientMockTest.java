@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.team.c2c.client.mock;
 
+import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.team.c2c.client.api.ClientFactory;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.c2c.client.impl.C2ClientImpl;
 
 /**
  *
@@ -53,7 +57,7 @@ import org.netbeans.modules.team.c2c.client.api.CloudClient;
  */
 public class CloudClientMockTest extends NbTestCase {
 
-    private CloudClient client;
+    private C2ClientImpl client;
 
     public CloudClientMockTest(String arg0) {
         super(arg0);
@@ -64,9 +68,35 @@ public class CloudClientMockTest extends NbTestCase {
         return Level.ALL;
     }
 
-    public void testMockClient() throws Exception {
+    @Override
+    protected void setUp() throws Exception {
         System.setProperty("cloud-client-mock", Boolean.TRUE.toString());
-        client = ClientFactory.getInstance().createClient(new File(getDataDir(), "ods-json").getAbsolutePath(), null);
-        assertTrue(client instanceof CloudClientMock);
+        super.setUp();
     }
+    
+    public void testMockClient() throws Exception {
+        assertTrue(getClient().getDelegate() instanceof CloudClientMock);
+    }
+    
+    public void testGetMyProjects() throws Exception {
+        List<Project> projects = getClient().getMyProjects();
+        assertNotNull(projects);
+        assertEquals(2, projects.size());
+    }
+    
+    public void testGetProjectById () throws Exception {
+        Project project = getClient().getProjectById("anagram-game");
+        assertNotNull(project);
+        assertEquals("anagram-game", project.getIdentifier());
+    }
+    
+    private C2ClientImpl getClient() throws CloudException, MalformedURLException {
+        if(client == null) {
+            client = new C2ClientImpl();
+            client.initialize(new File(getDataDir(), "ods-json").getAbsolutePath(), null);
+        }
+        return client;
+    }
+    
+    
 }

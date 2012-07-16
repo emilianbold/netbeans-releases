@@ -65,9 +65,12 @@ public class C2ClientImpl implements CloudClient {
     
     private CloudClient delegate;
 
+    public CloudClient getDelegate() {
+        return delegate;
+    }
+    
     public C2ClientImpl() {
-        if (System.getProperty("cloud-client-mock", Boolean.FALSE.toString()).equalsIgnoreCase(Boolean.TRUE.toString())) {
-            System.setProperty("cloud-client-mock", Boolean.FALSE.toString());
+        if (Boolean.getBoolean("team.c2c.mockClient")) {
             delegate = new CloudClientMock();
         } else {
             delegate = new C2CJersey();
