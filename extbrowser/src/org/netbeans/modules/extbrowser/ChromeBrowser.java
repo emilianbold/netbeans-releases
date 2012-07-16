@@ -137,7 +137,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
             File file = getLocalAppPath();
             if ( file.exists() && file.canExecute() ){
                 setDDEServer(ExtWebBrowser.CHROME);
-                return new NbProcessDescriptor (b, params);
+                return new NbProcessDescriptor (file.getPath(), params);
             }
             /*
              * Chrome is installed at the moment in the local user directory.
