@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.composer.commands;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
@@ -66,15 +69,19 @@ public final class Composer extends PhpProgram {
 
     private static final String LOCK_FILENAME = "composer.json"; // NOI18N
 
-    private static final String[] DEFAULT_PARAMS = {
-        "--ansi", // NOI18N
-        "--no-interaction", // NOI18N
-    };
+    // commands
     private static final String INIT_COMMAND = "init"; // NOI18N
     private static final String INSTALL_COMMAND = "install"; // NOI18N
     private static final String UPDATE_COMMAND = "update"; // NOI18N
     private static final String VALIDATE_COMMAND = "validate"; // NOI18N
     private static final String SELF_UPDATE_COMMAND = "self-update"; // NOI18N
+    // params
+    private static final String[] DEFAULT_PARAMS = {
+        "--ansi", // NOI18N
+        "--no-interaction", // NOI18N
+    };
+    private static final String NAME_PARAM = "--name=%s"; // NOI18N
+    private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
 
 
     public Composer(String command) {
@@ -116,7 +123,12 @@ public final class Composer extends PhpProgram {
                 return;
             }
         }
-        runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init());
+        // command params
+        ComposerOptions options = ComposerOptions.getInstance();
+        List<String> params = Arrays.asList(
+                String.format(NAME_PARAM, phpModule.getDisplayName()),
+                String.format(AUTHOR_PARAM, options.getAuthorName(), options.getAuthorEmail()));
+        runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init(), params);
     }
 
     @NbBundle.Messages("Composer.run.install=Composer install")
@@ -140,7 +152,11 @@ public final class Composer extends PhpProgram {
     }
 
     private void runCommand(PhpModule phpModule, String command, String title) {
-        ExternalProcessBuilder processBuilder = getBuilder(phpModule, command);
+        runCommand(phpModule, command, title, Collections.<String>emptyList());
+    }
+
+    private void runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
+        ExternalProcessBuilder processBuilder = getBuilder(phpModule, command, commandParams);
         if (processBuilder == null) {
             warnNoSources(phpModule.getDisplayName());
             return;
@@ -148,7 +164,7 @@ public final class Composer extends PhpProgram {
         PhpProgram.executeLater(processBuilder, getDescriptor(), title);
     }
 
-    private ExternalProcessBuilder getBuilder(PhpModule phpModule, String command) {
+    private ExternalProcessBuilder getBuilder(PhpModule phpModule, String command, List<String> commandParams) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             return null;
@@ -166,7 +182,11 @@ public final class Composer extends PhpProgram {
             for (String param : DEFAULT_PARAMS) {
                 processBuilder = processBuilder.addArgument(param);
             }
-            return processBuilder.addArgument(command);
+            processBuilder = processBuilder.addArgument(command);
+            for (String param : commandParams) {
+                processBuilder = processBuilder.addArgument(param);
+            }
+            return processBuilder;
         } catch (InvalidPhpProgramException ex) {
             // ignored, should not happen
         }

@@ -47,8 +47,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.composer.commands.Composer;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
+import org.netbeans.modules.php.composer.options.ComposerOptionsValidator;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -77,6 +77,8 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
     @Override
     public void update() {
         composerOptionsPanel.setComposerPath(getOptions().getComposerPath());
+        composerOptionsPanel.setAuthorName(getOptions().getAuthorName());
+        composerOptionsPanel.setAuthorEmail(getOptions().getAuthorEmail());
 
         changed = false;
     }
@@ -84,6 +86,8 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
     @Override
     public void applyChanges() {
         getOptions().setComposerPath(composerOptionsPanel.getComposerPath());
+        getOptions().setAuthorName(composerOptionsPanel.getAuthorName());
+        getOptions().setAuthorEmail(composerOptionsPanel.getAuthorEmail());
 
         changed = false;
     }
@@ -94,13 +98,18 @@ public class ComposerOptionsPanelController extends OptionsPanelController imple
 
     @Override
     public boolean isValid() {
+        ComposerOptionsValidator validator = new ComposerOptionsValidator();
+        validator.validate(composerOptionsPanel.getComposerPath(), composerOptionsPanel.getAuthorName(), composerOptionsPanel.getAuthorEmail());
+        // errors
+        if (validator.hasErrors()) {
+            composerOptionsPanel.setError(validator.getErrors().get(0).getMessage());
+            return false;
+        }
         // warnings
-        String warning = Composer.validate(composerOptionsPanel.getComposerPath());
-        if (warning != null) {
-            composerOptionsPanel.setWarning(warning);
+        if (validator.hasWarnings()) {
+            composerOptionsPanel.setWarning(validator.getWarnings().get(0).getMessage());
             return true;
         }
-
         // everything ok
         composerOptionsPanel.setError(" "); // NOI18N
         return true;
