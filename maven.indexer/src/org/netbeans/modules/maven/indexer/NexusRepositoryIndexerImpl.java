@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -98,6 +99,7 @@ import org.apache.maven.settings.crypto.SettingsDecrypter;
 import org.apache.maven.settings.crypto.SettingsDecryptionResult;
 import org.apache.maven.wagon.Wagon;
 import org.apache.maven.wagon.authentication.AuthenticationInfo;
+import org.apache.maven.wagon.providers.http.HttpWagon;
 import org.apache.maven.wagon.proxy.ProxyInfo;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
@@ -481,7 +483,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         }
                     }
                     // MINDEXER-42: cannot use WagonHelper.getWagonResourceFetcher
-                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(embedder.lookup(Wagon.class, protocol), listener, wagonAuth, wagonProxy);
+                    HttpWagon wagon = (HttpWagon) embedder.lookup(Wagon.class, protocol);
+                    //#215343
+                    Properties p = new Properties();
+                    p.setProperty("User-Agent", "netBeans/" + System.getProperty("netbeans.buildnumber"));
+                    wagon.setHttpHeaders(p);
+                    ResourceFetcher fetcher = new WagonHelper.WagonFetcher(wagon, listener, wagonAuth, wagonProxy);
                     listener.setFetcher(fetcher);
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext, fetcher);
                     NotifyingIndexCreator nic = null;
