@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -205,7 +206,7 @@ public class CGSInfo {
                             List<String> existingGetters = new ArrayList<String>();
                             List<String> existingSetters = new ArrayList<String>();
 
-                            PropertiesVisitor visitor = new PropertiesVisitor(getProperties(), existingGetters, existingSetters);
+                            PropertiesVisitor visitor = new PropertiesVisitor(getProperties(), existingGetters, existingSetters, Utils.getRoot(info));
                             visitor.scan(classDecl);
                             String propertyName;
                             boolean existGetter, existSetter;
@@ -256,11 +257,13 @@ public class CGSInfo {
         private final List<String> existingGetters;
         private final List<String> existingSetters;
         private final List<Property> properties;
+        private final Program program;
 
-        public PropertiesVisitor(List<Property> properties, List<String> existingGetters, List<String> existingSetters) {
+        public PropertiesVisitor(List<Property> properties, List<String> existingGetters, List<String> existingSetters, Program program) {
             this.existingGetters = existingGetters;
             this.existingSetters = existingSetters;
             this.properties = properties;
+            this.program = program;
         }
 
         @Override
@@ -271,10 +274,44 @@ public class CGSInfo {
                     Variable variable = singleFieldDeclaration.getName();
                     if (variable != null && variable.getName() instanceof Identifier) {
                         String name = ((Identifier) variable.getName()).getName();
-                        getProperties().add(new Property(name, node.getModifier()));
+                        getProperties().add(new Property(name, node.getModifier(), getPropertyType(singleFieldDeclaration)));
                     }
                 }
             }
+        }
+
+        private String getPropertyType(final ASTNode node) {
+            String result = ""; //NOI18N
+            Comment comment = Utils.getCommentForNode(program, node);
+            if (comment instanceof PHPDocBlock) {
+                result = getFirstTypeFromBlock((PHPDocBlock) comment);
+            }
+            return result;
+        }
+
+        private String getFirstTypeFromBlock(final PHPDocBlock phpDoc) {
+            String result = ""; //NOI18N
+            for (PHPDocTag pHPDocTag : phpDoc.getTags()) {
+                if (pHPDocTag instanceof PHPDocTypeTag && pHPDocTag.getKind().equals(PHPDocTag.Type.VAR)) {
+                    result = getFirstTypeFromTag((PHPDocTypeTag) pHPDocTag);
+                    if (!result.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+
+        private String getFirstTypeFromTag(final PHPDocTypeTag typeTag) {
+            String result = ""; //NOI18N
+            for (PHPDocTypeNode typeNode : typeTag.getTypes()) {
+                String type = typeNode.getValue();
+                if (!VariousUtils.isPrimitiveType(type) && !VariousUtils.isSpecialClassName(type)) {
+                    result = type;
+                    break;
+                }
+            }
+            return result;
         }
 
         @Override
