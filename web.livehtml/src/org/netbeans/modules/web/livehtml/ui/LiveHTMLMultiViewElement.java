@@ -56,7 +56,7 @@ import org.openide.windows.TopComponent;
 persistenceType = TopComponent.PERSISTENCE_NEVER,
 preferredID = LiveHTMLTopComponent.PREFERRED_ID,
 mimeType = "text/html",
-position = 1000000)
+position = 9127)
 public class LiveHTMLMultiViewElement extends AnalysisPanel implements MultiViewElement {
 
     public LiveHTMLMultiViewElement(Lookup lookup) {
