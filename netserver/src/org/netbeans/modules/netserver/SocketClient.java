@@ -44,8 +44,12 @@ package org.netbeans.modules.netserver;
 
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
 
 
 /**
@@ -56,10 +60,25 @@ public class SocketClient extends SocketFramework {
 
     public SocketClient(SocketAddress address ) throws IOException {
         super();
+        writeQueue = new ConcurrentLinkedQueue<ByteBuffer>();
         socketChannel = SocketChannel.open();
         socketChannel.configureBlocking( false );
         socketChannel.connect( address );
         socketChannel.register( getSelector(), SelectionKey.OP_CONNECT );
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.SocketFramework#run()
+     */
+    @Override
+    public void run() {
+        super.run();
+        try {
+            socketChannel.close();
+        }
+        catch (IOException e) {
+            LOG.log(Level.WARNING, null, e);
+        }
     }
 
     /* (non-Javadoc)
@@ -88,7 +107,7 @@ public class SocketClient extends SocketFramework {
         super.process(key);
     }
     
-    protected SocketChannel getChanel(){
+    protected SocketChannel getChannel(){
         return socketChannel;
     }
 
@@ -98,6 +117,12 @@ public class SocketClient extends SocketFramework {
         }
         socketChannel.register(getSelector(), SelectionKey.OP_READ);
     }
+    
+    @Override
+    protected Queue<ByteBuffer> getWriteQueue( SelectionKey key ){
+        return writeQueue;
+    }
 
     private SocketChannel socketChannel;
+    private Queue<ByteBuffer> writeQueue;
 }

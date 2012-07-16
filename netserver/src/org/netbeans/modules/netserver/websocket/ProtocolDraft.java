@@ -69,7 +69,7 @@ public final class ProtocolDraft {
         version = 0;
     }
     
-    public ProtocolDraft getProtocol( int number ){
+    public static ProtocolDraft getProtocol( int number ){
         if ( number == 75 ){
             return new ProtocolDraft( Draft.Draft75 );
         }
@@ -87,7 +87,7 @@ public final class ProtocolDraft {
         }
     }
     
-    public ProtocolDraft getRFC(){
+    public static ProtocolDraft getRFC(){
         return new ProtocolDraft();
     }
     

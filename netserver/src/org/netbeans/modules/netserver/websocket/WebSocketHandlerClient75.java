@@ -42,6 +42,11 @@
  */
 package org.netbeans.modules.netserver.websocket;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.charset.Charset;
+
 
 
 /**
@@ -51,7 +56,22 @@ package org.netbeans.modules.netserver.websocket;
 class WebSocketHandlerClient75 extends AbstractWSHandler75 {
 
     WebSocketHandlerClient75( WebSocketClient webSocketClient ) {
-        // TODO Auto-generated constructor stub
+        client = webSocketClient;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#read(java.nio.ByteBuffer)
+     */
+    @Override
+    public void read( ByteBuffer byteBuffer ) throws IOException {
+        if ( handshakeRed ){
+            super.read(byteBuffer);
+        }
+        else {
+            readHandshakeResponse( byteBuffer );
+            handshakeRed = true;
+            getClient().getWebSocketReadHandler().accepted(getKey());
+        }
     }
 
     /* (non-Javadoc)
@@ -59,8 +79,74 @@ class WebSocketHandlerClient75 extends AbstractWSHandler75 {
      */
     @Override
     public void sendHandshake() {
-        // TODO Auto-generated method stub
-
+        StringBuilder builder = new StringBuilder(Utils.GET);
+        builder.append(' ');
+        builder.append(getClient().getUri().getPath());
+        builder.append(' ');
+        builder.append( Utils.HTTP_11);
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.WS_UPGRADE);
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.HOST);
+        builder.append(": ");                               // NOI18N
+        builder.append(getClient().getUri().getHost());
+        builder.append(Utils.CRLF);
+        
+        builder.append("Origin: ");
+        builder.append( Utils.getOrigin(getClient().getUri()));
+        
+        builder.append(Utils.WS_PROTOCOL);
+        builder.append(": chat");                             // NOI18N
+        
+        builder.append( Utils.CRLF );
+        builder.append( Utils.CRLF );
+        
+        getClient().send(builder.toString().getBytes( 
+                Charset.forName(Utils.UTF_8)), getKey() );
+    }
+    
+    protected void readHandshakeResponse( ByteBuffer buffer) throws IOException {
+        Utils.readHttpRequest(getClient().getChannel(), buffer);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#getKey()
+     */
+    @Override
+    protected SelectionKey getKey() {
+        return getClient().getKey();
     }
 
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#close()
+     */
+    @Override
+    protected void close() throws IOException {
+        getClient().close(getKey());
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#readDelegate(byte[])
+     */
+    @Override
+    protected void readDelegate( byte[] bytes ) {
+        client.getWebSocketReadHandler().read(getKey(), bytes, null); 
+    }
+    
+    protected WebSocketClient getClient(){
+        return client;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#isStopped()
+     */
+    @Override
+    protected boolean isStopped() {
+        return getClient().isStopped();
+    }
+
+    private boolean handshakeRed;
+    private WebSocketClient client;
 }
