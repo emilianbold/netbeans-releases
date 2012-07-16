@@ -60,6 +60,10 @@ public class Bundle {
     private static final String ADD_CLOUD_WIZARD_PANEL_NAME_PREFIX
             = "GlassFish.cloud.wizard.panel.";
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes - cloud wizard panel                                  //
+    ////////////////////////////////////////////////////////////////////////////
+
     /** Add Cloud panel name property suffix
      *  (GlassFish.cloud.wizard.panel.&lt;index&gt;.name
      *  after &lt;index&gt;). */
@@ -97,6 +101,18 @@ public class Bundle {
     static final String ADD_CLOUD_WIZARD_DISPLAY_NAME
             = "GlassFish.cloud.wizard.displayName";
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes - cloud wizard actions                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Cloud instance popup menu: remove action display name. */
+    static final String CLOUD_ACTION_REMOVE_NAME
+            = "GlassFishCloudActionRemoveInstance.name";
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes - user account wizard panel                           //
+    ////////////////////////////////////////////////////////////////////////////
+
     /** Add User Account wizard name property. */
     static final String ADD_ACCOUNT_WIZARD_DISPLAY_NAME
             = "GlassFish.account.wizard.displayName";
@@ -128,7 +144,6 @@ public class Bundle {
     /** User account panel validation error: User password is empty. */
     static final String USER_PANEL_ERROR_USER_PASSWORD_EMPTY
             = "GlassFishAcocuntWizardUserPanel.error.user.password.empty";
-
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////

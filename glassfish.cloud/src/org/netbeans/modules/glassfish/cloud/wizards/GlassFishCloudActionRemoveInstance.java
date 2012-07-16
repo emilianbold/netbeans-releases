@@ -45,6 +45,7 @@ import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import static org.openide.util.NbBundle.getMessage;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -73,7 +74,8 @@ public class GlassFishCloudActionRemoveInstance extends NodeAction {
 
     @Override
     public String getName() {
-        return "Remove";
+        return getMessage(GlassFishCloudActionRemoveInstance.class,
+                Bundle.CLOUD_ACTION_REMOVE_NAME);
     }
 
     @Override

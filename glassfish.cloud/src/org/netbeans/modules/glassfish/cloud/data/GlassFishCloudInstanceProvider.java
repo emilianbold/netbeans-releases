@@ -65,10 +65,10 @@ public class GlassFishCloudInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
 
     /** GlassFish cloud instance properties name space. */
-    static final String PROPERTIES_NAME_SPACE="GlassFish.cloud.cpas";
+    private static final String PROPERTIES_NAME_SPACE="GlassFish.cloud.cpas";
 
     /** GlassFish cloud instance key ring name space. */
-    static final String KEYRING_NAME_SPACE="GlassFish.cloud.cpas";
+    private static final String KEYRING_NAME_SPACE="GlassFish.cloud.cpas";
 
     /** Singleton object instance. */
     private static volatile GlassFishCloudInstanceProvider instance;
@@ -257,7 +257,7 @@ public class GlassFishCloudInstanceProvider
      * @param instance GlassFish cloud instance to be removed.
      */
     public void removeInstance(GlassFishCloudInstance instance) {
-        // TODO: Remove from persistence properties.
+        remove(instance);
         serverInstances.remove(instance.getServerInstance());
         cloudInstances.remove(instance.getDisplayName());
         changeListeners.fireChange();
@@ -273,9 +273,11 @@ public class GlassFishCloudInstanceProvider
      * @param instance GlassFish Cloud Instance to be stored.
      */
     private void store(GlassFishCloudInstance instance) {
-        InstanceProperties props = InstancePropertiesManager.getInstance()
-                .createProperties(
-                PROPERTIES_NAME_SPACE);
+        InstanceProperties props;
+        synchronized (this) {
+            props = InstancePropertiesManager.getInstance().createProperties(
+                    PROPERTIES_NAME_SPACE);
+        }
         instance.store(props);
     }
 
@@ -284,14 +286,32 @@ public class GlassFishCloudInstanceProvider
      * persistent properties.
      */
     private void load() {
-        for(InstanceProperties props
+        for (InstanceProperties props
                 : InstancePropertiesManager.getInstance()
-                .getProperties(
-                PROPERTIES_NAME_SPACE)) {
+                .getProperties(PROPERTIES_NAME_SPACE)) {
             GlassFishCloudInstance cloudInstance
                     = GlassFishCloudInstance.load(props);
             if (cloudInstance != null) {
                 addInstanceWithoutStoring(cloudInstance);
+            }
+        }
+    }
+
+    /**
+     * Remove given GlassFish Cloud Instance from properties to persist.
+     * <p/>
+     * @param instance GlassFish Cloud Instance to be removed.
+     */
+    private void remove(GlassFishCloudInstance instance) {
+        List<InstanceProperties> propsList = InstancePropertiesManager
+                .getInstance().getProperties(PROPERTIES_NAME_SPACE);
+        synchronized (this) {
+            for (Iterator<InstanceProperties> i = propsList.iterator();
+                    i.hasNext(); ) {
+                InstanceProperties props = i.next();
+                if (instance.equalProps(props)) {
+                    props.remove();
+                }
             }
         }
     }

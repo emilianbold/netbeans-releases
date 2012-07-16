@@ -81,14 +81,4 @@ public abstract class GlassFishInstanceNode extends AbstractNode {
         setIconBaseWithExtension(GLASSFISH_ICON);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Methods                                                                //
-    ////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(GlassFishCloudActionRemoveInstance.class)
-        };
-    }
 }
