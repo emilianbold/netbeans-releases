@@ -190,7 +190,7 @@ public final class CloudClientMock implements CloudClient {
     private void loadData() {
         loadProfile();
         loadProjects();
-        loadHutson();
+        loadHudson();
     }
 
     private void loadProfile() {
@@ -227,7 +227,7 @@ public final class CloudClientMock implements CloudClient {
         }
     }
 
-    private void loadHutson() {
+    private void loadHudson() {
         int i = 0;
         for (Project project : projects) {
             HudsonStatus hudsonStatus = new HudsonStatus();
