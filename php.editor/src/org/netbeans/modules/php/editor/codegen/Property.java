@@ -50,8 +50,8 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  */
 public class Property {
 
-    final private String name;
-    final private int modifier;
+    private final String name;
+    private final int modifier;
     private boolean selected;
     private final String type;
 
