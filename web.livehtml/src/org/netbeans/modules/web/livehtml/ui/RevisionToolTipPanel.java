@@ -77,9 +77,9 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
                     component.setEnabled(revisionToolTipService.canProcess(revision));
                 }
                 
-                JScrollPane scrollPane = new JScrollPane(component);
+//                JScrollPane scrollPane = new JScrollPane(component);
                 
-                toolTipTabbedPane.addTab(revisionToolTipService.getName(), scrollPane);
+                toolTipTabbedPane.addTab(revisionToolTipService.getName(), component);
                 toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
                 
                 i += 1;
@@ -88,14 +88,14 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
             for (RevisionToolTipService revisionToolTipService : Lookup.getDefault().lookupAll(RevisionToolTipService.class)) {
                 for (int i = 0; i < components.length; i++) {
                     Component component = components[i];
-                    if (component instanceof JScrollPane) {
-                        JScrollPane scrollPane = (JScrollPane) component;
-                        final Component view = scrollPane.getViewport().getView();
+//                    if (component instanceof JScrollPane) {
+//                        JScrollPane scrollPane = (JScrollPane) component;
+//                        final Component view = scrollPane.getViewport().getView();
                         if (revisionToolTipService.getName().equals(toolTipTabbedPane.getTitleAt(i))) {
-                            revisionToolTipService.update(view, revision);
+                            revisionToolTipService.update(component, revision);
                             toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
                         }
-                    }
+//                    }
                 }
             }
         }

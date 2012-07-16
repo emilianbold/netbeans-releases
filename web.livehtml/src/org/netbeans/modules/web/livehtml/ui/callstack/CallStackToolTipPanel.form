@@ -27,10 +27,6 @@
   </Layout>
   <SubComponents>
     <Component class="org.openide.explorer.view.ListView" name="listView1">
-      <Properties>
-        <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
-        <Property name="verticalScrollBarPolicy" type="int" value="21"/>
-      </Properties>
     </Component>
   </SubComponents>
 </Form>

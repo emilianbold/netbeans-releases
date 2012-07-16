@@ -82,9 +82,6 @@ public class CallStackToolTipPanel extends javax.swing.JPanel implements Explore
 
         listView1 = new org.openide.explorer.view.ListView();
 
-        listView1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        listView1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(

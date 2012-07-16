@@ -42,8 +42,14 @@
 package org.netbeans.modules.web.livehtml.filter;
 
 import java.io.File;
+import java.net.URL;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.web.livehtml.Analysis;
+import org.netbeans.modules.web.livehtml.AnalysisListener;
+import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.diff.Diff;
 
 /**
  *
@@ -52,14 +58,53 @@ import org.netbeans.modules.web.livehtml.Analysis;
 public class FilteredAnalysis extends Analysis {
     
     private final Analysis parentAnalysis;
-    private final RevisionFilter revisionFilter;
+    private RevisionFilter revisionFilter;
 
     public FilteredAnalysis(Analysis parentAnalysis, RevisionFilter revisionFilter, File root, String initialContent) {
         super(root, initialContent);
         this.parentAnalysis = parentAnalysis;
-        this.revisionFilter = revisionFilter;
+        setRevisionFilter(revisionFilter);
         
         makeFinished();
     }
 
+    public Analysis getParentAnalysis() {
+        return parentAnalysis;
+    }
+
+    public final void setRevisionFilter(RevisionFilter revisionFilter) {
+        this.revisionFilter = revisionFilter;
+        
+        List<String> filteredTimeStamps = new CopyOnWriteArrayList<String>();
+        
+        for (int i = 1; i <= parentAnalysis.getRevisionsCount(); i++) {
+            final Revision revision = parentAnalysis.getRevision(i, false);
+            if (revision != null && revisionFilter.match(revision)) {
+                filteredTimeStamps.add(revision.getTimeStamp());
+            }
+        }
+    }
+
+    public RevisionFilter getRevisionFilter() {
+        return revisionFilter;
+    }
+
+    @Override
+    public Revision getRevision(int changeIndex, boolean reformatRevision) {
+        final String filteredTimeStamp = getTimeStamps().get(changeIndex);
+        int timeStampIndex = -1;
+        for (int i = 0; i < parentAnalysis.getTimeStampsCount(); i++) {
+            String timeStamp = parentAnalysis.getTimeStamps().get(i);
+            if (filteredTimeStamp.equals(timeStamp)) {
+                timeStampIndex = i;
+            }
+        }
+        
+        if (timeStampIndex == -1) {
+            return null;
+        }
+        
+        return parentAnalysis.getRevision(timeStampIndex, reformatRevision);
+    }
+    
 }
