@@ -1033,6 +1033,7 @@ public class ImportProject implements PropertyChangeListener {
                                     done = true;
                                     exeLogDone = true;
                                     extension.apply(map, makeProject);
+                                    DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
                                     importResult.put(Step.DiscoveryLog, State.Successful);
                                 } catch (IOException ex) {
                                     ex.printStackTrace(System.err);
@@ -1063,6 +1064,7 @@ public class ImportProject implements PropertyChangeListener {
                             try {
                                 done = true;
                                 extension.apply(map, makeProject);
+                                DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
                                 if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                                     importResult.put(Step.DiscoveryLog, State.Successful);
                                 } else {
@@ -1092,6 +1094,7 @@ public class ImportProject implements PropertyChangeListener {
                             try {
                                 done = true;
                                 extension.apply(map, makeProject);
+                                DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
                                 importResult.put(Step.DiscoveryLog, State.Successful);
                             } catch (IOException ex) {
                                 ex.printStackTrace(System.err);
@@ -1156,6 +1159,7 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
         saveMakeConfigurationDescriptor(null);
+        DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
     }
 
     private void saveMakeConfigurationDescriptor(final ProjectBase p) {
@@ -1177,7 +1181,7 @@ public class ImportProject implements PropertyChangeListener {
             logger.log(Level.INFO, "#save configuration descriptor"); // NOI18N
         }
     }
-
+    
     private void postModelDiscovery(final boolean isFull) {
         if (!isProjectOpened()) {
             isFinished = true;
@@ -1287,6 +1291,7 @@ public class ImportProject implements PropertyChangeListener {
             logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
         }
         DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, logger);
+        DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
         importResult.put(Step.FixExcluded, State.Successful);
     }
 

@@ -48,6 +48,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -68,6 +70,7 @@ import org.openide.util.RequestProcessor;
  */
 public final class ToolchainValidator {
     private static final boolean DISABLED = Boolean.getBoolean("cnd.toolchain.validator.disabled") || CompilerSetManagerImpl.DISABLED; // NOI18N
+    private static final Logger LOG = Logger.getLogger(ToolchainValidator.class.getName());
 
     public static final ToolchainValidator INSTANCE = new ToolchainValidator();
     private static final RequestProcessor RP = new RequestProcessor("Tool collection validator", 1); // NOI18N
@@ -144,17 +147,38 @@ public final class ToolchainValidator {
         }
         List<String> systemIncludeDirectories = tool.getSystemIncludeDirectories();
         List<String> systemPreprocessorSymbols = tool.getSystemPreprocessorSymbols();
-        if (!compareLists(systemIncludesAndDefines.get(0), systemIncludeDirectories)) {
+        if (!comparePathsLists(systemIncludesAndDefines.get(0), systemIncludeDirectories, tool)) {
             return false;
         }
-        if (!compareLists(systemIncludesAndDefines.get(1), systemPreprocessorSymbols)) {
+        if (!compareMacrosLists(systemIncludesAndDefines.get(1), systemPreprocessorSymbols, tool)) {
             return false;
         }
         return true;
     }
 
-    private boolean compareLists(List<String> newList, List<String> oldList) {
+    private boolean comparePathsLists(List<String> newList, List<String> oldList, AbstractCompiler tool) {
         Set<String> oldSet = new HashSet<String>(oldList);
+        boolean res = true;
+        for(String s : newList) {
+            if (!oldSet.contains(s)) {
+                LOG.log(Level.FINE, "Tool {0} was changed. Added system include path {1}", new Object[]{tool.getDisplayName(), s});
+                res = false;
+            }
+        }
+        return res;
+    }
+
+    private boolean compareMacrosLists(List<String> newList, List<String> oldList, AbstractCompiler tool) {
+        Map<String,String> oldMap = new HashMap<String,String>();
+        for(String s : oldList) {
+            int i = s.indexOf('=');
+            if (i > 0) {
+                oldMap.put(s.substring(0,i), s.substring(i+1));
+            } else {
+                oldMap.put(s, null);
+            }
+        }
+        boolean res = true;
         for(String s : newList) {
             if (s.startsWith("__TIME__") || // NOI18N
                 s.startsWith("__DATE__") || // NOI18N
@@ -162,11 +186,37 @@ public final class ToolchainValidator {
                 s.startsWith("__LINE__")) { // NOI18N
                 continue;
             }
-            if (!oldSet.contains(s)) {
-                return false;
+            String key;
+            String value;
+            int i = s.indexOf('=');
+            if (i > 0) {
+                key = s.substring(0,i);
+                value = s.substring(i+1);
+            } else {
+                key = s;
+                value = null;
             }
+            if (!oldMap.containsKey(key)) {
+                LOG.log(Level.FINE, "Tool {0} was changed. Added macro {1}", new Object[]{tool.getDisplayName(), s});
+                res = false;
+            }
+            String oldValue = oldMap.get(key);
+            if (value == null && oldValue == null) {
+                // equals
+                continue;
+            }
+            if (value == null && "1".equals(oldValue) ||
+                "1".equals(value) && oldValue == null) {
+                // equals
+                continue;
+            }
+            if (value != null && oldValue != null && value.equals(oldValue)) {
+                // equals
+                continue;
+            }
+            LOG.log(Level.FINE, "Tool {0} was changed. Changed macro {1} from [{2}] to [{3}]", new Object[]{tool.getDisplayName(), key, oldValue, value});
+            res = false;
         }
-        return true;
+        return res;
     }
-
 }

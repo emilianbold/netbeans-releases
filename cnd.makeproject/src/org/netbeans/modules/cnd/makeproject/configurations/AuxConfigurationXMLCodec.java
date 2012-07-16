@@ -66,9 +66,8 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
     private int descriptorVersion = -1;
 
-    public AuxConfigurationXMLCodec(String tag,
-            ConfigurationDescriptor configurationDescriptor) {
-        super(configurationDescriptor, false);
+    public AuxConfigurationXMLCodec(String tag, ConfigurationDescriptor configurationDescriptor, boolean versionedLocation) {
+        super(configurationDescriptor, false, versionedLocation);
         this.tag = tag;
         this.configurationDescriptor = configurationDescriptor;
     }
