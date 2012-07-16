@@ -53,11 +53,17 @@ public class Property {
     final private String name;
     final private int modifier;
     private boolean selected;
+    private final String type;
 
-    public Property(String name, int modifier) {
+    public Property(final String name, final int modifier, final String type) {
         this.name = name;
         this.modifier = modifier;
+        this.type = type;
         selected = false;
+    }
+
+    public Property(String name, int modifier) {
+        this(name, modifier, ""); //NOI18N
     }
 
     public int getModifier() {
@@ -66,6 +72,10 @@ public class Property {
 
     public String getName() {
         return name;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public boolean isSelected() {
