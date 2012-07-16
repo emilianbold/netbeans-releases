@@ -69,8 +69,11 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
     public static Boolean isHidden () {
         String detectedPath = null;
         if (Utilities.isWindows()) {
+            detectedPath = getLocalAppPath().getPath();
             try {
-                detectedPath = NbDdeBrowserImpl.getBrowserPath("chrome");       // NOI18N
+                if ( detectedPath == null ){
+                    detectedPath = NbDdeBrowserImpl.getBrowserPath("chrome");       // NOI18N
+                }
             } catch (NbBrowserException e) {
                 ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect chrome : " + e);   // NOI18N
             }
@@ -131,10 +134,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
         //Windows
         if (Utilities.isWindows()) {
             params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";  // NOI18N
-            String localFiles = System.getenv("LOCALAPPDATA");
-            b = localFiles+"\\Google\\Chrome\\Application\\chrome.exe";  // NOI18N
-            
-            File file = new File( b );
+            File file = getLocalAppPath();
             if ( file.exists() && file.canExecute() ){
                 setDDEServer(ExtWebBrowser.CHROME);
                 return new NbProcessDescriptor (b, params);
@@ -208,6 +208,13 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
     @Override
     public BrowserFamilyId getBrowserFamilyId() {
         return BrowserFamilyId.CHROME;
+    }
+    
+    private static File getLocalAppPath(){
+        String localFiles = System.getenv("LOCALAPPDATA");              // NOI18N
+        String chrome = localFiles+"\\Google\\Chrome\\Application\\chrome.exe";     // NOI18N
+        
+        return new File( chrome );
     }
 
 }
