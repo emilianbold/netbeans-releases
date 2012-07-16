@@ -77,6 +77,7 @@ import org.openide.util.WeakListeners;
 /**
  *
  * @author Milan Kubec, Jan Becicka
+ * XXX somebody keeps and leaks the handles
  */
 public class SourceHandleImpl extends SourceHandle implements PropertyChangeListener {
 
