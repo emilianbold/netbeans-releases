@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonView;
@@ -147,8 +149,17 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         views.add(view);
     }
     
+    @Messages({"# {0} - job name", "MSG_Starting=Starting {0}"})
     @Override public void start() {
-        instance.getBuilderConnector().startJob(this);
+        ProgressHandle handle = ProgressHandleFactory.createHandle(
+                MSG_Starting(this.getName()));
+        handle.start();
+        try {
+            instance.getBuilderConnector().startJob(this);
+        } finally {
+            handle.finish();
+        }
+        instance.synchronize(false);
     }
 
     @Messages({

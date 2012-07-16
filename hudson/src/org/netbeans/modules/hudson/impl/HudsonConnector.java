@@ -61,24 +61,20 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
+import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonVersion;
-import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.api.Utilities;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
-import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -100,14 +96,17 @@ public class HudsonConnector extends BuilderConnector {
     public static final HudsonConsoleDisplayer HUDSON_CONSOLE_DISPLAYER =
             new HudsonConsoleDisplayer();
     
-    private HudsonInstanceImpl instance;
-    
     private HudsonVersion version;
     private boolean connected = false;
     /** #182689: true if have no anon access and need to log in just to see job list */
     boolean forbidden;
     
     private Map<String, ViewData> cache = new HashMap<String, ViewData>();
+    private String instanceUrl;
+
+    public HudsonConnector(String instanceUrl) {
+        this.instanceUrl = instanceUrl;
+    }
     
     private boolean canUseTree(boolean authentication) {
         HudsonVersion v = getHudsonVersion(authentication);
@@ -116,7 +115,7 @@ public class HudsonConnector extends BuilderConnector {
     
     @Override
     public synchronized InstanceData getInstanceData(boolean authentication) {
-        Document docInstance = getDocument(instance.getUrl() + XML_API_URL + (canUseTree(authentication) ?
+        Document docInstance = getDocument(instanceUrl + XML_API_URL + (canUseTree(authentication) ?
                 "?tree=primaryView[name],views[name,url,jobs[name]]," +
                 "jobs[name,url,color,displayName,buildable,inQueue," +
                 "lastBuild[number],lastFailedBuild[number],lastStableBuild[number],lastSuccessfulBuild[number],lastCompletedBuild[number]," +
@@ -137,24 +136,21 @@ public class HudsonConnector extends BuilderConnector {
         cache.clear();
         // Parse jobs and return them
         Collection<ViewData> viewsData = getViewData(docInstance);
-        Collection<JobData> jobsData = getJobsData(docInstance);
+        Collection<JobData> jobsData = getJobsData(docInstance, viewsData);
         return new InstanceData(jobsData, viewsData);
     }
 
-    @Messages({"# {0} - job name", "MSG_Starting=Starting {0}"})
     @Override
     public synchronized void startJob(final HudsonJob job) {
-        ProgressHandle handle = ProgressHandleFactory.createHandle(
-                MSG_Starting(job.getName()));
-        handle.start();
         try {
-            new ConnectionBuilder().instance(instance).url(job.getUrl() + "build").postData("delay=0sec".getBytes("UTF-8")).followRedirects(false).connection(); // NOI18N
+            HudsonInstance hi = HudsonManagerImpl.getDefault().getInstance(instanceUrl);
+            if (hi == null) {
+                return;
+            }
+            new ConnectionBuilder().instance(hi).url(job.getUrl() + "build").postData("delay=0sec".getBytes("UTF-8")).followRedirects(false).connection(); // NOI18N
         } catch (IOException e) {
             LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
-        } finally {
-            handle.finish();
         }
-        instance.synchronize(false);
     }
 
     /**
@@ -302,7 +298,8 @@ public class HudsonConnector extends BuilderConnector {
         return views;
     }
     
-    private Collection<JobData> getJobsData(Document doc) {
+    private Collection<JobData> getJobsData(Document doc,
+            Collection<ViewData> viewsData) {
         Collection<JobData> jobs = new ArrayList<JobData>();
         
         NodeList nodes = doc.getDocumentElement().getChildNodes();
@@ -386,7 +383,7 @@ public class HudsonConnector extends BuilderConnector {
                     LOG.log(Level.FINE, "unexpected global <job> child: {0}", nodeName);
                 }
             }
-            for (HudsonView v : instance.getViews()) {
+            for (ViewData v : viewsData) {
                 if (/* https://github.com/hudson/hudson/commit/105f2b09cf1376f9fe4dbf80c5bdb7a0d30ba1c1#commitcomment-447142 */secured ||
                         null != cache.get(v.getName() + "/" + jd.getJobName())) {
                     jd.addView(v.getName());
@@ -414,13 +411,13 @@ public class HudsonConnector extends BuilderConnector {
         }
         Matcher m = tailPattern.matcher(suggested);
         if (m.matches()) {
-            String result = instance.getUrl() + m.group(1);
+            String result = instanceUrl + m.group(1);
             if (!result.equals(suggested)) {
                 LOG.log(Level.FINER, "Normalizing {0} -> {1}", new Object[] {suggested, result});
             }
             return result;
         } else {
-            LOG.log(Level.WARNING, "Anomalous URL {0} not ending with {1} from {2}", new Object[] {suggested, relativePattern, instance});
+            LOG.log(Level.WARNING, "Anomalous URL {0} not ending with {1} from {2}", new Object[] {suggested, relativePattern, instanceUrl});
             return suggested;
         }
     }
@@ -430,8 +427,11 @@ public class HudsonConnector extends BuilderConnector {
         HudsonVersion v = null;
         
         try {
-
-            String sVersion = new ConnectionBuilder().instance(instance).url(instance.getUrl()).authentication(authentication).httpConnection().getHeaderField("X-Hudson"); // NOI18N
+            HudsonInstance instance = HudsonManagerImpl.getDefault().getInstance(instanceUrl);
+            if (instance == null) {
+                return null;
+            }
+            String sVersion = new ConnectionBuilder().instance(instance).url(instanceUrl).authentication(authentication).httpConnection().getHeaderField("X-Hudson"); // NOI18N
             if (sVersion != null) {
                 v = new HudsonVersion(sVersion);
             }
@@ -447,6 +447,10 @@ public class HudsonConnector extends BuilderConnector {
         Document doc = null;
         
         try {
+            HudsonInstance instance = HudsonManagerImpl.getDefault().getInstance(instanceUrl);
+            if (instance == null) {
+                return null;
+            }
             HttpURLConnection conn = new ConnectionBuilder().instance(instance).url(url).authentication(authentication).httpConnection();
             
             // Connected successfully
@@ -495,10 +499,6 @@ public class HudsonConnector extends BuilderConnector {
     @Override
     public boolean isForbidden() {
         return forbidden;
-    }
-
-    public void setInstance(HudsonInstanceImpl instance) {
-        this.instance = instance;
     }
 
     @Override

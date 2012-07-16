@@ -70,6 +70,7 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
+import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
@@ -219,9 +220,8 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
     
     public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive) {
-        HudsonConnector connector = new HudsonConnector();
+        HudsonConnector connector = new HudsonConnector(properties.get(HudsonInstanceConstants.INSTANCE_URL));
         HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive, connector);
-        connector.setInstance(instance);
 
         assert instance.getName() != null;
         assert instance.getUrl() != null;
