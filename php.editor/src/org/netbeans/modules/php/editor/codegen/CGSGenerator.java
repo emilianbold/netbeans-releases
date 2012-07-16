@@ -82,7 +82,8 @@ public class CGSGenerator implements CodeGenerator {
     private static final String NEW_LINE = System.getProperty("line.separator");    //NOI18N
     private static final String PROPERTY = "${PROPERTY}";                           //NOI18N
     private static final String CURSOR = "${cursor}";                           //NOI18N
-    private static final String PARAM_NAME = "${PARAM_NAME}";
+    private static final String PARAM_NAME = "${PARAM_NAME}"; //NOI18N
+    private static final String PARAM_TYPE = "${PARAM_TYPE}"; //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}";  //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE = "${UpFirstLetterPropertyWithoutUnderscore}";  //NOI18N
     private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}";  //NOI18N
@@ -214,10 +215,14 @@ public class CGSGenerator implements CodeGenerator {
                         final String name = property.getName();
                         final String paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
                                 ? withoutUnderscore(name) : name;
+                        final String type = property.getType();
                         String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
                                 ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
                         final String methodName = getUnusedMethodName(new ArrayList<String>(), changedName);
-                        setters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, methodName).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        setters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName)
+                                .replace(UP_FIRST_LETTER_PROPERTY, methodName)
+                                .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
+                                .replace(PARAM_TYPE, type));
                         setters.append(NEW_LINE);
                     }
                 }
@@ -264,7 +269,11 @@ public class CGSGenerator implements CodeGenerator {
                                 ? withoutUnderscore(name) : name;
                         gettersAndSetters.append(getGetterTemplate(cgsInfo).replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         gettersAndSetters.append(NEW_LINE);
-                        gettersAndSetters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        final String type = property.getType();
+                        gettersAndSetters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName)
+                                .replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName))
+                                .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
+                                .replace(PARAM_TYPE, type));
                         gettersAndSetters.append(NEW_LINE);
                     }
                 }
@@ -455,7 +464,7 @@ public class CGSGenerator implements CodeGenerator {
     private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
     private static final String ASSIGNMENT_TEMPLATE = NEW_LINE + "$this->" + PROPERTY + " = $" + PARAM_NAME + ";";          //NOI18N
     private static final String GETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "() {" + NEW_LINE + "return $$this->" + PROPERTY + ";" + NEW_LINE + "}" + NEW_LINE;    //NOI18N
-    private static final String SETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "($$" + PARAM_NAME + ") {" + ASSIGNMENT_TEMPLATE + NEW_LINE + FLUENT_SETTER + "}" + NEW_LINE; //NOI18N
+    private static final String SETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "(" + PARAM_TYPE + "$$" + PARAM_NAME + ") {" + ASSIGNMENT_TEMPLATE + NEW_LINE + FLUENT_SETTER + "}" + NEW_LINE; //NOI18N
     private final GenType type;
     private final CGSInfo cgsInfo;
     private final JTextComponent component;
