@@ -78,6 +78,8 @@ import org.openide.util.RequestProcessor;
 public final class ExternalBrowserPlugin {
     /** ID of 'reload of save' feature. */
     private static final String FEATURE_ROS = "RoS"; // NOI18N
+    
+    public static final String UTF_8 = "UTF-8";                    // NOI18N
 
     private static final int PORT = 8008;
 
@@ -228,7 +230,7 @@ public final class ExternalBrowserPlugin {
             if ( dataType != null && dataType != 1 ){
                 return;
             }
-            String message = new String( data , Charset.forName( WebSocketServer.UTF_8));
+            String message = new String( data , Charset.forName( UTF_8));
             Message msg = Message.parse(message);
             if (msg == null || (msg.getType() == null)) {
                 notifyDispatchers(message, key);
