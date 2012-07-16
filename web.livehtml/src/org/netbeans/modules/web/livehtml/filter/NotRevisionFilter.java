@@ -39,29 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.ui;
+package org.netbeans.modules.web.livehtml.filter;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
-import org.openide.awt.ActionID;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.modules.web.livehtml.Revision;
 
-@ActionID(
-    category = "View",
-id = "org.netbeans.modules.web.livehtml.ui.ShowGlobalLiveHTML")
-@ActionRegistration(
-    displayName = "#CTL_ShowGlobalLiveHTML")
-@ActionReferences({
-    @ActionReference(path = "Menu/View", position = 1090, separatorBefore = 1070)
-})
-@Messages("CTL_ShowGlobalLiveHTML=Live HTML")
-public final class ShowGlobalLiveHTML implements ActionListener {
+/**
+ *
+ * @author petr-podzimek
+ */
+public class NotRevisionFilter implements RevisionFilter {
+    
+    private final RevisionFilter revisionFilter;
+
+    public NotRevisionFilter(RevisionFilter revisionFilter) {
+        this.revisionFilter = revisionFilter;
+    }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        LiveHTMLTopComponent.showLiveHTML();
+    public boolean match(Revision revision) {
+        return !revisionFilter.match(revision);
     }
+    
 }

@@ -39,38 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.livehtml.ui;
 
-package org.netbeans.modules.web.livehtml;
+import java.text.DateFormat;
+import org.netbeans.modules.web.livehtml.Analysis;
 
-import java.net.URL;
-import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
-import org.openide.util.lookup.ServiceProvider;
+/**
+ *
+ * @author petr-podzimek
+ */
+public class AnalysisItem implements Comparable<AnalysisItem> {
+    
+    private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance();
+    
+    private Analysis analysis;
 
-@ServiceProvider(service=LiveHTMLImplementation.class)
-public class LiveHTMLImpl implements LiveHTMLImplementation {
-
-    @Override
-    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, callStack, true);
-        }
+    public AnalysisItem(Analysis analysis) {
+        this.analysis = analysis;
     }
 
-    @Override
-    public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, null, false);
-        }
+    public Analysis getAnalysis() {
+        return analysis;
     }
     
+    public boolean canBeAnalyzed() {
+        return getAnalysis() != null && getAnalysis() instanceof Analysis;
+    }
+
     @Override
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDataEvent(timeStamp, data, request, mime);
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        
+        if (analysis.getFinished() == null) {
+            sb.append(" * ");
         }
+        
+        if (analysis.getSourceUrl() != null) {
+            String sourceUrl = analysis.getSourceUrl().toExternalForm();
+            if (sourceUrl.length() > 25) {
+                sourceUrl = "..." + sourceUrl.substring(25);
+            }
+            sb.append(sourceUrl);
+        }
+        
+        if (analysis.getCreated() != null) {
+            sb.append(" - ");
+            sb.append(DATE_FORMAT.format(analysis.getCreated()));
+        }
+        
+        return sb.toString();
+    }
+
+    @Override
+    public int compareTo(AnalysisItem o) {
+        if (o == null || getAnalysis() == null) {
+            return -1;
+        }
+        return -getAnalysis().compareTo(o.getAnalysis());
     }
 
 }

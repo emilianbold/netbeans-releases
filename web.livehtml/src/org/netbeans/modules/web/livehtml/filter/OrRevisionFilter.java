@@ -39,38 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.livehtml.filter;
 
-package org.netbeans.modules.web.livehtml;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.web.livehtml.Revision;
 
-import java.net.URL;
-import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
-import org.openide.util.lookup.ServiceProvider;
+/**
+ *
+ * @author petr-podzimek
+ */
+public class OrRevisionFilter implements RevisionFilter {
+    
+    private List<RevisionFilter> revisionFilters = new CopyOnWriteArrayList<RevisionFilter>();
 
-@ServiceProvider(service=LiveHTMLImplementation.class)
-public class LiveHTMLImpl implements LiveHTMLImplementation {
-
-    @Override
-    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, callStack, true);
+    public OrRevisionFilter(List<RevisionFilter> revisionFilters) {
+        if (revisionFilters != null) {
+            for (RevisionFilter revisionFilter : revisionFilters) {
+                this.revisionFilters.add(revisionFilter);
+            }
         }
     }
 
     @Override
-    public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, null, false);
+    public boolean match(Revision revision) {
+        for (RevisionFilter revisionFilter : revisionFilters) {
+            if (revisionFilter.match(revision)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void addRevisionFilter(RevisionFilter revisionFilter) {
+        if (revisionFilter != null) {
+            revisionFilters.add(revisionFilter);
         }
     }
     
-    @Override
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDataEvent(timeStamp, data, request, mime);
-        }
-    }
-
 }

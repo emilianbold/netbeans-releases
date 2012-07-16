@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.web.livehtml;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 /**
@@ -51,20 +53,34 @@ import org.json.simple.JSONValue;
  */
 public final class Revision {
     
+    private int index = -1;
+    
     private StringBuilder content;
     private JSONArray stacktrace;
     private List<Change> changes;
     private StringBuilder data;
+    
+    private String timeStamp = null;
 
-    public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data) {
+    public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data, String timeStamp, int index) {
         this.content = content;
-        this.stacktrace = (JSONArray) JSONValue.parse(stacktrace.toString());
+        
+        if (stacktrace != null) {
+            this.stacktrace = (JSONArray) JSONValue.parse(stacktrace.toString());
+        }
+        
         this.changes = changes;
         this.data = data;
+        this.timeStamp = timeStamp;
+        this.index = index;
+        
         addRemovedContent();
     }
 
     public String getContent() {
+        if (content == null) {
+            return null;
+        }
         return content.toString();
     }
 
@@ -80,6 +96,10 @@ public final class Revision {
         return data;
     }
 
+    public int getIndex() {
+        return index;
+    }
+
     private void addRemovedContent() {
         int increment = 0;
         for (Change ch : changes) {
@@ -93,6 +113,49 @@ public final class Revision {
                 increment += ch.getRemovedText().length();
             }
         }
+    }
+    
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+    
+    public List<Object> getCallStackValues(String valueName) {
+        List<Object> objects = new ArrayList<Object>();
+        if (valueName == null || getStacktrace() == null) {
+            return objects;
+        }
+        for (Object object : getStacktrace()) {
+            if (object instanceof JSONObject) {
+                JSONObject jSONObject = (JSONObject) object;
+                final Object value = jSONObject.get(valueName);
+                if (value != null) {
+                    objects.add(value);
+                }
+            }
+        }
+        return objects;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + (this.timeStamp != null ? this.timeStamp.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Revision other = (Revision) obj;
+        if ((this.timeStamp == null) ? (other.timeStamp != null) : !this.timeStamp.equals(other.timeStamp)) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -39,38 +39,72 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.livehtml.filter;
 
-package org.netbeans.modules.web.livehtml;
-
+import java.io.File;
 import java.net.URL;
-import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.web.livehtml.Analysis;
+import org.netbeans.modules.web.livehtml.AnalysisListener;
+import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.diff.Diff;
 
-@ServiceProvider(service=LiveHTMLImplementation.class)
-public class LiveHTMLImpl implements LiveHTMLImplementation {
+/**
+ *
+ * @author petr-podzimek
+ */
+public class FilteredAnalysis extends Analysis {
+    
+    private final Analysis parentAnalysis;
+    private RevisionFilter revisionFilter;
 
-    @Override
-    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, callStack, true);
+    public FilteredAnalysis(Analysis parentAnalysis, RevisionFilter revisionFilter, File root, String initialContent) {
+        super(root, initialContent);
+        this.parentAnalysis = parentAnalysis;
+        setRevisionFilter(revisionFilter);
+        
+        makeFinished();
+    }
+
+    public Analysis getParentAnalysis() {
+        return parentAnalysis;
+    }
+
+    public final void setRevisionFilter(RevisionFilter revisionFilter) {
+        this.revisionFilter = revisionFilter;
+        
+        List<String> filteredTimeStamps = new CopyOnWriteArrayList<String>();
+        
+        for (int i = 1; i <= parentAnalysis.getRevisionsCount(); i++) {
+            final Revision revision = parentAnalysis.getRevision(i, false);
+            if (revision != null && revisionFilter.match(revision)) {
+                filteredTimeStamps.add(revision.getTimeStamp());
+            }
         }
     }
 
+    public RevisionFilter getRevisionFilter() {
+        return revisionFilter;
+    }
+
     @Override
-    public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, null, false);
+    public Revision getRevision(int changeIndex, boolean reformatRevision) {
+        final String filteredTimeStamp = getTimeStamps().get(changeIndex);
+        int timeStampIndex = -1;
+        for (int i = 0; i < parentAnalysis.getTimeStampsCount(); i++) {
+            String timeStamp = parentAnalysis.getTimeStamps().get(i);
+            if (filteredTimeStamp.equals(timeStamp)) {
+                timeStampIndex = i;
+            }
         }
+        
+        if (timeStampIndex == -1) {
+            return null;
+        }
+        
+        return parentAnalysis.getRevision(timeStampIndex, reformatRevision);
     }
     
-    @Override
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDataEvent(timeStamp, data, request, mime);
-        }
-    }
-
 }

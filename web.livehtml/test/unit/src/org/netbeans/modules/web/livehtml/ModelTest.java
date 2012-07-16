@@ -57,6 +57,8 @@ import org.netbeans.modules.web.livehtml.diff.DiffTest;
  */
 public class ModelTest extends NbTestCase{
     
+    private AnalysisStorage analysisStorage;
+    
     public ModelTest() {
         super(ModelTest.class.getName());
     }
@@ -71,6 +73,7 @@ public class ModelTest extends NbTestCase{
     
     @Before
     public void setUp() {
+        analysisStorage = AnalysisStorage.getInstance();
     }
     
     @After
@@ -82,25 +85,25 @@ public class ModelTest extends NbTestCase{
      */
     @Test
     public void testOrigins() throws IOException {
-        Model.isUnitTesting = true;
+        AnalysisStorage.isUnitTesting = true;
         File f = new File(getWorkDir(), ""+System.currentTimeMillis());
         f.mkdir();
-        Model m = new Model(f, null);
+        Analysis m = new Analysis(f, null);
         HtmlSource source = DiffTest.getHtmlSource(getDataDir(), "model/test001-v1.html");
-        m.storeDocumentVersion(0, source.getSourceCode().toString(), "[{}]", true);
+        m.storeDocumentVersion("0", source.getSourceCode().toString(), "[{}]", true);
         HtmlSource source2 = DiffTest.getHtmlSource(getDataDir(), "model/test001-v2.html");
-        m.storeDocumentVersion(1, source2.getSourceCode().toString(), "[{}]", true);
+        m.storeDocumentVersion("1", source2.getSourceCode().toString(), "[{}]", true);
         HtmlSource source3 = DiffTest.getHtmlSource(getDataDir(), "model/test001-v3.html");
-        m.storeDocumentVersion(2, source3.getSourceCode().toString(), "[{}]", true);
+        m.storeDocumentVersion("2", source3.getSourceCode().toString(), "[{}]", true);
         HtmlSource source4 = DiffTest.getHtmlSource(getDataDir(), "model/test001-v4.html");
-        m.storeDocumentVersion(3, source4.getSourceCode().toString(), "[{}]", true);
+        m.storeDocumentVersion("3", source4.getSourceCode().toString(), "[{}]", true);
         
-        Revision r = m.getChange(0, false);
+        Revision r = m.getRevision(1, false);
         DiffTest.assertAddChange(192, 8, "id=\"new\"", source2, r.getChanges().get(0));
         DiffTest.assertAddChange(201, 14, "data-url=\"new\"", source2, r.getChanges().get(1));
         DiffTest.assertAddChange(356, 25, "id=\"new-form-placeholder\"", source2, r.getChanges().get(2));
         
-        r = m.getChange(1, false);
+        r = m.getRevision(2, false);
         HtmlSource s3 = new HtmlSource(r.getContent());
         //Change.dump(r.getChanges());
         assertEquals(9, r.getChanges().size());
@@ -114,7 +117,7 @@ public class ModelTest extends NbTestCase{
         DiffTest.assertAddChange(431, 26, "<div>\n                    ", s3, r.getChanges().get(7));
         DiffTest.assertAddChange(501, 23, "\n                </div>", s3, r.getChanges().get(8));
         
-        r = m.getChange(2, false);
+        r = m.getRevision(3, false);
         HtmlSource s4 = new HtmlSource(r.getContent());
         //Change.dump(r.getChanges());
         assertEquals(7, r.getChanges().size());

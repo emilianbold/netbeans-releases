@@ -39,38 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.livehtml.ui.callstack;
 
-package org.netbeans.modules.web.livehtml;
+import java.util.ArrayList;
+import java.util.List;
+import org.json.simple.JSONArray;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
-import java.net.URL;
-import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
-import org.openide.util.lookup.ServiceProvider;
-
-@ServiceProvider(service=LiveHTMLImplementation.class)
-public class LiveHTMLImpl implements LiveHTMLImplementation {
-
-    @Override
-    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, callStack, true);
-        }
-    }
-
-    @Override
-    public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, null, false);
-        }
-    }
+/**
+ *
+ * @author petr-podzimek
+ */
+public class CallStackToolTipNodeContainer extends Children.Keys<JSONArray> {
     
+    private final JSONArray callStack;
+
+    public CallStackToolTipNodeContainer(JSONArray callStack) {
+        this.callStack = callStack;
+    }
+
     @Override
-    public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
-        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
-        if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDataEvent(timeStamp, data, request, mime);
+    protected void addNotify() {
+        setKeys(new JSONArray[] {callStack});
+    }
+
+    @Override
+    protected Node[] createNodes(JSONArray key) {
+        List<Node> nodes = new ArrayList<Node>();
+        
+        for (Object object : key) {
+            nodes.add(new CallStackToolTipLeafNode(object));
         }
+        
+        return nodes.toArray(new Node[nodes.size()]);
     }
 
 }
