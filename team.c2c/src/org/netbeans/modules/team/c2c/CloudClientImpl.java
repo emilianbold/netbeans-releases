@@ -266,7 +266,7 @@ public final class CloudClientImpl implements CloudClient {
     }
 
     @Override
-    public void initialize(String url, PasswordAuthentication auth) {
+    public void initialize(String url, PasswordAuthentication auth) throws CloudException {
         if (!url.endsWith("/")) { //NOI18N
             url = url + '/';
         }

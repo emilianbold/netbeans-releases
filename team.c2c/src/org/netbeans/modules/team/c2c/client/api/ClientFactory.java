@@ -42,8 +42,10 @@
 package org.netbeans.modules.team.c2c.client.api;
 
 import java.net.PasswordAuthentication;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.team.c2c.CloudClientImpl;
-import org.netbeans.modules.team.c2c.client.mock.CloudClientMock;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -65,15 +67,26 @@ public final class ClientFactory {
     }
     
     public synchronized CloudClient createClient (String url, PasswordAuthentication auth) {
-        if (System.getProperty("cloud-client-mock", Boolean.FALSE.toString()).equalsIgnoreCase(Boolean.TRUE.toString())) {
-            System.setProperty("cloud-client-mock", Boolean.FALSE.toString());
-            return new CloudClientMock(url);
+        CloudClient impl = Lookup.getDefault().lookup(CloudClient.class);
+        if(impl != null) {
+            try {
+                impl.initialize(url, auth);
+            } catch (CloudException ex) {
+                // wasn't accepted, fallback on default impl
+                impl = null;
+            }
         }
-        CloudClientImpl impl = new CloudClientImpl();
-        impl.initialize(url, auth);
+        
+        if(impl == null) {
+            impl = new CloudClientImpl();
+            try {
+                impl.initialize(url, auth);
+            } catch (CloudException ex) {
+                // should not happen, so log and continue
+                Logger.getLogger(ClientFactory.class.getName()).log(Level.WARNING, url, ex);
+            }
+        }
         return impl;
     }
-    
-    
     
 }

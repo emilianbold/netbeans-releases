@@ -29,7 +29,10 @@ public class C2CJersey implements CloudClient {
     private Client client;
     
     @Override
-    public void initialize(String url, PasswordAuthentication pa) {
+    public void initialize(String url, PasswordAuthentication pa) throws CloudException {
+        if(!Boolean.getBoolean("team.c2c.useJersey")) {
+            throw new CloudException(url);
+        }
         this.url = url;
         this.pa = pa;
         client = getClient();

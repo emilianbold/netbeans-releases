@@ -57,7 +57,7 @@ import java.util.List;
  */
 public interface CloudClient {
 
-    void initialize(String url, PasswordAuthentication pa);
+    void initialize(String url, PasswordAuthentication pa) throws CloudException;
     
     BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws CloudException;
 

@@ -74,10 +74,8 @@ public final class CloudClientMock implements CloudClient {
     private File rootFolder;
     private final PojsonLoad jsonLoad;
 
-    public CloudClientMock(String url) {
+    public CloudClientMock() {
         jsonLoad = PojsonLoad.create();
-        rootFolder = new File(url);
-        loadData();
     }
 
     @Override
@@ -260,6 +258,7 @@ public final class CloudClientMock implements CloudClient {
 
     @Override
     public void initialize(String url, PasswordAuthentication pa) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        rootFolder = new File(url);
+        loadData();
     }
 }
