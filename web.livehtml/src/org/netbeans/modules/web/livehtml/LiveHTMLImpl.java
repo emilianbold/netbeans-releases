@@ -53,7 +53,7 @@ public class LiveHTMLImpl implements LiveHTMLImplementation {
     public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
         final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
         if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(timeStamp, content, callStack, true);
+            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, callStack, true);
         }
     }
 
@@ -61,7 +61,7 @@ public class LiveHTMLImpl implements LiveHTMLImplementation {
     public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
         final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
         if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(timeStamp, content, null, false);
+            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, null, false);
         }
     }
     

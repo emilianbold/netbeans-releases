@@ -39,42 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.ui.changes;
+package org.netbeans.modules.web.livehtml.filter;
 
-import javax.swing.JComponent;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.web.livehtml.Revision;
-import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author petr-podzimek
  */
-@ServiceProvider(service=RevisionToolTipService.class)
-public class ChangesToolTipProvider extends RevisionToolTipService<ChangesToolTipPanel> {
+public class AndRevisionFilter implements RevisionFilter {
     
-    private static final String NAME = "Changes";
+    private List<RevisionFilter> revisionFilters = new CopyOnWriteArrayList<RevisionFilter>();
 
-    @Override
-    public ChangesToolTipPanel getComponent(Revision revision) {
-        return new ChangesToolTipPanel();
+    public AndRevisionFilter(List<RevisionFilter> revisionFilters) {
+        if (revisionFilters != null) {
+            for (RevisionFilter revisionFilter : revisionFilters) {
+                this.revisionFilters.add(revisionFilter);
+            }
+        }
     }
 
     @Override
-    public void update(ChangesToolTipPanel changesToolTipPanel, Revision revision) {
-        changesToolTipPanel.setChanges(revision.getChanges());
+    public boolean match(Revision revision) {
+        for (RevisionFilter revisionFilter : revisionFilters) {
+            if (!revisionFilter.match(revision)) {
+                return false;
+            }
+        }
+        return true;
     }
 
-    @Override
-    public boolean canProcess(Revision revision) {
-        return revision.getChanges() != null && !revision.getChanges().isEmpty();
-    }
-
-    @Override
-    public String getName() {
-        return NAME;
+    public void addRevisionFilter(RevisionFilter revisionFilter) {
+        if (revisionFilter != null) {
+            revisionFilters.add(revisionFilter);
+        }
     }
     
 }

@@ -61,6 +61,10 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
     public Analysis getAnalysis() {
         return analysis;
     }
+    
+    public boolean canBeAnalyzed() {
+        return getAnalysis() != null && getAnalysis() instanceof Analysis;
+    }
 
     @Override
     public String toString() {

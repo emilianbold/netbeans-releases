@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.web.livehtml;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 /**
@@ -115,6 +117,23 @@ public final class Revision {
     
     public String getTimeStamp() {
         return timeStamp;
+    }
+    
+    public List<Object> getCallStackValues(String valueName) {
+        List<Object> objects = new ArrayList<Object>();
+        if (valueName == null || getStacktrace() == null) {
+            return objects;
+        }
+        for (Object object : getStacktrace()) {
+            if (object instanceof JSONObject) {
+                JSONObject jSONObject = (JSONObject) object;
+                final Object value = jSONObject.get(valueName);
+                if (value != null) {
+                    objects.add(value);
+                }
+            }
+        }
+        return objects;
     }
 
     @Override

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.livehtml.ui.callstack;
 import org.netbeans.modules.web.livehtml.ui.callstack.CallStackToolTipRootNode;
 import org.json.simple.JSONArray;
 import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -67,7 +68,7 @@ public class CallStackToolTipPanel extends javax.swing.JPanel implements Explore
     }
     
     public void setCallStack(JSONArray callStack) {
-        explorerManager.setRootContext(new CallStackToolTipRootNode(callStack));
+        explorerManager.setRootContext(callStack == null ? Node.EMPTY : new CallStackToolTipRootNode(callStack));
     }
 
     /**

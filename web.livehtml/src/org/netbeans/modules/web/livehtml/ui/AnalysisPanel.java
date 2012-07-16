@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,9 +67,17 @@ import org.netbeans.modules.web.livehtml.Analysis;
 import org.netbeans.modules.web.livehtml.AnalysisListener;
 import org.netbeans.modules.web.livehtml.AnalysisModel;
 import org.netbeans.modules.web.livehtml.AnalysisModelListener;
+import org.netbeans.modules.web.livehtml.AnalysisStorage;
+import org.netbeans.modules.web.livehtml.filter.AndRevisionFilter;
 import org.netbeans.modules.web.livehtml.Change;
+import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
+import org.netbeans.modules.web.livehtml.filter.NotRevisionFilter;
 import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.filter.RevisionFilter;
+import org.netbeans.modules.web.livehtml.filter.ScriptRevisionFilter;
 import org.netbeans.modules.web.livehtml.Utilities;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
@@ -138,6 +147,7 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
             updateRevisions(null);
         }
         
+        startAnalysisButton.setEnabled(analysis == null || (analysis.getClass() == Analysis.class));
     }
     
     private void updateRevisions(Analysis analysis) {
@@ -297,7 +307,7 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
     }
 
     @Override
-    public void revisionAdded(Analysis analysis, long timeStamp) {
+    public void revisionAdded(Analysis analysis, String timeStamp) {
         final Analysis selectedAnalysis = getSelectedAnalysis();
         if (analysis == selectedAnalysis) {
             updateRevisions(selectedAnalysis);
@@ -391,6 +401,7 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
         revisionEditorPane = new javax.swing.JEditorPane();
         revisionLabel = new javax.swing.JLabel();
         revisionSlider = new javax.swing.JSlider();
+        filterButton = new javax.swing.JButton();
 
         analysisComboBox.setToolTipText(Bundle.CTL_AnalysisComboBox_ToolTip());
         analysisComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -463,6 +474,13 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(filterButton, org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.filterButton.text")); // NOI18N
+        filterButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
@@ -471,15 +489,19 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
                 .addComponent(revisionSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(revisionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(2, 2, 2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(filterButton)
+                .addContainerGap())
             .addComponent(revisionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(revisionSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(revisionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(revisionSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(revisionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(filterButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(revisionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
         );
@@ -621,8 +643,29 @@ public class AnalysisPanel extends javax.swing.JPanel implements AnalysisModelLi
         });
     }//GEN-LAST:event_revisionEditorPaneMouseExited
 
+    private void filterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterButtonActionPerformed
+        // TODO add your handling code here:
+        
+        final Analysis selectedAnalysis = getSelectedAnalysis();
+        
+        RevisionFilterPanel revisionFilterPanel = new RevisionFilterPanel();
+        revisionFilterPanel.setAnalysis(selectedAnalysis);
+        DialogDescriptor dialogDescriptor = new DialogDescriptor(revisionFilterPanel, "XXX XXX");
+        
+        Object result = DialogDisplayer.getDefault().notify(dialogDescriptor);
+        if (result != DialogDescriptor.OK_OPTION) {
+            return;
+        }
+        
+        RevisionFilter revisionFilter = revisionFilterPanel.getRevisionFilter();
+        
+        AnalysisStorage.getInstance().addFiltered(selectedAnalysis, revisionFilter, reformatRevisionButton.isSelected());
+        
+    }//GEN-LAST:event_filterButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox analysisComboBox;
+    private javax.swing.JButton filterButton;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JToggleButton reformatRevisionButton;
     private javax.swing.JEditorPane revisionEditorPane;

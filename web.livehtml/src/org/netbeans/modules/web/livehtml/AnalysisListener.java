@@ -47,6 +47,6 @@ package org.netbeans.modules.web.livehtml;
  */
 public interface AnalysisListener {
     
-    void revisionAdded(Analysis analysis, long timeStamp);
+    void revisionAdded(Analysis analysis, String timeStamp);
     
 }

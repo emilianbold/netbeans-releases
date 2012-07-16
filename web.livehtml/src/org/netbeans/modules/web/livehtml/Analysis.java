@@ -73,7 +73,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author petr-podzimek
  */
-public final class Analysis implements Comparable<Analysis> {
+public class Analysis implements Comparable<Analysis> {
     
     private URL sourceUrl;
     private Date created = new Date();
@@ -92,13 +92,14 @@ public final class Analysis implements Comparable<Analysis> {
         this.root = root;
         if (initialContent != null) {
             long currentTime = System.currentTimeMillis();
-            store("content", currentTime, initialContent);
-            addTimeStamp(currentTime);
+            final String timeStampStr = String.valueOf(currentTime);
+            store("content", timeStampStr, initialContent);
+            addTimeStamp(timeStampStr);
         }
     }
 
-    protected void store(String type, long timestamp, String content) {
-        File storeFile = new File(getRoot(), Long.toString(timestamp) + "." + type);
+    protected void store(String type, String timestamp, String content) {
+        File storeFile = new File(getRoot(), timestamp + "." + type);
         storeFile.deleteOnExit();
         try {
             assert !storeFile.exists() : "should not exist yet! "+storeFile;
@@ -228,8 +229,8 @@ public final class Analysis implements Comparable<Analysis> {
         }
     }
     
-    protected void addTimeStamp(long timestamp) {
-        timeStamps.add(Long.toString(timestamp));
+    protected void addTimeStamp(String timestamp) {
+        timeStamps.add(timestamp);
         fireRevisionAdded(timestamp);
     }
     
@@ -288,13 +289,13 @@ public final class Analysis implements Comparable<Analysis> {
         }
     }
     
-    private void fireRevisionAdded(long timeStamp) {
+    private void fireRevisionAdded(String timeStamp) {
         for (AnalysisListener analysisListener : analysisListeners) {
             analysisListener.revisionAdded(this, timeStamp);
         }
     }
 
-    public void storeDocumentVersion(final long timestamp, final String content, final String stackTrace, final boolean realChange) {
+    public void storeDocumentVersion(final String timestamp, final String content, final String stackTrace, final boolean realChange) {
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -332,7 +333,7 @@ public final class Analysis implements Comparable<Analysis> {
         }
     }
     
-    private void parse(String content, long timestamp, boolean realChange, int previousChangeIndex, String previousTimestamp) {
+    private void parse(String content, String timestamp, boolean realChange, int previousChangeIndex, String previousTimestamp) {
         StringBuilder previousContent = read("content", previousTimestamp);
         HtmlParser parser = HtmlParserFactory.findParser(HtmlVersion.getDefaultVersion());
         try {

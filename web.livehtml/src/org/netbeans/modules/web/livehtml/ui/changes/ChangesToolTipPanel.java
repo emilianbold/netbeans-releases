@@ -45,6 +45,8 @@ import java.util.List;
 import org.netbeans.modules.web.livehtml.Change;
 import org.netbeans.modules.web.livehtml.ui.callstack.CallStackToolTipRootNode;
 import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
@@ -68,7 +70,7 @@ public class ChangesToolTipPanel extends javax.swing.JPanel implements ExplorerM
     }
 
     public void setChanges(List<Change> changes) {
-        explorerManager.setRootContext(new ChangesToolTipRootNode(changes));
+        explorerManager.setRootContext(changes == null ? Node.EMPTY : new ChangesToolTipRootNode(changes));
     }
     
     /**

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.livehtml;
 
+import org.netbeans.modules.web.livehtml.filter.RevisionFilter;
+import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -158,6 +160,61 @@ public class AnalysisStorage {
             addAnalysis(analysis);
         }
         return analysis;
+    }
+    
+    public synchronized Analysis addFiltered(Analysis parentAnalysis, RevisionFilter revisionFilter, boolean reformatRevision) {
+//        makeAllAsFinished();
+        
+        File analysisRoot = getChangesStorageRoot(getStorageRoot());
+        final Revision firstRevision = parentAnalysis.getRevision(0, reformatRevision);
+        FilteredAnalysis filteredAnalysis = 
+                new FilteredAnalysis(
+                parentAnalysis, 
+                revisionFilter, 
+                analysisRoot, 
+                firstRevision.getContent() == null ? "null" : firstRevision.getContent());
+        filteredAnalysis.setSourceUrl(parentAnalysis.getSourceUrl());
+        
+        addAnalysis(filteredAnalysis);
+        
+        if (firstRevision != null) {
+            filteredAnalysis.storeDocumentVersion(
+                    firstRevision.getTimeStamp(), 
+                    firstRevision.getContent() == null ? "null" : firstRevision.getContent(), 
+                    firstRevision.getStacktrace() == null ? "" : firstRevision.getStacktrace().toJSONString(), 
+                    reformatRevision);
+        }
+        
+//        if (firstRevision != null) {
+//            filteredAnalysis.storeDocumentVersion(
+//                    Long.valueOf(firstRevision.getTimeStamp()), 
+//                    firstRevision.getContent() == null ? "null" : firstRevision.getContent(), 
+//                    Utilities.convertCallStack(firstRevision.getStacktrace()).toString(),
+//                    reformatRevision);
+//        }
+        
+        Revision lastRevision = null;
+        for (int i = 1; i <= parentAnalysis.getRevisionsCount(); i++) {
+            final Revision revision = parentAnalysis.getRevision(i, reformatRevision);
+            if (revision != null && revisionFilter.match(revision)) {
+                filteredAnalysis.storeDocumentVersion(
+                        revision.getTimeStamp(), 
+                        revision.getContent() == null ? "null" : revision.getContent(), 
+                        revision.getStacktrace() == null ? null : revision.getStacktrace().toJSONString(),
+                        true);
+                lastRevision = revision;
+            }
+        }
+        
+        if (lastRevision != null) {
+            filteredAnalysis.storeDocumentVersion(
+                    lastRevision.getTimeStamp(), 
+                    lastRevision.getContent() == null ? "null" : lastRevision.getContent(), 
+                    lastRevision.getStacktrace() == null ? null : lastRevision.getStacktrace().toJSONString(),
+                    true);
+        }
+        
+        return filteredAnalysis;
     }
 
     public List<Analysis> getStoredAnalyses() {

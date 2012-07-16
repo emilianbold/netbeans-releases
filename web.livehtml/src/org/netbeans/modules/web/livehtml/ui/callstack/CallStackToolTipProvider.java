@@ -61,9 +61,7 @@ public class CallStackToolTipProvider extends RevisionToolTipService<CallStackTo
 
     @Override
     protected void update(CallStackToolTipPanel component, Revision revision) {
-        if (revision != null && revision.getStacktrace() != null) {
-           component.setCallStack(revision.getStacktrace());
-        }
+        component.setCallStack(revision.getStacktrace());
     }
 
     @Override
