@@ -502,6 +502,10 @@ public class JsFormatterTest extends JsTestBase {
     public void testTernary1() throws Exception {
         reformatFileContents("testfiles/formatter/ternary1.js",new IndentPrefs(4, 4));
     }
+    
+    public void testTernary2() throws Exception {
+        reformatFileContents("testfiles/formatter/ternary2.js",new IndentPrefs(4, 4));
+    }
 
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
         reformatFileContents(file, options, null);

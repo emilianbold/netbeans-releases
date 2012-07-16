@@ -456,8 +456,8 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(TernaryNode ternaryNode, boolean onset) {
         if (onset) {
-            int start = getStart(ternaryNode);
-            FormatToken question = getNextToken(start, JsTokenId.OPERATOR_TERNARY);
+            int start = getStart(ternaryNode.rhs());
+            FormatToken question = getPreviousToken(start, JsTokenId.OPERATOR_TERNARY);
             if (question != null) {
                 FormatToken previous = question.previous();
                 if (previous != null) {
