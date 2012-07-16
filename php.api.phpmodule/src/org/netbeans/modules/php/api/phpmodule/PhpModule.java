@@ -82,7 +82,7 @@ public abstract class PhpModule {
 
     /**
      * Get the source directory for this PHP module.
-     * @return the source directory, <b>can be <code>null</code> if the project is corrupted!</b>
+     * @return the source directory, <b>can be <code>null</code> or {@link FileObject#isValid() invalid} if the project is corrupted!</b>
      */
     public abstract FileObject getSourceDirectory();
 

@@ -332,11 +332,11 @@ public final class PhpProject implements Project {
     }
 
     private FileObject resolveWebRootDirectory() {
-        FileObject sources = getSourcesDirectory();
-        if (sources == null) {
+        if (PhpProjectValidator.isFatallyBroken(this)) {
             // corrupted project
             return null;
         }
+        FileObject sources = getSourcesDirectory();
         String webRootProperty = eval.getProperty(PhpProjectProperties.WEB_ROOT);
         if (webRootProperty == null) {
             // web root directory not set, return sources
@@ -455,7 +455,7 @@ public final class PhpProject implements Project {
     }
 
     public List<PhpFrameworkProvider> getFrameworks() {
-        if (getSourcesDirectory() == null) {
+        if (PhpProjectValidator.isFatallyBroken(this)) {
             // corrupted project
             return Collections.emptyList();
         }
@@ -468,7 +468,7 @@ public final class PhpProject implements Project {
                     for (PhpFrameworkProvider frameworkProvider : PhpFrameworks.getFrameworks()) {
                         if (frameworkProvider.isInPhpModule(phpModule)) {
                             if (LOGGER.isLoggable(Level.FINE)) {
-                                LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getIdentifier(), getSourcesDirectory()));
+                                LOGGER.fine(String.format("Adding framework %s for project %s", frameworkProvider.getIdentifier(), getName()));
                             }
                             newFrameworks.add(frameworkProvider);
                         }
@@ -661,7 +661,7 @@ public final class PhpProject implements Project {
             reinitFolders();
 
             resetFrameworks();
-            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", getSourcesDirectory());
+            LOGGER.log(Level.FINE, "Adding frameworks listener for {0}", getName());
             PhpFrameworks.addFrameworksListener(frameworksListener);
             List<PhpFrameworkProvider> frameworkProviders = getFrameworks();
             getName();

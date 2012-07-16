@@ -66,7 +66,7 @@ public class JsFormatter implements Formatter {
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
 
-    private static boolean NEW_LINE_AFTER_STATEMENT = true;
+    private static boolean NEW_LINE_BREAKS = true;
 
     private final Language<JsTokenId> language;
 
@@ -361,8 +361,9 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, formatContext, offsetDiff,
                                     !CodeStyle.get(formatContext).spaceWithinArrayBrackets());
                             break;
+                        case AFTER_BLOCK_START:
                         case AFTER_STATEMENT:
-                            if (!NEW_LINE_AFTER_STATEMENT) {
+                            if (!NEW_LINE_BREAKS) {
                                 break;
                             }
 
@@ -494,7 +495,7 @@ public class JsFormatter implements Formatter {
     private int handleSpaceAfter(List<FormatToken> tokens, int index,
             FormatContext formatContext, int offsetDiff, boolean remove) {
 
-        if (NEW_LINE_AFTER_STATEMENT && isAfterStatement(tokens, index)) {
+        if (NEW_LINE_BREAKS && isAfterStatement(tokens, index)) {
             return offsetDiff;
         }
 
@@ -548,7 +549,7 @@ public class JsFormatter implements Formatter {
     private int handleSpaceBefore(List<FormatToken> tokens, int index,
             FormatContext formatContext, int offsetDiff, boolean remove) {
 
-        if (NEW_LINE_AFTER_STATEMENT && isAfterStatement(tokens, index)) {
+        if (NEW_LINE_BREAKS && isAfterStatement(tokens, index)) {
             return offsetDiff;
         }
 
