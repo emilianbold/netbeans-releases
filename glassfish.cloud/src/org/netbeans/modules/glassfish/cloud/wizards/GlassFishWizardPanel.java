@@ -79,15 +79,27 @@ public abstract class GlassFishWizardPanel
      *  in <code>getComponent</code> method. */
     GlassFishWizardComponent component;
 
+    /** Wizard step names. */
+    final String[] names;
+    
+    /** Index of wizard step name to use as panel header. */
+    final int nameIndex;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
      * Constructs an instance of CPAS panel.
+     * <p/>
+     * @param names     Wizard steps names to be added into steps tab.
+     * @param nameIndex Index of wizard step name to be displayed
+     *                  as component name.
      */
-    public GlassFishWizardPanel() {
+    public GlassFishWizardPanel(String[] names, int nameIndex) {
         listeners = new ChangeSupport(this);
+        this.nameIndex = nameIndex;
+        this.names = names;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -181,6 +193,24 @@ public abstract class GlassFishWizardPanel
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Initialize common properties of newly created panel component.
+     * <p/>
+     * This is helper method to implement <code>getComponent</code> method
+     * in child classes.
+     * <p/>
+     * Component must be initialized before calling this method and also both
+     * <code>names</code> and <code>nameIndex</code> attributes must be
+     * initialized properly.
+     */
+    void initComponent() {
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names);
+        component.putClientProperty(
+                WizardDescriptor.PROP_CONTENT_SELECTED_INDEX,
+                Integer.valueOf(nameIndex));
+        component.setName(names[nameIndex]);
+    }
 
     /**
      * Set error message to be displayed at the bottom of the wizard.

@@ -71,8 +71,8 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
 
     public GlassFishCloudWizardIterator() {
         super(PANELS_COUNT);
-        panel[0] = new GlassFishCloudWizardCpasPanel();
-        for (int i = 0; i < PANELS_COUNT; i++) {
+        panel[0] = new GlassFishCloudWizardCpasPanel(name, 1);
+        for (int i = 0; i < PANELS_COUNT + 1; i++) {
             this.name[i] = getMessage(GlassFishCloudWizardProvider.class,
                 Bundle.addCloudWizardName(i), new Object[]{});
         }

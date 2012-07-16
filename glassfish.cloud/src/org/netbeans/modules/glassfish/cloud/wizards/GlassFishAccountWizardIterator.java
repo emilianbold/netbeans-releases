@@ -79,10 +79,10 @@ public class GlassFishAccountWizardIterator extends GlassFishWizardIterator {
 
     public GlassFishAccountWizardIterator() {
         super(PANELS_COUNT);
-        panel[0] = new GlassFishAcocuntWizardUserPanel();
-        for (int i = 0; i < PANELS_COUNT; i++) {
+        panel[0] = new GlassFishAcocuntWizardUserPanel(name, 1);
+        for (int i = 0; i < PANELS_COUNT + 1; i++) {
             this.name[i] = getMessage(GlassFishCloudWizardProvider.class,
-                Bundle.addCloudWizardName(i), new Object[]{});
+                Bundle.addAccountWizardName(i), new Object[]{});
         }
     }
 

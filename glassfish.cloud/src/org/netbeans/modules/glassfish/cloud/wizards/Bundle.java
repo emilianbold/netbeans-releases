@@ -54,15 +54,15 @@ public class Bundle {
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes - cloud wizard panel                                  //
+    ////////////////////////////////////////////////////////////////////////////
+
     /** Add Cloud panel name property prefix
      *  (GlassFish.cloud.wizard.panel.&lt;index&gt;.name
      *  before &lt;index&gt;). */
     private static final String ADD_CLOUD_WIZARD_PANEL_NAME_PREFIX
             = "GlassFish.cloud.wizard.panel.";
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Class attributes - cloud wizard panel                                  //
-    ////////////////////////////////////////////////////////////////////////////
 
     /** Add Cloud panel name property suffix
      *  (GlassFish.cloud.wizard.panel.&lt;index&gt;.name
@@ -113,6 +113,17 @@ public class Bundle {
     // Class attributes - user account wizard panel                           //
     ////////////////////////////////////////////////////////////////////////////
 
+    /** Add Cloud panel name property prefix
+     *  (GlassFish.cloud.wizard.panel.&lt;index&gt;.name
+     *  before &lt;index&gt;). */
+    private static final String ADD_ACCOUNT_WIZARD_PANEL_NAME_PREFIX
+            = "GlassFish.account.wizard.panel.";
+
+    /** Add Cloud panel name property suffix
+     *  (GlassFish.cloud.wizard.panel.&lt;index&gt;.name
+     *  after &lt;index&gt;). */
+    private static final String ADD_ACCOUNT_WIZARD_PANEL_NAME_SUFFIX = ".name";
+
     /** Add User Account wizard name property. */
     static final String ADD_ACCOUNT_WIZARD_DISPLAY_NAME
             = "GlassFish.account.wizard.displayName";
@@ -145,6 +156,10 @@ public class Bundle {
     static final String USER_PANEL_ERROR_USER_PASSWORD_EMPTY
             = "GlassFishAcocuntWizardUserPanel.error.user.password.empty";
 
+    /** User account panel validation error: GlassFish cloud not selected. */
+    static final String USER_PANEL_ERROR_CLOUD_EMPTY
+            = "GlassFishAcocuntWizardUserPanel.error.cloud.empty";
+
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes - cloud wizard actions                                //
     ////////////////////////////////////////////////////////////////////////////
@@ -169,6 +184,21 @@ public class Bundle {
         sb.append(ADD_CLOUD_WIZARD_PANEL_NAME_PREFIX);
         sb.append(index);
         sb.append(ADD_CLOUD_WIZARD_PANEL_NAME_SUFFIX);
+        return sb.toString();
+    }
+
+    /**
+     * Build the display name of GlassFish cloud wizard panel with given index.
+     * <p/>
+     * @param index Index of panel display name.
+     */
+    public static String addAccountWizardName(int index) {
+        StringBuilder sb = new StringBuilder(
+                ADD_ACCOUNT_WIZARD_PANEL_NAME_PREFIX.length()
+                + ADD_ACCOUNT_WIZARD_PANEL_NAME_SUFFIX.length() + 2);
+        sb.append(ADD_ACCOUNT_WIZARD_PANEL_NAME_PREFIX);
+        sb.append(index);
+        sb.append(ADD_ACCOUNT_WIZARD_PANEL_NAME_SUFFIX);
         return sb.toString();
     }
 

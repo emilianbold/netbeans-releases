@@ -77,9 +77,13 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
 
     /**
      * Constructs an instance of CPAS panel.
+     * <p/>
+     * @param names     Wizard steps names to be added into steps tab.
+     * @param nameIndex Index of wizard step name to be displayed
+     *                  as component name.
      */
-    public GlassFishCloudWizardCpasPanel() {
-        super();
+    public GlassFishCloudWizardCpasPanel(String[] names, int nameIndex) {
+        super(names, nameIndex);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -96,6 +100,7 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
         if (component == null) {
             super.component = component
                     = new GlassFishCloudWizardCpasComponent();
+            initComponent();
             component.setChangeListener(this);
         }
         GlassFishWizardComponent.ValidationResult result

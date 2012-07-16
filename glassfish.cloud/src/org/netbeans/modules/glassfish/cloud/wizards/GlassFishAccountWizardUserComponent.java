@@ -194,6 +194,9 @@ public class GlassFishAccountWizardUserComponent
     /** Validity of <code>userPassword</code> field. */
     private boolean userPasswordValid;
 
+    /** Validity of GlassFish Cloud selection field. */
+    private boolean glassFishCloudValid;
+
     private CloudComboBox cloudComboBoxItems;
 
     /** Event listener to validate host field on the fly. */
@@ -251,6 +254,7 @@ public class GlassFishAccountWizardUserComponent
         /**
          * Invoked when an item has been selected or deselected by the user.
          * <p/>
+         * Validates combo box selection.
          * Updates values in GlassFish cloud CPAS host and port text fields.
          * <p/>
          * @param event Event related to item selection or deselection.
@@ -260,6 +264,11 @@ public class GlassFishAccountWizardUserComponent
         @SuppressWarnings("fallthrough")
         @Override
         public void itemStateChanged(ItemEvent event) {
+            // Validate combo box selection.
+            ValidationResult result = glassFishCloudValid();
+            glassFishCloudValid = result.isValid();
+            update(result);
+            // Update host and port fields.
             switch(event.getStateChange()) {
                 case ItemEvent.SELECTED:
                     GlassFishCloudEntity selectedCloud
@@ -294,7 +303,7 @@ public class GlassFishAccountWizardUserComponent
                 .cloneCloudInstances());
         cloudComboBox.setModel(cloudComboBoxItems);
         cloudComboBox.addItemListener(cloudSelectionListener);
-
+        glassFishCloudValid = glassFishCloudValid().isValid();
         displayNameValid = displayNameValid().isValid();
         accountValid = accountValid().isValid();
         userNameValid = userNameValid().isValid();
@@ -392,7 +401,8 @@ public class GlassFishAccountWizardUserComponent
      */
     @Override
     boolean valid() {
-        return displayNameValid && accountValid && userNameValid && userPasswordValid; 
+        return glassFishCloudValid && displayNameValid && accountValid
+                && userNameValid && userPasswordValid; 
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -503,6 +513,25 @@ public class GlassFishAccountWizardUserComponent
             return new ValidationResult(false,
                     getMessage(GlassFishCloudWizardCpasComponent.class,
                     Bundle.USER_PANEL_ERROR_USER_PASSWORD_EMPTY));
+        }
+    }
+
+    /**
+     * Validate GlassFish Cloud selection.
+     * <p/>
+     * GlassFish Cloud combo box should contain selected value (can't be empty).
+     * <p/>
+     * @return <code>true</code> when GlassFish Cloud selection contains
+     *         existing GlassFish Cloud or <code>false</code> when no cloud
+     *         was selected.
+     */
+    final ValidationResult glassFishCloudValid() {
+        if (cloudComboBox.getSelectedItem() != null) {
+            return new ValidationResult(true, null);
+        } else {
+            return new ValidationResult(false,
+                    getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.USER_PANEL_ERROR_CLOUD_EMPTY));
         }
     }
 

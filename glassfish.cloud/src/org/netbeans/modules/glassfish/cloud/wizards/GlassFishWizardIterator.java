@@ -109,7 +109,7 @@ public abstract class GlassFishWizardIterator
     public GlassFishWizardIterator(final int panelsCount) {
         this.panelsCount = panelsCount;
         this.panel = new WizardDescriptor.Panel[panelsCount];
-        this.name = new String[panelsCount];
+        this.name = new String[panelsCount + 1];
         this.listeners = new ChangeSupport(this);
         for (int i = 0; i < panelsCount; i++) {
             this.panel[i] = null;
