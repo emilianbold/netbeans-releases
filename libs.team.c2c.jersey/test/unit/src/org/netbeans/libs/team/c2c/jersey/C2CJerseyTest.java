@@ -47,7 +47,11 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
+import com.tasktop.c2c.server.common.service.domain.QueryResult;
+import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.project.Organization;
+import com.tasktop.c2c.server.profile.domain.project.Profile;
+import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectAccessibility;
 import com.tasktop.c2c.server.profile.domain.project.ProjectPreferences;
 import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
@@ -56,6 +60,7 @@ import com.tasktop.c2c.server.profile.domain.project.ProjectsQuery;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.net.PasswordAuthentication;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlElement;
@@ -63,6 +68,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jettison.json.JSONObject;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.team.c2c.jersey.wrappers.ProfileWrapper;
+import org.netbeans.modules.team.c2c.client.api.CloudException;
 
 /**
  *
@@ -73,7 +79,8 @@ public class C2CJerseyTest extends NbTestCase {
     private static boolean firstRun = true;
     private static String uname;
     private static String passw;
-    private static String proxy;
+    private static String proxyHost;
+    private static String proxyPort;
     
     public C2CJerseyTest(String testName) {
         super(testName);
@@ -89,61 +96,75 @@ public class C2CJerseyTest extends NbTestCase {
                 BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
                 uname = br.readLine();
                 passw = br.readLine();
-                proxy = br.readLine();
+                proxyHost = br.readLine();
+                proxyPort = br.readLine();
                 br.close();
             }
             if (firstRun) {
                 firstRun = false;
             }
         }
-        if (!proxy.isEmpty()) {
-            System.setProperty("netbeans.system_http_proxy", proxy);
+        if (!proxyHost.isEmpty()) {
+            System.setProperty("netbeans.system_http_proxy", proxyHost + ":" + proxyPort);
         }
     }
     
-    public void testApp() throws Exception {
-        ClientConfig clientConfig = new DefaultClientConfig();
-        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-        clientConfig.getClasses().add(ObjectMapperProvider.class);
-        Client c = Client.create(clientConfig);
-        c.addFilter(new HTTPBasicAuthFilter(uname, passw));
-        WebResource root = c.resource("https://q.tasktop.com/alm/api/profile");
-        String ret = root.accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
-
-
-        System.out.println("Hello World: " + ret);
-
-
-        JSONObject o = root.accept(MediaType.APPLICATION_JSON_TYPE).get(JSONObject.class);
-        System.out.println("JSON Object: " + o.get("profile"));
-
-
-        System.out.println("NOW WITH JACKSON:");
-        ProfileWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ProfileWrapper.class);
-        System.out.println("Parse User Name: " + wrapper.profile.getUsername());
+//    public void testApp() throws Exception {
+//        ClientConfig clientConfig = new DefaultClientConfig();
+//        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+//        clientConfig.getClasses().add(ObjectMapperProvider.class);
+//        
+////        ClientConfig clientConfig = new DefaultApacheHttpClientConfig();
+////        clientConfig.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+////        clientConfig.getClasses().add(ObjectMapperProvider.class);
+////        clientConfig.getProperties().put(DefaultApacheHttpClientConfig.PROPERTY_PROXY_URI, "http://" + proxyHost + ":" + proxyPort);
+//
+//        Client c = Client.create(clientConfig);
+//        c.addFilter(new HTTPBasicAuthFilter(uname, passw));
+//        WebResource root = c.resource("https://q.tasktop.com/alm/api/profile");
+//        String ret = root.accept(MediaType.APPLICATION_JSON_TYPE).get(String.class);
+//
+//        System.out.println("Hello World: " + ret);
+//
+//        JSONObject o = root.accept(MediaType.APPLICATION_JSON_TYPE).get(JSONObject.class);
+//        System.out.println("JSON Object: " + o.get("profile"));
+//
+//        System.out.println("NOW WITH JACKSON:");
+//        ProfileWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ProfileWrapper.class);
+//        System.out.println("Parse User Name: " + wrapper.profile.getUsername());
+//        
+//        System.out.println("QUERY RET LIKE STRING:");
+//        root = c.resource("https://q.tasktop.com/alm/api/projects/search");
+//        ret = root.type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).post(String.class, new ProjectsQuery(ProjectRelationship.MEMBER, null));
+//        System.out.println(ret);
+//        
+//        System.out.println("QUERY RET CUSTOM:");
+//        root = c.resource("https://q.tasktop.com/alm/api/projects/search");
+//        Record r = root.type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).post(Record.class, new ProjectsQuery(ProjectRelationship.MEMBER, null));
+//        System.out.println(r.queryResult.resultPage[0].name);
+//        
+//    }
+    
+    public void testGetProfile() throws CloudException {
+        C2CJersey c = new C2CJersey();
+        c.initialize("https://q.tasktop.com", new PasswordAuthentication(uname, passw.toCharArray()));
+        Profile profile = c.getCurrentProfile();
         
-
-        
-//        System.out.println(" +++ " + query);
-        
-        System.out.println("QUERY RET LIKE STRING:");
-        root = c.resource("https://q.tasktop.com/alm/api/projects/search");
-        ret = root.type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).post(String.class, new ProjectsQuery(ProjectRelationship.MEMBER, null));
-        System.out.println(ret);
-        
-        System.out.println("QUERY RET CUSTOM:");
-        root = c.resource("https://q.tasktop.com/alm/api/projects/search");
-        Record r = root.type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON).post(Record.class, new ProjectsQuery(ProjectRelationship.MEMBER, null));
-        System.out.println(r.queryResult.resultPage[0].name);
-        
-//        QueryResult<Project> qr = 
-//                root.type(MediaType.APPLICATION_JSON_TYPE)
-//                    .accept(MediaType.APPLICATION_JSON)
-//                    .post(new GenericType<QueryResult<Project>>(){}, new ProjectsQuery(ProjectRelationship.MEMBER, null));
-        
-//        System.out.println("QUERY : " + qr);
-                
+        assertNotNull(profile);
+        assertEquals(uname, profile.getUsername());
     }
+    
+    public void testRecentActivities() throws CloudException {
+        C2CJersey c = new C2CJersey();
+        c.initialize("https://q.tasktop.com", new PasswordAuthentication(uname, passw.toCharArray()));
+        
+        List<ProjectActivity> as = c.getRecentActivities("anagramgame");
+        
+        assertNotNull(as);
+        assertFalse(as.isEmpty());
+    }
+    
+    
     
     @XmlRootElement
     public static final class Record {
