@@ -49,6 +49,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -62,6 +63,8 @@ public final class Composer extends PhpProgram {
 
     public static final String NAME = "composer"; // NOI18N
     public static final String LONG_NAME = NAME + ".phar"; // NOI18N
+
+    private static final String LOCK_FILENAME = "composer.json"; // NOI18N
 
     private static final String[] DEFAULT_PARAMS = {
         "--ansi", // NOI18N
@@ -102,8 +105,17 @@ public final class Composer extends PhpProgram {
         return FileUtils.validateFile(Bundle.Composer_script_label(), getProgram(), false);
     }
 
-    @NbBundle.Messages("Composer.run.init=Composer init")
+    @NbBundle.Messages({
+        "Composer.run.init=Composer init",
+        "Composer.lockFile.exists=Composer lock file already exists - overwrite it?"
+    })
     public void init(PhpModule phpModule) {
+        FileObject lockFile = getLockFile(phpModule);
+        if (lockFile != null && lockFile.isValid()) {
+            if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_lockFile_exists())) {
+                return;
+            }
+        }
         runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init());
     }
 
@@ -156,7 +168,7 @@ public final class Composer extends PhpProgram {
             }
             return processBuilder.addArgument(command);
         } catch (InvalidPhpProgramException ex) {
-            // ignored
+            // ignored, should not happen
         }
         return super.getProcessBuilder();
     }
@@ -174,6 +186,15 @@ public final class Composer extends PhpProgram {
     public static void warnNoSources(String projectName) {
         DialogDisplayer.getDefault().notifyLater(
                 new NotifyDescriptor.Message(Bundle.Composer_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
+    }
+
+    private FileObject getLockFile(PhpModule phpModule) {
+        return phpModule.getSourceDirectory().getFileObject(LOCK_FILENAME);
+    }
+
+    private boolean userConfirmation(String title, String question) {
+        NotifyDescriptor confirmation = new DialogDescriptor.Confirmation(question, title, DialogDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(confirmation) == DialogDescriptor.YES_OPTION;
     }
 
 }
