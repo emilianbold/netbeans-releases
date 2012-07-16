@@ -79,6 +79,7 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         
         builder.append("Origin: ");
         builder.append( Utils.getOrigin(getClient().getUri()));
+        builder.append(Utils.CRLF);
         
         builder.append(Utils.KEY1);
         builder.append(": ");                               // NOI18N
