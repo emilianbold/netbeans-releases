@@ -282,6 +282,35 @@ public class CGSInfo {
 
         private String getPropertyType(final ASTNode node) {
             String result = ""; //NOI18N
+            Comment comment = Utils.getCommentForNode(program, node);
+            if (comment instanceof PHPDocBlock) {
+                result = getFirstTypeFromBlock((PHPDocBlock) comment);
+            }
+            return result;
+        }
+
+        private String getFirstTypeFromBlock(final PHPDocBlock phpDoc) {
+            String result = ""; //NOI18N
+            for (PHPDocTag pHPDocTag : phpDoc.getTags()) {
+                if (pHPDocTag instanceof PHPDocTypeTag && pHPDocTag.getKind().equals(PHPDocTag.Type.VAR)) {
+                    result = getFirstTypeFromTag((PHPDocTypeTag) pHPDocTag);
+                    if (!result.isEmpty()) {
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+
+        private String getFirstTypeFromTag(final PHPDocTypeTag typeTag) {
+            String result = ""; //NOI18N
+            for (PHPDocTypeNode typeNode : typeTag.getTypes()) {
+                String type = typeNode.getValue();
+                if (!VariousUtils.isPrimitiveType(type) && !VariousUtils.isSpecialClassName(type)) {
+                    result = type;
+                    break;
+                }
+            }
             return result;
         }
 
