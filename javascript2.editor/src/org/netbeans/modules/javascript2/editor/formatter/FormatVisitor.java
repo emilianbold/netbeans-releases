@@ -542,10 +542,11 @@ public class FormatVisitor extends NodeVisitor {
     private void handleStandardBlock(Block block) {
         handleBlockContent(block);
 
-        // indentation mark
+        // indentation mark & block start
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null && !isScript(block)) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark after non white token preceeding curly bracket
@@ -559,10 +560,11 @@ public class FormatVisitor extends NodeVisitor {
     private void handleCaseBlock(Block block) {
         handleBlockContent(block);
 
-        // indentation mark
+        // indentation mark & block start
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark
@@ -583,8 +585,17 @@ public class FormatVisitor extends NodeVisitor {
 
         Node statement = block.getStatements().get(0);
         
-        // indentation mark
+        // indentation mark & block start
         Token token = getPreviousNonEmptyToken(getStart(statement));
+        
+        /*
+         * If its VarNode it does not contain var keyword so we have to search
+         * for it.
+         */
+        if (statement instanceof VarNode && token.id() == JsTokenId.KEYWORD_VAR) {
+            token = getPreviousNonEmptyToken(ts.offset());
+        }
+        
         if (token != null) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
             if (!isScript(block)) {
@@ -592,6 +603,7 @@ public class FormatVisitor extends NodeVisitor {
                     formatToken = tokenStream.getTokens().get(0);
                 }
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
             }
         }
 

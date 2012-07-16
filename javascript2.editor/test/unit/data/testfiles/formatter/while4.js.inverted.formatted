@@ -2,15 +2,19 @@ while (a){
     " something strange"
 }
 
-do;
+do
+    ;
 while (r.test)
 {
-    {"good"
+    {
+        "good"
     }
 }
 ;
 
-do{ {"command"
+do{
+    {
+        "command"
     }
 } while (r.test1() + r);
 
@@ -18,7 +22,8 @@ do{
     "ok"
 } while ((s || b.some()))
 
-while (sss);
+while (sss)
+    ;
 
 while (a && (f.test() || x.test())){
     print("ok");

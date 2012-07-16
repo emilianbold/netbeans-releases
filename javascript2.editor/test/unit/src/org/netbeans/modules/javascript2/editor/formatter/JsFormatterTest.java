@@ -248,6 +248,10 @@ public class JsFormatterTest extends JsTestBase {
                 options, ".inverted.formatted");
     }
 
+    public void testIf4Default() throws Exception {
+        reformatFileContents("testfiles/formatter/if4.js", new IndentPrefs(4, 4));
+    }
+    
     public void testDoWhile1() throws Exception {
         reformatFileContents("testfiles/formatter/dowhile1.js",new IndentPrefs(4, 4));
     }

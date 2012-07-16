@@ -7,7 +7,9 @@ function compute2(a, b){
     a = something + 5;
 }
 
-function compute3(a){ { }
+function compute3(a){
+    {
+    }
     a = something + 5;
 }
 
