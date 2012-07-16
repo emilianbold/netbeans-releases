@@ -69,6 +69,8 @@ final class Utils {
     
     static final String WS_UPGRADE = "Upgrade: WebSocket";                            // NOI18N
     
+    static final String WS_UPGRADE_1 = "Upgrade: websocket";                          // NOI18N
+    
     static final String CONN_UPGRADE = "Connection: Upgrade";                         // NOI18N
     
     static final String CRLF = "\r\n";                                                // NOI18N

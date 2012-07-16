@@ -96,6 +96,7 @@ class WebSocketHandlerClient75 extends AbstractWSHandler75 {
         
         builder.append("Origin: ");
         builder.append( Utils.getOrigin(getClient().getUri()));
+        builder.append(Utils.CRLF);
         
         builder.append(Utils.WS_PROTOCOL);
         builder.append(": chat");                             // NOI18N

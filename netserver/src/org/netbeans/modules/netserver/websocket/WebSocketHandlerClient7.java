@@ -72,12 +72,15 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
         builder.append( Utils.HTTP_11);
         builder.append(Utils.CRLF);
         
-        builder.append(Utils.WS_UPGRADE);
-        builder.append(Utils.CRLF);
-        
         builder.append(Utils.HOST);
         builder.append(": ");                               // NOI18N
         builder.append(getClient().getUri().getHost());
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.WS_UPGRADE_1);
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.CONN_UPGRADE);
         builder.append(Utils.CRLF);
         
         if ( version >= 7 && version<= 10){
@@ -87,6 +90,7 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
             builder.append("Origin: ");
         }
         builder.append( Utils.getOrigin(getClient().getUri()));
+        builder.append( Utils.CRLF );
         
         builder.append("Sec-WebSocket-Protocol: chat");     // NOI18N
         builder.append( Utils.CRLF );
@@ -109,7 +113,6 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
         
         builder.append( Utils.CRLF );
         builder.append( Utils.CRLF );
-        
         
         getClient().send(builder.toString().getBytes( 
                 Charset.forName(Utils.UTF_8)), client.getKey() );
