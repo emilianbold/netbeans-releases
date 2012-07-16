@@ -12,13 +12,16 @@ else{
 }
 
 if (done());
-else{ {"ok"} }
+else{ {"ok"
+    }
+}
 
 if (true)
     a = 7
 
 if ((e || b));
-else{};
+else{}
+;
 
 if (element.select && (element.tagName.toLowerCase() != 'input' ||
         !['button', 'reset', 'submit'].include(element.type))){

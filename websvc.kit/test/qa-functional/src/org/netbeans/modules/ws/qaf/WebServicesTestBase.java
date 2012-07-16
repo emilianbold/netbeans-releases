@@ -509,10 +509,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         // wait project appear in projects view
         ProjectRootNode node;
         long oldTimeout = JemmyProperties.getCurrentTimeout("JTreeOperator.WaitNextNodeTimeout");
-        if (!type.isAntBasedProject()) {
-            // need to increase time to wait for project node for Maven project
-            JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000);
-        }
+        // need to increase time to wait for project node
+        JemmyProperties.setCurrentTimeout("JTreeOperator.WaitNextNodeTimeout", 120000);
         try {
             node = ProjectsTabOperator.invoke().getProjectRootNode(name);
         } finally {

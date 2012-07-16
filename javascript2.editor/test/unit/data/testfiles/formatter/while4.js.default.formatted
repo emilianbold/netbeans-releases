@@ -2,11 +2,17 @@ while (a) {
     " something strange"
 }
 
-do; while (r.test)  {
-    {"good"}
-};
+do;
+while (r.test)
+{
+    {"good"
+    }
+}
+;
 
-do { {"command"}  } while (r.test1() + r);
+do { {"command"
+    }
+} while (r.test1() + r);
 
 do {
     "ok"
