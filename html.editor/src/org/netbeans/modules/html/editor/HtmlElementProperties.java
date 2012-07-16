@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
 @NbBundle.Messages({
     "edit.attribute.tooltip=You can edit the value or delete the attribute by setting an empty value",
     "new.attribute.tooltip=You can add the attribute by setting its value",
-    "element.element.attributes.title=Element Attributes",
+    "element.element.attributes.title=Element Attributes"
 })
 public class HtmlElementProperties {
 
