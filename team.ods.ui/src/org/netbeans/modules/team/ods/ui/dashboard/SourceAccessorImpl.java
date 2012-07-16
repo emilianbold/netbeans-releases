@@ -87,11 +87,9 @@ import org.openide.windows.WindowManager;
  * @author Milan Kubec, Jan Becicka, Tomas Stupka
  */
 public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
-    private final CloudUiServer server;
     private final DashboardProviderImpl provider;
 
-    public SourceAccessorImpl(CloudUiServer server, DashboardProviderImpl provider) {
-        this.server = server;
+    public SourceAccessorImpl(DashboardProviderImpl provider) {
         this.provider = provider;
     }
 
