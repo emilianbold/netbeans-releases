@@ -2,10 +2,12 @@ while (a) {
     " something strange"
 }
 
-do;
+do
+    ;
 while (r);
 
-do;
+do
+    ;
 while (r);
 
 do {

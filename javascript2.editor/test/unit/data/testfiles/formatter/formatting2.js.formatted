@@ -34,7 +34,8 @@ function Ridic(name, surname) {
     this.name = name;
     this.surname = surname;
     ;
-    if (a);
+    if (a)
+        ;
     this.getName = function() {
         return /*this is ugly comment*/this.name;
     }
