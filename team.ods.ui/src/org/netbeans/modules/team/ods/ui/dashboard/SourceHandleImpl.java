@@ -61,7 +61,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.git.api.Git;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
@@ -70,6 +70,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -89,7 +90,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     public SourceHandleImpl(final ProjectHandleImpl projectHandle, ScmRepository repository) {
         this.repository = repository;
-        // XXX after git api was implemented prefs = NbPreferences.forModule(Git.class);
+        prefs = NbPreferences.forModule(Git.class);
         this.projectHandle = projectHandle;
         OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this , OpenProjects.getDefault()));
         initRecent();
@@ -179,8 +180,9 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
                         recent.remove(MAX_PROJECTS);
                     }
                     storeRecent();
-                    if (fireChanges)
+                    if (fireChanges) {
                         projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
+                    }    
                 }
             } catch (IOException ex) {
                 Logger.getLogger(SourceHandleImpl.class.getName()).fine("Project not found for " + prj);
