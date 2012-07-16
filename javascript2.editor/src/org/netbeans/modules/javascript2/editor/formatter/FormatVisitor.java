@@ -464,7 +464,7 @@ public class FormatVisitor extends NodeVisitor {
                     appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
                 }
                 appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
-                FormatToken colon = getNextToken(question.getOffset(), JsTokenId.OPERATOR_COLON);
+                FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
                 if (colon != null) {
                     previous = colon.previous();
                     if (previous != null) {
