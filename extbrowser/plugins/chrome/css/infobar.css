@@ -57,7 +57,7 @@ button, .button {
     border: 1px solid orange;
     border-radius: 3px;
     color: white;
-    padding: 2px 4px;
+    padding: 3px 4px;
     box-shadow: 1px 1px 5px #1D1D1D;
 }
 button:hover, .button:hover {
@@ -70,6 +70,15 @@ button.disabled, button[disabled=disabled], .button.disabled {
 }
 button.disabled:hover, button[disabled=disabled]:hover, .button.disabled:hover {
     background-color: grey;
+}
+
+div.button {
+    padding: 1px 0px 0px 0px;
+}
+#selectionModeMenu {
+    color: white;
+    padding-top: 2px;
+    padding-right: 4px;
 }
 
 #preview * {
