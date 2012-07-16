@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.css.visual;
 
+import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

@@ -45,9 +45,8 @@ package org.netbeans.modules.css.visual;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
-import java.util.Collection;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;

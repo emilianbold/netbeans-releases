@@ -39,16 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.css.visual.api;
 
 import java.awt.BorderLayout;
-import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
+ * Css Rule Editor {@link TopComponent}.
+ * 
+ * One may manipulate the content of this component by obtaining an instance
+ * of {@link RuleEditorController} via {@link #getRuleEditorController() } method.
+ * 
+ * @see RuleEditorController
  * 
  * @author mfukala@netbeans.org
  */
@@ -61,7 +66,7 @@ import org.openide.windows.TopComponent;
         openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
-        id = "org.netbeans.modules.css.visual.v2.RuleEditorTC") // NOI18N
+        id = "org.netbeans.modules.css.visual.api.RuleEditorTC.OpenAction") // NOI18N
 @ActionReference(
         path = "Menu/Window/Navigator", // NOI18N
         position = 900)
@@ -85,6 +90,9 @@ public final class RuleEditorTC extends TopComponent {
         setToolTipText(Bundle.HINT_RuleEditorTC());
     }
 
+    /**
+     * Returns the default {@link RuleEditorController} associated with this rule editor top component.
+     */
     public RuleEditorController getRuleEditorController() {
         return controller;
     }
