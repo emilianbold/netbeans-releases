@@ -52,7 +52,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.properties.Properties;
@@ -87,7 +86,20 @@ public class RuleNode extends AbstractNode {
     private static final Comparator<PropertyDefinition> PROPERTY_DEFINITIONS_COMPARATOR = new Comparator<PropertyDefinition>() {
         @Override
         public int compare(PropertyDefinition pd1, PropertyDefinition pd2) {
-            return pd1.getName().compareTo(pd2.getName());
+            String pd1name = pd1.getName();
+            String pd2name = pd2.getName();
+            
+             //sort the vendor spec. props below the common ones
+            boolean d1vendor = Properties.isVendorSpecificPropertyName(pd1name);
+            boolean d2vendor = Properties.isVendorSpecificPropertyName(pd2name);
+            
+            if(d1vendor && !d2vendor) {
+                return +1;
+            } else if(!d1vendor && d2vendor) {
+                return -1;
+            }
+            
+            return pd1name.compareTo(pd2name);
         }
     };
     
@@ -96,6 +108,16 @@ public class RuleNode extends AbstractNode {
         public int compare(Declaration d1, Declaration d2) {
             String d1Name = d1.getProperty().getContent().toString();
             String d2Name = d2.getProperty().getContent().toString();
+            
+            //sort the vendor spec. props below the common ones
+            boolean d1vendor = Properties.isVendorSpecificPropertyName(d1Name);
+            boolean d2vendor = Properties.isVendorSpecificPropertyName(d2Name);
+            
+            if(d1vendor && !d2vendor) {
+                return +1;
+            } else if(!d1vendor && d2vendor) {
+                return -1;
+            }
             
             return d1Name.compareTo(d2Name);
         }
@@ -158,7 +180,7 @@ public class RuleNode extends AbstractNode {
         List<Declaration> declarations = getRule().getDeclarations() == null 
                 ? Collections.<Declaration>emptyList()
                 : getRule().getDeclarations().getDeclarations();
-        Map<PropertyCategory, PropertyCategoryPropertySet> propertySetsMap;
+        
         
         if (isShowCategories()) {
             //create property sets for property categories
@@ -183,7 +205,7 @@ public class RuleNode extends AbstractNode {
                 }
             }
 
-            propertySetsMap = new EnumMap<PropertyCategory, PropertyCategoryPropertySet>(PropertyCategory.class);
+            Map<PropertyCategory, PropertyCategoryPropertySet> propertySetsMap = new EnumMap<PropertyCategory, PropertyCategoryPropertySet>(PropertyCategory.class);
             for (Entry<PropertyCategory, List<Declaration>> entry : categoryToDeclarationsMap.entrySet()) {
                 
                 List<Declaration> categoryDeclarations = entry.getValue();
@@ -196,6 +218,34 @@ public class RuleNode extends AbstractNode {
                 sets.add(propertyCategoryPropertySet);
             }
 
+            if (isShowAllProperties()) {
+                //Show all properties
+                for (PropertyCategory cat : PropertyCategory.values()) {
+                    PropertyCategoryPropertySet propertySet = propertySetsMap.get(cat);
+                    if (propertySet == null) {
+                        propertySet = new PropertyCategoryPropertySet(cat, Collections.<Declaration>emptyList());
+                        sets.add(propertySet);
+                    } 
+                    //now add all the remaining properties
+                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(cat.getProperties());
+                    
+
+                    Collections.sort(allInCat, PROPERTY_DEFINITIONS_COMPARATOR);
+
+                    //remove already used
+                    for (Declaration d : propertySet.declarations) {
+                        PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
+                        allInCat.remove(def);
+                    }
+
+                    //add the rest of unused properties to the property set
+                    for (PropertyDefinition pd : allInCat) {
+                        propertySet.properties.add(new PropertyDefinitionProperty(pd));
+                    }
+
+                }
+
+            }
 
         } else {
             //not showCategories
@@ -229,39 +279,26 @@ public class RuleNode extends AbstractNode {
             
             sets.add(set);
 
-            propertySetsMap = Collections.singletonMap(PropertyCategory.DEFAULT, set);
-        }
-        
-        if (isShowAllProperties()) {
+            if (isShowAllProperties()) {
                 //Show all properties
-                //
-                //add the existing - unused properties separator to the already added caregories
-                //and create set for unused categories
-                for (PropertyCategory cat : PropertyCategory.values()) {
-                    PropertyCategoryPropertySet propertySet = propertySetsMap.get(cat);
-                    if (propertySet == null) {
-                        propertySet = new PropertyCategoryPropertySet(cat, Collections.<Declaration>emptyList());
-                        sets.add(propertySet);
-                    } 
-                    //now add all the remaining properties
-                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(cat.getProperties());
+                List<PropertyDefinition> all = new ArrayList<PropertyDefinition>(Properties.getProperties(true));
+                Collections.sort(all, PROPERTY_DEFINITIONS_COMPARATOR);
 
-                    Collections.sort(allInCat, PROPERTY_DEFINITIONS_COMPARATOR);
+                //remove already used
+                for (Declaration d : set.declarations) {
+                    PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
+                    all.remove(def);
+                }
 
-                    //remove already used
-                    for (Declaration d : propertySet.declarations) {
-                        PropertyDefinition def = Properties.getProperty(d.getProperty().getContent().toString());
-                        allInCat.remove(def);
-                    }
-
-                    //add the rest of unused properties to the property set
-                    for (PropertyDefinition pd : allInCat) {
-                        propertySet.properties.add(new PropertyDefinitionProperty(pd));
-                    }
-
+                //add the rest of unused properties to the property set
+                for (PropertyDefinition pd : all) {
+                    set.properties.add(new PropertyDefinitionProperty(pd));
                 }
 
             }
+        }
+        
+        
 
         return sets.toArray(new PropertySet[0]);
     }
