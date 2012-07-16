@@ -311,6 +311,10 @@ public class FormatVisitor extends NodeVisitor {
                         JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
                 if (rightBrace != null) {
                     previous = rightBrace.previous();
+                    while (previous != null && previous.isVirtual()
+                            && previous.getKind() != FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS) {
+                        previous = previous.previous();
+                    }
                     assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
                     tokenStream.removeToken(previous);
                 }
@@ -452,15 +456,15 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(TernaryNode ternaryNode, boolean onset) {
         if (onset) {
-            int start = getStart(ternaryNode);
-            FormatToken question = getNextToken(start, JsTokenId.OPERATOR_TERNARY);
+            int start = getStart(ternaryNode.rhs());
+            FormatToken question = getPreviousToken(start, JsTokenId.OPERATOR_TERNARY);
             if (question != null) {
                 FormatToken previous = question.previous();
                 if (previous != null) {
                     appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
                 }
                 appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
-                FormatToken colon = getNextToken(question.getOffset(), JsTokenId.OPERATOR_COLON);
+                FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
                 if (colon != null) {
                     previous = colon.previous();
                     if (previous != null) {
