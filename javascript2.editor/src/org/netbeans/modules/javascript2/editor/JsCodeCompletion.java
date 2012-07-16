@@ -479,6 +479,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             List<JsObject> types = new ArrayList<JsObject>();
             List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
             List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
+            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+            JsIndex jsIndex = JsIndex.get(fo);
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
@@ -499,7 +501,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                     
-                    if(!types.isEmpty()){
+                    Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
+//                    Collection<String> prototypeChain = new ArrayList<String>();
+                    for (IndexedElement globalVar : globalVars) {
+                        System.out.println("globalVar: " + globalVar.getName());
+                        Collection<TypeUsage> assignments = globalVar.getAssignments();
+                        lastResolvedTypes.addAll(assignments);
+//                        for (TypeUsage typeUsage : assignments) {
+//                            prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+//                        }
+                    }
+//                    for (String string : prototypeChain) {
+//                        lastResolvedTypes.add(new TypeUsageImpl(string));
+//                    }
+                    
+                    if(!types.isEmpty()){ 
                         for(JsObject type : types) {
                             if(type.getAssignmentForOffset(request.anchor).isEmpty()) {
                                 // also check, whether the same type is not in the index
@@ -522,6 +538,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                     break;
                                 }
                             }
+                            
                         }
                     } 
                 } else {
@@ -543,8 +560,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     
                     
                     for (TypeUsage typeUsage : lastResolvedTypes) {
-                        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-                        Collection<? extends IndexResult> indexResults = JsIndex.get(fo).findFQN(typeUsage.getType() + "." + name);
+                        Collection<String> prototypeChain = new ArrayList<String>();
+                        prototypeChain.add(typeUsage.getType());
+                        prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                        
+                        Collection<? extends IndexResult> indexResults = null;        
+                        for (String fqn : prototypeChain) {
+                            indexResults = jsIndex.findFQN(fqn + "." + name); //NOI18N
+                            if (indexResults.isEmpty()) {
+                                indexResults = jsIndex.findFQN(fqn + ".prototype." + name); //NOI18N
+                            }
+                            if(!indexResults.isEmpty()) {
+                                break;
+                            }
+                        }
+                        
                         for (IndexResult indexResult : indexResults) {
                             JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
@@ -577,9 +607,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     lastResolvedTypes = newResolvedTypes;
                 }
             }
-
-            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-            JsIndex jsIndex = JsIndex.get(fo);
             
             // resolving prototpe chains
             Collection<String> prototypeChain = new ArrayList<String>();
