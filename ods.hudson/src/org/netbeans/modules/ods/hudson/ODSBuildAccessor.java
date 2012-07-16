@@ -91,12 +91,12 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
 
     @Override
     public List<BuildHandle> getBuilds(ProjectHandle<ODSProject> projectHandle) {
-        ODSBuilderConnector odsBuilderConnector = new ODSBuilderConnector(projectHandle);
+        String url = projectHandle.getTeamProject().getBuildUrl(); // XXX what if more than one service
         HudsonInstance hi = HudsonManager.addInstance(
                 projectHandle.getDisplayName(),
-                projectHandle.getTeamProject().getServer().getUrl()
-                + "/" + projectHandle.getId() + "/", //NOI18N
-                1, odsBuilderConnector);
+                url, 
+                1, 
+                false);
         if (hi == null) {
             return Collections.emptyList();
         }

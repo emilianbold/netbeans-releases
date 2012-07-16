@@ -190,6 +190,18 @@ public final class ODSProject {
         return hasService(ServiceType.SCM);
     }
 
+    public String getBuildUrl() {
+        List<ProjectService> s = project.getProjectServicesOfType(ServiceType.BUILD);
+        if(s != null) {
+            for (ProjectService ps : s) {
+                if(ps.isAvailable()) {
+                    return ps.getUrl();
+                }
+            }
+        } 
+        return null;
+    }
+    
     private boolean hasService(ServiceType type) {
         List<ProjectService> s = project.getProjectServicesOfType(type);
         if(s != null) {
