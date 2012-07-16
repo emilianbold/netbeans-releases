@@ -199,6 +199,12 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         //TODO
         return "src/main/java"; //NOI18N
     }
+    
+    @Override
+    public String getTestSourceDirectoryPath() {
+        //TODO
+        return "src/test/java"; //NOI18N
+    }
 
     @Override
     public FileObject getSourceDirectory() {

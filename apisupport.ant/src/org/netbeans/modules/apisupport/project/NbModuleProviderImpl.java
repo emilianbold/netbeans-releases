@@ -94,6 +94,10 @@ class NbModuleProviderImpl implements NbModuleProvider {
     @Override public String getSourceDirectoryPath() {
         return prj.getSourceDirectoryPath();
     }
+    
+    @Override public String getTestSourceDirectoryPath() {
+        return getResourceDirectoryPath(true);
+    }
 
     @Override public FileObject getSourceDirectory() {
         return prj.getSourceDirectory();
