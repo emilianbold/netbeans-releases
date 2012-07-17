@@ -49,7 +49,9 @@ import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataListener;
+import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import static org.openide.util.NbBundle.getMessage;
 
@@ -68,7 +70,7 @@ public class GlassFishAccountWizardUserComponent
      * List of registered GlassFish cloud instances used to select one for
      * user account being registered.
      */
-    class CloudComboBox implements ComboBoxModel {
+    static class CloudComboBox implements ComboBoxModel {
 
         ////////////////////////////////////////////////////////////////////////
         // Instance attributes                                                //
@@ -179,9 +181,39 @@ public class GlassFishAccountWizardUserComponent
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Initialize GlassFish cloud GUI component instance in constructor.
+     * <p/>
+     * Constructor helper containing shared code. do not use this method outside
+     * constructors.
+     * <p/>
+     * @param instance GlassFish cloud user account GUI component instance
+     *                 to be initialized.
+     */
+    private static void initInstance(
+            GlassFishAccountWizardUserComponent instance) {
+        instance.cloudComboBoxItems = new CloudComboBox(
+                GlassFishCloudInstanceProvider.getInstance()
+                .cloneCloudInstances());
+        instance.initComponents();
+        instance.cloudComboBox.addItemListener(instance.cloudSelectionListener);
+        instance.glassFishCloudValid = instance.glassFishCloudValid().isValid();
+        instance.displayNameValid = instance.displayNameValid().isValid();
+        instance.accountValid = instance.accountValid().isValid();
+        instance.userNameValid = instance.userNameValid().isValid();
+        instance.userPasswordValid = instance.userPasswordValid().isValid();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
     
+    /** GlassFish cloud user account instance. */
+    GlassFishAccountInstance instance;
+
     /** Validity of <code>displayName</code> field. */
     private boolean displayNameValid;
 
@@ -294,20 +326,13 @@ public class GlassFishAccountWizardUserComponent
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates new form GlassFishAccountWizardUserComponent
+     * Creates new instance of GlassFish cloud user account GUI component.
+     * <p/>
+     * Form field handlers are set to wizard mode.
      */
     public GlassFishAccountWizardUserComponent() {
-        initComponents();
-        cloudComboBoxItems = new CloudComboBox(
-                GlassFishCloudInstanceProvider.getInstance()
-                .cloneCloudInstances());
-        cloudComboBox.setModel(cloudComboBoxItems);
-        cloudComboBox.addItemListener(cloudSelectionListener);
-        glassFishCloudValid = glassFishCloudValid().isValid();
-        displayNameValid = displayNameValid().isValid();
-        accountValid = accountValid().isValid();
-        userNameValid = userNameValid().isValid();
-        userPasswordValid = userPasswordValid().isValid();
+        this.instance = null;
+        initInstance(this);
         accountTextField.getDocument()
                 .addDocumentListener(accountEventListener);
         userNameTextField.getDocument()
@@ -316,12 +341,27 @@ public class GlassFishAccountWizardUserComponent
                 .addDocumentListener(userPasswordEventListener);
     }
 
+    /**
+     * Creates new instance of GlassFish cloud user account GUI component.
+     * <p/>
+     * Form field handlers are set to edit mode and fields are initialized using
+     * <code>instance</code> content.
+     * <p/>
+     * @param instance GlassFish cloud user account instance to be modified.
+     */
+    public GlassFishAccountWizardUserComponent(
+            GlassFishAccountInstance instance) {
+        this.instance = instance;
+        initComponents();
+        
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // GUI Getters                                                            //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Get CPAS display name.
+     * Get user account display name.
      * <p/>
      * @return CPAS display name.
      */
@@ -370,6 +410,132 @@ public class GlassFishAccountWizardUserComponent
         GlassFishCloudEntity selected
                 = (GlassFishCloudEntity)cloudComboBox.getSelectedItem();
         return selected != null ? selected.getName() : null;
+    }
+
+    /**
+     * Get display name for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * @return Value of name passed from cloud user account entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initDisplayName() {
+        return instance != null ? instance.getName() : "";
+    }
+
+    /**
+     * Get account for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * @return Value of account passed from cloud user account entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initAccount() {
+        return instance != null ? instance.getAcount() : "";
+    }
+
+    /**
+     * Get user name for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * @return Value of user name passed from cloud user account entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initUserName() {
+        return instance != null ? instance.getUserName() : "";
+    }
+
+    /**
+     * Get user password for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * @return Value of user password passed from cloud user account
+     *         entity object or empty <code>String</code> when cloud
+     *         entity object is <code>null</code>.
+     */
+    private String initUserPassword() {
+        return instance != null ? instance.getUserPassword() : "";
+    }
+
+    /**
+     * Get CPAS host for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * Uses cloud entity object encapsulated in cloud user account entity object
+     * or null when there is no such object encapsulated.
+     * <p/>
+     * @return Value of CPAS host passed from cloud entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initCloudHost() {
+        GlassFishCloud cloudInstance;
+        if (instance != null) {
+            cloudInstance = instance.getCloudEntity();
+        } else {
+            cloudInstance = null;
+        }
+        return cloudInstance != null ? cloudInstance.getHost() : "";
+    }
+
+    /**
+     * Get CPAS host for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * Uses cloud entity object encapsulated in cloud user account entity object
+     * or null when there is no such object encapsulated.
+     * <p/>
+     * @return Value of CPAS host passed from cloud entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initCloudPort() {
+        GlassFishCloud cloudInstance;
+        if (instance != null) {
+            cloudInstance = instance.getCloudEntity();
+        } else {
+            cloudInstance = null;
+        }
+        return cloudInstance != null
+                ? Integer.toString(cloudInstance.getPort()) : "";
+    }
+
+    /**
+     * Get CPAS selection in
+     * {@see GlassFishAccountWizardUserComponent.CloudComboBox} model
+     * for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * Updates combo box selection to point to selected GlassFish cloud (CPAS).
+     * Local <code>cloudComboBoxItems</code> attribute must be initialized
+     * before this method is called (and also <code>initComponents</code>
+     * method is called).
+     */
+    private CloudComboBox initCloudComboBox() {
+        GlassFishCloud cloudInstance;
+        if (instance != null) {
+            cloudInstance = instance.getCloudEntity();
+            String name = cloudInstance != null
+                    ? cloudInstance.getName() : null;
+            if (name != null) {
+                for (GlassFishCloudEntity item : cloudComboBoxItems.items) {
+                    if (name.equals(item.getName())) {
+                        cloudComboBoxItems.selected = item;
+                    }
+                }
+            }
+        }
+        return cloudComboBoxItems;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -573,13 +739,20 @@ public class GlassFishAccountWizardUserComponent
 
         userPasswordLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.userPasswordLabel.text")); // NOI18N
 
-        userNameTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.userNameTextField.text")); // NOI18N
+        userNameTextField.setText(initUserName());
 
-        accountTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.accountTextField.text")); // NOI18N
+        accountTextField.setText(initAccount());
+        accountTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                accountTextFieldActionPerformed(evt);
+            }
+        });
+
+        cloudComboBox.setModel(initCloudComboBox());
 
         cloudLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.cloudLabel.text")); // NOI18N
 
-        userPasswordTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.userPasswordTextField.text")); // NOI18N
+        userPasswordTextField.setText(initUserPassword());
 
         separator.setForeground(new java.awt.Color(0, 0, 0));
 
@@ -589,20 +762,20 @@ public class GlassFishAccountWizardUserComponent
 
         hostTextField.setBackground(new java.awt.Color(238, 238, 238));
         hostTextField.setEditable(false);
-        hostTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.hostTextField.text")); // NOI18N
+        hostTextField.setText(initCloudHost());
 
         portLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.portLabel.text")); // NOI18N
 
         portTextField.setBackground(new java.awt.Color(238, 238, 238));
         portTextField.setEditable(false);
-        portTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.portTextField.text")); // NOI18N
+        portTextField.setText(initCloudPort());
 
         acocuntHeader.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.acocuntHeader.text")); // NOI18N
 
         nameLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.nameLabel.text")); // NOI18N
 
         nameTextField.setEditable(false);
-        nameTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishAccountWizardUserComponent.class, "GlassFishAccountWizardUserComponent.nameTextField.text")); // NOI18N
+        nameTextField.setText(initDisplayName());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -668,6 +841,10 @@ public class GlassFishAccountWizardUserComponent
                     .addComponent(userPasswordTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void accountTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_accountTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_accountTextFieldActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel accountLabel;

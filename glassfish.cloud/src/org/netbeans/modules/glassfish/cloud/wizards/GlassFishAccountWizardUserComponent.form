@@ -125,22 +125,25 @@
     </Component>
     <Component class="javax.swing.JTextField" name="userNameTextField">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/glassfish/cloud/wizards/Bundle.properties" key="GlassFishAccountWizardUserComponent.userNameTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="initUserName()" type="code"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="accountTextField">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/glassfish/cloud/wizards/Bundle.properties" key="GlassFishAccountWizardUserComponent.accountTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="initAccount()" type="code"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="accountTextFieldActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JComboBox" name="cloudComboBox">
       <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="0"/>
+        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="initCloudComboBox()" type="code"/>
         </Property>
       </Properties>
     </Component>
@@ -153,8 +156,8 @@
     </Component>
     <Component class="javax.swing.JPasswordField" name="userPasswordTextField">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/glassfish/cloud/wizards/Bundle.properties" key="GlassFishAccountWizardUserComponent.userPasswordTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="initUserPassword()" type="code"/>
         </Property>
       </Properties>
     </Component>
@@ -185,8 +188,8 @@
           <Color blue="ee" green="ee" red="ee" type="rgb"/>
         </Property>
         <Property name="editable" type="boolean" value="false"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/glassfish/cloud/wizards/Bundle.properties" key="GlassFishAccountWizardUserComponent.hostTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="initCloudHost()" type="code"/>
         </Property>
       </Properties>
     </Component>
@@ -203,8 +206,8 @@
           <Color blue="ee" green="ee" red="ee" type="rgb"/>
         </Property>
         <Property name="editable" type="boolean" value="false"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/glassfish/cloud/wizards/Bundle.properties" key="GlassFishAccountWizardUserComponent.portTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="initCloudPort()" type="code"/>
         </Property>
       </Properties>
     </Component>
@@ -225,8 +228,8 @@
     <Component class="javax.swing.JTextField" name="nameTextField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/glassfish/cloud/wizards/Bundle.properties" key="GlassFishAccountWizardUserComponent.nameTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="initDisplayName()" type="code"/>
         </Property>
       </Properties>
     </Component>

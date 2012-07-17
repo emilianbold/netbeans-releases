@@ -42,73 +42,94 @@
 package org.netbeans.modules.glassfish.cloud.wizards;
 
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
- *
- * @author kratz
+ * GlassFish cloud GUI component.
+ * <p/>
+ * Allows editing cloud attributes in both add wizard and properties update
+ * pop up.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudWizardCpasComponent
         extends GlassFishWizardComponent {
 
     ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Initialize GlassFish cloud GUI component instance in constructor.
+     * <p/>
+     * Constructor helper containing shared code. do not use this method outside
+     * constructors.
+     * <p/>
+     * @param instance GlassFish cloud GUI component instance to be initialized.
+     */
+    private static void initInstance(
+            GlassFishCloudWizardCpasComponent instance) {
+        instance.initComponents();
+        instance.hostValid = instance.hostValid().isValid();
+        instance.portValid = instance.portValid().isValid();
+        instance.displayNameValid = instance.displayNameValid().isValid();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish cloud instance. */
+    GlassFishCloudInstance instance;
 
     /** Validity of <code>displayName</code> field. */
     private boolean displayNameValid;
 
-    /** Validity of <code>displayName</code> field. */
+    /** Validity of <code>host</code> field. */
     private boolean hostValid;
     
     /** Validity of <code>port</code> field. */
     private boolean portValid;
-
-    /** Event listener to validate displayName field on the fly. */
-    private DocumentListener hostEventListener = new ComponentFieldListener() {
-
-        /**
-         * Process received notification.
-         */
-        @Override
-        void processEvent() {
-            ValidationResult result = hostValid();
-            hostValid = result.isValid();
-            update(result);            
-        }
-
-    };
-
-    /** Event listener to validate port field on the fly. */
-    private DocumentListener portEventListener = new ComponentFieldListener() {
-
-        /**
-         * Process received notification.
-         */
-        @Override
-        void processEvent() {
-            ValidationResult result = portValid();
-            portValid = result.isValid();
-            update(result);            
-        }
-
-    };
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates new form GlassFishCloudWizardCpasComponent
+     * Creates new instance of GlassFish cloud GUI component.
+     * <p/>
+     * Form field handlers are set to wizard mode.
      */
+    @SuppressWarnings("LeakingThisInConstructor") // initInstance(this);
     public GlassFishCloudWizardCpasComponent() {
-        initComponents();
-        hostValid = hostValid().isValid();
-        portValid = portValid().isValid();
-        displayNameValid = displayNameValid().isValid();
-        hostTextField.getDocument().addDocumentListener(hostEventListener);
-        portTextField.getDocument().addDocumentListener(portEventListener);
+        this.instance = null;
+        initInstance(this);
+        hostTextField.getDocument()
+                .addDocumentListener(initHostValidateListener());
+        portTextField.getDocument()
+                .addDocumentListener(initPortValidateListener());
+    }
+
+    /**
+     * Creates new instance of GlassFish cloud GUI component.
+     * <p/>
+     * Form field handlers are set to edit mode and fields are initialized using
+     * <code>instance</code> content.
+     * <p/>
+     * @param instance GlassFish cloud instance to be modified.
+     */
+    @SuppressWarnings("LeakingThisInConstructor") // initInstance(this);
+    public GlassFishCloudWizardCpasComponent(GlassFishCloudInstance instance) {
+        this.instance = instance;
+        initInstance(this);
+        nameLabel.setVisible(false);
+        nameTextField.setVisible(false);
+        hostTextField.getDocument()
+                .addDocumentListener(initHostUpdateListener());
+        portTextField.getDocument()
+                .addDocumentListener(initPortUpdateListener());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -161,6 +182,45 @@ public class GlassFishCloudWizardCpasComponent
         return text != null ? text.trim() : null;
     }
 
+    /**
+     * Get CPAS display name for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * @return Value of name passed from cloud entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initDisplayName() {
+        return instance != null ? instance.getName() : "";
+    }
+
+    /**
+     * Get CPAS host for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * @return Value of host passed from cloud entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initHost() {
+        return instance != null ? instance.getHost() : "";
+    }
+
+    /**
+     * Get CPAS port for GUI initialization.
+     * <p/>
+     * This method is used only in generated <code>initComponents</code> method.
+     * <p/>
+     * @return Value of port passed from cloud entity object
+     *         or empty <code>String</code> when cloud entity object
+     *         is <code>null</code>.
+     */
+    private String initPort() {
+        return instance != null ? Integer.toString(instance.getPort()) : "";
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Implemented abstract methods                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -189,6 +249,90 @@ public class GlassFishCloudWizardCpasComponent
     @Override
     boolean valid() {
         return displayNameValid && hostValid && portValid;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Event helper metyhods                                                  //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Process host field validation event.
+     * <p/>
+     * This is internal event processing helper and should not be used outside
+     * listeners <code>processEvent</code> method.
+     */
+    void processHostValidateEvent() {
+        ValidationResult result = hostValid();
+        hostValid = result.isValid();
+        update(result);
+    }
+    
+    /**
+     * Process port field validation event.
+     * <p/>
+     * This is internal event processing helper and should not be used outside
+     * listeners <code>processEvent</code> method.
+     */
+    void processPortValidateEvent() {
+        ValidationResult result = portValid();
+        portValid = result.isValid();
+        update(result);
+    }
+
+    /**
+     * Create event listener to validate host field on the fly.
+     */
+    private DocumentListener initHostValidateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processHostValidateEvent();
+            }
+        };
+    }
+
+    /**
+     * Create event listener to validate port field on the fly.
+     */
+    private DocumentListener initPortValidateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processPortValidateEvent();
+            }
+        };
+    }
+
+    /**
+     * Create event listener to update host field on the fly.
+     */
+    private DocumentListener initHostUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processHostValidateEvent();
+                if (hostValid && instance != null) {
+                    instance.setHost(getHost());
+                    GlassFishCloudInstanceProvider.persist(instance);
+                }
+            }
+        };
+    }
+
+    /**
+     * Create event listener to update port field on the fly.
+     */
+    private DocumentListener initPortUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processPortValidateEvent();
+                if (portValid && instance != null) {
+                    instance.setPort(getPort());
+                    GlassFishCloudInstanceProvider.persist(instance);
+                }
+            }
+        };
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -308,17 +452,17 @@ public class GlassFishCloudWizardCpasComponent
 
         hostLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.hostLabel.text")); // NOI18N
 
-        hostTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.hostTextField.text")); // NOI18N
+        hostTextField.setText(initHost());
 
         portLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.portLabel.text")); // NOI18N
 
-        portTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.portTextField.text")); // NOI18N
+        portTextField.setText(initPort());
 
         nameLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.nameLabel.text")); // NOI18N
 
         nameTextField.setBackground(new java.awt.Color(238, 238, 238));
         nameTextField.setEditable(false);
-        nameTextField.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.nameTextField.text")); // NOI18N
+        nameTextField.setText(initDisplayName());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -333,7 +477,7 @@ public class GlassFishCloudWizardCpasComponent
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
+                        .addGap(12, 12, Short.MAX_VALUE))
                     .addComponent(hostTextField)
                     .addComponent(nameTextField)))
         );

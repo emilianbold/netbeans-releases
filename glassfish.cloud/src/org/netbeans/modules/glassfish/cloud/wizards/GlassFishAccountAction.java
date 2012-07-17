@@ -41,65 +41,35 @@
  */
 package org.netbeans.modules.glassfish.cloud.wizards;
 
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceNode;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
-import org.openide.nodes.Node;
-import static org.openide.util.NbBundle.getMessage;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 /**
- * GUI action to remove GlassFish cloud instance.
+ * GUI action to work with GlassFish cloud user account.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
-
+public abstract class GlassFishAccountAction extends NodeAction {
+    
     /**
-     * Perform the action based on the currently activated nodes.
+     * This action will be performed synchronously as called in the
+     * event thread.
      * <p/>
-     * This action will always be triggered from
-     * {@link GlassFishCloudInstanceNode} so we can access it directly.
-     * <p/>
-     * @param activatedNodes Current activated nodes. It should always be
-     *                       GlassFish cloud GUI node.
+     * @return <code>false</code> to perform this action synchronously.
      */
     @Override
-    protected void performAction(Node[] activatedNodes) {
-        GlassFishCloudInstance instance = activatedNodes[0].getLookup()
-                .lookup(GlassFishCloudInstance.class);
-        GlassFishCloudInstanceProvider.getInstance().removeInstance(instance);
+    protected boolean asynchronous() {
+        return false;
     }
 
     /**
-     * Test whether the action should be enabled based on the currently
-     * activated nodes.
+     * Get no help context for the action.
      * <p/>
-     * @param activatedNodes Current activated nodes, may be empty but not
-     *                       <code>null</code>.
-     * @return <code>true</code> to be enabled or <code>false</code>
-     *         to be disabled.
+     * @return <code>null</code> to provide no help to poor users.
      */
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup()
-                .lookup(GlassFishCloudInstance.class) != null;
-    }
-
-    /**
-     * Get a human presentable name of the action.
-     * <p/>
-     * This may be presented as an item in a menu. Value is retrieved from
-     * properties bundle.
-     * <p/>
-     * @return human presentable name of the action.
-     */
-    @Override
-    public String getName() {
-        return getMessage(GlassFishCloudActionRemoveInstance.class,
-                Bundle.CLOUD_ACTION_REMOVE_NAME);
+    public HelpCtx getHelpCtx() {
+        return null;
     }
 
 }

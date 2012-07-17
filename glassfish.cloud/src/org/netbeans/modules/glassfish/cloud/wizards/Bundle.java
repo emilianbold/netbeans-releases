@@ -109,6 +109,10 @@ public class Bundle {
     static final String CLOUD_ACTION_REMOVE_NAME
             = "GlassFishCloudActionRemoveInstance.name";
 
+    /** Cloud instance pop up menu: properties action display name. */
+    static final String CLOUD_ACTION_PROPERTIES_NAME
+            = "GlassFishCloudActionProperties.name";
+
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes - user account wizard panel                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -167,6 +171,10 @@ public class Bundle {
     /** User account instance pop up menu: remove action display name. */
     static final String USER_ACTION_REMOVE_NAME
             = "GlassFishAccountActionRemoveInstance.name";
+
+    /** User account instance pop up menu: properties action display name. */
+    static final String USER_ACTION_PROPERTIES_NAME
+            = "GlassFishAccountActionProperties.name";
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //

@@ -47,13 +47,14 @@ import javax.swing.JComponent;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.modules.glassfish.cloud.wizards.GlassFishCloudWizardCpasComponent;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
- * GlassFish Cloud instance extended to contain NetBeans related attributes.
+ * GlassFish cloud instance extended to contain NetBeans related attributes.
  * <p/>
  * GlassFish cloud instance represents CPAS interface. Based on Tooling SDK
  * entity object.
@@ -194,18 +195,18 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
      */
     @Override
     public JComponent getCustomizer() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new GlassFishCloudWizardCpasComponent(this);
     }
 
     /**
      * Removes instance from provider(s).
      * <p/>
-     * No {@link ServerInstanceProvider} should return this instance once
+     * No {@link GlassFishCloudInstanceProvider} should return this instance once
      * it is removed.
      */
     @Override
     public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        GlassFishCloudInstanceProvider.getInstance().removeInstance(this);
     }
 
     /**
@@ -217,7 +218,7 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
      */
     @Override
     public boolean isRemovable() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
     
     ////////////////////////////////////////////////////////////////////////////

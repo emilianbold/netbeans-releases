@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.cloud.data;
 
 import javax.swing.Action;
+import org.netbeans.modules.glassfish.cloud.wizards.GlassFishAccountActionProperties;
 import org.netbeans.modules.glassfish.cloud.wizards.GlassFishAccountActionRemoveInstance;
 import org.openide.util.actions.SystemAction;
 
@@ -91,8 +92,18 @@ public class GlassFishAccountInstanceNode extends GlassFishInstanceNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
+            SystemAction.get(GlassFishAccountActionProperties.class),
             SystemAction.get(GlassFishAccountActionRemoveInstance.class)
         };
+    }
+
+    /**
+     * Get cloud instance object holding this node.
+     * <p/>
+     * @return Cloud instance object holding this node.
+     */
+    public GlassFishAccountInstance getInstance() {
+        return instance;
     }
 
 }

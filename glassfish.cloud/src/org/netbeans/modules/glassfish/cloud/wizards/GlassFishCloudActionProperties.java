@@ -41,19 +41,19 @@
  */
 package org.netbeans.modules.glassfish.cloud.wizards;
 
+import org.netbeans.api.server.CommonServerUIs;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceNode;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import org.openide.nodes.Node;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
- * GUI action to remove GlassFish cloud instance.
+ * GUI action to update GlassFish cloud properties.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
-
+public class GlassFishCloudActionProperties extends GlassFishCloudAction {
+    
     /**
      * Perform the action based on the currently activated nodes.
      * <p/>
@@ -67,7 +67,7 @@ public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
     protected void performAction(Node[] activatedNodes) {
         GlassFishCloudInstance instance = activatedNodes[0].getLookup()
                 .lookup(GlassFishCloudInstance.class);
-        GlassFishCloudInstanceProvider.getInstance().removeInstance(instance);
+        CommonServerUIs.showCloudCustomizer(instance.getServerInstance());
     }
 
     /**
@@ -99,7 +99,8 @@ public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
     @Override
     public String getName() {
         return getMessage(GlassFishCloudActionRemoveInstance.class,
-                Bundle.CLOUD_ACTION_REMOVE_NAME);
+                Bundle.CLOUD_ACTION_PROPERTIES_NAME);
     }
+
 
 }

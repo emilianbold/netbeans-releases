@@ -121,6 +121,16 @@ public class GlassFishCloudInstanceProvider
     public static GlassFishCloudInstance getCloudInstance(String name) {
         return getInstance().getCloudInstances().get(name);
     }
+
+    /**
+     * Update properties to persist using given GlassFish Cloud Instance.
+     * <p/>
+     * @param instance GlassFish Cloud Instance used to persist.
+     */
+    public static void persist(GlassFishCloudInstance instance) {
+        getInstance().update(instance);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -319,6 +329,25 @@ public class GlassFishCloudInstanceProvider
                 InstanceProperties props = i.next();
                 if (instance.equalProps(props)) {
                     props.remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * Update properties to persist using given GlassFish Cloud Instance.
+     * <p/>
+     * @param instance GlassFish Cloud Instance used to update properties.
+     */
+    private void update(GlassFishCloudInstance instance) {
+        List<InstanceProperties> propsList = InstancePropertiesManager
+                .getInstance().getProperties(PROPERTIES_NAME_SPACE);
+        synchronized (this) {
+            for (Iterator<InstanceProperties> i = propsList.iterator();
+                    i.hasNext(); ) {
+                InstanceProperties props = i.next();
+                if (instance.equalProps(props)) {
+                    instance.store(props);
                 }
             }
         }

@@ -49,13 +49,14 @@ import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
+import org.netbeans.modules.glassfish.cloud.wizards.GlassFishAccountWizardUserComponent;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
- * GlassFish User Account instance extended to contain NetBeans related
+ * GlassFish cloud user account instance extended to contain NetBeans related
  * attributes.
  * <p/>
  * GlassFish user account instance represents user on cloud account. Based
@@ -225,7 +226,7 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
      */
     @Override
     public JComponent getCustomizer() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new GlassFishAccountWizardUserComponent(this);
     }
 
     /**

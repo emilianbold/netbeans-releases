@@ -42,27 +42,43 @@
 package org.netbeans.modules.glassfish.cloud.wizards;
 
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceNode;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import static org.openide.util.NbBundle.getMessage;
-import org.openide.util.actions.NodeAction;
 
 /**
  * GUI action to remove GlassFish cloud user account instance.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishAccountActionRemoveInstance extends NodeAction {
+public class GlassFishAccountActionRemoveInstance extends GlassFishAccountAction {
 
+    /**
+     * Perform the action based on the currently activated nodes.
+     * <p/>
+     * This action will always be triggered from
+     * {@link GlassFishAccountInstanceNode} so we can access it directly.
+     * <p/>
+     * @param activatedNodes Current activated nodes. It should always be
+     *                       GlassFish user account GUI node.
+     */
     @Override
     protected void performAction(Node[] activatedNodes) {
-        GlassFishAccountInstance instance
-                = activatedNodes[0].getLookup().lookup(
-                GlassFishAccountInstance.class);
+        GlassFishAccountInstance instance = activatedNodes[0].getLookup()
+                .lookup(GlassFishAccountInstance.class);
         GlassFishAccountInstanceProvider.getInstance().removeInstance(instance);
     }
 
+    /**
+     * Test whether the action should be enabled based on the currently
+     * activated nodes.
+     * <p/>
+     * @param activatedNodes Current activated nodes, may be empty but not
+     *                       <code>null</code>.
+     * @return <code>true</code> to be enabled or <code>false</code>
+     *         to be disabled.
+     */
     @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length != 1) {
@@ -72,15 +88,18 @@ public class GlassFishAccountActionRemoveInstance extends NodeAction {
                 .lookup(GlassFishAccountInstance.class) != null;
     }
 
+    /**
+     * Get a human presentable name of the action.
+     * <p/>
+     * This may be presented as an item in a menu. Value is retrieved from
+     * properties bundle.
+     * <p/>
+     * @return human presentable name of the action.
+     */
     @Override
     public String getName() {
         return getMessage(GlassFishAccountActionRemoveInstance.class,
                 Bundle.USER_ACTION_REMOVE_NAME);
     }
 
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-    
 }

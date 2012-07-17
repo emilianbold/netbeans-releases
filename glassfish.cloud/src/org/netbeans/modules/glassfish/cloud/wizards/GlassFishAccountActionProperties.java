@@ -41,33 +41,33 @@
  */
 package org.netbeans.modules.glassfish.cloud.wizards;
 
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceNode;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
+import org.netbeans.api.server.CommonServerUIs;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceNode;
 import org.openide.nodes.Node;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
- * GUI action to remove GlassFish cloud instance.
+ * GUI action to update GlassFish cloud user account properties.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
+public class GlassFishAccountActionProperties extends GlassFishAccountAction {
 
     /**
      * Perform the action based on the currently activated nodes.
      * <p/>
      * This action will always be triggered from
-     * {@link GlassFishCloudInstanceNode} so we can access it directly.
+     * {@link GlassFishAccountInstanceNode} so we can access it directly.
      * <p/>
      * @param activatedNodes Current activated nodes. It should always be
-     *                       GlassFish cloud GUI node.
+     *                       GlassFish user account GUI node.
      */
     @Override
     protected void performAction(Node[] activatedNodes) {
-        GlassFishCloudInstance instance = activatedNodes[0].getLookup()
-                .lookup(GlassFishCloudInstance.class);
-        GlassFishCloudInstanceProvider.getInstance().removeInstance(instance);
+        GlassFishAccountInstance instance = activatedNodes[0].getLookup()
+                .lookup(GlassFishAccountInstance.class);
+        CommonServerUIs.showCloudCustomizer(instance.getServerInstance());
     }
 
     /**
@@ -85,7 +85,7 @@ public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
             return false;
         }
         return activatedNodes.length > 0 && activatedNodes[0].getLookup()
-                .lookup(GlassFishCloudInstance.class) != null;
+                .lookup(GlassFishAccountInstance.class) != null;
     }
 
     /**
@@ -98,8 +98,8 @@ public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
      */
     @Override
     public String getName() {
-        return getMessage(GlassFishCloudActionRemoveInstance.class,
-                Bundle.CLOUD_ACTION_REMOVE_NAME);
+        return getMessage(GlassFishAccountActionProperties.class,
+                Bundle.USER_ACTION_PROPERTIES_NAME);
     }
 
 }
