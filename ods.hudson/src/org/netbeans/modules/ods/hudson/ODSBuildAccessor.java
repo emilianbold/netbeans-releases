@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -91,12 +92,12 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
 
     @Override
     public List<BuildHandle> getBuilds(ProjectHandle<ODSProject> projectHandle) {
-        String url = projectHandle.getTeamProject().getBuildUrl(); // XXX what if more than one service
+        ODSPasswordAuthorizer.ProjectHandleRegistry.registerProjectHandle(
+                projectHandle);
         HudsonInstance hi = HudsonManager.addInstance(
                 projectHandle.getDisplayName(),
-                url, 
-                1, 
-                false);
+                projectHandle.getTeamProject().getBuildUrl(),
+                1, false);
         if (hi == null) {
             return Collections.emptyList();
         }
@@ -110,8 +111,18 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
 
     @Override
     public Action getNewBuildAction(ProjectHandle<ODSProject> projectHandle) {
-        // TODO Use project URL rather than server URL>
-        final URL url = projectHandle.getTeamProject().getServer().getUrl();
+        final String urlString = projectHandle.getTeamProject().getBuildUrl();
+        final URL url;
+        try {
+            url = new URL(urlString);
+        } catch (MalformedURLException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                }
+            };
+        }
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {

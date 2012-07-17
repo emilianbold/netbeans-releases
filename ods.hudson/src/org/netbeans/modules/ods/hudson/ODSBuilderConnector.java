@@ -59,17 +59,15 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
-import org.netbeans.modules.team.c2c.api.CloudServer;
+import org.netbeans.modules.hudson.spi.RemoteFileSystem;
 import org.netbeans.modules.team.c2c.api.ODSProject;
-import org.netbeans.modules.team.c2c.client.api.ClientFactory;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -166,8 +164,18 @@ public class ODSBuilderConnector extends BuilderConnector {
     }
 
     @Override
-    public FileSystem getArtifacts(HudsonJobBuild build) {
-        return FileUtil.createMemoryFileSystem();
+    public RemoteFileSystem getArtifacts(HudsonJobBuild build) {
+        return new ODSBuildArtifactsFileSystem(projectHandle, build);
+    }
+
+    @Override
+    public RemoteFileSystem getArtifacts(HudsonMavenModuleBuild build) {
+        return null;
+    }
+
+    @Override
+    public RemoteFileSystem getWorkspace(HudsonJob job) {
+        return null;
     }
 
     @Override
@@ -201,8 +209,7 @@ public class ODSBuilderConnector extends BuilderConnector {
     }
     
     private CloudClient getClient() {
-        CloudServer server = projectHandle.getTeamProject().getServer();
-        return ClientFactory.getInstance().createClient(server.getUrl().toString(), server.getPasswordAuthentication());        
+        return ODSHudsonUtils.getClient(projectHandle);
     }
 
     private void updateJobDataBuildNumbers(List<BuildSummary> bss, JobData jd)
