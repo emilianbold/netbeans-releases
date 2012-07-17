@@ -20,11 +20,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" attributes="0">
-              <Component id="muteREvisionsLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-          </Group>
-          <Component id="scriptsScrollPane" pref="518" max="32767" attributes="0"/>
+          <Component id="scriptsScrollPane" max="32767" attributes="0"/>
+          <Component id="muteREvisionsLabel" alignment="0" pref="518" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -46,19 +43,18 @@
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="scriptsScrollPane">
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JList" name="scriptsList">
+        <Container class="javax.swing.JPanel" name="scriptsPane">
           <Properties>
-            <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="listModel" type="code"/>
-            </Property>
+            <Property name="opaque" type="boolean" value="false"/>
           </Properties>
-        </Component>
+
+          <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBoxLayout">
+            <Property name="axis" type="int" value="1"/>
+          </Layout>
+        </Container>
       </SubComponents>
     </Container>
   </SubComponents>

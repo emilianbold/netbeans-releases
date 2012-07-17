@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.web.livehtml.ui;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.DefaultListModel;
+import javax.swing.JCheckBox;
 import org.netbeans.modules.web.livehtml.Analysis;
 import org.netbeans.modules.web.livehtml.AnalysisStorage;
 import org.netbeans.modules.web.livehtml.filter.AndRevisionFilter;
@@ -63,7 +65,6 @@ import org.netbeans.modules.web.livehtml.filter.ScriptRevisionFilter;
 public class RevisionFilterPanel extends javax.swing.JPanel {
     
     private Analysis analysis;
-    private DefaultListModel listModel = new DefaultListModel();
     
     /**
      * Creates new form RevisionFilterPanel
@@ -91,19 +92,23 @@ public class RevisionFilterPanel extends javax.swing.JPanel {
             }
         }
         
-        listModel.clear();
+        scriptsPane.removeAll();
         for (String script : scripts) {
-            listModel.addElement(script);
+            final JCheckBox checkBox = new JCheckBox(script);
+            checkBox.setToolTipText(script);
+            
+            scriptsPane.add(checkBox);
         }
     }
     
     private List<String> getSelectedScripts() {
-        final Object[] selectedValues = scriptsList.getSelectedValues();
         List<String> selectedScripts = new ArrayList<String>();
-        for (Object object : selectedValues) {
-            if (object instanceof String) {
-                String s = (String) object;
-                selectedScripts.add(s);
+        for (Component component : scriptsPane.getComponents()) {
+            if (component instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) component;
+                if (checkBox.isSelected()) {
+                    selectedScripts.add(checkBox.getToolTipText());
+                }
             }
         }
         return selectedScripts;
@@ -118,12 +123,11 @@ public class RevisionFilterPanel extends javax.swing.JPanel {
                     final RevisionFilter sourceRevisionFilter = notRevisionFilter.getRevisionFilter();
                     if (sourceRevisionFilter instanceof ScriptRevisionFilter) {
                         ScriptRevisionFilter scriptRevisionFilter = (ScriptRevisionFilter) sourceRevisionFilter;
-                        for (int i = 0; i < listModel.getSize(); i++) {
-                            final Object object = listModel.get(i);
-                            if (object instanceof String) {
-                                String string = (String) object;
-                                if (string.equals(scriptRevisionFilter.getScriptUrl())) {
-                                    scriptsList.addSelectionInterval(i, i);
+                        for (Component component : scriptsPane.getComponents()) {
+                            if (component instanceof JCheckBox) {
+                                JCheckBox checkBox = (JCheckBox) component;
+                                if (checkBox.getText().equals(scriptRevisionFilter.getScriptUrl())) {
+                                    checkBox.setSelected(true);
                                 }
                             }
                         }
@@ -162,21 +166,20 @@ public class RevisionFilterPanel extends javax.swing.JPanel {
         buttonGroup1 = new javax.swing.ButtonGroup();
         muteREvisionsLabel = new javax.swing.JLabel();
         scriptsScrollPane = new javax.swing.JScrollPane();
-        scriptsList = new javax.swing.JList();
+        scriptsPane = new javax.swing.JPanel();
 
         org.openide.awt.Mnemonics.setLocalizedText(muteREvisionsLabel, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.muteREvisionsLabel.text")); // NOI18N
 
-        scriptsList.setModel(listModel);
-        scriptsScrollPane.setViewportView(scriptsList);
+        scriptsPane.setOpaque(false);
+        scriptsPane.setLayout(new javax.swing.BoxLayout(scriptsPane, javax.swing.BoxLayout.Y_AXIS));
+        scriptsScrollPane.setViewportView(scriptsPane);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(muteREvisionsLabel)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(scriptsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+            .addComponent(scriptsScrollPane)
+            .addComponent(muteREvisionsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -189,7 +192,7 @@ public class RevisionFilterPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel muteREvisionsLabel;
-    private javax.swing.JList scriptsList;
+    private javax.swing.JPanel scriptsPane;
     private javax.swing.JScrollPane scriptsScrollPane;
     // End of variables declaration//GEN-END:variables
 }
