@@ -248,6 +248,22 @@ public class JsFormatterTest extends JsTestBase {
                 options, ".inverted.formatted");
     }
 
+    public void testIf4Default() throws Exception {
+        reformatFileContents("testfiles/formatter/if4.js", new IndentPrefs(4, 4));
+    }
+
+    public void testIf5() throws Exception {
+        reformatFileContents("testfiles/formatter/if5.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIf6() throws Exception {
+        reformatFileContents("testfiles/formatter/if6.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIf7() throws Exception {
+        reformatFileContents("testfiles/formatter/if7.js",new IndentPrefs(4, 4));
+    }
+
     public void testDoWhile1() throws Exception {
         reformatFileContents("testfiles/formatter/dowhile1.js",new IndentPrefs(4, 4));
     }
@@ -497,6 +513,14 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testPartialFormat5() throws Exception {
         reformatFileContents("testfiles/formatter/partialFormat5.js", Collections.<String, Object>emptyMap());
+    }
+
+    public void testTernary1() throws Exception {
+        reformatFileContents("testfiles/formatter/ternary1.js",new IndentPrefs(4, 4));
+    }
+    
+    public void testTernary2() throws Exception {
+        reformatFileContents("testfiles/formatter/ternary2.js",new IndentPrefs(4, 4));
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {

@@ -254,8 +254,8 @@ public class ProjectBridge {
                 } else {
                     path = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
                 }
-                path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
             }
+            path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
             set.add(getRelativepath(path));
         }
         if (isDifferentCompilePath(filePath, compilePath)){

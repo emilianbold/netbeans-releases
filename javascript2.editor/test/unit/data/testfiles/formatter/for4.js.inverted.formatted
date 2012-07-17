@@ -4,7 +4,9 @@ for (a in b){
 for (i = 1; i < q; i++)
     ;
 
-for (var x in t){{test()
+for (var x in t){
+    {
+        test()
     }
 }
 ;
@@ -12,7 +14,8 @@ for (var x in t){{test()
 for (e in t){
     test();
 }
-for (f in (eval1())) "yep";
+for (f in (eval1()))
+    "yep";
 
 for (var i = 1; i < q; (i++)){
     done();

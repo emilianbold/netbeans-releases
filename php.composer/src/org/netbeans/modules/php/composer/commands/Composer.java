@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.composer.commands;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
@@ -49,6 +52,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -63,15 +67,21 @@ public final class Composer extends PhpProgram {
     public static final String NAME = "composer"; // NOI18N
     public static final String LONG_NAME = NAME + ".phar"; // NOI18N
 
-    private static final String[] DEFAULT_PARAMS = {
-        "--ansi", // NOI18N
-        "--no-interaction", // NOI18N
-    };
+    private static final String LOCK_FILENAME = "composer.json"; // NOI18N
+
+    // commands
     private static final String INIT_COMMAND = "init"; // NOI18N
     private static final String INSTALL_COMMAND = "install"; // NOI18N
     private static final String UPDATE_COMMAND = "update"; // NOI18N
     private static final String VALIDATE_COMMAND = "validate"; // NOI18N
     private static final String SELF_UPDATE_COMMAND = "self-update"; // NOI18N
+    // params
+    private static final String[] DEFAULT_PARAMS = {
+        "--ansi", // NOI18N
+        "--no-interaction", // NOI18N
+    };
+    private static final String NAME_PARAM = "--name=%s"; // NOI18N
+    private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
 
 
     public Composer(String command) {
@@ -102,9 +112,23 @@ public final class Composer extends PhpProgram {
         return FileUtils.validateFile(Bundle.Composer_script_label(), getProgram(), false);
     }
 
-    @NbBundle.Messages("Composer.run.init=Composer init")
+    @NbBundle.Messages({
+        "Composer.run.init=Composer init",
+        "Composer.lockFile.exists=Composer lock file already exists - overwrite it?"
+    })
     public void init(PhpModule phpModule) {
-        runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init());
+        FileObject lockFile = getLockFile(phpModule);
+        if (lockFile != null && lockFile.isValid()) {
+            if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_lockFile_exists())) {
+                return;
+            }
+        }
+        // command params
+        ComposerOptions options = ComposerOptions.getInstance();
+        List<String> params = Arrays.asList(
+                String.format(NAME_PARAM, phpModule.getDisplayName()),
+                String.format(AUTHOR_PARAM, options.getAuthorName(), options.getAuthorEmail()));
+        runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init(), params);
     }
 
     @NbBundle.Messages("Composer.run.install=Composer install")
@@ -128,7 +152,11 @@ public final class Composer extends PhpProgram {
     }
 
     private void runCommand(PhpModule phpModule, String command, String title) {
-        ExternalProcessBuilder processBuilder = getBuilder(phpModule, command);
+        runCommand(phpModule, command, title, Collections.<String>emptyList());
+    }
+
+    private void runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
+        ExternalProcessBuilder processBuilder = getBuilder(phpModule, command, commandParams);
         if (processBuilder == null) {
             warnNoSources(phpModule.getDisplayName());
             return;
@@ -136,7 +164,7 @@ public final class Composer extends PhpProgram {
         PhpProgram.executeLater(processBuilder, getDescriptor(), title);
     }
 
-    private ExternalProcessBuilder getBuilder(PhpModule phpModule, String command) {
+    private ExternalProcessBuilder getBuilder(PhpModule phpModule, String command, List<String> commandParams) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             return null;
@@ -154,9 +182,13 @@ public final class Composer extends PhpProgram {
             for (String param : DEFAULT_PARAMS) {
                 processBuilder = processBuilder.addArgument(param);
             }
-            return processBuilder.addArgument(command);
+            processBuilder = processBuilder.addArgument(command);
+            for (String param : commandParams) {
+                processBuilder = processBuilder.addArgument(param);
+            }
+            return processBuilder;
         } catch (InvalidPhpProgramException ex) {
-            // ignored
+            // ignored, should not happen
         }
         return super.getProcessBuilder();
     }
@@ -174,6 +206,15 @@ public final class Composer extends PhpProgram {
     public static void warnNoSources(String projectName) {
         DialogDisplayer.getDefault().notifyLater(
                 new NotifyDescriptor.Message(Bundle.Composer_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
+    }
+
+    private FileObject getLockFile(PhpModule phpModule) {
+        return phpModule.getSourceDirectory().getFileObject(LOCK_FILENAME);
+    }
+
+    private boolean userConfirmation(String title, String question) {
+        NotifyDescriptor confirmation = new DialogDescriptor.Confirmation(question, title, DialogDescriptor.YES_NO_OPTION);
+        return DialogDisplayer.getDefault().notify(confirmation) == DialogDescriptor.YES_OPTION;
     }
 
 }
