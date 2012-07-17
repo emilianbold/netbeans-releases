@@ -45,6 +45,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 
 /**
  *
@@ -119,5 +120,20 @@ public class AnalysisModel implements AnalysisStorageListener {
 //        analysisModelListeners.clear();
 //        analysisModelListeners = null;
 //    }
+
+    public FilteredAnalysis getFilteredAnalysis(Analysis parentAnalysis) {
+        if (parentAnalysis == null) {
+            return null;
+        }
+        for (Analysis analysis : AnalysisStorage.getInstance().getStoredAnalyses()) {
+            if (analysis instanceof FilteredAnalysis) {
+                FilteredAnalysis filteredAnalysis = (FilteredAnalysis) analysis;
+                if (parentAnalysis == filteredAnalysis.getParentAnalysis()) {
+                    return filteredAnalysis;
+                }
+            }
+        }
+        return null;
+    }
 
 }

@@ -98,7 +98,7 @@ public class RevisionFilterPanel extends javax.swing.JPanel {
     }
     
     private List<String> getSelectedScripts() {
-        final Object[] selectedValues = jList1.getSelectedValues();
+        final Object[] selectedValues = scriptsList.getSelectedValues();
         List<String> selectedScripts = new ArrayList<String>();
         for (Object object : selectedValues) {
             if (object instanceof String) {
@@ -109,12 +109,40 @@ public class RevisionFilterPanel extends javax.swing.JPanel {
         return selectedScripts;
     }
     
+    public void updateRevisionFilter(RevisionFilter revisionFilter) {
+        if (revisionFilter != null && revisionFilter instanceof OrRevisionFilter) {
+            OrRevisionFilter orRevisionFilter = (OrRevisionFilter) revisionFilter;
+            for (RevisionFilter revisionFilter1 : orRevisionFilter.getRevisionFilters()) {
+                if (revisionFilter1 instanceof NotRevisionFilter) {
+                    NotRevisionFilter notRevisionFilter = (NotRevisionFilter) revisionFilter1;
+                    final RevisionFilter sourceRevisionFilter = notRevisionFilter.getRevisionFilter();
+                    if (sourceRevisionFilter instanceof ScriptRevisionFilter) {
+                        ScriptRevisionFilter scriptRevisionFilter = (ScriptRevisionFilter) sourceRevisionFilter;
+                        for (int i = 0; i < listModel.getSize(); i++) {
+                            final Object object = listModel.get(i);
+                            if (object instanceof String) {
+                                String string = (String) object;
+                                if (string.equals(scriptRevisionFilter.getScriptUrl())) {
+                                    scriptsList.addSelectionInterval(i, i);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     public RevisionFilter getRevisionFilter() {
         final List<String> selectedScripts = getSelectedScripts();
         
+        if (selectedScripts == null || selectedScripts.isEmpty()) {
+            return null;
+        }
+        
         List<RevisionFilter> revisionFilters = new ArrayList<RevisionFilter>();
         for (String script : selectedScripts) {
-            revisionFilters.add(new ScriptRevisionFilter(script));
+            revisionFilters.add(new NotRevisionFilter(new ScriptRevisionFilter(script)));
         }
         
         RevisionFilter revisionFilter = new OrRevisionFilter(revisionFilters);
@@ -132,57 +160,36 @@ public class RevisionFilterPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jLabel1 = new javax.swing.JLabel();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList();
+        muteREvisionsLabel = new javax.swing.JLabel();
+        scriptsScrollPane = new javax.swing.JScrollPane();
+        scriptsList = new javax.swing.JList();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(muteREvisionsLabel, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.muteREvisionsLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.jCheckBox1.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox2, org.openide.util.NbBundle.getMessage(RevisionFilterPanel.class, "RevisionFilterPanel.jCheckBox2.text")); // NOI18N
-
-        jList1.setModel(listModel);
-        jScrollPane2.setViewportView(jList1);
+        scriptsList.setModel(listModel);
+        scriptsScrollPane.setViewportView(scriptsList);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 709, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jCheckBox1)
-                            .addComponent(jCheckBox2))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addComponent(muteREvisionsLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(scriptsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(muteREvisionsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCheckBox1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jCheckBox2)
-                .addContainerGap())
+                .addComponent(scriptsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 256, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JList jList1;
-    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel muteREvisionsLabel;
+    private javax.swing.JList scriptsList;
+    private javax.swing.JScrollPane scriptsScrollPane;
     // End of variables declaration//GEN-END:variables
 }

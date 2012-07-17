@@ -165,13 +165,9 @@ public class AnalysisStorage {
     public synchronized Analysis addFiltered(Analysis parentAnalysis, RevisionFilter revisionFilter, boolean reformatRevision) {
         File analysisRoot = getChangesStorageRoot(getStorageRoot());
         final Revision firstRevision = parentAnalysis.getRevision(0, reformatRevision);
-        FilteredAnalysis filteredAnalysis = 
-                new FilteredAnalysis(
-                parentAnalysis, 
-                revisionFilter, 
-                analysisRoot, 
-                firstRevision.getContent() == null ? "null" : firstRevision.getContent());
+        FilteredAnalysis filteredAnalysis = new FilteredAnalysis(parentAnalysis, analysisRoot, firstRevision.getContent());
         filteredAnalysis.setSourceUrl(parentAnalysis.getSourceUrl());
+        filteredAnalysis.setRevisionFilter(revisionFilter, reformatRevision);
         
         addAnalysis(filteredAnalysis);
         
@@ -181,7 +177,7 @@ public class AnalysisStorage {
     public List<Analysis> getStoredAnalyses() {
         return storedAnalyses;
     }
-
+    
     private Analysis getAnalysis(URL url) {
         if (url == null) {
             return null;

@@ -74,6 +74,12 @@ import org.openide.util.RequestProcessor;
  * @author petr-podzimek
  */
 public class Analysis implements Comparable<Analysis> {
+    public static final String CONTENT = "content";
+    public static final String DIFF = "diff";
+    public static final String BDIFF = "bdiff";
+    public static final String BCONTENT = "bcontent";
+    public static final String STACKTRACE = "stacktrace";
+    public static final String DATA = "data";
     
     private URL sourceUrl;
     private Date created = new Date();
@@ -93,7 +99,7 @@ public class Analysis implements Comparable<Analysis> {
         if (initialContent != null) {
             long currentTime = System.currentTimeMillis();
             final String timeStampStr = String.valueOf(currentTime);
-            store("content", timeStampStr, initialContent);
+            store(CONTENT, timeStampStr, initialContent);
             addTimeStamp(timeStampStr);
         }
     }
@@ -120,17 +126,17 @@ public class Analysis implements Comparable<Analysis> {
             return null;
         }
         final String timeStamp = getTimeStamps().get(changeIndex);
-        StringBuilder content = read("content", timeStamp);
+        StringBuilder content = read(CONTENT, timeStamp);
         
         StringBuilder stacktrace = null;
         StringBuilder data = null;
-        StringBuilder diff = read("diff", timeStamp);
-        StringBuilder beautifiedDiff = read("bdiff", timeStamp);
-        StringBuilder beautifiedContent = read("bcontent", timeStamp);
+        StringBuilder diff = read(DIFF, timeStamp);
+        StringBuilder beautifiedDiff = read(BDIFF, timeStamp);
+        StringBuilder beautifiedContent = read(BCONTENT, timeStamp);
         
         if (changeIndex > 0) {
-            stacktrace = read("stacktrace", getTimeStamps().get(changeIndex - 1));
-            data = read("data", getTimeStamps().get(changeIndex - 1));
+            stacktrace = read(STACKTRACE, getTimeStamps().get(changeIndex - 1));
+            data = read(DATA, getTimeStamps().get(changeIndex - 1));
         }
         
         StringBuilder editorContent;
@@ -311,11 +317,11 @@ public class Analysis implements Comparable<Analysis> {
                 } else {
                     setLastChangeWasNotReal(true);
                 }
-                store("content", timestamp, content);
+                store(CONTENT, timestamp, content);
                 if (realChange) {
-                    store("stacktrace", timestamp, stackTrace);
+                    store(STACKTRACE, timestamp, stackTrace);
                     if (data != null) {
-                        store("data", timestamp, data);
+                        store(DATA, timestamp, data);
                     }
                 }
                 int total = getTimeStampsCount();
@@ -334,7 +340,7 @@ public class Analysis implements Comparable<Analysis> {
     }
     
     private void parse(String content, String timestamp, boolean realChange, int previousChangeIndex, String previousTimestamp) {
-        StringBuilder previousContent = read("content", previousTimestamp);
+        StringBuilder previousContent = read(CONTENT, previousTimestamp);
         HtmlParser parser = HtmlParserFactory.findParser(HtmlVersion.getDefaultVersion());
         try {
             HtmlSource s1 = new HtmlSource(previousContent);
@@ -345,15 +351,15 @@ public class Analysis implements Comparable<Analysis> {
                     (OpenTag)previousResult.root().children().iterator().next(), 
                     (OpenTag)currentResult.root().children().iterator().next());
             List<Change> changes = d.compare(getLastDiff(), previousChangeIndex);
-            store("diff", timestamp, Change.encodeToJSON(changes));
+            store(DIFF, timestamp, Change.encodeToJSON(changes));
             
             List<Change> beautifiedChanges = Change.decodeFromJSON(Change.encodeToJSON(changes));
             StringBuilder beautifiedContent = ReformatSupport.reformat(
                     new HtmlSource(content), 
                     (OpenTag)currentResult.root().children().iterator().next(), 
                     beautifiedChanges);
-            store("bdiff", timestamp, Change.encodeToJSON(beautifiedChanges));
-            store("bcontent", timestamp, beautifiedContent.toString());
+            store(BDIFF, timestamp, Change.encodeToJSON(beautifiedChanges));
+            store(BCONTENT, timestamp, beautifiedContent.toString());
             
             if (realChange) {
                 setLastDiff(d);
