@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -240,7 +242,44 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         }
         return null;
     }
+    
+    public static class SimpleDeclarationBuilder implements CsmObjectBuilder {
+        
+        private boolean typedefSpecifier = false;
+        private boolean typeSpecifier = false;
+        private boolean inDeclSpecifiers = false;
+        
+        
+        public void setTypedefSpecifier() {
+            this.typedefSpecifier = true;
+        }
 
+        public boolean hasTypedefSpecifier() {
+            return typedefSpecifier;
+        }
+
+        public void setTypeSpecifier() {
+            this.typeSpecifier = true;
+        }
+
+        public boolean hasTypeSpecifier() {
+            return typeSpecifier && inDeclSpecifiers;
+        }
+        
+        public void declSpecifiers() {
+            inDeclSpecifiers = true;
+        }
+
+        public void endDeclSpecifiers() {
+            inDeclSpecifiers = false;
+        }
+        
+        public boolean isInDeclSpecifiers() {
+            return inDeclSpecifiers;
+        }
+        
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
