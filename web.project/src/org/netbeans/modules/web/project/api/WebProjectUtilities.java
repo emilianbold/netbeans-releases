@@ -580,7 +580,7 @@ public class WebProjectUtilities {
                         libs.add(URLMapper.findURL(FileUtil.getArchiveRoot(children[i]), URLMapper.EXTERNAL));
                     }
                 }
-                p.getClassPathModifier().addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
+                p.getClassPathModifier().getClassPathModifier().addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
                 //do we really need to add the listener? commenting it out
                 //libFolder.addFileChangeListener(p);
             }

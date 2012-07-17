@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -192,12 +193,7 @@ public final class SessionGenerator {
         // make sure project where remote interfrace is going to be defined has javax.ejb API available:
         assert LibraryManager.getDefault().getLibrary("javaee-api-6.0") != null;
         if (ClassPath.getClassPath(remotePkg, ClassPath.COMPILE).findResource("javax/ejb") == null) {
-            try {
-                // for Maven, first try CPExtender.CLASSPATH_COMPILE_ONLY = "classpath/compile_only", see bug 186221.
-                ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, "classpath/compile_only");
-            } catch (UnsupportedOperationException e) {
-                ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, ClassPath.COMPILE);
-            }
+            ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, JavaClassPathConstants.COMPILE_ONLY);
         }
         return remotePkg;
     }
