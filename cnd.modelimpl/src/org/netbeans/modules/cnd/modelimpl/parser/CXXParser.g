@@ -476,7 +476,9 @@ simple_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-        decl_specifier*
+                                                                                {action.simple_declaration(input.LT(1));}
+                                                                                {action.decl_specifiers();}
+        decl_specifier*                                                         {action.end_decl_specifiers();}
         (
             SEMICOLON
         |
@@ -487,7 +489,7 @@ scope Declaration;
             )
             // this is a continuation of init_declarator_list after constructor_declarator/init_declarator
             (COMMA init_declarator)* SEMICOLON
-        )
+        )                                                                       {action.end_simple_declaration(input.LT(0));}
     ;
 
 /*
@@ -500,8 +502,9 @@ simple_declaration_or_function_definition [decl_kind kind]
 //scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-        {action.simple_declaration(input.LT(1));}
-        decl_specifier*
+                                                                                {action.simple_declaration(input.LT(1));}
+                                                                                {action.decl_specifiers();}
+        decl_specifier*                                                         {action.end_decl_specifiers();}
         (
             SEMICOLON
         |
@@ -523,8 +526,7 @@ simple_declaration_or_function_definition [decl_kind kind]
                 // this is a continuation of init_declarator_list after greedy_declarator
                 initializer? ( COMMA init_declarator )* SEMICOLON
             )
-        )
-        {action.end_simple_declaration(input.LT(0));}
+        )                                                                       {action.end_simple_declaration(input.LT(0));}
     ;
 
 static_assert_declaration:
@@ -537,17 +539,17 @@ attribute_declaration:
 
 decl_specifier
     :
-        storage_class_specifier {action.decl_specifier(action.DECL_SPECIFIER__STORAGE_CLASS_SPECIFIER, null);}
+        storage_class_specifier                                                 {action.decl_specifier(action.DECL_SPECIFIER__STORAGE_CLASS_SPECIFIER, input.LT(0));}
     |
-        function_specifier      {action.decl_specifier(action.DECL_SPECIFIER__FUNCTION_SPECIFIER, null);}
+        function_specifier                                                      {action.decl_specifier(action.DECL_SPECIFIER__FUNCTION_SPECIFIER, input.LT(0));}
     |
-        LITERAL_friend          {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_FRIEND, $LITERAL_friend);}
+        LITERAL_friend                                                          {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_FRIEND, $LITERAL_friend);}
     |
-        LITERAL_typedef         {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_TYPEDEF, $LITERAL_typedef);}
+        LITERAL_typedef                                                         {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_TYPEDEF, $LITERAL_typedef);}
     |
-        type_specifier          {action.decl_specifier(action.DECL_SPECIFIER__TYPE_SPECIFIER, null);}
+        type_specifier                                                          {action.decl_specifier(action.DECL_SPECIFIER__TYPE_SPECIFIER, input.LT(0));}
     |
-        LITERAL_constexpr
+        LITERAL_constexpr                                                       {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_CONSTEXPR, $LITERAL_constexpr);}
     ;
 
 storage_class_specifier:
@@ -626,37 +628,37 @@ simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
 @init { qual_setup(); }
     :
-        LITERAL_char
+        LITERAL_char                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_wchar_t
+        LITERAL_wchar_t                                                         {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_char16_t
+        LITERAL_char16_t                                                        {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_char32_t
+        LITERAL_char32_t                                                        {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_bool
+        LITERAL_bool                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_short
+        LITERAL_short                                                           {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_int
+        LITERAL_int                                                             {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_long
+        LITERAL_long                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_signed
+        LITERAL_signed                                                          {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_unsigned
+        LITERAL_unsigned                                                        {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_float
+        LITERAL_float                                                           {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_double
+        LITERAL_double                                                          {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_void
+        LITERAL_void                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_auto
+        LITERAL_auto                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        decltype_specifier
+        decltype_specifier                                                      {action.simple_type_specifier(input.LT(0));}
     |
-        /*
+/*
          * "at most one type-specifier is allowed in the complete decl-specifier-seq of a declaration..."
          * In particular (qualified)type_name is allowed only once.
          */
@@ -1294,7 +1296,10 @@ member_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-        decl_specifier*
+                                                                                {action.simple_declaration(input.LT(1));}
+    (
+                                                                                {action.decl_specifiers();}
+        decl_specifier*                                                         {action.end_decl_specifiers();}
         (
             (IDENT? COLON)=>
                 member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
@@ -1332,6 +1337,8 @@ scope Declaration;
         static_assert_declaration
     |
         alias_declaration
+    )
+                                                                                {action.end_simple_declaration(input.LT(0));}
     ;
 
 member_bitfield_declarator:
@@ -1488,7 +1495,12 @@ literal_operator_id:
 
 // [gram.temp] 
 template_declaration [decl_kind kind]:
-        LITERAL_export? LITERAL_template LESSTHAN template_parameter_list GREATERTHAN declaration[kind]
+        LITERAL_export? 
+        LITERAL_template 
+        LESSTHAN                                                                {action.template_declaration(action.TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_parameter_list 
+        GREATERTHAN                                                             {action.template_declaration(action.TEMPLATE_DECLARATION__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+        declaration[kind]
     ;
 
 template_parameter_list:
@@ -1514,33 +1526,36 @@ template_parameter:
         parameter_declaration[tparm_decl]
     ;
 type_parameter:
-        LITERAL_class ELLIPSIS? IDENT? 
+        LITERAL_class ELLIPSIS? IDENT?                                          {action.type_parameter(action.TYPE_PARAMETER__CLASS, $LITERAL_class, $ELLIPSIS, $IDENT);}
     |
-        LITERAL_class IDENT? ASSIGNEQUAL type_id 
+        LITERAL_class IDENT? ASSIGNEQUAL type_id                                {action.type_parameter(action.TYPE_PARAMETER__CLASS_ASSIGNEQUAL, $LITERAL_class, $IDENT, $ASSIGNEQUAL);}
     |
-        LITERAL_typename ELLIPSIS? IDENT? 
+        LITERAL_typename ELLIPSIS? IDENT?                                       {action.type_parameter(action.TYPE_PARAMETER__TYPENAME, $LITERAL_typename, $ELLIPSIS, $IDENT);}
     |
-        LITERAL_typename IDENT? ASSIGNEQUAL type_id 
+        LITERAL_typename IDENT? ASSIGNEQUAL type_id                             {action.type_parameter(action.TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL, $LITERAL_typename, $IDENT, $ASSIGNEQUAL);}
     |
         LITERAL_template LESSTHAN template_parameter_list GREATERTHAN LITERAL_class ELLIPSIS? IDENT? (ASSIGNEQUAL id_expression)?
     ;
 
 simple_template_id
     :
-        IDENT                   {action.simple_template_id($IDENT);}
-        LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
-            template_argument_list? GREATERTHAN
+        IDENT                                                                   {action.simple_template_id($IDENT);}
+        LESSTHAN { (action.identifier_is(IDT_TEMPLATE_NAME, $IDENT)) }?         {action.simple_template_id(action.SIMPLE_TEMPLATE_ID__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_argument_list? 
+        GREATERTHAN                                                             {action.simple_template_id(action.SIMPLE_TEMPLATE_ID__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
     ;
 lookup_simple_template_id
     :
-        IDENT LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
+        IDENT LESSTHAN { (action.identifier_is(IDT_TEMPLATE_NAME, $IDENT)) }?
             look_after_tmpl_args
     ;
 
 simple_template_id_nocheck
     :
-        IDENT                   {action.simple_template_id_nocheck($IDENT);}
-        LESSTHAN template_argument_list? GREATERTHAN 
+        IDENT                                                                   {action.simple_template_id_nocheck($IDENT);}
+        LESSTHAN                                                                {action.simple_template_id_nocheck(action.SIMPLE_TEMPLATE_ID_NOCHECK__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_argument_list? 
+        GREATERTHAN                                                             {action.simple_template_id_nocheck(action.SIMPLE_TEMPLATE_ID_NOCHECK__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
     ;
 lookup_simple_template_id_nocheck
     :
@@ -1549,10 +1564,18 @@ lookup_simple_template_id_nocheck
 
 simple_template_id_or_IDENT
     :
-        IDENT                   {action.class_name($IDENT);}
-        ( (LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?) =>
-            LESSTHAN template_argument_list? GREATERTHAN
-        )?
+        ( (IDENT LESSTHAN) => 
+                ( { action.identifier_is(IDT_TEMPLATE_NAME, input.LT(1)) }? =>
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+                LESSTHAN                                                        {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+                template_argument_list?
+                GREATERTHAN                                                     {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+            |   
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+            )
+        |   
+            IDENT                                                               {action.simple_template_id_or_ident(input.LT(0));}
+        )
     ;
 
 lookup_simple_template_id_or_IDENT
