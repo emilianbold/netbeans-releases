@@ -43,6 +43,7 @@ package org.netbeans.modules.web.livehtml.ui;
 
 import java.text.DateFormat;
 import org.netbeans.modules.web.livehtml.Analysis;
+import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 
 /**
  *
@@ -53,6 +54,7 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
     private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance();
     
     private Analysis analysis;
+    private FilteredAnalysis filteredAnalysis;
 
     public AnalysisItem(Analysis analysis) {
         this.analysis = analysis;
@@ -61,9 +63,33 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
     public Analysis getAnalysis() {
         return analysis;
     }
+
+    public Analysis resolveAnalysis() {
+        return isFilteredItem() ? filteredAnalysis : analysis;
+    }
+    
+    public boolean isFilteredItem() {
+        return filteredAnalysis != null;
+    }
+
+    public FilteredAnalysis getFilteredAnalysis() {
+        return filteredAnalysis;
+    }
+
+    public void setFilteredAnalysis(FilteredAnalysis filteredAnalysis) {
+        this.filteredAnalysis = filteredAnalysis;
+    }
     
     public boolean canBeAnalyzed() {
-        return getAnalysis() != null && getAnalysis() instanceof Analysis;
+        return resolveAnalysis() != null && resolveAnalysis() instanceof Analysis;
+    }
+    
+    public String getRevisionsLabel(int selectedRevisionIndex) {
+        String revisionsLabel = selectedRevisionIndex + " / " + resolveAnalysis().getRevisionsCount();
+        if (isFilteredItem()) {
+            revisionsLabel = revisionsLabel + " (" + analysis.getRevisionsCount() + ")";
+        }
+        return revisionsLabel;
     }
 
     @Override
@@ -72,6 +98,10 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
         
         if (analysis.getFinished() == null) {
             sb.append(" * ");
+        }
+        
+        if (filteredAnalysis != null) {
+            sb.append(" F ");
         }
         
         if (analysis.getSourceUrl() != null) {
@@ -92,10 +122,10 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
 
     @Override
     public int compareTo(AnalysisItem o) {
-        if (o == null || getAnalysis() == null) {
+        if (o == null || resolveAnalysis() == null) {
             return -1;
         }
-        return -getAnalysis().compareTo(o.getAnalysis());
+        return -resolveAnalysis().compareTo(o.resolveAnalysis());
     }
 
 }

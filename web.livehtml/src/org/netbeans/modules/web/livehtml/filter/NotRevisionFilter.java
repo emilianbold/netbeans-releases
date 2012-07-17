@@ -55,6 +55,10 @@ public class NotRevisionFilter implements RevisionFilter {
         this.revisionFilter = revisionFilter;
     }
 
+    public RevisionFilter getRevisionFilter() {
+        return revisionFilter;
+    }
+
     @Override
     public boolean match(Revision revision) {
         return !revisionFilter.match(revision);

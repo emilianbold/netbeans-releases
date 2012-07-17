@@ -48,7 +48,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.web.livehtml.Analysis;
 import org.netbeans.modules.web.livehtml.AnalysisListener;
+import org.netbeans.modules.web.livehtml.Change;
 import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.Utilities;
 import org.netbeans.modules.web.livehtml.diff.Diff;
 
 /**
@@ -60,51 +62,81 @@ public class FilteredAnalysis extends Analysis {
     private final Analysis parentAnalysis;
     private RevisionFilter revisionFilter;
 
-    public FilteredAnalysis(Analysis parentAnalysis, RevisionFilter revisionFilter, File root, String initialContent) {
+    public FilteredAnalysis(Analysis parentAnalysis, File root, String initialContent) {
         super(root, initialContent);
         this.parentAnalysis = parentAnalysis;
-        setRevisionFilter(revisionFilter);
-        
-        makeFinished();
     }
 
+    @Override
+    public Revision getRevision(int changeIndex, boolean reformatRevision) {
+        if (changeIndex >= getTimeStampsCount()) {
+            return null;
+        }
+        final String timeStamp = getTimeStamps().get(changeIndex);
+        StringBuilder content = read(CONTENT, timeStamp);
+        
+        StringBuilder diff = read(DIFF, timeStamp);
+        StringBuilder beautifiedDiff = read(BDIFF, timeStamp);
+        StringBuilder beautifiedContent = read(BCONTENT, timeStamp);
+        
+        StringBuilder stackTrace = read(STACKTRACE, getTimeStamps().get(changeIndex));
+        StringBuilder data = read(DATA, getTimeStamps().get(changeIndex));
+        
+        StringBuilder editorContent;
+        List<Change> changes;
+        if (reformatRevision) {
+            editorContent = beautifiedContent;
+            changes = Change.decodeFromJSON(beautifiedDiff == null ? null : beautifiedDiff.toString());
+        } else {
+            editorContent = content;
+            changes = Change.decodeFromJSON(diff == null ? null : diff.toString());
+        }
+        Revision rev = new Revision(editorContent, stackTrace, changes, data, timeStamp, changeIndex);
+        
+        return rev;
+    }
+    
     public Analysis getParentAnalysis() {
         return parentAnalysis;
     }
 
-    public final void setRevisionFilter(RevisionFilter revisionFilter) {
+    public final void setRevisionFilter(RevisionFilter revisionFilter, boolean reformatRevision) {
         this.revisionFilter = revisionFilter;
         
-        List<String> filteredTimeStamps = new CopyOnWriteArrayList<String>();
-        
-        for (int i = 1; i <= parentAnalysis.getRevisionsCount(); i++) {
-            final Revision revision = parentAnalysis.getRevision(i, false);
-            if (revision != null && revisionFilter.match(revision)) {
-                filteredTimeStamps.add(revision.getTimeStamp());
+        for (int i = 1; i < parentAnalysis.getTimeStampsCount(); i++) {
+            final Revision revision = parentAnalysis.getRevision(i, reformatRevision);
+            if (revision != null && (i == 0 || revisionFilter.match(revision))) {
+                storeDocumentVersion(
+                        revision.getTimeStamp(), 
+                        revision.getContent() == null ? "null" : revision.getContent(), 
+                        revision.getStacktrace() == null ? "null" : revision.getStacktrace().toJSONString(),
+                        true);
             }
         }
+        
+        makeFinished();
     }
 
     public RevisionFilter getRevisionFilter() {
         return revisionFilter;
     }
 
-    @Override
-    public Revision getRevision(int changeIndex, boolean reformatRevision) {
-        final String filteredTimeStamp = getTimeStamps().get(changeIndex);
-        int timeStampIndex = -1;
-        for (int i = 0; i < parentAnalysis.getTimeStampsCount(); i++) {
-            String timeStamp = parentAnalysis.getTimeStamps().get(i);
-            if (filteredTimeStamp.equals(timeStamp)) {
-                timeStampIndex = i;
-            }
-        }
-        
-        if (timeStampIndex == -1) {
-            return null;
-        }
-        
-        return parentAnalysis.getRevision(timeStampIndex, reformatRevision);
-    }
-    
+//    @Override
+//    public Revision getRevision(int changeIndex, boolean reformatRevision) {
+//        final String filteredTimeStamp = getTimeStamps().get(changeIndex);
+//        int timeStampIndex = -1;
+//        for (int i = 0; i < parentAnalysis.getTimeStampsCount(); i++) {
+//            String timeStamp = parentAnalysis.getTimeStamps().get(i);
+//            if (filteredTimeStamp.equals(timeStamp)) {
+//                timeStampIndex = i;
+//            }
+//        }
+//        
+//        if (timeStampIndex == -1) {
+//            return null;
+//        }
+//        
+//        return parentAnalysis.getRevision(timeStampIndex, reformatRevision);
+//    }
+//    
 }
