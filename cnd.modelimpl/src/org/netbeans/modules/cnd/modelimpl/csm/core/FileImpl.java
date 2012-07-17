@@ -235,6 +235,8 @@ public final class FileImpl implements CsmFile,
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
 
+    private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
+
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
     private int hash = 0; // Default to 0
@@ -905,6 +907,7 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public void dispose() {
+        disposed = true;
         onDispose();
         Notificator.instance().registerRemovedFile(this);
         disposeAll(true);
@@ -1650,6 +1653,9 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public boolean isValid() {
+        if (disposed) {
+            return false;
+        }
         CsmProject project = _getProject(false);
         return project != null && project.isValid();
     }
