@@ -116,14 +116,18 @@ public class WebKitPageModel extends PageModel {
         // to reinitialize the page)
         org.openide.nodes.Node node = getDocumentNode();
 
-        // Do not initialize the temporary page unnecessarily
-        Node webKitNode = node.getLookup().lookup(Node.class);
-        webKitNode = convertNode(webKitNode);
-        Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
-        if (attr == null) {
-            // init
-            String initScript = Files.getScript("initialization"); // NOI18N
-            webKit.getRuntime().evaluate(initScript);
+        if (node == null) {
+            LOG.info("getDocumentNode() returned null!"); // NOI18N
+        } else {
+            // Do not initialize the temporary page unnecessarily
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            webKitNode = convertNode(webKitNode);
+            Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
+            if (attr == null) {
+                // init
+                String initScript = Files.getScript("initialization"); // NOI18N
+                webKit.getRuntime().evaluate(initScript);
+            }
         }
     }
 
