@@ -1560,7 +1560,7 @@ template_argument_list:
     ;
 template_argument:
         // id_exression is included into assignment_expression, thus we need to explicitly rule it up
-        (id_expression)=> id_expression
+        (id_expression ELLIPSIS? (COMMA | GREATERTHAN))=> id_expression
     |
         (type_id)=> type_id
     |
