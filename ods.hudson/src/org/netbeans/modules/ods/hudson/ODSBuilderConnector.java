@@ -165,7 +165,7 @@ public class ODSBuilderConnector extends BuilderConnector {
 
     @Override
     public RemoteFileSystem getArtifacts(HudsonJobBuild build) {
-        return new ODSBuildArtifactsFileSystem(projectHandle, build);
+        return null;
     }
 
     @Override
