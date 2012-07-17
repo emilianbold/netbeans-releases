@@ -84,6 +84,8 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
     private static final Logger LOG = Logger.getLogger(
             ODSBuildAccessor.class.getName());
 
+    private RequestProcessor rp = new RequestProcessor("ODS Build Services", 10); // NOI18N
+    
     @Override
     public boolean isEnabled(ProjectHandle<ODSProject> projectHandle) {
         projectHandle.getTeamProject().getServer().addPropertyChangeListener(null);
@@ -164,7 +166,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         return jobs;
     }
 
-    private static class HudsonBuildHandle extends BuildHandle {
+    private class HudsonBuildHandle extends BuildHandle {
 
         private HudsonInstance hudsonInstance;
         private String jobName;
@@ -201,7 +203,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
 
         private void scheduleUpdateStatus() {
             if (!updateStatusScheduled) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                rp.post(new Runnable() {
                     @Override
                     public void run() {
                         updateStatus();
