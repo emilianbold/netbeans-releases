@@ -380,7 +380,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
             if (ServerType.TOMCAT.equals(REGISTERED_SERVER) && !ProjectType.WEB.equals(getProjectType()) && !ProjectType.JAVASE_APPLICATION.equals(getProjectType())) {
                 fail("Tomcat does not support: " + getProjectType().getProjectTypeName() + "s."); //NOI18N
             }
-            System.out.println("########  TestCase: " + getName() + "  #######"); //NOI18N
+            System.out.println("########  TestCase: " + getClass().getSimpleName() + "." + getName() + "  #######"); //NOI18N
             System.out.println("########  Server: " + REGISTERED_SERVER.toString() + "  #######"); //NOI18N
             File projectRoot = new File(getDataDir(), "projects/" + getProjectName()); //NOI18N
             if (projectRoot.exists()) {
@@ -811,7 +811,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     
     protected File getProjectsRootDir() throws IOException {
         File f = getWorkDir();
-        LOGGER.log(Level.FINE, "Working directory is set to: {0}", f.getAbsolutePath());
+        LOGGER.log(Level.FINE, "Working directory is set to: {0}", f);
         if (f != null) {
             f = f.getParentFile();
             if (f != null) {
