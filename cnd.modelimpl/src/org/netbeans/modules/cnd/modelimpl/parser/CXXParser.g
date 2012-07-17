@@ -372,9 +372,10 @@ block_declaration:
 
 // IDs
 id_expression:
-        unqualified_id
+        // TODO: review temp predicate
+        (simple_template_id_or_IDENT SCOPE) => qualified_id
     |
-        qualified_id
+        unqualified_id
     ;
 
 unqualified_id:
@@ -396,13 +397,17 @@ qualified_id:
         nested_name_specifier LITERAL_template? unqualified_id
     |
         SCOPE (
+            // TODO: review temp predicate
+            (simple_template_id_or_IDENT SCOPE) =>
             nested_name_specifier LITERAL_template? unqualified_id
+        |
+            // TODO: review temp predicate
+            (LITERAL_OPERATOR STRING_LITERAL IDENT) =>
+            literal_operator_id
         |
             operator_function_id
         |
             simple_template_id_or_IDENT
-        |
-            literal_operator_id
         )
     ;
 
@@ -424,10 +429,11 @@ nested_name_specifier:
 
 nested_name_specifier returns [ name_specifier_t namequal ]
     :
-        IDENT                   {action.nested_name_specifier(input.LT(0));}
+        simple_template_id_or_IDENT                                             {action.nested_name_specifier(input.LT(0));}
         SCOPE 
         (
-            (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> LITERAL_template simple_template_id_nocheck SCOPE
+            (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> 
+                LITERAL_template simple_template_id_nocheck SCOPE
         |
             (IDENT SCOPE) =>
                 IDENT           {action.nested_name_specifier(input.LT(0));}
@@ -850,7 +856,12 @@ using-declaration:
  * It should be ruled out after the parsing.
  */
 using_declaration
-     : LITERAL_using LITERAL_typename? SCOPE? nested_name_specifier? unqualified_id SEMICOLON
+     : 
+        LITERAL_using LITERAL_typename? SCOPE? 
+        // TODO: review temp predicate
+        ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)? 
+        unqualified_id                                                          {action.using_declaration(input.LT(0));}
+        SEMICOLON
     ;
 
 using_directive:
@@ -1160,7 +1171,7 @@ function_definition_after_declarator:
 function_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
-    :
+    :   
         decl_specifier* function_declarator
     ;
 
@@ -1223,7 +1234,9 @@ class_head:
 */
 optionally_qualified_name
     :
-        nested_name_specifier? simple_template_id_or_IDENT
+        // TODO: review temp predicate
+        (((lookup_simple_template_id | IDENT) SCOPE) => nested_name_specifier)? 
+        simple_template_id_or_IDENT                                             {action.class_name(input.LT(0));}
     ;
 
 class_head:
@@ -1375,7 +1388,10 @@ base_specifier:
         access_specifier LITERAL_virtual? base_type_specifier
     ;
 class_or_decltype:
-        SCOPE? nested_name_specifier? class_name
+        SCOPE? 
+        // TODO: review temp predicate
+        ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)?
+        class_name
     |
         decltype_specifier
     ;
