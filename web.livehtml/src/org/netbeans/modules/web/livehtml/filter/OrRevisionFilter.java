@@ -61,8 +61,15 @@ public class OrRevisionFilter implements RevisionFilter {
         }
     }
 
+    public List<RevisionFilter> getRevisionFilters() {
+        return revisionFilters;
+    }
+
     @Override
     public boolean match(Revision revision) {
+        if (revisionFilters.isEmpty()) {
+            return true;
+        }
         for (RevisionFilter revisionFilter : revisionFilters) {
             if (revisionFilter.match(revision)) {
                 return true;

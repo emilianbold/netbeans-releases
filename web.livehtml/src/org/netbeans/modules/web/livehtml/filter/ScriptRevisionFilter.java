@@ -56,6 +56,10 @@ public class ScriptRevisionFilter implements RevisionFilter {
         this.scriptUrl = scriptUrl;
     }
 
+    public String getScriptUrl() {
+        return scriptUrl;
+    }
+
     @Override
     public boolean match(Revision revision) {
         final List<Object> callStackValues = revision.getCallStackValues("script");
