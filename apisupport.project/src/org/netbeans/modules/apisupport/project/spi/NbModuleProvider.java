@@ -79,6 +79,12 @@ public interface NbModuleProvider {
      * @return relative path to sources..
      */
     String getSourceDirectoryPath();
+    
+    /** Returns a relative path to a project's test source directory. 
+     * @return relative path to test sources..
+     * @Since 1.56
+     */
+    String getTestSourceDirectoryPath();
     /**
      * relative path to the directory which contains/is to contain resources, META-INF/services folder or layer file for example
      * @param inTests 

@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -324,7 +325,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return;
         }
         if (instantiationParams == null) {
-            instantiationParams = new ArrayList<CsmSpecializationParameter>();
+            instantiationParams = new ArrayList<CsmSpecializationParameter>(params.size());
         }
         instantiationParams.addAll(params);
     }
@@ -874,6 +875,33 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         UIDObjectFactory.getDefaultFactory().writeUID(uid, output);
     }
+    
+    // Proxy list to be able to work with null instantiationParams collection
+    private class ProxyParamsList extends AbstractList<CsmSpecializationParameter> {
+        @Override
+        public boolean add(CsmSpecializationParameter e) {
+            if (instantiationParams == null) {
+                instantiationParams = new ArrayList<CsmSpecializationParameter>();
+            }
+            return instantiationParams.add(e);
+        }
+        
+        @Override
+        public CsmSpecializationParameter get(int index) {
+            if (instantiationParams != null) {
+                return instantiationParams.get(index);
+            }
+            throw new IndexOutOfBoundsException("Index: "+index+", Size: 0"); //NOI18N
+        }
+
+        @Override
+        public int size() {
+            if (instantiationParams != null) {
+                return instantiationParams.size();
+            }
+            return 0;
+        }
+    }
 
     public TypeImpl(RepositoryDataInput input) throws IOException {
         super(input);
@@ -884,7 +912,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         assert this.classifierText != null;
 
         this.qname = PersistentUtils.readStrings(input, NameCache.getManager());
-        PersistentUtils.readSpecializationParameters(this.instantiationParams, input);
+        PersistentUtils.readSpecializationParameters(new ProxyParamsList(), input);
         trimInstantiationParams();
         this.classifierUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }
