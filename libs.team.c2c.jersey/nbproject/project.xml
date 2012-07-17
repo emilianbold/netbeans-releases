@@ -50,6 +50,16 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.libs.team.c2c.jersey</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.codehaus.jackson.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.codehaus.jackson.mapper</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>com.tasktop.c2c.server.common.api</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
@@ -118,16 +128,8 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/jackson-core-asl-1.9.2.jar</runtime-relative-path>
-                <binary-origin>external/jackson-core-asl-1.9.2.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/jackson-jaxrs-1.9.2.jar</runtime-relative-path>
                 <binary-origin>external/jackson-jaxrs-1.9.2.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jackson-mapper-asl-1.9.2.jar</runtime-relative-path>
-                <binary-origin>external/jackson-mapper-asl-1.9.2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jersey-client-1.12.jar</runtime-relative-path>

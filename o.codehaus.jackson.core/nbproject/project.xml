@@ -9,7 +9,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-codehaus-jackson-core.jar</runtime-relative-path>
-                <binary-origin>external/org.codehaus.jackson.core-1.7.4.jar</binary-origin>
+                <binary-origin>external/jackson-core-asl-1.9.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
