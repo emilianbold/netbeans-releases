@@ -1,5 +1,5 @@
 Name: Mylyn Tasks Core library
-Version: 3.7.1
+Version: 3.8.0
 License: EPL-v10
 OSR: 10108
 Origin: http://www.eclipse.org/mylyn/

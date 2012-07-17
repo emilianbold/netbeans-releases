@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.c2c.tasks.tasktop;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcRepositoryConnector;
+import com.tasktop.c2c.internal.client.tasks.core.C2CRepositoryConnector;
 import com.tasktop.c2c.internal.client.tasks.core.client.CfcClientData;
-import com.tasktop.c2c.internal.client.tasks.core.client.ICfcClient;
-import com.tasktop.c2c.internal.client.tasks.core.util.CfcQueryUtil;
+import com.tasktop.c2c.internal.client.tasks.core.client.IC2CClient;
+import com.tasktop.c2c.internal.client.tasks.core.util.C2CQueryUtil;
 import com.tasktop.c2c.server.tasks.domain.Component;
 import com.tasktop.c2c.server.tasks.domain.ExternalTaskRelation;
 import com.tasktop.c2c.server.tasks.domain.FieldDescriptor;
@@ -72,7 +72,7 @@ import org.netbeans.modules.c2c.tasks.spi.C2CExtender;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
-/** Implementation of the extender based on Cfc internal data.
+/** Implementation of the extender based on C2C internal data.
  */
 @ServiceProvider(service=C2CExtender.class, position=99999)
 public final class TaskTopExtender extends C2CExtender<CfcClientData> {
@@ -81,20 +81,20 @@ public final class TaskTopExtender extends C2CExtender<CfcClientData> {
     
     @Override
     protected AbstractRepositoryConnector spiCreate() {
-        return new CfcRepositoryConnector();
+        return new C2CRepositoryConnector();
     }
 
     @Override
     protected void spiAssignTaskRepositoryLocationFactory(AbstractRepositoryConnector rc, TaskRepositoryLocationFactory taskRepositoryLocationFactory) {
-        CfcRepositoryConnector cfc = (CfcRepositoryConnector)rc;
+        C2CRepositoryConnector cfc = (C2CRepositoryConnector)rc;
         cfc.getClientManager().setTaskRepositoryLocationFactory(new TaskRepositoryLocationFactory());
     }
     
     @Override
     protected synchronized C2CData spiClientData(AbstractRepositoryConnector rc, TaskRepository taskRepository) {
-        CfcRepositoryConnector cfc = (CfcRepositoryConnector)rc;
-        ICfcClient client = cfc.getClientManager().getClient(taskRepository);
-        CfcClientData clientData = client.getCalmClientData();
+        C2CRepositoryConnector cfc = (C2CRepositoryConnector)rc;
+        IC2CClient client = cfc.getClientManager().getClient(taskRepository);
+        CfcClientData clientData = client.getC2CClientData();
 
         if (!clientData.isInitialized()) {
             try {
@@ -109,7 +109,7 @@ public final class TaskTopExtender extends C2CExtender<CfcClientData> {
 
     @Override
     protected void spiRepositoryRemove(AbstractRepositoryConnector rc, TaskRepository r) {
-        CfcRepositoryConnector cfc = (CfcRepositoryConnector)rc;
+        C2CRepositoryConnector cfc = (C2CRepositoryConnector)rc;
         cfc.getClientManager().repositoryRemoved(r);
     }
 
@@ -119,7 +119,7 @@ public final class TaskTopExtender extends C2CExtender<CfcClientData> {
         PredefinedTaskQuery predefinedTaskQuery,
         String name, String connectorKind
     ) {
-        return CfcQueryUtil.getQuery(predefinedTaskQuery, name, connectorKind);
+        return C2CQueryUtil.getQuery(predefinedTaskQuery, name, connectorKind);
     }
 
     @Override

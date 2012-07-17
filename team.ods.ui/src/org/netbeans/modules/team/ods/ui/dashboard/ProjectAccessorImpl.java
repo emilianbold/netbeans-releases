@@ -117,12 +117,6 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public ProjectHandleImpl getNonMemberProject(CloudUiServer server, String projectId, boolean force) {
-//        try {
-//            return new ProjectHandleImpl(server.getKenai().getProject(projectId,force));
-//        } catch (KenaiException ex) {
-//            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getProject() " + projectId + " failed", ex);
-//            return null;
-//        }
         return null;
     }
 
@@ -141,7 +135,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     @Override
     public Action getDetailsAction(final ProjectHandle<ODSProject> project) {
         return DetailsAction.forProject(project);    
-//        return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
+//      XXX what is this ?  return new URLDisplayerAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_EditProject"), ((ProjectHandleImpl) project).getProject().getWebLocation());
     }
 
     private Action getOpenAction(final ProjectHandle<ODSProject> project) {
@@ -218,6 +212,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getBookmarkAction(final ProjectHandle<ODSProject> project) {
+        // XXX is bookmark the same as watch?
 //        return new AbstractAction() {
 //            public void actionPerformed(ActionEvent e) {
 //                Kenai kenai = project.getProject().getKenai();

@@ -1,9 +1,9 @@
-Name: Tasktop C2C Client Tasks Core
-Version: 2.3.1
+Name: Tasktop C2C Client Commons
+Version: 2.4.0
 License: Tasktop END USER LICENSE AGREEMENT
 OSR: XXX
 Origin: http://www.tasktop.com
-Description: Tasktop C2C tasks connector
+Description: Tasktop C2C Client Commons
 
 TASKTOP MASTER SUBSCRIPTION AGREEMENT
 
