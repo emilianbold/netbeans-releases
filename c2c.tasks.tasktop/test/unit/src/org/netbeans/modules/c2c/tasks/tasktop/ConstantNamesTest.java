@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.c2c.tasks.tasktop;
 
-import com.tasktop.c2c.internal.client.tasks.core.CfcConstants;
-import com.tasktop.c2c.internal.client.tasks.core.data.CfcTaskAttribute;
+import com.tasktop.c2c.internal.client.tasks.core.C2CConstants;
+import com.tasktop.c2c.internal.client.tasks.core.data.C2CTaskAttribute;
 import java.lang.reflect.Field;
 import junit.framework.Test;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -52,7 +52,7 @@ import org.netbeans.modules.c2c.tasks.spi.C2CData;
 import org.openide.util.Exceptions;
 
 
-/** Verifies the values of Cfc constants are the same as the ones used
+/** Verifies the values of C2C constants are the same as the ones used
  * by C2CData.
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
@@ -76,7 +76,7 @@ public class ConstantNamesTest extends NbTestCase {
             if (f.getName().startsWith("ATTR_")) {
                 s.addTest(new ConstantNamesTest(
                     "test" + f.getName(), C2CData.class, 
-                    CfcTaskAttribute.class, f.getName(), f.getName().substring(5)
+                    C2CTaskAttribute.class, f.getName(), f.getName().substring(5)
                 ));
                 cnt++;
             }
@@ -85,11 +85,11 @@ public class ConstantNamesTest extends NbTestCase {
             fail("There should be at least 5 attributes: " + cnt);
         }
         s.addTest(new ConstantNamesTest(
-            "CUSTOM_FIELD_PREFIX", C2CData.class, CfcConstants.class, 
+            "CUSTOM_FIELD_PREFIX", C2CData.class, C2CConstants.class, 
             "CUSTOM_FIELD_PREFIX", "CUSTOM_FIELD_PREFIX"
         ));
         cnt = 0;
-        for (Field orig : CfcTaskAttribute.class.getFields()) {
+        for (Field orig : C2CTaskAttribute.class.getFields()) {
             try {
                 Field f = C2CData.class.getField("ATTR_" + orig.getName());
                 continue;
@@ -100,8 +100,8 @@ public class ConstantNamesTest extends NbTestCase {
             try {
                 Field f = TaskAttribute.class.getField(orig.getName());
                 s.addTest(new ConstantNamesTest(
-                    "testCfcAndTaskAttributeConsistency" + f.getName(), 
-                    TaskAttribute.class, CfcTaskAttribute.class, f.getName(), f.getName()
+                    "testC2CAndTaskAttributeConsistency" + f.getName(), 
+                    TaskAttribute.class, C2CTaskAttribute.class, f.getName(), f.getName()
                 ));
                 cnt++;
             } catch (Exception ex) {
@@ -120,8 +120,8 @@ public class ConstantNamesTest extends NbTestCase {
         Field f2 = c2.getField(n2);
         Object v1 = f1.get(null);
         Object v2 = f2.get(null);
-        if (v2 instanceof CfcTaskAttribute) {
-            CfcTaskAttribute ta = (CfcTaskAttribute)v2;
+        if (v2 instanceof C2CTaskAttribute) {
+            C2CTaskAttribute ta = (C2CTaskAttribute)v2;
             v2 = ta.getKey();
         }
         

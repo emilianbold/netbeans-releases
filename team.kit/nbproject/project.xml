@@ -49,6 +49,16 @@
                 </dependency>
                 
                 <dependency>
+                    <code-name-base>com.tasktop.commons.repository.core</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>com.tasktop.commons.core</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>com.tasktop.c2c.client.tasks.core</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>

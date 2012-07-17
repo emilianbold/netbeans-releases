@@ -1,9 +1,9 @@
-Name: Mylyn Commons NET library
-Version: 3.7.1
+Name: Mylyn Commons XMLRPC library
+Version: 3.8.0
 License: EPL-v10
 OSR: 5852
 Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Commons NET library
+Description: Mylyn Commons XMLRPC library
 
 Eclipse Public License - v 1.0
 
