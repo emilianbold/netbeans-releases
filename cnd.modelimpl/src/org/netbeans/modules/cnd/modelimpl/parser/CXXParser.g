@@ -837,6 +837,7 @@ namespace_definition:
         LCURLY                                                                  {action.namespace_body($LCURLY);}
         namespace_body 
         RCURLY                                                                  {action.end_namespace_body($RCURLY);} 
+                                                                                {action.end_namespace_declaration($RCURLY);} 
     ;
 
 namespace_body:
