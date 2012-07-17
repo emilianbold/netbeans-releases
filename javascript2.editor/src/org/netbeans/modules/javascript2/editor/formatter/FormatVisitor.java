@@ -200,7 +200,13 @@ public class FormatVisitor extends NodeVisitor {
                 markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
 
                 if (body.getStart() == body.getFinish()) {
-                    handleVirtualBlock(body);
+                    // do the standard block related things
+                    if (body.getStatements().get(0) instanceof IfNode) {
+                        // we mark else if statement here
+                        handleVirtualBlock(body, FormatToken.forFormat(FormatToken.Kind.ELSE_IF_BLOCK));
+                    } else {
+                        handleVirtualBlock(body);
+                    }
                 } else {
                     visit(body, onset);
                 }
@@ -575,6 +581,10 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void handleVirtualBlock(Block block) {
+        handleVirtualBlock(block, null);
+    }
+
+    private void handleVirtualBlock(Block block, FormatToken additionalStartToken) {
         assert block.getStart() == block.getFinish() && block.getStatements().size() <= 1;
 
         if (block.getStatements().isEmpty()) {
@@ -604,6 +614,10 @@ public class FormatVisitor extends NodeVisitor {
                 }
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
+                if (additionalStartToken != null) {
+                    assert additionalStartToken.isVirtual();
+                    appendTokenAfterLastVirtual(formatToken, additionalStartToken);
+                }
             }
         }
 
