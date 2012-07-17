@@ -203,7 +203,8 @@ public class FormatVisitor extends NodeVisitor {
                     // do the standard block related things
                     if (body.getStatements().get(0) instanceof IfNode) {
                         // we mark else if statement here
-                        handleVirtualBlock(body, FormatToken.forFormat(FormatToken.Kind.ELSE_IF_BLOCK));
+                        handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
+                                FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
                     } else {
                         handleVirtualBlock(body);
                     }
@@ -581,10 +582,13 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void handleVirtualBlock(Block block) {
-        handleVirtualBlock(block, null);
+        handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
+                FormatToken.Kind.AFTER_BLOCK_START);
     }
 
-    private void handleVirtualBlock(Block block, FormatToken additionalStartToken) {
+    private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
+            FormatToken.Kind indentationDec, FormatToken.Kind afterBlock) {
+
         assert block.getStart() == block.getFinish() && block.getStatements().size() <= 1;
 
         if (block.getStatements().isEmpty()) {
@@ -612,12 +616,8 @@ public class FormatVisitor extends NodeVisitor {
                 if (formatToken == null && ts.offset() <= formatFinish) {
                     formatToken = tokenStream.getTokens().get(0);
                 }
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
-                if (additionalStartToken != null) {
-                    assert additionalStartToken.isVirtual();
-                    appendTokenAfterLastVirtual(formatToken, additionalStartToken);
-                }
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
             }
         }
 
@@ -625,7 +625,7 @@ public class FormatVisitor extends NodeVisitor {
         FormatToken formatToken = getPreviousToken(getFinish(statement), null, true);
         if (formatToken != null && !isScript(block)) {
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
             }
         }
     }

@@ -1442,8 +1442,8 @@ Element.Methods = {
                 var css = document.defaultView.getComputedStyle(element, null);
                 value = css ? css[style] : null;
             } else if (element.currentStyle) {
-                    value = element.currentStyle[style];
-                }
+                value = element.currentStyle[style];
+            }
         }
 
         if ((value == 'auto') && ['width', 'height'].include(style) && (element.getStyle('display') != 'none'))
@@ -1474,17 +1474,17 @@ Element.Methods = {
                     if (/MSIE/.test(navigator.userAgent) && !window.opera)
                         element.style.filter = element.getStyle('filter').replace(/alpha\([^\)]*\)/gi, '');
                 } else if (value == '') {
-                        if (/MSIE/.test(navigator.userAgent) && !window.opera)
-                            element.style.filter = element.getStyle('filter').replace(/alpha\([^\)]*\)/gi, '');
-                    } else {
-                        if (value < 0.00001)
-                            value = 0;
-                        if (/MSIE/.test(navigator.userAgent) && !window.opera)
-                            element.style.filter = element.getStyle('filter').replace(/alpha\([^\)]*\)/gi, '') +
-                                    'alpha(opacity=' + value * 100 + ')';
-                    }
+                    if (/MSIE/.test(navigator.userAgent) && !window.opera)
+                        element.style.filter = element.getStyle('filter').replace(/alpha\([^\)]*\)/gi, '');
+                } else {
+                    if (value < 0.00001)
+                        value = 0;
+                    if (/MSIE/.test(navigator.userAgent) && !window.opera)
+                        element.style.filter = element.getStyle('filter').replace(/alpha\([^\)]*\)/gi, '') +
+                                'alpha(opacity=' + value * 100 + ')';
+                }
             } else if (['float', 'cssFloat'].include(name))
-                    name = (typeof element.style.styleFloat != 'undefined') ? 'styleFloat' : 'cssFloat';
+                name = (typeof element.style.styleFloat != 'undefined') ? 'styleFloat' : 'cssFloat';
             element.style[name.camelize()] = value;
         }
         return element;
@@ -2364,9 +2364,9 @@ Object.extend(Event, {
             this.observers.push([element, name, observer, useCapture]);
             element.addEventListener(name, observer, useCapture);
         } else if (element.attachEvent) {
-                this.observers.push([element, name, observer, useCapture]);
-                element.attachEvent('on' + name, observer);
-            }
+            this.observers.push([element, name, observer, useCapture]);
+            element.attachEvent('on' + name, observer);
+        }
     },
 
     unloadCache: function() {
@@ -2403,11 +2403,11 @@ Object.extend(Event, {
         if (element.removeEventListener) {
             element.removeEventListener(name, observer, useCapture);
         } else if (element.detachEvent) {
-                try {
-                    element.detachEvent('on' + name, observer);
-                } catch (e) {
-                }
+            try {
+                element.detachEvent('on' + name, observer);
+            } catch (e) {
             }
+        }
     }
 });
 
