@@ -1435,7 +1435,8 @@ conversion_declarator:
  * Resolve by folding and adding a synpred.
  */
 conversion_type_id:
-        type_specifier+
+        type_specifier
+        (type_specifier)*
         ((ptr_operator)=> ptr_operator)*
     ;
 
