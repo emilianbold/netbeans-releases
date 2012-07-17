@@ -662,7 +662,8 @@ scope QualName;
          * "at most one type-specifier is allowed in the complete decl-specifier-seq of a declaration..."
          * In particular (qualified)type_name is allowed only once.
          */
-        { !type_specifier_already_present(CTX) }? =>
+        { action.type_specifier_already_present(input) }? =>
+//        { !type_specifier_already_present(CTX) }? =>
             (SCOPE {{ qual_add_colon2(); }} )?
             /* note that original rule does not allow empty nested_name_specifier for the LITERAL_template alternative */
             (
@@ -676,7 +677,7 @@ scope QualName;
     ;
 
 lookup_type_name:
-        IDENT { identifier_is(IDT_CLASS_NAME|IDT_ENUM_NAME|IDT_TYPEDEF_NAME) }?
+        IDENT { action.identifier_is(IDT_CLASS_NAME|IDT_ENUM_NAME|IDT_TYPEDEF_NAME, $IDENT) }?
     ;
 
 /*
@@ -704,11 +705,16 @@ decltype_specifier:
     ;
 
 elaborated_type_specifier:
-        class_key SCOPE? (
+        class_key SCOPE?         
+        (
             (IDENT SCOPE) =>
                 nested_name_specifier (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
         |
-             (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
+            (
+                simple_template_id_or_IDENT                                     {action.elaborated_type_specifier(input.LT(0));}
+            | 
+                LITERAL_template simple_template_id_nocheck
+            )
         )
     |
         LITERAL_enum SCOPE? (
@@ -736,19 +742,25 @@ enum_name:
  */
 enum_specifier:
 //        LITERAL_enum IDENT? LCURLY enumerator_list? RCURLY
+                                                                                {action.enum_declaration(input.LT(1));}
         enum_head 
         (
-            LCURLY (enumerator_list COMMA?)? RCURLY
+            LCURLY                                                              {action.enum_body($LCURLY);}
+            (enumerator_list COMMA?)? 
+            RCURLY                                                              {action.end_enum_body($RCURLY);}
+                                                                                {action.end_enum_declaration($RCURLY);}
         |
-            SEMICOLON
+            SEMICOLON                                                           {action.end_enum_declaration($SEMICOLON);}
         )
     ;
 enum_head:
     enum_key 
     (
-        nested_name_specifier IDENT
+        nested_name_specifier IDENT                                             {action.enum_name(input.LT(0));}
     |
-        IDENT?
+        (   
+            IDENT                                                               {action.enum_name(input.LT(0));}
+        )?
     )
     enum_base?
     ;
@@ -771,7 +783,7 @@ enumerator_definition:
     ;
 
 enumerator:
-        IDENT 
+        IDENT                                                                   {action.enumerator($IDENT);}
     ;
 
 /*
@@ -818,14 +830,13 @@ unnamed_namespace_definition:
  */
 namespace_definition:
         LITERAL_inline?
-        LITERAL_namespace       {action.namespace_declaration($LITERAL_namespace);}
+        LITERAL_namespace                                                       {action.namespace_declaration($LITERAL_namespace);}
         (   
-            IDENT               {action.namespace_name($IDENT);}
+            IDENT                                                               {action.namespace_name($IDENT);}
         )? 
-        LCURLY                  {action.namespace_body($LCURLY);}
+        LCURLY                                                                  {action.namespace_body($LCURLY);}
         namespace_body 
-        RCURLY                  {action.end_namespace_body($RCURLY);} 
-                                {action.end_namespace_declaration($RCURLY);}
+        RCURLY                                                                  {action.end_namespace_body($RCURLY);} 
     ;
 
 namespace_body:
@@ -1209,7 +1220,7 @@ braced_init_list:
 
 //[gram.class] 
 class_name:
-        simple_template_id_or_IDENT 
+        simple_template_id_or_IDENT                                             {action.class_name(input.LT(0));}
     ;
 
 class_specifier:
@@ -1252,11 +1263,11 @@ class_virtual_specifier:
     ;
 
 class_key:
-        LITERAL_class           {action.class_kind($LITERAL_class);}
+        LITERAL_class                                                           {action.class_kind($LITERAL_class);}
     |
-        LITERAL_struct          {action.class_kind($LITERAL_struct);}
+        LITERAL_struct                                                          {action.class_kind($LITERAL_struct);}
     |
-        LITERAL_union           {action.class_kind($LITERAL_union);}
+        LITERAL_union                                                           {action.class_kind($LITERAL_union);}
     ;
 member_specification :
         member_declaration[field_decl] member_specification?
@@ -1864,10 +1875,10 @@ unary_expression:
         unary_operator_but_not_TILDE cast_expression
     |
         LITERAL_sizeof (
-            unary_expression
-        |
             (LPAREN type_id RPAREN)=>
                 LPAREN type_id RPAREN
+        |
+            unary_expression
         )
     |
         noexcept_expression
