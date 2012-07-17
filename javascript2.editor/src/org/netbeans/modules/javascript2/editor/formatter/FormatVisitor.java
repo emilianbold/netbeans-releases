@@ -622,7 +622,10 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         // put indentation mark after non white token
-        FormatToken formatToken = getPreviousToken(getFinish(statement), null, true);
+        int finish = getFinish(statement);
+        // empty statement has start == finish
+        FormatToken formatToken = getPreviousToken(
+                statement.getStart() < finish ? finish - 1 : finish, null, true);
         if (formatToken != null && !isScript(block)) {
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
