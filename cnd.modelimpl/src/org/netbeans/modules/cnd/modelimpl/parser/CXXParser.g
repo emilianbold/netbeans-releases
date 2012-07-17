@@ -1991,7 +1991,7 @@ shift_expression:
 relational_expression:
         shift_expression
         ( 
-            { !top_level_of_template_arguments() }?=>
+            { !action.top_level_of_template_arguments() }?=>
             GREATERTHAN shift_expression
           |
             LESSTHAN shift_expression
