@@ -362,6 +362,9 @@ public class JsFormatter implements Formatter {
                                     !CodeStyle.get(formatContext).spaceWithinArrayBrackets());
                             break;
                         case AFTER_BLOCK_START:
+                            if (token.next() != null && token.next().getKind() == FormatToken.Kind.ELSE_IF_BLOCK) {
+                                break;
+                            }
                         case AFTER_STATEMENT:
                             if (!NEW_LINE_BREAKS) {
                                 break;
