@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.InputLocation;
 import org.apache.maven.model.InputSource;
 import org.apache.maven.model.Model;
@@ -55,6 +56,7 @@ import org.apache.maven.model.building.DefaultModelBuilder;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuildingResult;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.MavenEmbedder.ModelDescription;
 import org.openide.filesystems.FileUtil;
@@ -166,7 +168,7 @@ public class NBModelBuilder extends DefaultModelBuilder {
         final String artifactId;
         final String groupId;
         final String version;
-        final File location;
+        File location;
         final String name;
         final List<String> profileNames;
         final List<String> modules;
@@ -196,6 +198,13 @@ public class NBModelBuilder extends DefaultModelBuilder {
 
         @Override
         public File getLocation() {
+            if (location != null) {
+                return location;
+            }
+            MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
+            Artifact art = embedder.createProjectArtifact(groupId, artifactId, version);
+            File file = new File(embedder.getLocalRepositoryFile(), embedder.getLocalRepository().pathOf(art));
+            location = FileUtil.normalizeFile(file);
             return location;
         }
 
