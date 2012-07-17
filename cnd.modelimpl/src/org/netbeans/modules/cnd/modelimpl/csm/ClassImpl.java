@@ -440,6 +440,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
 
         public ClassBuilder(FileContent fileContent) {
+            assert fileContent != null;
             this.fileContent = fileContent;
         }
         
@@ -455,6 +456,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
         }
 
+        public CharSequence getName() {
+            return name;
+        }
+        
         public void setFile(CsmFile file) {
             this.file = file;
         }
