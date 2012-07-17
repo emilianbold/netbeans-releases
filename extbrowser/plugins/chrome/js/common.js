@@ -195,6 +195,7 @@ NetBeans.processMessage = function(message) {
     } else if (type === 'close') {
         this.processCloseMessage(message);
     } else if (type === 'attach_debugger') {
+        this.selectionMode = false;
         this.processAttachDebuggerMessage(message);
     } else if (type === 'detach_debugger') {
         this.processDetachDebuggerMessage(message);
