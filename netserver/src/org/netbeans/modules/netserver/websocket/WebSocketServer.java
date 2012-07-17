@@ -164,12 +164,20 @@ public class WebSocketServer extends SocketServer {
             return httpRequest;
         }
         
+        byte[] getContent(){
+            return content;
+        }
+        
         void setRequest( String request ){
             httpRequest = request;
         }
         
         void setHandler( WebSocketChanelHandler handler ){
             this.handler = handler;
+        }
+        
+        void setContent( byte[] content ) {
+            this.content = content;
         }
         
         WebSocketChanelHandler getHandler(){
@@ -180,6 +188,7 @@ public class WebSocketServer extends SocketServer {
         private volatile Map<String,String> headers;
         private volatile String httpRequest;
         private volatile WebSocketChanelHandler handler;
+        private volatile byte[] content;
     }
     
     protected class WebSocketHandler implements ReadHandler {
@@ -264,9 +273,11 @@ public class WebSocketServer extends SocketServer {
         protected boolean readHttpRequest(SocketChannel socketChannel, 
                 SelectionKey key) throws IOException
         {
-            List<String> headers = Utils.readHttpRequest(socketChannel, byteBuffer);
+            byte[] content = new byte[8];
+            List<String> headers = Utils.readHttpRequest(socketChannel, byteBuffer, 
+                    content);
             if ( headers != null ){
-                setHeaders(key , headers);
+                setHeaders(key , headers, content );
                 return true;
             }
             else {
@@ -274,7 +285,9 @@ public class WebSocketServer extends SocketServer {
             }
         }
         
-        private void setHeaders(SelectionKey key , List<String> headerLines){
+        private void setHeaders(SelectionKey key , List<String> headerLines,
+                byte[] content )
+        {
             if ( headerLines.size() >0 ){
                 getContext(key).setRequest(headerLines.get(0));
             }
@@ -286,6 +299,7 @@ public class WebSocketServer extends SocketServer {
                 }
             }
             getContext(key).setHeaders(result);
+            getContext(key).setContent(content);
         }
         
         private ByteBuffer byteBuffer;

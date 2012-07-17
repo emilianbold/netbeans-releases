@@ -69,12 +69,15 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         builder.append( Utils.HTTP_11);
         builder.append(Utils.CRLF);
         
-        builder.append(Utils.WS_UPGRADE);
-        builder.append(Utils.CRLF);
-        
         builder.append(Utils.HOST);
         builder.append(": ");                               // NOI18N
         builder.append(getClient().getUri().getHost());
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.CONN_UPGRADE);
+        builder.append(Utils.CRLF);
+        
+        builder.append(Utils.WS_UPGRADE);
         builder.append(Utils.CRLF);
         
         builder.append("Origin: ");
@@ -122,15 +125,25 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
     protected void readHandshakeResponse( ByteBuffer buffer )
             throws IOException
     {
-        Utils.readHttpRequest(getClient().getChannel(), buffer);
-        byte[] md5Challenge = readRequestContent(16);
+        byte[] md5Challenge = new byte[16];
+        Utils.readHttpRequest(getClient().getChannel(), buffer, md5Challenge);
+        boolean md5red = false;
+        for( byte b: md5Challenge ){
+            if ( b!= 0){
+                md5red = true;
+                break;
+            }
+        }
+        if ( !md5red ){
+            md5Challenge = readRequestContent(16);
+        }
         /*
          *  TODO : check md5Challenge against initial data in the handshake
          *  
-         *  if ( md5Challenge is no correct ) {
-         *      throws IOException("wrong handshake data");
-         *  }
          */
+        if ( md5Challenge == null ){
+            throw new IOException("Invalid handshake. Cannot read handshake content."); // NOI18N
+        }
     }
     
     private byte[] generateContent(){

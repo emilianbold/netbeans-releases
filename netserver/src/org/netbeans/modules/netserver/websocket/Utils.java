@@ -91,10 +91,18 @@ final class Utils {
     static List<String> readHttpRequest(SocketChannel socketChannel,
             ByteBuffer buffer ) throws IOException
     {
+        return readHttpRequest(socketChannel, buffer, null );
+    }
+    
+    static List<String> readHttpRequest(SocketChannel socketChannel,
+            ByteBuffer buffer , byte[] content) throws IOException
+    {
             List<String> headers = new LinkedList<String>();
             buffer.clear();
             StringBuilder builder = new StringBuilder();
             byte[] bytes = new byte[ BYTES ];
+            boolean readContent = content != null;
+            List<Byte> remaining = new LinkedList<Byte>();
             read: while( true ){
                 int read = socketChannel.read( buffer );
                 if ( read ==-1 ){
@@ -106,34 +114,89 @@ final class Utils {
                 buffer.clear();
                 String stringValue = new String( bytes , 0, size, 
                         Charset.forName(UTF_8) );
+                String fullString = stringValue;
                 int index = stringValue.indexOf(NEW_LINE);
                 if ( index == -1 ){
                     builder.append( stringValue );
+                    if ( readContent ){
+                        copyBytes(bytes, remaining, 0, size);
+                    }
                 }
                 else {
+                    if ( readContent ){
+                        remaining = new LinkedList<Byte>();
+                    }
                     builder.append( stringValue.subSequence(0, index));
                     String line = builder.toString().trim();
                     headers.add( line );
                     builder.setLength(0);
                     if ( line.isEmpty() ){
+                        int start = stringValue.substring(0, index+1).getBytes().length;
+                        copyBytes(bytes, remaining, start, size );
                         break;
                     }
+                    int fullIndex = index;
                     do {
                         stringValue = stringValue.substring( index +1);
                         index = stringValue.indexOf(NEW_LINE );
                         if ( index != -1){
+                            fullIndex+=(index+1);
                             line = stringValue.substring( 0, index ).trim();
                             headers.add( line );
                             if ( line.isEmpty() ){
+                                int start = fullString.substring(0, fullIndex+1).
+                                        getBytes().length;
+                                copyBytes(bytes, remaining, start, size );
                                 break read;
                             }
                         }
                     }
                     while( index != -1 );
+                    int start = fullString.substring(0, fullIndex+1).getBytes().length;
+                    copyBytes(bytes, remaining, start, size );
                     builder.append( stringValue);
                 }
             }
+
+            if ( remaining.size() == 0 ){
+                return headers;
+            }
+            if ( !readContent ){
+                throw new IOException("Unexpected content on connection initialization");       // NOI18N
+            }
+            else {
+                int size = content.length;
+                int red = remaining.size();
+                if ( red > size ){
+                    throw new IOException("Unexpected content on connection initialization");       // NOI18N
+                }
+                ByteBuffer buf = ByteBuffer.allocate( size - red );
+                while(red<size){
+                    int read = socketChannel.read( buffer );
+                    if ( read == -1){
+                        return null;
+                    }
+                    red+=read;
+                }
+                buf.flip();
+                bytes = new byte[buf.capacity()];
+                buf.get(bytes);
+                int i=0;
+                for( Byte b: remaining ){
+                    content[i] = b;
+                    i++;
+                }
+                System.arraycopy(bytes, 0, content, i, bytes.length );
+            }
             return headers;
+    }
+    
+    private static void copyBytes( byte[] src, List<Byte> dst , int startPos , 
+            int lenght)
+    {
+        for( int i=startPos; i< lenght ; i++ ){
+            dst.add( src[i]);
+        }
     }
     
     static String getOrigin(URI uri ){

@@ -70,7 +70,7 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
     public void sendHandshake( ) throws IOException {
         byte[] lastEightBytes = readRequestContent( );
         if ( lastEightBytes == null ){
-            return;
+            throw new IOException("Invalid handshake. Cannot read handshake content");  // NOI18N
         }
         StringBuilder builder = new StringBuilder(Utils.HTTP_RESPONSE);
         builder.append(Utils.CRLF);
@@ -128,6 +128,7 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
         String key2 = headers.get(Utils.KEY2);
         ByteBuffer buffer = ByteBuffer.allocate(16).putInt(decodeNumber(key1)).
             putInt(decodeNumber(key2)).put(lastEightBytes);
+        buffer.flip();
         byte[] bytes = new byte[ buffer.capacity()];
         buffer.get( bytes );
         try {
@@ -140,7 +141,20 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
     }
 
     private byte[] readRequestContent(  ) throws IOException {
-        return readRequestContent( 8 );
+        byte[] content = getServer().getContext( getKey()).getContent();
+        boolean red = false;
+        for( byte b : content ){
+            if ( b!= 0){
+                red = true;
+                break;
+            }
+        }
+        if ( red ){
+            return content;
+        }
+        else {
+            return readRequestContent( 8 );
+        }
     }
     
     private int decodeNumber(String code) {
