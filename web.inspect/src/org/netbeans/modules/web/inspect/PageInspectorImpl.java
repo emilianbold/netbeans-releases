@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JToggleButton;
@@ -146,6 +147,9 @@ public class PageInspectorImpl extends PageInspector {
                         @Override
                         public void run() {
                             pageModel.setSelectionMode(selectionMode);
+                            if (!selectionMode) {
+                                pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
+                            }
                         }
                     });
                 }
@@ -270,6 +274,9 @@ public class PageInspectorImpl extends PageInspector {
                     if (MESSAGE_SELECTION_MODE.equals(type)) {
                         boolean selectionMode = (Boolean)message.get(MESSAGE_SELECTION_MODE_ATTR);
                         pageModel.setSelectionMode(selectionMode);
+                        if (!selectionMode) {
+                            pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
+                        }
                     }
                 } catch (ParseException ex) {
                     Logger.getLogger(PageInspectorImpl.class.getName())
