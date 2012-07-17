@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.openide.awt;
+package org.netbeans.core.windows.view.ui;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -56,20 +56,23 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
+import org.netbeans.core.windows.actions.MaximizeWindowAction;
+import org.openide.awt.CloseButtonFactory;
+import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 
 /**
  * Copy of original CloseButtonTabbedPane from the NetBeans 3.4 winsys.  Old code never dies.
+ * (moved from openide.awt module)
  *
  * @author Tran Duc Trung
  * @author S. Aubrecht
- * @since 6.10.0
+ * @since 2.52
  *
  */
 final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeListener {
-
-    static final String PROP_CLOSE = "close";
 
     CloseButtonTabbedPane() {
             // close tab via middle button
@@ -96,6 +99,21 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
                         lastIdx = -1;
                     }
                 }
+
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                if( e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton( e ) ) {
+                    //toggle maximize
+                    TopComponent tc = ( TopComponent ) SwingUtilities.getAncestorOfClass( TopComponent.class, CloseButtonTabbedPane.this );
+                    if( null != tc ) {
+                        MaximizeWindowAction mwa = new MaximizeWindowAction(tc);
+                        if( mwa.isEnabled() )
+                            mwa.actionPerformed(null);
+                    }
+                }
+            }
+
+
             });
         //Bugfix #28263: Disable focus.
         setFocusable(false);
@@ -110,22 +128,27 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
     }
 
     private class CBTPPolicy extends FocusTraversalPolicy {
+        @Override
         public Component getComponentAfter(Container aContainer, Component aComponent) {
             return sel();
         }
 
+        @Override
         public Component getComponentBefore(Container aContainer, Component aComponent) {
             return sel();
         }
 
+        @Override
         public Component getFirstComponent(Container aContainer) {
             return sel();
         }
 
+        @Override
         public Component getLastComponent(Container aContainer) {
             return sel();
         }
 
+        @Override
         public Component getDefaultComponent(Container aContainer) {
             return sel();
         }
@@ -359,7 +382,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
     }
     
     private void fireCloseRequest(Component c) {
-        firePropertyChange(PROP_CLOSE, null, c);
+        firePropertyChange(TabbedPaneFactory.PROP_CLOSE, null, c);
         if (getTabLayoutPolicy() == JTabbedPane.SCROLL_TAB_LAYOUT) {
             int idx = getSelectedIndex();
             if (idx > 0) {
@@ -438,6 +461,7 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
         return super.getBackgroundAt(index);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() instanceof Component) {
             assert evt.getPropertyName().equals(TabbedPaneFactory.NO_CLOSE_BUTTON);
