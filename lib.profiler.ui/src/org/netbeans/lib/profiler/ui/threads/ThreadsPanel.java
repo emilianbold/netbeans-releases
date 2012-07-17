@@ -69,6 +69,7 @@ import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -260,9 +261,13 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         this.supportsSleepingState = supportsSleepingState;
 
         // create components
+        setOpaque(true);
+        setBackground(new HTMLTextArea().getBackground());        
 
         // contentPanel for threadsTable and enable threads profiling notification
         contentPanel = new JPanel(new CardLayout());
+        contentPanel.setOpaque(true);
+        contentPanel.setBackground(new HTMLTextArea().getBackground());        
 
         // threads table components
         table = createViewTable();
@@ -307,7 +312,9 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         buttonsToolBar = ProfilerToolbar.create(true);
 
         JPanel tablePanel = new JPanel();
+        tablePanel.setOpaque(false);
         JPanel scrollPanel = new JPanel();
+        scrollPanel.setOpaque(false);
         popupMenu = initPopupMenu();
 
         // set properties
@@ -390,6 +397,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
         JPanel legendPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING, 7, 8));
+        legendPanel.setOpaque(false);
         legendPanel.add(runningLegend);
         legendPanel.add(sleepingLegend);
 
@@ -402,14 +410,17 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setOpaque(false);
         bottomPanel.add(UIUtils.createHorizontalLine(bottomPanel.getBackground()), BorderLayout.NORTH);
         bottomPanel.add(legendPanel, BorderLayout.EAST);
 
         //scrollPanel.add(bottomPanel, BorderLayout.SOUTH);
         JPanel dataPanel = new JPanel();
+        dataPanel.setOpaque(false);
         dataPanel.setLayout(new BorderLayout());
 
         tableScroll = new JScrollPane();
+        tableScroll.setOpaque(false);
         tableScroll.setCorner(JScrollPane.UPPER_RIGHT_CORNER, new JPanel());
         tableScroll.getCorner(JScrollPane.UPPER_RIGHT_CORNER).setBackground(Color.WHITE);
         viewPort = new CustomTimeLineViewport(this);

@@ -513,6 +513,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
         getAccessibleContext().setAccessibleDescription(Bundle.LiveResultsWindow_LiveResultsAccessDescr());
         //        setBorder(new EmptyBorder(5, 5, 5, 5));
         setLayout(new BorderLayout());
+        setOpaque(false);
 
         memoryActionsHandler = new MemoryActionsHandler();
         historyActionsHandler = new HistoryActionsHandler();
@@ -526,6 +527,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
         add(toolBar.getComponent(), BorderLayout.NORTH);
 
         noResultsPanel = new EmptyLiveResultsPanel();
+        noResultsPanel.setOpaque(false);
         noResultsPanel.setLayout(new BorderLayout());
         noResultsPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
@@ -535,6 +537,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
         noResultsLabel.setIcon(Icons.getIcon(ProfilerIcons.MONITORING_32));
         noResultsLabel.setIconTextGap(10);
         noResultsLabel.setEnabled(false);
+        noResultsLabel.setOpaque(false);
         noResultsPanel.add(noResultsLabel, BorderLayout.NORTH);
 
         currentDisplay = null;
@@ -543,6 +546,7 @@ public final class LiveResultsWindow extends ProfilerTopComponent
 
         //*************
         memoryTabPanel = new JPanel(new BorderLayout());
+        memoryTabPanel.setOpaque(false);
 
         graphButtonsSeparator = new JToolBar.Separator();
         toolBar.add(graphButtonsSeparator);
