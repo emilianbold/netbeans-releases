@@ -48,8 +48,7 @@ import org.netbeans.modules.php.composer.commands.Composer;
 import org.openide.util.NbPreferences;
 
 /**
- *
- * @author gapon
+ * Composer options.
  */
 public class ComposerOptions {
 
@@ -61,6 +60,8 @@ public class ComposerOptions {
 
     // composer
     private static final String COMPOSER_PATH = "composer.path"; // NOI18N
+    private static final String AUTHOR_NAME = "author.name"; // NOI18N
+    private static final String AUTHOR_EMAIL = "author.email"; // NOI18N
 
     private volatile boolean composerSearched = false;
 
@@ -84,6 +85,22 @@ public class ComposerOptions {
 
     public void setComposerPath(String composerPath) {
         getPreferences().put(COMPOSER_PATH, composerPath);
+    }
+
+    public String getAuthorName() {
+        return getPreferences().get(AUTHOR_NAME, System.getProperty("user.name")); // NOI18N
+    }
+
+    public void setAuthorName(String authorName) {
+        getPreferences().put(AUTHOR_NAME, authorName);
+    }
+
+    public String getAuthorEmail() {
+        return getPreferences().get(AUTHOR_EMAIL, "your@email.here"); // NOI18N
+    }
+
+    public void setAuthorEmail(String authorEmail) {
+        getPreferences().put(AUTHOR_EMAIL, authorEmail);
     }
 
     private Preferences getPreferences() {

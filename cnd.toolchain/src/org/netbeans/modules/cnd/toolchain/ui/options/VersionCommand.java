@@ -44,15 +44,12 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
-import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 
 /**
  *
@@ -98,12 +95,10 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
         npb.redirectError();
 
         try {
-            NativeProcess process = npb.call();
-            version = extractVersion(process.getInputStream());
-
-            // version retrieved, now destroy the process
-            // (dbx does not exit with -V argument)
-            process.destroy();
+            ExitStatus result = ProcessUtils.execute(npb);
+            String data = result.output.trim().concat(result.error.trim());
+            int br = data.indexOf('\n');
+            version = br < 0 ? data : data.substring(0, br).trim();
         } catch (Exception ex) {
             // silently drop
         }
@@ -122,23 +117,4 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
             return flags;
         }
     }
-
-    private String extractVersion(InputStream is) {
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new InputStreamReader(is));
-            return br.readLine();
-        } catch (IOException ioe) {
-            return null;
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException ex) {
-                    // silently drop
-                }
-            }
-        }
-    }
-
 }

@@ -164,6 +164,8 @@ public final class FormatToken {
         AFTER_PROPERTY,
         AFTER_CASE,
         
+        AFTER_BLOCK_START,
+        
         BEFORE_OBJECT,
 
         // around binary operator

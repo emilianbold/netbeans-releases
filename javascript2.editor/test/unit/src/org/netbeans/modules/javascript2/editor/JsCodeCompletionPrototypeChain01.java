@@ -76,7 +76,23 @@ public class JsCodeCompletionPrototypeChain01 extends JsTestBase {
         checkCompletion("testfiles/completion/prototypeChain01/issue214556_test.js", "cc.^toString();", false);
     }
     
+    public void testDocument01() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/basicDocumentCC.js", "document.getE^lementById(\"dd\").getElementsByTagName(\"*\").item(2).getFeature(\"pero\").toLocaleString().charCodeAt(10).toExponential();", false);
+    }
+
+    public void testDocument02() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/basicDocumentCC.js", "document.getElementById(\"dd\").getElementsByTagName(\"*\").item(2).getFeature(\"pero\").toLocale^String().charCodeAt(10).toExponential();", false);
+    }
+
+    public void testDocument03() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/basicDocumentCC.js", "document.getElementById(\"dd\").getElementsByTagName(\"*\").item(2).getFeature(\"pero\").toLocaleString().charCodeAt(10).toEx^ponential();", false);
+    }
     
+    public void testDocument04() throws Exception {
+        checkCompletion("testfiles/completion/prototypeChain01/basicDocumentCC.js", "document.createTextNode(\"null\").replaceWholeText(\"flajfda\").le^ngth;", false);
+    }
+
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

@@ -161,7 +161,7 @@ public final class ToolchainValidator {
         boolean res = true;
         for(String s : newList) {
             if (!oldSet.contains(s)) {
-                LOG.log(Level.FINE, "Tool {0} was changed. Added system include path {1}", new Object[]{tool.getDisplayName(), s});
+                LOG.log(Level.FINE, "Tool {0} was changed. Added system include path {1}", new Object[]{tool.getDisplayName(), s}); // NOI18N
                 res = false;
             }
         }
@@ -171,7 +171,7 @@ public final class ToolchainValidator {
     private boolean compareMacrosLists(List<String> newList, List<String> oldList, AbstractCompiler tool) {
         Map<String,String> oldMap = new HashMap<String,String>();
         for(String s : oldList) {
-            int i = s.indexOf('=');
+            int i = s.indexOf('='); // NOI18N
             if (i > 0) {
                 oldMap.put(s.substring(0,i), s.substring(i+1));
             } else {
@@ -188,7 +188,7 @@ public final class ToolchainValidator {
             }
             String key;
             String value;
-            int i = s.indexOf('=');
+            int i = s.indexOf('='); // NOI18N
             if (i > 0) {
                 key = s.substring(0,i);
                 value = s.substring(i+1);
@@ -197,7 +197,7 @@ public final class ToolchainValidator {
                 value = null;
             }
             if (!oldMap.containsKey(key)) {
-                LOG.log(Level.FINE, "Tool {0} was changed. Added macro {1}", new Object[]{tool.getDisplayName(), s});
+                LOG.log(Level.FINE, "Tool {0} was changed. Added macro {1}", new Object[]{tool.getDisplayName(), s}); // NOI18N
                 res = false;
             }
             String oldValue = oldMap.get(key);
@@ -205,8 +205,8 @@ public final class ToolchainValidator {
                 // equals
                 continue;
             }
-            if (value == null && "1".equals(oldValue) ||
-                "1".equals(value) && oldValue == null) {
+            if (value == null && "1".equals(oldValue) || // NOI18N
+                "1".equals(value) && oldValue == null) { // NOI18N
                 // equals
                 continue;
             }
@@ -214,7 +214,7 @@ public final class ToolchainValidator {
                 // equals
                 continue;
             }
-            LOG.log(Level.FINE, "Tool {0} was changed. Changed macro {1} from [{2}] to [{3}]", new Object[]{tool.getDisplayName(), key, oldValue, value});
+            LOG.log(Level.FINE, "Tool {0} was changed. Changed macro {1} from [{2}] to [{3}]", new Object[]{tool.getDisplayName(), key, oldValue, value}); // NOI18N
             res = false;
         }
         return res;

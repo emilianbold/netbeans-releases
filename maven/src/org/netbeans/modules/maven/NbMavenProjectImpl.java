@@ -287,7 +287,9 @@ public final class NbMavenProjectImpl implements Project {
         }
         //clear the project building request, it references multiple Maven Models via the RepositorySession cache
         //is not used in maven itself, most likely used by m2e only..
-        parent.setProjectBuildingRequest(null);
+        if (parent != null) {
+            parent.setProjectBuildingRequest(null);
+        }
         return parent;
     }
 

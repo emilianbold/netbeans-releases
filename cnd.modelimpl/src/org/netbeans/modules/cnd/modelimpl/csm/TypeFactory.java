@@ -300,10 +300,10 @@ public class TypeFactory {
                                             || namePart.getType() == CPPTokenTypes.LITERAL_class
                                             || namePart.getType() == CPPTokenTypes.LITERAL_union) {
                                         CsmType t = AstRenderer.renderType(namePart, file, true);
-                                        type.instantiationParams.add(new TypeBasedSpecializationParameterImpl(t));
+                                        type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(t));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                                        type.instantiationParams.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, type.getContainingFile(), scope),
+                                        type.addInstantiationParam(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, type.getContainingFile(), scope),
                                                 type.getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                                     }
                                 }
@@ -384,7 +384,7 @@ public class TypeFactory {
             l.add(name);
             type.setQName(l.toArray(new CharSequence[l.size()]));
             type.initClassifier(cls);
-            type.instantiationParams.addAll(instantiationParams);
+            type.addAllInstantiationParams(instantiationParams);
             
             if(child != null) {
                 return child.create(type);

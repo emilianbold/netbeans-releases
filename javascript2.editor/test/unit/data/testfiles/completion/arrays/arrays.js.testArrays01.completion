@@ -3,6 +3,9 @@ arr01.|pop();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   stub_CORE_Array.js
+METHOD     apply(): Array                  [PUBLIC]   stub_CORE_Function.js
+METHOD     bind(): String                  [PUBLIC]   stub_CORE_Function.js
+METHOD     call(): String                  [PUBLIC]   stub_CORE_Function.js
 METHOD     concat(): Array                 [PUBLIC]   stub_CORE_Array.js
 METHOD     create(): Object                [PUBLIC,   stub_CORE_Object.js
 METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
@@ -20,6 +23,7 @@ METHOD     indexOf(): Number               [PUBLIC]   stub_CORE_Array.js
 METHOD     isArray(): Boolean              [PUBLIC,   stub_CORE_Array.js
 METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
 METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     isGenerator(): Boolean          [PUBLIC]   stub_CORE_Function.js
 METHOD     isPrototypeOf(): Boolean        [PUBLIC]   stub_CORE_Object.js
 METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
 METHOD     join(): String                  [PUBLIC]   stub_CORE_Array.js
@@ -46,5 +50,9 @@ METHOD     unshift(): Number               [PUBLIC]   stub_CORE_Array.js
 METHOD     unwatch(): undefined            [PUBLIC]   stub_CORE_Object.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
 METHOD     watch(): undefined              [PUBLIC]   stub_CORE_Object.js
+FIELD      arguments                       [PUBLIC]   stub_CORE_Function.js
+FIELD      arity                           [PUBLIC]   stub_CORE_Function.js
+FIELD      caller                          [PUBLIC]   stub_CORE_Function.js
 FIELD      constructor                     [PUBLIC]   stub_CORE_Array.js
 FIELD      length                          [PUBLIC]   stub_CORE_Array.js
+FIELD      name                            [PUBLIC]   stub_CORE_Function.js
