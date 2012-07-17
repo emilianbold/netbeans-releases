@@ -249,7 +249,9 @@ public final class FormatToken {
 
         // array literal brackets
         AFTER_ARRAY_LITERAL_BRACKET,
-        BEFORE_ARRAY_LITERAL_BRACKET
+        BEFORE_ARRAY_LITERAL_BRACKET,
+
+        ELSE_IF_BLOCK
     }
 
 }
