@@ -1568,7 +1568,7 @@ template_argument:
     ;
 
 explicit_instantiation [decl_kind kind]:
-        LITERAL_template declaration[kind]
+        (LITERAL_extern)? LITERAL_template declaration[kind]
     ;
 explicit_specialization [decl_kind kind]:
         LITERAL_template LESSTHAN GREATERTHAN declaration[kind]
