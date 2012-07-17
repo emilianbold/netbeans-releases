@@ -74,6 +74,7 @@ import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
+import org.netbeans.modules.hudson.spi.RemoteFileSystem;
 import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.ui.notification.ProblemNotificationController;
 import org.openide.filesystems.FileSystem;
@@ -478,7 +479,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     /* access from HudsonJobImpl */ FileSystem getRemoteWorkspace(final HudsonJob job) {
         return getFileSystemFromCache(workspaces, job.getName(), new Callable<RemoteFileSystem>() {
             @Override public RemoteFileSystem call() throws Exception {
-                return new RemoteFileSystem(job);
+                return builderConnector.getWorkspace(job);
             }
         });
     }
@@ -486,7 +487,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     /* access from HudsonJobBuildImpl */ FileSystem getArtifacts(final HudsonJobBuild build) {
         return getFileSystemFromCache(artifacts, build.getJob().getName() + "/" + build.getNumber(), new Callable<RemoteFileSystem>() { // NOI18N
             @Override public RemoteFileSystem call() throws Exception {
-                return new RemoteFileSystem(build);
+                return builderConnector.getArtifacts(build);
             }
         });
     }
@@ -496,7 +497,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                 module.getBuild().getNumber() + "/" + module.getName(), // NOI18N
                 new Callable<RemoteFileSystem>() {
             @Override public RemoteFileSystem call() throws Exception {
-                return new RemoteFileSystem(module);
+                return builderConnector.getArtifacts(module);
             }
         });
     }
@@ -507,6 +508,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
             if (fs == null) {
                 try {
                     fs = create.call();
+                    if (fs == null) {
+                        return null;
+                    }
                     cache.put(key, new WeakReference<RemoteFileSystem>(fs));
                 } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);

@@ -54,7 +54,6 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
-import org.openide.filesystems.FileSystem;
 
 /**
  * Interface of Hudson connectors. It specifies how data should be accessed and
@@ -102,8 +101,26 @@ public abstract class BuilderConnector {
      * @return Filesystem containing the build artifacts, or null if it is not
      * available.
      */
-    public @CheckForNull abstract FileSystem getArtifacts(
+    public abstract @CheckForNull RemoteFileSystem getArtifacts(
             @NonNull HudsonJobBuild build);
+
+    /**
+     * Get builds artifacts for a maven module build.
+     *
+     * @return Filesystem containing the build artifacts, or null if it is not
+     * available.
+     */
+    public abstract @CheckForNull RemoteFileSystem getArtifacts(
+            @NonNull HudsonMavenModuleBuild build);
+
+    /**
+     * Get child nodes for job workspace.
+     *
+     * @return Filesystem representing job workspace, or null if it is not
+     * available.
+     */
+    public abstract @CheckForNull RemoteFileSystem getWorkspace(
+            @NonNull HudsonJob job);
 
     /**
      * Check whether this connector is connected to the build server.

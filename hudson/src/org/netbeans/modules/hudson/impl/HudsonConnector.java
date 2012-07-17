@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,13 +68,14 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.Utilities;
 import static org.netbeans.modules.hudson.constants.HudsonXmlApiConstants.*;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.hudson.spi.RemoteFileSystem;
 import org.openide.util.Lookup;
 import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
@@ -492,8 +494,33 @@ public class HudsonConnector extends BuilderConnector {
     }
 
     @Override
-    public FileSystem getArtifacts(HudsonJobBuild build) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public RemoteFileSystem getArtifacts(HudsonJobBuild build) {
+        try {
+            return new HudsonRemoteFileSystem(build);
+        } catch (MalformedURLException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return null;
+        }
+    }
+
+    @Override
+    public RemoteFileSystem getArtifacts(HudsonMavenModuleBuild build) {
+        try {
+            return new HudsonRemoteFileSystem(build);
+        } catch (MalformedURLException ex) {
+            LOG.log(Level.INFO, null, ex);
+            return null;
+        }
+    }
+
+    @Override
+    public RemoteFileSystem getWorkspace(HudsonJob job) {
+        try {
+            return new HudsonRemoteFileSystem(job);
+        } catch (MalformedURLException ex) {
+           LOG.log(Level.INFO, null, ex);
+            return null;
+        }
     }
 
     @Override
