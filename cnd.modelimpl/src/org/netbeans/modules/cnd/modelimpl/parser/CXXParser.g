@@ -658,7 +658,7 @@ scope QualName;
     |
         decltype_specifier                                                      {action.simple_type_specifier(input.LT(0));}
     |
-/*
+        /*
          * "at most one type-specifier is allowed in the complete decl-specifier-seq of a declaration..."
          * In particular (qualified)type_name is allowed only once.
          */
@@ -668,10 +668,10 @@ scope QualName;
             (
                 (lookup_nested_name_specifier)=>
                     nested_name_specifier 
-                    (IDENT      {action.simple_type_specifier(input.LT(0));}
+                    (simple_template_id_or_IDENT                                {action.simple_type_specifier(input.LT(0));}
                     | LITERAL_template simple_template_id)
             |
-                IDENT           {action.simple_type_specifier(input.LT(0));}
+                simple_template_id_or_IDENT                                     {action.simple_type_specifier(input.LT(0));}
             )
     ;
 
