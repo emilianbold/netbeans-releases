@@ -68,13 +68,14 @@ abstract class AbstractWSHandler75 implements WebSocketChanelHandler {
         List<List<Byte>> messages = new LinkedList<List<Byte>>();
         List<Byte> message = new LinkedList<Byte>();
         boolean newMessage = false;
-        while (true || !isStopped()) {
+        while (!isStopped()) {
             byteBuffer.clear();
             if (socketChannel.read(byteBuffer) == -1) {
                 close();
+                return;
             }
             byteBuffer.flip();
-            byteBuffer.get(bytes);
+            byteBuffer.get(bytes, 0, byteBuffer.limit() );
             if (bytes[0] == 0 && !newMessage) {
                 newMessage = true;
                 if (!message.isEmpty()) {
@@ -129,10 +130,14 @@ abstract class AbstractWSHandler75 implements WebSocketChanelHandler {
         ByteBuffer buffer = ByteBuffer.allocate(size);
         SocketChannel socketChannel = (SocketChannel) getKey().channel();
         try {
-            while ( buffer.hasRemaining() ){
+            while ( buffer.hasRemaining() && !isStopped()){
                 if ( socketChannel.read( buffer ) == -1){
                     close();
                 }
+            }
+            if ( isStopped() ){
+                close();
+                return null;
             }
             byte[] bytes = new byte[buffer.capacity()];
             buffer.flip();
