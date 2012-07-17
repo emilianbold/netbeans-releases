@@ -4,30 +4,30 @@ MyObj.create().|getInfo().big();
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   stub_CORE_Object.js
 METHOD     create(): MyObj                 [PUBLIC]   methodChainSimple.js
-METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperty(): Object        [PUBLIC,   stub_CORE_Object.js
-METHOD     eval(): Object                  [PUBLIC]   stub_CORE_Object.js
+METHOD     defineProperties(obj: String,   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(obj: String, pr  [PUBLIC,   stub_CORE_Object.js
+METHOD     eval(string: String): Object    [PUBLIC]   stub_CORE_Object.js
 METHOD     factory(): MyObj                [PUBLIC]   methodChainSimple.js
-METHOD     freeze(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     freeze(obj: String): Object     [PUBLIC,   stub_CORE_Object.js
 METHOD     getInfo(): String               [PUBLIC]   methodChainSimple.js
-METHOD     getOwnPropertyDescriptor(): Ob  [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyNames(): Array    [PUBLIC,   stub_CORE_Object.js
-METHOD     getPrototypeOf(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(obj: Strin  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(object: Object)  [PUBLIC,   stub_CORE_Object.js
 METHOD     getVersion(): Number            [PUBLIC]   methodChainSimple.js
-METHOD     hasOwnProperty(): Boolean       [PUBLIC]   stub_CORE_Object.js
-METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
-METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
-METHOD     isPrototypeOf(): Boolean        [PUBLIC]   stub_CORE_Object.js
-METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
-METHOD     keys(): Array                   [PUBLIC,   stub_CORE_Object.js
-METHOD     preventExtensions(): Object     [PUBLIC,   stub_CORE_Object.js
-METHOD     propertyIsEnumerable(): Boolea  [PUBLIC]   stub_CORE_Object.js
-METHOD     seal(): Object                  [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(prop: String):   [PUBLIC]   stub_CORE_Object.js
+METHOD     isExtensible(obj: String): Boo  [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(obj: String): Boolean  [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(object: Object):  [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(obj: String): Boolean  [PUBLIC,   stub_CORE_Object.js
+METHOD     keys(obj: String): Array        [PUBLIC,   stub_CORE_Object.js
+METHOD     preventExtensions(obj: String)  [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   stub_CORE_Object.js
+METHOD     seal(obj: String): Object       [PUBLIC,   stub_CORE_Object.js
 METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
 METHOD     toSource(): String              [PUBLIC]   stub_CORE_Object.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Object.js
-METHOD     unwatch(): undefined            [PUBLIC]   stub_CORE_Object.js
+METHOD     unwatch(prop: String): undefin  [PUBLIC]   stub_CORE_Object.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-METHOD     watch(): undefined              [PUBLIC]   stub_CORE_Object.js
+METHOD     watch(prop: String, handler: S  [PUBLIC]   stub_CORE_Object.js
 FIELD      constructor                     [PUBLIC]   stub_CORE_Object.js
 FIELD      version                         [PUBLIC]   methodChainSimple.js

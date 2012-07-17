@@ -3,50 +3,50 @@ MyObj.create().getInfo().|big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   stub_CORE_String.js
-METHOD     anchor(): String                [PUBLIC]   stub_CORE_String.js
+METHOD     anchor(nameAttribute: String):  [PUBLIC]   stub_CORE_String.js
 METHOD     big(): String                   [PUBLIC]   stub_CORE_String.js
 METHOD     blink(): String                 [PUBLIC]   stub_CORE_String.js
 METHOD     bold(): String                  [PUBLIC]   stub_CORE_String.js
-METHOD     charAt(): String                [PUBLIC]   stub_CORE_String.js
+METHOD     charAt(index: Number): String   [PUBLIC]   stub_CORE_String.js
 METHOD     charCodeAt(): Number            [PUBLIC]   stub_CORE_String.js
-METHOD     concat(): String                [PUBLIC]   stub_CORE_String.js
-METHOD     create(): Object                [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperty(): Object        [PUBLIC,   stub_CORE_Object.js
-METHOD     eval(): Object                  [PUBLIC]   stub_CORE_Object.js
+METHOD     concat(string2, string3): Stri  [PUBLIC]   stub_CORE_String.js
+METHOD     create(proto: Object): Object   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(obj: String,   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(obj: String, pr  [PUBLIC,   stub_CORE_Object.js
+METHOD     eval(string: String): Object    [PUBLIC]   stub_CORE_Object.js
 METHOD     fixed(): String                 [PUBLIC]   stub_CORE_String.js
-METHOD     fontcolor(): String             [PUBLIC]   stub_CORE_String.js
-METHOD     fontsize(): Number              [PUBLIC]   stub_CORE_String.js
-METHOD     freeze(): Object                [PUBLIC,   stub_CORE_Object.js
-METHOD     fromCharCode(): String          [PUBLIC,   stub_CORE_String.js
-METHOD     getOwnPropertyDescriptor(): Ob  [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyNames(): Array    [PUBLIC,   stub_CORE_Object.js
-METHOD     getPrototypeOf(): Object        [PUBLIC,   stub_CORE_Object.js
-METHOD     hasOwnProperty(): Boolean       [PUBLIC]   stub_CORE_Object.js
-METHOD     indexOf(): Number               [PUBLIC]   stub_CORE_String.js
-METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
-METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
-METHOD     isPrototypeOf(): Boolean        [PUBLIC]   stub_CORE_Object.js
-METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     fontcolor(color: String): Stri  [PUBLIC]   stub_CORE_String.js
+METHOD     fontsize(size: Number): Number  [PUBLIC]   stub_CORE_String.js
+METHOD     freeze(obj: String): Object     [PUBLIC,   stub_CORE_Object.js
+METHOD     fromCharCode(num1): String      [PUBLIC,   stub_CORE_String.js
+METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(obj: Strin  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(object: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(prop: String):   [PUBLIC]   stub_CORE_Object.js
+METHOD     indexOf(searchValue: String):   [PUBLIC]   stub_CORE_String.js
+METHOD     isExtensible(obj: String): Boo  [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(obj: String): Boolean  [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(object: Object):  [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(obj: String): Boolean  [PUBLIC,   stub_CORE_Object.js
 METHOD     italics(): String               [PUBLIC]   stub_CORE_String.js
-METHOD     keys(): Array                   [PUBLIC,   stub_CORE_Object.js
-METHOD     lastIndexOf(): Number           [PUBLIC]   stub_CORE_String.js
-METHOD     link(): String                  [PUBLIC]   stub_CORE_String.js
-METHOD     localeCompare(): Number         [PUBLIC]   stub_CORE_String.js
-METHOD     match(): Array                  [PUBLIC]   stub_CORE_String.js
-METHOD     preventExtensions(): Object     [PUBLIC,   stub_CORE_Object.js
-METHOD     propertyIsEnumerable(): Boolea  [PUBLIC]   stub_CORE_Object.js
+METHOD     keys(obj: String): Array        [PUBLIC,   stub_CORE_Object.js
+METHOD     lastIndexOf(searchValue: Strin  [PUBLIC]   stub_CORE_String.js
+METHOD     link(hrefAttribute: String): S  [PUBLIC]   stub_CORE_String.js
+METHOD     localeCompare(compareString):   [PUBLIC]   stub_CORE_String.js
+METHOD     match(regexp): Array            [PUBLIC]   stub_CORE_String.js
+METHOD     preventExtensions(obj: String)  [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   stub_CORE_Object.js
 METHOD     quote(): String                 [PUBLIC]   stub_CORE_String.js
-METHOD     replace(): String               [PUBLIC]   stub_CORE_String.js
-METHOD     seal(): Object                  [PUBLIC,   stub_CORE_Object.js
-METHOD     search(): Number                [PUBLIC]   stub_CORE_String.js
-METHOD     slice(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     replace(regexp: String, newSub  [PUBLIC]   stub_CORE_String.js
+METHOD     seal(obj: String): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     search(regexp: String): Number  [PUBLIC]   stub_CORE_String.js
+METHOD     slice(beginslice): String       [PUBLIC]   stub_CORE_String.js
 METHOD     small(): String                 [PUBLIC]   stub_CORE_String.js
 METHOD     split(): Array                  [PUBLIC]   stub_CORE_String.js
 METHOD     strike(): String                [PUBLIC]   stub_CORE_String.js
 METHOD     sub(): String                   [PUBLIC]   stub_CORE_String.js
-METHOD     substr(): String                [PUBLIC]   stub_CORE_String.js
-METHOD     substring(): String             [PUBLIC]   stub_CORE_String.js
+METHOD     substr(start: String): String   [PUBLIC]   stub_CORE_String.js
+METHOD     substring(indexA: Number): Str  [PUBLIC]   stub_CORE_String.js
 METHOD     sup(): String                   [PUBLIC]   stub_CORE_String.js
 METHOD     toLocaleLowerCase(): String     [PUBLIC]   stub_CORE_String.js
 METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
@@ -58,8 +58,8 @@ METHOD     toUpperCase(): String           [PUBLIC]   stub_CORE_String.js
 METHOD     trim(): String                  [PUBLIC]   stub_CORE_String.js
 METHOD     trimLeft(): String              [PUBLIC]   stub_CORE_String.js
 METHOD     trimRight(): String             [PUBLIC]   stub_CORE_String.js
-METHOD     unwatch(): undefined            [PUBLIC]   stub_CORE_Object.js
+METHOD     unwatch(prop: String): undefin  [PUBLIC]   stub_CORE_Object.js
 METHOD     valueOf(): String               [PUBLIC]   stub_CORE_String.js
-METHOD     watch(): undefined              [PUBLIC]   stub_CORE_Object.js
+METHOD     watch(prop: String, handler: S  [PUBLIC]   stub_CORE_Object.js
 FIELD      constructor                     [PUBLIC]   stub_CORE_String.js
 FIELD      length                          [PUBLIC]   stub_CORE_String.js

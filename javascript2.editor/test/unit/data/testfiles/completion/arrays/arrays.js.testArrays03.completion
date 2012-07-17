@@ -2,5 +2,5 @@ Code completion result for source line:
 arr03.l|ength;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     lastIndexOf(): Number           [PUBLIC]   stub_CORE_Array.js
+METHOD     lastIndexOf(searchElement: Arr  [PUBLIC]   stub_CORE_Array.js
 FIELD      length                          [PUBLIC]   stub_CORE_Array.js
