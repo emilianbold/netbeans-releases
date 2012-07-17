@@ -68,6 +68,8 @@ public class JsFormatter implements Formatter {
 
     private static boolean NEW_LINE_BREAKS = true;
 
+    private static boolean ELSE_IF_SINGLE_LINE = true;
+
     private final Language<JsTokenId> language;
 
     public JsFormatter(Language<JsTokenId> language) {
@@ -361,6 +363,10 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, formatContext, offsetDiff,
                                     !CodeStyle.get(formatContext).spaceWithinArrayBrackets());
                             break;
+                        case ELSE_IF_AFTER_BLOCK_START:
+                            if (ELSE_IF_SINGLE_LINE) {
+                                break;
+                            }
                         case AFTER_BLOCK_START:
                         case AFTER_STATEMENT:
                             if (!NEW_LINE_BREAKS) {
@@ -608,8 +614,7 @@ public class JsFormatter implements Formatter {
                 || next.getKind() == FormatToken.Kind.AFTER_PROPERTY
                 || next.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
-                || next.getKind() == FormatToken.Kind.INDENTATION_INC
-                || next.getKind() == FormatToken.Kind.INDENTATION_DEC) {
+                || next.isIndentationMarker()) {
             return false;
         }
 
@@ -639,8 +644,7 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.AFTER_PROPERTY
                     || kind == FormatToken.Kind.AFTER_CASE
                     // do not suppose continuation when indentation is changed
-                    || kind == FormatToken.Kind.INDENTATION_INC
-                    || kind == FormatToken.Kind.INDENTATION_DEC) {
+                    || previous.isIndentationMarker()) {
                 result = previous;
                 break;
             }
@@ -651,8 +655,7 @@ public class JsFormatter implements Formatter {
                 || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
                 // do not suppose continuation when indentation is changed
-                || result.getKind() == FormatToken.Kind.INDENTATION_INC
-                || result.getKind() == FormatToken.Kind.INDENTATION_DEC) {
+                || result.isIndentationMarker()) {
             return false;
         }
 
@@ -711,8 +714,16 @@ public class JsFormatter implements Formatter {
 
     private int updateIndentationLevel(FormatToken token, int indentationLevel) {
         switch (token.getKind()) {
+            case ELSE_IF_INDENTATION_INC:
+                if (ELSE_IF_SINGLE_LINE) {
+                    break;
+                }
             case INDENTATION_INC:
                 return indentationLevel + 1;
+            case ELSE_IF_INDENTATION_DEC:
+                if (ELSE_IF_SINGLE_LINE) {
+                    break;
+                }
             case INDENTATION_DEC:
                 return indentationLevel - 1;
         }
