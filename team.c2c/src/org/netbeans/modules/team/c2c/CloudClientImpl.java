@@ -101,7 +101,22 @@ public final class CloudClientImpl implements CloudClient {
 
     private static ClassPathXmlApplicationContext appContext;
     
-    public CloudClientImpl() { }
+    public CloudClientImpl(String url, PasswordAuthentication auth) {
+        if (!url.endsWith("/")) { //NOI18N
+            url = url + '/';
+        }
+        location = new WebLocation(url, 
+                auth.getUserName(), 
+                auth.getPassword() == null ? "" : new String(auth.getPassword()), 
+                new ProxyProvider());
+        // maybe proxy credentials weel need to be provided somehow
+        ClassPathXmlApplicationContext context = getContext();
+        profileClient = context.getBean(ProfileWebServiceClient.class);
+        activityClient = context.getBean(ActivityServiceClient.class);
+        hudsonClient = context.getBean(HudsonServiceClient.class);
+        scmClient = context.getBean(ScmServiceClient.class);
+        CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
+    }
 
     @Override
     public Profile getCurrentProfile () throws CloudException {
@@ -263,25 +278,6 @@ public final class CloudClientImpl implements CloudClient {
     
     private static String buildUrl (String urlTemplate, String projectName) {
         return String.format(urlTemplate, projectName);
-    }
-
-    @Override
-    public void initialize(String url, PasswordAuthentication auth) throws CloudException {
-        if (!url.endsWith("/")) { //NOI18N
-            url = url + '/';
-        }
-        location = new WebLocation(url, 
-                auth.getUserName(), 
-                auth.getPassword() == null ? "" : new String(auth.getPassword()), 
-                new ProxyProvider());
-        // maybe proxy credentials weel need to be provided somehow
-        ClassPathXmlApplicationContext context = getContext();
-        profileClient = context.getBean(ProfileWebServiceClient.class);
-        activityClient = context.getBean(ActivityServiceClient.class);
-        hudsonClient = context.getBean(HudsonServiceClient.class);
-        scmClient = context.getBean(ScmServiceClient.class);
-        CredentialsInjector.configureRestTemplate(location, (RestTemplate) context.getBean(RestTemplate.class));
-        
     }
 
     private static ClassPathXmlApplicationContext createContext(String[] resourceNames, ClassLoader classLoader) {

@@ -43,21 +43,19 @@ package org.netbeans.modules.team.c2c.client.mock;
 
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.libs.team.c2c.jersey.ODSJerseyClient;
+import org.netbeans.modules.team.c2c.client.api.ClientFactory;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
-import org.netbeans.modules.team.c2c.client.impl.C2ClientImpl;
 
 /**
  *
  * @author jpeska
  */
 public class CloudClientMockTest extends NbTestCase {
-
-    private C2ClientImpl client;
+    private String url;
 
     public CloudClientMockTest(String arg0) {
         super(arg0);
@@ -70,12 +68,12 @@ public class CloudClientMockTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        System.setProperty("cloud-client-mock", Boolean.TRUE.toString());
+        url = new File(getDataDir(), "ods-json").getAbsolutePath();
         super.setUp();
     }
     
     public void testMockClient() throws Exception {
-        assertTrue(getClient().getDelegate() instanceof CloudClientMock);
+        assertTrue(getClient() instanceof ODSMockClient);
     }
     
     public void testGetMyProjects() throws Exception {
@@ -90,11 +88,10 @@ public class CloudClientMockTest extends NbTestCase {
         assertEquals("anagram-game", project.getIdentifier());
     }
     
-    private C2ClientImpl getClient() throws CloudException, MalformedURLException {
-        if(client == null) {
-            client = new C2ClientImpl();
-            client.initialize(new File(getDataDir(), "ods-json").getAbsolutePath(), null);
-        }
+    private CloudClient getClient() {
+        System.setProperty(ODSMockClientFactory.ID, "true");
+        CloudClient client = ClientFactory.getInstance().createClient(url, null);
+        assertEquals(ODSMockClient.class, client.getClass());
         return client;
     }
     

@@ -65,7 +65,7 @@ import org.netbeans.modules.team.c2c.client.api.CloudException;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.openide.util.Exceptions;
 
-public final class CloudClientMock implements CloudClient {
+public final class ODSMockClient implements CloudClient {
 
     private Profile currentProfile;
     private List<Project> projects = new ArrayList<Project>();
@@ -74,8 +74,10 @@ public final class CloudClientMock implements CloudClient {
     private File rootFolder;
     private final PojsonLoad jsonLoad;
 
-    public CloudClientMock() {
+    public ODSMockClient(String url) {
         jsonLoad = PojsonLoad.create();
+        rootFolder = new File(url);
+        loadData();        
     }
 
     @Override
@@ -254,11 +256,5 @@ public final class CloudClientMock implements CloudClient {
             hudsonStatuses.put(project.getIdentifier(), hudsonStatus);
             i++;
         }
-    }
-
-    @Override
-    public void initialize(String url, PasswordAuthentication pa) {
-        rootFolder = new File(url);
-        loadData();
     }
 }

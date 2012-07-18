@@ -22,20 +22,16 @@ import org.netbeans.libs.team.c2c.jersey.wrappers.ProfileWrapper;
 import org.netbeans.modules.team.c2c.client.api.CloudClient;
 import org.netbeans.modules.team.c2c.client.api.CloudException;
 
-public class C2CJersey implements CloudClient {
+public class ODSJerseyClient implements CloudClient {
     
-    private String url;
-    private PasswordAuthentication pa;
-    private Client client;
-    
-    @Override
-    public void initialize(String url, PasswordAuthentication pa) throws CloudException {
-        if(!Boolean.getBoolean("team.c2c.useJersey")) {
-            throw new CloudException(url);
-        }
+    private final String url;
+    private final PasswordAuthentication pa;
+    private final Client client;
+
+    public ODSJerseyClient(String url, PasswordAuthentication pa) {
         this.url = url;
         this.pa = pa;
-        client = getClient();
+        this.client = getClient();
     }
         
     @Override

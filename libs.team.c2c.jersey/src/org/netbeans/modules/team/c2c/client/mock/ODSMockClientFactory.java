@@ -39,53 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.client.api;
+package org.netbeans.modules.team.c2c.client.mock;
 
 import java.net.PasswordAuthentication;
-import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.team.c2c.CloudClientImpl;
-import org.openide.util.Lookup;
+import org.netbeans.modules.team.c2c.client.api.ClientFactory;
+import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
-public abstract class ClientFactory {
+@ServiceProvider(service=ClientFactory.class)
+public class ODSMockClientFactory extends ClientFactory {
 
-    private static ClientFactory instance;
-   
-    public static synchronized ClientFactory getInstance () {
-        if (instance == null) {
-            Collection<? extends ClientFactory> allFactories = Lookup.getDefault().lookupAll(ClientFactory.class);
-            if(allFactories != null) {
-                for (ClientFactory cf : allFactories) {
-                   if(cf.isAvailable()) {
-                       instance = cf;
-                       break;
-                   }
-                }
-            }
-            if(instance == null) {
-                instance = new ClientFactory() {
-                    @Override
-                    public synchronized CloudClient createClient (String url, PasswordAuthentication auth) {
-                        return new CloudClientImpl(url, auth);
-                    }
-
-                    @Override
-                    public boolean isAvailable() {
-                        return true;
-                    }
-
-                };
-            }
-        }
-        return instance;
-    }
+    public final static String ID = "team.ods.useMock";
     
-    public abstract boolean isAvailable ();
-    public abstract CloudClient createClient (String url, PasswordAuthentication auth);
+    @Override
+    public boolean isAvailable() {
+        return Boolean.getBoolean(ID);
+    }
+
+    @Override
+    public CloudClient createClient(String url, PasswordAuthentication auth) {
+        return new ODSMockClient(url);
+    }
     
 }
