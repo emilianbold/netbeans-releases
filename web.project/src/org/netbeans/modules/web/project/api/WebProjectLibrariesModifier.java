@@ -52,6 +52,9 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.common.project.CompilationOnlyClassPathModifier;
 
+/**
+ * @deprecated use WebProjectLibrariesModifier2 instead of WebProjectLibrariesModifier
+ */
 public interface WebProjectLibrariesModifier extends CompilationOnlyClassPathModifier {
     
     /**

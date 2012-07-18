@@ -373,6 +373,9 @@ public class PersistenceLibrarySupport {
     private static List<ProviderLibrary> createLibraries(String providerClass) {
         List<ProviderLibrary> providerLibs = new ArrayList<ProviderLibrary>();
         for (Library each : LibraryManager.getDefault().getLibraries()) {
+            if (!"j2se".equals(each.getType())) { // NOI18N
+                continue;
+            }
             ClassPath cp = getLibraryClassPath(each);
             Provider provider = extractProvider(cp, providerClass);
             if (provider != null && containsClass(cp, "javax.persistence.EntityManager")) { //NOI18N
