@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.AnnotationType;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
@@ -154,11 +155,11 @@ public class VariousUtils {
     }
 
     public static String getReturnTypeFromPHPDoc(Program root, FunctionDeclaration functionDeclaration) {
-        return getTypeFromPHPDoc(root, functionDeclaration, PHPDocTag.Type.RETURN);
+        return getTypeFromPHPDoc(root, functionDeclaration, AnnotationType.Type.RETURN);
     }
 
     public static String getFieldTypeFromPHPDoc(Program root, SingleFieldDeclaration field) {
-        return getTypeFromPHPDoc(root, field, PHPDocTag.Type.VAR);
+        return getTypeFromPHPDoc(root, field, AnnotationType.Type.VAR);
     }
 
 
@@ -170,7 +171,7 @@ public class VariousUtils {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
 
             for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag.getKind() == PHPDocTag.Type.PARAM) {
+                if (tag.getKind().equals(AnnotationType.Type.PARAM)) {
                     List<QualifiedName> types = new ArrayList<QualifiedName>();
                     PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag)tag;
                     for(PHPDocTypeNode type : paramTag.getTypes()) {
@@ -183,14 +184,14 @@ public class VariousUtils {
         return retval;
     }
 
-    public static String getTypeFromPHPDoc(Program root, ASTNode node, PHPDocTag.Type tagType) {
+    public static String getTypeFromPHPDoc(Program root, ASTNode node, AnnotationType.Type tagType) {
         Comment comment = Utils.getCommentForNode(root, node);
 
         if (comment instanceof PHPDocBlock) {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
 
             for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag.getKind() == tagType) {
+                if (tag.getKind().equals(tagType)) {
                     String parts[] = tag.getValue().trim().split("\\s+", 2); //NOI18N
 
                     if (parts.length > 0) {

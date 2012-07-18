@@ -56,6 +56,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
+import org.netbeans.modules.php.editor.parser.AnnotationType;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
@@ -79,15 +80,15 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
             String[] methodNames = parts[0].split("[(, ]", 2);
             if (methodNames.length > 0) {
                 methodName = methodNames[0];
-                offset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
+                offset = getOriginalNode().getStartOffset()+AnnotationType.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
             }
         } else if (parts.length >= 2) {
             String[] methodNames = parts[1].split("[(, ]", 2);
             if (parts[0].length() > 0 && methodNames.length > 0) {
                 returnType = parts[0];
                 methodName = methodNames[0];
-                offset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
-                typeOffset = getOriginalNode().getStartOffset()+PHPDocMethodTag.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(returnType);
+                offset = getOriginalNode().getStartOffset()+AnnotationType.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(methodName);
+                typeOffset = getOriginalNode().getStartOffset()+AnnotationType.Type.METHOD.toString().length() + 1 +node.getValue().indexOf(returnType);
             }
         }
 

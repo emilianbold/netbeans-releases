@@ -59,22 +59,22 @@ public class PHPDocCommentParser {
     /**
      * Tags that define a type / types
      */
-    private static final List<PHPDocTag.Type> PHPDocTypeTags = new ArrayList<PHPDocTag.Type>();
+    private static final List<AnnotationType> PHPDocTypeTags = new ArrayList<AnnotationType>();
     static {
-        PHPDocTypeTags.add(PHPDocTag.Type.RETURN);
-        PHPDocTypeTags.add(PHPDocTag.Type.VAR);
+        PHPDocTypeTags.add(AnnotationType.Type.RETURN);
+        PHPDocTypeTags.add(AnnotationType.Type.VAR);
     }
 
     /**
      * Tags that define something of a type
      */
-    private static final List<PHPDocTag.Type> PHPDocVarTypeTags = new ArrayList<PHPDocTag.Type>();
+    private static final List<AnnotationType> PHPDocVarTypeTags = new ArrayList<AnnotationType>();
     static {
-        PHPDocVarTypeTags.add(PHPDocTag.Type.PARAM);
-        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY);
-        PHPDocVarTypeTags.add(PHPDocTag.Type.GLOBAL);
-        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY_READ);
-        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY_WRITE);
+        PHPDocVarTypeTags.add(AnnotationType.Type.PARAM);
+        PHPDocVarTypeTags.add(AnnotationType.Type.PROPERTY);
+        PHPDocVarTypeTags.add(AnnotationType.Type.GLOBAL);
+        PHPDocVarTypeTags.add(AnnotationType.Type.PROPERTY_READ);
+        PHPDocVarTypeTags.add(AnnotationType.Type.PROPERTY_WRITE);
     }
 
     public PHPDocCommentParser() {
@@ -100,7 +100,7 @@ public class PHPDocCommentParser {
         int index = 0;
         String line = "";               // one line of the blog
         String description = "";        // temporary holder for description of block description or tag
-        PHPDocTag.Type lastTag = null;
+        AnnotationType lastTag = null;
         int lastStartIndex = 0;
         int lastEndIndex = comment.length();
 
@@ -109,7 +109,7 @@ public class PHPDocCommentParser {
             if (index == 0) { // remove * from the first line
                 line = removeStarAndTrim(line);
             }
-            PHPDocTag.Type tagType = findTagOnLine(line);
+            AnnotationType tagType = findTagOnLine(line);
             if (tagType != null) { // is a tag defined on the line
                 if (lastTag == null) { // is it the first tag in the block
                     blockDescription = description.length() > 0 && description.charAt(description.length() - 1) == '\n' ? description.substring(0, description.length() -1) : description;  // save the block description
@@ -134,7 +134,7 @@ public class PHPDocCommentParser {
         } else {
             line = comment.substring(index, comment.length()).trim();
         }
-        PHPDocTag.Type tagType = findTagOnLine(line);
+        AnnotationType tagType = findTagOnLine(line);
         if (tagType != null) {  // is defined a tag on the last line
             if (lastTag == null) {
                 blockDescription = description.trim();
@@ -163,8 +163,8 @@ public class PHPDocCommentParser {
         return new PHPDocBlock(Math.min(startOffset + 3, endOffset), endOffset, blockDescription, tags);
     }
 
-    private PHPDocTag createTag(int start, int end, PHPDocTag.Type type, String description, String originalComment, int originalCommentStart) {
-        if (type == PHPDocTag.Type.METHOD || PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type)) {
+    private PHPDocTag createTag(int start, int end, AnnotationType type, String description, String originalComment, int originalCommentStart) {
+        if (type.equals(AnnotationType.Type.METHOD) || PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type) || type instanceof CustomAnnotationType) {
             List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart);
             if (PHPDocVarTypeTags.contains(type)) {
                 String variable = getVaribleName(description);
@@ -172,14 +172,14 @@ public class PHPDocCommentParser {
                 if (variable != null) {
                     int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, variable, start);
                     varibaleNode = new PHPDocNode(startOfVariable, startOfVariable + variable.length(), variable);
-                } else if (type.equals(PHPDocTag.Type.PARAM)) {
+                } else if (type.equals(AnnotationType.Type.PARAM)) {
                     varibaleNode = new PHPDocNode(start, start, ""); //NOI18N
                 }
                 if (varibaleNode != null) {
                     return new PHPDocVarTypeTag(start, end, type, description, docTypes, varibaleNode);
                 }
                 return null;
-            } else if (type == PHPDocTag.Type.METHOD) {
+            } else if (type.equals(AnnotationType.Type.METHOD)) {
                 String name = getMethodName(description);
                 if (name != null) {
                     int startOfVariable = findStartOfDocNode(originalComment, originalCommentStart, name, start);
@@ -286,7 +286,7 @@ public class PHPDocCommentParser {
                     List<PHPDocTypeNode> types = token.trim().indexOf(' ') > -1
                             ? findTypes(token, position, description, startOfDescription)
                             : Collections.EMPTY_LIST;
-                    result.add(new PHPDocVarTypeTag(position, startOfParamName + paramName.length(), PHPDocTag.Type.PARAM, token, types, paramNameNode));
+                    result.add(new PHPDocVarTypeTag(position, startOfParamName + paramName.length(), AnnotationType.Type.PARAM, token, types, paramNameNode));
                 }
                 position = position + token.length() + 1;
             }
@@ -320,8 +320,8 @@ public class PHPDocCommentParser {
         return text;
     }
 
-    private PHPDocTag.Type findTagOnLine(String line) {
-        PHPDocTag.Type type = null;
+    private AnnotationType findTagOnLine(String line) {
+        AnnotationType type = null;
         if (line.length() > 0 && line.charAt(0) == '@') {
             String[] tokens = line.trim().split("[ \t]+");
             if (tokens.length > 0) {
@@ -331,12 +331,10 @@ public class PHPDocCommentParser {
                     tag = tag.replace('-', '_');
                 }
                 try {
-                    type = PHPDocTag.Type.valueOf(tag);
-                }
-                catch (IllegalArgumentException iae) {
+                    type = AnnotationType.Type.valueOf(tag);
+                } catch (IllegalArgumentException iae) {
                     // we are not able to thread such tag
-                    type = PHPDocTag.Type.CUSTOM;
-                    type.setName(name);
+                    type = new CustomAnnotationType(name);
                 }
             }
         }

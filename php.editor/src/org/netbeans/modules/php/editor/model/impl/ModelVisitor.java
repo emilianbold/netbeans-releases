@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.parser.AnnotationType;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
@@ -159,7 +160,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(PHPDocMethodTag node) {
-        PHPDocTag.Type kind = node.getKind();
+        AnnotationType kind = node.getKind();
         Scope currentScope = modelBuilder.getCurrentScope();
         boolean scopeHasBeenModified = false;
         // Someone uses @method tag in method scope :/ So we have to simulate that it's defined in class scope...
@@ -169,7 +170,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             modelBuilder.setCurrentScope((ScopeImpl) currentScope);
             scopeHasBeenModified = true;
         }
-        if (currentScope instanceof TypeScope && kind.equals(PHPDocTag.Type.METHOD)) {
+        if (currentScope instanceof TypeScope && kind.equals(AnnotationType.Type.METHOD)) {
             modelBuilder.buildMagicMethod(node, occurencesBuilder);
             occurencesBuilder.prepare(node, currentScope);
         }
@@ -1029,7 +1030,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 if (currentScope instanceof ClassScope && !it.hasNext()) {
                     new FieldElementImpl(currentScope, sb.length() > 0 ? sb.toString() : null, fqNames.length() > 0 ? fqNames.toString() : null, phpDocTypeTagInfo);
                 }
-            } else if (node.getKind().equals(PHPDocTag.Type.GLOBAL) && phpDocTypeTagInfo.getKind().equals(Kind.VARIABLE)) {
+            } else if (node.getKind().equals(AnnotationType.Type.GLOBAL) && phpDocTypeTagInfo.getKind().equals(Kind.VARIABLE)) {
                 final String typeName = phpDocTypeTagInfo.getTypeName();
                 final String varName = phpDocTypeTagInfo.getName();
                 VariableScope variableScope = getVariableScope(node.getStartOffset());

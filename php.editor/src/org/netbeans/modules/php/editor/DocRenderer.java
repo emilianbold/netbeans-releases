@@ -41,19 +41,10 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -68,29 +59,12 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.api.elements.ConstantElement;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.parser.AnnotationType;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -314,26 +288,20 @@ class DocRenderer {
             StringBuilder others = new StringBuilder();
 
             for (PHPDocTag tag : pHPDocBlock.getTags()) {
-
-                switch (tag.getKind()) {
-                    case PARAM:
-                        params.append(composeParameterLine((PHPDocVarTypeTag)tag));
-                        break;
-                    case RETURN:
-                        PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
-                        returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
-                        break;
-                    case VAR:
-                        PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
-                        String type = composeType(typeTag.getTypes());
-                        others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
-                        break;
-                    default:
-                        String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
-                                processPhpDoc(tag.getKind().toString()), processPhpDoc(tag.getValue().trim()));
-
-                        others.append(oline);
-                        break;
+                AnnotationType kind = tag.getKind();
+                if (AnnotationType.Type.PARAM.equals(kind)) {
+                    params.append(composeParameterLine((PHPDocVarTypeTag)tag));
+                } else if (AnnotationType.Type.RETURN.equals(kind)) {
+                    PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
+                    returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
+                } else if (AnnotationType.Type.VAR.equals(kind)) {
+                    PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
+                    String type = composeType(typeTag.getTypes());
+                    others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
+                } else {
+                    String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
+                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getValue().trim()));
+                    others.append(oline);
                 }
             }
 

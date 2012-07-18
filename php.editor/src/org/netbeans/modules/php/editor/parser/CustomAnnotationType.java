@@ -39,47 +39,23 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.astnodes;
-
-import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
-import org.netbeans.modules.php.editor.parser.AnnotationType;
+package org.netbeans.modules.php.editor.parser;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CommentExtractorTest extends PHPCodeCompletionTestBase {
+public class CustomAnnotationType implements AnnotationType {
 
-    public CommentExtractorTest(String testName) {
-        super(testName);
+    private final String name;
+
+    public CustomAnnotationType(final String name) {
+        this.name = name;
     }
 
     @Override
-    protected int timeOut() {
-        return 5000;
-    }
-
-    public void testNoDescription() throws Exception {
-        PHPDocNode methodName = new PHPDocNode(1, 2, "where");
-        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, AnnotationType.Type.METHOD, null, methodName, null, "@method DibiConnection where($cond)");
-        String documentation = methodTag.getDocumentation();
-        assertEquals("", documentation);
-    }
-
-    public void testExistingDescription() throws Exception {
-        PHPDocNode methodName = new PHPDocNode(1, 2, "where");
-        final String description = "My description.";
-        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, AnnotationType.Type.METHOD, null, methodName, null, "@method DibiConnection where($cond) " + description);
-        String documentation = methodTag.getDocumentation();
-        assertEquals(description, documentation);
-    }
-
-    public void testExistingDescriptionWithMoreDeclarations() throws Exception {
-        PHPDocNode methodName = new PHPDocNode(1, 2, "where");
-        final String description = "My description.";
-        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, AnnotationType.Type.METHOD, null, methodName, null, "@method DibiConnection where() where($cond) " + description);
-        String documentation = methodTag.getDocumentation();
-        assertEquals(description, documentation);
+    public String getName() {
+        return name;
     }
 
 }

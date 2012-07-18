@@ -46,6 +46,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.parser.AnnotationType;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
@@ -331,9 +332,9 @@ public class Utils {
         if (comment != null && (comment instanceof PHPDocBlock)) {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
             for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag.getKind() == PHPDocTag.Type.PROPERTY
-                        || tag.getKind() == PHPDocTag.Type.PROPERTY_READ
-                        || tag.getKind() == PHPDocTag.Type.PROPERTY_WRITE) {
+                if (tag.getKind().equals(AnnotationType.Type.PROPERTY)
+                        || tag.getKind().equals(AnnotationType.Type.PROPERTY_READ)
+                        || tag.getKind().equals(AnnotationType.Type.PROPERTY_WRITE)) {
                     tags.add((PHPDocVarTypeTag) tag);
                 }
             }
