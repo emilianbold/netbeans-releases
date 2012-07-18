@@ -346,7 +346,7 @@ public class PHPDocCommentParser {
                     type = PHPDocTag.Type.valueOf(tag);
                 } catch (IllegalArgumentException iae) {
                     // we are not able to thread such tag
-                    type = new CustomAnnotationType(name);
+                    type = new UnknownAnnotationType(name);
                 }
             }
         }

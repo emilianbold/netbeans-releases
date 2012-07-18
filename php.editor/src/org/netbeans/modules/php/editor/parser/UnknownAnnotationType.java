@@ -49,11 +49,11 @@ import org.netbeans.modules.csl.api.OffsetRange;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CustomAnnotationType implements PhpAnnotationType {
+public class UnknownAnnotationType implements PhpAnnotationType {
 
     private final String name;
 
-    public CustomAnnotationType(final String name) {
+    public UnknownAnnotationType(final String name) {
         this.name = name;
     }
 
