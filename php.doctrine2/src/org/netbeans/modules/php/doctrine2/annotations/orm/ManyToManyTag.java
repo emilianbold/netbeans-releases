@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class ManyToManyTag extends PhpAnnotationTag {
+public class ManyToManyTag extends AnnotationCompletionTag {
 
     public ManyToManyTag() {
         super("ManyToMany", // NOI18N

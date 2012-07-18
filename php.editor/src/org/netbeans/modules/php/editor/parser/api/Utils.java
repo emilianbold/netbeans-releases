@@ -331,9 +331,9 @@ public class Utils {
         if (comment != null && (comment instanceof PHPDocBlock)) {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
             for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag.getKind() == PHPDocTag.Type.PROPERTY
-                        || tag.getKind() == PHPDocTag.Type.PROPERTY_READ
-                        || tag.getKind() == PHPDocTag.Type.PROPERTY_WRITE) {
+                if (tag.getKind().equals(PHPDocTag.Type.PROPERTY)
+                        || tag.getKind().equals(PHPDocTag.Type.PROPERTY_READ)
+                        || tag.getKind().equals(PHPDocTag.Type.PROPERTY_WRITE)) {
                     tags.add((PHPDocVarTypeTag) tag);
                 }
             }

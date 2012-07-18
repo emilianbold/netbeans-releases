@@ -170,7 +170,7 @@ public class VariousUtils {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
 
             for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag.getKind() == PHPDocTag.Type.PARAM) {
+                if (tag.getKind().equals(PHPDocTag.Type.PARAM)) {
                     List<QualifiedName> types = new ArrayList<QualifiedName>();
                     PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag)tag;
                     for(PHPDocTypeNode type : paramTag.getTypes()) {
@@ -190,7 +190,7 @@ public class VariousUtils {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;
 
             for (PHPDocTag tag : phpDoc.getTags()) {
-                if (tag.getKind() == tagType) {
+                if (tag.getKind().equals(tagType)) {
                     String parts[] = tag.getValue().trim().split("\\s+", 2); //NOI18N
 
                     if (parts.length > 0) {

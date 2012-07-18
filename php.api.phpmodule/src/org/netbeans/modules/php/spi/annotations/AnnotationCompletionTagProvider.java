@@ -53,9 +53,9 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.Parameters;
 
 /**
- * Encapsulates a PHP annotations provider.
+ * Encapsulates a PHP annotations completion provider.
  *
- * <p>This class allows providing support for PHP annotations.</p>
+ * <p>This class allows providing support for completion of PHP annotations.</p>
  *
  * <p>Globally available (annotations available in all PHP files) instances of this class are registered
  * in the <code>{@value org.netbeans.modules.php.api.annotations.PhpAnnotations#ANNOTATIONS_PATH}</code>
@@ -65,7 +65,7 @@ import org.openide.util.Parameters;
  * @since 1.63
  * @see org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(PhpModule)
  */
-public abstract class PhpAnnotationsProvider {
+public abstract class AnnotationCompletionTagProvider {
 
     private final String identifier;
     private final String name;
@@ -83,7 +83,7 @@ public abstract class PhpAnnotationsProvider {
      *        for an open source framework based on the MVC pattern."); can be {@code null}
      * @throws NullPointerException if the {@ code identifier} or {@code name} parameter is {@code null}
      */
-    public PhpAnnotationsProvider(String identifier, String name, String description) {
+    public AnnotationCompletionTagProvider(String identifier, String name, String description) {
         Parameters.notNull("identifier", identifier); // NOI18N
         Parameters.notNull("name", name); // NOI18N
 
@@ -129,38 +129,38 @@ public abstract class PhpAnnotationsProvider {
      * Default implementation simply return all the possible annotations.
      * @return all possible annotations
      */
-    public List<PhpAnnotationTag> getAnnotations() {
-        Set<PhpAnnotationTag> annotations = new LinkedHashSet<PhpAnnotationTag>();
+    public List<AnnotationCompletionTag> getAnnotations() {
+        Set<AnnotationCompletionTag> annotations = new LinkedHashSet<AnnotationCompletionTag>();
         annotations.addAll(getFunctionAnnotations());
         annotations.addAll(getTypeAnnotations());
         annotations.addAll(getFieldAnnotations());
         annotations.addAll(getMethodAnnotations());
-        return new ArrayList<PhpAnnotationTag>(annotations);
+        return new ArrayList<AnnotationCompletionTag>(annotations);
     }
 
     /**
      * Get annotations that are available for global functions.
      * @return annotations that are available for global functions
      */
-    public abstract List<PhpAnnotationTag> getFunctionAnnotations();
+    public abstract List<AnnotationCompletionTag> getFunctionAnnotations();
 
     /**
      * Get annotations that are available for types (classes, interfaces).
      * @return annotations that are available for types (classes, interfaces)
      */
-    public abstract List<PhpAnnotationTag> getTypeAnnotations();
+    public abstract List<AnnotationCompletionTag> getTypeAnnotations();
 
     /**
      * Get annotations that are available for type fields.
      * @return annotations that are available for type fields
      */
-    public abstract List<PhpAnnotationTag> getFieldAnnotations();
+    public abstract List<AnnotationCompletionTag> getFieldAnnotations();
 
     /**
      * Get annotations that are available for type methods.
      * @return annotations that are available for type methods
      */
-    public abstract List<PhpAnnotationTag> getMethodAnnotations();
+    public abstract List<AnnotationCompletionTag> getMethodAnnotations();
 
     //~ Inner classes
 
@@ -181,16 +181,16 @@ public abstract class PhpAnnotationsProvider {
      * <p>Example of usage:
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
-     * &#64;PhpAnnotationsProvider.Registration(position=100)
-     * public class MyAnnotations extends PhpAnnotationsProvider {...}
+     * import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+     * &#64;AnnotationCompletionTagProvider.Registration(position=100)
+     * public class MyAnnotations extends AnnotationCompletionTagProvider {...}
      * </pre>
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.phpmodule.PhpAnnotationsProvider;
-     * public class MyAnnotations extends PhpAnnotationsProvider {
-     *     &#64;PhpAnnotationsProvider.Registration(position=100)
-     *     public static PhpAnnotationsProvider getInstance() {...}
+     * import org.netbeans.modules.php.spi.phpmodule.AnnotationCompletionTagProvider;
+     * public class MyAnnotations extends AnnotationCompletionTagProvider {
+     *     &#64;AnnotationCompletionTagProvider.Registration(position=100)
+     *     public static AnnotationCompletionTagProvider getInstance() {...}
      * }
      * </pre>
      */

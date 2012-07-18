@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.symfony2.annotations.security;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class RunAsTag extends PhpAnnotationTag {
+public class RunAsTag extends AnnotationCompletionTag {
 
     public RunAsTag() {
         super("RunAs", // NOI18N
