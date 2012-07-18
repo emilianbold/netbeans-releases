@@ -46,6 +46,7 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +61,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.favorites.api.Favorites;
+import org.netbeans.modules.git.api.Git;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
@@ -82,15 +84,9 @@ import org.openide.windows.WindowManager;
  */
 @ServiceProvider(service=SourceAccessor.class)
 public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
-//    private DashboardProvider provider;
 
-    public SourceAccessorImpl() {
-    }
+    public SourceAccessorImpl() { }
     
-//    public SourceAccessorImpl(DashboardProvider provider) {
-//        this.provider = provider;
-//    }
-
     @Override
     public Class<ODSProject> type() {
         return ODSProject.class;
@@ -109,6 +105,11 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
                 for (ScmRepository repository : repositories) {
                     SourceHandleImpl srcHandle = new SourceHandleImpl((ProjectHandle<ODSProject>)prjHandle, repository);
                     handlesList.add(srcHandle);
+                    try {
+                        Git.addRecentUrl(repository.getUrl());
+                    } catch (URISyntaxException ex) {
+                        Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.OFF, repository.getUrl(), ex);
+                    }
                 }
             }
         } catch (ODSException ex) {

@@ -41,11 +41,20 @@
  */
 package org.netbeans.modules.team.ods.ui;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.team.ods.api.CloudServer;
+import org.netbeans.modules.team.ods.api.ODSProject;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.openide.util.NbPreferences;
 import static org.netbeans.modules.team.ods.ui.Bundle.*;
+import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -113,4 +122,23 @@ public class Utilities {
             return password;
         }
     }
+    
+    public static List<ProjectHandle<ODSProject>> getMyProjects(CloudUiServer uiServer, boolean force) throws ODSException {
+        return toODSProjects(uiServer, uiServer.getServer().getMyProjects(force));
+    }
+
+    public static List<ProjectHandle<ODSProject>> getMyProjects(CloudUiServer uiServer) throws ODSException {
+        return toODSProjects(uiServer, uiServer.getServer().getMyProjects());
+    }
+
+    private static List<ProjectHandle<ODSProject>> toODSProjects(CloudUiServer uiServer, Collection<ODSProject> projects) {
+        if(projects == null) {
+            return Collections.emptyList();
+        }
+        List<ProjectHandle<ODSProject>> ret = new ArrayList<ProjectHandle<ODSProject>>(projects.size());
+        for (ODSProject project : projects) {
+            ret.add(new ProjectHandleImpl(uiServer, project));
+        }
+        return ret;
+    }        
 }

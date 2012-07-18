@@ -181,25 +181,4 @@ public class CloudUiServer implements TeamServer {
     public PasswordAuthentication getPasswordAuthentication() {
         return getServer().getPasswordAuthentication();
     }
-
-    // XXX no need to have this implemented in the TeamServer
-    public Collection<ProjectHandle<ODSProject>> getMyProjects(boolean force) throws ODSException {
-        return toODSProjects(getServer().getMyProjects(force));
-    }
-
-    public Collection<ProjectHandle<ODSProject>> getMyProjects() throws ODSException {
-        return toODSProjects(getServer().getMyProjects());
-    }
-
-    private Collection<ProjectHandle<ODSProject>> toODSProjects(Collection<ODSProject> projects) {
-        if(projects == null) {
-            return Collections.emptyList();
-        }
-        Collection<ProjectHandle<ODSProject>> ret = new ArrayList<ProjectHandle<ODSProject>>(projects.size());
-        for (ODSProject project : projects) {
-            ret.add(new ProjectHandleImpl(this, project));
-        }
-        return ret;
-    }
-
 }

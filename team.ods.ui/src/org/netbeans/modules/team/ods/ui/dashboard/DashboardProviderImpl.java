@@ -52,6 +52,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSException;
+import org.netbeans.modules.team.ods.ui.Utilities;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
@@ -172,7 +173,7 @@ public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODSP
     @Override
     public Collection<ProjectHandle<ODSProject>> getMyProjects() {
         try {
-            return server.getMyProjects();
+            return Utilities.getMyProjects(server);
         } catch (ODSException ex) {
             Exceptions.printStackTrace(ex);
         }

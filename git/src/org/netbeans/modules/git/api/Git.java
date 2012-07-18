@@ -45,7 +45,10 @@ import java.io.File;
 import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
 import javax.swing.SwingUtilities;
+import org.netbeans.libs.git.GitURI;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.clone.CloneAction;
+import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
 
 /**
  *
@@ -68,5 +71,8 @@ public final class Git {
         
     }
 
+    public static void addRecentUrl(String url) throws URISyntaxException {
+        GitModuleConfig.getDefault().insertRecentConnectionSettings(new ConnectionSettings(new GitURI(url)));
+    }
     
 }

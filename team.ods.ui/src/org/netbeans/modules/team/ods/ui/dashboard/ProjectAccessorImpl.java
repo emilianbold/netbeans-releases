@@ -44,17 +44,18 @@ package org.netbeans.modules.team.ods.ui.dashboard;
 
 import org.netbeans.modules.team.ods.ui.project.DetailsAction;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSException;
+import org.netbeans.modules.team.ods.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,39 +72,13 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     }
     
     @Override
-    public List<ProjectHandle<ODSProject>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
+    public List<ProjectHandle<ODSProject>> getMemberProjects(CloudUiServer uiServer, LoginHandle login, boolean force) {
         try {
-            return new ArrayList<ProjectHandle<ODSProject>>(server.getMyProjects(force));
+             return Utilities.getMyProjects(uiServer, force);
         } catch (ODSException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.WARNING, uiServer.getUrl().toString(), ex);
+            return null;
         }
-        return null;
-        //        try {
-        //            LinkedList<ProjectHandle> l = new LinkedList<ProjectHandle>();
-        //            for (Project prj : server.getKenai().getMyProjects(force)) {
-        //                l.add(new ProjectHandleImpl(prj));
-        //                for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
-        //                    if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
-        //                        try {
-        //                            Subversion.addRecentUrl(feature.getLocation());
-        //                        } catch (MalformedURLException ex) {
-        //                            Exceptions.printStackTrace(ex);
-        //                        }
-        //                    } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
-        //                        try {
-        //                            Mercurial.addRecentUrl(feature.getLocation());
-        //                        } catch (MalformedURLException ex) {
-        //                            Exceptions.printStackTrace(ex);
-        //                        }
-        //                    }
-        //
-        //                }
-        //            }
-        //            return l;
-        //        } catch (KenaiException ex) {
-        //            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getMyProject() failed", ex);
-        //            return null;
-        //        }
     }
 
     @Override
