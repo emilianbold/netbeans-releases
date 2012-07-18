@@ -369,7 +369,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
         }
 
         public ElementHandle getElementHandle() {
-            throw new UnsupportedOperationException("Not supported on the Root Node.");
+            return null;
         }
 
         public ElementKind getKind() {

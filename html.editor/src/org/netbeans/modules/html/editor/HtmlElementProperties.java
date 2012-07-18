@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -64,6 +66,9 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.cookies.EditorCookie;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -73,7 +78,9 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -115,7 +122,7 @@ public class HtmlElementProperties {
 
     }
 
-    private static class OpenTagNode extends AbstractNode {
+    public static class OpenTagNode extends AbstractNode {
 
         private OpenTag openTag;
         private HtmlParserResult res;
