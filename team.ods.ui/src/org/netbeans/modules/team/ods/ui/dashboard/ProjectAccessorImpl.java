@@ -57,6 +57,7 @@ import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -65,10 +66,10 @@ import org.openide.util.NbBundle;
 // XXX not properly implemented yet
 public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProject> {
     
-    private final CloudUiServer server;
+    private final CloudUiServer uiServer;
 
-    ProjectAccessorImpl(CloudUiServer server) {
-        this.server = server;
+    ProjectAccessorImpl(CloudUiServer uiServer) {
+        this.uiServer = uiServer;
     }
     
     @Override
@@ -88,14 +89,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getOpenNonMemberProjectAction() {
-        return NotYetAction.instance;
-//                new AbstractAction() {
-//            @Override
-//            public void actionPerformed(ActionEvent e) {
-//                throw new UnsupportedOperationException("not yet!");
-////                new OpenKenaiProjectAction(DashboardImpl.getInstance().getServer().getKenai()).actionPerformed(null);
-//            }
-//        };
+        return null;
     }
 
     @Override
@@ -109,7 +103,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
         return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_OpenProject")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                server.getDashboard().addProject(project, false, true);
+                uiServer.getDashboard().addProject(project, false, true);
             }
         };
     }
@@ -121,31 +115,19 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action[] getPopupActions(final ProjectHandle<ODSProject> project, boolean opened) {
-        return new Action[0];
-//        PasswordAuthentication pa = project.getProject().getKenai().getPasswordAuthentication();
-//        if (!opened) {
-//            try {
-//                if (pa != null && pa.getUserName().equals(project.getProject().getOwner().getUserName())) {
-//                    return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project), new DeleteProjectAction(project)};
-//                } else {
-//                    return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
-//                }
-//            } catch (KenaiException ex) {
-//                Exceptions.printStackTrace(ex);
-//                return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
-//            }
-//        } else {
-//            try {
-//                if (pa != null && pa.getUserName().equals(project.getProject().getOwner().getUserName())) {
-//                    return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project), new DeleteProjectAction(project)};
-//                } else {
-//                    return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project)};
-//                }
-//            } catch (KenaiException ex) {
-//                Exceptions.printStackTrace(ex);
-//                return new Action[]{new RemoveProjectAction(project), new RefreshAction(project), getDetailsAction(project)};
-//            }
-//        }
+        if (!opened) {
+            if (project.getTeamProject().getServer().isLoggedIn()) {
+                return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
+            } else {
+                return new Action[]{getOpenAction(project), new RefreshAction(project), getDetailsAction(project)};
+            }
+        } else {
+            if (project.getTeamProject().getServer().isLoggedIn()) {
+                return new Action[]{new RefreshAction(project), getDetailsAction(project)};
+            } else {
+                return new Action[]{new RefreshAction(project), getDetailsAction(project)};
+            }
+        }
     }
 
     @Override
@@ -252,27 +234,28 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 //        };
     }
 
-//    private static class RefreshAction extends AbstractAction {
-//
-//        private final ProjectHandle<ODSProject> project;
-//
-//        public RefreshAction(ProjectHandle<ODSProject> project) {
-//            super( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject"));
-//            this.project = project;
-//        }
-//
-//        public void actionPerformed(ActionEvent e) {
-//            RequestProcessor.getDefault().post(new Runnable() {
-//
-//                public void run() {
-//                    try {
-//                        project.getProject().getKenai().getProject(project.getId(), true);
-//                    } catch (KenaiException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                }
-//            });
-//        }
-//    }
+    private class RefreshAction extends AbstractAction {
+
+        private final ProjectHandle<ODSProject> projectHandle;
+
+        public RefreshAction(ProjectHandle<ODSProject> project) {
+            super( NbBundle.getMessage(ProjectAccessorImpl.class, "CTL_RefreshProject"));
+            this.projectHandle = project;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        uiServer.getServer().refresh(projectHandle.getTeamProject());
+                    } catch (ODSException ex) {
+                        Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.WARNING, projectHandle.getId(), ex);
+                    }
+                }
+            });
+        }
+    }
 
 }
