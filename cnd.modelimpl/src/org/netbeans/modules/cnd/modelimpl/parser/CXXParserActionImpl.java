@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.Map;
 import org.antlr.runtime.Token;
+import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -58,6 +59,11 @@ public class CXXParserActionImpl implements CXXParserActionEx {
         orig = new CppParserActionImpl(params);
     }
 
+    @Override
+    public boolean type_specifier_already_present(TokenStream input) {        
+        return orig.type_specifier_already_present(input);
+    }    
+    
     @Override
     public void enum_declaration(Token token) {
         orig.enum_declaration(convertToken(token));
@@ -187,7 +193,7 @@ public class CXXParserActionImpl implements CXXParserActionEx {
         return orig.getObjectsMap();
     }
 
-    private org.netbeans.modules.cnd.antlr.Token convertToken(Token token) {
+    public static org.netbeans.modules.cnd.antlr.Token convertToken(Token token) {
         return ParserProviderImpl.convertToken(token);
     }
 
@@ -217,12 +223,83 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
 
     @Override
+    public void simple_template_id_nocheck(int kind, Token token) {
+        orig.simple_template_id_nocheck(kind, convertToken(token));
+    }
+    
+    @Override
     public void simple_template_id(Token token) {
         orig.simple_template_id_nocheck(convertToken(token));
     }
 
     @Override
+    public void simple_template_id(int kind, Token token) {
+        orig.simple_template_id_nocheck(kind, convertToken(token));
+    }
+    
+    @Override
     public void decl_specifier(int kind, Token token) {
         orig.decl_specifier(kind, convertToken(token));
     }
+
+    @Override
+    public void simple_template_id_or_ident(Token token) {
+        orig.simple_template_id_or_ident(convertToken(token));
+    }
+
+    @Override
+    public void simple_template_id_or_ident(int kind, Token token) {
+        orig.simple_template_id_or_ident(kind, convertToken(token));
+    }
+    
+    @Override
+    public void type_parameter(int kind, Token token, Token token2, Token token3) {
+        orig.type_parameter(kind, convertToken(token), convertToken(token2), convertToken(token3));
+    }
+    
+    @Override
+    public void elaborated_type_specifier(Token token) {
+        orig.elaborated_type_specifier(convertToken(token));        
+    }
+
+    @Override
+    public void using_declaration(Token token) {
+        orig.using_declaration(convertToken(token));        
+    }
+
+    @Override
+    public void parameter_declaration_list() {
+        orig.parameter_declaration_list();
+    }
+
+    @Override
+    public void end_parameter_declaration_list() {
+        orig.end_parameter_declaration_list();
+    }
+    
+    @Override
+    public void decl_specifiers() {
+        orig.decl_specifiers();
+    }
+
+    @Override
+    public void end_decl_specifiers() {
+        orig.end_decl_specifiers();
+    }
+    
+    @Override
+    public boolean identifier_is(int kind, Token token) {
+        return orig.identifier_is(kind, convertToken(token));
+    }
+    
+    @Override
+    public boolean top_level_of_template_arguments() {
+        return orig.top_level_of_template_arguments();
+    }
+
+    @Override
+    public void template_declaration(int kind, Token token) {
+        orig.template_declaration(kind, convertToken(token));
+    }
+    
 }

@@ -256,7 +256,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         public void write(RepositoryDataOutput output, int unitIndex) throws IOException {
             assert output != null;
-            startFile.write(output);
+            startFile.write(output, unitIndex);
             
             assert systemIncludePaths != null;
             assert userIncludePaths != null;

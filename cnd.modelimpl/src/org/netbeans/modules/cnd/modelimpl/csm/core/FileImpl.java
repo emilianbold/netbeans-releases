@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.CXXParserEmptyActionImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
@@ -155,6 +156,8 @@ public final class FileImpl implements CsmFile,
     public static final int HEADER_FILE = 4;
     private static volatile AtomicLong parseCount = new AtomicLong(1);
 
+    private Collection<ParserError> parsingErrors;
+    
     public static void incParseCount() {
         parseCount.incrementAndGet();
     }
@@ -1300,10 +1303,10 @@ public final class FileImpl implements CsmFile,
             
             if (tokenStream != null) {
                 if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
-                    CsmParser parser = CsmParserProvider.createParser(this);
-                    parser.init(null, tokenStream, null);
-                    parser.setErrorDelegate(delegate);
-                    parser.parse(CsmParser.ConstructionKind.TRANSLATION_UNIT);
+                    CsmProject project = getProject();
+                    if(parsingErrors != null) {
+                        result.addAll(parsingErrors);
+                    }
                     return new ParserBasedTokenBuffer(null);
                 } else {
                     CPPParserEx parser = CPPParserEx.getInstance(this, tokenStream, flags);
@@ -1381,6 +1384,20 @@ public final class FileImpl implements CsmFile,
             assert parser != null : "no parser for " + this;
 
             parser.init(this, filteredTokenStream, parseParams.callback);
+            if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
+                if(parsingErrors == null) {
+                    parsingErrors = new ArrayList<ParserError>();
+                }
+                parsingErrors.clear();
+                CsmParserProvider.ParserErrorDelegate delegate = new CsmParserProvider.ParserErrorDelegate() {
+                    @Override
+                    public void onError(ParserError e) {
+                        parsingErrors.add(e);
+                    }
+                };
+                parser.setErrorDelegate(delegate);
+            }
+            
             parseResult = parser.parse(parseParams.lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
