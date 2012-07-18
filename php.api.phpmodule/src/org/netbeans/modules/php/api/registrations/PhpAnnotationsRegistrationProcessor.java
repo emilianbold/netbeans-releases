@@ -55,7 +55,7 @@ import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
 
-@SupportedAnnotationTypes("org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider.Registration")
+@SupportedAnnotationTypes("org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider.Registration")
 @ServiceProvider(service = Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class PhpAnnotationsRegistrationProcessor extends LayerGeneratingProcessor {
