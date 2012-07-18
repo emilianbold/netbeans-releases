@@ -42,16 +42,16 @@
 package org.netbeans.libs.team.c2c.jersey;
 
 import java.net.PasswordAuthentication;
-import org.netbeans.modules.team.c2c.client.api.ClientFactory;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.ods.client.api.ODSFactory;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-@ServiceProvider(service=ClientFactory.class)
-public class ODSJerseyClientFactory extends ClientFactory {
+@ServiceProvider(service=ODSFactory.class)
+public class ODSJerseyClientFactory extends ODSFactory {
 
     public final static String ID = "team.ods.useJersey";
     @Override
@@ -60,7 +60,7 @@ public class ODSJerseyClientFactory extends ClientFactory {
     }
 
     @Override
-    public CloudClient createClient(String url, PasswordAuthentication auth) {
+    public ODSClient createClient(String url, PasswordAuthentication auth) {
         return new ODSJerseyClient(url, auth);
     }
     

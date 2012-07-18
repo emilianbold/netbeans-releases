@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.client.mock;
+package org.netbeans.modules.team.ods.client.mock;
 
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
@@ -61,11 +61,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.codeviation.pojson.PojsonLoad;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.ods.client.api.ODSException;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
 import org.openide.util.Exceptions;
 
-public final class ODSMockClient implements CloudClient {
+public final class ODSMockClient implements ODSClient {
 
     private Profile currentProfile;
     private List<Project> projects = new ArrayList<Project>();
@@ -81,7 +81,7 @@ public final class ODSMockClient implements CloudClient {
     }
 
     @Override
-    public BuildDetails getBuildDetails(String projectId, String jobName, int buildNumber) throws CloudException {
+    public BuildDetails getBuildDetails(String projectId, String jobName, int buildNumber) throws ODSException {
         List<JobSummary> jobs = getHudsonStatus(projectId).getJobs();
         for (JobSummary jobSummary : jobs) {
             if (jobSummary.getName().equals(jobName)) {
@@ -97,17 +97,17 @@ public final class ODSMockClient implements CloudClient {
     }
 
     @Override
-    public Profile getCurrentProfile() throws CloudException {
+    public Profile getCurrentProfile() throws ODSException {
         return currentProfile;
     }
 
     @Override
-    public HudsonStatus getHudsonStatus(String projectId) throws CloudException {
+    public HudsonStatus getHudsonStatus(String projectId) throws ODSException {
         return hudsonStatuses.get(projectId);
     }
 
     @Override
-    public JobDetails getJobDetails(String projectId, String jobName) throws CloudException {
+    public JobDetails getJobDetails(String projectId, String jobName) throws ODSException {
         List<JobSummary> jobs = getHudsonStatus(projectId).getJobs();
         for (JobSummary jobSummary : jobs) {
             if (jobSummary.getName().equals(jobName)) {
@@ -118,12 +118,12 @@ public final class ODSMockClient implements CloudClient {
     }
 
     @Override
-    public List<Project> getMyProjects() throws CloudException {
+    public List<Project> getMyProjects() throws ODSException {
         return projects;
     }
 
     @Override
-    public Project getProjectById(String projectId) throws CloudException {
+    public Project getProjectById(String projectId) throws ODSException {
         for (Project project : projects) {
             if (project.getIdentifier().equals(projectId)) {
                 return project;
@@ -133,37 +133,37 @@ public final class ODSMockClient implements CloudClient {
     }
 
     @Override
-    public List<ProjectActivity> getRecentActivities(String projectId) throws CloudException {
+    public List<ProjectActivity> getRecentActivities(String projectId) throws ODSException {
         return recentActivities.get(projectId);
     }
 
     @Override
-    public List<ProjectActivity> getRecentShortActivities(String projectId) throws CloudException {
+    public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<ScmRepository> getScmRepositories(String projectId) throws CloudException {
+    public List<ScmRepository> getScmRepositories(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean isWatchingProject(String projectId) throws CloudException {
+    public boolean isWatchingProject(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<Project> searchProjects(String pattern) throws CloudException {
+    public List<Project> searchProjects(String pattern) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void unwatchProject(String projectId) throws CloudException {
+    public void unwatchProject(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void watchProject(String projectId) throws CloudException {
+    public void watchProject(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

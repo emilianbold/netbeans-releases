@@ -68,9 +68,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jettison.json.JSONObject;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.team.c2c.jersey.wrappers.ProfileWrapper;
-import org.netbeans.modules.team.c2c.client.api.ClientFactory;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.client.api.ODSFactory;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 
 /**
  *
@@ -152,7 +152,7 @@ public class C2CJerseyTest extends NbTestCase {
         getClient();
     }
     
-    public void testGetProfile() throws CloudException {
+    public void testGetProfile() throws ODSException {
         Profile profile = getClient().getCurrentProfile();
         
         assertNotNull(profile);
@@ -167,9 +167,9 @@ public class C2CJerseyTest extends NbTestCase {
 //        assertFalse(as.isEmpty());
 //    }
 
-    private CloudClient getClient() {
+    private ODSClient getClient() {
         System.setProperty(ODSJerseyClientFactory.ID, "true");
-        CloudClient client = ClientFactory.getInstance().createClient(URL, new PasswordAuthentication(uname, passw.toCharArray()));
+        ODSClient client = ODSFactory.getInstance().createClient(URL, new PasswordAuthentication(uname, passw.toCharArray()));
         assertEquals(ODSJerseyClient.class, client.getClass());
         return client;
     }

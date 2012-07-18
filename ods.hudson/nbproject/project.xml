@@ -38,7 +38,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.team.c2c</code-name-base>
+                    <code-name-base>org.netbeans.modules.team.ods</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

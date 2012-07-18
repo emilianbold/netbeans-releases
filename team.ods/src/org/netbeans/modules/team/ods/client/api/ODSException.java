@@ -39,30 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ods.client.mock;
-
-import java.net.PasswordAuthentication;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.openide.util.lookup.ServiceProvider;
+package org.netbeans.modules.team.ods.client.api;
 
 /**
  *
- * @author Tomas Stupka
+ * @author ondra
  */
-@ServiceProvider(service=ODSFactory.class)
-public class ODSMockClientFactory extends ODSFactory {
-
-    public final static String ID = "team.ods.useMock";
+public class ODSException extends Exception {
     
-    @Override
-    public boolean isAvailable() {
-        return Boolean.getBoolean(ID);
+    public ODSException (String message) {
+        super(message);
     }
-
-    @Override
-    public ODSClient createClient(String url, PasswordAuthentication auth) {
-        return new ODSMockClient(url);
+    
+    public ODSException (Throwable cause) {
+        super(cause);
     }
     
 }

@@ -39,30 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ods.client.mock;
+package org.netbeans.modules.team.ods.client.api;
 
+import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
+import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
+import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
+import com.tasktop.c2c.server.profile.domain.build.JobDetails;
+import com.tasktop.c2c.server.profile.domain.project.Profile;
+import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.net.PasswordAuthentication;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.List;
 
 /**
  *
- * @author Tomas Stupka
+ * @author jpeska
  */
-@ServiceProvider(service=ODSFactory.class)
-public class ODSMockClientFactory extends ODSFactory {
+public interface ODSClient {
 
-    public final static String ID = "team.ods.useMock";
-    
-    @Override
-    public boolean isAvailable() {
-        return Boolean.getBoolean(ID);
-    }
+    BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws ODSException;
 
-    @Override
-    public ODSClient createClient(String url, PasswordAuthentication auth) {
-        return new ODSMockClient(url);
-    }
-    
+    Profile getCurrentProfile() throws ODSException;
+
+    HudsonStatus getHudsonStatus(String projectId) throws ODSException;
+
+    JobDetails getJobDetails(String projectId, final String jobName) throws ODSException;
+
+    List<Project> getMyProjects() throws ODSException;
+
+    Project getProjectById(final String projectId) throws ODSException;
+
+    List<ProjectActivity> getRecentActivities(final String projectId) throws ODSException;
+
+    List<ProjectActivity> getRecentShortActivities(final String projectId) throws ODSException;
+
+    List<ScmRepository> getScmRepositories(String projectId) throws ODSException;
+
+    boolean isWatchingProject(final String projectId) throws ODSException;
+
+    List<Project> searchProjects(final String pattern) throws ODSException;
+
+    void unwatchProject(final String projectId) throws ODSException;
+
+    void watchProject(final String projectId) throws ODSException;
+
 }

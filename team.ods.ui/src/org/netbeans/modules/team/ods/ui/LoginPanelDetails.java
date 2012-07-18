@@ -47,7 +47,7 @@ import java.awt.event.MouseEvent;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.ToolTipManager;
-import org.netbeans.modules.team.c2c.api.CloudServer;
+import org.netbeans.modules.team.ods.api.CloudServer;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.URLDisplayerAction;
 import org.openide.util.Exceptions;

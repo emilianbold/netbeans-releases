@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.c2c.client.mock;
+package org.netbeans.modules.team.ods.client.mock;
 
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.io.File;
@@ -47,8 +47,8 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.team.c2c.jersey.ODSJerseyClient;
-import org.netbeans.modules.team.c2c.client.api.ClientFactory;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.ods.client.api.ODSFactory;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
 
 /**
  *
@@ -88,9 +88,9 @@ public class CloudClientMockTest extends NbTestCase {
         assertEquals("anagram-game", project.getIdentifier());
     }
     
-    private CloudClient getClient() {
+    private ODSClient getClient() {
         System.setProperty(ODSMockClientFactory.ID, "true");
-        CloudClient client = ClientFactory.getInstance().createClient(url, null);
+        ODSClient client = ODSFactory.getInstance().createClient(url, null);
         assertEquals(ODSMockClient.class, client.getClass());
         return client;
     }

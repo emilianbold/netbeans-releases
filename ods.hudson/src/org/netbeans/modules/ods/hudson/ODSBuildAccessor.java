@@ -64,7 +64,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
-import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;

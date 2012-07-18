@@ -66,8 +66,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.favorites.api.Favorites;
-import org.netbeans.modules.team.c2c.api.ODSProject;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.api.ODSProject;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
@@ -108,7 +108,7 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
                     handlesList.add(srcHandle);
                 }
             }
-        } catch (CloudException ex) {
+        } catch (ODSException ex) {
             // XXX log me
             Exceptions.printStackTrace(ex);
         }

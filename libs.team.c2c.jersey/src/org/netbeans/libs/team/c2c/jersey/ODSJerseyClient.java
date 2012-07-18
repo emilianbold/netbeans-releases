@@ -19,10 +19,10 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import org.netbeans.libs.team.c2c.jersey.wrappers.ActivityWrapper;
 import org.netbeans.libs.team.c2c.jersey.wrappers.ProfileWrapper;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 
-public class ODSJerseyClient implements CloudClient {
+public class ODSJerseyClient implements ODSClient {
     
     private final String url;
     private final PasswordAuthentication pa;
@@ -35,39 +35,39 @@ public class ODSJerseyClient implements CloudClient {
     }
         
     @Override
-    public BuildDetails getBuildDetails(String projectId, String jobName, int buildNumber) throws CloudException {
+    public BuildDetails getBuildDetails(String projectId, String jobName, int buildNumber) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Profile getCurrentProfile() throws CloudException {
+    public Profile getCurrentProfile() throws ODSException {
         WebResource root = client.resource(url + "/alm/api/profile");
         ProfileWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ProfileWrapper.class);
         return wrapper.profile;
     }
 
     @Override
-    public HudsonStatus getHudsonStatus(String projectId) throws CloudException {
+    public HudsonStatus getHudsonStatus(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public JobDetails getJobDetails(String projectId, String jobName) throws CloudException {
+    public JobDetails getJobDetails(String projectId, String jobName) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<Project> getMyProjects() throws CloudException {
+    public List<Project> getMyProjects() throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Project getProjectById(String projectId) throws CloudException {
+    public Project getProjectById(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<ProjectActivity> getRecentActivities(String projectId) throws CloudException {
+    public List<ProjectActivity> getRecentActivities(String projectId) throws ODSException {
         WebResource root = client.resource(url + "/alm/api/activity/"+ projectId);
         ActivityWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ActivityWrapper.class);
         if(wrapper.commits == null) {
@@ -78,32 +78,32 @@ public class ODSJerseyClient implements CloudClient {
     }
 
     @Override
-    public List<ProjectActivity> getRecentShortActivities(String projectId) throws CloudException {
+    public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<ScmRepository> getScmRepositories(String projectId) throws CloudException {
+    public List<ScmRepository> getScmRepositories(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public boolean isWatchingProject(String projectId) throws CloudException {
+    public boolean isWatchingProject(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public List<Project> searchProjects(String pattern) throws CloudException {
+    public List<Project> searchProjects(String pattern) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void unwatchProject(String projectId) throws CloudException {
+    public void unwatchProject(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void watchProject(String projectId) throws CloudException {
+    public void watchProject(String projectId) throws ODSException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

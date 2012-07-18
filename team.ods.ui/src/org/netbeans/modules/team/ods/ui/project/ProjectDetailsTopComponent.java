@@ -43,7 +43,7 @@ package org.netbeans.modules.team.ods.ui.project;
 
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import org.netbeans.api.settings.ConvertAsProperties;
-import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.ods.api.ODSProject;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.windows.TopComponent;

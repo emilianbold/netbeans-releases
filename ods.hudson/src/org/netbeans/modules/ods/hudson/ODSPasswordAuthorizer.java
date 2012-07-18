@@ -49,9 +49,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.util.Base64;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
-import org.netbeans.modules.team.c2c.api.CloudServer;
-import org.netbeans.modules.team.c2c.api.ODSProject;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.ods.api.CloudServer;
+import org.netbeans.modules.team.ods.api.ODSProject;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
@@ -108,7 +108,7 @@ public class ODSPasswordAuthorizer implements ConnectionAuthenticator {
             ProjectHandle<ODSProject> projectHandle =
                     ProjectHandleRegistry.findProjectHandle(home);
             if (projectHandle != null) {
-                CloudClient client = ODSHudsonUtils.getClient(projectHandle);
+                ODSClient client = ODSHudsonUtils.getClient(projectHandle);
                 CloudServer srv = projectHandle.getTeamProject().getServer();
                 PasswordAuthentication pa = srv.getPasswordAuthentication();
                 if (pa != null) {

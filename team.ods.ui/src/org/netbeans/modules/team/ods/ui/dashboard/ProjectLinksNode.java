@@ -54,7 +54,7 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ui.treelist.AsynchronousLeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;

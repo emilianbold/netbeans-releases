@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.ods.hudson;
 
-import org.netbeans.modules.team.c2c.api.CloudServer;
-import org.netbeans.modules.team.c2c.api.ODSProject;
-import org.netbeans.modules.team.c2c.client.api.ClientFactory;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
+import org.netbeans.modules.team.ods.api.CloudServer;
+import org.netbeans.modules.team.ods.api.ODSProject;
+import org.netbeans.modules.team.ods.client.api.ODSFactory;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
@@ -56,11 +56,11 @@ public final class ODSHudsonUtils {
     private ODSHudsonUtils() {
     }
 
-    public static CloudClient getClient(
+    public static ODSClient getClient(
             ProjectHandle<ODSProject> projectHandle) {
 
         CloudServer server = projectHandle.getTeamProject().getServer();
-        return ClientFactory.getInstance().createClient(
+        return ODSFactory.getInstance().createClient(
                 server.getUrl().toString(),
                 server.getPasswordAuthentication());
     }

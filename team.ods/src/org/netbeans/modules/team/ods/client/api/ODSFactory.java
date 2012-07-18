@@ -39,30 +39,53 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ods.client.mock;
+package org.netbeans.modules.team.ods.client.api;
 
 import java.net.PasswordAuthentication;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.team.ods.ODSClientImpl;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Tomas Stupka
+ * @author ondra
  */
-@ServiceProvider(service=ODSFactory.class)
-public class ODSMockClientFactory extends ODSFactory {
+public abstract class ODSFactory {
 
-    public final static String ID = "team.ods.useMock";
+    private static ODSFactory instance;
+   
+    public static synchronized ODSFactory getInstance () {
+        if (instance == null) {
+            Collection<? extends ODSFactory> allFactories = Lookup.getDefault().lookupAll(ODSFactory.class);
+            if(allFactories != null) {
+                for (ODSFactory cf : allFactories) {
+                   if(cf.isAvailable()) {
+                       instance = cf;
+                       break;
+                   }
+                }
+            }
+            if(instance == null) {
+                instance = new ODSFactory() {
+                    @Override
+                    public synchronized ODSClient createClient (String url, PasswordAuthentication auth) {
+                        return new ODSClientImpl(url, auth);
+                    }
+
+                    @Override
+                    public boolean isAvailable() {
+                        return true;
+                    }
+
+                };
+            }
+        }
+        return instance;
+    }
     
-    @Override
-    public boolean isAvailable() {
-        return Boolean.getBoolean(ID);
-    }
-
-    @Override
-    public ODSClient createClient(String url, PasswordAuthentication auth) {
-        return new ODSMockClient(url);
-    }
+    public abstract boolean isAvailable ();
+    public abstract ODSClient createClient (String url, PasswordAuthentication auth);
     
 }
