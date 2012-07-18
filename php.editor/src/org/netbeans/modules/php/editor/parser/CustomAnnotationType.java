@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -56,6 +60,16 @@ public class CustomAnnotationType implements PhpAnnotationType {
     @Override
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getDescription() {
+        return "";
+    }
+
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return Collections.EMPTY_MAP;
     }
 
 }

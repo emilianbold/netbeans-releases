@@ -49,5 +49,26 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface PhpAnnotationType {
+
+    /**
+     * Returns a name of an annotation without the "at" sign.
+     *
+     * @return Name.
+     */
     public String getName();
+
+    /**
+     * Returns a description of a tag.
+     *
+     * @return Description.
+     */
+    public String getDescription();
+
+    /**
+     * Returns an offset-ranges and their types.
+     *
+     * @return Type in an offset-range.
+     */
+    public Map<OffsetRange, String> getTypes();
+
 }

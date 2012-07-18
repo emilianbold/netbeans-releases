@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
 
 /**
@@ -66,6 +69,18 @@ public class PHPDocTag extends ASTNode {
         @Override
         public String getName() {
             return name;
+        }
+
+        @Override
+        public String getDescription() {
+            //description of these annotations is parsed by an editor parser itself
+            return "";
+        }
+
+        @Override
+        public Map<OffsetRange, String> getTypes() {
+            //types of these annotations are parsed by an editor parser itself
+            return Collections.EMPTY_MAP;
         }
 
     }
