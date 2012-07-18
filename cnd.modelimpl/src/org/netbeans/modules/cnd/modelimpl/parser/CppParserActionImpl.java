@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
@@ -107,14 +108,55 @@ public class CppParserActionImpl implements CppParserActionEx {
     public boolean type_specifier_already_present(TokenStream input) {
         if(builderContext.getSimpleDeclarationBuilderIfExist() != null && builderContext.getSimpleDeclarationBuilderIfExist().hasTypeSpecifier()) {
             return false;
-        }        
-        APTToken aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
-        final CharSequence name = aToken.getTextID();
-        SymTabEntry entry = globalSymTab.lookup(name);
-        if (entry != null) {
-            return entry.getAttribute(CppAttributes.TYPE) != null;
         }
-        return false;
+        int index = input.index();
+        int scopeLevel = 0;
+        SymTabEntry entry = null;
+        
+        while (true) {
+            APTToken aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
+            if (aToken.getType() == APTTokenTypes.IDENT) {
+                final CharSequence name = aToken.getTextID();
+                entry = globalSymTab.lookup(name);
+                if (entry == null || entry.getAttribute(CppAttributes.TYPE) == null) {
+                    break;
+                }
+                input.consume();
+                aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
+                if (aToken.getType() == APTTokenTypes.LESSTHAN) {
+                    input.consume();
+                    aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
+                    int templateLevel = 0;
+                    while (templateLevel != 0 || aToken.getType() != APTTokenTypes.GREATERTHAN) {
+                        if(aToken.getType() == APTTokenTypes.GREATERTHAN) {
+                            templateLevel--;
+                        } else if(aToken.getType() == APTTokenTypes.LESSTHAN) {
+                            templateLevel++;
+                        }
+                        input.consume();
+                        aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
+                    }
+                    input.consume();
+                    aToken = (APTToken) CXXParserActionImpl.convertToken(input.LT(1));
+                }
+                if (aToken.getType() == APTTokenTypes.SCOPE) {
+                    if (entry.getAttribute(CppAttributes.SYM_TAB) == null) {
+                        entry = null;
+                        break;
+                    }
+                    scopeLevel++;
+                    globalSymTab.push((SymTab) entry.getAttribute(CppAttributes.SYM_TAB));
+                } else {
+                    break;
+                }
+            }
+            input.consume();
+        }
+        for (int i = 0; i < scopeLevel; i++) {
+            globalSymTab.pop();
+        }
+        input.rewind(index);
+        return entry != null && entry.getAttribute(CppAttributes.TYPE) != null;
     }
     
     @Override
@@ -313,14 +355,21 @@ public class CppParserActionImpl implements CppParserActionEx {
 
     @Override
     public void end_class_body(Token token) {
+        SymTab st = globalSymTab.pop();
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof ClassBuilder) {
             ClassBuilder classBuilder = (ClassBuilder) top;
             if(token instanceof APTToken) {
                 classBuilder.setEndOffset(((APTToken)token).getEndOffset());
             }
+            CharSequence name = classBuilder.getName();
+            if(name != null) {
+                SymTabEntry classEntry = globalSymTab.lookupLocal(name);
+                if (classEntry != null) {
+                    classEntry.setAttribute(CppAttributes.SYM_TAB, st);
+                }                 
+            }
         }
-        globalSymTab.pop();
     }
     
     @Override
@@ -487,7 +536,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public void simple_template_id_or_ident(Token token) {
         CsmObjectBuilder top = builderContext.top();
-        if(top instanceof SimpleDeclarationBuilder && ((SimpleDeclarationBuilder)top).hasTypedefSpecifier()) {
+        if(top instanceof SimpleDeclarationBuilder && ((SimpleDeclarationBuilder)top).hasTypedefSpecifier() && !((SimpleDeclarationBuilder)top).isInDeclSpecifiers()) {
             APTToken aToken = (APTToken) token;
             final CharSequence name = aToken.getTextID();
             SymTabEntry classEntry = globalSymTab.lookupLocal(name);
