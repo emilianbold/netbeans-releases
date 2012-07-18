@@ -53,12 +53,12 @@ import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 public class PHPDocTag extends ASTNode {
 
     public enum Type implements AnnotationParsedLine {
-        GLOBAL("global"),
-        METHOD("method"),
-        PROPERTY("property"), PROPERTY_READ("property-read"), PROPERTY_WRITE("property-write"),
-        PARAM("param"),
-        RETURN("return"),
-        VAR("var");
+        GLOBAL("global"), //NOI18N
+        METHOD("method"), //NOI18N
+        PROPERTY("property"), PROPERTY_READ("property-read"), PROPERTY_WRITE("property-write"), //NOI18N
+        PARAM("param"), //NOI18N
+        RETURN("return"), //NOI18N
+        VAR("var"); //NOI18N
 
         private final String name;
 
