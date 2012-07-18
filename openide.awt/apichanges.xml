@@ -50,6 +50,19 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="TabbedPaneFactorySubClass">
+      <api name="awt"/>
+      <summary>TabbedPaneFactory can be subclassed.</summary>
+      <date day="17" month="7" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          It is possible to subclass TabbedPaneFactory to provide custom
+          implementations of close button tabbed pane.
+      </description>
+      <class package="org.openide.awt" name="TabbedPaneFactory"/>
+      <issue number="215265"/>
+    </change>
     <change id="CheckForUpdatesProvider">
         <api name="awt"/>
         <summary>Support for Check for Updates feature</summary>
