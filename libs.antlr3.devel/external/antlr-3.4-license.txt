@@ -7,6 +7,7 @@ License: BSD License
 OSR: 13311
 Origin: http://www.antlr.org
 
+Use of Antlr version 3.4 is governed by the terms of the license below:
 
  [The "BSD license"]
  Copyright (c) 2010 Terence Parr
