@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.*;
@@ -311,9 +312,8 @@ class DocRenderer {
 
         protected String processDescription(String text){
             StringBuilder result = new StringBuilder();
-            int index = 0;
             int lastIndex = 0;
-            index = text.indexOf('{', 0);
+            int index = text.indexOf('{', 0);
             while (index > -1 && text.length() > (index + 1)) {
                 result.append(text.substring(lastIndex, index));
                 lastIndex = index;
@@ -353,7 +353,7 @@ class DocRenderer {
             if (parameters.length() > 0) {
                 value.append("<h3>"); //NOI18N
                 value.append(NbBundle.getMessage(DocRenderer.class, "Parameters"));
-                value.append("</h3>\n<table cellspacing=0 " + TABLE_STYLE + ">\n" + parameters + "</table>\n"); //NOI18N
+                value.append("</h3>\n<table cellspacing=0 " + TABLE_STYLE + ">\n").append(parameters).append("</table>\n"); //NOI18N
             }
 
             if (returnValue.length() > 0) {
@@ -367,11 +367,11 @@ class DocRenderer {
             if (links != null && links.length() > 0) {
                 value.append("<h3>"); //NOI18N
                 value.append(NbBundle.getMessage(DocRenderer.class, "OnlineDocs"));
-                value.append("</h3>\n" + links); //NOI18N
+                value.append("</h3>\n").append(links); //NOI18N
             }
 
             if (others != null && others.length() > 0) {
-                value.append("<table>\n" + others + "</table>\n"); //NOI18N
+                value.append("<table>\n").append(others).append("</table>\n"); //NOI18N
             }
             return value.toString();
         }
@@ -439,8 +439,7 @@ class DocRenderer {
                     ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
 
                     if (node == null){ // issue #118222
-                        LOGGER.warning("Could not find AST node for element "
-                                + indexedElement.getName() + " defined in " + indexedElement.getFilenameUrl());
+                        LOGGER.log(Level.WARNING, "Could not find AST node for element {0} defined in {1}", new Object[]{indexedElement.getName(), indexedElement.getFilenameUrl()});
                         return;
                     }
                     //header.appendHtml("<br/>"); //NOI18N

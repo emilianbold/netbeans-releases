@@ -96,7 +96,7 @@ public class PHPDocCommentParser {
 
         Matcher matcher = pattern.matcher(comment);
         int index = 0;
-        String line = "";               // one line of the blog
+        String line;               // one line of the blog
         String description = "";        // temporary holder for description of block description or tag
         AnnotationParsedLine lastTag = null;
         int lastStartIndex = 0;
