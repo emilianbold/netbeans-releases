@@ -90,7 +90,7 @@ public final class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
 
     @Override
     public PersistentFactory getPersistentFactory() {
-        return ProjectSettingsValidator.getPersistentFactory();
+        return ProjectSettingsValidator.getPersistentFactory(getUnitId());
     }
 
     @Override
