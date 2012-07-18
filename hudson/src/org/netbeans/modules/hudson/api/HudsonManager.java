@@ -106,4 +106,14 @@ public class HudsonManager {
             return nue;
         }
     }
+
+    /**
+     * Remove a Hudson instance from Hudson Builders node.
+     */
+    public static void removeInstance(HudsonInstance instance) {
+        if (instance instanceof HudsonInstanceImpl) {
+            HudsonManagerImpl.getDefault().removeInstance(
+                    (HudsonInstanceImpl) instance);
+        }
+    }
 }
