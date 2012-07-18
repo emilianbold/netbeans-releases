@@ -132,30 +132,12 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public Action getOpenWikiAction(ProjectHandle<ODSProject> project) {
-        // XXX where is this called from? 
-        
-//        try {
-//            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.WIKI);
-//            if (wiki.length == 1) {
-//                return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
-//            }
-//        } catch (KenaiException kenaiException) {
-//            Exceptions.printStackTrace(kenaiException);
-//        }
-        return null;
+        return null; // XXX does anybody call this?
     }
 
     @Override
     public Action getOpenDownloadsAction(ProjectHandle<ODSProject> project) {
-//        try {
-//            KenaiFeature[] wiki = ((ProjectHandleImpl) project).getProject().getFeatures(Type.DOWNLOADS);
-//            if (wiki.length == 1) {
-//                return new URLDisplayerAction(wiki[0].getDisplayName(), wiki[0].getWebLocation());
-//            }
-//        } catch (KenaiException kenaiException) {
-//            Exceptions.printStackTrace(kenaiException);
-//        }
-        return null;
+        return null; // XXX does anybody call this?
     }
 
     @Override
