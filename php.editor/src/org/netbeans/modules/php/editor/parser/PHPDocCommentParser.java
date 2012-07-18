@@ -62,9 +62,7 @@ public class PHPDocCommentParser {
     private static final List<PHPDocTag.Type> PHPDocTypeTags = new ArrayList<PHPDocTag.Type>();
     static {
         PHPDocTypeTags.add(PHPDocTag.Type.RETURN);
-        PHPDocTypeTags.add(PHPDocTag.Type.THROWS);
         PHPDocTypeTags.add(PHPDocTag.Type.VAR);
-        PHPDocTypeTags.add(PHPDocTag.Type.SEE);
     }
 
     /**
@@ -124,7 +122,7 @@ public class PHPDocCommentParser {
                 lastTag = tagType;  // remember the recognized tag
                 lastStartIndex = index;
                 description = "";
-                line = line.substring(tagType.name().length() + 1); // and the first line of description of the tag
+                line = line.substring(tagType.getName().length() + 1); // and the first line of description of the tag
             }
             index = matcher.end();
             lastEndIndex = matcher.start();
@@ -146,7 +144,7 @@ public class PHPDocCommentParser {
                     tags.add(tag);
                 }
             }
-            line = line.substring(tagType.name().length() + 1).trim();
+            line = line.substring(tagType.getName().length() + 1).trim();
             PHPDocTag tag = createTag(startOffset + 3 + index, startOffset + 3 + comment.length(), tagType, line, comment, startOffset + 3);
             if (tag != null) {
                 tags.add(tag);
@@ -327,7 +325,8 @@ public class PHPDocCommentParser {
         if (line.length() > 0 && line.charAt(0) == '@') {
             String[] tokens = line.trim().split("[ \t]+");
             if (tokens.length > 0) {
-                String tag = tokens[0].substring(1).toUpperCase();
+                final String name = tokens[0].substring(1);
+                String tag = name.toUpperCase();
                 if (tag.indexOf('-') > -1) {
                     tag = tag.replace('-', '_');
                 }
@@ -336,7 +335,8 @@ public class PHPDocCommentParser {
                 }
                 catch (IllegalArgumentException iae) {
                     // we are not able to thread such tag
-                    type = null;
+                    type = PHPDocTag.Type.CUSTOM;
+                    type.setName(name);
                 }
             }
         }

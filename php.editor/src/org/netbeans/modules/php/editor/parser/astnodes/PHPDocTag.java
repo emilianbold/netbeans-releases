@@ -48,22 +48,27 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 public class PHPDocTag extends ASTNode {
 
     public enum Type {
-        ABSTRACT, ACCESS, AUTHOR,
-        CATEGORY, COPYRIGHT,
-        DEPRECATED, DESC,
-        EXAMPLE, EXCEPTION,
-        FILESOURCE, FINAL,
-        GLOBAL,
-        IGNORE, INTERNAL,
-        LICENSE, LINK,
-        MAGIC, METHOD,
-        NAME,
-        PROPERTY, PROPERTY_READ, PROPERTY_WRITE, PARAM, PACKAGE,
-        RETURN,
-        SEE, SINCE, STATIC, STATICVAR, SUBPACKAGE,
-        THROWS, TODO, TUTORIAL,
-        USES,
-        VAR, VERSION
+        GLOBAL("global"),
+        METHOD("method"),
+        PROPERTY("property"), PROPERTY_READ("property-read"), PROPERTY_WRITE("property-write"),
+        PARAM("param"),
+        RETURN("return"),
+        VAR("var"),
+        CUSTOM("custom");
+
+        private String name;
+
+        private Type(final String name) {
+            this.name = name;
+        }
+
+        public void setName(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 
     final private Type type;

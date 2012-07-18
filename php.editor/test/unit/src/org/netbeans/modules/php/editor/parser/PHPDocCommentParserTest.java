@@ -106,7 +106,7 @@ public class PHPDocCommentParserTest extends PHPTestBase {
     }
 
     public void testNoDescriptionOneTag() throws Exception {
-        String comment = " * @author Petr";
+        String comment = " * @custom Petr";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
         PHPDocBlock block = parser.parse(0, comment.length(), comment);
@@ -114,14 +114,14 @@ public class PHPDocCommentParserTest extends PHPTestBase {
         assertNotNull(block);
         assertEquals("", block.getDescription());
         assertEquals("Nunber of tags", 1, tags.size());
-        assertEquals(PHPDocTag.Type.AUTHOR, tags.get(0).getKind());
+        assertEquals(PHPDocTag.Type.CUSTOM, tags.get(0).getKind());
         assertEquals("Petr", tags.get(0).getValue());
-        assertEquals(comment.indexOf("@author"), tags.get(0).getStartOffset());
-        assertEquals(comment.indexOf("@author Petr") + "@author Petr".length(), tags.get(0).getEndOffset() - 3);
+        assertEquals(comment.indexOf("@custom"), tags.get(0).getStartOffset());
+        assertEquals(comment.indexOf("@custom Petr") + "@custom Petr".length(), tags.get(0).getEndOffset() - 3);
     }
 
     public void testNoDescriptionTwoTags() throws Exception {
-        String comment = " * @author Petr  \n * @since 1.5";
+        String comment = " * @custom Petr  \n * @custom 1.5";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
         PHPDocBlock block = parser.parse(0, comment.length(), comment);
@@ -129,18 +129,18 @@ public class PHPDocCommentParserTest extends PHPTestBase {
         assertNotNull(block);
         assertEquals("", block.getDescription());
         assertEquals("Nunber of tags", 2, tags.size());
-        assertEquals(PHPDocTag.Type.AUTHOR, tags.get(0).getKind());
+        assertEquals(PHPDocTag.Type.CUSTOM, tags.get(0).getKind());
         assertEquals(" Petr", tags.get(0).getValue());
-        assertEquals(comment.indexOf("@author"), tags.get(0).getStartOffset());
-        assertEquals(comment.indexOf("@author Petr  ") + "@author Petr  ".length(), tags.get(0).getEndOffset() - 3);
-        assertEquals(PHPDocTag.Type.SINCE, tags.get(1).getKind());
+        assertEquals(comment.indexOf("@custom"), tags.get(0).getStartOffset());
+        assertEquals(comment.indexOf("@custom Petr  ") + "@custom Petr  ".length(), tags.get(0).getEndOffset() - 3);
+        assertEquals(PHPDocTag.Type.CUSTOM, tags.get(1).getKind());
         assertEquals("1.5", tags.get(1).getValue());
-        assertEquals(comment.indexOf("@since 1.5") + 3 , tags.get(1).getStartOffset());
-        assertEquals(comment.indexOf("@since 1.5") + "@since 1.5".length(), tags.get(1).getEndOffset() - 3);
+        assertEquals(comment.indexOf("@custom 1.5") + 3 , tags.get(1).getStartOffset());
+        assertEquals(comment.indexOf("@custom 1.5") + "@custom 1.5".length(), tags.get(1).getEndOffset() - 3);
     }
 
     public void testNoDescriptionThreeTags() throws Exception {
-        String comment = " * @author Petr  \n *    @since 1.5  \n *      @License mine";
+        String comment = " * @custom Petr  \n *    @custom 1.5  \n *      @custom mine";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
         PHPDocBlock block = parser.parse(0, comment.length(), comment);
@@ -148,22 +148,22 @@ public class PHPDocCommentParserTest extends PHPTestBase {
         assertNotNull(block);
         assertEquals("", block.getDescription());
         assertEquals("Nunber of tags", 3, tags.size());
-        assertEquals(PHPDocTag.Type.AUTHOR, tags.get(0).getKind());
+        assertEquals(PHPDocTag.Type.CUSTOM, tags.get(0).getKind());
         assertEquals(" Petr", tags.get(0).getValue());
-        assertEquals(comment.indexOf("@author"), tags.get(0).getStartOffset());
-        assertEquals(comment.indexOf("@author Petr  ") + "@author Petr  ".length(), tags.get(0).getEndOffset() - 3);
-        assertEquals(PHPDocTag.Type.SINCE, tags.get(1).getKind());
+        assertEquals(comment.indexOf("@custom"), tags.get(0).getStartOffset());
+        assertEquals(comment.indexOf("@custom Petr  ") + "@custom Petr  ".length(), tags.get(0).getEndOffset() - 3);
+        assertEquals(PHPDocTag.Type.CUSTOM, tags.get(1).getKind());
         assertEquals(" 1.5", tags.get(1).getValue());
-        assertEquals(comment.indexOf("@since 1.5") + 3 , tags.get(1).getStartOffset());
-        assertEquals(comment.indexOf("@since 1.5") + "@since 1.5  ".length(), tags.get(1).getEndOffset() - 3);
-        assertEquals(PHPDocTag.Type.LICENSE, tags.get(2).getKind());
+        assertEquals(comment.indexOf("@custom 1.5") + 3 , tags.get(1).getStartOffset());
+        assertEquals(comment.indexOf("@custom 1.5") + "@custom 1.5  ".length(), tags.get(1).getEndOffset() - 3);
+        assertEquals(PHPDocTag.Type.CUSTOM, tags.get(2).getKind());
         assertEquals("mine", tags.get(2).getValue());
-        assertEquals(comment.indexOf("@License mine") + 3 , tags.get(2).getStartOffset());
-        assertEquals(comment.indexOf("@License mine") + "@License mine".length(), tags.get(2).getEndOffset() - 3);
+        assertEquals(comment.indexOf("@custom mine") + 3 , tags.get(2).getStartOffset());
+        assertEquals(comment.indexOf("@custom mine") + "@custom mine".length(), tags.get(2).getEndOffset() - 3);
     }
 
     public void testDescriptionTags() throws Exception {
-        String comment = " * hello this is a * very simple comment \n * and seccond line \n  * \n * last line of description\n * @link   http://www.seznam.cz   \n * @author";
+        String comment = " * hello this is a * very simple comment \n * and seccond line \n  * \n * last line of description\n * @custom   http://www.seznam.cz   \n * @custom1";
 
         PHPDocCommentParser parser = new PHPDocCommentParser();
 
@@ -172,14 +172,14 @@ public class PHPDocCommentParserTest extends PHPTestBase {
         assertEquals("hello this is a * very simple comment\nand seccond line\n\nlast line of description", block.getDescription().trim());
         List<PHPDocTag> tags = block.getTags();
         assertEquals("Nunber of tags", 2, tags.size());
-        assertEquals(PHPDocTag.Type.LINK, tags.get(0).getKind());
+        assertEquals(PHPDocTag.Type.CUSTOM, tags.get(0).getKind());
         assertEquals("   http://www.seznam.cz", tags.get(0).getValue());
-        assertEquals(comment.indexOf("@link") + 3, tags.get(0).getStartOffset());
-        assertEquals(comment.indexOf("@link   http://www.seznam.cz   ") + "@link   http://www.seznam.cz   ".length(), tags.get(0).getEndOffset() - 3);
-        assertEquals(PHPDocTag.Type.AUTHOR, tags.get(1).getKind());
+        assertEquals(comment.indexOf("@custom") + 3, tags.get(0).getStartOffset());
+        assertEquals(comment.indexOf("@custom   http://www.seznam.cz   ") + "@custom   http://www.seznam.cz   ".length(), tags.get(0).getEndOffset() - 3);
+        assertEquals(PHPDocTag.Type.CUSTOM, tags.get(1).getKind());
         assertEquals("", tags.get(1).getValue());
-        assertEquals(comment.indexOf("@author") + 3 , tags.get(1).getStartOffset());
-        assertEquals(comment.indexOf("@author") + "@author".length(), tags.get(1).getEndOffset() - 3);
+        assertEquals(comment.indexOf("@custom1") + 3 , tags.get(1).getStartOffset());
+        assertEquals(comment.indexOf("@custom1") + "@custom1".length(), tags.get(1).getEndOffset() - 3);
     }
 
     public void testDescriptionWithHtml() throws Exception {

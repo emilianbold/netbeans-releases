@@ -319,12 +319,6 @@ class DocRenderer {
                     case PARAM:
                         params.append(composeParameterLine((PHPDocVarTypeTag)tag));
                         break;
-                    case LINK:
-                        String lline = String.format("<a href=\"%s\">%s</a><br>\n", //NOI18N
-                                tag.getValue().trim(), tag.getValue().trim());
-
-                        links.append(lline);
-                        break;
                     case RETURN:
                         PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
                         returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
