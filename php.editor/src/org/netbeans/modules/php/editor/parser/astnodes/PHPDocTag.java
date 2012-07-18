@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
-import org.netbeans.modules.php.editor.parser.AnnotationType;
+import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
 
 /**
  * Represent a PHPDoc tag in the php documentation
@@ -49,16 +49,37 @@ import org.netbeans.modules.php.editor.parser.AnnotationType;
  */
 public class PHPDocTag extends ASTNode {
 
-    final private AnnotationType type;
+    public enum Type implements PhpAnnotationType {
+        GLOBAL("global"),
+        METHOD("method"),
+        PROPERTY("property"), PROPERTY_READ("property-read"), PROPERTY_WRITE("property-write"),
+        PARAM("param"),
+        RETURN("return"),
+        VAR("var");
+
+        private final String name;
+
+        private Type(final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+    }
+
+    final private PhpAnnotationType type;
     final private String value;
 
-    public PHPDocTag(int start, int end, AnnotationType kind, String value) {
+    public PHPDocTag(int start, int end, PhpAnnotationType kind, String value) {
         super(start, end);
         this.type = kind;
         this.value = value;
     }
 
-    public AnnotationType getKind() {
+    public PhpAnnotationType getKind() {
         return this.type;
     }
 

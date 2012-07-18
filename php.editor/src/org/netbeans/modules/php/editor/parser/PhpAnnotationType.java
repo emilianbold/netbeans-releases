@@ -41,30 +41,13 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface AnnotationType {
+public interface PhpAnnotationType {
     public String getName();
-
-    public enum Type implements AnnotationType {
-        GLOBAL("global"),
-        METHOD("method"),
-        PROPERTY("property"), PROPERTY_READ("property-read"), PROPERTY_WRITE("property-write"),
-        PARAM("param"),
-        RETURN("return"),
-        VAR("var");
-
-        private final String name;
-
-        private Type(final String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-    }
 }

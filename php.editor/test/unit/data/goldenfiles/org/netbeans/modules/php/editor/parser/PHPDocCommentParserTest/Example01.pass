@@ -13,7 +13,15 @@
                 <PHPDocTypeNode start='299' end='305' value='string' isArray='false'/>
             </Types>
         </PHPDocTypeTag>
-        <PHPDocTag start='381' end='419' kind='throws'/>
-        <PHPDocTag start='425' end='438' kind='see'/>
+        <PHPDocTypeTag start='381' end='419' kind='throws'>
+            <Types>
+                <PHPDocTypeNode start='389' end='414' value='sfInitializationException' isArray='false'/>
+            </Types>
+        </PHPDocTypeTag>
+        <PHPDocTypeTag start='425' end='438' kind='see'>
+            <Types>
+                <PHPDocTypeNode start='430' end='438' value='sfAction' isArray='false'/>
+            </Types>
+        </PHPDocTypeTag>
     </Tags>
 </PHPDocBlock>

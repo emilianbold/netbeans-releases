@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
-import org.netbeans.modules.php.editor.parser.AnnotationType;
 
 /**
  *
@@ -61,7 +60,7 @@ public class CommentExtractorTest extends PHPCodeCompletionTestBase {
 
     public void testNoDescription() throws Exception {
         PHPDocNode methodName = new PHPDocNode(1, 2, "where");
-        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, AnnotationType.Type.METHOD, null, methodName, null, "@method DibiConnection where($cond)");
+        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, PHPDocTag.Type.METHOD, null, methodName, null, "@method DibiConnection where($cond)");
         String documentation = methodTag.getDocumentation();
         assertEquals("", documentation);
     }
@@ -69,7 +68,7 @@ public class CommentExtractorTest extends PHPCodeCompletionTestBase {
     public void testExistingDescription() throws Exception {
         PHPDocNode methodName = new PHPDocNode(1, 2, "where");
         final String description = "My description.";
-        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, AnnotationType.Type.METHOD, null, methodName, null, "@method DibiConnection where($cond) " + description);
+        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, PHPDocTag.Type.METHOD, null, methodName, null, "@method DibiConnection where($cond) " + description);
         String documentation = methodTag.getDocumentation();
         assertEquals(description, documentation);
     }
@@ -77,7 +76,7 @@ public class CommentExtractorTest extends PHPCodeCompletionTestBase {
     public void testExistingDescriptionWithMoreDeclarations() throws Exception {
         PHPDocNode methodName = new PHPDocNode(1, 2, "where");
         final String description = "My description.";
-        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, AnnotationType.Type.METHOD, null, methodName, null, "@method DibiConnection where() where($cond) " + description);
+        PHPDocMethodTag methodTag = new PHPDocMethodTag(1, 2, PHPDocTag.Type.METHOD, null, methodName, null, "@method DibiConnection where() where($cond) " + description);
         String documentation = methodTag.getDocumentation();
         assertEquals(description, documentation);
     }

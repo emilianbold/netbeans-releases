@@ -62,7 +62,7 @@ import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
-import org.netbeans.modules.php.editor.parser.AnnotationType;
+import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.filesystems.FileObject;
@@ -288,13 +288,13 @@ class DocRenderer {
             StringBuilder others = new StringBuilder();
 
             for (PHPDocTag tag : pHPDocBlock.getTags()) {
-                AnnotationType kind = tag.getKind();
-                if (AnnotationType.Type.PARAM.equals(kind)) {
+                PhpAnnotationType kind = tag.getKind();
+                if (kind.equals(PHPDocTag.Type.PARAM)) {
                     params.append(composeParameterLine((PHPDocVarTypeTag)tag));
-                } else if (AnnotationType.Type.RETURN.equals(kind)) {
+                } else if (kind.equals(PHPDocTag.Type.RETURN)) {
                     PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
                     returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
-                } else if (AnnotationType.Type.VAR.equals(kind)) {
+                } else if (kind.equals(PHPDocTag.Type.VAR)) {
                     PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
                     String type = composeType(typeTag.getTypes());
                     others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N

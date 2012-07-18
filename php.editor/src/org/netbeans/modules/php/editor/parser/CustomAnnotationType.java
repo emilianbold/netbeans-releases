@@ -45,7 +45,7 @@ package org.netbeans.modules.php.editor.parser;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CustomAnnotationType implements AnnotationType {
+public class CustomAnnotationType implements PhpAnnotationType {
 
     private final String name;
 

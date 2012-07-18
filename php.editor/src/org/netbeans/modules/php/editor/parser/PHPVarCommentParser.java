@@ -43,13 +43,7 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 /**
  *
@@ -57,7 +51,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
  */
 public class PHPVarCommentParser {
 
-    private static String PHPDOCTAG = "@" + AnnotationType.Type.VAR.name().toLowerCase(); //NOI18N
+    private static String PHPDOCTAG = "@" + PHPDocTag.Type.VAR.name().toLowerCase(); //NOI18N
 
     PHPVarComment parse (final int startOffset, final int endOffset, final String comment) {
         int index = comment.indexOf(PHPDOCTAG);
@@ -105,7 +99,7 @@ public class PHPVarCommentParser {
                 startDocNode = startOffset + comment.indexOf(variableName);
                 PHPDocNode variableNode = new PHPDocNode(startDocNode, startDocNode + variableName.length(), variableName);
                 startDocNode = startOffset + comment.indexOf(PHPDOCTAG);
-                PHPDocVarTypeTag variableType =  new PHPDocVarTypeTag(startDocNode, endPosition, AnnotationType.Type.VAR, definition, typeNodes, variableNode);
+                PHPDocVarTypeTag variableType =  new PHPDocVarTypeTag(startDocNode, endPosition, PHPDocTag.Type.VAR, definition, typeNodes, variableNode);
                 return new PHPVarComment(startOffset, endOffset, variableType);
             }
         }
