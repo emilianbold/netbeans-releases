@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 
@@ -303,7 +302,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         public StateImpl(FileSystem fs, final RepositoryDataInput input, int unitIndex) throws IOException {
             assert input != null;
             
-            startFile = new StartEntry(fs, input);
+            startFile = new StartEntry(fs, input, unitIndex);
 
             int size = input.readInt();
             systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
