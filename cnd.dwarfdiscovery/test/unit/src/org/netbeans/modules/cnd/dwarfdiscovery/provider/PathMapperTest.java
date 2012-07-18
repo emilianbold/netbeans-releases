@@ -241,6 +241,25 @@ public class PathMapperTest extends NbTestCase {
         assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3", path.getRoot());
         assertEquals("/scratch/user1/view_storage/user1_vk_ctx_3/oracle/ctx/src/gx/include", path.getPath());
     }
+
+    public void testMapperDetectorCTX3() {
+        FS5 fs = new FS5("/scratch/user1/view_storage/user1_my_ctx");
+        String root = "/scratch/user1/view_storage/user1_my_ctx/ctx/src";
+        String unknown = "/net/user420/export/ifarm_base/ifarm_views/aime_ctx_286748/ctx_src_2/src/dr/dren";
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
+        assertTrue(mapper.discover(fs, root, unknown));
+        final ResolvedPath path = mapper.getPath(unknown);
+        assertEquals("/scratch/user1/view_storage/user1_my_ctx", path.getRoot());
+        assertEquals("/scratch/user1/view_storage/user1_my_ctx/ctx_src_2/src/dr/dren", path.getPath());
+    }
+
+    public void testMapperDetectorCTX4() {
+        FS5 fs = new FS5("/scratch/user1/view_storage/user1_my_ctx");
+        String root = "/scratch/user1/view_storage/user1_my_ctx/ctx/src";
+        String unknown = "/scratch/user1/view_storage/user1_my_ctx/ctx_src_4/src/ext/zfm/zfma.c";
+        RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
+        assertFalse(mapper.discover(fs, root, unknown));
+    }
     
     public void testMapper0() {
         FS4 fs = new FS4("/scratch/alsimon/view_storage/alsimon_my_rdbms");
@@ -373,6 +392,31 @@ public class PathMapperTest extends NbTestCase {
         private FS4(String prefix) {
             set.add(prefix+"/rdbms");
             set.add(prefix+"/odbc");
+        }
+        
+        @Override
+        public boolean exists(String path) {
+            return set.contains(path);
+        }
+    }
+
+    private static final class FS5 implements RelocatablePathMapperImpl.FS {
+        Set<String> set = new HashSet<String>();
+        private FS5(String prefix) {
+            set.add(prefix+"/ctx");
+            set.add(prefix+"/ctx/src");
+            set.add(prefix+"/ctx/src/dr");
+            set.add(prefix+"/ctx/src/ext");
+            set.add(prefix+"/ctx/src/dr/dren");
+            set.add(prefix+"/ctx_src_2");
+            set.add(prefix+"/ctx_src_2/src");
+            set.add(prefix+"/ctx_src_2/src/dr");
+            set.add(prefix+"/ctx_src_2/src/dr/dren");
+            set.add(prefix+"/ctx_src_4");
+            set.add(prefix+"/ctx_src_4/src");
+            set.add(prefix+"/ctx_src_4/src/ext");
+            set.add(prefix+"/ctx_src_4/src/ext/zfm");
+            set.add(prefix+"/ctx_src_4/src/ext/zfm/zfma.c");
         }
         
         @Override

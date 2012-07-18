@@ -218,6 +218,16 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
         }
         String[] rootSegments = root.split("/"); //NOI18N
         String[] unknownSegments = unknown.split("/"); //NOI18N
+        int min = 0;
+        for(int k = 0; k < Math.min(unknownSegments.length, rootSegments.length); k++) {
+            if (!unknownSegments[k].equals(rootSegments[k])) {
+                break;
+            }
+            min = k;
+        }
+        if (min > 2) {
+            return null;
+        }
         for(int k = 1; k < unknownSegments.length; k++) {
             for(int i = rootSegments.length - 1; i > 1; i--) {
                 StringBuilder buf = new StringBuilder();
