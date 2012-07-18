@@ -269,9 +269,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                 // even when the URL is loaded for the first time.
                 URL tempUrl = createBlankHTMLPage();
                 assert tempUrl != null;
-                if (status == ExtensionManager.ExtensitionStatus.INSTALLED) {
-                    ExternalBrowserPlugin.getInstance().register(tempUrl, url, this);
-                }
+                ExternalBrowserPlugin.getInstance().register(tempUrl, url, this);
                 loadURLInBrowser(tempUrl);
             }
             else {
