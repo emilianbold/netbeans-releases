@@ -352,7 +352,7 @@ public class PHPDocCommentParser {
                         }
                     }
                     if (result == null) {
-                        result = new UnknownAnnotationType(name);
+                        result = new UnknownAnnotationLine(name);
                     }
                 }
             }

@@ -50,11 +50,11 @@ import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnknownAnnotationType implements AnnotationParsedLine {
+public class UnknownAnnotationLine implements AnnotationParsedLine {
 
     private final String name;
 
-    public UnknownAnnotationType(final String name) {
+    public UnknownAnnotationLine(final String name) {
         this.name = name;
     }
 
