@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.web.clientproject.remote;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -113,7 +113,7 @@ public class RemoteFilesCache {
         return fo;
     }
     
-    private File getCachedFileName(URL url){
+    static File getCachedFileName(URL url){
         String s = url.toExternalForm();
         if (s.lastIndexOf('.') != -1) {
             s = s.substring(s.lastIndexOf('.'));
@@ -150,11 +150,11 @@ public class RemoteFilesCache {
         fo.refresh();
     }
 
-    private File getCacheRoot() {
+    private static File getCacheRoot() {
         return Places.getCacheSubdirectory("remotefiles");
     }
     
-    private String getMD5(String name) {
+    private static String getMD5(String name) {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("MD5"); // NOI18N
@@ -180,7 +180,7 @@ public class RemoteFilesCache {
 
         @Override
         public FileObject getRemoteFile(URL url) throws IOException {
-            return getDefault().getRemoteFile(url);
+            return RemoteFS.getDefault().getFileForURL(url);
         }
 
         @Override

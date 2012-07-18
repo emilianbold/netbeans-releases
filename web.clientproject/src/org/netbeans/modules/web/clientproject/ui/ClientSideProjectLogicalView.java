@@ -54,11 +54,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
-import org.netbeans.modules.web.clientproject.ui.action.OpenRemoteFileAction;
+import org.netbeans.modules.web.clientproject.remote.RemoteFS;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -71,7 +72,7 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -222,6 +223,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         
     }
     
+    @NbBundle.Messages("LBL_RemoteFiles=Remote Files")
     private static final class RemoteFilesNode extends AbstractNode {
 
         final ClientSideProject project;
@@ -243,11 +245,12 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public String getDisplayName() {
-            return "Remote Files";
+            return Bundle.LBL_RemoteFiles();
         }
 
     }    
-    private static class RemoteFilesChildren extends Children.Keys<RemoteFile> implements ChangeListener {
+    
+    private static class RemoteFilesChildren extends Children.Keys<URL> implements ChangeListener {
 
         final ClientSideProject project;
 
@@ -256,8 +259,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
         
         @Override
-        protected Node[] createNodes(RemoteFile key) {
-            return new Node[]{new SingleRemoteFileNode(key)};
+        protected Node[] createNodes(URL key) {
+            FileObject fo = RemoteFS.getDefault().getFileForURL(key);
+            DataObject dobj;
+            try {
+                dobj = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                return new Node[] {};
+            }
+            return new Node[] { dobj.getNodeDelegate() };
         }
 
         @Override
@@ -279,114 +289,29 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
         
         private void updateKeys() {
-            List<RemoteFile> keys = new ArrayList<RemoteFile>();
-            for (URL u : project.getRemoteFiles().getRemoteFiles()) {
-                keys.add(new RemoteFile(u));
-            }
-            Collections.sort(keys, new Comparator<RemoteFile>() {
+            List<URL> remoteFiles = project.getRemoteFiles().getRemoteFiles();
+            if (remoteFiles.size() > 1) {
+                remoteFiles = new ArrayList(remoteFiles);
+                Collections.sort(remoteFiles, new Comparator<URL>() {
                     @Override
-                    public int compare(RemoteFile o1, RemoteFile o2) {
-                        return o1.getName().compareToIgnoreCase(o2.getName());
+                    public int compare(URL o1, URL o2) {
+                        String p1 = o1.getPath();
+                        String p2 = o2.getPath();
+                        int i = p1.lastIndexOf('/');
+                        if (i > 0) {
+                            p1 = p1.substring(i+1);
+                        }
+                        i = p2.lastIndexOf('/');
+                        if (i > 0) {
+                            p2 = p2.substring(i+1);
+                        }
+                        return p1.compareToIgnoreCase(p2);
                     }
                 });
-            setKeys(keys);
+            }
+            setKeys(remoteFiles);
         }
 
     }
     
-    public static class RemoteFile {
-        private URL url;
-        private String name;
-        private String urlAsString;
-
-        public RemoteFile(URL url) {
-            this.url = url;
-            urlAsString = url.toExternalForm();
-            int index = urlAsString.lastIndexOf('/');
-            if (index != -1) {
-                name = urlAsString.substring(index+1);
-            }
-        }
-
-        public URL getUrl() {
-            return url;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getDescription() {
-            return urlAsString;
-        }
-        
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 67 * hash + (this.urlAsString != null ? this.urlAsString.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final RemoteFile other = (RemoteFile) obj;
-            if ((this.urlAsString == null) ? (other.urlAsString != null) : !this.urlAsString.equals(other.urlAsString)) {
-                return false;
-            }
-            return true;
-        }
-
-        
-    }
-    
-    private static final class SingleRemoteFileNode extends AbstractNode {
-        
-        private RemoteFile file;
-
-        public SingleRemoteFileNode(RemoteFile file) {
-            super(Children.LEAF, Lookups.singleton(file));
-            this.file = file;
-        }
-        
-        @Override
-        public String getDisplayName() {
-            return file.getName();
-        }
-
-        @Override
-        public String getShortDescription() {
-            return file.getDescription();
-        }
-        
-        @Override
-        public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/netbeans/modules/javascript/editing/javascript.png");
-        }
-
-        @Override
-        public Image getOpenedIcon(int type) {
-            return getIcon(type);
-        }
-
-        @Override
-        public Action[] getActions(boolean arg0) {
-            return new Action[] {
-                SystemAction.get(OpenRemoteFileAction.class),
-                //SystemAction.get(RefreshRemoteFileAction.class),
-            };
-        }
-
-        @Override
-        public SystemAction getDefaultAction() {
-            return SystemAction.get(OpenRemoteFileAction.class);
-        }
-
-        
-    }
 }

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.web.clientproject.remote;
 
 import java.io.IOException;
 import java.net.URL;
@@ -49,6 +49,7 @@ import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.html.editor.api.index.HtmlIndex;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.Places;
 import org.openide.util.ChangeSupport;
@@ -66,7 +67,7 @@ public class RemoteFiles {
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private HtmlIndex index;
     
-    RemoteFiles(ClientSideProject project) {
+    public RemoteFiles(ClientSideProject project) {
         this.project = project;
     }
     
