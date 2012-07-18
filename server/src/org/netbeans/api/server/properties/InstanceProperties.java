@@ -227,7 +227,7 @@ public abstract class InstanceProperties {
     public abstract void removeKey(String key);
 
     /**
-     * Removes the. All values of
+     * Removes this instance from the persistent space. All values of
      * previously set are lost. The result of call to
      * {@link InstancePropertiesManager#getProperties(String)} with appropriate
      * parameter will not contain this set of properties anymore.
