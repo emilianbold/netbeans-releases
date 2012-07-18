@@ -163,13 +163,41 @@ public class JsParserTest extends JsTestBase {
             + "var global2 = new Array();\n"
             + "if (true) {\n"
             + "   var global3 = new org.foo.bar.Baz();\n"
-            + "           }\n"
+            + "          \n"
+            + "}\n"
             + "\n"
             + "DonaldDuck.Mickey.Baz.boo.boo = function(param) {\n"
             + "    return true;\n"
             + "}\n",
             2,
             JsParser.Sanitize.ERROR_LINE);
+    }
+    
+    public void testSimpleErrorLine2() throws Exception {
+        parse("function A() {\n"
+            + "}\n"
+            + "A.prototype.say = function() {\n"
+            + "    return \"ahoj\";\n"
+            + "}\n"
+            + "var a = new A();\n"
+            + "function B() {\n"
+            + "}\n" 
+            + "B.prototype = new A();\n"
+            + "var b = new B();\n"
+            + "b.\n",
+            "function A() {\n"
+            + "}\n"
+            + "A.prototype.say = function() {\n"
+            + "    return \"ahoj\";\n"
+            + "}\n"
+            + "var a = new A();\n"
+            + "function B() {\n"
+            + "}\n" 
+            + "B.prototype = new A();\n"
+            + "var b = new B();\n"
+            + "b \n",
+            1,
+            JsParser.Sanitize.SYNTAX_ERROR_PREVIOUS);
     }
     
     private void parse(String original, String expected, int errorCount,

@@ -52,17 +52,7 @@ import java.nio.ByteBuffer;
  */
 interface WebSocketChanelHandler {
     
-    String HTTP_RESPONSE = "HTTP/1.1 101 Web Socket Protocol Handshake";    // NOI18N
-    
-    String WS_UPGRADE = "Upgrade: WebSocket";                               // NOI18N
-    
-    String CONN_UPGRADE = "Connection: Upgrade";                            // NOI18N
-    
-    String CRLF = "\r\n";                                                   // NOI18N
-    
-    String HOST = "Host";                                                   // NOI18N
-
-    void sendHandshake( );
+    void sendHandshake( ) throws IOException ;
 
     void read( ByteBuffer byteBuffer ) throws IOException ;
 

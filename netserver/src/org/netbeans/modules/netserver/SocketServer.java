@@ -44,9 +44,12 @@ package org.netbeans.modules.netserver;
 
 import java.io.IOException;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 
 
@@ -103,6 +106,17 @@ public class SocketServer extends SocketFramework {
         }
     }
     
+    protected Queue<ByteBuffer> getWriteQueue( SelectionKey key ){
+        Object attachment = key.attachment();
+        return (Queue<ByteBuffer>) attachment;
+    }
+    
+    protected void initWriteQueue( SelectionKey key ){
+        if ( key.attachment() == null ){
+            key.attach( new ConcurrentLinkedQueue<ByteBuffer>());
+        } 
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.SocketFramework#chanelClosed(java.nio.channels.SelectionKey)
      */
@@ -116,6 +130,7 @@ public class SocketServer extends SocketFramework {
         SocketChannel socketChannel = serverSocketChannel.accept();
         socketChannel.configureBlocking(false);
         socketChannel.register(getSelector(), SelectionKey.OP_READ);
+        initWriteQueue( socketChannel.keyFor(getSelector()));
     }
 
     private ServerSocketChannel serverChannel;

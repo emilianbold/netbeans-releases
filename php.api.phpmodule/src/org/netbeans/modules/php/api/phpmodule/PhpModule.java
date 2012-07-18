@@ -59,6 +59,8 @@ import org.openide.windows.WindowManager;
  * Note: For public API, this should likely be final class using accessor pattern.
  * @author Tomas Mysik
  */
+// XXX add isBroken() method
+// XXX add @NonNull etc.
 public abstract class PhpModule {
 
     /**
@@ -80,7 +82,7 @@ public abstract class PhpModule {
 
     /**
      * Get the source directory for this PHP module.
-     * @return the source directory, never <code>null</code>
+     * @return the source directory, <b>can be <code>null</code> or {@link FileObject#isValid() invalid} if the project is corrupted!</b>
      */
     public abstract FileObject getSourceDirectory();
 

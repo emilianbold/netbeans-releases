@@ -53,9 +53,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -139,7 +141,7 @@ public class LogReader {
                                     return false;
                                 }
                             };
-                            if (localMapper.init(fs, root, path)) {
+                            if (localMapper.discover(fs, root, path)) {
                                 resolvedPath = localMapper.getPath(path);
                                 fo = fileSystem.findResource(resolvedPath.getPath());
                                 if (fo != null && fo.isValid() && fo.isData()) {
@@ -343,7 +345,37 @@ public class LogReader {
     private static final String CURRENT_DIRECTORY = "Current working directory"; //NOI18N
     private static final String ENTERING_DIRECTORY = "Entering directory"; //NOI18N
     private static final String LEAVING_DIRECTORY = "Leaving directory"; //NOI18N
-    
+    private static final Pattern MAKE_DIRECTORY = Pattern.compile(".*make(?:\\.exe)?(?:\\[([0-9]+)\\])?: .*`([^']*)'$"); //NOI18N
+    private boolean isEntered;
+    private Stack<Integer> relativesLevel = new Stack<Integer>();
+    private Stack<String> relativesTo = new Stack<String>();
+
+    private void popPath() {
+        if (relativesTo.size() > 1) {
+            relativesTo.pop();
+        }
+    }
+
+    private String peekPath() {
+        if (relativesTo.size() > 1) {
+            return relativesTo.peek();
+        }
+        return root;
+    }
+
+    private void popLevel() {
+        if (relativesLevel.size() > 1) {
+            relativesLevel.pop();
+        }
+    }
+
+    private Integer peekLevel() {
+        if (relativesLevel.size() > 1) {
+            return relativesLevel.peek();
+        }
+        return Integer.valueOf(0);
+    }
+
     private String convertWindowsRelativePath(String path) {
         if (Utilities.isWindows()) {
             if (path.startsWith("/") || path.startsWith("\\")) { // NOI18N
@@ -419,6 +451,33 @@ public class LogReader {
             workDir = convertWindowsRelativePath(workDir);
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 message = "**>> by [just path string] "; //NOI18N
+            }
+        } else if (line.indexOf("make") >= 0) { //NOI18N
+            Matcher m = MAKE_DIRECTORY.matcher(line);
+            boolean found = m.find();
+            if (found && m.start() == 0) {
+                String levelString = m.group(1);
+                int level = levelString == null ? 0 : Integer.valueOf(levelString);
+                int baseLavel = peekLevel().intValue();
+                workDir = m.group(2);
+                workDir = convertPath(workDir);
+                workDir = convertWindowsRelativePath(workDir);
+                if (level > baseLavel) {
+                    isEntered = true;
+                    relativesLevel.push(level);
+                    isEntered = true;
+                } else if (level == baseLavel) {
+                    isEntered = !this.isEntered;
+                } else {
+                    isEntered = false;
+                    popLevel();
+                }
+                if (isEntered) {
+                    relativesTo.push(workDir);
+                } else {
+                    popPath();
+                    workDir = peekPath();
+                }
             }
         }
 
@@ -811,12 +870,7 @@ public class LogReader {
                     out.append(pkg.substring(1, pkg.length()-1));
                 } else {
                     StringTokenizer st = new StringTokenizer(pkg);
-                    boolean first = true;
                     if (st.hasMoreTokens()) {
-                        if (!first) {
-                            out.append(" "); //NOI18N
-                        }
-                        first = false;
                         out.append(st.nextToken());
                     }
                 }
@@ -826,12 +880,7 @@ public class LogReader {
                     out.append(pkg.substring(1, pkg.length()-1)); //NOI18N
                 } else {
                     StringTokenizer st = new StringTokenizer(pkg);
-                    boolean first = true;
                     if (st.hasMoreTokens()) {
-                        if (!first) {
-                            out.append(" "); //NOI18N
-                        }
-                        first = false;
                         out.append(st.nextToken());
                     }
                 }

@@ -83,8 +83,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-//import static org.netbeans.modules.javascript.editing.options.CodeStyle.*;
-
 /**
  *
  * @author phrebejk

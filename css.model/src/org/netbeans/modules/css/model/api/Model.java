@@ -149,6 +149,7 @@ public final class Model {
         lookupContent.add(parserResult);
         lookupContent.add(parserResult.getSnapshot());
         lookupContent.add(parserResult.getSnapshot().getText());
+        lookupContent.add(parserResult.getSnapshot().getSource().getFileObject());
         lookupContent.add(parserResult.getSnapshot().getSource().getDocument(true));
         
         MODEL_LOOKUP = Lookups.fixed(lookupContent.toArray());

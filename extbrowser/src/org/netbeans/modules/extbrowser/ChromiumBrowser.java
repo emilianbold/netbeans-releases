@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.extbrowser.plugins.BrowserId;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 
 
 public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeListener {
@@ -117,7 +117,7 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
             File file = new java.io.File (CHROMIUM_PATH); // NOI18N
             if (file.exists()) {
                 return new NbProcessDescriptor (
-                        file.getAbsolutePath(), "--remote-debugging-port=9222 {" + 
+                        file.getAbsolutePath(), "{" + 
                         ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", 
                         NbBundle.getMessage (ChromiumBrowser.class, 
                                 "MSG_BrowserExecutorHint")          // NOI18N
@@ -129,8 +129,8 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
     }
 
     @Override
-    public BrowserId getBrowserFamilyId() {
-        return BrowserId.CHROMIUM;
+    public BrowserFamilyId getBrowserFamilyId() {
+        return BrowserFamilyId.CHROMIUM;
     }
 
 }

@@ -99,6 +99,10 @@ public abstract class SocketFramework implements Runnable {
         getSelector().wakeup();
     }
     
+    public boolean isStopped(){
+        return stop;
+    }
+    
     protected void doRun() throws IOException {
         while (!stop) {
             while (true) {
@@ -113,6 +117,9 @@ public abstract class SocketFramework implements Runnable {
                 }
             }
             getSelector().select();
+            if ( isStopped() ){
+                return;
+            }
 
             for (Iterator<SelectionKey> iterator = getSelector().selectedKeys()
                     .iterator(); iterator.hasNext();)
@@ -123,7 +130,7 @@ public abstract class SocketFramework implements Runnable {
                 if (!key.isValid()) {
                     continue;
                 }
-
+                
                 try {
                     process(key);
                 }
@@ -133,6 +140,7 @@ public abstract class SocketFramework implements Runnable {
                 }
             }
         }
+        getSelector().close();
     }
     
     protected void process( SelectionKey key ) throws IOException {
@@ -148,10 +156,7 @@ public abstract class SocketFramework implements Runnable {
     
     protected abstract SocketAddress getAddress();
     
-    protected Queue<ByteBuffer> getWriteQueue( SelectionKey key ){
-        Object attachment = key.attachment();
-        return (Queue<ByteBuffer>) attachment;
-    }
+    protected abstract Queue<ByteBuffer> getWriteQueue( SelectionKey key );
     
     protected void setReadHandler( ReadHandler handler ){
         this.handler = handler;
@@ -165,13 +170,11 @@ public abstract class SocketFramework implements Runnable {
         return selector;
     }
     
-    protected void initWriteQueue( SelectionKey key ){
-        if ( key.attachment() == null ){
-            key.attach( new ConcurrentLinkedQueue<ByteBuffer>());
-        } 
+    protected void readData( SelectionKey key ) throws IOException {
+        handler.read(key);
     }
     
-    private void writeData( SelectionKey key ) throws IOException  {
+    protected void writeData( SelectionKey key ) throws IOException  {
         Queue<ByteBuffer> queue = getWriteQueue(key);
         while( queue!= null ){
             ByteBuffer buffer = queue.poll();
@@ -183,11 +186,6 @@ public abstract class SocketFramework implements Runnable {
             }
         }
         key.interestOps(SelectionKey.OP_READ);
-    }
-    
-    private void readData( SelectionKey key ) throws IOException {
-        initWriteQueue(key);
-        handler.read(key);
     }
     
     private Selector selector;

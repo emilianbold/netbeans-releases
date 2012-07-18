@@ -64,8 +64,11 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -90,6 +93,28 @@ public final class Utils {
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
     private Utils() {
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "# {1} - source file directory path",
+        "Utils.metadata.corrupted=<html><b>Project {0} has corrupted metadata</b>.<br><br>Restore \"{1}\" directory and eventually reopen the project."
+    })
+    public static void warnInvalidSourcesDirectory(PhpProject project) {
+        String name = project.getName();
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
+                Bundle.Utils_metadata_corrupted(name, getSourceDirectory(project).getAbsolutePath()),
+                name,
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION));
+        // XXX show problems customizer
+    }
+
+    private static File getSourceDirectory(PhpProject project) {
+        String srcDir = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.SRC_DIR);
+        return FileUtil.normalizeFile(new File(project.getHelper().resolvePath(srcDir)));
     }
 
     public static Color getSafeColor(int red, int green, int blue) {

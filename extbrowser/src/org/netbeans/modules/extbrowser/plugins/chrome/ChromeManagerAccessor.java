@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
+import org.netbeans.modules.extbrowser.plugins.ExtensionManager;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
 import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.netbeans.modules.extbrowser.plugins.Utils;
@@ -96,26 +97,26 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()
          */
         @Override
-        public boolean isInstalled() {
+        public ExtensionManager.ExtensitionStatus isInstalled() {
             File defaultProfile = getDefaultProfile();
             if ( defaultProfile == null ){
-                return false;
+                return ExtensionManager.ExtensitionStatus.MISSING;
             }
             File[] prefs = defaultProfile.listFiles( new FileFinder("preferences"));
             if ( prefs == null || prefs.length == 0){
-                return false;
+                return ExtensionManager.ExtensitionStatus.MISSING;
             }
             JSONObject preferences = Utils.readFile( prefs[0] );
             if (preferences == null) {
-                return false;
+                return ExtensionManager.ExtensitionStatus.MISSING;
             }
             JSONObject extensions = (JSONObject)preferences.get("extensions");
             if (extensions == null) {
-                return false;
+                return ExtensionManager.ExtensitionStatus.MISSING;
             }
             JSONObject settings = (JSONObject)extensions.get("settings");
             if (extensions == null) {
-                return false;
+                return ExtensionManager.ExtensitionStatus.MISSING;
             }
             for (Object item : settings.entrySet()) {
                 Map.Entry e = (Map.Entry)item;
@@ -123,13 +124,13 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 if (extension != null) {
                     String path = (String)extension.get("path");
                     if (path != null && path.indexOf("/extbrowser/plugins/chrome") != -1) {
-                        return true;
+                        return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
                     JSONObject manifest = (JSONObject)extension.get("manifest");
                     if (manifest != null && PLUGIN_NAME.equals((String)manifest.get("name"))) {
                         String version = (String)manifest.get("version");
                         if (isUpdateRequired( version )){
-                            return false;
+                            return ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE;
                         }
                         Number n = (Number)extension.get("state");
                         if (n != null && n.intValue() != 1) {
@@ -141,18 +142,18 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                                     "TTL_ChromePluginIsDisabled"));                             // NOI18N
                             DialogDisplayer.getDefault().notify(descriptor);
                         }
-                        return true;
+                        return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
                 }
             }
-            return false;
+            return ExtensionManager.ExtensitionStatus.MISSING;
         }
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#install(org.netbeans.modules.web.plugins.PluginLoader)
          */
         @Override
-        public boolean install( PluginLoader loader) {
+        public boolean install( PluginLoader loader, ExtensionManager.ExtensitionStatus currentStatus ) {
             File extensionFile = InstalledFileLocator.getDefault().locate(
                     EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
             
@@ -164,7 +165,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             
             NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(ChromeExtensionManager.class, 
-                            "LBL_InstallMsg"),                                  // NOI18N
+                            currentStatus == ExtensionManager.ExtensitionStatus.MISSING ? 
+                        "LBL_InstallMsg" : "LBL_UpgradeMsg"),                                  // NOI18N
                     NbBundle.getMessage(ChromeExtensionManager.class, 
                             "TTL_InstallExtension"),                            // NOI18N
                     NotifyDescriptor.OK_CANCEL_OPTION,

@@ -43,29 +43,34 @@
 package org.netbeans.modules.web.livehtml;
 
 import java.net.URL;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import org.netbeans.modules.web.livehtml.ui.LiveHTMLComponent;
 import org.netbeans.modules.web.webkit.debugging.spi.LiveHTMLImplementation;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
 
 @ServiceProvider(service=LiveHTMLImplementation.class)
 public class LiveHTMLImpl implements LiveHTMLImplementation {
 
     @Override
     public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
-        Model.getModel(connectionURL, false).storeDocumentVersion(timeStamp, content, callStack, true);
+        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
+        if (resolvedAnalysis != null) {
+            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, callStack, true);
+        }
     }
 
     @Override
     public void storeDocumentVersionAfterChange(URL connectionURL, long timeStamp, String content) {
-        Model.getModel(connectionURL, false).storeDocumentVersion(timeStamp, content, null, false);
+        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
+        if (resolvedAnalysis != null) {
+            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, null, false);
+        }
     }
     
     @Override
     public void storeDataEvent(URL connectionURL, long timeStamp, String data, String request, String mime) {
-        Model.getModel(connectionURL, false).storeDataEvent(timeStamp, data, request, mime);
+        final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
+        if (resolvedAnalysis != null) {
+            resolvedAnalysis.storeDataEvent(timeStamp, data, request, mime);
+        }
     }
 
 }

@@ -64,6 +64,7 @@ import org.netbeans.modules.css.editor.csl.CssCompletion;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssValueElement;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -114,13 +115,13 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
     }
 
-    public static CssCompletionItem createPropertyNameCompletionItem(CssElement element,
-            String propertyName,
+    public static CssCompletionItem createPropertyCompletionItem(CssElement element,
+            PropertyDefinition property,
             String propertyInsertPrefix,
             int anchorOffset,
             boolean addSemicolon) {
 
-        return new PropertyCompletionItem(element, propertyName, propertyInsertPrefix, anchorOffset, addSemicolon);
+        return new PropertyCompletionItem(element, property, propertyInsertPrefix, anchorOffset, addSemicolon);
     }
 
     public static CssCompletionItem createRAWCompletionItem(CssElement element,
@@ -561,15 +562,25 @@ public abstract class CssCompletionItem implements CompletionProposal {
     static class PropertyCompletionItem extends CssCompletionItem {
 
         private String propertyInsertPrefix;
+        private PropertyDefinition property;
+        private boolean vendorProperty;
         
         private PropertyCompletionItem(CssElement element,
-                String propertyName,
+                PropertyDefinition property,
                 String propertyInsertPrefix,
                 int anchorOffset,
                 boolean addSemicolon) {
 
-            super(element, propertyName, anchorOffset, addSemicolon);
+            super(element, property.getName(), anchorOffset, addSemicolon);
+            this.property = property;
             this.propertyInsertPrefix = propertyInsertPrefix;
+            this.vendorProperty = Css3Utils.isVendorSpecificProperty(property.getName());
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            //list the vendor specific properties after the standard properties
+            return vendorProperty ? super.getSortPrioOverride() + 50 : super.getSortPrioOverride();
         }
 
         @Override
@@ -579,7 +590,7 @@ public abstract class CssCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            if (Css3Utils.isVendorSpecificProperty(getName())) {
+            if (vendorProperty) {
                 formatter.appendHtml("<i>"); //NOI18N
                 formatter.appendText(getName());
                 formatter.appendHtml("</i>"); //NOI18N
@@ -590,6 +601,16 @@ public abstract class CssCompletionItem implements CompletionProposal {
             }
         }
 
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            formatter.appendHtml("<font color=999999>"); //NOI18N
+            formatter.appendText(property.getPropertyCategory().getDisplayName());
+            formatter.appendHtml("</font>");
+             
+            return formatter.getText();
+            
+        }
+        
         @Override
         public String getInsertPrefix() {
             return propertyInsertPrefix + ": "; //NOI18N

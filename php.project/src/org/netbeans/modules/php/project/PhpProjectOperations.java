@@ -76,7 +76,6 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
 
     @Override
     public void notifyDeleting() throws IOException {
-        project.setDeleting();
     }
 
     @Override

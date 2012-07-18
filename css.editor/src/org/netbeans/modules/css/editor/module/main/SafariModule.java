@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -52,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class SafariModule extends BrowserSupportModule {
 
     public SafariModule() {
-        super(new DefaultBrowser("Safari", "Apple", "webkit", "webkit", "safari20"), "webkit"); //NOI18N
+        super(new DefaultBrowser("Safari", "Apple", "webkit", "webkit", "safari20", PropertyCategory.SAFARI), "webkit"); //NOI18N
     }
 
 }

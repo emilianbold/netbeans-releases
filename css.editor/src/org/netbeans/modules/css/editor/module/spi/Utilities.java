@@ -148,9 +148,9 @@ public class Utilities {
                 String insertPrefix = stripLen == 0
                         ? p.getName()
                         : p.getName().substring(stripLen);
-                CompletionProposal proposal = CssCompletionItem.createPropertyNameCompletionItem(handle, p.getName(), insertPrefix, anchor, false);
+                CompletionProposal proposal = CssCompletionItem.createPropertyCompletionItem(handle, p, insertPrefix, anchor, false);
                 proposals.add(proposal);
-            }
+            } 
         }
         return proposals;
     }

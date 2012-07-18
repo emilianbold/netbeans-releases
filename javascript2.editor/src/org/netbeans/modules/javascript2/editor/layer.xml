@@ -25,7 +25,7 @@
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-javascript2-editor-codetemplates.xml" url="codetemplates.xml">
-                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript.editing.Bundle"/>
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.Bundle"/>
                         </file>
                     </folder>
                 </folder>

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -56,10 +55,10 @@ import java.util.List;
 import org.netbeans.modules.extbrowser.plugins.*;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -70,7 +69,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Radim Kubacki
  */
-public abstract class ExtBrowserImpl extends HtmlBrowser.Impl 
+public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     implements EnhancedBrowser 
 {
     /** Lookup of this {@code HtmlBrowser.Impl}.  */
@@ -142,8 +141,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                     new MessageDispatcherImpl(),
                     new RemoteScriptExecutor(this)
                 ));
-        if (extBrowserFactory.getBrowserFamilyId() == BrowserId.CHROME || 
-                extBrowserFactory.getBrowserFamilyId() == BrowserId.CHROMIUM) {
+        if (extBrowserFactory.getBrowserFamilyId() == BrowserFamilyId.CHROME || 
+                extBrowserFactory.getBrowserFamilyId() == BrowserFamilyId.CHROMIUM) {
             WebKitDebuggingTransport transport = new WebKitDebuggingTransport(this);
             lookups.add(Lookups.fixed(transport, Factory.createWebKitDebugging(transport)));
         }
@@ -151,8 +150,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
     }
     
-    protected BrowserId getDefaultBrowserFamilyId(){
-        return BrowserId.UNKNOWN;
+    protected BrowserFamilyId getDefaultBrowserFamilyId(){
+        return BrowserFamilyId.UNKNOWN;
     }
     
     
@@ -225,6 +224,15 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     public URL getURL() {
         return url;
     }
+
+    public void close(boolean closeTab) {
+        if (hasEnhancedMode()) {
+            BrowserTabDescriptor tab = getBrowserTabDescriptor();
+            if (tab != null) {
+                ExternalBrowserPlugin.getInstance().close(tab, closeTab);
+            }
+        }
+    }
     
     /** 
      *  Sets current URL. Descendants of this class will implement it and they can call this
@@ -237,10 +245,11 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         if (hasEnhancedMode()) {
             BrowserTabDescriptor tab = getBrowserTabDescriptor();
             if (tab == null) {
-                BrowserId pluginId = extBrowserFactory.getBrowserFamilyId();
-                boolean pluginAvailable = ExtensionManager
+                BrowserFamilyId pluginId = extBrowserFactory.getBrowserFamilyId();
+                ExtensionManager.ExtensitionStatus status = ExtensionManager
                         .isInstalled(pluginId);
-                if (!pluginAvailable) {
+                if (status == ExtensionManager.ExtensitionStatus.MISSING || 
+                        status == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE) {
                     ExtensionManager.installExtension(pluginId,
                             new PluginLoader() {
 
@@ -248,7 +257,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                                 public void requestPluginLoad( URL url ) {
                                     loadURLInBrowser(url);
                                 }
-                            });
+                            }, status);
                 }
                 
                 // instead of using real URL to open a new tab in the browser
@@ -260,7 +269,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                 // even when the URL is loaded for the first time.
                 URL tempUrl = createBlankHTMLPage();
                 assert tempUrl != null;
-                if (pluginAvailable) {
+                if (status == ExtensionManager.ExtensitionStatus.INSTALLED) {
                     ExternalBrowserPlugin.getInstance().register(tempUrl, url, this);
                 }
                 loadURLInBrowser(tempUrl);

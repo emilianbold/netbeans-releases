@@ -47,15 +47,14 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.Charset;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.netbeans.modules.netserver.ReadHandler;
 import org.netbeans.modules.netserver.SocketServer;
 
@@ -66,17 +65,8 @@ import org.netbeans.modules.netserver.SocketServer;
  */
 public class WebSocketServer extends SocketServer {
     
-    public static final String UTF_8 = "UTF-8";                    // NOI18N
-    static final int BYTES = 1000;  
-    private static final char NEW_LINE = '\n';
-    
     protected static final Logger LOG = SocketServer.LOG;
     
-    static final String VERSION = "Sec-WebSocket-Version";  // NOI18N
-    static final String KEY = "Sec-WebSocket-Key";          // NOI18N
-    static final String KEY1 = "Sec-WebSocket-Key1";        // NOI18N
-    static final String KEY2 = "Sec-WebSocket-Key2";        // NOI18N
-
     public WebSocketServer( SocketAddress address ) throws IOException {
         this(address , true);
     }
@@ -174,12 +164,20 @@ public class WebSocketServer extends SocketServer {
             return httpRequest;
         }
         
+        byte[] getContent(){
+            return content;
+        }
+        
         void setRequest( String request ){
             httpRequest = request;
         }
         
         void setHandler( WebSocketChanelHandler handler ){
             this.handler = handler;
+        }
+        
+        void setContent( byte[] content ) {
+            this.content = content;
         }
         
         WebSocketChanelHandler getHandler(){
@@ -190,12 +188,13 @@ public class WebSocketServer extends SocketServer {
         private volatile Map<String,String> headers;
         private volatile String httpRequest;
         private volatile WebSocketChanelHandler handler;
+        private volatile byte[] content;
     }
     
     protected class WebSocketHandler implements ReadHandler {
         
         WebSocketHandler(){
-            byteBuffer = ByteBuffer.allocate(BYTES);
+            byteBuffer = ByteBuffer.allocate(Utils.BYTES);
         }
         
         /* (non-Javadoc)
@@ -228,9 +227,9 @@ public class WebSocketServer extends SocketServer {
 
         protected void initHandler( SelectionKey key ) throws IOException {
             Map<String, String> headers = getContext(key).getHeaders();
-            String version = headers.get(VERSION);
+            String version = headers.get(Utils.VERSION);
             if ( version == null ){
-                if ( headers.containsKey( KEY1 ) ){
+                if ( headers.containsKey( Utils.KEY1 ) ){
                     handshakeVersion76( key );
                 }
                 else {
@@ -274,53 +273,21 @@ public class WebSocketServer extends SocketServer {
         protected boolean readHttpRequest(SocketChannel socketChannel, 
                 SelectionKey key) throws IOException
         {
-                List<String> headers = new LinkedList<String>();
-                byteBuffer.clear();
-                StringBuilder builder = new StringBuilder();
-                byte[] bytes = new byte[ BYTES ];
-                read: while( true ){
-                    int read = socketChannel.read( byteBuffer );
-                    if ( read ==-1 ){
-                        return false;
-                    }
-                    byteBuffer.flip();
-                    int size = byteBuffer.limit();
-                    byteBuffer.get( bytes , 0, size);
-                    byteBuffer.clear();
-                    String stringValue = new String( bytes , 0, size, 
-                            Charset.forName(UTF_8) );
-                    int index = stringValue.indexOf(NEW_LINE);
-                    if ( index == -1 ){
-                        builder.append( stringValue );
-                    }
-                    else {
-                        builder.append( stringValue.subSequence(0, index));
-                        String line = builder.toString().trim();
-                        headers.add( line );
-                        builder.setLength(0);
-                        if ( line.isEmpty() ){
-                            break;
-                        }
-                        do {
-                            stringValue = stringValue.substring( index +1);
-                            index = stringValue.indexOf(NEW_LINE );
-                            if ( index != -1){
-                                line = stringValue.substring( 0, index ).trim();
-                                headers.add( line );
-                                if ( line.isEmpty() ){
-                                    break read;
-                                }
-                            }
-                        }
-                        while( index != -1 );
-                        builder.append( stringValue);
-                    }
-                }
-                setHeaders(key , headers);
+            byte[] content = new byte[8];
+            List<String> headers = Utils.readHttpRequest(socketChannel, byteBuffer, 
+                    content);
+            if ( headers != null ){
+                setHeaders(key , headers, content );
                 return true;
+            }
+            else {
+                return false;
+            }
         }
         
-        private void setHeaders(SelectionKey key , List<String> headerLines){
+        private void setHeaders(SelectionKey key , List<String> headerLines,
+                byte[] content )
+        {
             if ( headerLines.size() >0 ){
                 getContext(key).setRequest(headerLines.get(0));
             }
@@ -332,6 +299,7 @@ public class WebSocketServer extends SocketServer {
                 }
             }
             getContext(key).setHeaders(result);
+            getContext(key).setContent(content);
         }
         
         private ByteBuffer byteBuffer;

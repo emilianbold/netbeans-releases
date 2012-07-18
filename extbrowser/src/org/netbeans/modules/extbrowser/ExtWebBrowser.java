@@ -47,7 +47,8 @@ package org.netbeans.modules.extbrowser;
 import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extbrowser.plugins.BrowserId;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.EnhancedBrowserFactory;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -57,7 +58,7 @@ import org.openide.util.Utilities;
 /** Factory and descriptions for external browser
  */
 
-public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable, PropertyChangeListener {
+public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable, PropertyChangeListener, EnhancedBrowserFactory {
 
     private static final long serialVersionUID = -3021027901671504127L;
 
@@ -466,12 +467,12 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         init();
     }
 
-    public BrowserId getBrowserFamilyId() {
+    public BrowserFamilyId getBrowserFamilyId() {
         NbProcessDescriptor desc = getBrowserExecutable();
         if (desc != null) {
             String p = desc.getProcessName();
             if (p.contains("chrom")) {
-                return BrowserId.CHROME;
+                return BrowserFamilyId.CHROME;
             }
             
             // TODO:
@@ -480,7 +481,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             
             
         }
-        return BrowserId.UNKNOWN;
+        return BrowserFamilyId.UNKNOWN;
     }
     
     /** Default format that can format tags related to execution. 

@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -76,8 +75,8 @@ import javax.swing.text.BadLocationException;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
@@ -676,8 +675,8 @@ class JSClientGenerator {
             VariableElement param = parameters.get(0);
             TypeMirror type = param.asType();
             if ( isSimple(type, controller)){
-                return new Object[]{MethodType.SET, name.substring(3).
-                        toLowerCase(Locale.ENGLISH), type};
+                return new Object[]{MethodType.SET, lowerFirstLetter(
+                        name.substring(3)), type};
             }
             else {
                 return null;
@@ -697,14 +696,25 @@ class JSClientGenerator {
             }
             TypeMirror returnType = method.getReturnType();
             if ( isSimple(returnType, controller)){
-                return new Object[]{ MethodType.GET, name.substring(start).
-                        toLowerCase(Locale.ENGLISH) , returnType};
+                return new Object[]{ MethodType.GET, lowerFirstLetter(
+                        name.substring(start)), returnType};
             }
             else {
                 return null;
             }
         }
         return null;
+    }
+    
+    private String lowerFirstLetter( String name ){
+        if ( name.length() <=1){
+            return name;
+        }
+        char firstLetter = name.charAt(0);
+        if ( Character.isUpperCase(firstLetter)){
+            return Character.toLowerCase(firstLetter) +name.substring(1);
+        }
+        return name;
     }
 
     /*

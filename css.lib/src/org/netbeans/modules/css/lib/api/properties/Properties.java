@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -62,9 +63,43 @@ public class Properties {
     private static final AtomicReference<Collection<PropertyDefinition>> PROPERTIES = new AtomicReference<Collection<PropertyDefinition>>();
     private static final Map<String, PropertyModel> PROPERTY_MODELS = new HashMap<String, PropertyModel>();
     
+    public static boolean isVisibleProperty(PropertyDefinition propertyDefinition) {
+        char c = propertyDefinition.getName().charAt(0);
+        return c != '@';
+    }
+    
+    public static boolean isVendorSpecificProperty(PropertyDefinition propertyDefinition) {
+        return isVendorSpecificPropertyName(propertyDefinition.getName());
+    }
+    
+    public static boolean isVendorSpecificPropertyName(String propertyName) {
+        char c = propertyName.charAt(0);
+        return c == '_' || c == '-';
+    }
+    
     /**
      * 
      * @return collection of all available property definitions
+     */
+    public static Collection<PropertyDefinition> getProperties(boolean visibleOnly) {
+        Collection<PropertyDefinition> props = getProperties();
+        if(visibleOnly) {
+            //filter
+            Collection<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
+            for(PropertyDefinition pd : props) {
+                if(isVisibleProperty(pd)) {
+                    filtered.add(pd);
+                }
+            }
+            return filtered;
+            
+        } else {
+            return props;
+        }
+    }
+    /**
+     * 
+     * @return collection of all available <b>VISIBLE</b> property definitions
      */
     public static Collection<PropertyDefinition> getProperties() {
         synchronized (PROPERTIES) {
@@ -75,6 +110,14 @@ public class Properties {
         }
     }
 
+    //return first found, to be changed!
+    public static PropertyDefinition getProperty(String propertyName) {
+        Collection<PropertyDefinition> found = getProperties(propertyName);
+        return found != null && !found.isEmpty() 
+                ? found.iterator().next()
+                : null;
+    }
+    
     /**
      * Returns a collection of property definitions for the given property name.
      */

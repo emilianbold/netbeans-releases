@@ -165,9 +165,9 @@ public class DiffHighlighter implements DocumentListener, CaretListener, MouseLi
 
     @Override
     public void caretUpdate(CaretEvent e) {
-        if (!(comp instanceof RealContent.MyEditorPane)) {
-            return;
-        }
+//        if (!(comp instanceof RealContent.MyEditorPane)) {
+//            return;
+//        }
         selectedOffset = comp.getCaretPosition();
         lastRefreshTask.schedule(100);
     }
@@ -176,7 +176,7 @@ public class DiffHighlighter implements DocumentListener, CaretListener, MouseLi
         bag2.clear();
         int offset = selectedOffset;//comp.getCaretPosition();
         if (changes == null) {
-            ((RealContent.MyEditorPane)comp).showToolTip(-1);
+//            ((RealContent.MyEditorPane)comp).showToolTip(-1);
             return;
         }
         for (Change o : changes) {
@@ -186,11 +186,11 @@ public class DiffHighlighter implements DocumentListener, CaretListener, MouseLi
                         bag2.addHighlight(oo.getOffset(), oo.getOffset()+oo.getLength(), hoverColor);
                     }
                 }
-                ((RealContent.MyEditorPane)comp).showToolTip(o.getRevisionIndex());
+//                ((RealContent.MyEditorPane)comp).showToolTip(o.getRevisionIndex());
                 return;
             }
         }
-        ((RealContent.MyEditorPane)comp).showToolTip(-1);
+//        ((RealContent.MyEditorPane)comp).showToolTip(-1);
     }
     
     @Override
@@ -219,9 +219,9 @@ public class DiffHighlighter implements DocumentListener, CaretListener, MouseLi
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        if (!(comp instanceof RealContent.MyEditorPane)) {
-            return;
-        }
+//        if (!(comp instanceof RealContent.MyEditorPane)) {
+//            return;
+//        }
         Point p = comp.getMousePosition();
         if (p == null) {
             return;

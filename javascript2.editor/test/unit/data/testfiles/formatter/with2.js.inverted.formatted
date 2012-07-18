@@ -7,9 +7,12 @@ with ( a ) {
 with ( (a) )
     doOneThing();
 
-with ( call() ) "";
+with ( call() )
+    "";
 
-with ( (a & b) ) test();
+with ( (a & b) )
+    test();
 
-with ( (a + c).test() );
+with ( (a + c).test() )
+    ;
 

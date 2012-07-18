@@ -62,7 +62,6 @@ import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -430,7 +429,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
 
         ts.move(request.anchor);
-        if (ts.movePrevious() && ts.moveNext()) {
+        if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
             if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();
             }
@@ -480,6 +479,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             List<JsObject> types = new ArrayList<JsObject>();
             List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
             List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
+            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+            JsIndex jsIndex = JsIndex.get(fo);
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
@@ -500,7 +501,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                     
-                    if(!types.isEmpty()){
+                    Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
+//                    Collection<String> prototypeChain = new ArrayList<String>();
+                    for (IndexedElement globalVar : globalVars) {
+                        System.out.println("globalVar: " + globalVar.getName());
+                        Collection<TypeUsage> assignments = globalVar.getAssignments();
+                        lastResolvedTypes.addAll(assignments);
+//                        for (TypeUsage typeUsage : assignments) {
+//                            prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+//                        }
+                    }
+//                    for (String string : prototypeChain) {
+//                        lastResolvedTypes.add(new TypeUsageImpl(string));
+//                    }
+                    
+                    if(!types.isEmpty()){ 
                         for(JsObject type : types) {
                             if(type.getAssignmentForOffset(request.anchor).isEmpty()) {
                                 // also check, whether the same type is not in the index
@@ -523,6 +538,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                     break;
                                 }
                             }
+                            
                         }
                     } 
                 } else {
@@ -544,8 +560,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     
                     
                     for (TypeUsage typeUsage : lastResolvedTypes) {
-                        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-                        Collection<? extends IndexResult> indexResults = JsIndex.get(fo).findFQN(typeUsage.getType() + "." + name);
+                        Collection<String> prototypeChain = new ArrayList<String>();
+                        prototypeChain.add(typeUsage.getType());
+                        prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                        
+                        Collection<? extends IndexResult> indexResults = null;        
+                        for (String fqn : prototypeChain) {
+                            indexResults = jsIndex.findFQN(fqn + "." + name); //NOI18N
+                            if (indexResults.isEmpty()) {
+                                indexResults = jsIndex.findFQN(fqn + ".prototype." + name); //NOI18N
+                            }
+                            if(!indexResults.isEmpty()) {
+                                break;
+                            }
+                        }
+                        
                         for (IndexResult indexResult : indexResults) {
                             JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
@@ -578,12 +607,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     lastResolvedTypes = newResolvedTypes;
                 }
             }
-
-            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-            JsIndex jsIndex = JsIndex.get(fo);
+            
+            // resolving prototpe chains
+            Collection<String> prototypeChain = new ArrayList<String>();
+            for (TypeUsage typeUsage : lastResolvedTypes) {
+                prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+            }
+            for(JsObject jsObject : lastResolvedObjects) {
+                prototypeChain.addAll(findPrototypeChain(ModelUtils.createFQN(jsObject), jsIndex));
+            }
+            for (String string : prototypeChain) {
+                lastResolvedTypes.add(new TypeUsageImpl(string));
+            }
+            
             HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
             boolean isFunction = false; // addding Function to the prototype chain?
-            List<IndexedElement> indexedElements = new ArrayList<IndexedElement>();
             for (TypeUsage typeUsage : lastResolvedTypes) {
                 // at first try to find the type in the model
                 JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
@@ -614,14 +652,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             }
                         }
                     }
-                    Collection<IndexedElement> properties = jsIndex.getProperties(typeUsage.getType());
-                    for (IndexedElement indexedElement : properties) {
-                        JsElement element = addedProperties.get(indexedElement.getName());
-                        if (startsWith(indexedElement.getName(), request.prefix) 
-                                && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                            indexedElements.add(indexedElement);
-                        }
-                    }
+                    addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
                 }
             }
             for (JsObject resolved : lastResolvedObjects) {
@@ -631,42 +662,16 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 addObjectPropertiesToCC(resolved, request, addedProperties);
                 if (!resolved.isDeclared()) {
                     // if the object is not defined here, look to the index as well
-                    Collection<IndexedElement> properties = jsIndex.getProperties(ModelUtils.createFQN(resolved));
-                    for (IndexedElement indexedElement : properties) {
-                        JsElement element = addedProperties.get(indexedElement.getName());
-                        if (startsWith(indexedElement.getName(), request.prefix) 
-                                && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                            indexedElements.add(indexedElement);
-                        }
-                    }
+                    addObjectPropertiesFromIndex(ModelUtils.createFQN(resolved), jsIndex, request, addedProperties);
                 }
             }
             
-            // add as last type Object
-            for (IndexedElement indexedElement : jsIndex.getProperties("Object")) {
-                if (startsWith(indexedElement.getName(), request.prefix)
-                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                    addedProperties.put(indexedElement.getName(), indexedElement);
-                }
-            }
-            // TODO there should be added objects from prototype chain
             if (isFunction) {
-                for (IndexedElement indexedElement : jsIndex.getProperties("Function")) {
-                    if (startsWith(indexedElement.getName(), request.prefix)) {
-                        addedProperties.put(indexedElement.getName(), indexedElement);
-                    }
-                }
+                addObjectPropertiesFromIndex("Function", jsIndex, request, addedProperties); //NOI18N
             }
             
-            
-            for(IndexedElement indexedElement : indexedElements) {
-                JsElement property = addedProperties.get(indexedElement.getName());
-                if (property == null 
-                        && (property == null || (!property.isDeclared() && indexedElement.isDeclared()))) {
-                    addedProperties.put(indexedElement.getName(), indexedElement);
-                }
-            }
-            
+            addObjectPropertiesFromIndex("Object", jsIndex, request, addedProperties); //NOI18N
+                        
             // now look to the index again for declared item outside
             StringBuilder fqn = new StringBuilder();
             for (int i = exp.size() - 1; i > -1; i--) {
@@ -808,6 +813,51 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
         }
+    }
+    
+    private void addObjectPropertiesFromIndex(String fqn, JsIndex jsIndex, CompletionRequest request, Map<String, JsElement> addedProperties) {
+        Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+        String prototypeFQN = null;
+        for (IndexedElement indexedElement : properties) {
+            JsElement element = addedProperties.get(indexedElement.getName());
+            if (startsWith(indexedElement.getName(), request.prefix)
+                    && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
+                addedProperties.put(indexedElement.getName(), indexedElement);
+            }
+            if ("prototype".equals(indexedElement.getName())) {
+                prototypeFQN = indexedElement.getFQN();
+            }
+        }
+        if (prototypeFQN != null) {
+            properties = jsIndex.getProperties(prototypeFQN);
+            for (IndexedElement indexedElement : properties) {
+                JsElement element = addedProperties.get(indexedElement.getName());
+                if (startsWith(indexedElement.getName(), request.prefix)
+                        && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
+                    addedProperties.put(indexedElement.getName(), indexedElement);
+                }
+            }
+        }
+    }
+    
+    private Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex) {
+        Collection<String> result = new ArrayList<String>();
+        Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+        for (IndexedElement property : properties) {
+            if("prototype".equals(property.getName())) {
+                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
+                for (IndexResult indexResult : indexResults) {
+                    Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                    for (TypeUsage typeUsage : assignments) {
+                        result.add(typeUsage.getType());
+                    }
+                    for (TypeUsage typeUsage : assignments) {
+                        result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                    }
+                }
+            }
+        }
+        return result;
     }
     
     private Collection<JsObject> getLibrariesGlobalObjects() {

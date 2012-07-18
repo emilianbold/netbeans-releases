@@ -42,19 +42,21 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
-import javax.swing.ActionMap;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.css.visual.api.RuleEditorListener;
+import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.css.visual.filters.FilterSubmenuAction;
 import org.netbeans.modules.css.visual.filters.FiltersManager;
@@ -62,7 +64,7 @@ import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
 import org.netbeans.modules.css.visual.filters.SortActionSupport;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,15 +72,45 @@ import org.openide.util.NbBundle;
  * the client's UI.
  * 
  * It can be controlled and observed via {@link RuleEditorPanelController} 
- * and {@link RuleEditorListener}.
+ * and {@link PropertyChangeListener}.
  *
+ * Open questions/todo-s:
+ * -----------------------
+ * 1) (P3) how to change the paint color of the property *keys*? (existing properties should
+ *    be bolded, the unused in plain font.
+ * 
+ * 2) (P4) related to #1 is how to listen on events happening over the sheet - implementing
+ *    the mouse hover based "disable" action (maybe not necessary since doesn't make
+ *    much sense for the rule editor).
+ * 
+ * 3) (P2) add own (propagate the filters) popup menu to the sheet
+ * 
+ * 4) (P4) (#EA) can property categories be programmatically collapsed/expanded?
+ * 
+ * 5) (P3) in the unsorted mode, can be the categories disabled? They seem to disappear only 
+ *    in the "sort by alpha" mode
+ * 
+ * Enhancements:
+ * --------------
+ * A) if categorized view enabled, the category name containing a physical properties could be in bold font
+ *    and the rest is collapsed (possibly configurable by a toolbar toggle)
+ * 
  * @author marekfukala
  */
-@NbBundle.Messages(
-        "titleLabel.text={0} properties"
-)
+@NbBundle.Messages({
+        "titleLabel.text={0} properties",
+        "label.rule.error.tooltip=The selected rule contains error(s), the lister properties are read only"
+})
 public class RuleEditorPanel extends JPanel {
 
+    private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
+    private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
+    static {
+        ERROR_LABEL.setToolTipText(Bundle.label_rule_error_tooltip());
+    }
+    
+    private static final Color defaultPanelBackground = javax.swing.UIManager.getDefaults().getColor("Panel.background"); //NOI18N
+    
     private PropertySheet sheet;
     
     private Model model;
@@ -88,14 +120,15 @@ public class RuleEditorPanel extends JPanel {
     private boolean showAllProperties, showCategories;
     private SortMode sortMode;
     
-            
-    private Collection<RuleEditorListener> LISTENERS
-            = Collections.synchronizedCollection(new ArrayList<RuleEditorListener>());
+    private RuleNode node;
     
+    private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     /**
      * Creates new form RuleEditorPanel
      */
     public RuleEditorPanel() {
+        node = new RuleNode(this);
+        
         sortMode = SortMode.NATURAL;
         
         filters = new RuleEditorFilters( this );
@@ -121,8 +154,14 @@ public class RuleEditorPanel extends JPanel {
         
         //add the property sheet to the center
         sheet = new PropertySheet();
+        try {
+            sheet.setSortingMode(PropertySheet.UNSORTED);
+        } catch (PropertyVetoException ex) {
+            //no-op
+        }
         sheet.setPopupEnabled(false);
         sheet.setDescriptionAreaVisible(false);
+        sheet.setNodes(new Node[]{node});
         
         add(sheet, BorderLayout.CENTER);
         
@@ -137,53 +176,97 @@ public class RuleEditorPanel extends JPanel {
         setShowAllProperties(filters.getInstance().isSelected(RuleEditorFilters.SHOW_ALL_PROPERTIES));
     }
 
-    public void setSortMode(SortMode mode) {
-        this.sortMode = mode;
-        
-        //update the stylesheet data
-    }
-
     public SortMode getSortMode() {
         return sortMode;
+    }
+
+    public void setSortMode(SortMode mode) {
+        if(this.sortMode == mode) {
+            return ; //no change
+        }
+        this.sortMode = mode;
+        node.fireContextChanged();
+    }
+
+    public boolean isShowAllProperties() {
+        return showAllProperties;
     }
 
     public void setShowAllProperties(boolean showAllProperties) {
         if(this.showAllProperties == showAllProperties) {
             return ; //no change
         }
-        
         this.showAllProperties = showAllProperties;
-        
-        System.out.println("show all properties: " + showAllProperties);
+        node.fireContextChanged();
+    }
+
+    public boolean isShowCategories() {
+        return showCategories;
     }
 
     public void setShowCategories(boolean showCategories) {
         if(this.showCategories == showCategories) {
             return ; //no change
         }
-        
         this.showCategories = showCategories;
-        
-        System.out.println("show categories: " + showCategories);
-        try {
-            sheet.setSortingMode(showCategories ? PropertySheet.UNSORTED : PropertySheet.SORTED_BY_NAMES);
-        } catch (PropertyVetoException ex) {
-            //no-op
-        }
+        node.fireContextChanged();
+    }
+
+    public Model getModel() {
+        return model;
     }
     
     public void setModel(Model model) {
+        if(this.model == model) {
+            return ; //no change
+        }
+        Model oldModel = this.model;
+        Rule oldRule = this.rule;
+        
         this.model = model;
         this.rule = null;
+        
+        CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
+        CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, this.rule);
+        
+        //do not fire change event since it is required
+        //to call setRule(...) subsequently which will 
+        //fire the change even
+    }
+
+    public Rule getRule() {
+        return rule;
     }
     
-    public void setRule(Rule r) {
+    public void setRule(final Rule rule) {
         if(model == null) {
             throw new IllegalStateException("you must call setModel(Model model) beforehand!"); //NOI18N
         }
-        this.rule = r;
+        if(this.rule == rule) {
+            return; //no change
+        }
+        Rule old = this.rule;
+        this.rule = rule;
         
-        sheet.setNodes(new Node[]{new RuleNode(model, rule)});
+        CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, this.rule);
+        
+        //check if the rule is valid
+        if(!rule.isValid()) {
+            northPanel.add(ERROR_LABEL, BorderLayout.WEST);
+            //the component returns different RGB color that is really pained, at least on motif
+            Color npc = northPanel.getBackground();
+            Color bitMoreRed = new Color(
+                Math.min(255, npc.getRed() + 6), 
+                Math.max(0, npc.getGreen() - 3), 
+                Math.max(0, npc.getBlue() - 3));
+            northPanel.setBackground(bitMoreRed);
+        } else {
+            northPanel.remove(ERROR_LABEL);
+            northPanel.setBackground(defaultPanelBackground);
+        }
+        
+        node.fireContextChanged();
+        
         final AtomicReference<String> ruleNameRef = new AtomicReference<String>();
         model.runReadTask(new Model.ModelTask() {
             @Override
@@ -196,25 +279,23 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setNoRuleState() {
-        sheet.setNodes(null);
-        //TODO - show some 'no rule selected' message
+        this.rule = null;
+        node.fireContextChanged();
     }
     
     /**
-     * Registers an instance of {@link RuleEditorListener} to the component.
+     * Registers an instance of {@link PropertyChangeListener} to the component.
      * @param listener
-     * @return true if the listeners list changed
      */
-    public boolean addRuleEditorListener(RuleEditorListener listener) {
-        return LISTENERS.add(listener);
+    public void addRuleEditorListener(PropertyChangeListener listener) {
+        CHANGE_SUPPORT.addPropertyChangeListener(listener);
     }
     /**
-     * Unregisters an instance of {@link RuleEditorListener} from the component.
+     * Unregisters an instance of {@link PropertyChangeListener} from the component.
      * @param listener
-     * @return true if the listeners list changed (listener removed)
      */
-    public boolean removeRuleEditorListener(RuleEditorListener listener) {
-        return LISTENERS.remove(listener);
+    public void removeRuleEditorListener(PropertyChangeListener listener) {
+        CHANGE_SUPPORT.removePropertyChangeListener(listener);
     }
     
     public Action[] getActions() {

@@ -45,7 +45,7 @@
 package org.netbeans.modules.extbrowser;
 
 import java.util.logging.Level;
-import org.netbeans.modules.extbrowser.plugins.BrowserId;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -176,8 +176,8 @@ public class MozillaBrowser extends ExtWebBrowser {
     }
 
     @Override
-    public BrowserId getBrowserFamilyId() {
-        return BrowserId.MOZILLA;
+    public BrowserFamilyId getBrowserFamilyId() {
+        return BrowserFamilyId.MOZILLA;
     }
     
 }

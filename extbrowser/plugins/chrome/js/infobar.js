@@ -56,6 +56,7 @@ NetBeans_Infobar._container = null;
 NetBeans_Infobar.show = function(presets) {
     this._presets = presets;
     this._init();
+    this._initSelectionMode();
     this._showPresets();
 }
 // redraw presets
@@ -70,13 +71,25 @@ NetBeans_Infobar._init = function() {
     this._container = document.getElementById('presets');
     this._registerEvents();
 }
+// selection mode init
+NetBeans_Infobar._initSelectionMode = function() {
+    var selectionMode = document.getElementById('selectionModeCheckBox');
+    selectionMode.checked = NetBeans.getSelectionMode();
+}
 // register events
 NetBeans_Infobar._registerEvents = function() {
+    var that = this;
     document.getElementById('autoPresetButton').addEventListener('click', function() {
         NetBeans.resetPageSize();
     }, false);
     document.getElementById('presetCustomizerButton').addEventListener('click', function() {
         NetBeans.showPresetCustomizer();
+    }, false);
+    document.getElementById('selectionModeCheckBox').addEventListener('click', function() {
+        that._updateSelectionMode(false);
+    }, false);
+    document.getElementById('selectionModeMenu').addEventListener('click', function() {
+        that._updateSelectionMode(true);
     }, false);
 }
 // show presets in the toolbar
@@ -97,6 +110,15 @@ NetBeans_Infobar._showPresets = function() {
         button.appendChild(document.createTextNode(preset.displayName));
         this._container.appendChild(button);
     }
+}
+
+NetBeans_Infobar._updateSelectionMode = function(switchCheckBoxValue) {
+    var checkbox = document.getElementById('selectionModeCheckBox');
+    if (switchCheckBoxValue) {
+        checkbox.checked = !checkbox.checked;
+    }
+    var selectionMode = checkbox.checked;
+    NetBeans.setSelectionMode(selectionMode);
 }
 
 // run!

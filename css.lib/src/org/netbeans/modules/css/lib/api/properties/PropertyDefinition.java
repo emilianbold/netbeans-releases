@@ -191,5 +191,5 @@ public class PropertyDefinition {
         hash = 79 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
     }
-    
+
 }

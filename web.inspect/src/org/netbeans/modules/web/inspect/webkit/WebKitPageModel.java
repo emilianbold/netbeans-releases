@@ -49,6 +49,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
@@ -85,7 +87,7 @@ public class WebKitPageModel extends PageModel {
     private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
 
     /** Logger used by this class */
-    //private java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(WebKitPageModel.class.getName());
+    static final Logger LOG = Logger.getLogger(WebKitPageModel.class.getName());
 
     /**
      * Creates a new {@code WebKitPageModel}.
@@ -114,14 +116,18 @@ public class WebKitPageModel extends PageModel {
         // to reinitialize the page)
         org.openide.nodes.Node node = getDocumentNode();
 
-        // Do not initialize the temporary page unnecessarily
-        Node webKitNode = node.getLookup().lookup(Node.class);
-        webKitNode = convertNode(webKitNode);
-        Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
-        if (attr == null) {
-            // init
-            String initScript = Files.getScript("initialization"); // NOI18N
-            webKit.getRuntime().evaluate(initScript);
+        if (node == null) {
+            LOG.info("getDocumentNode() returned null!"); // NOI18N
+        } else {
+            // Do not initialize the temporary page unnecessarily
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            webKitNode = convertNode(webKitNode);
+            Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
+            if (attr == null) {
+                // init
+                String initScript = Files.getScript("initialization"); // NOI18N
+                webKit.getRuntime().evaluate(initScript);
+            }
         }
     }
 
@@ -300,9 +306,13 @@ public class WebKitPageModel extends PageModel {
                     String initScript = Files.getScript("initialization") // NOI18N
                         + "\nNetBeans.setSelectionMode("+selectionMode+");"; // NOI18N
                     RemoteObject remote = webKit.getDOM().resolveNode(contentDocument, null);
-                    webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}");
-                    synchronized (WebKitPageModel.this) {
-                        contentDocumentMap.put(contentDocument.getNodeId(), remote);
+                    if (remote == null) {
+                        LOG.log(Level.INFO, "Node with ID {0} resolved to null RemoteObject!", contentDocument.getNodeId()); // NOI18N
+                    } else {
+                        webKit.getRuntime().callFunctionOn(remote, "function() {\n"+initScript+"\n}");
+                        synchronized (WebKitPageModel.this) {
+                            contentDocumentMap.put(contentDocument.getNodeId(), remote);
+                        }
                     }
                 }
             });

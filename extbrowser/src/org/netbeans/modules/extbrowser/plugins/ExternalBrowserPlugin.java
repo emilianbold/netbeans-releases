@@ -78,6 +78,8 @@ import org.openide.util.RequestProcessor;
 public final class ExternalBrowserPlugin {
     /** ID of 'reload of save' feature. */
     private static final String FEATURE_ROS = "RoS"; // NOI18N
+    
+    public static final String UTF_8 = "UTF-8";                    // NOI18N
 
     private static final int PORT = 8008;
 
@@ -143,6 +145,13 @@ public final class ExternalBrowserPlugin {
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createReloadMessage(tab.tabID, url));
     }
 
+    public void close(BrowserTabDescriptor tab, boolean closeTab) {
+        tab.deinitialize();
+        if (closeTab) {
+            server.sendMessage(tab.keyForFeature(FEATURE_ROS), createCloseTabMessage(tab.tabID));
+        }
+    }
+    
     public void attachWebKitDebugger(BrowserTabDescriptor tab) {
         server.sendMessage(tab.keyForFeature(FEATURE_ROS), createAttachDebuggerMessage(tab.tabID));
     }
@@ -221,7 +230,7 @@ public final class ExternalBrowserPlugin {
             if ( dataType != null && dataType != 1 ){
                 return;
             }
-            String message = new String( data , Charset.forName( WebSocketServer.UTF_8));
+            String message = new String( data , Charset.forName( UTF_8));
             Message msg = Message.parse(message);
             if (msg == null || (msg.getType() == null)) {
                 notifyDispatchers(message, key);
@@ -411,6 +420,9 @@ public final class ExternalBrowserPlugin {
                         protected void loadURLInBrowser(URL url) {
                             throw new UnsupportedOperationException();
                         }
+                        @Override
+                        public void close(boolean closeTab) {
+                        }
                     };
                     browserTab = new BrowserTabDescriptor(tabId, impl);
                     knownBrowserTabs.add(browserTab);
@@ -512,6 +524,13 @@ public final class ExternalBrowserPlugin {
         return "file:///"+url;
     }
     
+    private String createCloseTabMessage(int tabId) {
+        Map params = new HashMap();
+        params.put( Message.TAB_ID, tabId );
+        Message msg = new Message( Message.MessageType.CLOSE, params);
+        return msg.toStringValue();
+    }
+
     private String createAttachDebuggerMessage(int tabId) {
         Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );

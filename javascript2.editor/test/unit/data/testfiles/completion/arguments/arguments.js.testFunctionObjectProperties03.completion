@@ -2,23 +2,36 @@ Code completion result for source line:
 formatter.println("Result of testFunction: " + ArgumentsContext.testFunction(1, 2).|toString());
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     eval(string): undefined         [PUBLIC]   stub_core_Object.js
-METHOD     hasOwnProperty(prop): Boolean   [PUBLIC]   stub_core_Object.js
-METHOD     isPrototypeOf(object): Boolean  [PUBLIC]   stub_core_Object.js
-METHOD     propertyIsEnumerable(prop): Bo  [PUBLIC]   stub_core_Object.js
-METHOD     toExponential(fractionDigits):  [PUBLIC]   stub_core_Number.js
-METHOD     toFixed(digits): String         [PUBLIC]   stub_core_Number.js
-METHOD     toLocaleString(): String        [PUBLIC]   stub_core_Object.js
-METHOD     toPrecision(precision): String  [PUBLIC]   stub_core_Number.js
-METHOD     toSource(): undefined           [PUBLIC]   stub_core_Object.js
-METHOD     toString(): String              [PUBLIC]   stub_core_Object.js
-METHOD     unwatch(prop): undefined        [PUBLIC]   stub_core_Object.js
-METHOD     valueOf(): undefined            [PUBLIC]   stub_core_Object.js
-METHOD     watch(prop, handler): undefine  [PUBLIC]   stub_core_Object.js
-FIELD      MAX_VALUE                       [PUBLIC]   stub_core_Number.js
-FIELD      MIN_VALUE                       [PUBLIC]   stub_core_Number.js
-FIELD      NEGATIVE_INFINITY               [PUBLIC]   stub_core_Number.js
-FIELD      NaN                             [PUBLIC]   stub_core_Number.js
-FIELD      POSITIVE_INFINITY               [PUBLIC]   stub_core_Number.js
-FIELD      constructor                     [PUBLIC]   stub_core_Object.js
-FIELD      prototype                       [PUBLIC]   stub_core_Object.js
+CLASS      prototype                       [PUBLIC]   stub_CORE_Number.js
+METHOD     create(proto: Object): Object   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(obj: String,   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(obj: String, pr  [PUBLIC,   stub_CORE_Object.js
+METHOD     eval(string: String): Object    [PUBLIC]   stub_CORE_Object.js
+METHOD     freeze(obj: String): Object     [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(obj: Strin  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(object: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(prop: String):   [PUBLIC]   stub_CORE_Object.js
+METHOD     isExtensible(obj: String): Boo  [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(obj: String): Boolean  [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(object: Object):  [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(obj: String): Boolean  [PUBLIC,   stub_CORE_Object.js
+METHOD     keys(obj: String): Array        [PUBLIC,   stub_CORE_Object.js
+METHOD     preventExtensions(obj: String)  [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   stub_CORE_Object.js
+METHOD     seal(obj: String): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     toExponential(): Number         [PUBLIC]   stub_CORE_Number.js
+METHOD     toFixed(): Number               [PUBLIC]   stub_CORE_Number.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Number.js
+METHOD     toPrecision(): Number           [PUBLIC]   stub_CORE_Number.js
+METHOD     toSource(): String              [PUBLIC]   stub_CORE_Number.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Number.js
+METHOD     unwatch(prop: String): undefin  [PUBLIC]   stub_CORE_Object.js
+METHOD     valueOf(): Number               [PUBLIC]   stub_CORE_Number.js
+METHOD     watch(prop: String, handler: S  [PUBLIC]   stub_CORE_Object.js
+FIELD      MAX_VALUE                       [PUBLIC]   stub_CORE_Number.js
+FIELD      MIN_VALUE                       [PUBLIC]   stub_CORE_Number.js
+FIELD      NEGATIVE_INFINITY               [PUBLIC]   stub_CORE_Number.js
+FIELD      NaN                             [PUBLIC]   stub_CORE_Number.js
+FIELD      POSITIVE_INFINITY               [PUBLIC]   stub_CORE_Number.js
+FIELD      constructor                     [PUBLIC]   stub_CORE_Number.js

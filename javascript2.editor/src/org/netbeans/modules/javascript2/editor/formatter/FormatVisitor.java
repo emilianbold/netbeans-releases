@@ -200,7 +200,14 @@ public class FormatVisitor extends NodeVisitor {
                 markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
 
                 if (body.getStart() == body.getFinish()) {
-                    handleVirtualBlock(body);
+                    // do the standard block related things
+                    if (body.getStatements().get(0) instanceof IfNode) {
+                        // we mark else if statement here
+                        handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
+                                FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
+                    } else {
+                        handleVirtualBlock(body);
+                    }
                 } else {
                     visit(body, onset);
                 }
@@ -299,7 +306,7 @@ public class FormatVisitor extends NodeVisitor {
                 appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
 
                 // mark the within parenthesis places
-                
+
                 // remove original paren marks
                 FormatToken mark = leftBrace.next();
                 assert mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark.getKind();
@@ -311,6 +318,10 @@ public class FormatVisitor extends NodeVisitor {
                         JsTokenId.BRACKET_RIGHT_PAREN, getStart(callNode));
                 if (rightBrace != null) {
                     previous = rightBrace.previous();
+                    while (previous != null && previous.isVirtual()
+                            && previous.getKind() != FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS) {
+                        previous = previous.previous();
+                    }
                     assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
                     tokenStream.removeToken(previous);
                 }
@@ -452,15 +463,15 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(TernaryNode ternaryNode, boolean onset) {
         if (onset) {
-            int start = getStart(ternaryNode);
-            FormatToken question = getNextToken(start, JsTokenId.OPERATOR_TERNARY);
+            int start = getStart(ternaryNode.rhs());
+            FormatToken question = getPreviousToken(start, JsTokenId.OPERATOR_TERNARY);
             if (question != null) {
                 FormatToken previous = question.previous();
                 if (previous != null) {
                     appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
                 }
                 appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
-                FormatToken colon = getNextToken(question.getOffset(), JsTokenId.OPERATOR_COLON);
+                FormatToken colon = getPreviousToken(getStart(ternaryNode.third()), JsTokenId.OPERATOR_COLON);
                 if (colon != null) {
                     previous = colon.previous();
                     if (previous != null) {
@@ -538,14 +549,15 @@ public class FormatVisitor extends NodeVisitor {
     private void handleStandardBlock(Block block) {
         handleBlockContent(block);
 
-        // indentation mark
+        // indentation mark & block start
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null && !isScript(block)) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark after non white token preceeding curly bracket
-        formatToken = getPreviousNonWhiteToken(getFinish(block),
+        formatToken = getPreviousNonWhiteToken(getFinish(block) - 1,
                 getStart(block), JsTokenId.BRACKET_RIGHT_CURLY, true);
         if (formatToken != null && !isScript(block)) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
@@ -555,10 +567,11 @@ public class FormatVisitor extends NodeVisitor {
     private void handleCaseBlock(Block block) {
         handleBlockContent(block);
 
-        // indentation mark
+        // indentation mark & block start
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark
@@ -569,6 +582,13 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void handleVirtualBlock(Block block) {
+        handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
+                FormatToken.Kind.AFTER_BLOCK_START);
+    }
+
+    private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
+            FormatToken.Kind indentationDec, FormatToken.Kind afterBlock) {
+
         assert block.getStart() == block.getFinish() && block.getStatements().size() <= 1;
 
         if (block.getStatements().isEmpty()) {
@@ -579,23 +599,36 @@ public class FormatVisitor extends NodeVisitor {
 
         Node statement = block.getStatements().get(0);
         
-        // indentation mark
+        // indentation mark & block start
         Token token = getPreviousNonEmptyToken(getStart(statement));
+        
+        /*
+         * If its VarNode it does not contain var keyword so we have to search
+         * for it.
+         */
+        if (statement instanceof VarNode && token.id() == JsTokenId.KEYWORD_VAR) {
+            token = getPreviousNonEmptyToken(ts.offset());
+        }
+        
         if (token != null) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
             if (!isScript(block)) {
                 if (formatToken == null && ts.offset() <= formatFinish) {
                     formatToken = tokenStream.getTokens().get(0);
                 }
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
             }
         }
 
         // put indentation mark after non white token
-        FormatToken formatToken = getPreviousToken(getFinish(statement), null, true);
+        int finish = getFinish(statement);
+        // empty statement has start == finish
+        FormatToken formatToken = getPreviousToken(
+                statement.getStart() < finish ? finish - 1 : finish, null, true);
         if (formatToken != null && !isScript(block)) {
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationDec));
             }
         }
     }
@@ -609,11 +642,51 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         // statements
-        for (Node statement : block.getStatements()) {
-            int finish = getFinish(statement);
+        List<Node> statements = block.getStatements();
+        for (int i = 0; i < statements.size(); i++) {
+            Node statement = statements.get(i);
             statement.accept(this);
 
-            FormatToken formatToken = getPreviousToken(finish, null);
+            int start = getStart(statement);
+            int finish = getFinish(statement);
+
+            /*
+             * What do we solve here? Unfortunately nashorn parses single
+             * var statement as (possibly) multiple VarNodes. For example:
+             * var a=1,b=2; is parsed to two VarNodes. The first covering a=1,
+             * the second b=2. So we iterate subsequent VarNodes searching the
+             * last one and the proper finish token.
+             */
+            if (statement instanceof VarNode) {
+                Node lastVarNode = statement;
+
+                while (i + 1 < statements.size()) {
+                    Node next = statements.get(++i);
+                    if (!(next instanceof VarNode)) {
+                        i--;
+                        break;
+                    } else {
+                        Token token = getPreviousNonEmptyToken(getStart(next));
+                        if (token != null && JsTokenId.KEYWORD_VAR == token.id()) {
+                            i--;
+                            break;
+                        }
+                    }
+                    lastVarNode = next;
+                }
+
+                assert lastVarNode instanceof VarNode;
+
+                Token token = getNextNonEmptyToken(getFinish(lastVarNode) - 1);
+                if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
+                    finish = ts.offset() + 1;
+                } else {
+                    finish = getFinish(lastVarNode);
+                }
+            }
+
+            // empty statement has start == finish
+            FormatToken formatToken = getPreviousToken(start < finish ? finish - 1 : finish, null);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken,
                         FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT), true);
@@ -753,6 +826,26 @@ public class FormatVisitor extends NodeVisitor {
 
         Token ret = null;
         while (ts.movePrevious()) {
+            Token token = ts.token();
+            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
+                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
+                && token.id() != JsTokenId.WHITESPACE)) {
+                ret = token;
+                break;
+            }
+        }
+        return ret;
+    }
+
+    private Token getNextNonEmptyToken(int offset) {
+        ts.move(offset);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+
+        Token ret = null;
+        while (ts.moveNext()) {
             Token token = ts.token();
             if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
                 && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
