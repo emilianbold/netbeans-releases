@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AuthorTag extends PhpAnnotationTag {
+public class AuthorTag extends AnnotationCompletionTag {
 
     public AuthorTag() {
         super("author", "@author ${John} ${Doe} <${john.doe}@${example.com}>", //NOI18N

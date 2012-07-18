@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.doctrine2.annotations.odm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class CollectionTag extends PhpAnnotationTag {
+public class CollectionTag extends AnnotationCompletionTag {
 
     public CollectionTag() {
         super("Collection", // NOI18N

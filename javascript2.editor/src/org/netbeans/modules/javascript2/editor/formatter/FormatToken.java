@@ -213,6 +213,7 @@ public final class FormatToken {
         AFTER_TERNARY_OPERATOR,
 
         BEFORE_FUNCTION_DECLARATION,
+        AFTER_FUNCTION_DECLARATION,
 
         BEFORE_FUNCTION_CALL,
 

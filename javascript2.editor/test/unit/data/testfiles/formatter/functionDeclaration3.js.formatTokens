@@ -36,6 +36,7 @@ FormattingToken{kind=EOL, offset=47, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=48, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=49, text=
 }
 FormattingToken{kind=EOL, offset=50, text=
@@ -82,6 +83,7 @@ FormattingToken{kind=EOL, offset=98, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=99, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=100, text=
 }
 FormattingToken{kind=EOL, offset=101, text=
@@ -133,6 +135,7 @@ FormattingToken{kind=EOL, offset=152, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=153, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=154, text=
 }
 FormattingToken{kind=EOL, offset=155, text=
@@ -169,6 +172,7 @@ FormattingToken{kind=EOL, offset=189, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=190, text=  }
 FormattingToken{kind=TEXT, offset=192, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=BEFORE_RIGHT_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=193, text=)}
 FormattingToken{kind=TEXT, offset=194, text=.}
@@ -279,6 +283,7 @@ FormattingToken{kind=EOL, offset=348, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=349, text=    }
 FormattingToken{kind=TEXT, offset=353, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=354, text=
 }
@@ -321,10 +326,12 @@ FormattingToken{kind=EOL, offset=416, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=417, text=    }
 FormattingToken{kind=TEXT, offset=421, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=422, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=423, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=424, text=
 }

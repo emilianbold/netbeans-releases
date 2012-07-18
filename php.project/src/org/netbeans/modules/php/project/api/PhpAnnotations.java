@@ -50,7 +50,7 @@ import java.util.WeakHashMap;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -64,7 +64,7 @@ public final class PhpAnnotations implements PropertyChangeListener {
     private static final PhpAnnotations INSTANCE = new PhpAnnotations();
 
     // @GuardedBy(this)
-    private final Map<FileObject, List<PhpAnnotationsProvider>> cache = new WeakHashMap<FileObject, List<PhpAnnotationsProvider>>();
+    private final Map<FileObject, List<AnnotationCompletionTagProvider>> cache = new WeakHashMap<FileObject, List<AnnotationCompletionTagProvider>>();
 
 
     private PhpAnnotations() {
@@ -83,10 +83,10 @@ public final class PhpAnnotations implements PropertyChangeListener {
      * @param fileObject file to get annotations for
      * @return PHP annotations providers
      */
-    public synchronized List<PhpAnnotationsProvider> getProviders(FileObject fileObject) {
+    public synchronized List<AnnotationCompletionTagProvider> getCompletionTagProviders(FileObject fileObject) {
         Parameters.notNull("fileObject", fileObject);
 
-        List<PhpAnnotationsProvider> providers = cache.get(fileObject);
+        List<AnnotationCompletionTagProvider> providers = cache.get(fileObject);
         if (providers != null) {
             return providers;
         }
@@ -96,19 +96,19 @@ public final class PhpAnnotations implements PropertyChangeListener {
         return providers;
     }
 
-    private List<PhpAnnotationsProvider> computeProviders(FileObject fileObject) {
+    private List<AnnotationCompletionTagProvider> computeProviders(FileObject fileObject) {
         assert Thread.holdsLock(this);
 
-        List<PhpAnnotationsProvider> result = new ArrayList<PhpAnnotationsProvider>();
+        List<AnnotationCompletionTagProvider> result = new ArrayList<AnnotationCompletionTagProvider>();
         // first, add global providers
-        result.addAll(org.netbeans.modules.php.api.annotations.PhpAnnotations.getProviders());
+        result.addAll(org.netbeans.modules.php.api.annotations.PhpAnnotations.getCompletionTagProviders());
         // next, add providers from php frameworks
         PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(fileObject);
         if (phpProject != null) {
             ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(phpProject, this);
             final PhpModule phpModule = phpProject.getPhpModule();
             for (PhpFrameworkProvider provider : phpProject.getFrameworks()) {
-                result.addAll(provider.getAnnotationsProviders(phpModule));
+                result.addAll(provider.getAnnotationsCompletionTagProviders(phpModule));
             }
         }
         return result;

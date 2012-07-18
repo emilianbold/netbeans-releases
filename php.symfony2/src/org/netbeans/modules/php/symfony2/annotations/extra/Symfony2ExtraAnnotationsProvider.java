@@ -44,12 +44,12 @@ package org.netbeans.modules.php.symfony2.annotations.extra;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
 // http://symfony.com/doc/2.0/bundles/SensioFrameworkExtraBundle/index.html#annotations-for-controllers
-public final class Symfony2ExtraAnnotationsProvider extends PhpAnnotationsProvider {
+public final class Symfony2ExtraAnnotationsProvider extends AnnotationCompletionTagProvider {
 
     @NbBundle.Messages("Symfony2ExtraAnnotationsProvider.name=Symfony2 Extra")
     public Symfony2ExtraAnnotationsProvider() {
@@ -59,25 +59,25 @@ public final class Symfony2ExtraAnnotationsProvider extends PhpAnnotationsProvid
     }
 
     @Override
-    public List<PhpAnnotationTag> getFunctionAnnotations() {
+    public List<AnnotationCompletionTag> getFunctionAnnotations() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<PhpAnnotationTag> getTypeAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getTypeAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new RouteTag(),
                 new CacheTag());
     }
 
     @Override
-    public List<PhpAnnotationTag> getFieldAnnotations() {
+    public List<AnnotationCompletionTag> getFieldAnnotations() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<PhpAnnotationTag> getMethodAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getMethodAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new RouteTag(),
                 new MethodTag(),
                 new ParamConverterTag(),

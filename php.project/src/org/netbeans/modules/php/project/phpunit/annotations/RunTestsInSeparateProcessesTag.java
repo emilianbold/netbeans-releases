@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.project.phpunit.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 
-public class RunTestsInSeparateProcessesTag extends PhpAnnotationTag {
+public class RunTestsInSeparateProcessesTag extends AnnotationCompletionTag {
 
     public RunTestsInSeparateProcessesTag() {
         super("runTestsInSeparateProcesses", // NOI18N

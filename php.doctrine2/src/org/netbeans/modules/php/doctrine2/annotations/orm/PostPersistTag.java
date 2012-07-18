@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class PostPersistTag extends PhpAnnotationTag {
+public class PostPersistTag extends AnnotationCompletionTag {
 
     public PostPersistTag() {
         super("PostPersist", // NOI18N

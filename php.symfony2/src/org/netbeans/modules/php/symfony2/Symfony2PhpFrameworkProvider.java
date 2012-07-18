@@ -47,7 +47,7 @@ import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -165,8 +165,8 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public List<PhpAnnotationsProvider> getAnnotationsProviders(PhpModule phpModule) {
-        return Arrays.<PhpAnnotationsProvider>asList(
+    public List<AnnotationCompletionTagProvider> getAnnotationsCompletionTagProviders(PhpModule phpModule) {
+        return Arrays.<AnnotationCompletionTagProvider>asList(
                 new Symfony2ExtraAnnotationsProvider(),
                 new Symfony2SecurityAnnotationsProvider());
     }

@@ -154,6 +154,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functions6.js");
     }
 
+    public void testFunctions7() throws Exception {
+        reformatFileContents("testfiles/formatter/functions7.js",new IndentPrefs(4, 4));
+    }
+
+    public void testFunctions7Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/functions7.js");
+    }
+
     public void testFunctionDeclaration1() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.spaceBeforeMethodDeclParen, true);

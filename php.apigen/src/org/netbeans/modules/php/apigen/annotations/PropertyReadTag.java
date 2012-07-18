@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PropertyReadTag extends PhpAnnotationTag {
+public class PropertyReadTag extends AnnotationCompletionTag {
 
     public PropertyReadTag() {
         super("property-read", "@property-read ${type} $$${name} ${Description}", //NOI18N
