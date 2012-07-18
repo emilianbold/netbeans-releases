@@ -112,8 +112,7 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
                 }
             }
         } catch (ODSException ex) {
-            // XXX log me
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.WARNING, prjHandle.getId(), ex);
         }
         
         return handlesList.isEmpty() ? Collections.<SourceHandle>emptyList() : handlesList;
