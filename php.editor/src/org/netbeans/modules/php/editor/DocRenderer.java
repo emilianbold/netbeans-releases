@@ -62,9 +62,9 @@ import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
-import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -288,7 +288,7 @@ class DocRenderer {
             StringBuilder others = new StringBuilder();
 
             for (PHPDocTag tag : pHPDocBlock.getTags()) {
-                PhpAnnotationType kind = tag.getKind();
+                AnnotationParsedLine kind = tag.getKind();
                 if (kind.equals(PHPDocTag.Type.PARAM)) {
                     params.append(composeParameterLine((PHPDocVarTypeTag)tag));
                 } else if (kind.equals(PHPDocTag.Type.RETURN)) {

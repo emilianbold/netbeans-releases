@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
+import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 
 /**
  * Represents a type in the tags like @param, @return, @throws etc.
@@ -61,7 +61,7 @@ public class PHPDocTypeTag extends PHPDocTag {
     private final List<PHPDocTypeNode> types;
     protected String documentation;
 
-    public PHPDocTypeTag(int start, int end, PhpAnnotationType kind, String value, List<PHPDocTypeNode> types) {
+    public PHPDocTypeTag(int start, int end, AnnotationParsedLine kind, String value, List<PHPDocTypeNode> types) {
         super(start, end, kind, value);
         this.types = types;
         this.documentation = null;

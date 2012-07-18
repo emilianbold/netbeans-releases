@@ -64,12 +64,12 @@ import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
+import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -160,7 +160,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(PHPDocMethodTag node) {
-        PhpAnnotationType kind = node.getKind();
+        AnnotationParsedLine kind = node.getKind();
         Scope currentScope = modelBuilder.getCurrentScope();
         boolean scopeHasBeenModified = false;
         // Someone uses @method tag in method scope :/ So we have to simulate that it's defined in class scope...

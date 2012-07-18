@@ -39,38 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser;
+package org.netbeans.modules.php.spi.annotations;
 
-import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 
 /**
+ * Encapsulates parsed annotation line.
  *
+ * @since 1.69
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnknownAnnotationType implements AnnotationParsedLine {
+public interface AnnotationParsedLine {
 
-    private final String name;
+    /**
+     * Returns a name of an annotation without the "at" sign.
+     *
+     * @return name
+     */
+    public String getName();
 
-    public UnknownAnnotationType(final String name) {
-        this.name = name;
-    }
+    /**
+     * Returns a description of the parsed annotation.
+     *
+     * @return description
+     */
+    public String getDescription();
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        return "";
-    }
-
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return Collections.EMPTY_MAP;
-    }
+    /**
+     * Returns an offset-ranges and their types.
+     *
+     * @return offset range of a parsed type and its textual representation
+     */
+    public Map<OffsetRange, String> getTypes();
 
 }

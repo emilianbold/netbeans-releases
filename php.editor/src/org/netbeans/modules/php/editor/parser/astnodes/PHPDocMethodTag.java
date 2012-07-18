@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.List;
-import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
+import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 
 /**
  *
@@ -53,7 +53,7 @@ public class PHPDocMethodTag extends PHPDocTypeTag {
     private final List<PHPDocVarTypeTag> params;
     private final PHPDocNode name;
 
-    public PHPDocMethodTag(int start, int end, PhpAnnotationType kind,
+    public PHPDocMethodTag(int start, int end, AnnotationParsedLine kind,
             List<PHPDocTypeNode> returnTypes, PHPDocNode methodName,
             List<PHPDocVarTypeTag> parameters, String documentation) {
         super(start, end, kind, documentation, returnTypes);

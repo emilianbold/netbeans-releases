@@ -49,6 +49,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 
 /**
  *
@@ -61,7 +62,7 @@ public class PHPDocCommentParser {
     /**
      * Tags that define something of a type
      */
-    private static final List<PhpAnnotationType> PHPDocVarTypeTags = new ArrayList<PhpAnnotationType>();
+    private static final List<AnnotationParsedLine> PHPDocVarTypeTags = new ArrayList<AnnotationParsedLine>();
     static {
         PHPDocVarTypeTags.add(PHPDocTag.Type.PARAM);
         PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY);
@@ -93,7 +94,7 @@ public class PHPDocCommentParser {
         int index = 0;
         String line = "";               // one line of the blog
         String description = "";        // temporary holder for description of block description or tag
-        PhpAnnotationType lastTag = null;
+        AnnotationParsedLine lastTag = null;
         int lastStartIndex = 0;
         int lastEndIndex = comment.length();
 
@@ -102,7 +103,7 @@ public class PHPDocCommentParser {
             if (index == 0) { // remove * from the first line
                 line = removeStarAndTrim(line);
             }
-            PhpAnnotationType tagType = findTagOnLine(line);
+            AnnotationParsedLine tagType = findTagOnLine(line);
             if (tagType != null) { // is a tag defined on the line
                 if (lastTag == null) { // is it the first tag in the block
                     blockDescription = description.length() > 0 && description.charAt(description.length() - 1) == '\n' ? description.substring(0, description.length() -1) : description;  // save the block description
@@ -127,7 +128,7 @@ public class PHPDocCommentParser {
         } else {
             line = comment.substring(index, comment.length()).trim();
         }
-        PhpAnnotationType tagType = findTagOnLine(line);
+        AnnotationParsedLine tagType = findTagOnLine(line);
         if (tagType != null) {  // is defined a tag on the last line
             if (lastTag == null) {
                 blockDescription = description.trim();
@@ -156,7 +157,7 @@ public class PHPDocCommentParser {
         return new PHPDocBlock(Math.min(startOffset + 3, endOffset), endOffset, blockDescription, tags);
     }
 
-    private PHPDocTag createTag(int start, int end, PhpAnnotationType type, String description, String originalComment, int originalCommentStart) {
+    private PHPDocTag createTag(int start, int end, AnnotationParsedLine type, String description, String originalComment, int originalCommentStart) {
         final Map<OffsetRange, String> types = type.getTypes();
         if (types.isEmpty()) {
             List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart);
@@ -182,8 +183,10 @@ public class PHPDocCommentParser {
                     return new PHPDocMethodTag(start, end, type, docTypes, methodNode, params, description);
                 }
                 return null;
+            } else if (type.equals(PHPDocTag.Type.RETURN) || type.equals(PHPDocTag.Type.VAR)) {
+                return new PHPDocTypeTag(start, end, type, description, docTypes);
             }
-            return new PHPDocTypeTag(start, end, type, description, docTypes);
+            return new PHPDocTag(start, end, type, description);
         } else {
             return new PHPDocTypeTag(start, end, type, description, resolveTypes(types, start));
         }
@@ -323,8 +326,8 @@ public class PHPDocCommentParser {
         return text;
     }
 
-    private PhpAnnotationType findTagOnLine(String line) {
-        PhpAnnotationType type = null;
+    private AnnotationParsedLine findTagOnLine(String line) {
+        AnnotationParsedLine type = null;
         if (line.length() > 0 && line.charAt(0) == '@') {
             String[] tokens = line.trim().split("[ \t]+");
             if (tokens.length > 0) {

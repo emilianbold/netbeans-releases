@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
+import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 
 /**
  * Represent a PHPDoc tag in the php documentation
@@ -52,7 +52,7 @@ import org.netbeans.modules.php.editor.parser.PhpAnnotationType;
  */
 public class PHPDocTag extends ASTNode {
 
-    public enum Type implements PhpAnnotationType {
+    public enum Type implements AnnotationParsedLine {
         GLOBAL("global"),
         METHOD("method"),
         PROPERTY("property"), PROPERTY_READ("property-read"), PROPERTY_WRITE("property-write"),
@@ -85,16 +85,16 @@ public class PHPDocTag extends ASTNode {
 
     }
 
-    final private PhpAnnotationType type;
+    final private AnnotationParsedLine type;
     final private String value;
 
-    public PHPDocTag(int start, int end, PhpAnnotationType kind, String value) {
+    public PHPDocTag(int start, int end, AnnotationParsedLine kind, String value) {
         super(start, end);
         this.type = kind;
         this.value = value;
     }
 
-    public PhpAnnotationType getKind() {
+    public AnnotationParsedLine getKind() {
         return this.type;
     }
 

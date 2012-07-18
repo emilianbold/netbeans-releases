@@ -43,6 +43,7 @@ package org.netbeans.modules.php.api.annotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -50,20 +51,41 @@ import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
 /**
- * This class provides access to the list of registered PHP annotations providers
+ * This class provides access to:
+ *
+ * <ol>
+ * <li>
+ * <p>the list of registered PHP annotations providers
  * that are <b>globally</b> available (it means that their annotations are available
  * in every PHP file). For <b>framework specific</b> annotations, use
- * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
- * <p>
- * The path is "{@value #ANNOTATIONS_PATH}" on SFS.
+ * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.</p>
+ *
+ * <p>The path is "{@value #ANNOTATIONS_PATH}" on SFS.</p>
+ * </li>
+ *
+ * <li>
+ * <p>the list of registered PHP annotation line parsers that are <b>globally</b>
+ * available.</p>
+ *
+ * <p>The path is {@value #ANNOTATIONS_LINE_PARSERS_PATH} on SFS.</p>
+ * </li>
+ * </ol>
  * @since 1.63
  */
 public final class PhpAnnotations {
 
     public static final String ANNOTATIONS_PATH = "PHP/Annotations"; // NOI18N
+    /**
+     * @since 1.69
+     */
+    public static final String ANNOTATIONS_LINE_PARSERS_PATH = "PHP/Annotations/Line/Parsers"; // NOI18N
 
     private static final Lookup.Result<PhpAnnotationsProvider> PROVIDERS = Lookups.forPath(ANNOTATIONS_PATH).lookupResult(PhpAnnotationsProvider.class);
 
+    /**
+     * @since 1.69
+     */
+    private static final Lookup.Result<AnnotationLineParser> LINE_PARSERS = Lookups.forPath(ANNOTATIONS_LINE_PARSERS_PATH).lookupResult(AnnotationLineParser.class);
 
     private PhpAnnotations() {
     }
@@ -100,6 +122,44 @@ public final class PhpAnnotations {
     public static void removeListener(LookupListener listener) {
         Parameters.notNull("listener", listener);
         PROVIDERS.removeLookupListener(listener);
+    }
+
+    /**
+     * Get all registered {@link AnnotationLineParser}s that are
+     * <b>globally</b> available.
+     *
+     * @return a list of all registered {@link AnnotationLineParser}s; never {@code null}
+     * @since 1.69
+     */
+    public static List<AnnotationLineParser> getLineParsers() {
+        return new ArrayList<AnnotationLineParser>(LINE_PARSERS.allInstances());
+    }
+
+    /**
+     * Add {@link LookupListener listener} to be notified when line parsers change
+     * (new parser added, existing removed).
+     * <p>
+     * To avoid memory leaks, do not forget to {@link #removeListener(LookupListener) remove} the listener.
+     *
+     * @param listener {@link LookupListener listener} to be added
+     * @see #removeListener(LookupListener)
+     * @since 1.69
+     */
+    public static void addLineParsersListener(LookupListener listener) {
+        Parameters.notNull("listener", listener);
+        LINE_PARSERS.addLookupListener(listener);
+    }
+
+    /**
+     * Remove {@link LookupListener listener}.
+     *
+     * @param listener {@link LookupListener listener} to be removed
+     * @see #addListener(LookupListener)
+     * @since 1.69
+     */
+    public static void removeLineParsersListener(LookupListener listener) {
+        Parameters.notNull("listener", listener);
+        LINE_PARSERS.removeLookupListener(listener);
     }
 
 }
