@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.StructureItemDecorator;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -63,6 +64,11 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     public HtmlLanguage() {
     }
 
+    @Override
+    public StructureItemDecorator getStructureItemDecorator() {
+        return new HtmlStructureItemDecorator();
+    }
+    
     @Override
     public CommentHandler getCommentHandler() {
         return new HtmlCommentHandler();

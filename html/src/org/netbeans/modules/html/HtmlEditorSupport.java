@@ -55,9 +55,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ActionMap;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -73,6 +73,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -82,8 +84,6 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
@@ -103,7 +103,6 @@ import org.openide.windows.CloneableOpenSupport;
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie,
         EditCookie, EditorCookie.Observable, PrintCookie, HtmlEditorSupportControl {
 
-    private static final RequestProcessor SINGLE_THREAD_RP = new RequestProcessor(HtmlEditorSupport.class.getName(), 1);
     private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
     private static final String UTF_8_ENCODING = "UTF-8";
     /**
@@ -128,129 +127,21 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         }
     };
 
-    /**
-     * Allows to re-set the current node to the editor's top component.
-     */
-    private static class SwitchNodeLookupProvider implements Lookup.Provider {
-
-        private InstanceContent ic;
-        private AbstractLookup lookup;
-        private Node node;
-        private String mimeType;
-
-        public SwitchNodeLookupProvider(String mime, Object... lookupItems) {
-            this.mimeType = mime;
-            ic = new InstanceContent();
-            for (Object lo : lookupItems) {
-                ic.add(lo);
-            }
-
-            //let the navigator work w/o the DataObject based Node
-            ic.add(new NavigatorLookupHint() {
-                @Override
-                public String getContentType() {
-                    return mimeType;
-                }
-            });
-
-            lookup = new AbstractLookup(ic);
-        }
-
-        @Override
-        public Lookup getLookup() {
-            return lookup;
-        }
-
-        public void setNode(Node node) {
-            if (this.node == node) {
-                return;
-            }
-
-            if (this.node != null) {
-                //remove the old node
-                ic.remove(this.node);
-            }
-
-            ic.add(node);
-
-            this.node = node;
-        }
-    }
-
     static HtmlEditorSupport createInstance(HtmlDataObject dobj) {
-        return new HtmlEditorSupport(dobj, new EditorSupportLookup(dobj));
+        return new HtmlEditorSupport(dobj, new EditorLookupSupport(dobj));
     }
-    
 
-    private static class EditorSupportLookup extends ProxyLookup {
+    private EditorLookupSupport lookupSupport;
 
-        private String mimeType;
-        private Node node;
-        private Result<?> lookupResult;
-
-        public EditorSupportLookup(DataObject dob) {
-            super(new Lookup[]{dob.getLookup()});
-            this.mimeType = dob.getPrimaryFile().getMIMEType();
-            
-            //attach a listener to the source lookup result for all content
-            lookupResult = dob.getLookup().lookupResult(Object.class);
-            lookupResult.addLookupListener(new LookupListener() {
-                @Override
-                public void resultChanged(LookupEvent ev) {
-                    //the original lookup has changed, 
-                    //we need to recreate the modified lookup
-                    refresh();
-                }
-            });
-            
-        }
-
-        private void refresh() {
-            InstanceContent ic = new InstanceContent();
-            for (Object o : lookupResult.allInstances()) {
-                if (!(o instanceof Node)) {
-                    //filter out all instances of Node from the source lookup
-                    ic.add(o);
-                }
-            }
-            
-            ic.add(new NavigatorLookupHint() {
-                @Override
-                public String getContentType() {
-                    return mimeType;
-                }
-            });
-            if(node != null) {
-                ic.add(node);
-            }
-            setLookups(new AbstractLookup(ic));
-
-        }
-
-        public void setNode(Node extra) {
-            if (this.node == extra) {
-                return;
-            }
-            this.node = extra;
-            refresh();
-        }
-        
-    }
-    
-    private String mimeType;
-    private EditorSupportLookup doProxyLookup;
-
-    private HtmlEditorSupport(HtmlDataObject obj, EditorSupportLookup lookup) {
-        super(obj, lookup, new Environment(obj));
-        this.doProxyLookup = lookup;
-
-        this.mimeType = getDataObject().getPrimaryFile().getMIMEType();
-        setMIMEType(mimeType);
+    private HtmlEditorSupport(HtmlDataObject obj, EditorLookupSupport lookupSupport) {
+        super(obj, lookupSupport.getLookup(), new Environment(obj));
+        this.lookupSupport = lookupSupport;
+        setMIMEType(getDataObject().getPrimaryFile().getMIMEType());
     }
 
     @Override
     public void setNode(Node node) {
-        doProxyLookup.setNode(node);
+        lookupSupport.setNodeInLookup(node);
     }
 
     @Override
@@ -480,4 +371,70 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             return (HtmlEditorSupport) getDataObject().getCookie(HtmlEditorSupport.class);
         }
     } // End of nested Environment class.
+
+    private static final class EditorLookupSupport {
+
+        private InstanceContent nodeContent;
+        private Lookup lookup;
+
+        public EditorLookupSupport(final HtmlDataObject dataObject) {
+            nodeContent = new InstanceContent();
+            Lookup nodeLookup = new AbstractLookup(nodeContent);
+            
+            Lookup explorerLookup = ExplorerUtils.createLookup(new ExplorerManager(), new ActionMap());;
+
+            InstanceContent plainContent = new InstanceContent();
+            plainContent.add(new NavigatorLookupHint() {
+                @Override
+                public String getContentType() {
+                    return dataObject.getPrimaryFile().getMIMEType(); // NOI18N
+                }
+            });
+
+            Lookup plainContentLookup = new AbstractLookup(plainContent);
+            Lookup saveCookieLookup = new Lookup() {
+                @Override
+                public <T> T lookup(final Class<T> clazz) {
+                    if (clazz.isAssignableFrom(SaveCookie.class)) {
+                        return dataObject.getLookup().lookup(clazz);
+                    } else {
+                        return null;
+                    }
+                }
+
+                @Override
+                public <T> Result<T> lookup(Lookup.Template<T> template) {
+                    if (template.getType().isAssignableFrom(SaveCookie.class)) {
+                        return dataObject.getLookup().lookup(template);
+                    } else {
+                        return Lookup.EMPTY.lookup(template);
+                    }
+                }
+            };
+
+            lookup = new ProxyLookup(nodeLookup, explorerLookup, plainContentLookup, saveCookieLookup);
+            
+        }
+
+        private void setNodeInLookup(Node node) {
+            Node existing = lookup.lookup(Node.class);
+            if(existing == node) {
+                return ;
+            }
+            
+            if(existing != null) {
+                nodeContent.remove(existing);
+            }
+            
+            nodeContent.add(node);
+            
+        }
+        
+        public Lookup getLookup() {
+            return lookup;
+        }
+        
+    }
+    
+    
 }

@@ -172,6 +172,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
                                 List<? extends StructureItem> children = findCachedStructure(resultIterator.getSnapshot(), r);
                                 if (children == null) {
                                     long startTime = System.currentTimeMillis();
+//                                    children = convert(scanner.scan((ParserResult) r), language);
                                     children = scanner.scan((ParserResult) r);
                                     long endTime = System.currentTimeMillis();
                                     Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
@@ -271,6 +272,85 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
     public synchronized boolean isCancelled() {
         return canceled;
     }
+    
+    private static List<? extends StructureItem> convert(List<? extends StructureItem> items, Language lang) {
+        List<MimeStructureItem> conv = new ArrayList<MimeStructureItem>(items.size());
+        for(StructureItem si : items) {
+            conv.add(new MimeStructureItem(si, lang));
+        }
+        return conv;
+    }
+    
+    static final class MimeStructureItem implements StructureItem {
+        
+        private StructureItem peer;
+        private Language lang;
+
+        public MimeStructureItem(StructureItem peer, Language lang) {
+            this.peer = peer;
+            this.lang = lang;
+        }
+        
+        public Language getLanguage() {
+            return lang;
+        }
+
+        @Override
+        public String getName() {
+            return peer.getName();
+        }
+
+        @Override
+        public String getSortText() {
+            return peer.getSortText();
+        }
+
+        @Override
+        public String getHtml(HtmlFormatter formatter) {
+            return peer.getHtml(formatter);
+        }
+
+        @Override
+        public ElementHandle getElementHandle() {
+            return peer.getElementHandle();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return peer.getKind();
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return peer.getModifiers();
+        }
+
+        @Override
+        public boolean isLeaf() {
+            return peer.isLeaf();
+        }
+
+        @Override
+        public List<? extends StructureItem> getNestedItems() {
+            return peer.getNestedItems();
+        }
+
+        @Override
+        public long getPosition() {
+            return peer.getPosition();
+        }
+
+        @Override
+        public long getEndPosition() {
+            return peer.getEndPosition();
+        }
+
+        @Override
+        public ImageIcon getCustomIcon() {
+            return peer.getCustomIcon();
+        }
+        
+    }
 
     private static final class RootStructureItem implements StructureItem {
 
@@ -289,7 +369,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
         }
 
         public ElementHandle getElementHandle() {
-            throw new UnsupportedOperationException("Not supported on the Root Node.");
+            return null;
         }
 
         public ElementKind getKind() {
