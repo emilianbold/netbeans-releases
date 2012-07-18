@@ -237,19 +237,17 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
      */
     @Override
     public void remove() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        GlassFishAccountInstanceProvider.getInstance().removeInstance(this);
     }
 
     /**
-     * An information if instance can be removed by {@link #remove()} method.
+     * An information that instance can be removed by {@link #remove()} method.
      * <p/>
-     * Otherwise returns <code>false</code>.
-     * @return <code>true</code> if the instance can be removed
-     *         or <code>false</code> otherwise.
+     * @return Always returns <code>true</code>.
      */
     @Override
     public boolean isRemovable() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return true;
     }
     
     ////////////////////////////////////////////////////////////////////////////

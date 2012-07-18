@@ -52,6 +52,8 @@ import javax.swing.event.ListDataListener;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
 import static org.openide.util.NbBundle.getMessage;
 
@@ -199,7 +201,6 @@ public class GlassFishAccountWizardUserComponent
                 GlassFishCloudInstanceProvider.getInstance()
                 .cloneCloudInstances());
         instance.initComponents();
-        instance.cloudComboBox.addItemListener(instance.cloudSelectionListener);
         instance.glassFishCloudValid = instance.glassFishCloudValid().isValid();
         instance.displayNameValid = instance.displayNameValid().isValid();
         instance.accountValid = instance.accountValid().isValid();
@@ -231,96 +232,6 @@ public class GlassFishAccountWizardUserComponent
 
     private CloudComboBox cloudComboBoxItems;
 
-    /** Event listener to validate host field on the fly. */
-    private DocumentListener accountEventListener
-            = new ComponentFieldListener() {
-
-        /**
-         * Process received notification.
-         */
-        @Override
-        void processEvent() {
-            ValidationResult result = accountValid();
-            accountValid = result.isValid();
-            update(result);            
-        }
-
-    };
-
-    /** Event listener to validate user name field on the fly. */
-    private DocumentListener userNameEventListener
-            = new ComponentFieldListener() {
-
-        /**
-         * Process received notification.
-         */
-        @Override
-        void processEvent() {
-            ValidationResult result = userNameValid();
-            userNameValid = result.isValid();
-            update(result);            
-        }
-
-    };
-
-    /** Event listener to validate user password field on the fly. */
-    private DocumentListener userPasswordEventListener
-            = new ComponentFieldListener() {
-
-        /**
-         * Process received notification.
-         */
-        @Override
-        void processEvent() {
-            ValidationResult result = userPasswordValid();
-            userPasswordValid = result.isValid();
-            update(result);            
-        }
-
-    };
-
-    /** Event listener to update host and port values depending on combo box
-     *  selection changes. */
-    private ItemListener cloudSelectionListener = new ItemListener() {
-
-        /**
-         * Invoked when an item has been selected or deselected by the user.
-         * <p/>
-         * Validates combo box selection.
-         * Updates values in GlassFish cloud CPAS host and port text fields.
-         * <p/>
-         * @param event Event related to item selection or deselection.
-         */
-        // case ItemEvent.DESELECTED: takes care of selectedCloud == null in
-        // previous case.
-        @SuppressWarnings("fallthrough")
-        @Override
-        public void itemStateChanged(ItemEvent event) {
-            // Validate combo box selection.
-            ValidationResult result = glassFishCloudValid();
-            glassFishCloudValid = result.isValid();
-            update(result);
-            // Update host and port fields.
-            switch(event.getStateChange()) {
-                case ItemEvent.SELECTED:
-                    GlassFishCloudEntity selectedCloud
-                            = (GlassFishCloudEntity)cloudComboBoxItems
-                            .getSelectedItem();
-                    if (selectedCloud != null) {
-                        hostTextField.setText(selectedCloud.getHost());
-                        portTextField.setText(
-                                Integer.toString(selectedCloud.getPort()));
-                        break;
-                    }
-                case ItemEvent.DESELECTED:
-                    hostTextField.setText("");
-                    portTextField.setText("");
-                    break;
-            } 
-        }
-        
-    };
-
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -330,15 +241,19 @@ public class GlassFishAccountWizardUserComponent
      * <p/>
      * Form field handlers are set to wizard mode.
      */
+    @SuppressWarnings("LeakingThisInConstructor") // initInstance(this);
     public GlassFishAccountWizardUserComponent() {
         this.instance = null;
         initInstance(this);
         accountTextField.getDocument()
-                .addDocumentListener(accountEventListener);
+                .addDocumentListener(initAccountValidateListener());
         userNameTextField.getDocument()
-                .addDocumentListener(userNameEventListener);
+                .addDocumentListener(initUserNameValidateListener());
         userPasswordTextField.getDocument()
-                .addDocumentListener(userPasswordEventListener);
+                .addDocumentListener(initUserPasswordValidateListener());
+        cloudComboBox
+                .addItemListener(initCloudSelectionValidateListener());
+
     }
 
     /**
@@ -349,11 +264,21 @@ public class GlassFishAccountWizardUserComponent
      * <p/>
      * @param instance GlassFish cloud user account instance to be modified.
      */
+    @SuppressWarnings("LeakingThisInConstructor") // initInstance(this);
     public GlassFishAccountWizardUserComponent(
             GlassFishAccountInstance instance) {
         this.instance = instance;
-        initComponents();
-        
+        initInstance(this);
+        nameLabel.setVisible(false);
+        nameTextField.setVisible(false);
+        accountTextField.getDocument()
+                .addDocumentListener(initAccountUpdateListener());
+        userNameTextField.getDocument()
+                .addDocumentListener(initUserNameUpdateListener());
+        userPasswordTextField.getDocument()
+                .addDocumentListener(initUserPasswordUpdateListener());        
+        cloudComboBox
+                .addItemListener(initCloudSelectionUpdateListener());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -569,6 +494,202 @@ public class GlassFishAccountWizardUserComponent
     boolean valid() {
         return glassFishCloudValid && displayNameValid && accountValid
                 && userNameValid && userPasswordValid; 
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Event helper metyhods                                                  //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Process account field validation event.
+     * <p/>
+     * This is internal event processing helper and should not be used outside
+     * listeners <code>processEvent</code> method.
+     */
+    void processAccountValidateEvent() {
+        ValidationResult result = accountValid();
+        accountValid = result.isValid();
+        update(result);
+    }
+
+    /**
+     * Process user password field validation event.
+     * <p/>
+     * This is internal event processing helper and should not be used outside
+     * listeners <code>processEvent</code> method.
+     */
+    void processUserPasswordValidateEvent() {
+        ValidationResult result = userPasswordValid();
+        userPasswordValid = result.isValid();
+        update(result);
+    }
+
+    /**
+     * Process user password field validation event.
+     * <p/>
+     * This is internal event processing helper and should not be used outside
+     * listeners <code>processEvent</code> method.
+     */
+    void processUserNameValidateEvent() {
+        ValidationResult result = userNameValid();
+        userNameValid = result.isValid();
+        update(result);
+    }
+
+    /**
+     * Process cloud selection combo box change and validation event.
+     * <p/>
+     * This is internal event processing helper and should not be used outside
+     * listeners <code>itemStateChanged</code> method.
+     * <p/>
+     * @param event Event related to item selection or deselection.
+     */
+    @SuppressWarnings("fallthrough") // case ItemEvent.SELECTED
+    void processGlassFishCloudChangeEvent(ItemEvent event) {
+        // Validate combo box selection.
+        ValidationResult result = glassFishCloudValid();
+        glassFishCloudValid = result.isValid();
+        update(result);
+        // Update host and port fields.
+        switch (event.getStateChange()) {
+            case ItemEvent.SELECTED:
+                GlassFishCloudEntity selectedCloud
+                        = (GlassFishCloudEntity) cloudComboBoxItems
+                        .getSelectedItem();
+                if (selectedCloud != null) {
+                    hostTextField.setText(selectedCloud.getHost());
+                    portTextField.setText(
+                            Integer.toString(selectedCloud.getPort()));
+                    break;
+                }
+            // this case takes care of selectedCloud == null in from
+            // previous case.
+            case ItemEvent.DESELECTED:
+                hostTextField.setText("");
+                portTextField.setText("");
+                break;
+        }
+    }
+
+    /**
+     * Create event listener to validate account field on the fly.
+     */
+    private DocumentListener initAccountValidateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processAccountValidateEvent();
+            }
+        };
+    }
+
+    /**
+     * Create event listener to validate user name field on the fly.
+     */
+    private DocumentListener initUserNameValidateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processUserNameValidateEvent();
+            }
+        };
+    }
+
+    /**
+     * Create event listener to validate user password field on the fly.
+     */
+    private DocumentListener initUserPasswordValidateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processUserPasswordValidateEvent();
+            }
+        };
+    }
+
+    /**
+     * Create event listener to update host and port values depending on combo
+     * box selection changes.
+     */
+    private ItemListener initCloudSelectionValidateListener() {
+        return new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent event) {
+                processGlassFishCloudChangeEvent(event);
+            }
+        };
+    }
+
+    /**
+     * Create event listener to validate account field on the fly.
+     */
+    private DocumentListener initAccountUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processAccountValidateEvent();
+                if (accountValid && instance != null) {
+                    instance.setAcount(getAccount());
+                    GlassFishAccountInstanceProvider.persist(instance);
+                }
+            }
+        };
+    }
+
+    /**
+     * Create event listener to validate user name field on the fly.
+     */
+    private DocumentListener initUserNameUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processUserNameValidateEvent();
+                if (userNameValid && instance != null) {
+                    instance.setUserName(getUserName());
+                    GlassFishAccountInstanceProvider.persist(instance);
+                }
+            }
+        };
+    }
+
+    /**
+     * Create event listener to validate user password field on the fly.
+     */
+    private DocumentListener initUserPasswordUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processUserPasswordValidateEvent();
+                if (userPasswordValid && instance != null) {
+                    instance.setUserPassword(getUserPassword());
+                    GlassFishAccountInstanceProvider.persist(instance);
+                }
+            }
+        };
+    }
+
+    /**
+     * Create event listener to update host and port values depending on combo
+     * box selection changes.
+     */
+    private ItemListener initCloudSelectionUpdateListener() {
+        return new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent event) {
+                processGlassFishCloudChangeEvent(event);
+                if (glassFishCloudValid && instance != null) {
+                    GlassFishCloud selectedCloud
+                            = (GlassFishCloud) cloudComboBoxItems
+                            .getSelectedItem();
+                    GlassFishCloudInstance cloudInstance
+                            = GlassFishCloudInstanceProvider
+                            .getCloudInstance(selectedCloud.getName());
+                    instance.setCloudEntity(cloudInstance);
+                    GlassFishAccountInstanceProvider.persist(instance);
+                }
+                
+            }
+        };
     }
 
     ////////////////////////////////////////////////////////////////////////////

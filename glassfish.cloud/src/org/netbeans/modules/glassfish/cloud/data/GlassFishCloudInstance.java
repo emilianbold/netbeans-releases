@@ -201,8 +201,8 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     /**
      * Removes instance from provider(s).
      * <p/>
-     * No {@link GlassFishCloudInstanceProvider} should return this instance once
-     * it is removed.
+     * No {@link GlassFishCloudInstanceProvider} should return this instance
+     * once it is removed.
      */
     @Override
     public void remove() {
@@ -210,15 +210,15 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     }
 
     /**
-     * An information if instance can be removed by {@link #remove()} method.
+     * An information that instance can be removed by {@link #remove()} method.
      * <p/>
-     * Otherwise returns <code>false</code>.
-     * @return <code>true</code> if the instance can be removed
-     *         or <code>false</code> otherwise.
+     * @return <code>true</code> when there are no user account instances
+     *         referencing this cloud instance.
      */
     @Override
     public boolean isRemovable() {
-        return true;
+        return !GlassFishAccountInstanceProvider
+                .containsCloudInstance(this);
     }
     
     ////////////////////////////////////////////////////////////////////////////

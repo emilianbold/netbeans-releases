@@ -43,6 +43,7 @@ package org.netbeans.modules.glassfish.cloud.data;
 
 import java.util.*;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
@@ -132,6 +133,37 @@ public class GlassFishAccountInstanceProvider
         getInstance().removeInstance(instance);
     }
 
+    /**
+     * Get GlassFish user account instance from this provider.
+     * <p/>
+     * @param name GlassFish user account instance display name used as key.
+     */
+    public static GlassFishAccountInstance getAccountInstance(String name) {
+        return getInstance().getAccountInstances().get(name);
+    }
+
+    /**
+     * Update properties to persist using given GlassFish user account Instance.
+     * <p/>
+     * @param instance GlassFish user account Instance used to persist.
+     */
+    public static void persist(GlassFishAccountInstance instance) {
+        getInstance().update(instance);
+    }
+
+    /**
+     * Check if any registered GlassFish user account instance contains
+     * reference to given GlassFish cloud instance.
+     * <p/>
+     * @param instance GlassFish cloud instance to search for.
+     * @return <code>true if GlassFish cloud instance was found
+     *         or <code>false</code> otherwise.
+     */
+    public static boolean containsCloudInstance(
+            GlassFishCloudInstance cloudInstance) {
+        return getInstance().containsCloud(cloudInstance);
+        
+    }
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -141,7 +173,7 @@ public class GlassFishAccountInstanceProvider
     private List<ServerInstance> serverInstances;
 
     /** Stored GlassFish user account instances. */
-    private Map<String, GlassFishAccountInstance> cloudInstances;
+    private Map<String, GlassFishAccountInstance> accountInstances;
 
     /** Change listeners. */
     private ChangeSupport changeListeners;
@@ -153,7 +185,7 @@ public class GlassFishAccountInstanceProvider
     private GlassFishAccountInstanceProvider() {
         changeListeners = new ChangeSupport(this);
         serverInstances = new LinkedList<ServerInstance>();
-        cloudInstances = new HashMap<String, GlassFishAccountInstance>();
+        accountInstances = new HashMap<String, GlassFishAccountInstance>();
         load();
     }
 
@@ -202,6 +234,19 @@ public class GlassFishAccountInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Get stored GlassFish user account instances.
+     * <p/>
+     * Changing content of this <code>Map</code> without doing equivalent
+     * changes in <code>List</code> of <code>ServerInstance</code>s returned
+     * by <code>getInstances</code> method will corrupt this provider.
+     * <p/>
+     * @return Stored GlassFish user account instances
+     */
+    public Map<String, GlassFishAccountInstance> getAccountInstances() {
+        return accountInstances;
+    } 
+
+    /**
      * Add new GlassFish user account instance into this provider.
      * <p/>
      * Instance is registered in this provider without being stored into
@@ -211,7 +256,7 @@ public class GlassFishAccountInstanceProvider
      */
     private void addInstanceWithoutStoring(GlassFishAccountInstance instance) {
         serverInstances.add(instance.getServerInstance());
-        cloudInstances.put(instance.getDisplayName(), instance);
+        accountInstances.put(instance.getDisplayName(), instance);
         changeListeners.fireChange();
     }
 
@@ -236,8 +281,30 @@ public class GlassFishAccountInstanceProvider
     public void removeInstance(GlassFishAccountInstance instance) {
         remove(instance);
         serverInstances.remove(instance.getServerInstance());
-        cloudInstances.remove(instance.getDisplayName());
+        accountInstances.remove(instance.getDisplayName());
         changeListeners.fireChange();
+    }
+
+    /**
+     * Check if any registered GlassFish user account instance contains
+     * reference to given GlassFish cloud instance.
+     * <p/>
+     * @param instance GlassFish cloud instance to search for.
+     * @return <code>true if GlassFish cloud instance was found
+     *         or <code>false</code> otherwise.
+     */
+    private boolean containsCloud(
+            GlassFishCloudInstance cloudInstance) {
+        boolean found = false;
+        Collection<GlassFishAccountInstance> instances
+                = accountInstances.values();
+        for (GlassFishAccountInstance accountInstance : instances) {
+            GlassFishCloud cloudEntity = accountInstance.getCloudEntity();
+            if (cloudEntity != null && cloudEntity.equals(cloudInstance)) {
+                found = true;
+            }
+        }
+        return found;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -245,7 +312,7 @@ public class GlassFishAccountInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Store given GlassFish Cloud Instance into properties to persist.
+     * Store given GlassFish user account instance into properties to persist.
      * <p/>
      * @param instance GlassFish Cloud Instance to be stored.
      */
@@ -257,7 +324,7 @@ public class GlassFishAccountInstanceProvider
     }
 
     /**
-     * Load all stored GlassFish Cloud Instances into this provider from
+     * Load all stored GlassFish user account instances into this provider from
      * persistent properties.
      */
     private void load() {
@@ -274,7 +341,7 @@ public class GlassFishAccountInstanceProvider
     }
     
     /**
-     * Remove given GlassFish Cloud Instance from properties to persist.
+     * Remove given GlassFish user account instance from properties to persist.
      * <p/>
      * @param instance GlassFish Cloud Instance to be removed.
      */
@@ -287,6 +354,26 @@ public class GlassFishAccountInstanceProvider
                 InstanceProperties props = i.next();
                 if (instance.equalProps(props)) {
                     props.remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * Update properties to persist using given GlassFish user account instance.
+     * <p/>
+     * @param instance GlassFish user account instance used to update
+     *                 properties.
+     */
+    private void update(GlassFishAccountInstance instance) {
+        List<InstanceProperties> propsList = InstancePropertiesManager
+                .getInstance().getProperties(PROPERTIES_NAME_SPACE);
+        synchronized (this) {
+            for (Iterator<InstanceProperties> i = propsList.iterator();
+                    i.hasNext(); ) {
+                InstanceProperties props = i.next();
+                if (instance.equalProps(props)) {
+                    instance.store(props);
                 }
             }
         }

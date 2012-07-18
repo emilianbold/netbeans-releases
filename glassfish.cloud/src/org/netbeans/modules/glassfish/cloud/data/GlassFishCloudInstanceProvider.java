@@ -123,9 +123,9 @@ public class GlassFishCloudInstanceProvider
     }
 
     /**
-     * Update properties to persist using given GlassFish Cloud Instance.
+     * Update properties to persist using given GlassFish cloud instance.
      * <p/>
-     * @param instance GlassFish Cloud Instance used to persist.
+     * @param instance GlassFish cloud instance used to persist.
      */
     public static void persist(GlassFishCloudInstance instance) {
         getInstance().update(instance);
@@ -286,9 +286,9 @@ public class GlassFishCloudInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Store given GlassFish Cloud Instance into properties to persist.
+     * Store given GlassFish cloud instance into properties to persist.
      * <p/>
-     * @param instance GlassFish Cloud Instance to be stored.
+     * @param instance GlassFish cloud instance to be stored.
      */
     private void store(GlassFishCloudInstance instance) {
         InstanceProperties props;
@@ -300,7 +300,7 @@ public class GlassFishCloudInstanceProvider
     }
 
     /**
-     * Load all stored GlassFish Cloud Instances into this provider from
+     * Load all stored GlassFish cloud instances into this provider from
      * persistent properties.
      */
     private void load() {
@@ -316,9 +316,9 @@ public class GlassFishCloudInstanceProvider
     }
 
     /**
-     * Remove given GlassFish Cloud Instance from properties to persist.
+     * Remove given GlassFish cloud instance from properties to persist.
      * <p/>
-     * @param instance GlassFish Cloud Instance to be removed.
+     * @param instance GlassFish cloud instance to be removed.
      */
     private void remove(GlassFishCloudInstance instance) {
         List<InstanceProperties> propsList = InstancePropertiesManager
@@ -335,9 +335,9 @@ public class GlassFishCloudInstanceProvider
     }
 
     /**
-     * Update properties to persist using given GlassFish Cloud Instance.
+     * Update properties to persist using given GlassFish cloud instance.
      * <p/>
-     * @param instance GlassFish Cloud Instance used to update properties.
+     * @param instance GlassFish cloud instance used to update properties.
      */
     private void update(GlassFishCloudInstance instance) {
         List<InstanceProperties> propsList = InstancePropertiesManager

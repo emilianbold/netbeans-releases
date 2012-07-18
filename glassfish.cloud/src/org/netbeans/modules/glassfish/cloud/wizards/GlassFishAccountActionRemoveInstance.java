@@ -67,7 +67,7 @@ public class GlassFishAccountActionRemoveInstance extends GlassFishAccountAction
     protected void performAction(Node[] activatedNodes) {
         GlassFishAccountInstance instance = activatedNodes[0].getLookup()
                 .lookup(GlassFishAccountInstance.class);
-        GlassFishAccountInstanceProvider.getInstance().removeInstance(instance);
+        GlassFishAccountInstanceProvider.removeAccountInstance(instance);
     }
 
     /**

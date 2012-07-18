@@ -67,7 +67,7 @@ public class GlassFishAccountActionProperties extends GlassFishAccountAction {
     protected void performAction(Node[] activatedNodes) {
         GlassFishAccountInstance instance = activatedNodes[0].getLookup()
                 .lookup(GlassFishAccountInstance.class);
-        CommonServerUIs.showCloudCustomizer(instance.getServerInstance());
+        CommonServerUIs.showCustomizer(instance.getServerInstance());
     }
 
     /**

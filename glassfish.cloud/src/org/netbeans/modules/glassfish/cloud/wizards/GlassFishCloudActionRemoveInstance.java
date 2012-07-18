@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.glassfish.cloud.wizards;
 
+import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceNode;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
@@ -67,12 +68,15 @@ public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
     protected void performAction(Node[] activatedNodes) {
         GlassFishCloudInstance instance = activatedNodes[0].getLookup()
                 .lookup(GlassFishCloudInstance.class);
-        GlassFishCloudInstanceProvider.getInstance().removeInstance(instance);
+        GlassFishCloudInstanceProvider.removeCloudInstance(instance);
     }
 
     /**
      * Test whether the action should be enabled based on the currently
      * activated nodes.
+     * <p/>
+     * Remove action is enabled only when there are no user account instances
+     * referencing this cloud node.
      * <p/>
      * @param activatedNodes Current activated nodes, may be empty but not
      *                       <code>null</code>.
@@ -84,8 +88,13 @@ public class GlassFishCloudActionRemoveInstance extends GlassFishCloudAction {
         if (activatedNodes.length != 1) {
             return false;
         }
-        return activatedNodes.length > 0 && activatedNodes[0].getLookup()
-                .lookup(GlassFishCloudInstance.class) != null;
+        GlassFishCloudInstance instance = activatedNodes[0].getLookup()
+                .lookup(GlassFishCloudInstance.class);
+        return activatedNodes.length > 0
+                && activatedNodes[0].getLookup()
+                .lookup(GlassFishCloudInstance.class) != null
+                && !GlassFishAccountInstanceProvider
+                .containsCloudInstance(instance);
     }
 
     /**
