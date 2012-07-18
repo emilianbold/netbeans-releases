@@ -46,12 +46,16 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -89,6 +93,10 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
     private static RequestProcessor rp = new RequestProcessor(
             "ODS Build Services", 10);                                 // NOI18N
     
+    private final static Map<BuildsListener, Object> CACHE =
+            Collections.synchronizedMap(
+            new WeakHashMap<BuildsListener, Object>());
+
     @Override
     public boolean isEnabled(ProjectHandle<ODSProject> projectHandle) {
         return projectHandle.getTeamProject().hasBuild();
@@ -104,6 +112,18 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
                 1, false);
         if (hi == null) {
             return Collections.emptyList();
+        }
+        // Check cache of listeners at first. Listeners already contain all
+        // required information.
+        for (final BuildsListener listener : CACHE.keySet()) {
+            if (listener.projectHandle.get() == projectHandle
+                    && projectHandle.getTeamProject().getBuildUrl().equals(
+                    listener.instance.getUrl())) {
+                synchronized (listener.buildHandles) {
+                    listener.checkJobList(); //update job list
+                    return new LinkedList<BuildHandle>(listener.buildHandles);
+                }
+            }
         }
         List<HudsonBuildHandle> buildHandles =
                 new LinkedList<HudsonBuildHandle>();
@@ -317,6 +337,10 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
                 stateChanged();
             }
         }
+
+        public void cleanup() {
+            hudsonInstance.removeHudsonChangeListener(hudsonChangeListener);
+        }
     }
 
     /**
@@ -333,16 +357,19 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             HudsonChangeListener {
 
         private HudsonInstance instance;
-        private ProjectHandle<ODSProject> projectHandle;
-        private List<HudsonBuildHandle> buildHandles;
-        private volatile boolean closed = false;
+        private Reference<ProjectHandle<ODSProject>> projectHandle;
+        private Reference<CloudServer> server;
+        private final List<HudsonBuildHandle> buildHandles;
 
         public BuildsListener(HudsonInstance instance,
                 ProjectHandle<ODSProject> projectHandle,
                 List<HudsonBuildHandle> buildHandles) {
             this.instance = instance;
-            this.projectHandle = projectHandle;
-            this.buildHandles = buildHandles;
+            this.projectHandle = new WeakReference<ProjectHandle<ODSProject>>(
+                    projectHandle);
+            this.server = new WeakReference<CloudServer>(
+                    projectHandle.getTeamProject().getServer());
+            this.buildHandles = new LinkedList<HudsonBuildHandle>(buildHandles);
         }
 
         /**
@@ -352,35 +379,62 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          */
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (isTeamClosedEvent(evt) || isUserLoggedOutEvent(evt)) {
+            if (isTeamClosedEvent(evt)) {
+                removeHudsonAndClean();
+            } else if (isUserLoggedOutEvent(evt)) {
+                removeHudsonAndClean();
+                CACHE.clear();
+            } else if (projectHandle.get() == null) {
                 cleanup();
-                if (!instance.isPersisted()) {
-                    HudsonManager.removeInstance(instance);
-                }
+            }
+        }
+
+        private void removeHudsonAndClean() {
+            cleanup();
+            if (!instance.isPersisted()) {
+                HudsonManager.removeInstance(instance);
             }
         }
 
         private boolean isTeamClosedEvent(PropertyChangeEvent evt) {
-            return evt.getPropertyName().equals(ProjectHandle.PROP_CLOSE)
-                    && evt.getSource() == projectHandle;
+            ProjectHandle<ODSProject> ph = projectHandle.get();
+            if (ph == null) {
+                return false;
+            } else {
+                return evt.getPropertyName().equals(ProjectHandle.PROP_CLOSE)
+                        && evt.getSource() == ph;
+            }
         }
 
         private boolean isUserLoggedOutEvent(PropertyChangeEvent evt) {
-            return evt.getPropertyName().equals(CloudServer.PROP_LOGIN)
-                    && evt.getNewValue() == null
-                    && evt.getSource()
-                    == projectHandle.getTeamProject().getServer();
+            CloudServer srv = server.get();
+            if (srv == null) {
+                return false;
+            } else {
+                return evt.getPropertyName().equals(CloudServer.PROP_LOGIN)
+                        && evt.getNewValue() == null
+                        && evt.getSource() == srv;
+            }
         }
 
         private void cleanup() {
-            closed = true;
-            projectHandle.getTeamProject().getServer().
-                    removePropertyChangeListener(this);
-            projectHandle.removePropertyChangeListener(this);
+            ProjectHandle<ODSProject> ph = projectHandle.get();
+            if (ph != null) {
+                ph.removePropertyChangeListener(this);
+            }
+            CloudServer srv = server.get();
+            if (srv != null) {
+                srv.removePropertyChangeListener(this);
+            }
             instance.removeHudsonChangeListener(this);
             synchronized (this) {
+                for (HudsonBuildHandle handle: buildHandles) {
+                    handle.cleanup();
+                }
                 buildHandles.clear();
             }
+            projectHandle.clear();
+            CACHE.remove(this);
         }
 
         /**
@@ -389,6 +443,9 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          */
         @Override
         public void stateChanged() {
+            if (projectHandle.get() == null) {
+                cleanup();
+            }
         }
 
         /**
@@ -396,11 +453,17 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          */
         @Override
         public void contentChanged() {
-            PairOfDifferentLists lists = checkJobList();
-            if (lists != null && !closed) {
-                projectHandle.firePropertyChange(ProjectHandle.PROP_BUILD_LIST,
-                        lists.getOriginal(),
-                        lists.getUpdated());
+            ProjectHandle<ODSProject> ph = projectHandle.get();
+            if (ph != null) {
+                PairOfDifferentLists lists = checkJobList();
+                if (lists != null) {
+                    ph.firePropertyChange(
+                            ProjectHandle.PROP_BUILD_LIST,
+                            lists.getOriginal(),
+                            lists.getUpdated());
+                }
+            } else {
+                cleanup();
             }
         }
 
@@ -452,6 +515,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
                     }
                 }
                 if (!found) {
+                    handle.cleanup();
                     buildHandles.remove(handle);
                 }
             }
@@ -482,6 +546,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             projectHandle.getTeamProject().getServer().
                     addPropertyChangeListener(buildsListener);
             hudsonInstance.addHudsonChangeListener(buildsListener);
+            CACHE.put(buildsListener, new Object());
         }
 
         /**
