@@ -48,7 +48,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.api.annotations.PhpAnnotations;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
 
 /**
@@ -56,6 +58,8 @@ import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
  * @author Petr Pisl
  */
 public class PHPDocCommentParser {
+
+    private List<AnnotationLineParser> lineParsers;
 
     private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
 
@@ -327,7 +331,7 @@ public class PHPDocCommentParser {
     }
 
     private AnnotationParsedLine findTagOnLine(String line) {
-        AnnotationParsedLine type = null;
+        AnnotationParsedLine result = null;
         if (line.length() > 0 && line.charAt(0) == '@') {
             String[] tokens = line.trim().split("[ \t]+");
             if (tokens.length > 0) {
@@ -337,14 +341,30 @@ public class PHPDocCommentParser {
                     tag = tag.replace('-', '_');
                 }
                 try {
-                    type = PHPDocTag.Type.valueOf(tag);
+                    result = PHPDocTag.Type.valueOf(tag);
                 } catch (IllegalArgumentException iae) {
                     // we are not able to thread such tag
-                    type = new UnknownAnnotationType(name);
+                    for (AnnotationLineParser annotationLineParser : getLineParsers()) {
+                        AnnotationParsedLine parsedLine = annotationLineParser.parse(line.substring(1));
+                        if (parsedLine != null) {
+                            result = parsedLine;
+                            break;
+                        }
+                    }
+                    if (result == null) {
+                        result = new UnknownAnnotationType(name);
+                    }
                 }
             }
         }
-        return type;
+        return result;
+    }
+
+    private List<AnnotationLineParser> getLineParsers() {
+        if (lineParsers == null) {
+            lineParsers = PhpAnnotations.getLineParsers();
+        }
+        return lineParsers;
     }
 
     private static class ParametersExtractorImpl implements ParametersExtractor {
