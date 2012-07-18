@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.c2c.tasks.nb
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/c2c/tasks/nb/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Provides: org.netbeans.modules.c2c.tasks.spi.C2CExtender

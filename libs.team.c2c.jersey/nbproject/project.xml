@@ -126,7 +126,15 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>com.sun.jersey.api.client</package>
+                <package>com.sun.jersey.api.client.config</package>
+                <package>com.sun.jersey.api.client.filter</package>
+                <package>com.sun.jersey.core.util</package>
+                <package>javax.ws.rs</package>
+                <package>javax.ws.rs.core</package>
+                <package>javax.ws.rs.ext</package>
+            </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jackson-jaxrs-1.9.2.jar</runtime-relative-path>
                 <binary-origin>external/jackson-jaxrs-1.9.2.jar</binary-origin>
