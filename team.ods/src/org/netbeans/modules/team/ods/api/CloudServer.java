@@ -45,6 +45,7 @@ import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
@@ -52,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import javax.swing.Icon;
 import org.netbeans.modules.team.ods.client.api.ODSFactory;
@@ -89,7 +91,7 @@ public final class CloudServer {
     private Icon icon;
     private PasswordAuthentication auth;
     private Profile currentProfile;
-    private List<ODSProject> projects;
+    final HashMap<String, ODSProject> projectsCache = new HashMap<String, ODSProject>();
 
     private CloudServer (String displayName, String url) throws MalformedURLException {
         while (url.endsWith("/")) { //NOI18N
@@ -157,7 +159,7 @@ public final class CloudServer {
         synchronized(this) {
             auth = null;
             currentProfile = null;
-            projects = null;
+            projectsCache.clear();
         }
         PropertyChangeEvent propertyChangeEvent = new PropertyChangeEvent(this, PROP_LOGIN, old, auth);
         firePropertyChange(propertyChangeEvent);
@@ -196,31 +198,50 @@ public final class CloudServer {
         CloudServerManager.getDefault().propertyChangeSupport.firePropertyChange(event);
     }
 
-    public synchronized Collection<ODSProject> getMyProjects(boolean force) throws ODSException {
+    public void refresh(ODSProject odsProject) throws ODSException {
+        if(!isLoggedIn()) {
+            return;
+        }
+        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        Project p = client.getProjectById(odsProject.getId());
+        odsProject.setProject(p);
+    }
+    
+    public Collection<ODSProject> getMyProjects(boolean force) throws ODSException {
         if(!isLoggedIn()) {
             return Collections.EMPTY_LIST;
         }
         ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
-        if(force || projects == null) { 
-            List<Project> ps = client.getMyProjects();
-            if(ps == null) {
-                return Collections.EMPTY_LIST;
+        synchronized(projectsCache) {
+            if(force || projectsCache.isEmpty()) { 
+                List<Project> ps = client.getMyProjects();
+                if(ps == null) {
+                    return Collections.EMPTY_LIST;
+                }
+                Collection<ODSProject> ret = new ArrayList<ODSProject>(ps.size());
+                for (Project project : ps) {
+                    ODSProject p = new ODSProject(project, this);
+                    ret.add(p);
+                    projectsCache.put(project.getIdentifier(), p);
+                }
+                return ret;
+            } else {
+                return Collections.unmodifiableCollection(projectsCache.values());
             }
-            projects = new ArrayList<ODSProject>(ps.size());
-            for (Project project : ps) {
-                projects.add(new ODSProject(project, this));
-            }
-        }
-        return Collections.unmodifiableCollection(projects);
+        }   
     }
 
-    public synchronized Collection<ODSProject> getMyProjects() throws ODSException {
+    public Collection<ODSProject> getMyProjects() throws ODSException {
         if(!isLoggedIn()) {
             return Collections.EMPTY_LIST;
         }
-        if(projects == null) {
-            return getMyProjects(true);
+        synchronized(projectsCache) {
+            if(projectsCache.isEmpty()) {
+                return getMyProjects(true);
+            } else {
+                return Collections.unmodifiableCollection(projectsCache.values());
+            }
         }
-        return Collections.unmodifiableCollection(projects);
     }
+    
 }

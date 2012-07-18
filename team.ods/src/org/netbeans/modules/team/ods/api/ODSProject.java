@@ -85,19 +85,20 @@ public final class ODSProject {
         this.server = server;
     }
 
-    public String getName() {
+    public synchronized String getName() {
         return project.getName();
     }
     
-    public String getId() {
+    public synchronized String getId() {
         return project.getIdentifier();
     }
 
-    public CloudServer getServer() {
+    public synchronized CloudServer getServer() {
         return server;
     }
     /**
      * Returns all known ScmRepository-s in case the project has a SCM service type. Otherwise null.
+     * This method might block awt.
      * 
      * @return
      * @throws CloudException 
@@ -123,10 +124,13 @@ public final class ODSProject {
     }
     
     void setProject(Project project) {
-        this.project = project;
-        synchronized(REPOSITORIES_LOCK) {
-            repositories = null;
+        synchronized(this) {
+            this.project = project;
+            synchronized(REPOSITORIES_LOCK) {
+                repositories = null;
+            }
         }
+        propertyChangeSupport.firePropertyChange(PROP_PROJECT_CHANGED, null, null);
     }
    
     @Override
@@ -190,7 +194,7 @@ public final class ODSProject {
         return hasService(ServiceType.SCM);
     }
 
-    public String getBuildUrl() {
+    public synchronized String getBuildUrl() {
         List<ProjectService> s = project.getProjectServicesOfType(ServiceType.BUILD);
         if(s != null) {
             for (ProjectService ps : s) {
@@ -202,7 +206,7 @@ public final class ODSProject {
         return null;
     }
     
-    private boolean hasService(ServiceType type) {
+    private synchronized boolean hasService(ServiceType type) {
         List<ProjectService> s = project.getProjectServicesOfType(type);
         if(s != null) {
             for (ProjectService ps : s) {
