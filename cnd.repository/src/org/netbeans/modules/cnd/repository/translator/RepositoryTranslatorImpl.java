@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.repository.translator;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.cnd.repository.api.RepositoryTranslation;
@@ -118,7 +117,14 @@ public class RepositoryTranslatorImpl implements RepositoryTranslation {
             message.append("Unit: ").append(getUnitName(unitId)); //NOI18N
             message.append(" FileIndex: ").append(fileId); //NOI18N
             message.append(" CacheSize: ").append(fileNames.size()); //NOI18N
-            throw new IndexOutOfBoundsException(message.toString());
+            StackTraceElement[] cacheCreationStack = fileNames.getCreationStack();
+            if (cacheCreationStack == null) {
+                throw new IllegalArgumentException(message.toString());
+            } else {
+                Exception cause = new Exception("Files cache creation stack"); //NOI18N
+                cause.setStackTrace(cacheCreationStack);
+                throw new IllegalArgumentException(message.toString(), cause);
+            }
         }
         final CharSequence fileName = fileNames.getValueById(fileId);
         return fileName;
