@@ -109,7 +109,8 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         return s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
     
-    protected String[] getExtensibleClassPathTypes (SourceGroup sg) {
+    @Override
+    public String[] getExtensibleClassPathTypes (SourceGroup sg) {
         return new String[] {
             ClassPath.COMPILE,
             ClassPath.EXECUTE,
@@ -118,17 +119,19 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         };
     }
 
-    protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    @Override
+    public boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         return removeRoots(convertURLsToURIs(classPathRoots), sourceGroup, type);
     }
 
     @Override
-    protected boolean removeRoots(final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    public boolean removeRoots(final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
         return handleRoots (classPathRoots, classPathProperty, cpModifierCallback.getElementName(classPathProperty), REMOVE);
     }
 
-    protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
+    @Override
+    public boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
         return addRoots(convertURLsToURIs(classPathRoots), sourceGroup, type);
     }
     
@@ -137,7 +140,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
     
     @Override
-    protected boolean addRoots (final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
+    public boolean addRoots (final URI[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
         return addRoots(classPathRoots, sourceGroup, type, ADD);
     }
     
@@ -152,12 +155,14 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         return ClassPathModifierSupport.handleRoots(project, updateHelper, cs, eval, refHelper, cpUiSupportCallback, classPathRoots, classPathProperty, projectXMLElementName, operation);
     }
     
-    protected boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    @Override
+    public boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
         return handleAntArtifacts (artifacts, artifactElements, classPathProperty, cpModifierCallback.getElementName(classPathProperty), REMOVE);
     }
 
-    protected boolean addAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    @Override
+    public boolean addAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
         return handleAntArtifacts (artifacts, artifactElements, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
     }
@@ -166,12 +171,14 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         return ClassPathModifierSupport.handleAntArtifacts(project, updateHelper, cs, eval, refHelper, cpUiSupportCallback, artifacts, artifactElements, classPathProperty, projectXMLElementName, operation);
     }
     
-    protected boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    @Override
+    public boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
         return handleLibraries (libraries, classPathProperty, cpModifierCallback.getElementName(classPathProperty), REMOVE);
     }
 
-    protected boolean addLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    @Override
+    public boolean addLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         String classPathProperty = cpModifierCallback.getClassPathProperty(sourceGroup, type);
         return handleLibraries (libraries, classPathProperty, cpModifierCallback.getElementName(classPathProperty), ADD);
     }
