@@ -59,7 +59,7 @@ import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
  */
 public class PHPDocCommentParser {
 
-    private List<AnnotationLineParser> lineParsers;
+    private final List<AnnotationLineParser> lineParsers = PhpAnnotations.getLineParsers();
 
     private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
 
@@ -356,7 +356,7 @@ public class PHPDocCommentParser {
 
     private AnnotationParsedLine fetchCustomAnnotationLine(final String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : getLineParsers()) {
+        for (AnnotationLineParser annotationLineParser : lineParsers) {
             AnnotationParsedLine parsedLine = annotationLineParser.parse(line);
             if (parsedLine != null) {
                 result = parsedLine;
@@ -364,13 +364,6 @@ public class PHPDocCommentParser {
             }
         }
         return result;
-    }
-
-    private List<AnnotationLineParser> getLineParsers() {
-        if (lineParsers == null) {
-            lineParsers = PhpAnnotations.getLineParsers();
-        }
-        return lineParsers;
     }
 
     private static class ParametersExtractorImpl implements ParametersExtractor {
