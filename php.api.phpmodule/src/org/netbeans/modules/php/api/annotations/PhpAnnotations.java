@@ -44,7 +44,7 @@ package org.netbeans.modules.php.api.annotations;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
@@ -58,9 +58,9 @@ import org.openide.util.lookup.Lookups;
  * <p>the list of registered PHP annotations providers
  * that are <b>globally</b> available (it means that their annotations are available
  * in every PHP file). For <b>framework specific</b> annotations, use
- * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.</p>
+ * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsCompletionTagProviders(org.netbeans.modules.php.api.phpmodule.PhpModule)}.</p>
  *
- * <p>The path is "{@value #ANNOTATIONS_PATH}" on SFS.</p>
+ * <p>The path is {@value #ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH} on SFS.</p>
  * </li>
  *
  * <li>
@@ -74,13 +74,14 @@ import org.openide.util.lookup.Lookups;
  */
 public final class PhpAnnotations {
 
-    public static final String ANNOTATIONS_PATH = "PHP/Annotations"; // NOI18N
+    public static final String ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH = "PHP/Annotations"; // NOI18N
+
     /**
      * @since 1.69
      */
     public static final String ANNOTATIONS_LINE_PARSERS_PATH = "PHP/Annotations/Line/Parsers"; // NOI18N
 
-    private static final Lookup.Result<PhpAnnotationsProvider> PROVIDERS = Lookups.forPath(ANNOTATIONS_PATH).lookupResult(PhpAnnotationsProvider.class);
+    private static final Lookup.Result<AnnotationCompletionTagProvider> COMPLETION_TAG_PROVIDERS = Lookups.forPath(ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH).lookupResult(AnnotationCompletionTagProvider.class);
 
     /**
      * @since 1.69
@@ -91,37 +92,37 @@ public final class PhpAnnotations {
     }
 
     /**
-     * Get all registered {@link PhpAnnotationsProvider}s
+     * Get all registered {@link AnnotationCompletionTagProvider}s
      * that are <b>globally</b> available (it means that their annotations are available
      * in every PHP file). For <b>framework specific</b> annotations, use
-     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
-     * @return a list of all registered {@link PhpAnnotationsProvider}s; never {@code null}
+     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsCompletionTagProviders(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
+     * @return a list of all registered {@link AnnotationCompletionTagProvider}s; never {@code null}
      */
-    public static List<PhpAnnotationsProvider> getProviders() {
-        return new ArrayList<PhpAnnotationsProvider>(PROVIDERS.allInstances());
+    public static List<AnnotationCompletionTagProvider> getCompletionTagProviders() {
+        return new ArrayList<AnnotationCompletionTagProvider>(COMPLETION_TAG_PROVIDERS.allInstances());
     }
 
     /**
      * Add {@link LookupListener listener} to be notified when annotations providers change
      * (new provider added, existing removed).
      * <p>
-     * To avoid memory leaks, do not forget to {@link #removeListener(LookupListener) remove} the listener.
+     * To avoid memory leaks, do not forget to {@link #removeCompletionTagProvidersListener(LookupListener) remove} the listener.
      * @param listener {@link LookupListener listener} to be added
-     * @see #removeListener(LookupListener)
+     * @see #removeCompletionTagProvidersListener(LookupListener)
      */
-    public static void addListener(LookupListener listener) {
+    public static void addCompletionTagProvidersListener(LookupListener listener) {
         Parameters.notNull("listener", listener);
-        PROVIDERS.addLookupListener(listener);
+        COMPLETION_TAG_PROVIDERS.addLookupListener(listener);
     }
 
     /**
      * Remove {@link LookupListener listener}.
      * @param listener {@link LookupListener listener} to be removed
-     * @see #addListener(LookupListener)
+     * @see #addCompletionTagProvidersListener(LookupListener)
      */
-    public static void removeListener(LookupListener listener) {
+    public static void removeCompletionTagProvidersListener(LookupListener listener) {
         Parameters.notNull("listener", listener);
-        PROVIDERS.removeLookupListener(listener);
+        COMPLETION_TAG_PROVIDERS.removeLookupListener(listener);
     }
 
     /**

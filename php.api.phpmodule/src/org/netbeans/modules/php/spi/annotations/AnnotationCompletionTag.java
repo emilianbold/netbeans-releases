@@ -48,7 +48,7 @@ import org.openide.util.Parameters;
  * Class representing code-completion item.
  * @since 1.63
  */
-public class PhpAnnotationTag {
+public class AnnotationCompletionTag {
 
     private final String name;
     private final String insertTemplate;
@@ -60,7 +60,7 @@ public class PhpAnnotationTag {
      * @param name tag name, cannot
      * @param insertTemplate text that it inserted to the source file
      */
-    public PhpAnnotationTag(String name, String insertTemplate) {
+    public AnnotationCompletionTag(String name, String insertTemplate) {
         this(name, insertTemplate, null);
     }
 
@@ -70,7 +70,7 @@ public class PhpAnnotationTag {
      * @param insertTemplate text that it inserted to the source file
      * @param documentation documentation of the tag, HTML allowed; can be {@code null}
      */
-    public PhpAnnotationTag(String name, String insertTemplate, String documentation) {
+    public AnnotationCompletionTag(String name, String insertTemplate, String documentation) {
         Parameters.notEmpty("name", name);
         Parameters.notEmpty("insertTemplate", insertTemplate);
 
@@ -118,7 +118,7 @@ public class PhpAnnotationTag {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final PhpAnnotationTag other = (PhpAnnotationTag) obj;
+        final AnnotationCompletionTag other = (AnnotationCompletionTag) obj;
         if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
             return false;
         }

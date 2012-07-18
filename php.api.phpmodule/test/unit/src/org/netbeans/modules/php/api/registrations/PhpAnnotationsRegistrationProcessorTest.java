@@ -47,8 +47,8 @@ import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.annotations.PhpAnnotations;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
@@ -72,12 +72,12 @@ public class PhpAnnotationsRegistrationProcessorTest extends NbTestCase {
         MyAnnotations.factoryCalls = 0;
         MockLookup.init();
         assertSame("No factory method should not be used yet", 0, MyAnnotations.factoryCalls);
-        Collection<? extends PhpAnnotationsProvider> all = Lookups.forPath(PhpAnnotations.ANNOTATIONS_PATH).lookupAll(PhpAnnotationsProvider.class);
+        Collection<? extends AnnotationCompletionTagProvider> all = Lookups.forPath(PhpAnnotations.ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH).lookupAll(AnnotationCompletionTagProvider.class);
         assertSame("Two should be found", 2, all.size());
         // ???
         //assertSame("One factory method should be used", 1, MyAnnotations.factoryCalls);
 
-        Iterator<? extends PhpAnnotationsProvider> it = all.iterator();
+        Iterator<? extends AnnotationCompletionTagProvider> it = all.iterator();
         assertSame(CONSTRUCTOR, it.next().getIdentifier());
         assertSame(FACTORY, it.next().getIdentifier());
     }
@@ -85,15 +85,15 @@ public class PhpAnnotationsRegistrationProcessorTest extends NbTestCase {
     //~ Inner classes
 
     public static final class MyAnnotationsFactory {
-        @PhpAnnotationsProvider.Registration(position=200)
+        @AnnotationCompletionTagProvider.Registration(position=200)
         public static MyAnnotations getInstance() {
             MyAnnotations.factoryCalls++;
             return new MyAnnotations(FACTORY);
         }
     }
 
-    @PhpAnnotationsProvider.Registration(position=100)
-    public static final class MyAnnotations extends PhpAnnotationsProvider {
+    @AnnotationCompletionTagProvider.Registration(position=100)
+    public static final class MyAnnotations extends AnnotationCompletionTagProvider {
         static int factoryCalls = 0;
 
         public MyAnnotations() {
@@ -105,27 +105,27 @@ public class PhpAnnotationsRegistrationProcessorTest extends NbTestCase {
         }
 
         @Override
-        public List<PhpAnnotationTag> getAnnotations() {
+        public List<AnnotationCompletionTag> getAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public List<PhpAnnotationTag> getFunctionAnnotations() {
+        public List<AnnotationCompletionTag> getFunctionAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public List<PhpAnnotationTag> getTypeAnnotations() {
+        public List<AnnotationCompletionTag> getTypeAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public List<PhpAnnotationTag> getFieldAnnotations() {
+        public List<AnnotationCompletionTag> getFieldAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public List<PhpAnnotationTag> getMethodAnnotations() {
+        public List<AnnotationCompletionTag> getMethodAnnotations() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

@@ -224,7 +224,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>2.46</specification-version>
+                        <specification-version>2.52</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

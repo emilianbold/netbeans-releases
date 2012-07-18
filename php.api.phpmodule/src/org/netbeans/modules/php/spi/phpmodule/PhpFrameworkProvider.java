@@ -52,7 +52,7 @@ import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.util.Parameters;
@@ -273,7 +273,7 @@ public abstract class PhpFrameworkProvider {
     public abstract EditorExtender getEditorExtender(PhpModule phpModule);
 
     /**
-     * Get list of {@link PhpAnnotationsProvider annotations providers} for this framework
+     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this framework
      * and the given PHP module.
      * <p>
      * This method is called only for PHP modules with this framework present.
@@ -285,7 +285,7 @@ public abstract class PhpFrameworkProvider {
      *         any PHP annotations
      * @since 1.65
      */
-    public List<PhpAnnotationsProvider> getAnnotationsProviders(PhpModule phpModule) {
+    public List<AnnotationCompletionTagProvider> getAnnotationsCompletionTagProviders(PhpModule phpModule) {
         return Collections.emptyList();
     }
 

@@ -50,7 +50,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.php.api.annotations.PhpAnnotations;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -62,10 +62,10 @@ public class PhpAnnotationsRegistrationProcessor extends LayerGeneratingProcesso
 
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(PhpAnnotationsProvider.Registration.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(AnnotationCompletionTagProvider.Registration.class)) {
             layer(element)
-                    .instanceFile(PhpAnnotations.ANNOTATIONS_PATH, null, PhpAnnotationsProvider.class)
-                    .intvalue("position", element.getAnnotation(PhpAnnotationsProvider.Registration.class).position()) // NOI18N
+                    .instanceFile(PhpAnnotations.ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH, null, AnnotationCompletionTagProvider.class)
+                    .intvalue("position", element.getAnnotation(AnnotationCompletionTagProvider.Registration.class).position()) // NOI18N
                     .write();
         }
         return true;

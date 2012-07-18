@@ -56,8 +56,8 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.project.api.PhpAnnotations;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -115,12 +115,12 @@ public class PHPDOCCodeCompletion {
 
     private static void completeAnnotation(final PHPCompletionResult completionResult, final CompletionRequest request) {
         String prefix = request.prefix.substring(TAG_PREFIX.length());
-        List<PhpAnnotationsProvider> providers = PhpAnnotations.getDefault().getProviders(request.info.getSnapshot().getSource().getFileObject());
+        List<AnnotationCompletionTagProvider> providers = PhpAnnotations.getDefault().getCompletionTagProviders(request.info.getSnapshot().getSource().getFileObject());
         ASTNode nodeAfterOffset = Utils.getNodeAfterOffset(request.result, request.anchor);
         int priority = 0;
-        for (PhpAnnotationsProvider annotationProvider : providers) {
+        for (AnnotationCompletionTagProvider annotationProvider : providers) {
             priority++;
-            List<PhpAnnotationTag> annotations;
+            List<AnnotationCompletionTag> annotations;
             if (nodeAfterOffset instanceof TypeDeclaration) {
                 annotations = annotationProvider.getTypeAnnotations();
             } else if (nodeAfterOffset instanceof MethodDeclaration) {
@@ -132,7 +132,7 @@ public class PHPDOCCodeCompletion {
             } else {
                 annotations = annotationProvider.getAnnotations();
             }
-            for (PhpAnnotationTag tag : annotations) {
+            for (AnnotationCompletionTag tag : annotations) {
                 if (tag.getName().startsWith(prefix)) {
                     completionResult.add(new PHPDOCCodeCompletionItem(request.anchor, tag, annotationProvider.getName(), priority));
                 }
@@ -143,13 +143,13 @@ public class PHPDOCCodeCompletion {
     public static class PHPDOCCodeCompletionItem implements CompletionProposal {
         private static final String PHP_ANNOTATION_ICON = "org/netbeans/modules/php/editor/resources/annotation.png"; //NOI18N
         private static ImageIcon ANNOTATION_ICON = null;
-        private final PhpAnnotationTag tag;
+        private final AnnotationCompletionTag tag;
         private final int anchorOffset;
         private final PHPDOCTagElement elem;
         private final String providerName;
         private final int priority;
 
-        public PHPDOCCodeCompletionItem(int anchorOffset, PhpAnnotationTag tag, String providerName, int priority) {
+        public PHPDOCCodeCompletionItem(int anchorOffset, AnnotationCompletionTag tag, String providerName, int priority) {
             this.tag = tag;
             this.anchorOffset = anchorOffset;
             this.providerName= providerName;
