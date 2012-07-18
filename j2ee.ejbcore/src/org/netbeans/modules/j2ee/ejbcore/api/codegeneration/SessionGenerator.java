@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -193,8 +194,10 @@ public final class SessionGenerator {
         assert LibraryManager.getDefault().getLibrary("javaee-api-6.0") != null;
         if (ClassPath.getClassPath(remotePkg, ClassPath.COMPILE).findResource("javax/ejb") == null) {
             try {
-                // for Maven, first try CPExtender.CLASSPATH_COMPILE_ONLY = "classpath/compile_only", see bug 186221.
-                ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, "classpath/compile_only");
+                // first try JavaClassPathConstants.COMPILE_ONLY - if remotePkg represents
+                // Maven project then it will work; J2SE project on the other hand will fail
+                // and simple ClassPath.COMPILE should be used instead:
+                ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, JavaClassPathConstants.COMPILE_ONLY);
             } catch (UnsupportedOperationException e) {
                 ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, ClassPath.COMPILE);
             }
