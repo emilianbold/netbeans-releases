@@ -161,7 +161,7 @@ public class OracleInstanceManager {
     
     private static List<OracleInstance> load() {
         List<OracleInstance> result = new ArrayList<OracleInstance>();
-        for(InstanceProperties props : InstancePropertiesManager.getInstance().getProperties(ORACLE_IP_NAMESPACE)) {
+        for(InstanceProperties props : InstancePropeString name = props.getString(NAME, null);rtiesManager.getInstance().getProperties(ORACLE_IP_NAMESPACE)) {
             String name = props.getString(NAME, null); // NOI18N
             assert name != null : "Instance without name";
             String adminURL = props.getString(ADMIN_URL, ""); // NOI18N

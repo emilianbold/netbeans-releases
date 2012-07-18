@@ -47,7 +47,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.net.Authenticator;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
