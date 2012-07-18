@@ -90,21 +90,20 @@ public class SourceNode<CloudUIServer, ODSProject> extends LeafNode {
 
             if( source.isSupported() ) {
                 btn = new LinkButton(NbBundle.getMessage(SourceNode.class, "LBL_GetSources"), provider.getSourceAccessor().getOpenSourcesAction(source)); //NOI18N
-                String featureName = source.getScmFeatureName();
-                String repotype = "MSG_GIT"; // XXX budle me!
-                btn.setToolTipText(NbBundle.getMessage(SourceNode.class, repotype));
-                lbl1 = new TreeLabel("("); //NOI18N
-                lbl2 = new TreeLabel(")"); //NOI18N
+                btn.setToolTipText(NbBundle.getMessage(SourceNode.class, "MSG_GIT")); // NOI18N
+                lbl1 = new TreeLabel("("); // NOI18N
+                lbl2 = new TreeLabel(")"); // NOI18N
                 panel.add( lbl1, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
                 panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
                 panel.add( lbl2, new GridBagConstraints(3,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
             }
             panel.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
-        if( !isSelected && !source.isSupported() )
+        if( !isSelected && !source.isSupported() ) {
             lbl.setForeground(ColorManager.getDefault().getDisabledColor());
-        else
+        } else {
             lbl.setForeground(foreground);
+        }
         if( null != btn ) {
             lbl1.setForeground(foreground);
             lbl2.setForeground(foreground);

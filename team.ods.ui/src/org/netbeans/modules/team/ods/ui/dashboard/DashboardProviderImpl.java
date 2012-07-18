@@ -67,7 +67,6 @@ import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle.ResultType;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
@@ -82,7 +81,6 @@ public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODSP
 
     private final CloudUiServer server;
     private ProjectAccessorImpl projectAccessor;
-    private SourceAccessor sourceAccessor;
 
     public DashboardProviderImpl(CloudUiServer server) {
         this.server = server;
@@ -108,11 +106,7 @@ public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODSP
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // XXX handle more instances
-                TeamServer s = UIUtils.showLogin(server, false);
-                if(s != null) {
-                    
-                }
+                UIUtils.showLogin(server, false);
             }
         };
     }
@@ -129,7 +123,7 @@ public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODSP
 
     @Override
     public TreeListNode createMyProjectNode(ProjectHandle<ODSProject> p) {
-        return new MyProjectNode(p, server.getDashboard(), this);
+        return new MyProjectNode(p, server.getDashboard());
     }
 
     @Override
