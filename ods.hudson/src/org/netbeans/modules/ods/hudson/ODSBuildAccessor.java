@@ -43,6 +43,7 @@ package org.netbeans.modules.ods.hudson;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
@@ -64,6 +65,7 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
+import org.netbeans.modules.team.c2c.api.CloudServer;
 import org.netbeans.modules.team.c2c.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
@@ -84,12 +86,12 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
     private static final Logger LOG = Logger.getLogger(
             ODSBuildAccessor.class.getName());
 
-    private RequestProcessor rp = new RequestProcessor("ODS Build Services", 10); // NOI18N
+    private static RequestProcessor rp = new RequestProcessor(
+            "ODS Build Services", 10);                                 // NOI18N
     
     @Override
     public boolean isEnabled(ProjectHandle<ODSProject> projectHandle) {
-        projectHandle.getTeamProject().getServer().addPropertyChangeListener(null);
-        return projectHandle.getTeamProject().hasBuild(); 
+        return projectHandle.getTeamProject().hasBuild();
     }
 
     @Override
@@ -103,12 +105,14 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         if (hi == null) {
             return Collections.emptyList();
         }
-        List<BuildHandle> buildHandles = new LinkedList<BuildHandle>();
+        List<HudsonBuildHandle> buildHandles =
+                new LinkedList<HudsonBuildHandle>();
         Collection<HudsonJob> jobs = waitForJobs(hi);
         for (HudsonJob job : jobs) {
             buildHandles.add(new HudsonBuildHandle(hi, job.getName(), job));
         }
-        return buildHandles;
+        BuildsListener.create(hi, projectHandle, buildHandles);
+        return new LinkedList<BuildHandle>(buildHandles);
     }
 
     @Override
@@ -144,7 +148,6 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
      * are loaded.
      */
     private Collection<HudsonJob> waitForJobs(HudsonInstance hi) {
-        LOG.log(Level.INFO, "waiting for jobs in {0}", Thread.currentThread().getName());
         Collection<HudsonJob> jobs = hi.getJobs();
         if (jobs == null || jobs.isEmpty()) {
             final Semaphore semaphore = new Semaphore(0);
@@ -166,7 +169,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         return jobs;
     }
 
-    private class HudsonBuildHandle extends BuildHandle {
+    private static class HudsonBuildHandle extends BuildHandle {
 
         private HudsonInstance hudsonInstance;
         private String jobName;
@@ -253,6 +256,10 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             return Status.UNKNOWN;
         }
 
+        public HudsonJob getJob() {
+            return hudsonJob;
+        }
+
         @Override
         public Status getStatus() {
             if (currentStatus == null) {
@@ -308,6 +315,195 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             @Override
             public void contentChanged() {
                 stateChanged();
+            }
+        }
+    }
+
+    /**
+     * Listener that listens to various ProjectHandle-related events. It is
+     * notified when the team project is closed or user logs out from the team
+     * server. In this case the listener unregisters itself from objects that
+     * hold references to it.
+     *
+     * It is also notified when a content of the Hudson build instance is
+     * changed. Then it checks whether the list of jobs has changed, and if so,
+     * fires appropriate event on the project handle.
+     */
+    private static class BuildsListener implements PropertyChangeListener,
+            HudsonChangeListener {
+
+        private HudsonInstance instance;
+        private ProjectHandle<ODSProject> projectHandle;
+        private List<HudsonBuildHandle> buildHandles;
+        private volatile boolean closed = false;
+
+        public BuildsListener(HudsonInstance instance,
+                ProjectHandle<ODSProject> projectHandle,
+                List<HudsonBuildHandle> buildHandles) {
+            this.instance = instance;
+            this.projectHandle = projectHandle;
+            this.buildHandles = buildHandles;
+        }
+
+        /**
+         * Property change in project handle or team server. Triggers actions if
+         * the team project is closed or the user logged-out from the team
+         * server.
+         */
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (isTeamClosedEvent(evt) || isUserLoggedOutEvent(evt)) {
+                cleanup();
+                if (!instance.isPersisted()) {
+                    HudsonManager.removeInstance(instance);
+                }
+            }
+        }
+
+        private boolean isTeamClosedEvent(PropertyChangeEvent evt) {
+            return evt.getPropertyName().equals(ProjectHandle.PROP_CLOSE)
+                    && evt.getSource() == projectHandle;
+        }
+
+        private boolean isUserLoggedOutEvent(PropertyChangeEvent evt) {
+            return evt.getPropertyName().equals(CloudServer.PROP_LOGIN)
+                    && evt.getNewValue() == null
+                    && evt.getSource()
+                    == projectHandle.getTeamProject().getServer();
+        }
+
+        private void cleanup() {
+            closed = true;
+            projectHandle.getTeamProject().getServer().
+                    removePropertyChangeListener(this);
+            projectHandle.removePropertyChangeListener(this);
+            instance.removeHudsonChangeListener(this);
+            synchronized (this) {
+                buildHandles.clear();
+            }
+        }
+
+        /**
+         * Called when status of Hudson instance has changed. Not important for
+         * this listener.
+         */
+        @Override
+        public void stateChanged() {
+        }
+
+        /**
+         * Called when list of jobs in the hudson instance has changed.
+         */
+        @Override
+        public void contentChanged() {
+            PairOfDifferentLists lists = checkJobList();
+            if (lists != null && !closed) {
+                projectHandle.firePropertyChange(ProjectHandle.PROP_BUILD_LIST,
+                        lists.getOriginal(),
+                        lists.getUpdated());
+            }
+        }
+
+        /**
+         * Check whether the job of list has changed. If so, update
+         * {@link #buildHandles} list and return pair of original and update
+         * list. If the list has not been changed, return null.
+         */
+        private synchronized PairOfDifferentLists checkJobList() {
+            Collection<HudsonJob> jobs = instance.getJobs();
+            List<HudsonJob> added = new LinkedList<HudsonJob>(); // new jobs
+            boolean allFound = true; // jobs for all hanles have been found
+            for (HudsonJob job : jobs) {
+                boolean found = false;
+                for (HudsonBuildHandle handle : buildHandles) {
+                    if (handle.getJob().getUrl().equals(job.getUrl())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    added.add(job);
+                    allFound = false;
+                }
+            }
+            if (jobs.size() == buildHandles.size() && allFound) {
+                return null; // no change
+            } else {
+                List<BuildHandle> origList =
+                        new LinkedList<BuildHandle>(buildHandles);
+                removeOrphanedHandles(jobs);
+                addHandlesForAddedJobs(added);
+                return new PairOfDifferentLists(origList,
+                        new LinkedList<BuildHandle>(buildHandles));
+            }
+        }
+
+        /**
+         * Remove build handles that have no corresponding jobs on the hudson
+         * server.
+         */
+        private void removeOrphanedHandles(Collection<HudsonJob> jobs) {
+            for (HudsonBuildHandle handle : buildHandles) {
+                boolean found = false;
+                for (HudsonJob job : jobs) {
+                    if (job.getUrl().equals(handle.getJob().getUrl())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    buildHandles.remove(handle);
+                }
+            }
+        }
+
+        /**
+         * Create handles for newly found Hudson jobs and add them to the
+         * internal list of build handles.
+         */
+        private void addHandlesForAddedJobs(List<HudsonJob> added) {
+            for (HudsonJob job : added) {
+                buildHandles.add(new HudsonBuildHandle(instance,
+                        job.getName(), job));
+            }
+        }
+
+        /**
+         * Create a new listener and register it to all relevant objects.
+         */
+        public static void create(HudsonInstance hudsonInstance,
+                ProjectHandle<ODSProject> projectHandle,
+                List<HudsonBuildHandle> buildHandles) {
+
+            BuildsListener buildsListener = new BuildsListener(
+                    hudsonInstance, projectHandle, buildHandles);
+
+            projectHandle.addPropertyChangeListener(buildsListener);
+            projectHandle.getTeamProject().getServer().
+                    addPropertyChangeListener(buildsListener);
+            hudsonInstance.addHudsonChangeListener(buildsListener);
+        }
+
+        /**
+         * Pair of original and updated list of build handles.
+         */
+        private static class PairOfDifferentLists {
+
+            List<BuildHandle> original;
+            List<BuildHandle> updated;
+
+            public PairOfDifferentLists(List<BuildHandle> original,
+                    List<BuildHandle> updated) {
+                this.original = original;
+                this.updated = updated;
+            }
+
+            public List<BuildHandle> getOriginal() {
+                return original;
+            }
+
+            public List<BuildHandle> getUpdated() {
+                return updated;
             }
         }
     }

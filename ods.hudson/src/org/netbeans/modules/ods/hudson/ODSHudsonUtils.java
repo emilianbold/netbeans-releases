@@ -59,9 +59,18 @@ public final class ODSHudsonUtils {
     public static CloudClient getClient(
             ProjectHandle<ODSProject> projectHandle) {
 
-        CloudServer server = projectHandle.getTeamProject().getServer();
-        return ClientFactory.getInstance().createClient(
-                server.getUrl().toString(),
-                server.getPasswordAuthentication());
+        if (projectHandle != null) {
+            ODSProject teamProject = projectHandle.getTeamProject();
+            if (teamProject != null) {
+                CloudServer server = teamProject.getServer();
+                if (server != null && server.getUrl() != null
+                        && server.getPasswordAuthentication() != null) {
+                    return ClientFactory.getInstance().createClient(
+                            server.getUrl().toString(),
+                            server.getPasswordAuthentication());
+                }
+            }
+        }
+        return null;
     }
 }

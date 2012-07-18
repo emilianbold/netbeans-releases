@@ -109,6 +109,9 @@ public class ODSPasswordAuthorizer implements ConnectionAuthenticator {
                     ProjectHandleRegistry.findProjectHandle(home);
             if (projectHandle != null) {
                 CloudClient client = ODSHudsonUtils.getClient(projectHandle);
+                if (client == null) {
+                    return;
+                }
                 CloudServer srv = projectHandle.getTeamProject().getServer();
                 PasswordAuthentication pa = srv.getPasswordAuthentication();
                 if (pa != null) {
