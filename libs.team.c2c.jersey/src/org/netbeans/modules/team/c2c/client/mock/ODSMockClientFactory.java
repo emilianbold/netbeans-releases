@@ -39,38 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.hudson;
+package org.netbeans.modules.team.ods.client.mock;
 
-import org.netbeans.modules.team.ods.api.CloudServer;
-import org.netbeans.modules.team.ods.api.ODSProject;
+import java.net.PasswordAuthentication;
 import org.netbeans.modules.team.ods.client.api.ODSFactory;
 import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author jhavlin
+ * @author Tomas Stupka
  */
-public final class ODSHudsonUtils {
+@ServiceProvider(service=ODSFactory.class)
+public class ODSMockClientFactory extends ODSFactory {
 
-    private ODSHudsonUtils() {
+    public final static String ID = "team.ods.useMock";
+    
+    @Override
+    public boolean isAvailable() {
+        return Boolean.getBoolean(ID);
     }
 
-    public static ODSClient getClient(
-            ProjectHandle<ODSProject> projectHandle) {
-
-        if (projectHandle != null) {
-            ODSProject teamProject = projectHandle.getTeamProject();
-            if (teamProject != null) {
-                CloudServer server = teamProject.getServer();
-                if (server != null && server.getUrl() != null
-                        && server.getPasswordAuthentication() != null) {
-                    return ODSFactory.getInstance().createClient(
-                            server.getUrl().toString(),
-                            server.getPasswordAuthentication());
-                }
-            }
-        }
-        return null;
+    @Override
+    public ODSClient createClient(String url, PasswordAuthentication auth) {
+        return new ODSMockClient(url);
     }
+    
 }

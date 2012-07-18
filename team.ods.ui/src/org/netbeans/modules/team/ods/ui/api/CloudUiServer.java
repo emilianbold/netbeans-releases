@@ -51,8 +51,8 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import org.netbeans.modules.team.c2c.api.CloudServer;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.api.CloudServer;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ods.ui.dashboard.DashboardProviderImpl;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
@@ -62,7 +62,7 @@ import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.util.WeakListeners;
 import java.util.ArrayList;
 import java.util.Collections;
-import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.CloudServerProviderImpl;
 import org.netbeans.modules.team.ods.ui.LoginPanelSupportImpl;
 import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
@@ -181,11 +181,11 @@ public class CloudUiServer implements TeamServer {
     }
 
     // XXX no need to have this implemented in the TeamServer
-    public Collection<ProjectHandle<ODSProject>> getMyProjects(boolean force) throws CloudException {
+    public Collection<ProjectHandle<ODSProject>> getMyProjects(boolean force) throws ODSException {
         return toODSProjects(getServer().getMyProjects(force));
     }
 
-    public Collection<ProjectHandle<ODSProject>> getMyProjects() throws CloudException {
+    public Collection<ProjectHandle<ODSProject>> getMyProjects() throws ODSException {
         return toODSProjects(getServer().getMyProjects());
     }
 

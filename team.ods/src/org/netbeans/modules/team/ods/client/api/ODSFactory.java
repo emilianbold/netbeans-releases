@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.team.ods.client.api;
 
-package org.netbeans.modules.team.ods.ui.project;
-
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.ui.dashboard.ProjectAccessorImpl;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import java.net.PasswordAuthentication;
+import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.team.ods.ODSClientImpl;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Tomas Stupka
+ * @author ondra
  */
-public class DetailsAction {
+public abstract class ODSFactory {
 
-    static RequestProcessor.Task t = null;
-
-    public static synchronized AbstractAction forProject(final ProjectHandle<ODSProject> proj) {
-
-        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Details")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (t != null && !t.isFinished()) {
-                    t.cancel();
+    private static ODSFactory instance;
+   
+    public static synchronized ODSFactory getInstance () {
+        if (instance == null) {
+            Collection<? extends ODSFactory> allFactories = Lookup.getDefault().lookupAll(ODSFactory.class);
+            if(allFactories != null) {
+                for (ODSFactory cf : allFactories) {
+                   if(cf.isAvailable()) {
+                       instance = cf;
+                       break;
+                   }
                 }
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DetailsAction.class, "CTL_LoadingProjectDetails")); //NOI18N
-                handle.setInitialDelay(0);
-                handle.start();
-                t = RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        final ODSProject project = proj.getTeamProject();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.getInstance(project);
-                                tc.open();
-                                tc.requestActive();
-                            }
-                        });
-                        handle.finish();
-                    }
-                });
             }
-        };
-    }
+            if(instance == null) {
+                instance = new ODSFactory() {
+                    @Override
+                    public synchronized ODSClient createClient (String url, PasswordAuthentication auth) {
+                        return new ODSClientImpl(url, auth);
+                    }
 
+                    @Override
+                    public boolean isAvailable() {
+                        return true;
+                    }
+
+                };
+            }
+        }
+        return instance;
+    }
+    
+    public abstract boolean isAvailable ();
+    public abstract ODSClient createClient (String url, PasswordAuthentication auth);
+    
 }

@@ -68,7 +68,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.codehaus.jettison.json.JSONObject;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.team.c2c.jersey.wrappers.ProfileWrapper;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.client.api.ODSFactory;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 
 /**
  *
@@ -81,6 +83,7 @@ public class C2CJerseyTest extends NbTestCase {
     private static String passw;
     private static String proxyHost;
     private static String proxyPort;
+    public static final String URL = "https://q.tasktop.com";
     
     public C2CJerseyTest(String testName) {
         super(testName);
@@ -145,26 +148,31 @@ public class C2CJerseyTest extends NbTestCase {
 //        
 //    }
     
-    public void testGetProfile() throws CloudException {
-        C2CJersey c = new C2CJersey();
-        c.initialize("https://q.tasktop.com", new PasswordAuthentication(uname, passw.toCharArray()));
-        Profile profile = c.getCurrentProfile();
+    public void testGetClient() {
+        getClient();
+    }
+    
+    public void testGetProfile() throws ODSException {
+        Profile profile = getClient().getCurrentProfile();
         
         assertNotNull(profile);
         assertEquals(uname, profile.getUsername());
     }
     
-    public void testRecentActivities() throws CloudException {
-        C2CJersey c = new C2CJersey();
-        c.initialize("https://q.tasktop.com", new PasswordAuthentication(uname, passw.toCharArray()));
-        
-        List<ProjectActivity> as = c.getRecentActivities("anagramgame");
-        
-        assertNotNull(as);
-        assertFalse(as.isEmpty());
+//    public void testRecentActivities() throws CloudException {
+//        
+//        List<ProjectActivity> as = getClient().getRecentActivities("anagramgame");
+//        
+//        assertNotNull(as);
+//        assertFalse(as.isEmpty());
+//    }
+
+    private ODSClient getClient() {
+        System.setProperty(ODSJerseyClientFactory.ID, "true");
+        ODSClient client = ODSFactory.getInstance().createClient(URL, new PasswordAuthentication(uname, passw.toCharArray()));
+        assertEquals(ODSJerseyClient.class, client.getClass());
+        return client;
     }
-    
-    
     
     @XmlRootElement
     public static final class Record {

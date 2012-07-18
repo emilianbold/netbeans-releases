@@ -64,9 +64,9 @@ import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.RemoteFileSystem;
-import org.netbeans.modules.team.c2c.api.ODSProject;
-import org.netbeans.modules.team.c2c.client.api.CloudClient;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.api.ODSProject;
+import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
@@ -123,7 +123,7 @@ public class ODSBuilderConnector extends BuilderConnector {
             List<ViewData> viewsData = new ArrayList<ViewData>();
             viewsData.add(new ViewData("All", url, true));
             return new InstanceData(jobs, viewsData);
-        } catch (CloudException ex) {
+        } catch (ODSException ex) {
             LOG.log(Level.INFO, null, ex);
             return new InstanceData(Collections.<JobData>emptyList(),
                     Collections.<ViewData>emptyList());
@@ -133,7 +133,7 @@ public class ODSBuilderConnector extends BuilderConnector {
     @Override
     public Collection<BuildData> getJobBuildsData(HudsonJob job) {
         try {
-            CloudClient client = getClient();
+            ODSClient client = getClient();
             JobDetails jds = client.getJobDetails(projectHandle.getId(), job.getName());
             List<BuildSummary> builds = jds.getBuilds();
             ArrayList<BuildData> ret = new ArrayList<BuildData>(builds.size());
@@ -146,7 +146,7 @@ public class ODSBuilderConnector extends BuilderConnector {
                 ret.add(new BuildData(bds.getNumber(), result == null ? null : Result.valueOf(result.name()), bds.getBuilding()));
             }
             return ret;
-        } catch (CloudException ex) {
+        } catch (ODSException ex) {
             LOG.log(Level.INFO, null, ex);
             return Collections.emptyList(); 
         }
@@ -158,7 +158,7 @@ public class ODSBuilderConnector extends BuilderConnector {
             BuildDetails bds = getClient().getBuildDetails(projectHandle.getId(), build.getJob().getName(), build.getNumber());
             building.set(bds.getBuilding());
             result.set(Result.valueOf(bds.getResult().name()));
-        } catch (CloudException ex) {
+        } catch (ODSException ex) {
             LOG.log(Level.INFO, null, ex);
         }
     }
@@ -208,12 +208,12 @@ public class ODSBuilderConnector extends BuilderConnector {
         return null;
     }
     
-    private CloudClient getClient() {
+    private ODSClient getClient() {
         return ODSHudsonUtils.getClient(projectHandle);
     }
 
     private void updateJobDataBuildNumbers(List<BuildSummary> bss, JobData jd)
-            throws CloudException {
+            throws ODSException {
 
         boolean first = true;
         boolean failDone = false;
@@ -265,7 +265,7 @@ public class ODSBuilderConnector extends BuilderConnector {
                     projectHandle.getDisplayName(),
                     build.getJob().getName(), build.getNumber());
             return Collections.emptySet();
-        } catch (CloudException ex) {
+        } catch (ODSException ex) {
             LOG.log(Level.INFO, null, ex);
             return Collections.emptyList();
         }

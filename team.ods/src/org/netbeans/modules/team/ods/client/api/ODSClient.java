@@ -39,38 +39,48 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.hudson;
+package org.netbeans.modules.team.ods.client.api;
 
-import org.netbeans.modules.team.ods.api.CloudServer;
-import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
+import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
+import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
+import com.tasktop.c2c.server.profile.domain.build.JobDetails;
+import com.tasktop.c2c.server.profile.domain.project.Profile;
+import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import java.net.PasswordAuthentication;
+import java.util.List;
 
 /**
  *
- * @author jhavlin
+ * @author jpeska
  */
-public final class ODSHudsonUtils {
+public interface ODSClient {
 
-    private ODSHudsonUtils() {
-    }
+    BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws ODSException;
 
-    public static ODSClient getClient(
-            ProjectHandle<ODSProject> projectHandle) {
+    Profile getCurrentProfile() throws ODSException;
 
-        if (projectHandle != null) {
-            ODSProject teamProject = projectHandle.getTeamProject();
-            if (teamProject != null) {
-                CloudServer server = teamProject.getServer();
-                if (server != null && server.getUrl() != null
-                        && server.getPasswordAuthentication() != null) {
-                    return ODSFactory.getInstance().createClient(
-                            server.getUrl().toString(),
-                            server.getPasswordAuthentication());
-                }
-            }
-        }
-        return null;
-    }
+    HudsonStatus getHudsonStatus(String projectId) throws ODSException;
+
+    JobDetails getJobDetails(String projectId, final String jobName) throws ODSException;
+
+    List<Project> getMyProjects() throws ODSException;
+
+    Project getProjectById(final String projectId) throws ODSException;
+
+    List<ProjectActivity> getRecentActivities(final String projectId) throws ODSException;
+
+    List<ProjectActivity> getRecentShortActivities(final String projectId) throws ODSException;
+
+    List<ScmRepository> getScmRepositories(String projectId) throws ODSException;
+
+    boolean isWatchingProject(final String projectId) throws ODSException;
+
+    List<Project> searchProjects(final String pattern) throws ODSException;
+
+    void unwatchProject(final String projectId) throws ODSException;
+
+    void watchProject(final String projectId) throws ODSException;
+
 }

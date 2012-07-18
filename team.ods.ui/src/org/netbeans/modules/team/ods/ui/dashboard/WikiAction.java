@@ -43,7 +43,7 @@
 package org.netbeans.modules.team.ods.ui.dashboard;
 
 import javax.swing.AbstractAction;
-import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.RequestProcessor;
 

@@ -43,7 +43,7 @@ package org.netbeans.modules.team.ods.ui;
 
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.modules.team.c2c.api.CloudServer;
+import org.netbeans.modules.team.ods.api.CloudServer;
 import org.openide.util.NbPreferences;
 import static org.netbeans.modules.team.ods.ui.Bundle.*;
 import org.openide.util.NbBundle.Messages;

@@ -39,38 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.hudson;
-
-import org.netbeans.modules.team.ods.api.CloudServer;
-import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+package org.netbeans.modules.team.ods.client.api;
 
 /**
  *
- * @author jhavlin
+ * @author ondra
  */
-public final class ODSHudsonUtils {
-
-    private ODSHudsonUtils() {
+public class ODSException extends Exception {
+    
+    public ODSException (String message) {
+        super(message);
     }
-
-    public static ODSClient getClient(
-            ProjectHandle<ODSProject> projectHandle) {
-
-        if (projectHandle != null) {
-            ODSProject teamProject = projectHandle.getTeamProject();
-            if (teamProject != null) {
-                CloudServer server = teamProject.getServer();
-                if (server != null && server.getUrl() != null
-                        && server.getPasswordAuthentication() != null) {
-                    return ODSFactory.getInstance().createClient(
-                            server.getUrl().toString(),
-                            server.getPasswordAuthentication());
-                }
-            }
-        }
-        return null;
+    
+    public ODSException (Throwable cause) {
+        super(cause);
     }
+    
 }

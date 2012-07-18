@@ -51,8 +51,8 @@ import java.util.List;
 import java.util.Random;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.team.c2c.api.ODSProject;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.api.ODSProject;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
@@ -182,7 +182,7 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
     public Collection<ProjectHandle<ODSProject>> getMyProjects() {
         try {
             return server.getMyProjects();
-        } catch (CloudException ex) {
+        } catch (ODSException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;

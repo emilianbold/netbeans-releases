@@ -47,8 +47,8 @@ import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import org.netbeans.modules.team.c2c.api.CloudServer;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.api.CloudServer;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.team.ods.ui.Bundle.*;
@@ -85,7 +85,7 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
                             ? loginPanel.getPassword()
                             : null);
                     loginPanelCallback.successful();
-                } catch (final CloudException ex) {
+                } catch (final ODSException ex) {
                     Logger.getLogger(LoginPanelSupportImpl.class.getName()).log(Level.INFO, null, ex);
                     EventQueue.invokeLater(new Runnable() {
                         @Override

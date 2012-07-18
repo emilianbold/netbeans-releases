@@ -65,8 +65,8 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.team.c2c.api.ODSProject;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.api.ODSProject;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.UIUtils;
@@ -361,7 +361,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                                         });
                                     }
                                 }
-                            } catch (CloudException ex) {
+                            } catch (ODSException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
                     }

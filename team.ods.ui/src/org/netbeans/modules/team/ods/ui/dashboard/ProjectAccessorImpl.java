@@ -48,8 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.team.c2c.api.ODSProject;
-import org.netbeans.modules.team.c2c.client.api.CloudException;
+import org.netbeans.modules.team.ods.api.ODSProject;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
@@ -83,7 +83,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
     public List<ProjectHandle<ODSProject>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
         try {
             return new ArrayList<ProjectHandle<ODSProject>>(server.getMyProjects(force));
-        } catch (CloudException ex) {
+        } catch (ODSException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.team.ods.ui.dashboard;
 
-import org.netbeans.modules.team.c2c.api.ODSProject;
+import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
