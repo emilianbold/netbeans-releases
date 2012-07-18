@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,15 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.groovy.refactoring;
 
+import java.util.Collection;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
+
 /**
- * @author Jan Becicka
+ *
+ * @author Martin Janicek
  */
-public enum WhereUsedQueryConstants {
-    FIND_OVERRIDING_METHODS,
-    FIND_SUBCLASSES,
-    FIND_DIRECT_SUBCLASSES,
-    SEARCH_FROM_BASECLASS;
+@ServiceProvider(service = ActionsImplementationProvider.class, position=100)
+public class RefactoringActionsProvider extends ActionsImplementationProvider {
+
+    @Override
+    public boolean canFindUsages(Lookup lookup) {
+        /*Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+
+        Node node = nodes.iterator().next();
+        DataObject dob = node.getLookup().lookup(DataObject.class);
+        if (dob == null) {
+            return false;
+        }
+
+        FileObject fo = dob.getPrimaryFile();
+
+        if ((dob!=null) && GroovyProjectUtil.isGroovyFile(fo)) {
+            return true;
+        }*/
+        return false;
+    }
+
+    @Override
+    public void doFindUsages(Lookup lookup) {
+        RefactoringTask task = RefactoringTask.createRefactoringTask(lookup);
+        task.run();
+    }
 }

@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
-import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.text.Position.Bias;
@@ -56,6 +55,7 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesVisitor;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.api.Problem;

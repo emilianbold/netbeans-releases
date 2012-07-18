@@ -44,8 +44,11 @@
 
 package org.netbeans.modules.groovy.refactoring.utils;
 
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -55,9 +58,50 @@ import org.openide.util.Utilities;
  *
  * @author Erno Mononen
  */
-public final class JavaIdentifiersUtil {
+public final class IdentifiersUtil {
 
-    private JavaIdentifiersUtil(){
+    private IdentifiersUtil(){
+    }
+
+    /**
+     * Gets the new refactored name for the given <code>file</code>.
+     *
+     * @param file the file object for the class being renamed. Excepts that
+     * the target class is the public top level class in the file.
+     * @param rename the refactoring, must represent either package or folder rename.
+     *
+     * @return the new fully qualified name for the class being refactored.
+     */
+    public static String constructNewName(FileObject file, RenameRefactoring rename){
+        Parameters.notNull("file", file); //NOI18N
+        Parameters.notNull("rename", rename); //NOI18N
+
+        String fqn = getQualifiedName(file);
+
+        if (isPackageRename(rename)){
+            return rename.getNewName() + "." + unqualify(fqn);
+        }
+
+        FileObject folder = rename.getRefactoringSource().lookup(FileObject.class);
+        FileObject root = ClassPath.getClassPath(folder, ClassPath.SOURCE).findOwnerRoot(folder);
+
+        String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
+        String oldName = buildName(prefix, folder.getName());
+        String newName = buildName(prefix, rename.getNewName());
+        int oldNameIndex = fqn.lastIndexOf(oldName) + oldName.length();
+        return newName + fqn.substring(oldNameIndex, fqn.length());
+
+    }
+
+    private static boolean isPackageRename(RenameRefactoring rename){
+        return rename.getRefactoringSource().lookup(NonRecursiveFolder.class) != null;
+    }
+
+    private static String buildName(String prefix, String name){
+        if (prefix.length() == 0){
+            return name;
+        }
+        return prefix + "." + name;
     }
 
     /**
