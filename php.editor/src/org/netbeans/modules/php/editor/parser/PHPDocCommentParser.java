@@ -344,17 +344,23 @@ public class PHPDocCommentParser {
                     result = PHPDocTag.Type.valueOf(tag);
                 } catch (IllegalArgumentException iae) {
                     // we are not able to thread such tag
-                    for (AnnotationLineParser annotationLineParser : getLineParsers()) {
-                        AnnotationParsedLine parsedLine = annotationLineParser.parse(line.substring(1));
-                        if (parsedLine != null) {
-                            result = parsedLine;
-                            break;
-                        }
-                    }
+                    result = fetchCustomAnnotationLine(line.substring(1));
                     if (result == null) {
                         result = new UnknownAnnotationLine(name);
                     }
                 }
+            }
+        }
+        return result;
+    }
+
+    private AnnotationParsedLine fetchCustomAnnotationLine(final String line) {
+        AnnotationParsedLine result = null;
+        for (AnnotationLineParser annotationLineParser : getLineParsers()) {
+            AnnotationParsedLine parsedLine = annotationLineParser.parse(line);
+            if (parsedLine != null) {
+                result = parsedLine;
+                break;
             }
         }
         return result;
