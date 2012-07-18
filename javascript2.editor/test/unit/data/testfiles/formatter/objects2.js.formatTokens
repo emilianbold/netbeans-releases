@@ -97,6 +97,7 @@ FormattingToken{kind=EOL, offset=175, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=176, text=    }
 FormattingToken{kind=TEXT, offset=180, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=181, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
@@ -130,6 +131,7 @@ FormattingToken{kind=EOL, offset=227, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=228, text=    }
 FormattingToken{kind=TEXT, offset=232, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=233, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
@@ -164,6 +166,7 @@ FormattingToken{kind=EOL, offset=270, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=271, text=    }
 FormattingToken{kind=TEXT, offset=275, text=}}
+FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=276, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}

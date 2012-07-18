@@ -13,7 +13,8 @@ function myFunction() {
 
 (function dummy() {
     a = 5;
-}).test();
+}
+).test();
 
 x( myFoo( a ) )
         ;
