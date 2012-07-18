@@ -89,12 +89,12 @@ public interface AnnotationLineParser {
      * package my.module;
      * import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
      * &#64;AnnotationLineParser.Registration(position=100)
-     * public class MyProvider extends AnnotationLineParser {...}
+     * public class MyProvider implements AnnotationLineParser {...}
      * </pre>
      * <pre>
      * package my.module;
      * import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
-     * public class MyProvider extends AnnotationLineParser {
+     * public class MyProvider implements AnnotationLineParser {
      *     &#64;AnnotationLineParser.Registration(position=100)
      *     public static AnnotationLineParser getInstance() {...}
      * }

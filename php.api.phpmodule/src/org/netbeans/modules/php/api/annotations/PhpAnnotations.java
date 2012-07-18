@@ -139,10 +139,10 @@ public final class PhpAnnotations {
      * Add {@link LookupListener listener} to be notified when line parsers change
      * (new parser added, existing removed).
      * <p>
-     * To avoid memory leaks, do not forget to {@link #removeListener(LookupListener) remove} the listener.
+     * To avoid memory leaks, do not forget to {@link #removeLineParsersListener(LookupListener) remove} the listener.
      *
      * @param listener {@link LookupListener listener} to be added
-     * @see #removeListener(LookupListener)
+     * @see #removeLineParsersListener(LookupListener)
      * @since 1.69
      */
     public static void addLineParsersListener(LookupListener listener) {
@@ -154,7 +154,7 @@ public final class PhpAnnotations {
      * Remove {@link LookupListener listener}.
      *
      * @param listener {@link LookupListener listener} to be removed
-     * @see #addListener(LookupListener)
+     * @see #addLineParsersListener(LookupListener)
      * @since 1.69
      */
     public static void removeLineParsersListener(LookupListener listener) {
