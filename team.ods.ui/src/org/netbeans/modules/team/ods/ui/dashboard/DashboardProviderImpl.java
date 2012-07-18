@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.team.ods.ui.dashboard;
 
-import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
@@ -66,6 +65,7 @@ import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle.ResultType;
+import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.UIUtils;
@@ -78,11 +78,11 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, ODSProject> {
+public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODSProject> {
 
     private final CloudUiServer server;
     private ProjectAccessorImpl projectAccessor;
-    private SourceAccessorImpl sourceAccessor;
+    private SourceAccessor sourceAccessor;
 
     public DashboardProviderImpl(CloudUiServer server) {
         this.server = server;
@@ -156,21 +156,18 @@ public class DashboardProviderImpl implements DashboardProvider<CloudUiServer, O
     }
 
     @Override
-    public SourceAccessorImpl getSourceAccessor() {
-        if(sourceAccessor == null) {
-            sourceAccessor = new SourceAccessorImpl(this);
-        }
-        return sourceAccessor;
+    public SourceAccessor getSourceAccessor() {
+        return getSourceAccessor(ODSProject.class);
     }
 
     @Override
     public QueryAccessor<ODSProject> getQueryAccessor() {
-        return server.getDashboard().getQueryAccessor(ODSProject.class);
+        return getQueryAccessor(ODSProject.class);
     }
     
     @Override
     public BuildAccessor<ODSProject> getBuildAccessor() {
-        return server.getDashboard().getBuildAccessor(ODSProject.class);
+        return getBuildAccessor(ODSProject.class);
     }
 
     @Override

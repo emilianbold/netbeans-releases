@@ -75,7 +75,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author tomas
  */
-public class DashboardProviderImpl implements DashboardProvider<KenaiServer, KenaiProject> {
+public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiProject> {
     
     private final KenaiServer server;
 
@@ -154,7 +154,7 @@ public class DashboardProviderImpl implements DashboardProvider<KenaiServer, Ken
 
     @Override
     public QueryAccessor<KenaiProject> getQueryAccessor() {
-        return server.getDashboard().getQueryAccessor(KenaiProject.class);
+        return getQueryAccessor(KenaiProject.class);
     }            
 
     @Override

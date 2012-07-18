@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ods.ui.dashboard;
+package org.netbeans.modules.team.ods.git;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.domain.ScmType;
@@ -48,12 +48,13 @@ import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.git.api.Git;
+import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ods.ui.dashboard.GetSourcesFromCloudPanel.GetSourcesInfo;
+import org.netbeans.modules.team.ods.git.GetSourcesFromCloudPanel.GetSourcesInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.team.ods.ui.dashboard.SourceAccessorImpl.ProjectAndRepository;
+import org.netbeans.modules.team.ods.git.SourceAccessorImpl.ProjectAndRepository;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -65,14 +66,13 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
     private String dialogTitle = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudTitle");
     private String getOption = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudAction.GetFromKenai.option");
     private String cancelOption = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudAction.Cancel.option");
-    private final DashboardProviderImpl dashboardProvider;
 
-    public GetSourcesFromCloudAction(ProjectAndRepository prjRepo, SourceHandle src, DashboardProviderImpl dashboardProvider) {
+    public GetSourcesFromCloudAction(ProjectAndRepository prjRepo, SourceHandle src) {
         prjAndRepository = prjRepo;
         this.srcHandle = (SourceHandleImpl) src;
-        this.dashboardProvider = dashboardProvider;
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
 //        if (prjAndFeature!=null && KenaiService.Names.EXTERNAL_REPOSITORY.equals(prjAndFeature.feature.getService())) {
 //            tryExternalCheckout(prjAndFeature.feature.getLocation());
@@ -91,7 +91,7 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
 
         org.netbeans.modules.team.ui.spi.UIUtils.activateTeamDashboard();
 
-        GetSourcesFromCloudPanel getSourcesPanel = new GetSourcesFromCloudPanel(prjAndRepository, dashboardProvider);
+        GetSourcesFromCloudPanel getSourcesPanel = new GetSourcesFromCloudPanel(prjAndRepository);
 
         DialogDescriptor dialogDesc = new DialogDescriptor(getSourcesPanel, dialogTitle,
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -107,10 +107,10 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
             }
 
                 final ScmRepository repository = sourcesInfo.repository;
-                final PasswordAuthentication passwdAuth = sourcesInfo.projectHandle.getTeamServer().getPasswordAuthentication();
+                final PasswordAuthentication passwdAuth = CloudUiServer.forServer(sourcesInfo.projectHandle.getTeamProject().getServer()).getPasswordAuthentication();
 
                 if (repository.getType() == ScmType.GIT) {
-//                    UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
+//                 XXX   UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
                             try {

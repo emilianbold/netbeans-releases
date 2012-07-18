@@ -70,15 +70,6 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
         this.server = server;
     }
     
-    public List<ProjectHandleImpl> getMemberProjectsImpls(CloudUiServer server, LoginHandle login, boolean force) {
-        List<ProjectHandle<ODSProject>> prjs = getMemberProjects(server, login, force);
-        ArrayList<ProjectHandleImpl> ret = new ArrayList<ProjectHandleImpl>(prjs.size());
-        for (ProjectHandle<ODSProject> ph : prjs) {
-            ret.add((ProjectHandleImpl)ph);
-        }
-        return ret;
-    }
-    
     @Override
     public List<ProjectHandle<ODSProject>> getMemberProjects(CloudUiServer server, LoginHandle login, boolean force) {
         try {
