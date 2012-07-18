@@ -12893,16 +12893,8 @@
         <Comments>
             <PHPDocBlock start='85' end='2259'>
                 <Tags>
-                    <PHPDocTypeTag start='2159' end='2180' kind='author:'>
-                        <Types>
-                            <PHPDocTypeNode start='2168' end='2172' value='Jeff' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
-                    <PHPDocTypeTag start='2184' end='2255' kind='author:'>
-                        <Types>
-                            <PHPDocTypeNode start='2193' end='2198' value='Reini' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='2159' end='2180' kind='author:'/>
+                    <PHPDocTag start='2184' end='2255' kind='author:'/>
                 </Tags>
             </PHPDocBlock>
             Comment start='2261' end='2324' commentType='singleLine'/>
@@ -12929,11 +12921,7 @@
                         <Types>
                         </Types>
                     </PHPDocVarTypeTag>
-                    <PHPDocTypeTag start='2832' end='2852' kind='see'>
-                        <Types>
-                            <PHPDocTypeNode start='2837' end='2852' value='TextSearchQuery' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='2832' end='2852' kind='see'/>
                 </Tags>
             </PHPDocBlock>
             Comment start='3500' end='3558' commentType='singleLine'/>
@@ -12988,11 +12976,7 @@
             Comment start='7174' end='7192' commentType='singleLine'/>
             <PHPDocBlock start='7697' end='7817'>
                 <Tags>
-                    <PHPDocTypeTag start='7776' end='7809' kind='see'>
-                        <Types>
-                            <PHPDocTypeNode start='7781' end='7809' value='WikiDB_backend_PearDB_search' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='7776' end='7809' kind='see'/>
                 </Tags>
             </PHPDocBlock>
             Comment start='8577' end='8672' commentType='multiLine'/>
@@ -13012,39 +12996,19 @@
             </PHPDocBlock>
             <PHPDocBlock start='10576' end='10646'>
                 <Tags>
-                    <PHPDocTypeTag start='10618' end='10638' kind='see'>
-                        <Types>
-                            <PHPDocTypeNode start='10623' end='10638' value='TextSearchQuery' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='10618' end='10638' kind='see'/>
                 </Tags>
             </PHPDocBlock>
             <PHPDocBlock start='10965' end='11626'>
                 <Tags>
-                    <PHPDocTypeTag start='11535' end='11562' kind='package'>
-                        <Types>
-                            <PHPDocTypeNode start='11544' end='11562' value='NumericSearchQuery' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
-                    <PHPDocTypeTag start='11566' end='11585' kind='author'>
-                        <Types>
-                            <PHPDocTypeNode start='11574' end='11579' value='Reini' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
-                    <PHPDocTypeTag start='11589' end='11622' kind='see'>
-                        <Types>
-                            <PHPDocTypeNode start='11594' end='11622' value='SemanticAttributeSearchQuery' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='11535' end='11562' kind='package'/>
+                    <PHPDocTag start='11566' end='11585' kind='author'/>
+                    <PHPDocTag start='11589' end='11622' kind='see'/>
                 </Tags>
             </PHPDocBlock>
             <PHPDocBlock start='11661' end='12566'>
                 <Tags>
-                    <PHPDocTypeTag start='12315' end='12329' kind='access'>
-                        <Types>
-                            <PHPDocTypeNode start='12323' end='12329' value='public' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='12315' end='12329' kind='access'/>
                     <PHPDocVarTypeTag start='12337' end='12415' kind='param'>
                         <Variable>
                             <PHPDocNode start='12344' end='12357' value='$search_query'/>
@@ -13100,11 +13064,7 @@
             </PHPDocBlock>
             <PHPDocBlock start='17211' end='17557'>
                 <Tags>
-                    <PHPDocTypeTag start='17360' end='17375' kind='access'>
-                        <Types>
-                            <PHPDocTypeNode start='17368' end='17375' value='private' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='17360' end='17375' kind='access'/>
                     <PHPDocVarTypeTag start='17383' end='17450' kind='param'>
                         <Variable>
                             <PHPDocNode start='17390' end='17396' value='$value'/>
@@ -13132,11 +13092,7 @@
             Comment start='18052' end='18139' commentType='multiLine'/>
             <PHPDocBlock start='18205' end='18662'>
                 <Tags>
-                    <PHPDocTypeTag start='18390' end='18404' kind='access'>
-                        <Types>
-                            <PHPDocTypeNode start='18398' end='18404' value='public' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='18390' end='18404' kind='access'/>
                     <PHPDocVarTypeTag start='18412' end='18631' kind='param'>
                         <Variable>
                             <PHPDocNode start='18419' end='18428' value='$variable'/>
@@ -13155,11 +13111,7 @@
             Comment start='18879' end='18967' commentType='singleLine'/>
             <PHPDocBlock start='19154' end='19512'>
                 <Tags>
-                    <PHPDocTypeTag start='19351' end='19365' kind='access'>
-                        <Types>
-                            <PHPDocTypeNode start='19359' end='19365' value='public' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='19351' end='19365' kind='access'/>
                     <PHPDocVarTypeTag start='19373' end='19481' kind='param'>
                         <Variable>
                             <PHPDocNode start='19380' end='19389' value='$variable'/>
@@ -13316,16 +13268,8 @@
             Comment start='38183' end='38194' commentType='singleLine'/>
             <PHPDocBlock start='85' end='2259'>
                 <Tags>
-                    <PHPDocTypeTag start='2159' end='2180' kind='author:'>
-                        <Types>
-                            <PHPDocTypeNode start='2168' end='2172' value='Jeff' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
-                    <PHPDocTypeTag start='2184' end='2255' kind='author:'>
-                        <Types>
-                            <PHPDocTypeNode start='2193' end='2198' value='Reini' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='2159' end='2180' kind='author:'/>
+                    <PHPDocTag start='2184' end='2255' kind='author:'/>
                 </Tags>
             </PHPDocBlock>
             Comment start='2261' end='2324' commentType='singleLine'/>
@@ -13352,11 +13296,7 @@
                         <Types>
                         </Types>
                     </PHPDocVarTypeTag>
-                    <PHPDocTypeTag start='2832' end='2852' kind='see'>
-                        <Types>
-                            <PHPDocTypeNode start='2837' end='2852' value='TextSearchQuery' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='2832' end='2852' kind='see'/>
                 </Tags>
             </PHPDocBlock>
             Comment start='3500' end='3558' commentType='singleLine'/>
@@ -13411,11 +13351,7 @@
             Comment start='7174' end='7192' commentType='singleLine'/>
             <PHPDocBlock start='7697' end='7817'>
                 <Tags>
-                    <PHPDocTypeTag start='7776' end='7809' kind='see'>
-                        <Types>
-                            <PHPDocTypeNode start='7781' end='7809' value='WikiDB_backend_PearDB_search' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='7776' end='7809' kind='see'/>
                 </Tags>
             </PHPDocBlock>
             Comment start='8577' end='8672' commentType='multiLine'/>
@@ -13435,39 +13371,19 @@
             </PHPDocBlock>
             <PHPDocBlock start='10576' end='10646'>
                 <Tags>
-                    <PHPDocTypeTag start='10618' end='10638' kind='see'>
-                        <Types>
-                            <PHPDocTypeNode start='10623' end='10638' value='TextSearchQuery' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='10618' end='10638' kind='see'/>
                 </Tags>
             </PHPDocBlock>
             <PHPDocBlock start='10965' end='11626'>
                 <Tags>
-                    <PHPDocTypeTag start='11535' end='11562' kind='package'>
-                        <Types>
-                            <PHPDocTypeNode start='11544' end='11562' value='NumericSearchQuery' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
-                    <PHPDocTypeTag start='11566' end='11585' kind='author'>
-                        <Types>
-                            <PHPDocTypeNode start='11574' end='11579' value='Reini' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
-                    <PHPDocTypeTag start='11589' end='11622' kind='see'>
-                        <Types>
-                            <PHPDocTypeNode start='11594' end='11622' value='SemanticAttributeSearchQuery' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='11535' end='11562' kind='package'/>
+                    <PHPDocTag start='11566' end='11585' kind='author'/>
+                    <PHPDocTag start='11589' end='11622' kind='see'/>
                 </Tags>
             </PHPDocBlock>
             <PHPDocBlock start='11661' end='12566'>
                 <Tags>
-                    <PHPDocTypeTag start='12315' end='12329' kind='access'>
-                        <Types>
-                            <PHPDocTypeNode start='12323' end='12329' value='public' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='12315' end='12329' kind='access'/>
                     <PHPDocVarTypeTag start='12337' end='12415' kind='param'>
                         <Variable>
                             <PHPDocNode start='12344' end='12357' value='$search_query'/>
@@ -13523,11 +13439,7 @@
             </PHPDocBlock>
             <PHPDocBlock start='17211' end='17557'>
                 <Tags>
-                    <PHPDocTypeTag start='17360' end='17375' kind='access'>
-                        <Types>
-                            <PHPDocTypeNode start='17368' end='17375' value='private' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='17360' end='17375' kind='access'/>
                     <PHPDocVarTypeTag start='17383' end='17450' kind='param'>
                         <Variable>
                             <PHPDocNode start='17390' end='17396' value='$value'/>
@@ -13555,11 +13467,7 @@
             Comment start='18052' end='18139' commentType='multiLine'/>
             <PHPDocBlock start='18205' end='18662'>
                 <Tags>
-                    <PHPDocTypeTag start='18390' end='18404' kind='access'>
-                        <Types>
-                            <PHPDocTypeNode start='18398' end='18404' value='public' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='18390' end='18404' kind='access'/>
                     <PHPDocVarTypeTag start='18412' end='18631' kind='param'>
                         <Variable>
                             <PHPDocNode start='18419' end='18428' value='$variable'/>
@@ -13578,11 +13486,7 @@
             Comment start='18879' end='18967' commentType='singleLine'/>
             <PHPDocBlock start='19154' end='19512'>
                 <Tags>
-                    <PHPDocTypeTag start='19351' end='19365' kind='access'>
-                        <Types>
-                            <PHPDocTypeNode start='19359' end='19365' value='public' isArray='false'/>
-                        </Types>
-                    </PHPDocTypeTag>
+                    <PHPDocTag start='19351' end='19365' kind='access'/>
                     <PHPDocVarTypeTag start='19373' end='19481' kind='param'>
                         <Variable>
                             <PHPDocNode start='19380' end='19389' value='$variable'/>
