@@ -137,11 +137,11 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         this.accessor = dashboard.getDashboardProvider().getProjectAccessor();
         this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor();
         this.project.addPropertyChangeListener( projectListener );
-        // XXX
-//        project.getDummyCloudProject().getKenai().addPropertyChangeListener(projectListener);
-//        project.getDummyCloudProject().addPropertyChangeListener(projectListener);
+        project.getTeamProject().getServer().addPropertyChangeListener(projectListener);
+        project.getTeamProject().addPropertyChangeListener(projectListener);
     }
 
+    @Override
     public ProjectHandle getProject() {
         return project;
     }
@@ -248,16 +248,16 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     @Override
     protected void dispose() {
         super.dispose();
-        // XXX
-//        if( null != project ) {
-//            project.removePropertyChangeListener( projectListener );
-//            project.getDummyCloudProject().getKenai().removePropertyChangeListener(projectListener);
-//            project.getDummyCloudProject().removePropertyChangeListener(projectListener);
-//        }
+        
+        project.removePropertyChangeListener( projectListener );
+        project.getTeamProject().getServer().removePropertyChangeListener(projectListener);
+        project.getTeamProject().removePropertyChangeListener(projectListener);
+        
         if (allIssuesQuery != null) {
             allIssuesQuery.removePropertyChangeListener(projectListener);
             allIssuesQuery=null;
         }
+        
         if (bugNotification != null) {
             bugNotification.clear();
         }
