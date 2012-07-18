@@ -94,11 +94,11 @@ public final class StartEntry implements Persistent, SelfPersistent{
         APTSerializeUtils.writeFileNameIndex(startFile, output, startFileProject.getUnitId());
     }
     
-    public StartEntry(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
+    public StartEntry(FileSystem fs, RepositoryDataInput input) throws IOException {
         assert input != null;
         fileSystem = fs;
         startFileProject = KeyFactory.getDefaultFactory().readKey(input);
-        startFile = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), unitIndex);
+        startFile = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), startFileProject.getUnitId());
     }
 
     @Override

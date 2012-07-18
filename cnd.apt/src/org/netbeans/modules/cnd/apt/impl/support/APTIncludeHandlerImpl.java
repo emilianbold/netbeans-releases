@@ -302,7 +302,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         public StateImpl(FileSystem fs, final RepositoryDataInput input, int unitIndex) throws IOException {
             assert input != null;
             
-            startFile = new StartEntry(fs, input, unitIndex);
+            startFile = new StartEntry(fs, input);
 
             int size = input.readInt();
             systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
