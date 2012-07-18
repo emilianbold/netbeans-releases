@@ -61,6 +61,7 @@ import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.UIUtils;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
@@ -224,26 +225,6 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         setServer(server);
     }
 
-    public QueryAccessor<P> getQueryAccessor(Class<P> p) {
-        Collection<? extends QueryAccessor> c = Lookup.getDefault().lookupAll(QueryAccessor.class);
-        for (QueryAccessor a : c) {
-            if(a.type().equals(p)) {
-                return a;
-            }
-        }
-        return null;
-    }
-    
-    public BuildAccessor<P> getBuildAccessor(Class<P> p) {
-        Collection<? extends BuildAccessor> c = Lookup.getDefault().lookupAll(BuildAccessor.class);
-        for (BuildAccessor a : c) {
-            if(a.type().equals(p)) {
-                return a;
-            }
-        }
-        return null;
-    }
-    
     /**
      * currently visible team instance
      * @return
@@ -878,7 +859,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         }
     }
 
-    DashboardProvider<S, P> getDashboardProvider() {
+    public DashboardProvider<S, P> getDashboardProvider() {
         return dashboardProvider;
     }
 

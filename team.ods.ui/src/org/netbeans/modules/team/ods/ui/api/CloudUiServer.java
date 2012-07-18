@@ -62,10 +62,12 @@ import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.util.WeakListeners;
 import java.util.ArrayList;
 import java.util.Collections;
+import javax.swing.JComboBox;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.CloudServerProviderImpl;
 import org.netbeans.modules.team.ods.ui.LoginPanelSupportImpl;
 import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
+import org.netbeans.modules.team.ui.spi.UIUtils;
 
 /**
  *
@@ -109,7 +111,7 @@ public class CloudUiServer implements TeamServer {
         return serverUi;
     }
     
-    public DefaultDashboard getDashboard() {
+    public DefaultDashboard<CloudUiServer, ODSProject> getDashboard() {
         return dashboard;
     }    
 

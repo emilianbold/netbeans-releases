@@ -164,7 +164,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
         this.project = project;
         this.accessor = ProjectAccessorImpl.getDefault();
         this.maccessor = MessagingAccessorImpl.getDefault();
-        this.qaccessor = dashboard.getQueryAccessor(KenaiProject.class);
+        this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class);
         this.project.addPropertyChangeListener( projectListener );
         this.mh = maccessor.getMessaging(project);
         this.mh.addPropertyChangeListener(projectListener);

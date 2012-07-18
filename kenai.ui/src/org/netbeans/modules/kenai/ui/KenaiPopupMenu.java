@@ -317,7 +317,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                                 dashboard.addProject(pHandle, false, true);
                                             }
                                         });
-                                        dashboard.getQueryAccessor(KenaiProject.class).getFindIssueAction(pHandle).actionPerformed(e);
+                                        dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class).getFindIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_ISSUETRACKER"))); //NOI18N
@@ -364,7 +364,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                                                 dashboard.addProject(pHandle, false, true);
                                             }
                                         });
-                                        dashboard.getQueryAccessor(KenaiProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
+                                        dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
                                         return;
                                     } else {
                                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupMenu.class, "ERROR_ISSUETRACKER"))); //NOI18N

@@ -30,6 +30,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.team.ods.git</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.c2c.tasks</code-name-base>
                     <run-dependency>
                         <specification-version>0.1</specification-version>

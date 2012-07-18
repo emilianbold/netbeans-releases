@@ -264,7 +264,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                                 public void run() {
                                     ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
                                     h.start();
-                                    dashboard.getQueryAccessor(KenaiProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
+                                    dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
                                     h.finish();
                                 }
                             });
@@ -283,7 +283,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                                         public void run() {
                                             ProgressHandle h = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER"));
                                             h.start();
-                                            dashboard.getQueryAccessor(KenaiProject.class).getFindIssueAction(pHandle).actionPerformed(e);
+                                            dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class).getFindIssueAction(pHandle).actionPerformed(e);
                                             h.finish();
                                         }
                                     });

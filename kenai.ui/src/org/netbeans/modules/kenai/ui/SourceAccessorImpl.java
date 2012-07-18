@@ -97,6 +97,11 @@ public class SourceAccessorImpl extends SourceAccessor<KenaiProject> {
     private Map<SourceHandle,ProjectAndFeature> handlesMap = new HashMap<SourceHandle,ProjectAndFeature>();
 
     @Override
+    public Class<KenaiProject> type() {
+        return KenaiProject.class;
+    }
+    
+    @Override
     public List<SourceHandle> getSources(ProjectHandle<KenaiProject> prjHandle) {
 
         KenaiProject project = prjHandle.getTeamProject();

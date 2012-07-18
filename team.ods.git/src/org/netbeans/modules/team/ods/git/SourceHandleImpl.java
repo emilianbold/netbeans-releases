@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.ods.ui.dashboard;
+package org.netbeans.modules.team.ods.git;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.beans.PropertyChangeEvent;
@@ -62,10 +62,11 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.git.api.Git;
-import org.netbeans.modules.team.ui.spi.NbProjectHandle;
-import org.netbeans.modules.team.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
+import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.common.RecentProjectsCache;
+import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,13 +84,13 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     private ScmRepository repository;
     private Preferences prefs;
-    private ProjectHandleImpl projectHandle;
+    private ProjectHandle<ODSProject> projectHandle;
     private static final int MAX_PROJECTS = 5;
     private static final String RECENTPROJECTS_PREFIX = "recent.projects."; // NOI18N
     public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
     private RequestProcessor rp = new RequestProcessor(SourceHandleImpl.class);
 
-    public SourceHandleImpl(final ProjectHandleImpl projectHandle, ScmRepository repository) {
+    public SourceHandleImpl(final ProjectHandle<ODSProject> projectHandle, ScmRepository repository) {
         this.repository = repository;
         prefs = NbPreferences.forModule(Git.class);
         this.projectHandle = projectHandle;
@@ -101,7 +102,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         return repository;
     }
 
-    public ProjectHandleImpl getProjectHandle() {
+    public ProjectHandle<ODSProject> getProjectHandle() {
         return projectHandle;
     }
     

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.ods.ui.dashboard;
+package org.netbeans.modules.team.ods.git;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.awt.event.ActionEvent;
@@ -49,13 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -68,7 +62,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.favorites.api.Favorites;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSException;
-import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -80,19 +73,29 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Milan Kubec, Jan Becicka, Tomas Stupka
  */
+@ServiceProvider(service=SourceAccessor.class)
 public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
-    private final DashboardProviderImpl provider;
+//    private DashboardProvider provider;
 
-    public SourceAccessorImpl(DashboardProviderImpl provider) {
-        this.provider = provider;
+    public SourceAccessorImpl() {
     }
+    
+//    public SourceAccessorImpl(DashboardProvider provider) {
+//        this.provider = provider;
+//    }
 
+    @Override
+    public Class<ODSProject> type() {
+        return ODSProject.class;
+    }
+    
     @Override
     public List<SourceHandle> getSources(ProjectHandle<ODSProject> prjHandle) {
         
@@ -104,7 +107,7 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
                 // XXX add support for external - see repository.getScmLocation()
                 Collection<ScmRepository> repositories = project.getRepositories();
                 for (ScmRepository repository : repositories) {
-                    SourceHandleImpl srcHandle = new SourceHandleImpl((ProjectHandleImpl)prjHandle, repository);
+                    SourceHandleImpl srcHandle = new SourceHandleImpl((ProjectHandle<ODSProject>)prjHandle, repository);
                     handlesList.add(srcHandle);
                 }
             }
@@ -121,14 +124,14 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     public Action getOpenSourcesAction(SourceHandle srcHandle) {
         assert srcHandle instanceof SourceHandleImpl;
         SourceHandleImpl impl = (SourceHandleImpl) srcHandle;
-        return new GetSourcesFromCloudAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), srcHandle, provider);
+        return new GetSourcesFromCloudAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), srcHandle);
     }
 
     @Override
     public Action getDefaultAction(SourceHandle srcHandle) {
         assert srcHandle instanceof SourceHandleImpl;
         SourceHandleImpl impl = (SourceHandleImpl) srcHandle;
-        return new GetSourcesFromCloudAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), srcHandle, provider);
+        return new GetSourcesFromCloudAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), srcHandle);
     }
 
     @Override
@@ -249,10 +252,10 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     }
 
     public static class ProjectAndRepository {
-        public ProjectHandleImpl project;
+        public ProjectHandle<ODSProject> project;
         public ScmRepository repository;
         public String externalScmType;
-        public ProjectAndRepository(ProjectHandleImpl project, ScmRepository repository) {
+        public ProjectAndRepository(ProjectHandle<ODSProject> project, ScmRepository repository) {
             this.project = project;
             this.repository = repository;
         }

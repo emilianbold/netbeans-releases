@@ -3,35 +3,41 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.team.ui</code-name-base>
+            <code-name-base>org.netbeans.modules.team.ods.git</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.core.ide</code-name-base>
+                    <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.17</specification-version>
+                        <specification-version>8.26</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.swingx</code-name-base>
+                    <code-name-base>org.openide.util.lookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>8.15</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.options.api</code-name-base>
+                    <code-name-base>org.netbeans.modules.favorites</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.11</specification-version>
+                        <specification-version>1.30</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>       
+                <dependency>
+                    <code-name-base>org.netbeans.modules.git</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>     
                 <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
@@ -39,14 +45,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.47</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.projectui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.36</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -59,27 +57,27 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.actions</code-name-base>
+                    <code-name-base>org.netbeans.modules.team.ods</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.11</specification-version>
+                        <specification-version>0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.awt</code-name-base>
+                    <code-name-base>org.netbeans.modules.team.ods.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.24</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>                
                 <dependency>
-                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <code-name-base>org.netbeans.modules.team.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.10</specification-version>
+                        <specification-version>0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -87,9 +85,9 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.17</specification-version>
+                        <specification-version>6.46</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>             
                 <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
@@ -97,13 +95,13 @@
                     <run-dependency>
                         <specification-version>7.63</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>     
                 <dependency>
-                    <code-name-base>org.openide.modules</code-name-base>
+                    <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.21</specification-version>
+                        <specification-version>7.38</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -111,45 +109,46 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.8</specification-version>
+                        <specification-version>7.29</specification-version>
                     </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>8.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.util.lookup</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>8.0</specification-version>
-                    </run-dependency>
-                </dependency>
+                </dependency>           
                 <dependency>
                     <code-name-base>org.openide.windows</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.25</specification-version>
+                        <specification-version>6.56</specification-version>
                     </run-dependency>
-                </dependency>
+                </dependency>          
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.26</specification-version>
+                    </run-dependency>
+                </dependency>                 
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.47</specification-version>
+                    </run-dependency>
+                </dependency>                
+                <dependency>
+                    <code-name-base>com.tasktop.c2c.server.scm.api</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>       
+                <dependency>
+                    <code-name-base>com.tasktop.c2c.server.profile.api</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>       
+                                                 
             </module-dependencies>
-            <test-dependencies/>
-            <friend-packages>
-                <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.team.ods.ui</friend>
-                <friend>org.netbeans.modules.bugtracking.kenai</friend>
-                <friend>org.netbeans.modules.ods.hudson</friend>
-                <friend>org.netbeans.modules.team.ods.git</friend>
-                <package>org.netbeans.modules.team.ui.common</package>
-                <package>org.netbeans.modules.team.ui.spi</package>
-                <package>org.netbeans.modules.team.ui.treelist</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

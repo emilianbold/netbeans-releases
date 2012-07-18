@@ -19,6 +19,8 @@ import javax.swing.Action;
  */
 public abstract class SourceAccessor<P> {
 
+    public abstract Class<P> type();
+    
     /**
      * 
      * @param src
