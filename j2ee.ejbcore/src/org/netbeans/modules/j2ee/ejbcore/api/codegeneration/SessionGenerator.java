@@ -193,7 +193,14 @@ public final class SessionGenerator {
         // make sure project where remote interfrace is going to be defined has javax.ejb API available:
         assert LibraryManager.getDefault().getLibrary("javaee-api-6.0") != null;
         if (ClassPath.getClassPath(remotePkg, ClassPath.COMPILE).findResource("javax/ejb") == null) {
-            ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, JavaClassPathConstants.COMPILE_ONLY);
+            try {
+                // first try JavaClassPathConstants.COMPILE_ONLY - if remotePkg represents
+                // Maven project then it will work; J2SE project on the other hand will fail
+                // and simple ClassPath.COMPILE should be used instead:
+                ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, JavaClassPathConstants.COMPILE_ONLY);
+            } catch (UnsupportedOperationException e) {
+                ProjectClassPathModifier.addLibraries(new Library[]{LibraryManager.getDefault().getLibrary("javaee-api-6.0")}, remotePkg, ClassPath.COMPILE);
+            }
         }
         return remotePkg;
     }
