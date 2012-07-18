@@ -44,14 +44,14 @@
 package org.netbeans.modules.groovy.refactoring.ui;
 
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
-import org.netbeans.modules.groovy.refactoring.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.util.HelpCtx;
@@ -59,50 +59,49 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
- * WhereUsedQueryUI from the Java refactoring module, only moderately modified for Ruby
+ * WhereUsedQueryUI from the Java refactoring module, only moderately modified for Groovy
  * 
- * @author Martin Matula, Jan Becicka
+ * @author Martin Matula
+ * @author Jan Becicka
+ * @author Martin Janicek
  */
 public class WhereUsedQueryUI implements RefactoringUI {
-    private WhereUsedQuery query = null;
+
+    private final GroovyRefactoringElement element;
+    private final WhereUsedQuery query;
+    private final ElementKind kind;
     private final String name;
     private WhereUsedPanel panel;
-    private final GroovyRefactoringElement element;
-    private ElementKind kind;
-    private AbstractRefactoring delegate;
 
-    public WhereUsedQueryUI(GroovyRefactoringElement jmiObject) {
-        this.query = new WhereUsedQuery(Lookups.singleton(jmiObject));
-        this.query.getContext().add(GroovyProjectUtil.getClasspathInfoFor(jmiObject.getFileObject()));
-        this.element = jmiObject;
-        name = jmiObject.getName();
-        kind = jmiObject.getKind();
+    
+    public WhereUsedQueryUI(GroovyRefactoringElement element) {
+        this.query = new WhereUsedQuery(Lookups.singleton(element));
+        this.query.getContext().add(GroovyProjectUtil.getClasspathInfoFor(element.getFileObject()));
+        this.element = element;
+        this.name = element.getName();
+        this.kind = element.getKind();
     }
     
-    public WhereUsedQueryUI(GroovyRefactoringElement jmiObject, String name, AbstractRefactoring delegate) {
-        this.delegate = delegate;
-        //this.query.getContext().add(info.getClasspathInfo());
-        this.element = jmiObject;
-        this.name = name;
-    }
-    
+    @Override
     public boolean isQuery() {
         return true;
     }
 
+    @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new WhereUsedPanel(name, element, parent);
+            panel = WhereUsedPanel.create(element, parent);
         }
         return panel;
     }
 
-    public org.netbeans.modules.refactoring.api.Problem setParameters() {
-        query.putValue(query.SEARCH_IN_COMMENTS,panel.isSearchInComments());
+    @Override
+    public Problem setParameters() {
+        query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
         if (kind == ElementKind.METHOD) {
             setForMethod();
             return query.checkParameters();
-        } else if (kind == ElementKind.MODULE || kind == ElementKind.CLASS) {
+        } else if (kind == ElementKind.MODULE || kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
             setForClass();
             return query.checkParameters();
         } else
@@ -110,90 +109,103 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
     
     private void setForMethod() {
-        if (panel.isMethodFromBaseClass()) {
-            query.setRefactoringSource(Lookups.singleton(panel.getBaseMethod()));
-        } else {
-            query.setRefactoringSource(Lookups.singleton(element));
-        }
-        query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
-        query.putValue(query.FIND_REFERENCES,panel.isMethodFindUsages());
+        query.getContext().add(element);
+        query.setRefactoringSource(Lookups.singleton(element));
+        query.putValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, panel.isMethodFromBaseClass());
+        query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, panel.isMethodOverriders());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());
     }
     
     private void setForClass() {
-        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
-        query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
-        query.putValue(query.FIND_REFERENCES,panel.isClassFindUsages());
+        query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES, panel.isClassSubTypes());
+        query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES, panel.isClassSubTypesDirectOnly());
+        query.putValue(WhereUsedQuery.FIND_REFERENCES, panel.isClassFindUsages());
     }
     
-    public org.netbeans.modules.refactoring.api.Problem checkParameters() {
+    @Override
+    public Problem checkParameters() {
         if (kind == ElementKind.METHOD) {
-            setForMethod();
             return query.fastCheckParameters();
-        } else if (kind == ElementKind.CLASS || kind == ElementKind.MODULE) {
-            setForClass();
+        } else if (kind == ElementKind.MODULE || kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
             return query.fastCheckParameters();
         } else
             return null;
     }
 
-    public org.netbeans.modules.refactoring.api.AbstractRefactoring getRefactoring() {
-        return query!=null?query:delegate;
+    @Override
+    public AbstractRefactoring getRefactoring() {
+        return query;
     }
 
+    @Override
     public String getDescription() {
-        if (panel!=null) {
-            if ((kind == ElementKind.MODULE) || (kind == ElementKind.CLASS)) {
-                if (!panel.isClassFindUsages())
-                    if (!panel.isClassSubTypesDirectOnly()) {
-                    return getString("DSC_WhereUsedFindAllSubTypes", name);
-                    } else {
-                    return getString("DSC_WhereUsedFindDirectSubTypes", name);
+        String desc = null;
+
+        if (panel != null && kind != null) {
+            switch (kind) {
+                case CONSTRUCTOR: {
+                    if (panel.isMethodFindUsages() && panel.isMethodOverriders()) {
+                        desc = getString("DSC_WhereUsedAndOverriders", name);
+                    } else if (panel.isMethodFindUsages()) {
+                        desc = getString("DSC_WhereUsed",  name);
+                    } else if (panel.isMethodOverriders()) {
+                        desc = getString("DSC_WhereUsedMethodOverriders",  name);
                     }
-            } else {
-                if (kind == ElementKind.METHOD) {
-                    if (panel.isMethodFindUsages()) {
-                        if (panel.isMethodOverriders()) {
-                            return getString("DSC_WhereUsedFindUsagesAndMethodOverriders", panel.getMethodDeclaringClass(), name); //NOI18N
+                    break;
+                }
+                case METHOD: {
+                    if (panel.isMethodFindUsages() && panel.isMethodOverriders()) {
+                        desc = getString("DSC_WhereUsedFindUsagesAndMethodOverriders", element.getDefClass(), element.getName());
+                    } else if (panel.isMethodFindUsages()) {
+                        desc = getString("DSC_WhereUsedFindUsages", element.getDefClass(), element.getName());
+                    } else if (panel.isMethodOverriders()) {
+                        desc = getString("DSC_WhereUsedMethodOverriders", element.getDefClass(), element.getName());
+                    }
+                    break;
+                }
+                case MODULE:
+                case CLASS:
+                case INTERFACE: {
+                    if (!panel.isClassFindUsages()) {
+                        if (!panel.isClassSubTypesDirectOnly()) {
+                            desc = getString("DSC_WhereUsedFindAllSubTypes", name);
                         } else {
-                            return getString("DSC_WhereUsedFindUsages", panel.getMethodDeclaringClass() + name); //NOI18N
-                        }
-                    } else {
-                        if (panel.isMethodOverriders()) {
-                            return getString("DSC_WhereUsedMethodOverriders", panel.getMethodDeclaringClass() + name); //NOI18N
-                        } else {
-                            return getString("DSC_WhereUsed", panel.getMethodDeclaringClass() + name); //NOI18N
+                            desc = getString("DSC_WhereUsedFindDirectSubTypes", name);
                         }
                     }
+                    break;
+                }
+                case PACKAGE: {
+                    break;
+                }
+                case FIELD:
+                default: {
+                    break;
                 }
             }
         }
-        return getString("DSC_WhereUsed", name);
-    }
-    
-    private ResourceBundle bundle;
-    private String getString(String key) {
-        if (bundle == null) {
-            bundle = NbBundle.getBundle(WhereUsedQueryUI.class);
+        if (desc == null) {
+            desc = getString("DSC_WhereUsed", name);
         }
-        return bundle.getString(key);
+        return desc;
     }
     
     private String getString(String key, String ... values) {
-        return new MessageFormat(getString(key)).format (new Object[] {values});
+        return new MessageFormat(NbBundle.getMessage(WhereUsedQueryUI.class, key)).format (values);
     }
 
-
+    @Override
     public String getName() {
-        return new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_WhereUsed")).format (
-                    new Object[] {name}
-                );
+        return getString("DSC_WhereUsed", name);
     }
     
+    @Override
     public boolean hasParameters() {
         return true;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(WhereUsedQueryUI.class);
+        return new HelpCtx("org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI");
     }
 }
