@@ -201,7 +201,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     public void addAssignment(TypeUsage typeName, int offset){
         Collection<TypeUsage> types = assignments.get(offset);
-        if (types == null) {
+        if (types == null) { 
             types = new ArrayList<TypeUsage>();
             assignments.put(offset, types);
         }
@@ -312,6 +312,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public void resolveTypes() {
+        if (parent == null) {
+            return;
+        }
         Collection<TypeUsage> resolved = new ArrayList();
         for(Integer index: assignments.keySet()) {
             resolved.clear();
