@@ -48,6 +48,8 @@ import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -69,21 +71,42 @@ import org.openide.util.NbBundle;
 public class BuildListNode extends SectionNode {
 
     private final BuildAccessor accessor;
+    private List<BuildHandle> builds;
+    private final Object BUILDS_LOCK = new Object();
 
     public BuildListNode(ProjectNode parent, BuildAccessor accessor) {
-        super( NbBundle.getMessage(BuildListNode.class, "LBL_Builds"), parent,  //NOI18N
-                ProjectHandle.PROP_BUILD_LIST );
+        super( NbBundle.getMessage(BuildListNode.class, "LBL_Builds"), parent,  null ); //NOI18N
         this.accessor = accessor;
+        parent.getProject().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(ProjectHandle.PROP_BUILD_LIST.equals(evt.getPropertyName())) {
+                    synchronized (BUILDS_LOCK) {
+                        builds = (List<BuildHandle>) evt.getNewValue();
+                    }
+                    refreshChildren(); 
+                }
+            }
+        });
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        List<BuildHandle> builds = accessor.getBuilds(project);
-        for( BuildHandle b : builds ) {
-            res.add( new BuildNode( b, this ) );
-        }
+        ArrayList<TreeListNode> res = getBuilds();
         res.add( new NewBuildNode(this) );
+        return res;
+    }
+
+    private ArrayList<TreeListNode> getBuilds() {
+        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
+        synchronized (BUILDS_LOCK) {
+            if(builds == null) {
+                builds = accessor.getBuilds(project);
+            }
+            for( BuildHandle b : builds ) {
+                res.add( new BuildNode( b, this ) );
+            }
+        }
         return res;
     }
 

@@ -123,7 +123,7 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
     }
 
     public final void propertyChange(PropertyChangeEvent evt) {
-        if( propertyName.equals( evt.getPropertyName() ) ) {
+        if( propertyName != null && propertyName.equals( evt.getPropertyName() ) ) {
             refreshChildren();
         }
     }
