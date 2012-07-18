@@ -256,7 +256,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         public void write(RepositoryDataOutput output, int unitIndex) throws IOException {
             assert output != null;
-            startFile.write(output);
+            startFile.write(output, unitIndex);
             
             assert systemIncludePaths != null;
             assert userIncludePaths != null;
@@ -302,7 +302,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         public StateImpl(FileSystem fs, final RepositoryDataInput input, int unitIndex) throws IOException {
             assert input != null;
             
-            startFile = new StartEntry(fs, input);
+            startFile = new StartEntry(fs, input, unitIndex);
 
             int size = input.readInt();
             systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
