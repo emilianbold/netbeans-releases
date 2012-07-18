@@ -100,6 +100,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
@@ -167,7 +168,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name) {
         namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
         this.uniqueName = getUniqueName(fs, platformProject);
-        RepositoryUtils.openUnit(createProjectKey(fs, platformProject));
+        Key key = createProjectKey(fs, platformProject);
+        RepositoryUtils.openUnit(key);
+        unitId = key.getUnitId();
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         this.fileSystem = fs;
@@ -3362,6 +3365,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final AtomicBoolean disposing = new AtomicBoolean(false);
     private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private final CharSequence uniqueName;
+    private final int unitId;
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
     private final Key classifierStorageKey;
 
@@ -3399,11 +3403,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
+        aStream.writeInt(unitId);
         PersistentUtils.writeFileSystem(fileSystem, aStream);
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         assert this.name != null;
-        PersistentUtils.writeUTF(name, aStream);
+        APTSerializeUtils.writeFileNameIndex(name, aStream, unitId);
         //PersistentUtils.writeUTF(RepositoryUtils.getUnitName(getUID()), aStream);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
@@ -3414,12 +3419,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ProjectComponent.writeKey(classifierStorageKey, aStream);
         this.includedFileContainer.write(aStream);
 
-        PersistentUtils.writeUTF(this.uniqueName, aStream);
+        APTSerializeUtils.writeFileNameIndex(this.uniqueName, aStream, unitId);
         aStream.writeBoolean(hasFileSystemProblems);
     }
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {
-
+        unitId = aStream.readInt();
         fileSystem = PersistentUtils.readFileSystem(aStream);
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();
@@ -3430,7 +3435,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null : "default UID factory can not be bull";
 
-        this.name = PersistentUtils.readUTF(aStream, ProjectNameCache.getManager());
+        this.name = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
         assert this.name != null : "project name can not be null";
 
         //CharSequence unitName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
@@ -3464,13 +3469,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         includedFileContainer = new IncludedFileContainer(this, aStream);
         
-        uniqueName = PersistentUtils.readUTF(aStream, ProjectNameCache.getManager());
+        uniqueName = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
         assert uniqueName != null : "uniqueName can not be null";
 
         this.model = (ModelImpl) CsmModelAccessor.getModel();
 
         this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
         this.hasFileSystemProblems = aStream.readBoolean();
+    }
+
+    protected int getUnitId() {
+        return unitId;
     }
 
     private final WeakContainer<DeclarationContainerProject> weakDeclarationContainer;
