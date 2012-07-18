@@ -366,8 +366,8 @@ public class GlassFishCloudWizardCpasComponent
     final ValidationResult displayNameValid() {
         String displayName = getDisplayName();
         if (displayName != null && displayName.length() > 0) {
-            if (GlassFishCloudInstanceProvider.getInstance().getCloudInstances()
-                    .containsKey(displayName)) {
+            if (GlassFishCloudInstanceProvider
+                    .containsCloudInstanceWithName(displayName)) {
                 return new ValidationResult(false,
                         getMessage(GlassFishCloudWizardCpasComponent.class,
                         Bundle.CLOUD_PANEL_ERROR_DISPLAY_NAME_DUPLICATED));

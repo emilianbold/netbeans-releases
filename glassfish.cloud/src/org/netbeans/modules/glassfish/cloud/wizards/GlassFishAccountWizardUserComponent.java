@@ -198,8 +198,7 @@ public class GlassFishAccountWizardUserComponent
     private static void initInstance(
             GlassFishAccountWizardUserComponent instance) {
         instance.cloudComboBoxItems = new CloudComboBox(
-                GlassFishCloudInstanceProvider.getInstance()
-                .cloneCloudInstances());
+                GlassFishCloudInstanceProvider.cloneCloudInstances());
         instance.initComponents();
         instance.glassFishCloudValid = instance.glassFishCloudValid().isValid();
         instance.displayNameValid = instance.displayNameValid().isValid();
@@ -723,8 +722,8 @@ public class GlassFishAccountWizardUserComponent
     final ValidationResult displayNameValid() {
         String displayName = getDisplayName();
         if (displayName != null && displayName.length() > 0) {
-            if (GlassFishCloudInstanceProvider.getInstance().getCloudInstances()
-                    .containsKey(displayName)) {
+            if (GlassFishCloudInstanceProvider
+                    .containsCloudInstanceWithName(displayName)) {
                 return new ValidationResult(false,
                         getMessage(GlassFishCloudWizardCpasComponent.class,
                         Bundle.USER_PANEL_ERROR_DISPLAY_NAME_DUPLICATED));

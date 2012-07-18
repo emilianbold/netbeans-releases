@@ -53,7 +53,13 @@ import org.openide.util.ChangeSupport;
 /**
  * GlassFish Cloud Instances Provider.
  * <p>
- * Handles all registered glassFish cloud instances. Implemented as singleton.
+ * Handles all registered glassFish cloud instances. Implemented as singleton
+ * because NetBeans GUI components require singleton implementing
+ * <code>ServerInstanceProvider</code> interface.
+ * <p/>
+ * Usage inside module is done trough static methods to avoid
+ * <code>getInstance</code> method calls every time this provider is being
+ * accessed.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
@@ -74,7 +80,7 @@ public class GlassFishCloudInstanceProvider
     private static volatile GlassFishCloudInstanceProvider instance;
 
     ////////////////////////////////////////////////////////////////////////////
-    // Static methods                                                         //
+    // Static methods used as provider interface                              //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -96,6 +102,19 @@ public class GlassFishCloudInstanceProvider
     }
 
     /**
+     * Check if stored cloud instances contains instance with given display
+     * name.
+     * <p/>
+     * Display name (also cloud entity name) is used as unique key in cloud
+     * instances <code>Map</code>.
+     * <p/>
+     * @param name Display name to search for.
+     */
+    public static boolean containsCloudInstanceWithName(String name) {
+        return getInstance().cloudInstances.containsKey(name);
+    }
+
+    /**
      * Add new GlassFish cloud instance into this provider.
      * <p/>
      * @param instance GlassFish cloud instance to be added.
@@ -114,12 +133,26 @@ public class GlassFishCloudInstanceProvider
     }
 
     /**
+     * Create copy of stored GlassFish cloud instances.
+     * <p/>
+     * Changing content of returned list will not change content
+     * of this provider.
+     * <p/>
+     * @return Cloned <code>List</code> of cloned
+     *         <code>GlassFishCloudEntity</code> objects.
+     */
+    @SuppressWarnings(value={"rawtypes", "unchecked"})
+    public static List<GlassFishCloudEntity> cloneCloudInstances() {
+        return getInstance().cloneInstances();
+    }
+
+    /**
      * Get GlassFish cloud instance from this provider.
      * <p/>
      * @param name GlassFish cloud instance display name used as key.
      */
     public static GlassFishCloudInstance getCloudInstance(String name) {
-        return getInstance().getCloudInstances().get(name);
+        return getInstance().cloudInstances.get(name);
     }
 
     /**
@@ -162,16 +195,15 @@ public class GlassFishCloudInstanceProvider
     /**
      * Returns list of known cloud instances.
      * <p/>
-     * Changing content of this <code>List</code> without doing equivalent
-     * changes in <code>Map</code> of <code>GlassFishCloudInstance</code>s
-     * returned by <code>getCloudInstances</code> method will corrupt
-     * this provider.
+     * Will return copy of internal <code>ServerInstance<code>
+     * <code>List</code>. Any changes made to returned <code>List</code>
+     * will not affect content of this provider.
      * <p/>
      * @return <code>List</code> of known cloud instances.
      */
     @Override
-    public List<ServerInstance> getInstances() {
-        return serverInstances;
+    public synchronized List<ServerInstance> getInstances() {
+        return new ArrayList<ServerInstance>(serverInstances);
     }
 
     /**
@@ -205,19 +237,6 @@ public class GlassFishCloudInstanceProvider
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Get stored GlassFish cloud instances.
-     * <p/>
-     * Changing content of this <code>Map</code> without doing equivalent
-     * changes in <code>List</code> of <code>ServerInstance</code>s returned
-     * by <code>getInstances</code> method will corrupt this provider.
-     * <p/>
-     * @return Stored GlassFish cloud instances
-     */
-    public Map<String, GlassFishCloudInstance> getCloudInstances() {
-        return cloudInstances;
-    } 
-
-    /**
      * Create copy of stored GlassFish cloud instances.
      * <p/>
      * Changing content of returned list will not change content
@@ -227,7 +246,7 @@ public class GlassFishCloudInstanceProvider
      *         <code>GlassFishCloudEntity</code> objects.
      */
     @SuppressWarnings(value={"rawtypes", "unchecked"})
-    public List<GlassFishCloudEntity> cloneCloudInstances() {
+    private List<GlassFishCloudEntity> cloneInstances() {
         List<GlassFishCloudEntity> clonedCloudInstances
                 = new ArrayList(cloudInstances.size());
         for (Iterator<String> i =  cloudInstances.keySet().iterator();
@@ -251,8 +270,10 @@ public class GlassFishCloudInstanceProvider
      * @param instance GlassFish cloud instance to be added.
      */
     private void addInstanceWithoutStoring(GlassFishCloudInstance instance) {
-        serverInstances.add(instance.getServerInstance());
-        cloudInstances.put(instance.getDisplayName(), instance);
+        synchronized (this) {
+            serverInstances.add(instance.getServerInstance());
+            cloudInstances.put(instance.getDisplayName(), instance);
+        }
         changeListeners.fireChange();
     }
 
@@ -264,7 +285,7 @@ public class GlassFishCloudInstanceProvider
      * <p/>
      * @param instance GlassFish cloud instance to be added.
      */
-    public void addInstance(GlassFishCloudInstance instance) {
+    private void addInstance(GlassFishCloudInstance instance) {
         store(instance);
         addInstanceWithoutStoring(instance);
     }
@@ -274,10 +295,12 @@ public class GlassFishCloudInstanceProvider
      * <p/>
      * @param instance GlassFish cloud instance to be removed.
      */
-    public void removeInstance(GlassFishCloudInstance instance) {
+    private void removeInstance(GlassFishCloudInstance instance) {
         remove(instance);
-        serverInstances.remove(instance.getServerInstance());
-        cloudInstances.remove(instance.getDisplayName());
+        synchronized (this) {
+            serverInstances.remove(instance.getServerInstance());
+            cloudInstances.remove(instance.getDisplayName());
+        }
         changeListeners.fireChange();
     }
 
