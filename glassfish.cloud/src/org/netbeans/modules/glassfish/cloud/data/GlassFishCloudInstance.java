@@ -206,7 +206,7 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
      */
     @Override
     public void remove() {
-        GlassFishCloudInstanceProvider.getInstance().removeInstance(this);
+        GlassFishCloudInstanceProvider.removeCloudInstance(this);
     }
 
     /**

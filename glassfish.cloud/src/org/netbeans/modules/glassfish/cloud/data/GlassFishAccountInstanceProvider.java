@@ -53,8 +53,13 @@ import org.openide.util.ChangeSupport;
 /**
  * GlassFish User Account Instances Provider.
  * <p>
- * Handles all registered glassFish user account instances. Implemented
- * as singleton.
+ * Handles all registered glassFish user acocunt instances. Implemented
+ * as singleton because NetBeans GUI components require singleton implementing
+ * <code>ServerInstanceProvider</code> interface.
+ * <p/>
+ * Usage inside module is done trough static methods to avoid
+ * <code>getInstance</code> method calls every time this provider is being
+ * accessed.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
@@ -196,11 +201,15 @@ public class GlassFishAccountInstanceProvider
     /**
      * Returns list of known user account instances.
      * <p/>
+     * Will return copy of internal <code>ServerInstance<code>
+     * <code>List</code>. Any changes made to returned <code>List</code>
+     * will not affect content of this provider.
+     * <p/>
      * @return <code>List</code> of known user account instances.
      */
     @Override
-    public List<ServerInstance> getInstances() {
-        return serverInstances;
+    public synchronized List<ServerInstance> getInstances() {
+        return new ArrayList<ServerInstance>(serverInstances);
     }
 
     /**
@@ -242,7 +251,7 @@ public class GlassFishAccountInstanceProvider
      * <p/>
      * @return Stored GlassFish user account instances
      */
-    public Map<String, GlassFishAccountInstance> getAccountInstances() {
+    private Map<String, GlassFishAccountInstance> getAccountInstances() {
         return accountInstances;
     } 
 
@@ -255,8 +264,10 @@ public class GlassFishAccountInstanceProvider
      * @param instance GlassFish user account instance to be added.
      */
     private void addInstanceWithoutStoring(GlassFishAccountInstance instance) {
-        serverInstances.add(instance.getServerInstance());
-        accountInstances.put(instance.getDisplayName(), instance);
+        synchronized (this) {
+            serverInstances.add(instance.getServerInstance());
+            accountInstances.put(instance.getDisplayName(), instance);
+        }
         changeListeners.fireChange();
     }
 
@@ -268,7 +279,7 @@ public class GlassFishAccountInstanceProvider
      * <p/>
      * @param instance GlassFish user account instance to be added.
      */
-    public void addInstance(GlassFishAccountInstance instance) {
+    private void addInstance(GlassFishAccountInstance instance) {
         store(instance);
         addInstanceWithoutStoring(instance);
     }
@@ -278,10 +289,12 @@ public class GlassFishAccountInstanceProvider
      * <p/>
      * @param instance GlassFish user account instance to be removed.
      */
-    public void removeInstance(GlassFishAccountInstance instance) {
+    private void removeInstance(GlassFishAccountInstance instance) {
         remove(instance);
-        serverInstances.remove(instance.getServerInstance());
-        accountInstances.remove(instance.getDisplayName());
+        synchronized (this) {
+            serverInstances.remove(instance.getServerInstance());
+            accountInstances.remove(instance.getDisplayName());
+        }
         changeListeners.fireChange();
     }
 

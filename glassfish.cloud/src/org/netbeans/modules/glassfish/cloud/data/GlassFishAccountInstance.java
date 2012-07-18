@@ -237,7 +237,7 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
      */
     @Override
     public void remove() {
-        GlassFishAccountInstanceProvider.getInstance().removeInstance(this);
+        GlassFishAccountInstanceProvider.removeAccountInstance(this);
     }
 
     /**
