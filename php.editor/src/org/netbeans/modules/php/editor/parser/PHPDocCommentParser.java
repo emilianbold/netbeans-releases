@@ -44,8 +44,10 @@ package org.netbeans.modules.php.editor.parser;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 /**
@@ -164,7 +166,8 @@ public class PHPDocCommentParser {
     }
 
     private PHPDocTag createTag(int start, int end, PhpAnnotationType type, String description, String originalComment, int originalCommentStart) {
-        if (type.equals(PHPDocTag.Type.METHOD) || PHPDocTypeTags.contains(type) || PHPDocVarTypeTags.contains(type) || type instanceof CustomAnnotationType) {
+        final Map<OffsetRange, String> types = type.getTypes();
+        if (types.isEmpty()) {
             List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart);
             if (PHPDocVarTypeTags.contains(type)) {
                 String variable = getVaribleName(description);
@@ -190,8 +193,17 @@ public class PHPDocCommentParser {
                 return null;
             }
             return new PHPDocTypeTag(start, end, type, description, docTypes);
+        } else {
+            return new PHPDocTypeTag(start, end, type, description, resolveTypes(types, start));
         }
-        return new PHPDocTag(start, end, type, description);
+    }
+
+    private List<PHPDocTypeNode> resolveTypes(final Map<OffsetRange, String> types, final int lineStart) {
+        final List<PHPDocTypeNode> result = new ArrayList<PHPDocTypeNode>();
+        for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
+            result.add(new PHPDocTypeNode(lineStart + entry.getKey().getStart(), lineStart + entry.getKey().getEnd(), entry.getValue(), false));
+        }
+        return result;
     }
 
     private List<PHPDocTypeNode> findTypes(String description, int startDescription, String originalComment, int originalCommentStart) {
