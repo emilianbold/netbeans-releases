@@ -59,15 +59,6 @@ public class PHPDocCommentParser {
     private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
 
     /**
-     * Tags that define a type / types
-     */
-    private static final List<PhpAnnotationType> PHPDocTypeTags = new ArrayList<PhpAnnotationType>();
-    static {
-        PHPDocTypeTags.add(PHPDocTag.Type.RETURN);
-        PHPDocTypeTags.add(PHPDocTag.Type.VAR);
-    }
-
-    /**
      * Tags that define something of a type
      */
     private static final List<PhpAnnotationType> PHPDocVarTypeTags = new ArrayList<PhpAnnotationType>();
