@@ -65,6 +65,7 @@ import org.netbeans.modules.csl.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.csl.navigation.actions.SortActionSupport.SortByNameAction;
 import org.netbeans.modules.csl.navigation.actions.SortActionSupport.SortBySourceAction;
 import org.netbeans.modules.csl.navigation.base.FiltersManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -96,14 +97,14 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private MyBeanTreeView elementView;
     private TapPanel filtersPanel;
     private JLabel filtersLbl;
-    private Lookup lookup = null; // XXX may need better lookup
+    private Lookup lookup;
     private ClassMemberFilters filters;
     
     private Action[] actions; // General actions for the panel
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI(final Language language) {
-                      
+        
         initComponents();
         
         // Tree view of the elements
@@ -166,6 +167,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             }
         });
         manager.setRootContext(ElementNode.getWaitNode());
+        
+        lookup = ExplorerUtils.createLookup(manager, getActionMap());       
     }
 
     @Override

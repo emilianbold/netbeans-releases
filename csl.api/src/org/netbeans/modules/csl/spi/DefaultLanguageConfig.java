@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.OverridingMethods;
+import org.netbeans.modules.csl.api.StructureItemDecorator;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 
@@ -290,6 +291,14 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
     }
 
     public OverridingMethods getOverridingMethods() {
+        return null;
+    }
+    
+    /**
+     * @since 2.30
+     * @return 
+     */
+    public StructureItemDecorator getStructureItemDecorator() {
         return null;
     }
 
