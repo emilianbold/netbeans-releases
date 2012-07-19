@@ -68,7 +68,7 @@ public final class Doctrine2RunCommandAction extends RunCommandAction {
             return;
         }
 
-        Doctrine2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+        Doctrine2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).openPanel();
     }
 
     @Messages({
