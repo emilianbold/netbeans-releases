@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.apigen;
 
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.commands.ApiGenScript;
 import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
@@ -77,7 +77,7 @@ public final class ApiGenProvider extends PhpDocProvider {
     public void generateDocumentation(PhpModule phpModule) {
         try {
             ApiGenScript.getDefault().generateDocumentation(phpModule);
-        } catch (PhpProgram.InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), ApiGenOptionsPanelController.OPTIONS_SUBPATH);
         }
     }
