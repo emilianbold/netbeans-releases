@@ -47,7 +47,6 @@ made subject to such option by the copyright holder.
 <filesystem>
     <!-- empty folders as workaround to avoid os fs folder creation -->
     <folder name="PHP">
-        <folder name="Frameworks" />
         <folder name="Docs" />
     </folder>
 </filesystem>

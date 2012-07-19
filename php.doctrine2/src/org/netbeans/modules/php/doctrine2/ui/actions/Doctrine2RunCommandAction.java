@@ -43,7 +43,7 @@ package org.netbeans.modules.php.doctrine2.ui.actions;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.doctrine2.Doctrine2PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
+import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.openide.util.NbBundle.Messages;
 
 /**

@@ -46,10 +46,10 @@ import java.util.concurrent.Callable;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.actions.BaseAction;
-import org.netbeans.modules.php.symfony.SymfonyScript;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.framework.actions.BaseAction;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.symfony.SymfonyPhpFrameworkProvider;
+import org.netbeans.modules.php.symfony.SymfonyScript;
 import org.openide.util.NbBundle;
 
 /**

@@ -59,8 +59,8 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.doctrine2.ui.options.Doctrine2OptionsPanelController;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 

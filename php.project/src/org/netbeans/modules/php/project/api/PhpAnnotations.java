@@ -51,7 +51,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 

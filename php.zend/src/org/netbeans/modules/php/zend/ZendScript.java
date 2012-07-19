@@ -55,7 +55,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.zend.commands.ZendCommand;
 import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.ui.options.ZendOptions;

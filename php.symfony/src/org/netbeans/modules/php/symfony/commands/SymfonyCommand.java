@@ -44,7 +44,7 @@ package org.netbeans.modules.php.symfony.commands;
 
 import java.lang.ref.WeakReference;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
 import org.netbeans.modules.php.symfony.SymfonyScript;
 
 /**
