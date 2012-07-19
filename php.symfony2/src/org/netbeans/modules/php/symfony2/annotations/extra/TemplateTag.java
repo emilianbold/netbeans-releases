@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.symfony2.annotations.extra;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class TemplateTag extends PhpAnnotationTag {
+public class TemplateTag extends AnnotationCompletionTag {
 
     public TemplateTag() {
         super("Template", // NOI18N

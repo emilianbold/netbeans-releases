@@ -150,6 +150,10 @@ public class RestSamplesTest extends RestTestBase {
     public void testMessageBoardSample() throws IOException {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/Metro/MessageBoardSample");
         createProject(sampleName, getProjectType(), null);
+        // close dialog about missing JUnit
+        if (JDialogOperator.findJDialog("Open Project", true, true) != null) {
+            new NbDialogOperator("Open Project").close();
+        }
         deployProject(getProjectName());
         undeployProject(getProjectName());
     }
@@ -158,11 +162,11 @@ public class RestSamplesTest extends RestTestBase {
      * Creates suite from particular test cases. You can define order of testcases here.
      */
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestSamplesTest.class),
+        return addServerTests(Server.GLASSFISH, NbModuleSuite.createConfiguration(RestSamplesTest.class),
                 "testHelloWorldSample", //NOI18N
                 "testCustomerDBSample", //NOI18N
                 "testCustomerDBSpringSample", //NOI18N
                 "testMessageBoardSample" //NOI18N
-                ).enableModules(".*").clusters(".*")); //NOI18N
+                ).enableModules(".*").clusters(".*").suite(); //NOI18N
     }
 }

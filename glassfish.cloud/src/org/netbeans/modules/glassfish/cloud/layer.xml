@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Cloud">
+        <file name="GlassFishCloudInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider.getInstance"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
+        <file name="GlassFishCloudWizardProvider.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.wizards.GlassFishCloudWizardProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.cloud.wizards.Bundle#GlassFish.cloud.wizard.displayName"/>
+        </file>
+    </folder>
+
+    <folder name="Servers">
+        <file name="GlassFishAccountInstanceProvider.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider.getInstance"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstanceProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>
+        <file name="GlassFishAccountWizardProvider.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.wizards.GlassFishAccountWizardProvider"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerWizardProvider"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.glassfish.cloud.wizards.Bundle#GlassFish.account.wizard.displayName"/>
+        </file>
+    </folder>
+
+</filesystem>

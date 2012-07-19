@@ -70,6 +70,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
+import org.netbeans.modules.j2ee.clientproject.classpath.DelagatingProjectClassPathModifierImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
@@ -175,7 +176,7 @@ public final class AppClientProject implements Project, FileChangeListener {
     private final Car apiJar;
     private JarContainerImpl enterpriseResourceSupport;
     private FileObject libFolder;
-    private final ClassPathModifier cpMod;
+    private final DelagatingProjectClassPathModifierImpl cpMod;
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     private final AppClientCompilationClassPathModifierImpl libMod;
@@ -217,9 +218,10 @@ public final class AppClientProject implements Project, FileChangeListener {
         appClient = new AppClientProvider(this, helper, cpProvider);
         apiJar = CarFactory.createCar(new CarImpl2(appClient));
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
-        cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
+        ClassPathModifier cpModPrevious = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
             getClassPathUiSupportCallback());
+        cpMod = new DelagatingProjectClassPathModifierImpl(cpModPrevious, libMod);
         lookup = createLookup(aux, cpProvider);
     }
     
@@ -452,7 +454,7 @@ public final class AppClientProject implements Project, FileChangeListener {
         
         if (fo.getParent ().equals (libFolder)) {
             try {
-                cpMod.addRoots(new URL[] {FileUtil.getArchiveRoot(fo.getURL())}, ProjectProperties.JAVAC_CLASSPATH);
+                cpMod.getClassPathModifier().addRoots(new URL[] {FileUtil.getArchiveRoot(fo.getURL())}, ProjectProperties.JAVAC_CLASSPATH);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
@@ -588,7 +590,7 @@ public final class AppClientProject implements Project, FileChangeListener {
                                 libs.add(FileUtil.getArchiveRoot(children[i].getURL()));
                             }
                         }
-                        cpMod.addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
+                        cpMod.getClassPathModifier().addRoots(libs.toArray(new URL[libs.size()]), ProjectProperties.JAVAC_CLASSPATH);
                         libFolder.addFileChangeListener (AppClientProject.this);
                 }
                 

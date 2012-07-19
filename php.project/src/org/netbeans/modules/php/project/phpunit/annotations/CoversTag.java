@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.project.phpunit.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class CoversTag extends PhpAnnotationTag {
+public class CoversTag extends AnnotationCompletionTag {
 
     public CoversTag() {
         super("covers", // NOI18N

@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class DiscriminatorMapTag extends PhpAnnotationTag {
+public class DiscriminatorMapTag extends AnnotationCompletionTag {
 
     public DiscriminatorMapTag() {
         super("DiscriminatorMap", // NOI18N

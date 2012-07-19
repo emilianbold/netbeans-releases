@@ -43,14 +43,14 @@ package org.netbeans.modules.php.project.annotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
 /**
  * Provider for user PHP annotations.
  */
-public final class UserAnnotationsProvider extends PhpAnnotationsProvider {
+public final class UserAnnotationsProvider extends AnnotationCompletionTagProvider {
 
     private static final UserAnnotationsProvider INSTANCE = new UserAnnotationsProvider();
 
@@ -62,34 +62,34 @@ public final class UserAnnotationsProvider extends PhpAnnotationsProvider {
                 null);
     }
 
-    @PhpAnnotationsProvider.Registration(position=1000)
+    @AnnotationCompletionTagProvider.Registration(position=1000)
     public static UserAnnotationsProvider getInstance() {
         return INSTANCE;
     }
 
     @Override
-    public List<PhpAnnotationTag> getFunctionAnnotations() {
+    public List<AnnotationCompletionTag> getFunctionAnnotations() {
         return getAnnotationsForType(UserAnnotationTag.Type.FUNCTION);
     }
 
     @Override
-    public List<PhpAnnotationTag> getTypeAnnotations() {
+    public List<AnnotationCompletionTag> getTypeAnnotations() {
         return getAnnotationsForType(UserAnnotationTag.Type.TYPE);
     }
 
     @Override
-    public List<PhpAnnotationTag> getFieldAnnotations() {
+    public List<AnnotationCompletionTag> getFieldAnnotations() {
         return getAnnotationsForType(UserAnnotationTag.Type.FIELD);
     }
 
     @Override
-    public List<PhpAnnotationTag> getMethodAnnotations() {
+    public List<AnnotationCompletionTag> getMethodAnnotations() {
         return getAnnotationsForType(UserAnnotationTag.Type.METHOD);
     }
 
-    private List<PhpAnnotationTag> getAnnotationsForType(UserAnnotationTag.Type type) {
+    private List<AnnotationCompletionTag> getAnnotationsForType(UserAnnotationTag.Type type) {
         List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
-        List<PhpAnnotationTag> result = new ArrayList<PhpAnnotationTag>(annotations.size());
+        List<AnnotationCompletionTag> result = new ArrayList<AnnotationCompletionTag>(annotations.size());
         for (UserAnnotationTag userAnnotationTag : annotations) {
             if (userAnnotationTag.getTypes().contains(type)) {
                 result.add(userAnnotationTag);
