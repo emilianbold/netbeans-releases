@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.php.api.executable;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,6 +75,7 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
 /**
  * Class usable for running any PHP executable (program or script).
@@ -129,6 +133,8 @@ public final class PhpExecutable {
     private boolean warnUser = true;
     private List<String> additionalParameters = Collections.<String>emptyList();
     private PhpExecutableValidator.ValidationHandler validationHandler = null;
+    private File fileOutput = null;
+    private boolean fileOutputOnly = true;
 
 
     /**
@@ -235,6 +241,16 @@ public final class PhpExecutable {
         return this;
     }
 
+    public PhpExecutable fileOutput(File fileOutput) {
+        this.fileOutput = fileOutput;
+        return this;
+    }
+
+    public PhpExecutable fileOutputOnly(boolean fileOutputOnly) {
+        this.fileOutputOnly = fileOutputOnly;
+        return this;
+    }
+
     @CheckForNull
     public Future<Integer> run() {
         return run(DEFAULT_EXECUTION_DESCRIPTOR);
@@ -259,7 +275,10 @@ public final class PhpExecutable {
         if (processBuilder == null) {
             return null;
         }
+        // colors
         executionDescriptor = decorateExecutionDescriptorWithInfo(executionDescriptor);
+        // file output
+        executionDescriptor = decorateExecutionDescriptorWithFileOutput(executionDescriptor);
         return ExecutionService.newService(processBuilder, executionDescriptor, getDisplayName()).run();
     }
 
@@ -434,6 +453,22 @@ public final class PhpExecutable {
         });
     }
 
+    private ExecutionDescriptor decorateExecutionDescriptorWithFileOutput(ExecutionDescriptor executionDescriptor) {
+        if (fileOutput == null) {
+            return executionDescriptor;
+        }
+        if (fileOutputOnly) {
+            executionDescriptor = executionDescriptor.inputOutput(InputOutput.NULL)
+                    .frontWindow(false);
+        }
+        return executionDescriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            @Override
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return new RedirectOutputProcessor(fileOutput);
+            }
+        });
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
@@ -485,6 +520,39 @@ public final class PhpExecutable {
 
         private String colorize(String msg) {
             return "\033[1;30;47m" + msg + "\033[00m"; // NOI18N
+        }
+
+    }
+
+    static final class RedirectOutputProcessor implements InputProcessor {
+
+        private final File fileOuput;
+
+        private OutputStream outputStream;
+
+
+        public RedirectOutputProcessor(File fileOuput) {
+            this.fileOuput = fileOuput;
+        }
+
+        @Override
+        public void processInput(char[] chars) throws IOException {
+            if (outputStream == null) {
+                outputStream = new BufferedOutputStream(new FileOutputStream(fileOuput));
+            }
+            for (char c : chars) {
+                outputStream.write((byte) c);
+            }
+        }
+
+        @Override
+        public void reset() {
+            // noop
+        }
+
+        @Override
+        public void close() throws IOException {
+            outputStream.close();
         }
 
     }
