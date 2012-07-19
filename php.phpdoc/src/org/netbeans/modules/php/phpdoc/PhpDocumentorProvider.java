@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.php.phpdoc;
 
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.openide.util.NbBundle;
@@ -66,7 +66,7 @@ public final class PhpDocumentorProvider extends PhpDocumentationProvider {
     public void generateDocumentation(PhpModule phpModule) {
         try {
             PhpDocScript.getDefault().generateDocumentation(phpModule);
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpDocScript.OPTIONS_SUB_PATH);
         }
     }
