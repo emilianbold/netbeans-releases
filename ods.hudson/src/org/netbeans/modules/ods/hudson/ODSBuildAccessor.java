@@ -113,8 +113,30 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         if (hi == null) {
             return Collections.emptyList();
         }
-        // Check cache of listeners at first. Listeners already contain all
-        // required information.
+        List<BuildHandle> cachedHandles = findBuildHandlesInCache(
+                projectHandle);
+        if (cachedHandles != null) {
+            return cachedHandles;
+        }
+        List<HudsonBuildHandle> buildHandles =
+                new LinkedList<HudsonBuildHandle>();
+        BuildsListener bl = BuildsListener.create(hi, projectHandle);
+        Collection<HudsonJob> jobs = waitForJobs(hi);
+        for (HudsonJob job : jobs) {
+            buildHandles.add(new HudsonBuildHandle(hi, job.getName(), job));
+        }
+        bl.setBuildHandles(buildHandles);
+        CACHE.put(bl, new Object());
+        return new LinkedList<BuildHandle>(buildHandles);
+    }
+
+    /**
+     * Check cache of listeners at first. Listeners already contain all required
+     * information.
+     */
+    private List<BuildHandle> findBuildHandlesInCache(
+            ProjectHandle<ODSProject> projectHandle) {
+
         for (final BuildsListener listener : CACHE.keySet()) {
             if (listener.projectHandle.get() == projectHandle
                     && projectHandle.getTeamProject().getBuildUrl().equals(
@@ -125,14 +147,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
                 }
             }
         }
-        List<HudsonBuildHandle> buildHandles =
-                new LinkedList<HudsonBuildHandle>();
-        Collection<HudsonJob> jobs = waitForJobs(hi);
-        for (HudsonJob job : jobs) {
-            buildHandles.add(new HudsonBuildHandle(hi, job.getName(), job));
-        }
-        BuildsListener.create(hi, projectHandle, buildHandles);
-        return new LinkedList<BuildHandle>(buildHandles);
+        return null;
     }
 
     @Override
@@ -362,14 +377,28 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         private final List<HudsonBuildHandle> buildHandles;
 
         public BuildsListener(HudsonInstance instance,
-                ProjectHandle<ODSProject> projectHandle,
-                List<HudsonBuildHandle> buildHandles) {
+                ProjectHandle<ODSProject> projectHandle) {
             this.instance = instance;
             this.projectHandle = new WeakReference<ProjectHandle<ODSProject>>(
                     projectHandle);
             this.server = new WeakReference<CloudServer>(
                     projectHandle.getTeamProject().getServer());
-            this.buildHandles = new LinkedList<HudsonBuildHandle>(buildHandles);
+            this.buildHandles = new LinkedList<HudsonBuildHandle>();
+        }
+
+        /**
+         * Set list of build handles, after it was initialized in accessor
+         * method {@link #getBuilds(ProjectHandle)}, and start handling Hudson
+         * events.
+         *
+         * This listener is currently registered in project handle and team
+         * server (in order to be able to remove Hudson instance on project
+         * close or server logout), but is is not registered in Hudson - in
+         * order not to fire changes after initial getting of jobs.
+         */
+        public void setBuildHandles(List<HudsonBuildHandle> buildHandles) {
+            this.buildHandles.addAll(buildHandles);
+            instance.addHudsonChangeListener(this);
         }
 
         /**
@@ -534,19 +563,20 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
 
         /**
          * Create a new listener and register it to all relevant objects.
+         *
+         * Remember to call {@link #setBuildHandles(java.util.List)} to start
+         * listening to Hudson events after the initial list of build handles is
+         * initialized.
          */
-        public static void create(HudsonInstance hudsonInstance,
-                ProjectHandle<ODSProject> projectHandle,
-                List<HudsonBuildHandle> buildHandles) {
+        public static BuildsListener create(HudsonInstance hudsonInstance,
+                ProjectHandle<ODSProject> projectHandle) {
 
             BuildsListener buildsListener = new BuildsListener(
-                    hudsonInstance, projectHandle, buildHandles);
-
+                    hudsonInstance, projectHandle);
             projectHandle.addPropertyChangeListener(buildsListener);
             projectHandle.getTeamProject().getServer().
                     addPropertyChangeListener(buildsListener);
-            hudsonInstance.addHudsonChangeListener(buildsListener);
-            CACHE.put(buildsListener, new Object());
+            return buildsListener;
         }
 
         /**
