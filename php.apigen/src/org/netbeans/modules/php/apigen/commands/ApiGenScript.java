@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.apigen.commands;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -111,8 +112,6 @@ public final class ApiGenScript {
 
     private static final String LIST_SEPARATOR = ","; // NOI18N
 
-    private static final RequestProcessor RP = new RequestProcessor(ApiGenScript.class);
-
     // check for update just once
     private static boolean updateChecked = false;
 
@@ -149,46 +148,42 @@ public final class ApiGenScript {
         "# {0} - project name",
         "ApiGenScript.error.generating=Generating API documentation for {0} failed, review Output window for details."
     })
-    public void generateDocumentation(final PhpModule phpModule) {
+    public void generateDocumentation(PhpModule phpModule) {
+        assert !EventQueue.isDispatchThread();
         final String target = ApiGenPreferences.getTarget(phpModule, true);
         if (target == null) {
             // canceled
             return;
         }
 
-        final Future<Integer> result = apiGen.workDir(FileUtil.toFile(phpModule.getProjectDirectory()))
+        Future<Integer> result = apiGen.workDir(FileUtil.toFile(phpModule.getProjectDirectory()))
                 .displayName(Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()))
                 .additionalParameters(getParams(phpModule))
                 .run(getDescriptor());
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    File targetDir = new File(target);
-                    if (result.get() == 0) {
-                        if (targetDir.isDirectory()) {
-                            File index = new File(target, "index.html"); // NOI18N
-                            if (index.isFile()) {
-                                // false for pdf e.g.
-                                HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(index).toURL());
-                            }
-                        }
+        try {
+            File targetDir = new File(target);
+            if (result.get() == 0) {
+                if (targetDir.isDirectory()) {
+                    File index = new File(target, "index.html"); // NOI18N
+                    if (index.isFile()) {
+                        // false for pdf e.g.
+                        HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(index).toURL());
                     }
-                    // refresh fs
-                    if (targetDir.isDirectory()) {
-                        FileUtil.refreshFor(targetDir);
-                    }
-                } catch (CancellationException ex) {
-                    // canceled
-                } catch (ExecutionException ex) {
-                    UiUtils.processExecutionException(ex, ApiGenOptionsPanelController.OPTIONS_SUBPATH);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                } catch (MalformedURLException ex) {
-                    LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
                 }
             }
-        });
+            // refresh fs
+            if (targetDir.isDirectory()) {
+                FileUtil.refreshFor(targetDir);
+            }
+        } catch (CancellationException ex) {
+            // canceled
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, ApiGenOptionsPanelController.OPTIONS_SUBPATH);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.WARNING, ex.getLocalizedMessage(), ex);
+        }
     }
 
     private ExecutionDescriptor getDescriptor() {
