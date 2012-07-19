@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -52,6 +53,8 @@ import org.netbeans.modules.php.api.annotations.PhpAnnotations;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
  *
@@ -59,7 +62,25 @@ import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
  */
 public class PHPDocCommentParser {
 
-    private final List<AnnotationLineParser> lineParsers = PhpAnnotations.getLineParsers();
+    private static final Object LINE_PARSERS_LOCK = new Object();
+
+    //@GuardedBy("LINE_PARSERS_LOCK")
+    private static final List<AnnotationLineParser> LINE_PARSERS = new CopyOnWriteArrayList<AnnotationLineParser>(PhpAnnotations.getLineParsers());
+    static {
+        PhpAnnotations.addLineParsersListener(new LineParsersListener());
+    }
+
+    private static class LineParsersListener implements LookupListener {
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            synchronized (LINE_PARSERS_LOCK) {
+                LINE_PARSERS.clear();
+                LINE_PARSERS.addAll(PhpAnnotations.getLineParsers());
+            }
+        }
+
+    }
 
     private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
 
@@ -356,7 +377,7 @@ public class PHPDocCommentParser {
 
     private AnnotationParsedLine fetchCustomAnnotationLine(final String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : lineParsers) {
+        for (AnnotationLineParser annotationLineParser : LINE_PARSERS) {
             AnnotationParsedLine parsedLine = annotationLineParser.parse(line);
             if (parsedLine != null) {
                 result = parsedLine;
