@@ -45,8 +45,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>metro</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/websvc/metro/lib/Bundle</localizing-bundle>
@@ -63,8 +62,11 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst://org.netbeans.modules.websvc.metro.lib/docs/metro-1.4-doc.zip!/</resource>
     </volume>
-    <volume>
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/com/sun/xml/ws/webservices-rt/2.0/webservices-rt-2.0.pom</resource>
-    </volume>
+    <properties>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <property>
+            <name>maven-dependencies</name>
+            <value>com.sun.xml.ws:webservices-rt:2.0:jar</value>
+        </property>
+    </properties>    
 </library>

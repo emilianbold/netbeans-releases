@@ -45,8 +45,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>jaxws21</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/websvc/jaxws21/Bundle</localizing-bundle>
@@ -80,9 +79,14 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst://org.netbeans.modules.websvc.jaxws21/docs/jaxws-api-doc.zip!/</resource>
     </volume>
-    <volume>
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/javax/jws/jsr181-api/1.0-MR1/jsr181-api-1.0-MR1.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/xml/ws/jaxws-rt/2.2.6-1/jaxws-rt-2.2.6-1.pom</resource>
-    </volume>
+    <properties>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <property>
+            <name>maven-dependencies</name>
+            <value>
+                javax.jws:jsr181-api:1.0-MR1:jar
+                com.sun.xml.ws:jaxws-rt:2.2.6-1:jar
+            </value>
+        </property>
+    </properties>    
 </library>

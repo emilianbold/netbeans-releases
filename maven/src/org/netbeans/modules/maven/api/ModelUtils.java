@@ -43,14 +43,18 @@ package org.netbeans.modules.maven.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.SuppressWarnings;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -72,6 +76,14 @@ import org.openide.filesystems.FileObject;
  * @author Anuradha G
  */
 public final class ModelUtils {
+    /**
+     * library descriptor property containing whitespace separated list of maven coordinate values groupid:artifactId:version:[classifier:]type
+     */
+    public static final String LIBRARY_PROP_DEPENDENCIES = "maven-dependencies";
+    /**
+     * library descriptor property containing whitespace separated list of maven coordinate values repo_type:repo_url
+     */
+    public static final String LIBRARY_PROP_REPOSITORIES = "maven-repositories";
 
     private ModelUtils() {}
 
@@ -270,8 +282,10 @@ public final class ModelUtils {
      *
      * @param pom library to check
      * @return LibraryDescriptor corresponding to the library, or null if the pom URL format is not recognized.
+     * @deprecated  in favor of <code>checkLibraries(Library)</code>
      */
     @SuppressWarnings("SBSC_USE_STRINGBUFFER_CONCATENATION")
+    @Deprecated
     public static LibraryDescriptor checkLibrary(URL pom) {
         String pomS;
         try {
@@ -281,26 +295,153 @@ public final class ModelUtils {
         }
         Matcher m1 = LEGACY.matcher(pomS);
         if (m1.matches()) {
-            return new LibraryDescriptor("legacy", m1.group(1), m1.group(2), m1.group(3), m1.group(4), pom.getRef());
+            return new LibraryDescriptor("legacy", m1.group(1), m1.group(2), m1.group(3), m1.group(4), pom.getRef(), "jar");
         }
         Matcher m2 = DEFAULT.matcher(pomS);
         if (m2.matches()) {
-            return new LibraryDescriptor("default", m2.group(1), m2.group(2).replace('/', '.'), m2.group(3), m2.group(4), pom.getRef());
+            return new LibraryDescriptor("default", m2.group(1), m2.group(2).replace('/', '.'), m2.group(3), m2.group(4), pom.getRef(), "jar");
         }
         return null;
     }
+    
+    /**
+     * return a descriptor for entire <code>Library</code> containing recognized dependencies and repositories,
+     * both in old (volume) and new (properties) format
+     * @param library
+     * @return 
+     */
+    public static Descriptor checkLibraries(Library library) {
+        return checkLibraries(library.getProperties(), library.getContent("maven-pom"));
+    }
+    //for tests
+    static Descriptor checkLibraries(Map<String, String> properties, List<URL> volume) {
+        List<LibraryDescriptor> libs = new ArrayList<LibraryDescriptor>();
+        List<RepositoryDescriptor> reps = new ArrayList<RepositoryDescriptor>();
+                
+        String dependencies = properties.get(LIBRARY_PROP_DEPENDENCIES);
+        if (dependencies != null) {
+            //http://www.netbeans.org/ns/library-declaration/3
+            for (String dep : dependencies.split("([\\s])+")) {
+                String[] v = dep.trim().split(":");
+                if (v.length < 4) {
+                    //TODO log.
+                    continue;
+                }
+                String grid = v[0];
+                String art = v[1];
+                String ver = v[2];
+                String type = v.length == 4 ? v[3] : v[4];
+                String classifier = v.length >= 5 ? v[3] : null;
+                libs.add(new LibraryDescriptor(null, null, grid, art, ver, classifier, type));
+            }
+            String repositories = properties.get(LIBRARY_PROP_REPOSITORIES);
+            if (repositories != null) {
+                for (String r : repositories.split("([\\s])+")) {
+                    String[] rep = r.split(":", 2);
+                    if (rep.length < 2) {
+                        //TODO log.
+                        continue;
+                    }
+                    reps.add(new RepositoryDescriptor(rep[0], rep[1]));
+                }
+            }
+        } else {
+            for (URL pom : volume) {
+                LibraryDescriptor ld = checkLibrary(pom);
+                if (ld != null) {
+                    libs.add(ld);
+                }
+            }
+            //now come up with repositories
+            for (LibraryDescriptor ld : libs) {
+                if (ld.repoRoot != null) {
+                    RepositoryDescriptor rd = new RepositoryDescriptor(ld.repoType, ld.repoRoot);
+                    if (!reps.contains(rd)) {
+                        reps.add(rd);
+                    }
+                }
+            }
+        }
+        
+        return new Descriptor(libs, reps);
+    }
+    
+    public static final class Descriptor {
+        final List<LibraryDescriptor> dependencies;
+        final List<RepositoryDescriptor> repositories;
 
-    public static class LibraryDescriptor {
-        private String repoType /* default/legacy */, repoRoot, groupId, artifactId,
-                version, classifier /* optional, not part of path, but url's ref */;
+        Descriptor(@NonNull List<LibraryDescriptor> dependencies, @NonNull List<RepositoryDescriptor> repositories) {
+            this.dependencies = dependencies;
+            this.repositories = repositories;
+        }
 
-        LibraryDescriptor(String repoType, String repoRoot, String groupId, String artifactId, String version, String classifier) {
+        public List<LibraryDescriptor> getDependencies() {
+            return dependencies;
+        }
+
+        public List<RepositoryDescriptor> getRepositories() {
+            return repositories;
+        }
+    }
+    
+    public static final class RepositoryDescriptor {
+
+        private final String repoType /* default/legacy */, repoRoot;
+
+        RepositoryDescriptor(String repoType, String repoRoot) {
+            this.repoType = repoType;
+            this.repoRoot = repoRoot;
+        }
+
+        public String getRepoType() {
+            return repoType;
+        }
+
+        public String getRepoRoot() {
+            return repoRoot;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 37 * hash + (this.repoType != null ? this.repoType.hashCode() : 0);
+            hash = 37 * hash + (this.repoRoot != null ? this.repoRoot.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final RepositoryDescriptor other = (RepositoryDescriptor) obj;
+            if ((this.repoType == null) ? (other.repoType != null) : !this.repoType.equals(other.repoType)) {
+                return false;
+            }
+            if ((this.repoRoot == null) ? (other.repoRoot != null) : !this.repoRoot.equals(other.repoRoot)) {
+                return false;
+            }
+            return true;
+        }
+        
+    }
+    
+
+    public static final class LibraryDescriptor {
+        private final String repoType /* default/legacy */, repoRoot, groupId, artifactId,
+                version, classifier /* optional, not part of path, but url's ref */, type;
+
+        LibraryDescriptor(String repoType, String repoRoot, String groupId, String artifactId, String version, String classifier, String type) {
             this.repoType = repoType;
             this.repoRoot = repoRoot;
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
             this.classifier = classifier;
+            this.type = type;
         }
 
         public String getArtifactId() {
@@ -316,10 +457,11 @@ public final class ModelUtils {
             return groupId;
         }
 
+        @Deprecated
         public String getRepoRoot() {
             return repoRoot;
         }
-
+        @Deprecated
         public String getRepoType() {
             return repoType;
         }
@@ -327,9 +469,13 @@ public final class ModelUtils {
         public String getVersion() {
             return version;
         }
+        
+        public String getType() {
+            return type;
+        }
 
         @Override public String toString() {
-            return "LibraryDescriptor{" + "repoType=" + repoType + ", repoRoot=" + repoRoot + ", groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", classifier=" + classifier + '}';
+            return "LibraryDescriptor{" + "repoType=" + repoType + ", repoRoot=" + repoRoot + ", groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", classifier=" + classifier + ", type=" + type + '}';
         }
 
     }
