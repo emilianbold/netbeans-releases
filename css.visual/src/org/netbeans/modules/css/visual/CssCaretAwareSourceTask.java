@@ -160,7 +160,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
                         if (cancelled) {
                             return;
                         }
-                        if (astOffset > rule.getStartOffset() && astOffset < rule.getEndOffset()) {
+                        if (astOffset >= rule.getStartOffset() && astOffset < rule.getEndOffset()) {
                             ruleRef.set(rule);
                         }
                     }
