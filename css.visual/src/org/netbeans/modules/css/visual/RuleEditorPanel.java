@@ -43,6 +43,9 @@ package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyVetoException;
@@ -51,6 +54,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Model;
@@ -60,8 +64,12 @@ import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.css.visual.filters.FilterSubmenuAction;
 import org.netbeans.modules.css.visual.filters.FiltersManager;
+import org.netbeans.modules.css.visual.filters.FiltersSettings;
 import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
 import org.netbeans.modules.css.visual.filters.SortActionSupport;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
@@ -99,7 +107,8 @@ import org.openide.util.NbBundle;
  */
 @NbBundle.Messages({
         "titleLabel.text={0} properties",
-        "label.rule.error.tooltip=The selected rule contains error(s), the lister properties are read only"
+        "label.rule.error.tooltip=The selected rule contains error(s), the lister properties are read only",
+        "label.add.property=Add Property"
 })
 public class RuleEditorPanel extends JPanel {
 
@@ -123,15 +132,27 @@ public class RuleEditorPanel extends JPanel {
     private RuleNode node;
     
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
+    
+    private boolean addPropertyMode;
     /**
      * Creates new form RuleEditorPanel
      */
     public RuleEditorPanel() {
+        this(false);
+    }
+    
+    private RuleEditorPanel(boolean addPropertyMode) {
+        
+        this.addPropertyMode = addPropertyMode;
+        FiltersSettings filtersSettings = addPropertyMode
+                ? new FiltersSettings(false, false, true)
+                : new FiltersSettings();
+        
         node = new RuleNode(this);
         
         sortMode = SortMode.NATURAL;
         
-        filters = new RuleEditorFilters( this );
+        filters = new RuleEditorFilters( this, filtersSettings );
         filters.getInstance().hookChangeListener(new FiltersManager.FilterChangeListener() {
 
             @Override
@@ -150,6 +171,9 @@ public class RuleEditorPanel extends JPanel {
         
         //init default components
         initComponents();
+        
+        addPropertyButton.setVisible(!addPropertyMode);
+        
         titleLabel.setText(null);
         
         //add the property sheet to the center
@@ -165,15 +189,22 @@ public class RuleEditorPanel extends JPanel {
         
         add(sheet, BorderLayout.CENTER);
         
-        //add the filters panel
         northPanel.add(filters.getComponent(), BorderLayout.EAST);
         
         updateFiltersPresenters();
     }
     
     private void updateFiltersPresenters() {
-        setShowCategories(filters.getInstance().isSelected(RuleEditorFilters.SHOW_CATEGORIES));
-        setShowAllProperties(filters.getInstance().isSelected(RuleEditorFilters.SHOW_ALL_PROPERTIES));
+        if(filters.getSettings().isShowCategoriesEnabled()) {
+            setShowCategories(filters.getInstance().isSelected(RuleEditorFilters.SHOW_CATEGORIES));
+        }
+        if(filters.getSettings().isShowAllPropertiesEnabled()) {
+            setShowAllProperties(filters.getInstance().isSelected(RuleEditorFilters.SHOW_ALL_PROPERTIES));
+        }
+    }
+
+    public boolean isAddPropertyMode() {
+        return addPropertyMode;
     }
 
     public SortMode getSortMode() {
@@ -260,9 +291,13 @@ public class RuleEditorPanel extends JPanel {
                 Math.max(0, npc.getGreen() - 3), 
                 Math.max(0, npc.getBlue() - 3));
             northPanel.setBackground(bitMoreRed);
+            
+            addPropertyButton.setEnabled(false);
         } else {
             northPanel.remove(ERROR_LABEL);
             northPanel.setBackground(defaultPanelBackground);
+            
+            addPropertyButton.setEnabled(true);
         }
         
         node.fireContextChanged();
@@ -280,6 +315,7 @@ public class RuleEditorPanel extends JPanel {
     
     public void setNoRuleState() {
         this.rule = null;
+        addPropertyButton.setEnabled(false);
         node.fireContextChanged();
     }
     
@@ -330,10 +366,38 @@ public class RuleEditorPanel extends JPanel {
         addPropertyButton.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.addPropertyButton.text")); // NOI18N
         addPropertyButton.setEnabled(false);
         addPropertyButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        addPropertyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addPropertyButtonActionPerformed(evt);
+            }
+        });
         southPanel.add(addPropertyButton, java.awt.BorderLayout.WEST);
 
         add(southPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void addPropertyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addPropertyButtonActionPerformed
+        
+        //use the default rule editor panel with some modifications
+        final RuleEditorPanel addPropertyPanel = new RuleEditorPanel(true);
+        addPropertyPanel.setModel(model);
+        addPropertyPanel.setRule(rule);
+        addPropertyPanel.setShowAllProperties(true);
+        
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(
+                new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if("OK".equals(e.getActionCommand())) { 
+                    addPropertyPanel.node.applyModelChanges();
+                }
+            }
+        }));
+        
+        dialog.setVisible(true);
+        
+    }//GEN-LAST:event_addPropertyButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addPropertyButton;
