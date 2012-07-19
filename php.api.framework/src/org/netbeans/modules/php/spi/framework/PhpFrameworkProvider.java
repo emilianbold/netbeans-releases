@@ -270,7 +270,9 @@ public abstract class PhpFrameworkProvider {
      *         any additional fields/classes etx. to code completion etc.
      * @since 1.13
      */
-    public abstract EditorExtender getEditorExtender(PhpModule phpModule);
+    public EditorExtender getEditorExtender(PhpModule phpModule) {
+        return null;
+    }
 
     /**
      * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this framework

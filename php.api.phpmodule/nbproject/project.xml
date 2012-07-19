@@ -158,6 +158,7 @@
                 <friend>org.cakephp.netbeans</friend>
                 <friend>org.netbeans.modules.hudson.php</friend>
                 <friend>org.netbeans.modules.php.api.annotation</friend>
+                <friend>org.netbeans.modules.php.api.editor</friend>
                 <friend>org.netbeans.modules.php.api.executable</friend>
                 <friend>org.netbeans.modules.php.api.framework</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
@@ -176,11 +177,9 @@
                 <friend>org.netbeans.modules.php.yii</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
                 <package>org.netbeans.modules.php.api.doc</package>
-                <package>org.netbeans.modules.php.api.editor</package>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.api.util</package>
                 <package>org.netbeans.modules.php.spi.doc</package>
-                <package>org.netbeans.modules.php.spi.editor</package>
             </friend-packages>
         </data>
     </configuration>

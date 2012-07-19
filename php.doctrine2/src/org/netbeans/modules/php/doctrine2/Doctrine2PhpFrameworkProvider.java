@@ -55,7 +55,6 @@ import org.netbeans.modules.php.doctrine2.ui.actions.Doctrine2PhpModuleActionsEx
 import org.netbeans.modules.php.doctrine2.ui.customizer.Doctrine2PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.doctrine2.ui.wizards.Doctrine2PhpModuleExtender;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
@@ -125,11 +124,6 @@ public final class Doctrine2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
         return new Doctrine2CommandSupport(phpModule);
-    }
-
-    @Override
-    public EditorExtender getEditorExtender(PhpModule phpModule) {
-        return null;
     }
 
     @Override

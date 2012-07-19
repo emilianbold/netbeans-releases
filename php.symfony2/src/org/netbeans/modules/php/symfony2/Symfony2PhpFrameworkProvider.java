@@ -49,7 +49,6 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
@@ -157,11 +156,6 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
         return new Symfony2CommandSupport(phpModule);
-    }
-
-    @Override
-    public EditorExtender getEditorExtender(PhpModule phpModule) {
-        return null;
     }
 
     @Override

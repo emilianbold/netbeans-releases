@@ -52,7 +52,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
@@ -243,11 +242,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
-        return null;
-    }
-
-    @Override
-    public EditorExtender getEditorExtender(PhpModule phpModule) {
         return null;
     }
 
