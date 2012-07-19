@@ -6,6 +6,11 @@
             <code-name-base>org.netbeans.modules.team.ods.ui</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.codehaus.jackson.core</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>com.tasktop.c2c.client.commons</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
