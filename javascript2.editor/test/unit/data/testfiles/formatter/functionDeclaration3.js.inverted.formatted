@@ -7,13 +7,16 @@ function compute2(a, b){
     a = something + 5;
 }
 
-function compute3(a){ { }
+function compute3(a){
+    {
+    }
     a = something + 5;
 }
 
 (function dummy(){
     a = 5;
-}).test();
+}
+).test();
 
 
 function Car(color, maker){

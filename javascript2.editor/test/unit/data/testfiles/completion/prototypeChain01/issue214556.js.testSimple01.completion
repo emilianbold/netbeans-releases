@@ -2,24 +2,39 @@ Code completion result for source line:
 formatter.print("a.say(): " + a.|help());
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     apply(thisArg, argArray): unde  [PUBLIC]   stub_core_Function.js
-METHOD     call(thisArg, arg1, arg2): und  [PUBLIC]   stub_core_Function.js
-METHOD     eval(string): undefined         [PUBLIC]   stub_core_Object.js
-METHOD     hasOwnProperty(prop): Boolean   [PUBLIC]   stub_core_Object.js
+CLASS      prototype                       [PUBLIC]   issue214556.js
+METHOD     apply(): Array                  [PUBLIC]   stub_CORE_Function.js
+METHOD     bind(): String                  [PUBLIC]   stub_CORE_Function.js
+METHOD     call(): String                  [PUBLIC]   stub_CORE_Function.js
+METHOD     create(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     eval(): Object                  [PUBLIC]   stub_CORE_Object.js
+METHOD     freeze(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(): Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(): Array    [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(): Boolean       [PUBLIC]   stub_CORE_Object.js
 METHOD     help(): String                  [PUBLIC]   issue214556.js
-METHOD     isPrototypeOf(object): Boolean  [PUBLIC]   stub_core_Object.js
-METHOD     propertyIsEnumerable(prop): Bo  [PUBLIC]   stub_core_Object.js
+METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     isGenerator(): Boolean          [PUBLIC]   stub_CORE_Function.js
+METHOD     isPrototypeOf(): Boolean        [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     keys(): Array                   [PUBLIC,   stub_CORE_Object.js
+METHOD     preventExtensions(): Object     [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(): Boolea  [PUBLIC]   stub_CORE_Object.js
 METHOD     say(): String                   [PUBLIC]   issue214556.js
-METHOD     toLocaleString(): String        [PUBLIC]   stub_core_Object.js
-METHOD     toSource(): undefined           [PUBLIC]   stub_core_Function.js
-METHOD     toString(): String              [PUBLIC]   stub_core_Function.js
-METHOD     unwatch(prop): undefined        [PUBLIC]   stub_core_Object.js
-METHOD     valueOf(): undefined            [PUBLIC]   stub_core_Function.js
-METHOD     watch(prop, handler): undefine  [PUBLIC]   stub_core_Object.js
-FIELD      arity                           [PUBLIC]   stub_core_Function.js
-FIELD      caller                          [PUBLIC]   stub_core_Function.js
-FIELD      constructor                     [PUBLIC]   stub_core_Function.js
-FIELD      length                          [PUBLIC]   stub_core_Function.js
-FIELD      name                            [PUBLIC]   stub_core_Function.js
-FIELD      prototype                       [PUBLIC]   stub_core_Function.js
-VARIABLE   arguments                       [PUBLIC]   stub_core_Function.js
+METHOD     seal(): Object                  [PUBLIC,   stub_CORE_Object.js
+METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
+METHOD     toSource(): String              [PUBLIC]   stub_CORE_Function.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Function.js
+METHOD     unwatch(): undefined            [PUBLIC]   stub_CORE_Object.js
+METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
+METHOD     watch(): undefined              [PUBLIC]   stub_CORE_Object.js
+FIELD      arguments                       [PUBLIC]   stub_CORE_Function.js
+FIELD      arity                           [PUBLIC]   stub_CORE_Function.js
+FIELD      caller                          [PUBLIC]   stub_CORE_Function.js
+FIELD      constructor                     [PUBLIC]   stub_CORE_Function.js
+FIELD      length                          [PUBLIC]   stub_CORE_Function.js
+FIELD      name                            [PUBLIC]   stub_CORE_Function.js

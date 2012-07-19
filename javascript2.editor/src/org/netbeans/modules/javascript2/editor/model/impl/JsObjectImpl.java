@@ -92,8 +92,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.properties = new HashMap<String, JsObject>();
         this.declarationName = null;
         this.parent = parent;
-        this.occurrences = Collections.EMPTY_LIST;
-        this.assignments = Collections.EMPTY_MAP;
+        this.occurrences = new ArrayList<Occurrence>();
+        this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = false;
     }
     
@@ -201,7 +201,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     public void addAssignment(TypeUsage typeName, int offset){
         Collection<TypeUsage> types = assignments.get(offset);
-        if (types == null) {
+        if (types == null) { 
             types = new ArrayList<TypeUsage>();
             assignments.put(offset, types);
         }
@@ -312,6 +312,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public void resolveTypes() {
+        if (parent == null) {
+            return;
+        }
         Collection<TypeUsage> resolved = new ArrayList();
         for(Integer index: assignments.keySet()) {
             resolved.clear();
@@ -321,6 +324,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
                 } else {
                     resolved.add(type);
+                }
+            }
+            JsObject global = ModelUtils.getGlobalObject(parent);
+            for (TypeUsage type : resolved) {
+                if (type.getOffset() > 0) {
+                    JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                    if (jsObject != null) {
+                        ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
+                    }
                 }
             }
             unresolved.clear();

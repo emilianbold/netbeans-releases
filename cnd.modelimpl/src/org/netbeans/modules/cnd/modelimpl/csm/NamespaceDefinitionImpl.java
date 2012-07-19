@@ -314,8 +314,13 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             qName = name.toString();
         }
 
+        public CharSequence getName() {
+            return name;
+        }
+        
         public void setFile(CsmFile file) {
             this.file = file;
+            this.fileContent = ((FileImpl)file).getParsingFileContent();
         }
         
         public void setEndOffset(int endOffset) {

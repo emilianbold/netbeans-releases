@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTDefineNode;
+import org.netbeans.modules.cnd.apt.impl.structure.APTNodeBuilder;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
@@ -211,13 +212,13 @@ public class APTUtils {
     }
 
     public static APTDefine createAPTDefine(String macroText) {
-        APTDefineNode defNode = null;
+        APTNodeBuilder nodeBuilder = null;
         macroText = DEFINE_PREFIX + macroText;
         TokenStream stream = APTTokenStreamBuilder.buildTokenStream(macroText, APTLanguageSupport.UNKNOWN);
         try {
             APTToken next = (APTToken) stream.nextToken();
             // use define node to initialize #define directive from stream
-            defNode = new APTDefineNode(next);
+            nodeBuilder = new APTDefineNode.Builder(next);
             boolean look4Equal = true;
             do {
                 next = (APTToken) stream.nextToken();
@@ -226,15 +227,15 @@ public class APTUtils {
                     look4Equal = false;
                     next = (APTToken) stream.nextToken();
                 }
-            } while (defNode.accept(null, next));
+            } while (nodeBuilder.accept(null, next));
             // special check for macros without values, we must set it to be 1
-            if (defNode.getBody().isEmpty() && look4Equal) {
-                defNode.accept(null, APTUtils.DEF_MACRO_BODY);
+            if (((APTDefineNode)nodeBuilder.getNode()).getBody().isEmpty() && look4Equal) {
+                nodeBuilder.accept(null, APTUtils.DEF_MACRO_BODY);
             }
         } catch (TokenStreamException ex) {
             APTUtils.LOG.log(Level.SEVERE, "error on lexing macros {0}\n\t{1}", new Object[]{macroText, ex.getMessage()});
         }
-        return defNode;
+        return (APTDefineNode)nodeBuilder.getNode();
     }
 
     public static APTToken createAPTToken(int type, int startOffset, int endOffset, int startColumn, int startLine, int endColumn, int endLine) {

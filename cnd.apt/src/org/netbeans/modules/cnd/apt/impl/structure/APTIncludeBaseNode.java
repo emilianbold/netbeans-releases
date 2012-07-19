@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
  * @author Vladimir Voskresensky
  */
 public abstract class APTIncludeBaseNode extends APTTokenBasedNode
-        implements Serializable {
+        implements APTNodeBuilder, Serializable {
 
     private static final long serialVersionUID = -2311241687965334550L;
     // support pp-tokens as include stream
@@ -147,6 +147,11 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
                 }
         }
         return true;
+    }
+    
+    @Override
+    public APTBaseNode getNode() {
+        return this;
     }
 
     @Override

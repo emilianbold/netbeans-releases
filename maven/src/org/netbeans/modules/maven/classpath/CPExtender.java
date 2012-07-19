@@ -95,15 +95,6 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
     private Project project;
     private static final String POM_XML = "pom.xml"; //NOI18N
     
-    /**
-     * ClassPath for compiling only, but not running. In practice this means that scope
-     * for the artefacts with this classpath will be set to <code>provided</code>
-     * if added to a source group, and <code>test</code> if added to test source group.
-     * This constant is in practice a friend API, even if it is hardcoded in the
-     * consuming module (see e.g. bug 186221).
-     */
-    public static final String CLASSPATH_COMPILE_ONLY = "classpath/compile_only";
-
     public CPExtender(Project project) {
         this.project = project;
     }
@@ -256,7 +247,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
         return new String[] {
             ClassPath.COMPILE,
             ClassPath.EXECUTE,
-            CLASSPATH_COMPILE_ONLY,
+            JavaClassPathConstants.COMPILE_ONLY,
             JavaClassPathConstants.PROCESSOR_PATH
         };
     }
@@ -343,11 +334,6 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
                         dependency.setVersion(mp.getVersion());
                         if (scope != null) {
                             dependency.setScope(scope);
-                        } else {
-                            if (NbMavenProject.TYPE_EJB.equals(nbprj.getPackagingType()) ||
-                                NbMavenProject.TYPE_WAR.equals(nbprj.getPackagingType())) {
-                                dependency.setScope(Artifact.SCOPE_PROVIDED);
-                            }
                         }
                         added.set(true);
                     } else {
@@ -394,7 +380,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
             scope = "test"; //NOI18N
         }
         if (scope == null &&
-            (CLASSPATH_COMPILE_ONLY.equals(type) || JavaClassPathConstants.PROCESSOR_PATH.equals(type))) {
+            (JavaClassPathConstants.COMPILE_ONLY.equals(type) || JavaClassPathConstants.PROCESSOR_PATH.equals(type))) {
             scope = Artifact.SCOPE_PROVIDED;
         }
         return scope;

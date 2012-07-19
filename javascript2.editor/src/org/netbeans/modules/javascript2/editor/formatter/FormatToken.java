@@ -46,6 +46,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 
 /**
  *
@@ -134,6 +135,11 @@ public final class FormatToken {
         return BEFORE_MARKERS.contains(kind);
     }
 
+    public boolean isIndentationMarker() {
+        return Kind.INDENTATION_INC == kind || Kind.INDENTATION_DEC == kind
+                || Kind.ELSE_IF_INDENTATION_INC == kind || Kind.ELSE_IF_INDENTATION_DEC == kind;
+    }
+
     @Override
     public String toString() {
         return "FormattingToken{" + "kind=" + kind + ", offset=" + offset + ", text=" + text + '}';
@@ -158,11 +164,16 @@ public final class FormatToken {
         BLOCK_COMMENT,
 
         INDENTATION_INC,
+        ELSE_IF_INDENTATION_INC,
         INDENTATION_DEC,
+        ELSE_IF_INDENTATION_DEC,
 
         AFTER_STATEMENT,
         AFTER_PROPERTY,
         AFTER_CASE,
+        
+        AFTER_BLOCK_START,
+        ELSE_IF_AFTER_BLOCK_START,
         
         BEFORE_OBJECT,
 
@@ -202,6 +213,7 @@ public final class FormatToken {
         AFTER_TERNARY_OPERATOR,
 
         BEFORE_FUNCTION_DECLARATION,
+        AFTER_FUNCTION_DECLARATION,
 
         BEFORE_FUNCTION_CALL,
 

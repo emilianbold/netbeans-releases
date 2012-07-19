@@ -60,6 +60,37 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
     public static final Logger LOG = Logger.getLogger(RelocatablePathMapperImpl.class.getName());
     private static final boolean TEST = false;
     private final List<MapperEntry> mapper = new ArrayList<MapperEntry>();
+    /**
+     * Local path mapper file.
+     * If file specified, discovery uses it for mapping build artifacts:
+     * <pre>
+     * -J-Dmakeproject.pathMapper.file=path_to_path_mapper
+     * </pre>
+     * File format is:
+     * <pre>
+     * beginning_of_path_of_build_artifacts_1=beginning_of_sources_path_2
+     * beginning_of_path_of_build_artifacts_2=beginning_of_sources_path_2
+     * ...
+     * </pre>
+     * Order is important.
+     */
+    private final String PATH_MAPPER_FILE = System.getProperty("makeproject.pathMapper.file"); // NOI18N
+    /**
+     * By default IDE tries to discover path mapper by analyzing source root.
+     * If IDE automatically discovers wrong path mapper,
+     * you can provide own path mapper see {@link org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapperImpl#PATH_MAPPER_FILE)}
+     * or forbid discovering by this flag:
+     * <pre>
+     * -J-Dmakeproject.pathMapper.forbid_auto=true
+     * </pre>
+     * To trace path mapper logic use flag:
+     * <pre>
+     * -J-Dorg.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapperImpl.level=FINE
+     * or
+     * -J-Dorg.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapperImpl.level=FINER
+     * </pre>
+     */
+    private final boolean FORBID_AUTO_PATH_MAPPER = Boolean.getBoolean("makeproject.pathMapper.forbid_auto"); // NOI18N
     
     public RelocatablePathMapperImpl(ProjectProxy project) {
         if(project != null) {
@@ -71,7 +102,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
                 //list = storage.getList();
             }
             if (list == null || list.isEmpty()) {
-                String mapperFile = System.getProperty("makeproject.pathMapperFile"); // NOI18N
+                String mapperFile = PATH_MAPPER_FILE;
                 if (mapperFile != null) {
                     File file = new File(mapperFile);
                     if (file.exists() && file.canRead()) {
@@ -107,7 +138,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
                 for(int i = 0; i < list.size(); i+=2) {
                     if (i+1 < list.size()) {
                         mapper.add(new MapperEntry(list.get(i), list.get(i+1)));
-                        LOG.log(Level.FINE, "Map path {0} -> {1}", new Object[]{list.get(i), list.get(i+1)}); // NOI18N
+                        LOG.log(Level.FINE, "Init path map {0} -> {1}", new Object[]{list.get(i), list.get(i+1)}); // NOI18N
                     }
                 }
             }
@@ -142,11 +173,16 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
     }
     
     @Override
-    public boolean init(FS fs, String root, String unknown) {
-        MapperEntry mapperEntry = getMapperEntry(fs, root, unknown);
-        if (mapperEntry == null) {
+    public boolean discover(FS fs, String root, String unknown) {
+        if (FORBID_AUTO_PATH_MAPPER) {
             return false;
         }
+        MapperEntry mapperEntry = getMapperEntry(fs, root, unknown);
+        if (mapperEntry == null) {
+            LOG.log(Level.FINER, "Cannot discover path map of root {0} and canidate {1}", new Object[]{root, unknown}); // NOI18N
+            return false;
+        }
+        LOG.log(Level.FINE, "Discover path map of root {0} and canidate {1}", new Object[]{root, unknown}); // NOI18N
         LOG.log(Level.FINE, "Found path map {0} -> {1}", new Object[]{mapperEntry.from, mapperEntry.to}); // NOI18N
         synchronized(mapper) {
             if (!mapper.contains(mapperEntry)) {
@@ -182,6 +218,16 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
         }
         String[] rootSegments = root.split("/"); //NOI18N
         String[] unknownSegments = unknown.split("/"); //NOI18N
+        int min = 0;
+        for(int k = 0; k < Math.min(unknownSegments.length, rootSegments.length); k++) {
+            if (!unknownSegments[k].equals(rootSegments[k])) {
+                break;
+            }
+            min = k;
+        }
+        if (min > 2) {
+            return null;
+        }
         for(int k = 1; k < unknownSegments.length; k++) {
             for(int i = rootSegments.length - 1; i > 1; i--) {
                 StringBuilder buf = new StringBuilder();

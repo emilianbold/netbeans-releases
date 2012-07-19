@@ -1483,16 +1483,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected final APTPreprocHandler.State setChangedFileState(NativeFileItem nativeFile) {
         // TODO: do we need to change states in dependent projects' storages???
-        APTPreprocHandler.State state;
-        state = createPreprocHandler(nativeFile).getState();
         FileContainer fileContainer = getFileContainer();
         FileContainer.FileEntry entry = fileContainer.getEntry(nativeFile.getAbsolutePath());
-        synchronized (entry.getLock()) {
-            entry.invalidateStates();
-            entry.setState(state, FilePreprocessorConditionState.PARSING);
+        if (entry == null) {
+            return null;
+        } else {
+            APTPreprocHandler.State state = createPreprocHandler(nativeFile).getState();
+            synchronized (entry.getLock()) {
+                entry.invalidateStates();
+                entry.setState(state, FilePreprocessorConditionState.PARSING);
+            }
+            fileContainer.put();
+            return state;
         }
-        fileContainer.put();
-        return state;
     }
 
     protected final void invalidatePreprocState(CharSequence absPath) {
@@ -1517,10 +1520,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         fileContainer.put();
     }
 
-    protected final void markAsParsingPreprocStates(CharSequence absPath) {
+    protected final void markAsParsingPreprocStates(FileImpl fileImpl) {
+        CharSequence absPath = fileImpl.getAbsolutePath();
         // TODO: do we need to change states in dependent projects' storages???
         FileContainer fileContainer = getFileContainer();
         FileEntry fileEntry = fileContainer.getEntry(absPath);
+        if (fileEntry == null) {
+            CndUtils.assertTrue(!fileImpl.isValid(), "null entry for valid file ", fileImpl); //NOI18N
+            return;
+        }
         Object stateLock = fileEntry.getLock();
         Collection<ProjectBase> dependentProjects = getDependentProjects();
         synchronized (stateLock) {

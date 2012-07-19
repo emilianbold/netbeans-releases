@@ -1024,7 +1024,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         }
         return saveRunnable.ret;
     }
-
+    
     /**
      * Check needed header extensions and store list in the NB/project properties.
      * @param needAdd list of needed extensions of header files.
@@ -1180,6 +1180,21 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         setModified(false);
 
         return allOk;
+    }
+
+    public boolean writeDefaultVersionedConfigurations() {
+        FileObject fo = getProjectDirFileObject();
+        if (fo != null) {
+            LOGGER.log(Level.FINE, "Start of writting default versioned configurations descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
+            try {
+                new ConfigurationXMLWriter(fo, this).writeDefaultCondigurations();
+                LOGGER.log(Level.FINE, "End of writting default versioned configurations descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
+                return true;
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Error writing default versioned configurations", ex);
+            }
+        }
+        return false;
     }
 
     private void ConfigurationProjectXMLWriter() {

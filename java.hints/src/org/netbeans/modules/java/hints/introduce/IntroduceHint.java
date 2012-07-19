@@ -68,6 +68,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.TreeScanner;
 import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -1433,6 +1434,50 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         
         return targetClassWithDuplicates;
     }
+    
+    private static ClassTree insertField(WorkingCopy parameter, ClassTree clazz, VariableTree fieldToAdd, Set<Tree> allNewUses) {
+        ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember(clazz, fieldToAdd);
+
+        class Contains extends TreeScanner<Boolean, Set<Tree>> {
+            @Override public Boolean reduce(Boolean r1, Boolean r2) {
+                return r1 == Boolean.TRUE || r2 == Boolean.TRUE;
+            }
+            @Override public Boolean scan(Tree tree, Set<Tree> searchFor) {
+                if (tree != null && searchFor.contains(tree)) return true;
+                return super.scan(tree, searchFor);
+            }
+        }
+
+        int i = 0;
+
+        for (Tree member : nueClass.getMembers()) {
+            i++;
+            if (member.getKind() == Kind.VARIABLE) {
+                VariableTree field = (VariableTree) member;
+
+                if (   !field.getModifiers().getFlags().contains(Modifier.STATIC)
+                    || new Contains().scan(field.getInitializer(), allNewUses) != Boolean.TRUE) {
+                    continue;
+                }
+            } else if (member.getKind() == Kind.BLOCK) {
+                BlockTree block = (BlockTree) member;
+
+                if (   !block.isStatic()
+                    || new Contains().scan(block, allNewUses) != Boolean.TRUE) {
+                    continue;
+                }
+            } else if (member == fieldToAdd) {
+                break;
+            } else {
+                continue;
+            }
+
+            nueClass = parameter.getTreeMaker().insertClassMember(clazz, i - 1, fieldToAdd);
+            break;
+        }
+
+        return nueClass;
+    }
 
     private static final class IntroduceFix implements Fix {
 
@@ -1548,19 +1593,22 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 expressionStatement = true;
                             }
                             
-                            ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember((ClassTree)pathToClass.getLeaf(), constant);
-
-                            parameter.rewrite(pathToClass.getLeaf(), nueClass);
-
+                            Set<Tree> allNewUses = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
+                            
+                            allNewUses.add(resolved.getLeaf());
+                            
                             if (replaceAll) {
                                 for (TreePath p : duplicates) {
                                     if (variableRewrite) {
                                         removeFromParent(parameter, p);
                                     } else {
                                         parameter.rewrite(p.getLeaf(), make.Identifier(name));
+                                        allNewUses.add(p.getLeaf());
                                     }
                                 }
                             }
+                            
+                            parameter.rewrite(pathToClass.getLeaf(), insertField(parameter, (ClassTree)pathToClass.getLeaf(), constant, allNewUses));
                             break;
                         case CREATE_VARIABLE:
                             TreePath method        = findMethod(resolved);
@@ -1707,6 +1755,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     final TreeMaker make = parameter.getTreeMaker();
 
                     boolean isAnyOccurenceStatic = false;
+                    Set<Tree> allNewUses = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
+
+                    allNewUses.add(resolved.getLeaf());
+                    
                     Collection<TreePath> duplicates = new ArrayList<TreePath>();
 
                     if (replaceAll) {
@@ -1715,6 +1767,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 removeFromParent(parameter, p);
                             } else {
                                 parameter.rewrite(p.getLeaf(), make.Identifier(name));
+                                allNewUses.add(p.getLeaf());
                             }
                             Scope occurenceScope = parameter.getTrees().getScope(p);
                             if(parameter.getTreeUtilities().isStaticContext(occurenceScope))
@@ -1753,7 +1806,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         toRemoveFromParent = resolved;
                     }
                     
-                    ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember((ClassTree)pathToClass.getLeaf(), field);
+                    ClassTree nueClass = insertField(parameter, (ClassTree)pathToClass.getLeaf(), field, allNewUses);
 
                     TreePath method        = findMethod(resolved);
 

@@ -128,7 +128,7 @@ public class GoToTest implements TestLocator {
     @Override
     public FileType getFileType(FileObject fo) {
         PhpProject project = PhpProjectUtils.getPhpProject(fo);
-        if (project == null) {
+        if (project == null || PhpProjectValidator.isFatallyBroken(project)) {
             LOGGER.log(Level.INFO, "PHP project was not found for file {0}", fo);
             return FileType.NEITHER;
         }

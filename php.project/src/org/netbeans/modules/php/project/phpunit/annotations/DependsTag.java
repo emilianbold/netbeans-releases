@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.project.phpunit.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class DependsTag extends PhpAnnotationTag {
+public class DependsTag extends AnnotationCompletionTag {
 
     public DependsTag() {
         super("depends", // NOI18N

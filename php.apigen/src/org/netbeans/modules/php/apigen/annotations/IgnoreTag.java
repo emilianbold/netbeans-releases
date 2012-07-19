@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IgnoreTag extends PhpAnnotationTag {
+public class IgnoreTag extends AnnotationCompletionTag {
 
     public IgnoreTag() {
         super("ignore", "@ignore", //NOI18N

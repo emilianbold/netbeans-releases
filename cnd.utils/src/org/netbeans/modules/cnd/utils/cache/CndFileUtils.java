@@ -383,9 +383,18 @@ public final class CndFileUtils {
                         // let's index not indexed directory
                         index(fs, parent, files);
                         exists = files.get(absolutePath);
+                        if (exists == null) {
+                            // if we're inside INDEXED_DIRECTORY then the file does not exist
+                            exists = Flags.NOT_FOUND;
+                            assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                        }
                     }
                 } else {
-                    if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.BROKEN_LINK) {
+                    if (parentDirFlags == Flags.INDEXED_DIRECTORY) {
+                        // if we're inside INDEXED_DIRECTORY then the file does not exist
+                        exists = Flags.NOT_FOUND;
+                        assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                    } else if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.BROKEN_LINK) {
                         // no need to check non existing file
                         exists = Flags.NOT_FOUND;
                     } else {

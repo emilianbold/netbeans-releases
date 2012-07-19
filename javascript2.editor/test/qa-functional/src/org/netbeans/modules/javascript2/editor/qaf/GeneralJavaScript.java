@@ -330,7 +330,6 @@ public class GeneralJavaScript extends JellyTestCase {
     protected void cleanFile(EditorOperator eo){
          eo.typeKey('a', InputEvent.CTRL_MASK);
          eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
-         eo.save();
     }
 
     protected void checkCompletionItems(

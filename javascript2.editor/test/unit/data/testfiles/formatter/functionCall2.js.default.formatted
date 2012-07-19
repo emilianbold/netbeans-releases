@@ -13,9 +13,10 @@ function myFunction() {
 
 (function dummy() {
     a = 5;
-}).test();
+}
+).test();
 
 x(myFoo(a))
-;
+        ;
 call1().call2(x).call3();
 (myFoo())

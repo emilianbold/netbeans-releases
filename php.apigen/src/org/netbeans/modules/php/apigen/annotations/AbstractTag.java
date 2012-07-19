@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AbstractTag extends PhpAnnotationTag {
+public class AbstractTag extends AnnotationCompletionTag {
 
     public AbstractTag() {
         super("abstract", "@abstract", //NOI18N

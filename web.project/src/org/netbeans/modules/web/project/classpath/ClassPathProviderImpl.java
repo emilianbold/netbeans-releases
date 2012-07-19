@@ -98,7 +98,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      */
     private static enum ClassPathCache {
         WEB_SOURCE,
-        PACKAGED, // #131785
         WEB_COMPILATION,
         WEB_RUNTIME,
     }
@@ -194,21 +193,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return null;
     }
     
-    // packaged classpath = compilation time classpath - J2EE platform classpath
-    private synchronized ClassPath getPackagedClasspath(FileType type) {        
-        if (type == FileType.SOURCE || type == FileType.CLASS || type == FileType.WEB_SOURCE) {
-            // treat all these types as source:
-            ClassPath cp = cache.get(ClassPathCache.PACKAGED);
-            if (cp == null) {
-                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"javac.classpath"})); // NOI18N
-                cache.put(ClassPathCache.PACKAGED, cp);
-            }
-            return cp;
-        }
-        return null;
-    }
-    
     private synchronized ClassPath getRunTimeClasspath(FileType type) {
         if (type == FileType.WEB_SOURCE) {
             if (sourceRoots.getRoots().length > 0) {
@@ -255,8 +239,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             cp = getRunTimeClasspath(fileType);
         } else if (type.equals(ClassPath.SOURCE)) {
             cp = getSourcepath(fileType);
-        } else if (type.equals("classpath/packaged")) { // NOI18N
-            cp = getPackagedClasspath(fileType);
         } else if (type.equals("js/library")) { // NOI18N
             cp = getSourcepath(FileType.WEB_SOURCE);
         }

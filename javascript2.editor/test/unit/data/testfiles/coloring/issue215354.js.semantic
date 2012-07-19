@@ -5,7 +5,7 @@ function |>METHOD:A<|()
 
 }
 
-A.|>CLASS:prototype<|.|>METHOD:inc<| = function()        
+A.prototype.|>METHOD:inc<| = function()        
 {
     this.|>FIELD:x<| += 1;
 }

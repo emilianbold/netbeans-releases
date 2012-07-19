@@ -118,7 +118,7 @@ public class CNDValidation extends JellyTestCase {
         //npwo.selectCategory(samplesLabel + "|" + develLabel + "|" + ccLabel);
         npwo.selectCategory(samplesLabel + "|" + develLabel);
         npwo.selectProject(SAMPLE_PROJECT_NAME);
-        npwo.btNext().pushNoBlock();
+        npwo.next();
         // close "No C/C++ Compilers Found" dialog
         final AtomicBoolean stopClosingThread = new AtomicBoolean(false);
         new Thread(new Runnable() {
