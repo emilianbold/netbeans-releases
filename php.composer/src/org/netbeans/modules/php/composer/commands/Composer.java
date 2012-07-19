@@ -88,7 +88,7 @@ public final class Composer {
 
 
     public Composer(String composerPath) {
-        this.composer = new PhpExecutable(composerPath)
+        composer = new PhpExecutable(composerPath)
                 .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH);
     }
 
