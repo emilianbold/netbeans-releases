@@ -46,7 +46,7 @@ import java.util.List;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 

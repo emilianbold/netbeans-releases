@@ -44,8 +44,8 @@ package org.netbeans.modules.php.symfony2.annotations.security;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
 // http://symfony.com/doc/2.0/bundles/JMSSecurityExtraBundle/index.html#annotations

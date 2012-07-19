@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.api.annotations;
+package org.netbeans.modules.php.api.annotation;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;

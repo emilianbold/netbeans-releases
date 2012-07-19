@@ -39,16 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.api.registrations;
+package org.netbeans.modules.php.api.annotation.registration;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.annotations.PhpAnnotations;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.api.annotation.PhpAnnotations;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 

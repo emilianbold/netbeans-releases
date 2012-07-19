@@ -39,36 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.api.registrations;
+package org.netbeans.modules.php.spi.annotation;
 
-import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.php.api.annotations.PhpAnnotations;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
-import org.openide.filesystems.annotations.LayerGeneratingProcessor;
-import org.openide.filesystems.annotations.LayerGenerationException;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 
-@SupportedAnnotationTypes("org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider.Registration")
-@ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PhpAnnotationsRegistrationProcessor extends LayerGeneratingProcessor {
+/**
+ * Encapsulates parsed annotation line.
+ *
+ * @since 1.69
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public interface AnnotationParsedLine {
 
-    @Override
-    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(AnnotationCompletionTagProvider.Registration.class)) {
-            layer(element)
-                    .instanceFile(PhpAnnotations.ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH, null, AnnotationCompletionTagProvider.class)
-                    .intvalue("position", element.getAnnotation(AnnotationCompletionTagProvider.Registration.class).position()) // NOI18N
-                    .write();
-        }
-        return true;
-    }
+    /**
+     * Returns a name of an annotation without the "at" sign.
+     *
+     * @return name
+     */
+    public String getName();
+
+    /**
+     * Returns a description of the parsed annotation.
+     *
+     * @return description
+     */
+    public String getDescription();
+
+    /**
+     * Returns an offset-ranges and their types.
+     *
+     * @return offset range of a parsed type and its textual representation
+     */
+    public Map<OffsetRange, String> getTypes();
 
 }

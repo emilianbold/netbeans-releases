@@ -50,7 +50,7 @@ import java.util.WeakHashMap;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -101,7 +101,7 @@ public final class PhpAnnotations implements PropertyChangeListener {
 
         List<AnnotationCompletionTagProvider> result = new ArrayList<AnnotationCompletionTagProvider>();
         // first, add global providers
-        result.addAll(org.netbeans.modules.php.api.annotations.PhpAnnotations.getCompletionTagProviders());
+        result.addAll(org.netbeans.modules.php.api.annotation.PhpAnnotations.getCompletionTagProviders());
         // next, add providers from php frameworks
         PhpProject phpProject = org.netbeans.modules.php.project.util.PhpProjectUtils.getPhpProject(fileObject);
         if (phpProject != null) {

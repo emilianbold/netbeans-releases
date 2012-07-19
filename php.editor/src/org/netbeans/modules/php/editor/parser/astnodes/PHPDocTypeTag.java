@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  * Represents a type in the tags like @param, @return, @throws etc.

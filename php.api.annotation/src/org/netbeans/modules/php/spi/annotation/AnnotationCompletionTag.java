@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.spi.annotations;
+package org.netbeans.modules.php.spi.annotation;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.openide.util.Parameters;

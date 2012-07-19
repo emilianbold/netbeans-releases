@@ -39,38 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.spi.annotations;
+package org.netbeans.modules.php.api.annotation.registration;
 
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.php.api.annotation.PhpAnnotations;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Encapsulates parsed annotation line.
  *
- * @since 1.69
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface AnnotationParsedLine {
+@SupportedAnnotationTypes("org.netbeans.modules.php.spi.annotation.AnnotationLineParser.Registration")
+@ServiceProvider(service = Processor.class)
+@SupportedSourceVersion(SourceVersion.RELEASE_6)
+public class AnnotationLineParserRegistrationProcessor extends LayerGeneratingProcessor {
 
-    /**
-     * Returns a name of an annotation without the "at" sign.
-     *
-     * @return name
-     */
-    public String getName();
-
-    /**
-     * Returns a description of the parsed annotation.
-     *
-     * @return description
-     */
-    public String getDescription();
-
-    /**
-     * Returns an offset-ranges and their types.
-     *
-     * @return offset range of a parsed type and its textual representation
-     */
-    public Map<OffsetRange, String> getTypes();
+    @Override
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(AnnotationLineParser.Registration.class)) {
+            layer(element)
+                    .instanceFile(PhpAnnotations.ANNOTATIONS_LINE_PARSERS_PATH, null, AnnotationLineParser.class)
+                    .intvalue("position", element.getAnnotation(AnnotationLineParser.Registration.class).position()) //NOI18N
+                    .write();
+        }
+        return true;
+    }
 
 }

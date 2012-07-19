@@ -44,8 +44,8 @@ package org.netbeans.modules.php.doctrine2.annotations.odm;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
 // http://docs.doctrine-project.org/projects/doctrine-mongodb-odm/en/latest/reference/annotations-reference.html

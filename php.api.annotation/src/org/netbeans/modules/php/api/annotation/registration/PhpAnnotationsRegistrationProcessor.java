@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.api.registrations;
+package org.netbeans.modules.php.api.annotation.registration;
 
 import java.util.Set;
 import javax.annotation.processing.Processor;
@@ -49,27 +49,23 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.php.api.annotations.PhpAnnotations;
-import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
+import org.netbeans.modules.php.api.annotation.PhpAnnotations;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
- */
-@SupportedAnnotationTypes("org.netbeans.modules.php.spi.annotations.AnnotationLineParser.Registration")
+@SupportedAnnotationTypes("org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider.Registration")
 @ServiceProvider(service = Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class AnnotationLineParserRegistrationProcessor extends LayerGeneratingProcessor {
+public class PhpAnnotationsRegistrationProcessor extends LayerGeneratingProcessor {
 
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(AnnotationLineParser.Registration.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(AnnotationCompletionTagProvider.Registration.class)) {
             layer(element)
-                    .instanceFile(PhpAnnotations.ANNOTATIONS_LINE_PARSERS_PATH, null, AnnotationLineParser.class)
-                    .intvalue("position", element.getAnnotation(AnnotationLineParser.Registration.class).position()) //NOI18N
+                    .instanceFile(PhpAnnotations.ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH, null, AnnotationCompletionTagProvider.class)
+                    .intvalue("position", element.getAnnotation(AnnotationCompletionTagProvider.Registration.class).position()) // NOI18N
                     .write();
         }
         return true;

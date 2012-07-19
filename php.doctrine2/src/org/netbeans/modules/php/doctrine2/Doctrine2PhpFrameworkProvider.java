@@ -54,7 +54,7 @@ import org.netbeans.modules.php.doctrine2.preferences.Doctrine2Preferences;
 import org.netbeans.modules.php.doctrine2.ui.actions.Doctrine2PhpModuleActionsExtender;
 import org.netbeans.modules.php.doctrine2.ui.customizer.Doctrine2PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.doctrine2.ui.wizards.Doctrine2PhpModuleExtender;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;

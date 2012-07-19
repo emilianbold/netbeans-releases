@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.spi.annotations;
+package org.netbeans.modules.php.spi.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.parser.astnodes;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  * Represent a PHPDoc tag in the php documentation
