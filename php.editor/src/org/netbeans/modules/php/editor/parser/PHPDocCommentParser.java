@@ -87,13 +87,13 @@ public class PHPDocCommentParser {
     /**
      * Tags that define something of a type
      */
-    private static final List<AnnotationParsedLine> PHPDocVarTypeTags = new ArrayList<AnnotationParsedLine>();
+    private static final List<AnnotationParsedLine> PHP_DOC_VAR_TYPE_TAGS = new ArrayList<AnnotationParsedLine>();
     static {
-        PHPDocVarTypeTags.add(PHPDocTag.Type.PARAM);
-        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY);
-        PHPDocVarTypeTags.add(PHPDocTag.Type.GLOBAL);
-        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY_READ);
-        PHPDocVarTypeTags.add(PHPDocTag.Type.PROPERTY_WRITE);
+        PHP_DOC_VAR_TYPE_TAGS.add(PHPDocTag.Type.PARAM);
+        PHP_DOC_VAR_TYPE_TAGS.add(PHPDocTag.Type.PROPERTY);
+        PHP_DOC_VAR_TYPE_TAGS.add(PHPDocTag.Type.GLOBAL);
+        PHP_DOC_VAR_TYPE_TAGS.add(PHPDocTag.Type.PROPERTY_READ);
+        PHP_DOC_VAR_TYPE_TAGS.add(PHPDocTag.Type.PROPERTY_WRITE);
     }
 
     public PHPDocCommentParser() {
@@ -186,7 +186,7 @@ public class PHPDocCommentParser {
         final Map<OffsetRange, String> types = type.getTypes();
         if (types.isEmpty()) {
             List<PHPDocTypeNode> docTypes = findTypes(description, start, originalComment, originalCommentStart);
-            if (PHPDocVarTypeTags.contains(type)) {
+            if (PHP_DOC_VAR_TYPE_TAGS.contains(type)) {
                 String variable = getVaribleName(description);
                 PHPDocNode varibaleNode = null;
                 if (variable != null) {
