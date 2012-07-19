@@ -84,8 +84,6 @@ import org.openide.util.NbBundle;
  *
  * Open questions/todo-s:
  * -----------------------
- * 1) (P3) how to change the paint color of the property *keys*? (existing properties should
- *    be bolded, the unused in plain font.
  * 
  * 2) (P4) related to #1 is how to listen on events happening over the sheet - implementing
  *    the mouse hover based "disable" action (maybe not necessary since doesn't make
@@ -383,6 +381,9 @@ public class RuleEditorPanel extends JPanel {
         addPropertyPanel.setModel(model);
         addPropertyPanel.setRule(rule);
         addPropertyPanel.setShowAllProperties(true);
+        addPropertyPanel.setShowCategories(true);
+        
+        addPropertyPanel.updateFiltersPresenters();
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(
                 new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
