@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.team.ods.ui.project;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.ui.dashboard.ProjectAccessorImpl;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import javax.swing.JPanel;
 
 /**
  *
- * @author Tomas Stupka
+ * @author jpeska
  */
-public class DetailsAction {
+public class TitlePanel extends JPanel {
 
-    static RequestProcessor.Task t = null;
+    @Override
+    protected void paintComponent(Graphics g) {
+        if (!isOpaque()) {
+            super.paintComponent(g);
+            return;
+        }
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<ODSProject> proj) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        GradientPaint gp = new GradientPaint(0, 0, getBackground().darker(), 0, getHeight(), getBackground().brighter().brighter());
+        g2d.setPaint(gp);
+        g2d.fillRect(0, 0, getWidth(), getHeight());
 
-        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Details")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (t != null && !t.isFinished()) {
-                    t.cancel();
-                }
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DetailsAction.class, "CTL_LoadingProjectDetails")); //NOI18N
-                handle.setInitialDelay(0);
-                handle.start();
-                t = RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        final ODSProject project = proj.getTeamProject();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.getInstanceFor(project);
-                                tc.open();
-                                tc.requestActive();
-                            }
-                        });
-                        handle.finish();
-                    }
-                });
-            }
-        };
+        setOpaque(false);
+        super.paintComponent(g);
+        setOpaque(true);
     }
-
 }

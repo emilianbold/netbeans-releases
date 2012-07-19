@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,58 +37,77 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.team.ods.ui.project;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.ui.dashboard.ProjectAccessorImpl;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.font.TextAttribute;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JLabel;
 
 /**
  *
- * @author Tomas Stupka
+ * @author jpeska
  */
-public class DetailsAction {
+public abstract class LinkLabel extends JLabel implements MouseListener{
 
-    static RequestProcessor.Task t = null;
+    private Map<TextAttribute, Object> underlineFontMap;
+    private static final Color FOREGROUND_COLOR = Color.BLUE;
+    private static final Color FOREGROUND_FOCUS_COLOR = new Color(0, 150, 255);
 
-    public static synchronized AbstractAction forProject(final ProjectHandle<ODSProject> proj) {
-
-        return new AbstractAction(NbBundle.getMessage(ProjectAccessorImpl.class, "LBL_Details")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (t != null && !t.isFinished()) {
-                    t.cancel();
-                }
-                final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(DetailsAction.class, "CTL_LoadingProjectDetails")); //NOI18N
-                handle.setInitialDelay(0);
-                handle.start();
-                t = RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        final ODSProject project = proj.getTeamProject();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.getInstanceFor(project);
-                                tc.open();
-                                tc.requestActive();
-                            }
-                        });
-                        handle.finish();
-                    }
-                });
-            }
-        };
+    public LinkLabel(String text) {
+        this();
+        setText(text);
     }
 
+    public LinkLabel() {
+        underlineFontMap = new HashMap<TextAttribute, Object>();
+        underlineFontMap.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL);
+        init();
+    }
+
+
+
+    private void init() {
+        Font font = getFont();
+        font = font.deriveFont(underlineFontMap);
+        setFont(font);
+        setForeground(FOREGROUND_COLOR);
+        addMouseListener(this);
+    }
+
+    @Override
+    public void setFont(Font font) {
+        font = font.deriveFont(underlineFontMap);
+        super.setFont(font);
+    }
+
+    @Override
+    public abstract void mouseClicked(MouseEvent e);
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        setForeground(FOREGROUND_FOCUS_COLOR);
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        setForeground(FOREGROUND_COLOR);
+    }
 }
