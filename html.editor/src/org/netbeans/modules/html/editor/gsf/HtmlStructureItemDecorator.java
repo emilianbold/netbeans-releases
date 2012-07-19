@@ -48,6 +48,7 @@ import org.netbeans.modules.html.editor.HtmlElementProperties;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.nodes.Node;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.util.Exceptions;
 
@@ -69,7 +70,7 @@ public class HtmlStructureItemDecorator extends StructureItemDecorator {
                 public void run(HtmlParserResult result) {
                     HtmlElementHandle handle = (HtmlElementHandle)htmlSi.getElementHandle();
                     OpenTag openTag = handle.resolve(result);
-                    HtmlElementProperties.OpenTagNode node = new HtmlElementProperties.OpenTagNode(result, openTag);
+                    Node node = HtmlElementProperties.createOpenTagNode(result, openTag);
                     ref.set(node.getPropertySets());
                 }
             });

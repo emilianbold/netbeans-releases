@@ -384,12 +384,17 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             Lookup explorerLookup = ExplorerUtils.createLookup(new ExplorerManager(), new ActionMap());;
 
             InstanceContent plainContent = new InstanceContent();
+            //add NavigatorLookupHint so the navigator gets activated when the html editor topcomponent
+            //gets activated
             plainContent.add(new NavigatorLookupHint() {
                 @Override
                 public String getContentType() {
                     return dataObject.getPrimaryFile().getMIMEType(); // NOI18N
                 }
             });
+            //add the DataObject and FileObject as well
+            plainContent.add(dataObject);
+            plainContent.add(dataObject.getPrimaryFile());
 
             Lookup plainContentLookup = new AbstractLookup(plainContent);
             Lookup saveCookieLookup = new Lookup() {
