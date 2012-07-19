@@ -53,12 +53,15 @@ public final class PhpExecutableValidator {
     private PhpExecutableValidator() {
     }
 
-    public static boolean isValidCommand(@NonNull String command) {
+    public static boolean isValidCommand(@NullAllowed String command) {
         return validateCommand(command, (String) null) == null;
     }
 
-    public static String validateCommand(@NonNull String command, @NullAllowed String executableName) {
-        String executable = PhpExecutable.parseCommand(command).first;
+    public static String validateCommand(@NullAllowed String command, @NullAllowed String executableName) {
+        String executable = null;
+        if (command != null) {
+            executable = PhpExecutable.parseCommand(command).first;
+        }
         return FileUtils.validateFile(executableName, executable, false);
     }
 
