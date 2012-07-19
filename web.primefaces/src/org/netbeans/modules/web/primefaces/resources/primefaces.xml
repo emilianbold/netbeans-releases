@@ -19,8 +19,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>primefaces</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/web/primefaces/resources/Bundle</localizing-bundle>
@@ -31,9 +30,11 @@ Microsystems, Inc. All Rights Reserved.
     <volume>
         <type>javadoc</type>
     </volume>
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repository.primefaces.org/org/primefaces/primefaces/3.2/primefaces-3.2.pom</resource>
-    </volume>
+        <property>
+            <name>maven-dependencies</name>
+            <value>org.primefaces:primefaces:3.2:jar</value>
+        </property>
+    </properties>
 </library>

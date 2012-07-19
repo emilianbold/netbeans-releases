@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>junit</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.junitlib.Bundle</localizing-bundle>
@@ -18,9 +17,11 @@
         <resource>jar:nbinst://org.netbeans.modules.junitlib/docs/junit-3.8.2-src.jar!/</resource>
     </volume>
     -->
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/junit/junit/3.8.2/junit-3.8.2.pom</resource>
-    </volume>
+        <property>
+            <name>maven-dependencies</name>
+            <value>junit:junit:3.8.2:jar</value>
+        </property>
+    </properties>    
 </library>

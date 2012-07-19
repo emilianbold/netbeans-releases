@@ -45,8 +45,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library  version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>restlib</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
@@ -88,22 +87,26 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-server-1.8-javadoc.zip!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-signature-1.8-javadoc.zip!/</resource>
     </volume>
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/jersey-atom/1.8/jersey-atom-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/jersey-json/1.8/jersey-json-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/jersey-core/1.8/jersey-core-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/jersey-server/1.8/jersey-server-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/jersey-client/1.8/jersey-client-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-atom-abdera/1.8/jersey-atom-abdera-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-apache-client/1.8/jersey-apache-client-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-spring/1.8/jersey-spring-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-multipart/1.8/jersey-multipart-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-guice/1.8/jersey-guice-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-simple-server/1.8/jersey-simple-server-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-oauth/oauth-client/1.8/oauth-client-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-oauth/oauth-server/1.8/oauth-server-1.8.pom</resource>
-        <resource>http://repo1.maven.org/maven2/com/sun/jersey/contribs/jersey-oauth/oauth-signature/1.8/oauth-signature-1.8.pom</resource>
-    </volume>
+        <property>
+            <name>maven-dependencies</name>
+            <value>
+                com.sun.jersey:jersey-atom:1.8:jar
+                com.sun.jersey:jersey-json:1.8:jar
+                com.sun.jersey:jersey-core:1.8:jar
+                com.sun.jersey:jersey-server:1.8:jar
+                com.sun.jersey:jersey-client:1.8:jar
+                com.sun.jersey.contribs:jersey-atom-abdera:1.8:jar
+                com.sun.jersey.contribs:jersey-apache-client:1.8:jar
+                com.sun.jersey.contribs:jersey-spring:1.8:jar
+                com.sun.jersey.contribs:jersey-multipart:1.8:jar
+                com.sun.jersey.contribs:jersey-guice:1.8:jar
+                com.sun.jersey.contribs:jersey-simple-server:1.8:jar
+                com.sun.jersey.contribs.jersey-oauth:oauth-client:1.8:jar
+                com.sun.jersey.contribs.jersey-oauth:oauth-server:1.8:jar
+                com.sun.jersey.contribs.jersey-oauth:oauth-signature:1.8:jar
+            </value>
+        </property>
+    </properties>    
 </library>
