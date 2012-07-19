@@ -88,6 +88,10 @@ public final class ODSProject {
     public String getName() {
         return project.getName();
     }
+
+    public String getDescription() {
+        return project.getDescription();
+    }
     
     public String getId() {
         return project.getIdentifier();
