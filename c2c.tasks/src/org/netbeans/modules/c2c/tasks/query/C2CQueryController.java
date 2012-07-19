@@ -81,6 +81,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.spi.QueryController;
+import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.c2c.tasks.C2C;
@@ -103,7 +105,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class C2CQueryController extends org.netbeans.modules.bugtracking.spi.QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
+public class C2CQueryController extends QueryController implements ItemListener, ListSelectionListener, ActionListener, FocusListener, KeyListener, IssueTable.IssueTableProvider {
 
     protected QueryPanel panel;
 
