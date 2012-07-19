@@ -45,7 +45,8 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
     <!-- empty folders as workaround to avoid os fs folder creation -->
     <folder name="PHP">
         <folder name="Annotations" >
-            <folder name="Line" >
+            <folder name="Line">
+                <attr name="position" intvalue="1"/>
                 <folder name="Parsers" />
             </folder>
         </folder>
