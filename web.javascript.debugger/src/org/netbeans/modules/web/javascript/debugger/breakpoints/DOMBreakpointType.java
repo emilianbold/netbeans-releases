@@ -51,6 +51,7 @@ import org.openide.util.NbBundle;
 
 
 @NbBundle.Messages({"DOMBreakpointTypeName=DOM"})
+@BreakpointType.Registration(displayName="#DOMBreakpointTypeName")
 public class DOMBreakpointType extends BreakpointType {
     
     private LineBreakpointCustomizer cust;

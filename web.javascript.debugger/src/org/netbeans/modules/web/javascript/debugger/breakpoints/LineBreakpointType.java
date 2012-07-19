@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 
 @NbBundle.Messages({"JavaScriptBreakpointTypeCategory=JavaScript",
     "LineBreakpointTypeName=Line"})
+@BreakpointType.Registration(displayName="#LineBreakpointTypeName")
 public class LineBreakpointType extends BreakpointType {
     
     private LineBreakpointCustomizer cust;

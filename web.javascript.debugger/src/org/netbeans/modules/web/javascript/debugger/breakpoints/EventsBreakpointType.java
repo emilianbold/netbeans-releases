@@ -51,6 +51,7 @@ import org.openide.util.NbBundle;
 
 
 @NbBundle.Messages({"EventBreakpointTypeName=Event"})
+@BreakpointType.Registration(displayName="#EventBreakpointTypeName")
 public class EventsBreakpointType extends BreakpointType {
     
     private LineBreakpointCustomizer cust;
