@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.composer.ui.actions;
 
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.composer.commands.Composer;
 import org.openide.util.NbBundle;
 
@@ -58,7 +58,7 @@ public class InstallAction extends BaseComposerAction {
     }
 
     @Override
-    protected void runCommand(PhpModule phpModule) throws InvalidPhpProgramException {
+    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
         Composer.getDefault().install(phpModule);
     }
 

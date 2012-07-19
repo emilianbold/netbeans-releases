@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.composer.ui.actions;
 
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.netbeans.modules.php.spi.actions.BaseAction;
@@ -52,7 +52,7 @@ abstract class BaseComposerAction extends BaseAction {
 
     protected abstract String getName();
 
-    protected abstract void runCommand(PhpModule phpModule) throws InvalidPhpProgramException;
+    protected abstract void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException;
 
 
     @Override
@@ -70,7 +70,7 @@ abstract class BaseComposerAction extends BaseAction {
     protected void actionPerformed(PhpModule phpModule) {
         try {
             runCommand(phpModule);
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(Bundle.BaseComposerAction_error_composer_notValid(), ComposerOptionsPanelController.OPTIONS_SUBPATH);
         }
     }
