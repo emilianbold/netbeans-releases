@@ -59,7 +59,6 @@ import org.openide.windows.WindowManager;
  * Note: For public API, this should likely be final class using accessor pattern.
  * @author Tomas Mysik
  */
-// XXX add isBroken() method
 // XXX add @NonNull etc.
 public abstract class PhpModule {
 
@@ -74,15 +73,20 @@ public abstract class PhpModule {
     public abstract String getDisplayName();
 
     /**
+     * CHeck whether the PHP module is broken (e.g. missing Source Files).
+     * @return {@code true} if the PHP module is broken, {@code false} otherwise
+     */
+    public abstract boolean isBroken();
+
+    /**
      * Get the project directory for this PHP module.
      * @return the project directory, never <code>null</code>
-     * @since 1.50
      */
     public abstract FileObject getProjectDirectory();
 
     /**
      * Get the source directory for this PHP module.
-     * @return the source directory, <b>can be <code>null</code> or {@link FileObject#isValid() invalid} if the project is corrupted!</b>
+     * @return the source directory, <b>can be <code>null</code> or {@link FileObject#isValid() invalid} if the project is {@link #isBroken() broken}.</b>
      */
     public abstract FileObject getSourceDirectory();
 
@@ -97,7 +101,6 @@ public abstract class PhpModule {
      * Please note that caller should not hold this properties because they can
      * change very often (if user changes Run Configuration).
      * @return the current {@link PhpModuleProperties properties}
-     * @since 1.19
      */
     public abstract PhpModuleProperties getProperties();
 
@@ -108,7 +111,6 @@ public abstract class PhpModule {
      * @param clazz a class which defines the namespace of preferences
      * @param shared whether the returned settings should be shared
      * @return {@link Preferences} for this PHP module and the given class
-     * @since 1.26
      * @see org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)
      */
     public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
@@ -117,7 +119,6 @@ public abstract class PhpModule {
      * Gets PHP module for the given {@link FileObject}.
      * @param fo {@link FileObject} to get PHP module for
      * @return PHP module or <code>null</code> if not found
-     * @since 1.16
      */
     public static PhpModule forFileObject(FileObject fo) {
         Project project = FileOwnerQuery.getOwner(fo);
@@ -216,7 +217,6 @@ public abstract class PhpModule {
     /**
      * This class is used to notify about changes in the direction from frameworks to PHP module.
      * @see org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender#save(PhpModule)
-     * @since 1.26
      */
     public enum Change {
         /**
@@ -238,7 +238,6 @@ public abstract class PhpModule {
         IGNORED_FILES_CHANGE,
         /**
          * Framework has been added or removed.
-         * @since 1.60
          */
         FRAMEWORK_CHANGE,
     }

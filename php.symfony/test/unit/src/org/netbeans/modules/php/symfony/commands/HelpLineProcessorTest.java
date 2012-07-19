@@ -163,5 +163,10 @@ public class HelpLineProcessorTest extends NbTestCase {
         public Preferences getPreferences(Class<?> clazz, boolean shared) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public boolean isBroken() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 }
