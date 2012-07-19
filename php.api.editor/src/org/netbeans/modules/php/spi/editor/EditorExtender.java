@@ -51,7 +51,6 @@ import org.openide.filesystems.FileObject;
  * <p>
  * <i>All the methods are called only for the {@link FileObject}
  * that is currently opened in the editor.</i>
- * @since 1.13
  * @author Tomas Mysik
  */
 public abstract class EditorExtender {

@@ -46,7 +46,6 @@ import org.openide.util.Parameters;
 
 /**
  * Class representing code-completion item.
- * @since 1.63
  */
 public class AnnotationCompletionTag {
 

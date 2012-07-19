@@ -55,7 +55,6 @@ import org.openide.util.RequestProcessor;
  * {@link #goToView() goToView()} in its
  * own {@link RequestProcessor request processor}.
  * @author Tomas Mysik
- * @since 1.29
  * @see GoToActionAction
  */
 public abstract class GoToViewAction extends AbstractAction {
@@ -78,7 +77,6 @@ public abstract class GoToViewAction extends AbstractAction {
      * <p>
      * It is run in its own {@link RequestProcessor request processor}.
      * @return {@code true} if successful (typically the View is found and opened)
-     * @since 1.31
      */
     public abstract boolean goToView();
 

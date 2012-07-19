@@ -48,7 +48,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Helper editor class that can be found in the default lookup.
- * @since 1.13
  * @author Tomas Mysik
  */
 public interface EditorSupport {
@@ -66,7 +65,6 @@ public interface EditorSupport {
      * @param phpClass {@link PhpClass PHP class} to search for
      * @return collection of {@link FileObject file objects} (with offsets) containing the {@link PhpClass PHP class}, never <code>null</code>
      * @see #getClasses(FileObject)
-     * @since 1.34
      */
     Collection<Pair<FileObject, Integer>> filesForClass(FileObject sourceRoot, PhpClass phpClass);
 
@@ -75,7 +73,6 @@ public interface EditorSupport {
      * @param fo file to search in
      * @param offset offset in the file
      * @return {@link PhpElement PHP element}, can be <code>null</code> if not in any
-     * @since 1.17
      */
     PhpBaseElement getElement(FileObject fo, int offset);
 }

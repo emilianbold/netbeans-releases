@@ -47,7 +47,6 @@ import org.netbeans.modules.csl.api.OffsetRange;
 /**
  * Encapsulates parsed annotation line.
  *
- * @since 1.69
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface AnnotationParsedLine {

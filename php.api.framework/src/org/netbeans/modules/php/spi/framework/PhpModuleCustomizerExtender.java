@@ -54,7 +54,6 @@ import org.openide.util.HelpCtx;
  * For Reading and storing properties, {@link PhpModule#getPreferences(Class, boolean)} can be used.
  *
  * @author Tomas Mysik
- * @since 1.26
  */
 public abstract class PhpModuleCustomizerExtender {
 
@@ -125,7 +124,6 @@ public abstract class PhpModuleCustomizerExtender {
      * @return warning message or <code>null</code>
      * @see #isValid()
      * @see #getErrorMessage()
-     * @since 1.27
      */
     public String getWarningMessage() {
         return null;

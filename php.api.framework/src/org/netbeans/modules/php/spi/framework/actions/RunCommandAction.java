@@ -48,7 +48,6 @@ import org.openide.util.NbBundle;
 /**
  * Base Run Command action.
  * @author Tomas Mysik
- * @since 1.30
  */
 public abstract class RunCommandAction extends BaseAction {
 

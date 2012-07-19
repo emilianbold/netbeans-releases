@@ -107,14 +107,12 @@ public abstract class FrameworkCommandSupport {
     /**
      * Get the name of the framework; it's used in the UI for selecting a command.
      * @return the name of the framework.
-     * @since 1.8
      */
     public abstract String getFrameworkName();
 
     /**
      * Run command for the given command descriptor.
      * @param commandDescriptor descriptor for the selected framework command
-     * @since 1.8
      * @see #runCommand()
      * @see CommandDescriptor
      */
@@ -130,7 +128,6 @@ public abstract class FrameworkCommandSupport {
      * Get the plugin directory to which a {@link FileChangeListener} is added
      * (commands are refreshed if any change in this directory happens).
      * @return the plugin directory or <code>null</code> if the framework does not have such directory
-     * @since 1.18
      */
     protected abstract File getPluginsDirectory();
 
@@ -169,7 +166,6 @@ public abstract class FrameworkCommandSupport {
     /**
      * Get {@link PhpModule PHP module} for which this framework command support is created.
      * @return {@link PhpModule PHP module} for which this framework command support is created, never <code>null</code>.
-     * @since 1.8
      */
     public final PhpModule getPhpModule() {
         return phpModule;
@@ -278,7 +274,6 @@ public abstract class FrameworkCommandSupport {
      * @param arguments command's arguments.
      * @return command or <code>null</code> if any error occurs.
      * @see #createSilentCommand(String, String[])
-     * @since 1.24
      */
     public ExternalProcessBuilder createCommand(final String[] commands, final String... arguments) {
         return createCommandInternal(commands, arguments, true);
@@ -305,7 +300,6 @@ public abstract class FrameworkCommandSupport {
      * @param arguments command's arguments.
      * @return command or <code>null</code> if any error occurs.
      * @see #createCommand(String, String[])
-     * @since 1.24
      */
     public ExternalProcessBuilder createSilentCommand(final String[] commands, final String... arguments) {
         return createCommandInternal(commands, arguments, false);
@@ -342,7 +336,6 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * Show the panel with framework commands with possibility to run any.
-     * @since 1.8
      * @see #runCommand(CommandDescriptor)
      */
     public final void runCommand() {
@@ -373,7 +366,6 @@ public abstract class FrameworkCommandSupport {
      * @param arguments arguments of the given command
      * @return input stream with command output or {@code null} if the command can't be run
      * @see #getProcessBuilder(boolean)
-     * @since 1.51
      */
     protected final InputStream redirectScriptOutput(String command, String... arguments) {
         ExternalProcessBuilder processBuilder = createSilentCommand(command, arguments);

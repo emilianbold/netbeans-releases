@@ -44,6 +44,7 @@ package org.netbeans.modules.php.api.documentation;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
@@ -53,18 +54,17 @@ import org.openide.util.lookup.Lookups;
 /**
  * This class provides access to the list of registered {@link PhpDocumentationProvider PHP documentation providers}.
  * <p>
- * The path is "{@value #DOCS_PATH}" on SFS.
+ * The path is "{@value #DOCUMENTATION_PATH}" on SFS.
  * @author Tomas Mysik
- * @since 1.35
  */
 public final class PhpDocumentations {
 
     /**
      * Path on SFS where {@link PhpDocumentationProvider PHP documentation providers} need to be registered.
      */
-    public static final String DOCS_PATH = "PHP/Docs"; //NOI18N
+    public static final String DOCUMENTATION_PATH = "PHP/Documentation"; //NOI18N
 
-    private static final Lookup.Result<PhpDocumentationProvider> DOCS = Lookups.forPath(DOCS_PATH).lookupResult(PhpDocumentationProvider.class);
+    private static final Lookup.Result<PhpDocumentationProvider> DOCUMENTATIONS = Lookups.forPath(DOCUMENTATION_PATH).lookupResult(PhpDocumentationProvider.class);
 
     private PhpDocumentations() {
     }
@@ -74,7 +74,7 @@ public final class PhpDocumentations {
      * @return a list of all registered {@link PhpDocumentationProvider}s; never {@code null}.
      */
     public static List<PhpDocumentationProvider> getDocumentations() {
-        return new ArrayList<PhpDocumentationProvider>(DOCS.allInstances());
+        return new ArrayList<PhpDocumentationProvider>(DOCUMENTATIONS.allInstances());
     }
 
     /**
@@ -85,9 +85,9 @@ public final class PhpDocumentations {
      * @param listener {@link LookupListener listener} to be added
      * @see #removeDocumentationsListener(LookupListener)
      */
-    public static void addDocumentationsListener(LookupListener listener) {
+    public static void addDocumentationsListener(@NonNull LookupListener listener) {
         Parameters.notNull("listener", listener);
-        DOCS.addLookupListener(listener);
+        DOCUMENTATIONS.addLookupListener(listener);
     }
 
     /**
@@ -95,8 +95,8 @@ public final class PhpDocumentations {
      * @param listener {@link LookupListener listener} to be removed
      * @see #addDocumentationsListener(LookupListener)
      */
-    public static void removeDocumentationsListener(LookupListener listener) {
+    public static void removeDocumentationsListener(@NonNull LookupListener listener) {
         Parameters.notNull("listener", listener);
-        DOCS.removeLookupListener(listener);
+        DOCUMENTATIONS.removeLookupListener(listener);
     }
 }

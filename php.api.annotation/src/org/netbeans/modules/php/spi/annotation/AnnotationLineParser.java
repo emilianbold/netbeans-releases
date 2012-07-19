@@ -55,7 +55,6 @@ import java.lang.annotation.Target;
  * in the <code>{@value org.netbeans.modules.php.api.annotations.PhpAnnotations#ANNOTATIONS_LINE_PARSERS_PATH}</code>
  * in the module layer, see {@link Registration}.
  *
- * @since 1.69
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface AnnotationLineParser {
@@ -87,13 +86,13 @@ public interface AnnotationLineParser {
      * <p>Example of usage:
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
+     * import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
      * &#64;AnnotationLineParser.Registration(position=100)
      * public class MyProvider implements AnnotationLineParser {...}
      * </pre>
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
+     * import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
      * public class MyProvider implements AnnotationLineParser {
      *     &#64;AnnotationLineParser.Registration(position=100)
      *     public static AnnotationLineParser getInstance() {...}

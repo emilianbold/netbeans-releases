@@ -83,7 +83,6 @@ public abstract class PhpFrameworkProvider {
      * @param  name the <b>localized</b> name of this PHP framework (e.g., "Symfony PHP Web Framework"); never <code>null</code>.
      * @param  description the description of this PHP framework (e.g., "An open source framework based on the MVC pattern"); can be <code>null</code>.
      * @throws NullPointerException if the <code>identifier</code> or <code>name</code> parameter is <code>null</code>.
-     * @since 1.49
      */
     public PhpFrameworkProvider(String identifier, String name, String description) {
         Parameters.notNull("identifier", identifier); // NOI18N
@@ -113,7 +112,6 @@ public abstract class PhpFrameworkProvider {
      * Returns the <b>non-localized (usually english)</b> identifier of this PHP framework.
      *
      * @return the <b>non-localized (usually english)</b> identifier; never <code>null</code>.
-     * @since 1.49
      */
     public final String getIdentifier() {
         return identifier;
@@ -146,7 +144,6 @@ public abstract class PhpFrameworkProvider {
      * <p>
      * The default implementation returns {@code null}.
      * @return the {@link BadgeIcon badge icon} for this PHP framework or {@code null}
-     * @since 1.39
      */
     public BadgeIcon getBadgeIcon() {
         return null;
@@ -203,7 +200,6 @@ public abstract class PhpFrameworkProvider {
      * @param  phpModule the PHP module which properties are to be extended
      * @return a new PHP module customizer extender; can be {@code null} if the framework doesn't need
      *         to store/read any PHP module specific properties (or does not need to be added to PHP module)
-     * @since 1.26
      */
     public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
         return null;
@@ -229,7 +225,6 @@ public abstract class PhpFrameworkProvider {
      * @param  phpModule the PHP module which actions are going to be extended
      * @return a new PHP module actions extender, can be <code>null</code> if the framework doesn't support
      *         extending of actions
-     * @since 1.11
      */
     public abstract PhpModuleActionsExtender getActionsExtender(PhpModule phpModule);
 
@@ -242,7 +237,6 @@ public abstract class PhpFrameworkProvider {
      * @param  phpModule the PHP module which ignored files are going to be extended
      * @return PHP module ignored files extender, can be <code>null</code> if the framework doesn't need
      *         to recommend to hide any files or folders
-     * @since 1.12
      */
     public abstract PhpModuleIgnoredFilesExtender getIgnoredFilesExtender(PhpModule phpModule);
 
@@ -255,7 +249,6 @@ public abstract class PhpFrameworkProvider {
      * @param  phpModule the PHP module for which framework command support is to be gotten
      * @return framework command support, can be <code>null</code> if the framework doesn't support
      *         running external commands
-     * @since 1.11
      */
     public abstract FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule);
 
@@ -268,7 +261,6 @@ public abstract class PhpFrameworkProvider {
      * @param  phpModule the PHP module for which editor extender is to be gotten
      * @return editor extender, can be <code>null</code> if the framework doesn't provide
      *         any additional fields/classes etx. to code completion etc.
-     * @since 1.13
      */
     public EditorExtender getEditorExtender(PhpModule phpModule) {
         return null;
@@ -285,7 +277,6 @@ public abstract class PhpFrameworkProvider {
      * @param  phpModule the PHP module for which annotations provider is to be gotten
      * @return list of annotations providers, never <code>null</code>; empty list if the framework doesn't provide
      *         any PHP annotations
-     * @since 1.65
      */
     public List<AnnotationCompletionTagProvider> getAnnotationsCompletionTagProviders(PhpModule phpModule) {
         return Collections.emptyList();
@@ -297,7 +288,6 @@ public abstract class PhpFrameworkProvider {
      * @param phpModule the PHP module that is being opened in the IDE
      * @see #isInPhpModule(PhpModule)
      * @see #phpModuleClosed(PhpModule)
-     * @since 1.24
      */
     public void phpModuleOpened(PhpModule phpModule) {
     }
@@ -308,7 +298,6 @@ public abstract class PhpFrameworkProvider {
      * @param phpModule the PHP module that is being closed in the IDE
      * @see #isInPhpModule(PhpModule)
      * @see #phpModuleOpened(PhpModule)
-     * @since 1.24
      */
     public void phpModuleClosed(PhpModule phpModule) {
     }
@@ -338,7 +327,6 @@ public abstract class PhpFrameworkProvider {
      *     public static PhpFrameworkProvider getInstance() {...}
      * }
      * </pre>
-     * @since 1.36
      */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})

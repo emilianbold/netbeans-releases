@@ -51,7 +51,6 @@ import org.openide.util.Parameters;
  * Badge icon (8x8) which provides an {@link Image} as well as {@link URL}
  * of the icon.
  * @author Tomas Mysik
- * @since 1.39
  */
 public final class BadgeIcon {
     private final Image image;

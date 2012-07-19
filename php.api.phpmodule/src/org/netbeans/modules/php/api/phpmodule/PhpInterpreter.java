@@ -51,7 +51,6 @@ import org.openide.util.NbBundle;
 /**
  * PHP interpreter as it is specified in Tools > Options > PHP.
  * @author Tomas Mysik
- * @since 1.9
  */
 public final class PhpInterpreter extends PhpProgram {
     public static final Pattern[] LINE_PATTERNS = {

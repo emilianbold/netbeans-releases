@@ -46,6 +46,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.Parameters;
 
@@ -56,11 +57,10 @@ import org.openide.util.Parameters;
  *
  * <p>This class allows providing support for generating PHP documentation.</p>
  *
- * <p>Instances of this class are registered in the <code>{@value org.netbeans.modules.php.api.doc.PhpDocs#DOCS_PATH}</code>
+ * <p>Instances of this class are registered in the <code>{@value org.netbeans.modules.php.api.documentation.PhpDocs#DOCS_PATH}</code>
  * in the module layer.</p>
  *
  * @author Tomas Mysik
- * @since 1.35
  */
 public abstract class PhpDocumentationProvider {
 
@@ -73,7 +73,7 @@ public abstract class PhpDocumentationProvider {
      * @param  name the short name of this PHP documentation provider (e.g., "PhpDoc"), should not be localized; never <code>null</code>
      * @param  displayName the display name of the provider, should be localized; never <code>null</code>
      */
-    public PhpDocumentationProvider(String name, String displayName) {
+    public PhpDocumentationProvider(@NonNull String name, @NonNull String displayName) {
         Parameters.notNull("name", name); // NOI18N
         Parameters.notNull("displayName", displayName); // NOI18N
 
@@ -110,7 +110,7 @@ public abstract class PhpDocumentationProvider {
      * @param  phpModule the PHP module; never <code>null</code>
      * @return <code>true</code> if the PHP module already contains documentation for this PHP documentation provider, <code>false</code> otherwise.
      */
-    public boolean isInPhpModule(PhpModule phpModule) {
+    public boolean isInPhpModule(@NonNull PhpModule phpModule) {
         return true;
     }
 
@@ -122,12 +122,12 @@ public abstract class PhpDocumentationProvider {
      * @see #isInPhpModule(PhpModule)
      * @see PhpModule#getPreferences(Class, boolean)
      */
-    public abstract void generateDocumentation(PhpModule phpModule);
+    public abstract void generateDocumentation(@NonNull PhpModule phpModule);
 
     /**
      * Declarative registration of a singleton PHP documentation provider provider.
      * By marking an implementation class or a factory method with this annotation,
-     * you automatically register that implementation, normally in {@link org.netbeans.modules.php.api.doc.PhpDocs#DOCS_PATH}.
+     * you automatically register that implementation, normally in {@link org.netbeans.modules.php.api.documentation.PhpDocs#DOCS_PATH}.
      * The class must be public and have:
      * <ul>
      *  <li>a public no-argument constructor, or</li>
@@ -137,19 +137,18 @@ public abstract class PhpDocumentationProvider {
      * <p>Example of usage:
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.doc.PhpDocumentationProvider;
+     * import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
      * &#64;PhpDocumentationProvider.Registration(position=100)
      * public class MyDoc extends PhpDocumentationProvider {...}
      * </pre>
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.doc.PhpDocumentationProvider;
+     * import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
      * public class MyDoc extends PhpDocumentationProvider {
      *     &#64;PhpDocumentationProvider.Registration(position=100)
      *     public static PhpDocumentationProvider getInstance() {...}
      * }
      * </pre>
-     * @since 1.37
      */
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})

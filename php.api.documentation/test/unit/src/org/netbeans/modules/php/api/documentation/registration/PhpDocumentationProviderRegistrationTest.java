@@ -71,7 +71,7 @@ public class PhpDocumentationProviderRegistrationTest extends NbTestCase {
         MyDoc.factoryCalls = 0;
         MockLookup.init();
         assertSame("No factory method should not be used yet", 0, MyDoc.factoryCalls);
-        Collection<? extends PhpDocumentationProvider> all = Lookups.forPath(PhpDocumentations.DOCS_PATH).lookupAll(PhpDocumentationProvider.class);
+        Collection<? extends PhpDocumentationProvider> all = Lookups.forPath(PhpDocumentations.DOCUMENTATION_PATH).lookupAll(PhpDocumentationProvider.class);
         assertSame("Two should be found", 2, all.size());
         // ???
         //assertSame("One factory method should be used", 1, MyDoc.factoryCalls);

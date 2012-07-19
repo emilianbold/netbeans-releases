@@ -79,7 +79,6 @@ public final class PhpFrameworks {
      * <p>
      * To avoid memory leaks, do not forget to {@link #removeFrameworksListener(LookupListener) remove} the listener.
      * @param listener {@link LookupListener listener} to be added
-     * @since 1.14
      * @see #removeFrameworksListener(LookupListener)
      */
     public static void addFrameworksListener(LookupListener listener) {
@@ -90,7 +89,6 @@ public final class PhpFrameworks {
     /**
      * Remove {@link LookupListener listener}.
      * @param listener {@link LookupListener listener} to be removed
-     * @since 1.14
      * @see #addFrameworksListener(LookupListener)
      */
     public static void removeFrameworksListener(LookupListener listener) {

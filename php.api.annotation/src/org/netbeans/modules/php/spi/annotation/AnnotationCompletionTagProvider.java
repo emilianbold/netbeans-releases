@@ -60,10 +60,9 @@ import org.openide.util.Parameters;
  * <p>Globally available (annotations available in all PHP files) instances of this class are registered
  * in the <code>{@value org.netbeans.modules.php.api.annotations.PhpAnnotations#ANNOTATIONS_PATH}</code>
  * in the module layer, see {@link Registration}. For <b>framework specific</b> annotations, use
- * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.</p>
+ * {@link org.netbeans.modules.php.spi.framework.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.</p>
 
- * @since 1.63
- * @see org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(PhpModule)
+ * @see org.netbeans.modules.php.spi.framework.PhpFrameworkProvider#getAnnotationsProvider(PhpModule)
  */
 public abstract class AnnotationCompletionTagProvider {
 
@@ -168,7 +167,7 @@ public abstract class AnnotationCompletionTagProvider {
      * Declarative registration of a singleton PHP annotations provider.
      * that is <b>globally</b> available (it means that its annotations are available
      * in every PHP file). For <b>framework specific</b> annotations, use
-     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
+     * {@link org.netbeans.modules.php.spi.framework.PhpFrameworkProvider#getAnnotationsProvider(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
      * <p>
      * By marking an implementation class or a factory method with this annotation,
      * you automatically register that implementation, normally in {@link org.netbeans.modules.php.api.annotations.PhpAnnotations#ANNOTATIONS_PATH}.
@@ -181,7 +180,7 @@ public abstract class AnnotationCompletionTagProvider {
      * <p>Example of usage:
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+     * import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
      * &#64;AnnotationCompletionTagProvider.Registration(position=100)
      * public class MyAnnotations extends AnnotationCompletionTagProvider {...}
      * </pre>

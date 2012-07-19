@@ -62,13 +62,11 @@ import org.openide.util.Utilities;
 /**
  * Base class for all PHP based programs (scripts).
  * @author Tomas Mysik
- * @since 1.9
  */
 public abstract class PhpProgram {
     private static final ExecutionDescriptor DEFAULT_DESCRIPTOR = new ExecutionDescriptor()
             .controllable(true)
             .frontWindow(true)
-            // @since 1.62
             .frontWindowOnError(true)
             .inputVisible(true)
             .showProgress(true);
@@ -79,7 +77,6 @@ public abstract class PhpProgram {
      * <p>
      * <b>In fact, it is not needed anymore since the Output window understands ANSI escape sequences.</b>
      * @see InputProcessors#ansiStripping(InputProcessor)
-     * @since 1.10
      */
     public static final InputProcessorFactory ANSI_STRIPPING_FACTORY = new InputProcessorFactory() {
         @Override
@@ -176,7 +173,6 @@ public abstract class PhpProgram {
      * and {@link #getParameters() parameters}.
      * @return {@link ExternalProcessBuilder process builder} with {@link #getProgram() program}
      *         and {@link #getParameters() parameters}.
-     * @since 1.10
      */
     public ExternalProcessBuilder getProcessBuilder() {
         // XXX possibility to run via php interpreter
@@ -198,7 +194,6 @@ public abstract class PhpProgram {
      *   <li>{@link ExecutionDescriptor#showProgress() shows progress}</li>
      * </ul>
      * @return the default {@link ExecutionDescriptor execution descriptor}.
-     * @since 1.10
      */
     public static ExecutionDescriptor getExecutionDescriptor() {
         // XXX not static
@@ -216,7 +211,6 @@ public abstract class PhpProgram {
      * @see #executeAndWait(ExternalProcessBuilder, ExecutionDescriptor, String)
      * @see #execute(ExternalProcessBuilder, ExecutionDescriptor, String, String)
      * @see ExecutionService#run()
-     * @since 1.10
      */
     public static Future<Integer> executeLater(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) {
         return ExecutionService.newService(processBuilder, executionDescriptor, title).run();
@@ -233,7 +227,6 @@ public abstract class PhpProgram {
      * @throws InterruptedException if the current thread was interrupted while waiting
      * @see #executeLater(ExternalProcessBuilder, ExecutionDescriptor, String)
      * @see #execute(ExternalProcessBuilder, ExecutionDescriptor, String, String)
-     * @since 1.10
      */
     public static int executeAndWait(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title) throws ExecutionException, InterruptedException {
         return ExecutionService.newService(processBuilder, executionDescriptor, title).run().get();
@@ -251,7 +244,6 @@ public abstract class PhpProgram {
      * @return exit code of the process or {@code null} if any error occured
      * @see #executeLater(ExternalProcessBuilder, ExecutionDescriptor, String)
      * @see #executeAndWait(ExternalProcessBuilder, ExecutionDescriptor, String)
-     * @since 1.48
      */
     public static Integer execute(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, String progressMessage) {
         ExecutionService service = ExecutionService.newService(processBuilder, executionDescriptor, title);

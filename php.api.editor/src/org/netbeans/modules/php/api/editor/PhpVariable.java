@@ -46,7 +46,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Class representing a PHP local variable.
- * @since 1.13
  * @author Tomas Mysik
  */
 public final class PhpVariable extends PhpBaseElement {
@@ -55,23 +54,14 @@ public final class PhpVariable extends PhpBaseElement {
         super(name, fullyQualifiedName, description);
     }
 
-    /**
-     * @since 1.25
-     */
     public PhpVariable(String name, String fullyQualifiedName, FileObject file) {
         super(name, fullyQualifiedName, file);
     }
 
-    /**
-     * @since 1.28
-     */
     public PhpVariable(String name, String fullyQualifiedName, FileObject file, int offset) {
         super(name, fullyQualifiedName, file, offset, null);
     }
 
-    /**
-     * @since 1.32
-     */
     public PhpVariable(String name, PhpClass type, FileObject file, int offset) {
         super(name, null, type, file, offset, null);
     }
@@ -80,9 +70,6 @@ public final class PhpVariable extends PhpBaseElement {
         super(name, fullyQualifiedName);
     }
 
-    /**
-     * @since 1.32
-     */
     public PhpVariable(String name, PhpClass type) {
         super(name, type);
     }

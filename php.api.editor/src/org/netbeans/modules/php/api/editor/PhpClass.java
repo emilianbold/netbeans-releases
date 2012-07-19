@@ -49,7 +49,6 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Class representing a PHP class.
- * @since 1.13
  * @author Tomas Mysik
  */
 public final class PhpClass extends PhpBaseElement {
@@ -90,9 +89,6 @@ public final class PhpClass extends PhpBaseElement {
         return addField(name, fullyQualifiedName, -1, description);
     }
 
-    /**
-     * @since 1.32
-     */
     public PhpClass addField(String name, PhpClass type, FileObject file, int offset) {
         fields.add(new Field(name, type, file, offset));
         return this;
@@ -125,7 +121,6 @@ public final class PhpClass extends PhpBaseElement {
 
     /**
      * Class representing a PHP class field.
-     * @since 1.13
      * @author Tomas Mysik
      */
     public final class Field extends PhpBaseElement {
@@ -133,9 +128,6 @@ public final class PhpClass extends PhpBaseElement {
             super(name, fullyQualifiedName, offset, description);
         }
 
-        /**
-         * @since 1.32
-         */
         Field(String name, PhpClass type, FileObject file, int offset) {
             super(name, null, type, file, offset, null);
         }
@@ -147,8 +139,6 @@ public final class PhpClass extends PhpBaseElement {
 
     /**
      * Class representing a PHP class method.
-     * Use
-     * @since 1.13
      * @author Tomas Mysik
      */
     public final class Method extends PhpBaseElement {

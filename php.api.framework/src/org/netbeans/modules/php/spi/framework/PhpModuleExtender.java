@@ -117,7 +117,6 @@ public abstract class PhpModuleExtender {
      * @return warning message or <code>null</code>
      * @see #isValid()
      * @see #getErrorMessage()
-     * @since 1.7
      */
     public abstract String getWarningMessage();
 
@@ -137,7 +136,6 @@ public abstract class PhpModuleExtender {
 
     /**
      * Exception that is thrown if the {@link PhpModuleExtender#extend(PhpModule) extending operation} fails.
-     * @since 1.2
      */
     public static final class ExtendingException extends Exception {
         private static final long serialVersionUID = 160207942147917846L;

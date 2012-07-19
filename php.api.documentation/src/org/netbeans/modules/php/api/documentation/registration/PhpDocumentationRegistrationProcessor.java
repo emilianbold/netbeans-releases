@@ -68,7 +68,7 @@ public class PhpDocumentationRegistrationProcessor extends LayerGeneratingProces
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocumentationProvider.Registration.class)) {
             layer(element)
-                    .instanceFile(PhpDocumentations.DOCS_PATH, null, PhpDocumentationProvider.class)
+                    .instanceFile(PhpDocumentations.DOCUMENTATION_PATH, null, PhpDocumentationProvider.class)
                     .intvalue("position", element.getAnnotation(PhpDocumentationProvider.Registration.class).position()) // NOI18N
                     .write();
         }

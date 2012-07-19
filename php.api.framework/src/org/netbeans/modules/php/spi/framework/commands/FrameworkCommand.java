@@ -62,9 +62,6 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
         this(new String[] {command}, description, displayName);
     }
 
-    /**
-     * @since 1.24
-     */
     protected FrameworkCommand(String[] commands, String description, String displayName) {
         this.commands = commands;
         this.description = description;
@@ -88,9 +85,6 @@ public abstract class FrameworkCommand implements Comparable<FrameworkCommand> {
         return StringUtils.implode(Arrays.asList(commands), " "); // NOI18N
     }
 
-    /**
-     * @since 1.24
-     */
     public final String[] getCommands() {
         String[] copy = new String[commands.length];
         System.arraycopy(commands, 0, copy, 0, commands.length);

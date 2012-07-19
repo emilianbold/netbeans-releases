@@ -51,7 +51,6 @@ import org.openide.util.HelpCtx;
  * Base action class which operates with a PHP module, suitable for framework classes.
  * It takes care about names (name in menu, name in shortcuts).
  * @author Tomas Mysik
- * @since 1.30
  */
 public abstract class BaseAction extends AbstractAction implements HelpCtx.Provider {
 

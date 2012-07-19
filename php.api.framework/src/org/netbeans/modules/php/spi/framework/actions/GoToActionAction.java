@@ -55,7 +55,6 @@ import org.openide.util.RequestProcessor;
  * {@link #goToAction() goToAction()} in its
  * own {@link RequestProcessor request processor}.
  * @author Tomas Mysik
- * @since 1.29
  */
 public abstract class GoToActionAction extends AbstractAction {
     /**
@@ -77,7 +76,6 @@ public abstract class GoToActionAction extends AbstractAction {
      * <p>
      * It is run in its own {@link RequestProcessor request processor}.
      * @return {@code true} if successful (typically the Action is found and opened)
-     * @since 1.31
      */
     public abstract boolean goToAction();
 

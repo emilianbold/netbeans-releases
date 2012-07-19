@@ -54,7 +54,6 @@ import java.util.Set;
  * in different user views but are likely not e.g. scanned and indexed too.
  *
  * @author Tomas Mysik
- * @since 1.12
  */
 public abstract class PhpModuleIgnoredFilesExtender {
 

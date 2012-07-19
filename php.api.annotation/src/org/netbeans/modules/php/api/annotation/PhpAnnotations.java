@@ -58,7 +58,7 @@ import org.openide.util.lookup.Lookups;
  * <p>the list of registered PHP annotations providers
  * that are <b>globally</b> available (it means that their annotations are available
  * in every PHP file). For <b>framework specific</b> annotations, use
- * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsCompletionTagProviders(org.netbeans.modules.php.api.phpmodule.PhpModule)}.</p>
+ * {@link org.netbeans.modules.php.spi.framework.PhpFrameworkProvider#getAnnotationsCompletionTagProviders(org.netbeans.modules.php.api.phpmodule.PhpModule)}.</p>
  *
  * <p>The path is {@value #ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH} on SFS.</p>
  * </li>
@@ -70,22 +70,15 @@ import org.openide.util.lookup.Lookups;
  * <p>The path is {@value #ANNOTATIONS_LINE_PARSERS_PATH} on SFS.</p>
  * </li>
  * </ol>
- * @since 1.63
  */
 public final class PhpAnnotations {
 
     public static final String ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH = "PHP/Annotations"; // NOI18N
 
-    /**
-     * @since 1.69
-     */
     public static final String ANNOTATIONS_LINE_PARSERS_PATH = "PHP/Annotations/Line/Parsers"; // NOI18N
 
     private static final Lookup.Result<AnnotationCompletionTagProvider> COMPLETION_TAG_PROVIDERS = Lookups.forPath(ANNOTATIONS_COMPLETION_TAG_PROVIDERS_PATH).lookupResult(AnnotationCompletionTagProvider.class);
 
-    /**
-     * @since 1.69
-     */
     private static final Lookup.Result<AnnotationLineParser> LINE_PARSERS = Lookups.forPath(ANNOTATIONS_LINE_PARSERS_PATH).lookupResult(AnnotationLineParser.class);
 
     private PhpAnnotations() {
@@ -95,7 +88,7 @@ public final class PhpAnnotations {
      * Get all registered {@link AnnotationCompletionTagProvider}s
      * that are <b>globally</b> available (it means that their annotations are available
      * in every PHP file). For <b>framework specific</b> annotations, use
-     * {@link org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider#getAnnotationsCompletionTagProviders(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
+     * {@link org.netbeans.modules.php.spi.framework.PhpFrameworkProvider#getAnnotationsCompletionTagProviders(org.netbeans.modules.php.api.phpmodule.PhpModule)}.
      * @return a list of all registered {@link AnnotationCompletionTagProvider}s; never {@code null}
      */
     public static List<AnnotationCompletionTagProvider> getCompletionTagProviders() {
@@ -130,7 +123,6 @@ public final class PhpAnnotations {
      * <b>globally</b> available.
      *
      * @return a list of all registered {@link AnnotationLineParser}s; never {@code null}
-     * @since 1.69
      */
     public static List<AnnotationLineParser> getLineParsers() {
         return new ArrayList<AnnotationLineParser>(LINE_PARSERS.allInstances());
@@ -144,7 +136,6 @@ public final class PhpAnnotations {
      *
      * @param listener {@link LookupListener listener} to be added
      * @see #removeLineParsersListener(LookupListener)
-     * @since 1.69
      */
     public static void addLineParsersListener(LookupListener listener) {
         Parameters.notNull("listener", listener);
@@ -156,7 +147,6 @@ public final class PhpAnnotations {
      *
      * @param listener {@link LookupListener listener} to be removed
      * @see #addLineParsersListener(LookupListener)
-     * @since 1.69
      */
     public static void removeLineParsersListener(LookupListener listener) {
         Parameters.notNull("listener", listener);

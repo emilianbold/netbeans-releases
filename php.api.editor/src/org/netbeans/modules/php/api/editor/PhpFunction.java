@@ -44,7 +44,6 @@ package org.netbeans.modules.php.api.editor;
 
 /**
  * Class representing a PHP global function.
- * @since 1.13
  * @author Tomas Mysik
  */
 public final class PhpFunction extends PhpBaseElement {

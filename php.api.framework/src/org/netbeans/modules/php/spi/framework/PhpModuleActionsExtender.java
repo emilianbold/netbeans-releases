@@ -90,7 +90,6 @@ public abstract class PhpModuleActionsExtender {
      * <p>
      * The default implementation returns {@code null}.
      * @return {@link RunCommandAction} if the framework provider supports it or {@code null} if not
-     * @since 1.30
      */
     public RunCommandAction getRunCommandAction() {
         return null;
@@ -108,7 +107,6 @@ public abstract class PhpModuleActionsExtender {
      * @param fo file object to check (the currently opened file in editor)
      * @return {@code true} if the given FileObject is a <em>view</em> (or a <em>template</em>)
      * @see #getGoToActionAction(FileObject, int)
-     * @since 1.29
      */
     public boolean isViewWithAction(FileObject fo) {
         return false;
@@ -126,7 +124,6 @@ public abstract class PhpModuleActionsExtender {
      * @param fo file object to check (the currently opened file in editor)
      * @return {@code true} if the given FileObject is an <em>action</em> (or a <em>controller</em>)
      * @see #getGoToViewAction(FileObject, int)
-     * @since 1.29
      */
     public boolean isActionWithView(FileObject fo) {
         return false;
@@ -141,7 +138,6 @@ public abstract class PhpModuleActionsExtender {
      * @param offset current offset in the file object
      * @return instance of framework specific Go To Action action or {@code null}
      * @see #isViewWithAction(FileObject)
-     * @since 1.29
      */
     public GoToActionAction getGoToActionAction(FileObject fo, int offset) {
         return null;
@@ -156,7 +152,6 @@ public abstract class PhpModuleActionsExtender {
      * @param offset current offset in the file object
      * @return instance of framework specific Go To View action or {@code null}
      * @see #isActionWithView(FileObject)
-     * @since 1.29
      */
     public GoToViewAction getGoToViewAction(FileObject fo, int offset) {
         return null;
