@@ -78,7 +78,7 @@ import org.openide.util.Utilities;
  */
 public final class PhpExecutable {
 
-    protected static final Logger LOGGER = Logger.getLogger(PhpExecutable.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PhpExecutable.class.getName());
 
     /**
      * The {@link InputProcessorFactory input processor factory} that strips any
