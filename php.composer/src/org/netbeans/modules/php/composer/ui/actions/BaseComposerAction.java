@@ -41,33 +41,35 @@
  */
 package org.netbeans.modules.php.composer.ui.actions;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
-import org.netbeans.modules.php.spi.actions.BaseAction;
 import org.openide.util.NbBundle;
 
-abstract class BaseComposerAction extends BaseAction {
+abstract class BaseComposerAction extends AbstractAction {
+
+    protected BaseComposerAction() {
+        putValue("noIconInMenu", true); // NOI18N
+        String name = getName();
+        putValue(NAME, name);
+        putValue(SHORT_DESCRIPTION, name);
+        putValue("menuText", name); // NOI18N
+    }
 
     protected abstract String getName();
 
     protected abstract void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException;
 
-
-    @Override
-    protected String getFullName() {
-        return getName();
-    }
-
-    @Override
-    protected String getPureName() {
-        return getName();
-    }
-
     @NbBundle.Messages("BaseComposerAction.error.composer.notValid=Composer is not valid.")
     @Override
-    protected void actionPerformed(PhpModule phpModule) {
+    public final void actionPerformed(ActionEvent e) {
+        PhpModule phpModule = PhpModule.inferPhpModule();
+        if (phpModule == null) {
+            return;
+        }
         try {
             runCommand(phpModule);
         } catch (InvalidPhpExecutableException ex) {
