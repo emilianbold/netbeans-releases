@@ -155,6 +155,35 @@ public class LogReader {
                             path = fo.getPath();
                         }
                     }
+                } else {
+                    RelocatablePathMapper.ResolvedPath resolvedPath = localMapper.getPath(fo.getPath());
+                    if (resolvedPath == null) {
+                        if (root != null) {
+                            RelocatablePathMapper.FS fs = new RelocatablePathMapperImpl.FS() {
+                                @Override
+                                public boolean exists(String path) {
+                                    FileObject fo = fileSystem.findResource(path);
+                                    if (fo != null && fo.isValid()) {
+                                        return true;
+                                    }
+                                    return false;
+                                }
+                            };
+                            if (localMapper.discover(fs, root, path)) {
+                                resolvedPath = localMapper.getPath(path);
+                                fo = fileSystem.findResource(resolvedPath.getPath());
+                                if (fo != null && fo.isValid() && fo.isData()) {
+                                    path = fo.getPath();
+                                }
+                            }
+                        }
+                    } else {
+                        path = fo.getPath();
+                        fo = fileSystem.findResource(resolvedPath.getPath());
+                        if (fo != null && fo.isValid()) {
+                            path = fo.getPath();
+                        }
+                    }
                 }
             }
         }
@@ -804,9 +833,9 @@ public class LogReader {
        if (workingDir == null) {
            return false;
        }
-       if (!workingDir.startsWith(root)){
-           return false;
-       }
+       //if (!workingDir.startsWith(root)){
+       //    return false;
+       //}
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
            gatherLine(li, storage);
