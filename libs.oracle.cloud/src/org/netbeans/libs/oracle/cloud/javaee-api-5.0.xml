@@ -44,8 +44,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>javaee-api-5.0</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/libs/oracle/cloud/Bundle</localizing-bundle>
@@ -53,9 +52,11 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
 	<resource>jar:nbinst://org.netbeans.libs.oracle.cloud/modules/ext/javaee5.jar!/</resource>
     </volume>
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/javaee/javaee-api/5/javaee-api-5.pom</resource>
-    </volume>
+        <property>
+            <name>maven-dependencies</name>
+            <value>javaee:javaee-api:5:jar</value>
+        </property>
+    </properties>    
 </library>
