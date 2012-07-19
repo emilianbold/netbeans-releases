@@ -65,7 +65,6 @@ import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -115,12 +114,11 @@ public final class ApiGenScript {
     // check for update just once
     private static boolean updateChecked = false;
 
-    private final PhpExecutable apiGen;
+    private final String apiGenPath;
 
 
     private ApiGenScript(String apiGenPath) {
-        apiGen = new PhpExecutable(apiGenPath)
-                .optionsSubcategory(ApiGenOptionsPanelController.OPTIONS_SUBPATH);
+        this.apiGenPath = apiGenPath;
     }
 
     /**
@@ -156,7 +154,9 @@ public final class ApiGenScript {
             return;
         }
 
-        Future<Integer> result = apiGen.workDir(FileUtil.toFile(phpModule.getProjectDirectory()))
+        Future<Integer> result = new PhpExecutable(apiGenPath)
+                .optionsSubcategory(ApiGenOptionsPanelController.OPTIONS_SUBPATH)
+                .workDir(FileUtil.toFile(phpModule.getProjectDirectory()))
                 .displayName(Bundle.ApiGenScript_api_generating(phpModule.getDisplayName()))
                 .additionalParameters(getParams(phpModule))
                 .run(getDescriptor());

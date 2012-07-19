@@ -84,12 +84,11 @@ public final class Composer {
     private static final String NAME_PARAM = "--name=%s"; // NOI18N
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
 
-    private final PhpExecutable composer;
+    private final String composerPath;
 
 
     public Composer(String composerPath) {
-        composer = new PhpExecutable(composerPath)
-                .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH);
+        this.composerPath = composerPath;
     }
 
     /**
@@ -160,7 +159,9 @@ public final class Composer {
             warnNoSources(phpModule.getDisplayName());
             return;
         }
-        composer.workDir(FileUtil.toFile(sourceDirectory))
+        new PhpExecutable(composerPath)
+                .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH)
+                .workDir(FileUtil.toFile(sourceDirectory))
                 .displayName(title)
                 .additionalParameters(getAllParameters(command, commandParams))
                 .run(getDescriptor());

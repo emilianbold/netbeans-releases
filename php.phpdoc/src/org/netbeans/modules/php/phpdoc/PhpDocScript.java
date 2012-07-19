@@ -84,12 +84,11 @@ public final class PhpDocScript {
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
 
-    private final PhpExecutable phpDoc;
+    private final String phpDocPath;
 
 
     private PhpDocScript(String phpDocPath) {
-        phpDoc = new PhpExecutable(phpDocPath)
-                .optionsSubcategory(OPTIONS_SUB_PATH);
+        this.phpDocPath = phpDocPath;
     }
 
     /**
@@ -123,7 +122,9 @@ public final class PhpDocScript {
         }
 
         String sanitizedPhpDocTarget = sanitizePath(phpDocTarget);
-        Future<Integer> result = phpDoc.displayName(NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()))
+        Future<Integer> result = new PhpExecutable(phpDocPath)
+                .optionsSubcategory(OPTIONS_SUB_PATH)
+                .displayName(NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()))
                 .additionalParameters(getParameters(sanitizedPhpDocTarget, phpModule))
                 .run(getExecutionDescriptor(sanitizedPhpDocTarget));
 
