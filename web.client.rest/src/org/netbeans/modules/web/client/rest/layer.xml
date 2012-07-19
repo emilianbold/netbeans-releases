@@ -60,6 +60,10 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="0"/>
 		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
+            <file name="rest.js" url="/org/netbeans/modules/web/client/rest/resources/rest.js">
+                <attr name="position" intvalue="0"/>
+		<attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
 	</folder>
     </folder>
 </filesystem>

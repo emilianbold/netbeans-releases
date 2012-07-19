@@ -63,16 +63,16 @@ import org.openide.util.NbBundle;
  */
 public final class RestPanelVisual extends JPanel  {
     
-    private static final String UNDERSCORE_JS = "underscore.js";   // NOI18N
-    private static final String UNDERSCORE_JS_ = UNDERSCORE_JS+'-';
-    private static final String JQUERY_JS = "jquery";              // NOI18N
+    private static final String UNDERSCORE = "underscore";          // NOI18N
+    private static final String UNDERSCORE_JS_ = UNDERSCORE+".js-"; // NOI18N
+    private static final String JQUERY_JS = "jquery";               // NOI18N
     private static final String JQUERY_JS_ = JQUERY_JS+'-';        
     
-    private static final String BACKBONE_JS = "backbone.js";    // NOI18N
-    private static final String BACKBONE_JS_ = BACKBONE_JS+'-'; 
+    private static final String BACKBONE = "backbone";              // NOI18N
+    private static final String BACKBONE_JS_ = BACKBONE+".js-";     // NOI18N
     
-    private static String REST_CLIENT = "RestClient";           // NOI18N
-    private static String JS          = ".js";                  // NOI18N
+    private static String REST_CLIENT = "RestClient";               // NOI18N
+    private static String JS          = ".js";                      // NOI18N
 
     public RestPanelVisual(RestPanel panel) {
         myPanel = panel;
@@ -201,21 +201,21 @@ public final class RestPanelVisual extends JPanel  {
                 if (child.isFolder()) {
                     if (name.startsWith(BACKBONE_JS_)) {
                         backboneExists = true;
-                        myBackbone = getFile(child, BACKBONE_JS);
+                        myBackbone = getFile(child, BACKBONE);
                     }
                     else if (name.startsWith(UNDERSCORE_JS_)) {
-                        myUnderscore = getFile(child, UNDERSCORE_JS);
+                        myUnderscore = getFile(child, UNDERSCORE);
                     }
                     else if (name.startsWith(JQUERY_JS_)) {
                         myJQuery = getFile(child, JQUERY_JS);
                     }
                 }
                 else {
-                    if (name.startsWith(BACKBONE_JS)) {
+                    if (name.startsWith(BACKBONE)) {
                         backboneExists = true;
                         myBackbone = child;
                     }
-                    else if (name.startsWith(UNDERSCORE_JS)) {
+                    else if (name.startsWith(UNDERSCORE)) {
                         myUnderscore = child;
                     }
                     else if (name.startsWith(JQUERY_JS)) {

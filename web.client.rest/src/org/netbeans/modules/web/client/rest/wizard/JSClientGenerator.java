@@ -71,7 +71,6 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.swing.text.BadLocationException;
 
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -79,14 +78,9 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 
 /**
@@ -133,12 +127,13 @@ class JSClientGenerator {
         return new JSClientGenerator(description);
     }
 
-    public void generate( final FileObject jsFile) {
+    public Map<String,String> generate( ) {
         FileObject restSource = myDescription.getFile();
         if ( restSource == null ){
-            return;
+            return Collections.emptyMap();
         }
-        myContent = new StringBuilder("$(function(){\n");               // NOI18N
+        Map<String,String> result = new HashMap<String, String>();
+        myModels = new StringBuilder();               
         JavaSource javaSource = JavaSource.forFileObject( restSource);
         final String restClass = myDescription.getClassName();
         Task<CompilationController> task = new Task<CompilationController>(){
@@ -202,50 +197,19 @@ class JSClientGenerator {
         }
         
         if ( !isModelGenerated ){
-            myContent.append("// No JSON media type is detected in GET RESTful methods\n");
+            myModels.append("// No JSON media type is detected in GET RESTful methods\n");
         }
-        myContent.append("});");
+        result.put("models",myModels.toString());           // NOI18N
+        //TODO : fill other template attributes 
+        result.put("routers", "");
+        result.put("header", "");
+        result.put("sidebar", "");
+        result.put("content", "");
+        result.put("tpl_create", "");
+        result.put("tpl_list_item", "");
+        result.put("tpl_details", "");
         
-
-        try {
-            DataObject jsDo = DataObject.find(jsFile);
-            EditorCookie cookie = jsDo.getCookie(EditorCookie.class);
-            cookie.open();
-            final BaseDocument document = (BaseDocument) cookie.openDocument();
-
-            final Indent indent = Indent.get(document);
-            indent.lock();
-            try {
-                document.runAtomic(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        int position = document.getLength();
-                        try {
-                            document.insertString(position,
-                                    myContent.toString(), null);
-
-                            indent.reindent(0, document.getLength());
-                        }
-                        catch (BadLocationException e) {
-                            LOG.log(Level.WARNING, null, e);
-                        }
-                    }
-                });
-            }
-            finally {
-                indent.unlock();
-            }
-            cookie.saveDocument();
-
-        }
-        catch (DataObjectNotFoundException e) {
-            LOG.log(Level.WARNING, null, e);
-        }
-        catch (IOException e) {
-            LOG.log(Level.WARNING, null, e);
-        }
-        
+        return result;
     }
     
     private void handleRestMethods( CompilationController controller,  
@@ -459,57 +423,57 @@ class JSClientGenerator {
         String name = entity.getSimpleName().toString();
         String modelName = suggestModelName(name );
         
-        myContent.append("\n// Model for ");                    // NOI18N
+        myModels.append("\n// Model for ");                    // NOI18N
         if ( name.equals(modelName)){
-            myContent.append( name );
+            myModels.append( name );
         }
         else {
-            myContent.append( fqn );
+            myModels.append( fqn );
         }
-        myContent.append(" entity\n");                          // NOI18N
+        myModels.append(" entity\n");                          // NOI18N
         
         String url = getUrl( path );
         
-        myContent.append("window.");                            // NOI18N
-        myContent.append(modelName);
-        myContent.append(" = Backbone.Model.extend({\n");       // NOI18N
-        myContent.append("urlRoot : \"");                       // NOI18N
-        myContent.append( url );
-        myContent.append("\"");                                 // NOI18N
+        myModels.append("models.");                            // NOI18N
+        myModels.append(modelName);
+        myModels.append(" = Backbone.Model.extend({\n");       // NOI18N
+        myModels.append("urlRoot : \"");                       // NOI18N
+        myModels.append( url );
+        myModels.append("\"");                                 // NOI18N
         String parsedData = parse(entity, controller);
         if ( parsedData != null ){
-            myContent.append(',');                              
-            myContent.append(parsedData);
+            myModels.append(',');                              
+            myModels.append(parsedData);
         }
         String sync = overrideSync( url, httpPaths , useIds ); 
         if ( sync != null && sync.length()>0 ){
-            myContent.append(",\n");                             // NOI18N
-            myContent.append(sync);
-            myContent.append("\n");                             // NOI18N
+            myModels.append(",\n");                             // NOI18N
+            myModels.append(sync);
+            myModels.append("\n");                             // NOI18N
         }
-        myContent.append("\n});\n\n");                          // NOI18N
+        myModels.append("\n});\n\n");                          // NOI18N
         
         if ( collectionPath == null){
             return;
         }
-        myContent.append("\n// Collection class for ");          // NOI18N
+        myModels.append("\n// Collection class for ");          // NOI18N
         if ( name.equals(modelName)){
-            myContent.append( name );
+            myModels.append( name );
         }
         else {
-            myContent.append( entity.getQualifiedName().toString() );
+            myModels.append( entity.getQualifiedName().toString() );
         }
-        myContent.append(" entities\n");                        // NOI18N
-        myContent.append("window.");
-        myContent.append(modelName);
-        myContent.append("Collection");                         // NOI18N
-        myContent.append(" = Backbone.Collection.extend({\n");  // NOI18N
-        myContent.append("model: ");                            // NOI18N
-        myContent.append(modelName);
-        myContent.append(",\nurl : \"");                        // NOI18N
-        myContent.append( getUrl( collectionPath ));
-        myContent.append("\"\n");                               // NOI18N
-        myContent.append("});\n\n");                            // NOI18N
+        myModels.append(" entities\n");                        // NOI18N
+        myModels.append("models.");
+        myModels.append(modelName);
+        myModels.append("Collection");                         // NOI18N
+        myModels.append(" = Backbone.Collection.extend({\n");  // NOI18N
+        myModels.append("model: ");                            // NOI18N
+        myModels.append(modelName);
+        myModels.append(",\nurl : \"");                        // NOI18N
+        myModels.append( getUrl( collectionPath ));
+        myModels.append("\"\n");                               // NOI18N
+        myModels.append("});\n\n");                            // NOI18N
     }
 
     private String overrideSync( String url,
@@ -954,7 +918,7 @@ class JSClientGenerator {
     }
     
     private RestServiceDescription myDescription;
-    private StringBuilder myContent;
+    private StringBuilder myModels;
     private Set<String> myEntities  = new HashSet<String>();
     private boolean isModelGenerated;
 
