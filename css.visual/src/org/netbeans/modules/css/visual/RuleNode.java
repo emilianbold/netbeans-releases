@@ -370,9 +370,16 @@ public class RuleNode extends AbstractNode {
         @Override
         public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             //add a new declaration to the rule
-            Declarations declarations = getRule().getDeclarations();
-
             ElementFactory factory = getModel().getElementFactory();
+            
+            Rule rule = getRule();
+            Declarations declarations = rule.getDeclarations();
+
+            if(declarations == null) {
+                //empty rule, create declarations node as well
+                declarations = factory.createDeclarations();
+                rule.setDeclarations(declarations);
+            }
 
             org.netbeans.modules.css.model.api.Property property = factory.createProperty(def.getName());
             Expression expr = factory.createExpression(val);

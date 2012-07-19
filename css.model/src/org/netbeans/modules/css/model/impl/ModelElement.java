@@ -129,6 +129,14 @@ public abstract class ModelElement implements Element {
         parent = e;
     }
 
+    /**
+     * @return true if this {@link ModelElement} has been build by a client code, 
+     * not from the source code.
+     */
+    protected boolean isArtificialElement() {
+        return node == null;
+    }
+    
     @Override
     public boolean isValid() {
         if (node == null) {
