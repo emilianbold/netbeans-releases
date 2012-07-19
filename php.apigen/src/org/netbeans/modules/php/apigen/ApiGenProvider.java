@@ -46,13 +46,13 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.apigen.commands.ApiGenScript;
 import org.netbeans.modules.php.apigen.ui.options.ApiGenOptionsPanelController;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.openide.util.NbBundle;
 
 /**
  * {@link PhpDocProvider} for <a href="http://apigen.org/">ApiGen</a>.
  */
-public final class ApiGenProvider extends PhpDocProvider {
+public final class ApiGenProvider extends PhpDocumentationProvider {
 
     private static final String LAST_FOLDER_SUFFIX = ".apiGen.dir"; // NOI18N
 
@@ -64,7 +64,7 @@ public final class ApiGenProvider extends PhpDocProvider {
         super("ApiGen", Bundle.ApiGenProvider_name()); // NOI18N
     }
 
-    @PhpDocProvider.Registration(position=90)
+    @PhpDocumentationProvider.Registration(position=90)
     public static ApiGenProvider getInstance() {
         return INSTANCE;
     }

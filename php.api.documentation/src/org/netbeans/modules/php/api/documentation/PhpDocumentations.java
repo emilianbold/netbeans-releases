@@ -40,41 +40,41 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.doc;
+package org.netbeans.modules.php.api.documentation;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.Lookups;
 
 /**
- * This class provides access to the list of registered {@link PhpDocProvider PHP documentation providers}.
+ * This class provides access to the list of registered {@link PhpDocumentationProvider PHP documentation providers}.
  * <p>
  * The path is "{@value #DOCS_PATH}" on SFS.
  * @author Tomas Mysik
  * @since 1.35
  */
-public final class PhpDocs {
+public final class PhpDocumentations {
 
     /**
-     * Path on SFS where {@link PhpDocProvider PHP documentation providers} need to be registered.
+     * Path on SFS where {@link PhpDocumentationProvider PHP documentation providers} need to be registered.
      */
     public static final String DOCS_PATH = "PHP/Docs"; //NOI18N
 
-    private static final Lookup.Result<PhpDocProvider> DOCS = Lookups.forPath(DOCS_PATH).lookupResult(PhpDocProvider.class);
+    private static final Lookup.Result<PhpDocumentationProvider> DOCS = Lookups.forPath(DOCS_PATH).lookupResult(PhpDocumentationProvider.class);
 
-    private PhpDocs() {
+    private PhpDocumentations() {
     }
 
     /**
-     * Get all registered {@link PhpDocProvider}s.
-     * @return a list of all registered {@link PhpDocProvider}s; never {@code null}.
+     * Get all registered {@link PhpDocumentationProvider}s.
+     * @return a list of all registered {@link PhpDocumentationProvider}s; never {@code null}.
      */
-    public static List<PhpDocProvider> getDocumentations() {
-        return new ArrayList<PhpDocProvider>(DOCS.allInstances());
+    public static List<PhpDocumentationProvider> getDocumentations() {
+        return new ArrayList<PhpDocumentationProvider>(DOCS.allInstances());
     }
 
     /**

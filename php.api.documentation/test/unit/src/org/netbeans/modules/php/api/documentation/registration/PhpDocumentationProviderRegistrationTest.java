@@ -40,24 +40,24 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.registrations;
+package org.netbeans.modules.php.api.documentation.registration;
 
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.doc.PhpDocs;
+import org.netbeans.modules.php.api.documentation.PhpDocumentations;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
-public class PhpDocProviderRegistrationTest extends NbTestCase {
+public class PhpDocumentationProviderRegistrationTest extends NbTestCase {
 
     private static final String CONSTRUCTOR = "constructor";
     private static final String FACTORY = "factory";
 
 
-    public PhpDocProviderRegistrationTest(String name) {
+    public PhpDocumentationProviderRegistrationTest(String name) {
         super(name);
     }
 
@@ -71,12 +71,12 @@ public class PhpDocProviderRegistrationTest extends NbTestCase {
         MyDoc.factoryCalls = 0;
         MockLookup.init();
         assertSame("No factory method should not be used yet", 0, MyDoc.factoryCalls);
-        Collection<? extends PhpDocProvider> all = Lookups.forPath(PhpDocs.DOCS_PATH).lookupAll(PhpDocProvider.class);
+        Collection<? extends PhpDocumentationProvider> all = Lookups.forPath(PhpDocumentations.DOCS_PATH).lookupAll(PhpDocumentationProvider.class);
         assertSame("Two should be found", 2, all.size());
         // ???
         //assertSame("One factory method should be used", 1, MyDoc.factoryCalls);
 
-        Iterator<? extends PhpDocProvider> it = all.iterator();
+        Iterator<? extends PhpDocumentationProvider> it = all.iterator();
         assertSame(CONSTRUCTOR, it.next().getName());
         assertSame(FACTORY, it.next().getName());
     }
@@ -84,15 +84,15 @@ public class PhpDocProviderRegistrationTest extends NbTestCase {
     //~ Inner classes
 
     public static final class MyDocFactory {
-        @PhpDocProvider.Registration(position=200)
+        @PhpDocumentationProvider.Registration(position=200)
         public static MyDoc getInstance() {
             MyDoc.factoryCalls++;
             return new MyDoc(FACTORY);
         }
     }
 
-    @PhpDocProvider.Registration(position=100)
-    public static final class MyDoc extends PhpDocProvider {
+    @PhpDocumentationProvider.Registration(position=100)
+    public static final class MyDoc extends PhpDocumentationProvider {
         static int factoryCalls = 0;
 
         public MyDoc() {

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.spi.doc;
+package org.netbeans.modules.php.spi.documentation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -62,7 +62,7 @@ import org.openide.util.Parameters;
  * @author Tomas Mysik
  * @since 1.35
  */
-public abstract class PhpDocProvider {
+public abstract class PhpDocumentationProvider {
 
     private final String name;
     private final String displayName;
@@ -73,7 +73,7 @@ public abstract class PhpDocProvider {
      * @param  name the short name of this PHP documentation provider (e.g., "PhpDoc"), should not be localized; never <code>null</code>
      * @param  displayName the display name of the provider, should be localized; never <code>null</code>
      */
-    public PhpDocProvider(String name, String displayName) {
+    public PhpDocumentationProvider(String name, String displayName) {
         Parameters.notNull("name", name); // NOI18N
         Parameters.notNull("displayName", displayName); // NOI18N
 
@@ -137,16 +137,16 @@ public abstract class PhpDocProvider {
      * <p>Example of usage:
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-     * &#64;PhpDocProvider.Registration(position=100)
-     * public class MyDoc extends PhpDocProvider {...}
+     * import org.netbeans.modules.php.spi.doc.PhpDocumentationProvider;
+     * &#64;PhpDocumentationProvider.Registration(position=100)
+     * public class MyDoc extends PhpDocumentationProvider {...}
      * </pre>
      * <pre>
      * package my.module;
-     * import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-     * public class MyDoc extends PhpDocProvider {
-     *     &#64;PhpDocProvider.Registration(position=100)
-     *     public static PhpDocProvider getInstance() {...}
+     * import org.netbeans.modules.php.spi.doc.PhpDocumentationProvider;
+     * public class MyDoc extends PhpDocumentationProvider {
+     *     &#64;PhpDocumentationProvider.Registration(position=100)
+     *     public static PhpDocumentationProvider getInstance() {...}
      * }
      * </pre>
      * @since 1.37

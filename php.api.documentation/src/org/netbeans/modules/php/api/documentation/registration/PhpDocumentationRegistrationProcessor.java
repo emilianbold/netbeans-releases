@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.registrations;
+package org.netbeans.modules.php.api.documentation.registration;
 
 import java.util.Set;
 import javax.annotation.processing.Processor;
@@ -50,8 +50,8 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.php.api.doc.PhpDocs;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+import org.netbeans.modules.php.api.documentation.PhpDocumentations;
+import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -59,17 +59,17 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * @author Tomas Mysik
  */
-@SupportedAnnotationTypes("org.netbeans.modules.php.spi.doc.PhpDocProvider.Registration")
+@SupportedAnnotationTypes("org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider.Registration")
 @ServiceProvider(service = Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PhpDocRegistrationProcessor extends LayerGeneratingProcessor {
+public class PhpDocumentationRegistrationProcessor extends LayerGeneratingProcessor {
 
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocProvider.Registration.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(PhpDocumentationProvider.Registration.class)) {
             layer(element)
-                    .instanceFile(PhpDocs.DOCS_PATH, null, PhpDocProvider.class)
-                    .intvalue("position", element.getAnnotation(PhpDocProvider.Registration.class).position()) // NOI18N
+                    .instanceFile(PhpDocumentations.DOCS_PATH, null, PhpDocumentationProvider.class)
+                    .intvalue("position", element.getAnnotation(PhpDocumentationProvider.Registration.class).position()) // NOI18N
                     .write();
         }
         return true;
