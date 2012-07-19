@@ -44,7 +44,7 @@ package org.netbeans.modules.web.client.rest.wizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -207,29 +207,31 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         FileObject targetFolder = Templates.getTargetFolder(myWizard);
         String targetName = Templates.getTargetName(myWizard);
         
-        FileObject templateFO = FileUtil.getConfigFile("Templates/ClientSide/new.js");  //NOI18N
+        handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
+                "TXT_GenerateModel"));   // NOI18N
+        JSClientGenerator generator = JSClientGenerator.create( description );
+        Map<String,String> map = generator.generate() ;
+        
+        FileObject templateFO = FileUtil.getConfigFile("Templates/ClientSide/rest.js");  //NOI18N
         DataObject templateDO = DataObject.find(templateFO);
         DataFolder dataFolder = DataFolder.findFolder(targetFolder);
-        DataObject createdFile = templateDO.createFromTemplate(dataFolder, targetName);
+        DataObject createdFile = templateDO.createFromTemplate(dataFolder, 
+                targetName ,map);
         
         FileObject jsFile = createdFile.getPrimaryFile();
-        
-        handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
-                    "TXT_GenerateModel"));                         // NOI18N
-        JSClientGenerator generator = JSClientGenerator.create( description );
-        generator.generate( jsFile);
         
         File htmlFile = (File)myWizard.getProperty(
                 HtmlPanel.HTML_FILE);
         if ( htmlFile != null ){
             handle.progress(NbBundle.getMessage(JSClientGenerator.class, 
                     "TXT_GenerateHtml"));                         // NOI18N
-            createHtml( htmlFile , jsFile, existedBackbone , existedUnderscore, 
-                    existedJQuery );
+            FileObject html = createHtml( htmlFile , jsFile, existedBackbone , 
+                    existedUnderscore, existedJQuery , map );
         }
 
         handle.finish();
-        return null;
+        // TODO: add html ?
+        return Collections.singleton(jsFile);
     }
 
     /* (non-Javadoc)
@@ -248,9 +250,9 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         myPanels = null;
     }
     
-    private void createHtml( File htmlFile, FileObject appFile, 
-            FileObject backbone , FileObject underscore, FileObject jQuery) 
-        throws IOException 
+    private FileObject createHtml( File htmlFile, FileObject appFile, 
+            FileObject backbone , FileObject underscore, FileObject jQuery,
+            Map<String,String> map) throws IOException 
     {
         File parentFile = htmlFile.getParentFile();
         parentFile.mkdirs();
@@ -263,7 +265,6 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
             name = name.substring(0 , name.length()-HtmlPanelVisual.HTML.length());
         }
         
-        Map<String,String> map = new HashMap<String, String>();
         StringBuilder builder = new StringBuilder();
         if ( underscore == null ){
             builder.append("<script src='http://documentcloud.github.com/underscore/underscore-min.js'>"); // NOI18N
@@ -300,8 +301,8 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         builder.append("'></script>");      // NOI18N
         map.put("script", builder.toString());  // NOI18N
         
-        DataObject createdFile = templateDO.createFromTemplate(dataFolder, 
-                name, map);
+        return templateDO.createFromTemplate(dataFolder, 
+                name, map).getPrimaryFile();
     }
     
     private void setSteps() {
