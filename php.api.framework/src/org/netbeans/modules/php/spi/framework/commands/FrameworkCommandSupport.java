@@ -42,36 +42,15 @@
 
 package org.netbeans.modules.php.spi.framework.commands;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
-import org.netbeans.modules.php.api.framework.ui.commands.RefreshPhpModuleRunnable;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.framework.ui.commands.FrameworkCommandChooser;
-import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -80,7 +59,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.windows.InputOutput;
 
 /**
  * Support for running framework commands.
@@ -113,10 +91,9 @@ public abstract class FrameworkCommandSupport {
     /**
      * Run command for the given command descriptor.
      * @param commandDescriptor descriptor for the selected framework command
-     * @see #runCommand()
      * @see CommandDescriptor
      */
-    public abstract void runCommand(CommandDescriptor commandDescriptor);
+    public abstract void runCommand(CommandDescriptor commandDescriptor, Runnable postExecution);
 
     /**
      * Get options path for {@link ExecutionDescriptor execution descriptor}, can be <code>null</code>.
@@ -130,31 +107,6 @@ public abstract class FrameworkCommandSupport {
      * @return the plugin directory or <code>null</code> if the framework does not have such directory
      */
     protected abstract File getPluginsDirectory();
-
-    /**
-     * Get the process builder for running framework commands or <code>null</code> if something is wrong.
-     * The default implmentation returns {@link ExternalProcessBuilder process builder}
-     * with default {@link PhpInterpreter#getDefault() PHP interpreter}
-     * with all its parameters (specified in Tools > Options > PHP).
-     * @param warnUser <code>true</code> if user should be warned (e.g. the script is incorrect), <code>false</code> otherwise
-     * @return {@ExternalProcessBuilder process builder} with default {@link PhpInterpreter#getDefault() PHP interpreter}
-     *         or <code>null</code> if something is wrong.
-     * @see PhpInterpreter#getDefault()
-     */
-    protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
-        PhpInterpreter phpInterpreter;
-        try {
-            phpInterpreter = PhpInterpreter.getDefault();
-        } catch (InvalidPhpProgramException ex) {
-            if (warnUser) {
-                UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
-            }
-            return null;
-        }
-        assert phpInterpreter.isValid() : "php interpreter must be valid";
-
-        return phpInterpreter.getProcessBuilder();
-    }
 
     /**
      * Get the framework commands. Typically in this method script is called and its output is parsed,
@@ -187,30 +139,11 @@ public abstract class FrameworkCommandSupport {
     }
 
     /**
-     * Get {@link ExecutionDescriptor descriptor} with no factory for standard output processor.
-     * @return {@link ExecutionDescriptor descriptor} with no factory for standard output processor.
-     * @see #getDescriptor(InputProcessorFactory)
+     * Show the panel with framework commands with possibility to run any.
+     * @see #runCommand(CommandDescriptor)
      */
-    public ExecutionDescriptor getDescriptor() {
-        return getDescriptor(null);
-    }
-
-    /**
-     * Get {@link PhpProgram#getExecutionDescriptor() descriptor} with factory for standard output processor.
-     * This descriptor refreshes PHP module after running a command.
-     * @param outFactory factory for standard output processor.
-     * @return {@link ExecutionDescriptor descriptor} with factory for standard output processor.
-     */
-    public ExecutionDescriptor getDescriptor(InputProcessorFactory outFactory) {
-        ExecutionDescriptor descriptor = PhpProgram.getExecutionDescriptor().postExecution(new RefreshPhpModuleRunnable(phpModule));
-        String optionsPath = getOptionsPath();
-        if (optionsPath != null) {
-            descriptor = descriptor.optionsPath(optionsPath);
-        }
-        if (outFactory != null) {
-            descriptor = descriptor.outProcessorFactory(outFactory);
-        }
-        return descriptor;
+    public final void openPanel() {
+        FrameworkCommandChooser.open(this);
     }
 
     final void refreshFrameworkCommands() {
@@ -253,182 +186,7 @@ public abstract class FrameworkCommandSupport {
         });
     }
 
-    /**
-     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
-     * Warning should be shown if any error occurs.
-     * This method is useful for commands like "create-project" etc.
-     * @param command command to create.
-     * @param arguments command's arguments.
-     * @return command or <code>null</code> if any error occurs.
-     * @see #createSilentCommand(String, String[])
-     */
-    public ExternalProcessBuilder createCommand(final String command, final String... arguments) {
-        return createCommand(new String[] {command}, arguments);
-    }
-
-    /**
-     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
-     * Warning should be shown if any error occurs.
-     * This method is useful for commands like "create project" etc.
-     * @param commands command to create.
-     * @param arguments command's arguments.
-     * @return command or <code>null</code> if any error occurs.
-     * @see #createSilentCommand(String, String[])
-     */
-    public ExternalProcessBuilder createCommand(final String[] commands, final String... arguments) {
-        return createCommandInternal(commands, arguments, true);
-    }
-
-    /**
-     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
-     * No error dialog is displayed if e.g. framework script is invalid.
-     * This method is useful for commands like "create-project" etc.
-     * @param command command to create.
-     * @param arguments command's arguments.
-     * @return command or <code>null</code> if any error occurs.
-     * @see #createCommand(String, String[])
-     */
-    public ExternalProcessBuilder createSilentCommand(final String command, final String... arguments) {
-        return createSilentCommand(new String[] {command}, arguments);
-    }
-
-    /**
-     * Create command which uses {@link #getProcessBuilder(boolean) process builder} and {@link #getDescriptor() descriptor}.
-     * No error dialog is displayed if e.g. framework script is invalid.
-     * This method is useful for commands like "create project" etc.
-     * @param commands command to create.
-     * @param arguments command's arguments.
-     * @return command or <code>null</code> if any error occurs.
-     * @see #createCommand(String, String[])
-     */
-    public ExternalProcessBuilder createSilentCommand(final String[] commands, final String... arguments) {
-        return createCommandInternal(commands, arguments, false);
-    }
-
-    /**
-     * Get the title for the given command descriptor that could be useful for e.g. Output Window title.
-     * @param commandDescriptor command descriptor
-     * @return title for the given command descriptor.
-     */
-    public String getOutputTitle(CommandDescriptor commandDescriptor) {
-        String command = StringUtils.implode(Arrays.asList(commandDescriptor.getFrameworkCommand().getCommands()), " ");
-        return getOutputTitle(command, commandDescriptor.getCommandParams()); // NOI18N
-    }
-
-    /**
-     * Get the title for the given command and its arguments that could be useful for e.g. Output Window title.
-     * @param command command
-     * @param params command's arguments
-     * @return the title for the given command and its arguments.
-     */
-    public String getOutputTitle(String command, String... params) {
-        StringBuilder title = new StringBuilder(200);
-        title.append(phpModule.getDisplayName());
-        title.append(" ("); // NOI18N
-        title.append(command);
-        for (String param : params) {
-            title.append(" "); // NOI18N
-            title.append(param);
-        }
-        title.append(")"); // NOI18N
-        return title.toString();
-    }
-
-    /**
-     * Show the panel with framework commands with possibility to run any.
-     * @see #runCommand(CommandDescriptor)
-     */
-    public final void runCommand() {
-        FrameworkCommandChooser.open(this);
-    }
-
-    private ExternalProcessBuilder createCommandInternal(final String[] commands, final String[] arguments, boolean warnUser) {
-        ExternalProcessBuilder processBuilder = getProcessBuilder(warnUser);
-        if (processBuilder == null) {
-            return null;
-        }
-        for (String command : commands) {
-            processBuilder = processBuilder.addArgument(command);
-        }
-        for (String arg : arguments) {
-            processBuilder = processBuilder.addArgument(arg);
-        }
-        return processBuilder;
-    }
-
-    /**
-     * {@link #createSilentCommand(String, String[]) Silently} run the given command
-     * and redirect its output to a stream.
-     * <p>
-     * Please notice that the stream can be {@code null}, incomplete or even empty
-     * if any error occurs during command running or if the command is cancelled.
-     * @param comand command to be run
-     * @param arguments arguments of the given command
-     * @return input stream with command output or {@code null} if the command can't be run
-     * @see #getProcessBuilder(boolean)
-     */
-    protected final InputStream redirectScriptOutput(String command, String... arguments) {
-        ExternalProcessBuilder processBuilder = createSilentCommand(command, arguments);
-        if (processBuilder == null) {
-            return null;
-        }
-
-        InputStream output = null;
-        try {
-            final RedirectOutputProcessor inputProcessor = new RedirectOutputProcessor();
-            ExecutionDescriptor executionDescriptor = new ExecutionDescriptor().inputOutput(InputOutput.NULL).outProcessorFactory(
-                    new ExecutionDescriptor.InputProcessorFactory() {
-                        @Override
-                        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                            return inputProcessor;
-                        }
-                    }
-            );
-            ExecutionService service = ExecutionService.newService(processBuilder, executionDescriptor, "output redirect for: " + getOutputTitle(command, arguments)); // NOI18N
-            Future<Integer> task = service.run();
-            try {
-                if (task.get().intValue() == 0) {
-                    output = inputProcessor.getOutput();
-                }
-            } catch (CancellationException ex) {
-                // cancelled
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException ex) {
-                UiUtils.processExecutionException(ex);
-            }
-        } catch (IOException exc) {
-            LOGGER.log(Level.WARNING, null, exc);
-        }
-        return output;
-    }
-
-    /**
-     * Proxy for factories for standard input processor.
-     */
-    public static final class ProxyInputProcessorFactory implements InputProcessorFactory {
-        private final List<InputProcessorFactory> factories;
-
-        public ProxyInputProcessorFactory(InputProcessorFactory... proxied) {
-            Parameters.notNull("proxied", proxied);
-
-            factories = new ArrayList<InputProcessorFactory>(proxied.length);
-            for (InputProcessorFactory factory : proxied) {
-                if (factory != null) {
-                    factories.add(factory);
-                }
-            }
-        }
-
-        @Override
-        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-            InputProcessor[] processors = new InputProcessor[factories.size()];
-            for (int i = 0; i < processors.length; i++) {
-                processors[i] = factories.get(i).newInputProcessor(defaultProcessor);
-            }
-            return InputProcessors.proxy(processors);
-        }
-    }
+    //~ Inner classes
 
     private class PluginListener implements FileChangeListener {
 
@@ -470,7 +228,7 @@ public abstract class FrameworkCommandSupport {
 
     /**
      * Descriptor for the selected framework command.
-     * @see FrameworkCommandChooser#open(FrameworkCommandSupport)
+     * @see org.netbeans.modules.php.api.framework.ui.commands.FrameworkCommandChooser#open(FrameworkCommandSupport)
      */
     public static final class CommandDescriptor {
 
@@ -498,39 +256,6 @@ public abstract class FrameworkCommandSupport {
         public boolean isDebug() {
             return debug;
         }
-    }
-
-    private static class RedirectOutputProcessor implements InputProcessor {
-
-        private static final Logger LOGGER = Logger.getLogger(RedirectOutputProcessor.class.getName());
-
-        private final ByteArrayOutputStream output;
-
-
-        RedirectOutputProcessor() throws IOException {
-            output = new ByteArrayOutputStream();
-        }
-
-        @Override
-        public void processInput(char[] chars) throws IOException {
-            for (char c : chars) {
-                output.write((byte) c);
-            }
-        }
-
-        @Override
-        public void reset() {
-        }
-
-        @Override
-        public void close() {
-            // nothing to do
-        }
-
-        public InputStream getOutput() {
-            return new ByteArrayInputStream(output.toByteArray());
-        }
-
     }
 
 }

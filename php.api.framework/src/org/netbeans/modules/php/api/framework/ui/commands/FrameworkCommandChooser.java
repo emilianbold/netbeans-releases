@@ -237,7 +237,8 @@ public final class FrameworkCommandChooser extends JPanel {
                 FrameworkCommandChooser.lastTask = task;
                 chooserPanel.storeParameters();
 
-                frameworkCommandSupport.runCommand(new CommandDescriptor(task, chooserPanel.getParameters(), FrameworkCommandChooser.debug));
+                frameworkCommandSupport.runCommand(new CommandDescriptor(task, chooserPanel.getParameters(), FrameworkCommandChooser.debug),
+                        new RefreshPhpModuleRunnable(frameworkCommandSupport.getPhpModule()));
             }
         });
 
