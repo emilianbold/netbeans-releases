@@ -423,7 +423,14 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            declaration.getPropertyValue().getExpression().setContent(val);
+            if(val.isEmpty()) {
+                //remove the whole declaration
+                Declarations declarations = (Declarations)declaration.getParent();
+                declarations.removeDeclaration(declaration);
+            } else {
+                //update the value
+                declaration.getPropertyValue().getExpression().setContent(val);
+            }
             applyModelChanges();
         }
     }
