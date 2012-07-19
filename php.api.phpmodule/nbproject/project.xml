@@ -155,10 +155,9 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.ext4yii.editor</friend>
-                <friend>cz.swiz.netbeans</friend>
                 <friend>org.cakephp.netbeans</friend>
                 <friend>org.netbeans.modules.hudson.php</friend>
+                <friend>org.netbeans.modules.php.api.executable</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
                 <friend>org.netbeans.modules.php.composer</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
