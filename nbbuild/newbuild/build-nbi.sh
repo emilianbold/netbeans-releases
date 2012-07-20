@@ -40,8 +40,8 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
        exit $ERROR_CODE;
    fi
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip/moduleclusters
-#   scp -q -v $DIST/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
-   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectTimeout=60 -o ConnectionAttempts=3 -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
+# -o ConnectTimeout=60 is not supported on nbfixes   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectTimeout=60 -o ConnectionAttempts=3 -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
+   ls $DIST/zip/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -o ConnectionAttempts=3 -q -v $DIST/zip/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
    if [ 1 -eq $ML_BUILD ] ; then
         ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/zip-ml/*      
         ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip-ml/moduleclusters
