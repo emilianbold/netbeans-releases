@@ -97,7 +97,7 @@ public final class ZendScript {
 
     // commands
     private static final String HELP_COMMAND = "?"; // NOI18N
-    private static final List<String> INIT_PROJECT_COMMAND = Arrays.asList("create", "project"); // NOI18N
+    private static final List<String> INIT_PROJECT_COMMAND = Arrays.asList("create", "project", "."); // NOI18N
     private static final List<String> CREATE_CONFIG_COMMAND = Arrays.asList("create", "config"); // NOI18N
     private static final List<String> ENABLE_CONFIG_COMMAND = Arrays.asList("enable", "config.provider", "NetBeansCommandsProvider"); // NOI18N
     private static final List<String> SHOW_COMMANDS_COMMAND = Arrays.asList("show", "nb-commands", COMMANDS_SEPARATOR); // NOI18N
@@ -231,6 +231,7 @@ public final class ZendScript {
                     .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                     .displayName(getDisplayName(phpModule, INIT_PROJECT_COMMAND.get(0)))
                     .additionalParameters(INIT_PROJECT_COMMAND)
+                    .warnUser(false)
                     .run(getDescriptor(null))
                     .get();
         } catch (CancellationException ex) {
