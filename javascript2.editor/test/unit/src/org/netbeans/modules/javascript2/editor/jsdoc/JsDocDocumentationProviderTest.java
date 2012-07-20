@@ -211,6 +211,13 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
         checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 478)));
     }
 
+    public void testGetReturnTypeAtProperty() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
+
+        final int caretOffset = getCaretOffset(testSource, "Math.E^");
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 654)));
+    }
+
     public void testGetParametersForOnlyNameParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel){^}");
