@@ -36,7 +36,7 @@ FormattingToken{kind=EOL, offset=45, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=46, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=47, text=
 }
 FormattingToken{kind=EOL, offset=48, text=
@@ -84,7 +84,7 @@ FormattingToken{kind=EOL, offset=97, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=98, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=99, text=
 }
 FormattingToken{kind=EOL, offset=100, text=
@@ -127,7 +127,7 @@ FormattingToken{kind=EOL, offset=146, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=147, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=148, text=
 }
 FormattingToken{kind=EOL, offset=149, text=
@@ -164,7 +164,6 @@ FormattingToken{kind=EOL, offset=183, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=184, text=  }
 FormattingToken{kind=TEXT, offset=186, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=BEFORE_RIGHT_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=187, text=)}
 FormattingToken{kind=TEXT, offset=188, text=.}
@@ -276,7 +275,6 @@ FormattingToken{kind=EOL, offset=341, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=342, text=    }
 FormattingToken{kind=TEXT, offset=346, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=347, text=
 }
@@ -319,12 +317,11 @@ FormattingToken{kind=EOL, offset=409, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=410, text=    }
 FormattingToken{kind=TEXT, offset=414, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=415, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=416, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=417, text=
 }
