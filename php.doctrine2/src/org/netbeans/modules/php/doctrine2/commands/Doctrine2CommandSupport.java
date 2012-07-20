@@ -45,7 +45,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -58,9 +57,6 @@ import org.openide.util.NbBundle.Messages;
  * Command support for Doctrine2.
  */
 public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
-
-    static final Logger LOGGER = Logger.getLogger(Doctrine2CommandSupport.class.getName());
-
 
     public Doctrine2CommandSupport(PhpModule phpModule) {
         super(phpModule);
