@@ -210,6 +210,18 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue215554() throws Exception {
         checkOccurrences("testfiles/coloring/issue215554.js", "model: B^ug", true);
     }
+    
+    public void testIssue215756_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215756.js", "var lay^out;", true);
+    }
+    
+    public void testIssue215756_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215756.js", "TEST.te^st();", true);
+    }
+    
+    public void testIssue215756_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215756.js", "TE^ST.test();", true);
+    }
         
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
