@@ -136,7 +136,7 @@ public final class PhpExecutable {
     private Map<String, String> environmentVariables = Collections.<String, String>emptyMap();
     private PhpExecutableValidator.ValidationHandler validationHandler = null;
     private File fileOutput = null;
-    private boolean pureOutputOnly = true;
+    private boolean pureOutputOnly = false;
 
 
     /**
@@ -251,6 +251,7 @@ public final class PhpExecutable {
 
     public PhpExecutable fileOutput(File fileOutput) {
         this.fileOutput = fileOutput;
+        this.pureOutputOnly = true;
         return this;
     }
 
@@ -457,7 +458,7 @@ public final class PhpExecutable {
 
     private ExecutionDescriptor decorateExecutionDescriptorWithInfo(ExecutionDescriptor executionDescriptor) {
         if (fileOutput != null || pureOutputOnly) {
-            // no info for file output
+            // no info for file or pure output
             return executionDescriptor;
         }
         return executionDescriptor.outProcessorFactory(new InputProcessorFactory() {
