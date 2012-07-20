@@ -194,7 +194,12 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             };
             hi.addHudsonChangeListener(listener);
             try {
-                semaphore.tryAcquire(30, TimeUnit.SECONDS); // loop, prodluzovat interval, 3sec az 5min, koef 3
+                if (hi.getJobs() == null || hi.getJobs().isEmpty()) {
+                    // Try again, jobs could have been initilized before adding
+                    // the listener. If it is still uninitialized, wait for the
+                    // listener.
+                    semaphore.tryAcquire(5, TimeUnit.MINUTES);
+                }
             } catch (InterruptedException ex) {
                 LOG.log(Level.FINE, null, ex);
             }
