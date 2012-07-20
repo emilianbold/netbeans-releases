@@ -539,9 +539,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     }
                     fqName = getName(binNode);
-                    if (binNode.lhs() instanceof AccessNode
+                    if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
                             && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
-                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this")) {
+                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
                         isDeclaredInParent = true;
                     }
                 }
