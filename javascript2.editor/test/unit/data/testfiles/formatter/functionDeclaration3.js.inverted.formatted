@@ -15,8 +15,7 @@ function compute3(a){
 
 (function dummy(){
     a = 5;
-}
-).test();
+}).test();
 
 
 function Car(color, maker){
