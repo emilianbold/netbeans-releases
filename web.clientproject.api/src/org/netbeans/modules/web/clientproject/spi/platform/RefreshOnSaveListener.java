@@ -39,15 +39,19 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi;
 
-import javax.swing.JPanel;
+package org.netbeans.modules.web.clientproject.spi.platform;
+
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Jan Becicka
+ * Callback to notify configuration that some project sources were changed or 
+ * deleted. Configuration and its associated platform should for example reload
+ * the changed files in browser or mobile device.
  */
-public interface ProjectConfigurationCustomizer {
-    public static final String PATH = "org.netbeans.modules.web.clientproject/platforms";
-    JPanel createPanel(ClientProjectConfiguration config);
+public interface RefreshOnSaveListener {
+
+    void fileChanged(FileObject fo);
+    
+    void fileDeleted(FileObject fo);
 }

@@ -39,39 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.ui.ClientSideProjectPanel;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
+package org.netbeans.modules.web.clientproject.spi.platform;
+
+import java.beans.PropertyChangeListener;
+import java.util.List;
+import org.netbeans.spi.project.ActionProvider;
 
 /**
- *
- * @author Jan Becicka
+ * Platform here means for example Browser platform which represents all browsers
+ * for which project can be developed. Or Cordova platform which represents
+ * all different mobile devices supported by Cordova.
  */
-public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public interface ClientProjectPlatformImplementation {
+    
+    String PROP_CONFIGURATIONS = "configurations"; // NOI18N
 
-    @Override
-    public Category createCategory(Lookup context) {
-            return ProjectCustomizer.Category.create(
-                    "buildConfig",
-                    "Run",
-                    null);
-    }
+    /**
+     * List of configuration this platform provides.
+     */
+    List<? extends ClientProjectConfigurationImplementation> getConfigurations();
+    
+    /**
+     * Returns list of types of configurations user can choose from to create a new one.
+     */
+    List<String> getNewConfigurationTypes();
 
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        return new ClientSideProjectPanel((ClientSideProject)context.lookup(Project.class));
-    }
+    /**
+     * Create new configuration of given type and given name and return new
+     * configuration's ID.
+     * @return returns null if configuration type cannot be handled by this platform
+     */
+    String createConfiguration(String configurationType, String configurationName);
+    
+    void addPropertyChangeListener(PropertyChangeListener lst);
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = ClientSideProjectType.TYPE,
-            position = 100)
-    public static ClientSideProjectPanelProvider createRunConfigs() {
-        return new ClientSideProjectPanelProvider();
-    }
+    void removePropertyChangeListener(PropertyChangeListener lst);
     
 }

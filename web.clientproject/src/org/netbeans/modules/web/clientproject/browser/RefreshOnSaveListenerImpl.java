@@ -39,39 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
 
-import javax.swing.JComponent;
+package org.netbeans.modules.web.clientproject.browser;
+
+import java.net.URL;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.ui.ClientSideProjectPanel;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
+import org.openide.filesystems.FileObject;
 
-/**
- *
- * @author Jan Becicka
- */
-public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
 
-    @Override
-    public Category createCategory(Lookup context) {
-            return ProjectCustomizer.Category.create(
-                    "buildConfig",
-                    "Run",
-                    null);
-    }
+    private BrowserSupport support;
 
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        return new ClientSideProjectPanel((ClientSideProject)context.lookup(Project.class));
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = ClientSideProjectType.TYPE,
-            position = 100)
-    public static ClientSideProjectPanelProvider createRunConfigs() {
-        return new ClientSideProjectPanelProvider();
+    public RefreshOnSaveListenerImpl(BrowserSupport support) {
+        this.support = support;
     }
     
+    @Override
+    public void fileChanged(FileObject fo) {
+        URL u = support.getBrowserURL(fo, true);
+        if (u != null) {
+            assert support.canReload(u) : u;
+            support.reload(u);
+        }
+    }
+
+    @Override
+    public void fileDeleted(FileObject fo) {
+        // TODO: close browser tab?
+    }
+
 }

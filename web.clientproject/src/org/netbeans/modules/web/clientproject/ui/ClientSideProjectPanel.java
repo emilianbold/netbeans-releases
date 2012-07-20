@@ -45,27 +45,18 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
-import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
-import org.netbeans.modules.web.clientproject.spi.ConfigUtils;
-import org.netbeans.modules.web.clientproject.spi.ProjectConfigurationCustomizer;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.EditableProperties;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -73,26 +64,29 @@ import org.openide.util.lookup.Lookups;
  */
 public class ClientSideProjectPanel extends javax.swing.JPanel {
     
-    private Project p;
+    private ClientSideProject p;
 
     private void updateCustomizerPanel(final ClientSideConfigurationProvider configProvider) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 customizerArea.removeAll();
-                final ClientProjectConfiguration activeConfiguration = configProvider.getActiveConfiguration();
+                final ClientProjectConfigurationImplementation activeConfiguration = configProvider.getActiveConfiguration();
                 if (activeConfiguration != null) {
-                    String type = activeConfiguration.getType();
-                    Lookup lookup = LookupProviderSupport.createCompositeLookup(Lookups.fixed(p), "Projects/" + ProjectConfigurationCustomizer.PATH + "/"+ type + "/Lookup");
-                    ProjectConfigurationCustomizer customizerPanel = lookup.lookup(ProjectConfigurationCustomizer.class);
+                    ProjectConfigurationCustomizer customizerPanel = activeConfiguration.getProjectConfigurationCustomizer();
                     if (customizerPanel != null) {
-                        customizerArea.add(customizerPanel.createPanel(activeConfiguration), BorderLayout.CENTER);
+                        customizerArea.add(customizerPanel.createPanel(), BorderLayout.CENTER);
                     }
                 }
                 customizerArea.validate();
                 customizerArea.repaint();
             }
         });
+    }
+
+    private void updateDeleteButton() {
+        ClientProjectConfigurationImplementation cfg = ((ClientProjectConfigurationImplementation) configCombo.getSelectedItem());
+        deleteButton.setEnabled(cfg.canBeDeleted());
     }
 
     private static class ConfigRenderer extends DefaultListCellRenderer {
@@ -111,10 +105,10 @@ public class ClientSideProjectPanel extends javax.swing.JPanel {
     /**
      * Creates new form ClientSideProjectPanel
      */
-    public ClientSideProjectPanel(Project p) {
+    public ClientSideProjectPanel(ClientSideProject p) {
         this.p = p;
         initComponents();
-        final ClientSideConfigurationProvider configProvider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
+        final ClientSideConfigurationProvider configProvider = p.getProjectConfigurations();
         configCombo.setModel((ComboBoxModel) configProvider);
         configCombo.setRenderer(new ConfigRenderer());
         configProvider.addPropertyChangeListener(new PropertyChangeListener() {
@@ -125,19 +119,8 @@ public class ClientSideProjectPanel extends javax.swing.JPanel {
             }
         });
         updateCustomizerPanel(configProvider);
-    }
-    
-    private String[] getTypes() {
-        FileObject configFile = FileUtil.getConfigFile("Projects/"+ProjectConfigurationCustomizer.PATH);
-        if (configFile==null) {
-            return new String[0];
-        }
-        final FileObject[] children = configFile.getChildren();
-        final String[] result = new String[children.length];
-        for (int i=0; i<children.length; i++) {
-            result[i] = children[i].getName();
-        }
-        return result;
+        newButton.setEnabled(p.getProjectConfigurations().getNewConfigurationTypes().length > 0);
+        updateDeleteButton();
     }
 
     /**
@@ -158,6 +141,12 @@ public class ClientSideProjectPanel extends javax.swing.JPanel {
 
         configLabel.setLabelFor(configCombo);
         org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(ClientSideProjectPanel.class, "ClientSideProjectPanel.configLabel.text")); // NOI18N
+
+        configCombo.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                configComboItemStateChanged(evt);
+            }
+        });
 
         customizerArea.setLayout(new java.awt.BorderLayout());
 
@@ -206,30 +195,22 @@ public class ClientSideProjectPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-        NewConfigurationPanel newPanel = new NewConfigurationPanel("Configuration", getTypes());
+        NewConfigurationPanel newPanel = new NewConfigurationPanel("Configuration", p.getProjectConfigurations().getNewConfigurationTypes());
         DialogDescriptor dd = new DialogDescriptor(newPanel, "New Configuration");
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (DialogDescriptor.OK_OPTION == result) {
-            EditableProperties props = new EditableProperties(true);
-            props.put("type", newPanel.getType());
-            props.put("display.name", newPanel.getNewName());
-            try {
-                FileObject conf = ConfigUtils.createConfigFile(p.getProjectDirectory(), newPanel.getType(), props);
-                for (ClientProjectConfiguration config : p.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
-                    if (conf.getName().equals(config.getName())) {
+            String configId = p.getProjectConfigurations().createNewConfiguration(newPanel.getType(), newPanel.getNewName());
+            for (ClientProjectConfigurationImplementation config : p.getProjectConfigurations().getConfigurations()) {
+                if (configId.equals(config.getId())) {
                         configCombo.setSelectedItem(config);
                         break;
                     }
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
         }
     }//GEN-LAST:event_newButtonActionPerformed
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        try {
-            final String dname = ((ClientProjectConfiguration) configCombo.getSelectedItem()).getDisplayName();
+        final String dname = ((ClientProjectConfigurationImplementation) configCombo.getSelectedItem()).getDisplayName();
             NotifyDescriptor yesNo = new NotifyDescriptor("Are You Sure You Want to Delete " + dname,
                     "Confirm Object Deletion",
                     NotifyDescriptor.YES_NO_OPTION,
@@ -239,15 +220,15 @@ public class ClientSideProjectPanel extends javax.swing.JPanel {
 
             if (DialogDisplayer.getDefault().notify(yesNo) == NotifyDescriptor.YES_OPTION) {
                 int i = configCombo.getSelectedIndex();
-                final String name = ((ClientProjectConfiguration) configCombo.getSelectedItem()).getName();
-                p.getProjectDirectory().getFileObject("nbproject/configs/" + name + ".properties").delete();
-                configCombo.setSelectedIndex(i - 1);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ClientProjectConfigurationImplementation cfg = ((ClientProjectConfigurationImplementation) configCombo.getSelectedItem());
+            cfg.delete();
         }
     
     }//GEN-LAST:event_deleteButtonActionPerformed
+
+    private void configComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_configComboItemStateChanged
+        updateDeleteButton();
+    }//GEN-LAST:event_configComboItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox configCombo;

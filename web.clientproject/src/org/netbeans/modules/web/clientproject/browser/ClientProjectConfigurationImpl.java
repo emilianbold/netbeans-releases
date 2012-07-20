@@ -39,86 +39,82 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
 
-import java.net.URISyntaxException;
-import java.net.URL;
+package org.netbeans.modules.web.clientproject.browser;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
-import org.netbeans.modules.web.clientproject.spi.ProjectConfigurationCustomizer;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
+import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
-/**
- * @david
- * @author Jan Becicka
- */
-@ProjectServiceProvider(
-        service=ActionProvider.class,
-        projectType=ProjectConfigurationCustomizer.PATH + "/browser")
+public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation {
 
-public class BrowserActionProvider implements ActionProvider {
+    final private Project project;
+    final private WebBrowser browser;
+    final private ClientProjectPlatformImpl platform;
+    private BrowserSupport browserSupport;
 
-    private final ClientSideProject p;
-
-    public BrowserActionProvider(Project p) {
-        this.p = (ClientSideProject) p;
+    public ClientProjectConfigurationImpl(Project project, WebBrowser browser, ClientProjectPlatformImpl platform) {
+        this.project = project;
+        this.browser = browser;
+        this.platform = platform;
     }
     
     @Override
-    public String[] getSupportedActions() {
-        return new String[] {COMMAND_RUN};
+    public String getId() {
+        return browser.getId();
     }
 
     @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        FileObject fo = null;
-        if (COMMAND_RUN.equals(command)) {
-// TODO: this needs to be configurable
-            fo = p.getProjectDirectory().getFileObject("index.html");
-        } else if (COMMAND_RUN_SINGLE.equals(command)) {
-            fo = getFile(context);
-        }
-        if (fo != null) {
-            browseFile(p.getBrowserSupport(), fo);
-        }
+    public void save() {
     }
 
+    @Override
+    public String getDisplayName() {
+        return browser.getName();
+    }
+
+    @Override
+    public RefreshOnSaveListener getRefreshOnSaveListener() {
+        return new RefreshOnSaveListenerImpl(getBrowserSupport());
+    }
+
+    @Override
+    public ActionProvider getActionProvider() {
+        return new BrowserActionProvider(project, getBrowserSupport());
+    }
+
+    @Override
+    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
+        return null;
+    }
     
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        Project prj = context.lookup(Project.class);
-        ClientSideConfigurationProvider provider = prj.getLookup().lookup(ClientSideConfigurationProvider.class);
-        if (provider.getActiveConfiguration().getBrowser() != null) {
-            return true;
+    public BrowserSupport getBrowserSupport() {
+        if (browserSupport == null) {
+            browserSupport = BrowserSupport.create(browser);
         }
+        return browserSupport;
+    }
+
+    @Override
+    public boolean canBeDeleted() {
         return false;
     }
-    
-    private FileObject getFile(Lookup context) {
-        return context.lookup(FileObject.class);
+
+    @Override
+    public void delete() {
+        throw new UnsupportedOperationException("not allowed");
     }
 
-    private boolean isHTMLFile(FileObject fo) {
-        return (fo != null && "html".equals(fo.getExt()));
+    @Override
+    public void deactivate() {
+        if (browserSupport != null) {
+            getBrowserSupport().close(true);
+        }
     }
     
-    private static void browseFile(BrowserSupport bs, FileObject fo) {
-        URL url;
-        String urlString;
-        try {
-            url = fo.toURL();
-            urlString = url.toURI().toString();
-            // XXXXX:
-            urlString = urlString.replaceAll("file:/", "file:///");
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
-        bs.load(url, fo);
-    }
 }
