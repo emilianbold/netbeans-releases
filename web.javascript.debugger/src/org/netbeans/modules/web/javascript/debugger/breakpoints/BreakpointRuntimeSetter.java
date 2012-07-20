@@ -266,6 +266,7 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
                 return ;
             }
             d.removeLineBreakpoint(b);
+            b = null;
         }
     }
 
