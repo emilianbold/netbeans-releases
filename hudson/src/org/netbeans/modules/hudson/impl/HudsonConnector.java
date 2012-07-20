@@ -63,7 +63,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
-import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
@@ -145,11 +144,12 @@ public class HudsonConnector extends BuilderConnector {
     @Override
     public synchronized void startJob(final HudsonJob job) {
         try {
-            HudsonInstance hi = HudsonManagerImpl.getDefault().getInstance(instanceUrl);
-            if (hi == null) {
-                return;
-            }
-            new ConnectionBuilder().instance(hi).url(job.getUrl() + "build").postData("delay=0sec".getBytes("UTF-8")).followRedirects(false).connection(); // NOI18N
+            new ConnectionBuilder().homeURL(instanceUrl).
+                    url(job.getUrl() + "build"). //NOI18N
+                    postData("delay=0sec".getBytes("UTF-8")). //NOI18N
+                    followRedirects(false).connection(); // NOI18N
+        } catch (MalformedURLException mue) {
+            LOG.log(Level.INFO, "Malformed URL " + instanceUrl, mue);
         } catch (IOException e) {
             LOG.log(Level.FINE, "Could not start {0}: {1}", new Object[] {job, e});
         }
@@ -429,14 +429,14 @@ public class HudsonConnector extends BuilderConnector {
         HudsonVersion v = null;
         
         try {
-            HudsonInstance instance = HudsonManagerImpl.getDefault().getInstance(instanceUrl);
-            if (instance == null) {
-                return null;
-            }
-            String sVersion = new ConnectionBuilder().instance(instance).url(instanceUrl).authentication(authentication).httpConnection().getHeaderField("X-Hudson"); // NOI18N
+            String sVersion = new ConnectionBuilder().homeURL(instanceUrl).
+                    url(instanceUrl).authentication(authentication).
+                    httpConnection().getHeaderField("X-Hudson"); // NOI18N
             if (sVersion != null) {
                 v = new HudsonVersion(sVersion);
             }
+        } catch (MalformedURLException mue) {
+            LOG.log(Level.INFO, "Malformed URL " + instanceUrl, mue);   //NOI18N
         } catch (IOException e) {
             // Nothing
         }
@@ -449,12 +449,9 @@ public class HudsonConnector extends BuilderConnector {
         Document doc = null;
         
         try {
-            HudsonInstance instance = HudsonManagerImpl.getDefault().getInstance(instanceUrl);
-            if (instance == null) {
-                return null;
-            }
-            HttpURLConnection conn = new ConnectionBuilder().instance(instance).url(url).authentication(authentication).httpConnection();
-            
+            HttpURLConnection conn = new ConnectionBuilder().
+                    homeURL(instanceUrl).url(url).
+                    authentication(authentication).httpConnection();
             // Connected successfully
             if (!isConnected()) {
                 connected = true;
@@ -483,6 +480,9 @@ public class HudsonConnector extends BuilderConnector {
             conn.disconnect();
         } catch (SAXParseException x) {
             // already reported
+            LOG.log(Level.INFO, null, x);
+        } catch (MalformedURLException mue) {
+            LOG.log(Level.INFO, "Invalid URL " + instanceUrl, mue);     //NOI18N
         } catch (Exception x) {
             LOG.log(Level.FINE, url, x);
             if (!authentication && x instanceof HttpRetryException && ((HttpRetryException) x).responseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
