@@ -64,7 +64,6 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.doctrine2.options.Doctrine2Options;
 import org.netbeans.modules.php.doctrine2.ui.options.Doctrine2OptionsPanelController;
-import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -109,13 +108,12 @@ public final class Doctrine2Script {
         return PhpExecutableValidator.validateCommand(command, Bundle.Doctrine2Script_script_label());
     }
 
-    public void runCommand(PhpModule phpModule, FrameworkCommandSupport.CommandDescriptor commandDescriptor, Runnable postExecution) {
-        String[] commands = commandDescriptor.getFrameworkCommand().getCommands();
-        String[] commandParams = commandDescriptor.getCommandParams();
-        List<String> allParams = new ArrayList<String>(commands.length + commandParams.length);
-        allParams.addAll(Arrays.asList(commands));
-        allParams.addAll(Arrays.asList(commandParams));
-        runCommand(phpModule, allParams, postExecution);
+    public void runCommand(PhpModule phpModule, List<String> parameters, Runnable postExecution) {
+        new PhpExecutable(doctrine2Path)
+                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .additionalParameters(getAllParameters(parameters))
+                .run(getDescriptor(postExecution));
     }
 
     public List<Doctrine2CommandVO> getCommands(PhpModule phpModule) {
@@ -164,14 +162,6 @@ public final class Doctrine2Script {
 
     private void runCommand(PhpModule phpModule, List<String> parameters) {
         runCommand(phpModule, parameters, null);
-    }
-
-    private void runCommand(PhpModule phpModule, List<String> parameters, Runnable postExecution) {
-        new PhpExecutable(doctrine2Path)
-                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
-                .displayName(getDisplayName(phpModule, parameters.get(0)))
-                .additionalParameters(getAllParameters(parameters))
-                .run(getDescriptor(postExecution));
     }
 
     @NbBundle.Messages({

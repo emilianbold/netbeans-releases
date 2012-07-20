@@ -43,6 +43,7 @@ package org.netbeans.modules.php.doctrine2.commands;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
@@ -73,8 +74,13 @@ public final class Doctrine2CommandSupport extends FrameworkCommandSupport {
 
     @Override
     public void runCommand(CommandDescriptor commandDescriptor, Runnable postExecution) {
+        String[] commands = commandDescriptor.getFrameworkCommand().getCommands();
+        String[] commandParams = commandDescriptor.getCommandParams();
+        List<String> params = new ArrayList<String>(commands.length + commandParams.length);
+        params.addAll(Arrays.asList(commands));
+        params.addAll(Arrays.asList(commandParams));
         try {
-            Doctrine2Script.getDefault().runCommand(phpModule, commandDescriptor, postExecution);
+            Doctrine2Script.getDefault().runCommand(phpModule, params, postExecution);
         } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), Doctrine2OptionsPanelController.OPTIONS_SUBPATH);
         }
