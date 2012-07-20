@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -132,9 +133,10 @@ public final class PhpExecutable {
     private File workDir = null;
     private boolean warnUser = true;
     private List<String> additionalParameters = Collections.<String>emptyList();
+    private Map<String, String> environmentVariables = Collections.<String, String>emptyMap();
     private PhpExecutableValidator.ValidationHandler validationHandler = null;
     private File fileOutput = null;
-    private boolean fileOutputOnly = true;
+    private boolean pureOutputOnly = true;
 
 
     /**
@@ -236,6 +238,12 @@ public final class PhpExecutable {
         return this;
     }
 
+    public PhpExecutable environmentVariables(Map<String, String> environmentVariables) {
+        Parameters.notNull("environmentVariables", environmentVariables);
+        this.environmentVariables = environmentVariables;
+        return this;
+    }
+
     public PhpExecutable validationHandler(PhpExecutableValidator.ValidationHandler validationHandler) {
         this.validationHandler = validationHandler;
         return this;
@@ -246,8 +254,8 @@ public final class PhpExecutable {
         return this;
     }
 
-    public PhpExecutable fileOutputOnly(boolean fileOutputOnly) {
-        this.fileOutputOnly = fileOutputOnly;
+    public PhpExecutable pureOutputOnly(boolean pureOutputOnly) {
+        this.pureOutputOnly = pureOutputOnly;
         return this;
     }
 
@@ -371,6 +379,9 @@ public final class PhpExecutable {
         if (workDir != null) {
             processBuilder = processBuilder.workingDirectory(workDir);
         }
+        for (Map.Entry<String, String> variable : environmentVariables.entrySet()) {
+            processBuilder = processBuilder.addEnvironmentVariable(variable.getKey(), variable.getValue());
+        }
         processBuilder = processBuilder.redirectErrorStream(redirectErrorStream);
         return processBuilder;
     }
@@ -445,6 +456,10 @@ public final class PhpExecutable {
     }
 
     private ExecutionDescriptor decorateExecutionDescriptorWithInfo(ExecutionDescriptor executionDescriptor) {
+        if (fileOutput != null || pureOutputOnly) {
+            // no info for file output
+            return executionDescriptor;
+        }
         return executionDescriptor.outProcessorFactory(new InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
@@ -457,7 +472,7 @@ public final class PhpExecutable {
         if (fileOutput == null) {
             return executionDescriptor;
         }
-        if (fileOutputOnly) {
+        if (pureOutputOnly) {
             executionDescriptor = executionDescriptor.inputOutput(InputOutput.NULL)
                     .frontWindow(false);
         }
