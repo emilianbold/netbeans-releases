@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -136,6 +137,8 @@ public final class Doctrine2Script {
                 runCommand(phpModule, LIST_PARAMS);
                 return null;
             }
+        } catch (CancellationException ex) {
+            // canceled
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return null;
