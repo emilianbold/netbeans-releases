@@ -106,7 +106,7 @@ public class SymfonyScript {
     private final String symfonyPath;
 
 
-    public SymfonyScript(String symfonyPath) {
+    private SymfonyScript(String symfonyPath) {
         this.symfonyPath = symfonyPath;
     }
 
