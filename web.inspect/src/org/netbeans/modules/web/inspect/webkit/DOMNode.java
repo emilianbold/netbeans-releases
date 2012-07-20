@@ -185,6 +185,11 @@ public class DOMNode extends AbstractNode {
         children.updateKeys(node);
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + "[nodeId=" + getNode().getNodeId() + "]"; // NOI18N
+    }
+
     /**
      * Children for {@code DOMNode}.
      */
