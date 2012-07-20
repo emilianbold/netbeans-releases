@@ -520,7 +520,7 @@ simple_declaration_or_function_definition [decl_kind kind]
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
-                { /*$greedy_declarator.type.is_function()*/ true }?
+                { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
                     function_definition_after_declarator
             |
                 // this is a continuation of init_declarator_list after greedy_declarator
@@ -1327,7 +1327,7 @@ scope Declaration;
         |
             declarator
             (
-                { /*$declarator.type.is_function()*/ true }?
+                { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
                     function_definition_after_declarator
             |
                 // this was member_declarator_list
