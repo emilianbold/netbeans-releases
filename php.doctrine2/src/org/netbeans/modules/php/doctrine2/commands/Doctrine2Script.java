@@ -121,6 +121,7 @@ public final class Doctrine2Script {
         File tmpFile;
         try {
             tmpFile = File.createTempFile("nb-doctrine2-commands-", ".xml"); // NOI18N
+            tmpFile.deleteOnExit();
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
             return null;
@@ -139,6 +140,7 @@ public final class Doctrine2Script {
             }
         } catch (CancellationException ex) {
             // canceled
+            return null;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return null;
