@@ -183,8 +183,11 @@ public class WebKitPageModel extends PageModel {
                     // even when it doesn't change) => we are not removing
                     // them from 'nodes' collection to be able to reuse
                     // them once they are back.
-                    if (child.getContentDocument() == null) {
+                    Node contentDocument = child.getContentDocument();
+                    if (contentDocument == null) {
                         nodes.remove(child.getNodeId());
+                    } else {
+                        contentDocumentMap.remove(contentDocument.getNodeId());
                     }
                 }
             }
