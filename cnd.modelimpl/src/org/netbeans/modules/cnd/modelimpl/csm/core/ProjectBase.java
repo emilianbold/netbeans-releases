@@ -436,7 +436,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         Parameters.notNull("FileSystem", fs); //NOI18N
         String postfix = CndFileUtils.isLocalFileSystem(fs) ? "" : fs.getDisplayName();
         if (TraceFlags.CACHE_IN_PROJECT) {
-            postfix += CndFileUtils.isLocalFileSystem(fs) ? "L" : "R";
+            postfix += CndFileUtils.isLocalFileSystem(fs) ? "L" : "R"; //NOI18N
         }
         String result;
         if (platformProject instanceof NativeProject) {
