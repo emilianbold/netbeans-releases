@@ -373,7 +373,7 @@ block_declaration:
 // IDs
 id_expression:
         // TODO: review temp predicate
-        (simple_template_id_or_IDENT SCOPE) => qualified_id
+        ((simple_template_id_or_IDENT)? SCOPE) => qualified_id
     |
         unqualified_id
     ;
@@ -446,13 +446,13 @@ nested_name_specifier returns [ name_specifier_t namequal ]
 
 lookup_nested_name_specifier:
         IDENT SCOPE
-        (
-            IDENT SCOPE
-        |
-            LITERAL_template lookup_simple_template_id SCOPE
-        |
-            lookup_simple_template_id SCOPE
-        )*
+//        (
+//            IDENT SCOPE
+//        |
+//            LITERAL_template lookup_simple_template_id SCOPE
+//        |
+//            lookup_simple_template_id SCOPE
+//        )*
     ;
 
 //[gram.dcl]
