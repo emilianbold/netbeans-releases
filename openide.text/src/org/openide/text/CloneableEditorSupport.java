@@ -2890,7 +2890,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 ERR.fine("PROP_TIME new value: " + time + ", " + (time != null ? time.getTime() : -1));
                 ERR.fine("       lastSaveTime: " + new Date(lastSaveTime) + ", " + lastSaveTime);
                 
-                boolean reload = (lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime));
+                boolean reload = (lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime) ||
+                        time.getTime() + 10000 < lastSaveTime); // Threshold 10secs to be further discussed
                 ERR.fine("             reload: " + reload);
 
                 if (reload) {

@@ -220,6 +220,7 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.wagon.events</package>
                 <package>org.apache.maven.wagon.providers.file</package>
                 <package>org.apache.maven.wagon.providers.http</package>
+                <package>org.apache.maven.wagon.shared.http4</package>
                 <package>org.apache.maven.wagon.proxy</package>
                 <package>org.apache.maven.wagon.repository</package>
                 <package>org.apache.maven.wagon.resource</package>

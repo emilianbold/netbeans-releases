@@ -73,6 +73,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.installer.ui.SuiteInstallerProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -141,6 +142,10 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 is.close();
                             }
                             appName = ps.getProperty("app.name");
+                            if (appName.contains("$")) {
+                                appName = ProjectUtils.getInformation(prj).getName();
+                            }
+                            
                             appIcon = ps.getProperty("app.icon");
                             appIconIcns = ps.getProperty("app.icon.icns", null);
                             if(appIconIcns!=null) {

@@ -46,8 +46,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -135,10 +137,21 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
         StringBuilder classnameExt = new StringBuilder();
         if (group != null) {
             boolean first = true;
+            boolean isTest = false;
+            Set<String> uniqueClassNames = new HashSet<String>(fos.length);
             for (FileObject file : fos) {
                 if (first) {
                     first = false;
                 } else {
+                    if (!isTest && !(ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
+                                     ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
+                                     ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName) ||
+                                     ActionProvider.COMMAND_TEST.equals(actionName))) {
+                        // Execution can not have more files separated by commas. Only test can.
+                        break;
+                    } else {
+                        isTest = true;
+                    }
                     packClassname.append(',');
                     classname.append(',');
                     classnameExt.append(',');
@@ -159,12 +172,19 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                 } else { // XXX do we need to limit to text/x-java? What about files of other type?
                     String relP = FileUtil.getRelativePath(group.getRootFolder(), file.getParent());
                     assert relP != null;
+                    StringBuilder cn = new StringBuilder();
                     if (!relP.isEmpty()) {
-                        packClassname.append(relP.replace('/', '.')).append('.');
+                        cn.append(relP.replace('/', '.')).append('.');
                     }
                     String n = file.getName();
-                    packClassname.append(n);
-                    classname.append(n);
+                    cn.append(n);
+                    if (uniqueClassNames.add(cn.toString())) {
+                        packClassname.append(cn);
+                        classname.append(n);
+                    } else {
+                        packClassname.deleteCharAt(packClassname.length() - 1); // Delete the comma
+                        classname.deleteCharAt(classname.length() - 1);
+                    }
                     classnameExt.append(file.getNameExt());
                 }
             }

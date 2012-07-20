@@ -180,10 +180,10 @@
 <mapID target="register-cloud" url="web/cloud/register-cloud.html"/>
 <mapID target="develop-locally" url="web/cloud/develop-locally.html"/>
 <mapID target="deploy-cloud" url="web/cloud/deploy-cloud.html"/>
-<mapID target="oracle-cloud-whitelisting" url="web/cloud/whitelisting.html"/>
+<!--<mapID target="oracle-cloud-whitelisting" url="web/cloud/whitelisting.html"/>-->
         
 <!-- Cloud support CSH topics -->
-<mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="web/cloud/csh/add-cloud-provider-oracle.html" />
+<!--<mapID target="org.netbeans.modules.cloud.oracle.ui.OracleWizardPanel" url="web/cloud/csh/add-cloud-provider-oracle.html" />-->
 <mapID target="org.netbeans.api.server.CommonCloudUIs" url="web/cloud/csh/cloud-providers.html"/>
 </map>
 

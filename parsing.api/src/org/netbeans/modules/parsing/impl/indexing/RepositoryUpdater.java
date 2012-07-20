@@ -3276,14 +3276,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
         
         private boolean shouldRefresh() {
-            if (this.files.size() != 1) {
-                return true;
-            }
-            final Source source = getActiveSource();
-            if (source == null) {
-                return true;
-            }
-            return !files.iterator().next().equals(source.getFileObject());            
+            return !TransientUpdateSupport.isTransientUpdate();
         }
         
     } // End of FileListWork class

@@ -453,7 +453,9 @@ public class JFXProjectGenerator {
 
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(platformName));
         ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(platformName));
-        ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, JavaFXPlatformUtils.getJavaFXClassPath()); // NOI18N
+
+        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, JavaFXPlatformUtils.getJavaFXClassPath()); // NOI18N
+        ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, ""); // NOI18N
 
         ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
         ep.setProperty(JFXProjectProperties.RUN_APP_HEIGHT, "600"); // NOI18N
@@ -467,7 +469,7 @@ public class JFXProjectGenerator {
             // Disable J2SE JAR creation
             ep.setProperty("jar.archive.disabled", "true"); // NOI18N
             ep.setComment("jar.archive.disabled", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_oldjar")}, false); // NOI18N
-            ep.setProperty(ProjectProperties.MAIN_CLASS, type == WizardType.SWING ? mainClass : "com.javafx.main.Main"); // NOI18N
+            ep.setProperty(ProjectProperties.MAIN_CLASS, type == WizardType.SWING ? (mainClass == null ? "" : mainClass) : "com.javafx.main.Main"); // NOI18N
             ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_main.class")}, false); // NOI18N
 
             if (type != WizardType.LIBRARY) {
@@ -527,7 +529,6 @@ public class JFXProjectGenerator {
         ep.setProperty("dist.dir", "dist"); // NOI18N
         ep.setComment("dist.dir", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_dist.dir")}, false); // NOI18N
         ep.setProperty("dist.jar", "${dist.dir}/" + validatePropertyValue(name) + ".jar"); // NOI18N
-        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         ep.setProperty("application.vendor", System.getProperty("user.name", "User Name")); //NOI18N
         ep.setProperty("application.title", name); // NOI18N
         
@@ -538,8 +539,7 @@ public class JFXProjectGenerator {
         ep.setProperty(ProjectProperties.RUN_CLASSPATH, new String[]{ // NOI18N
                     // note that dist.jar needs to be first to prevent mixups in case of multiple dependent FX projects
                     "${dist.jar}:", // NOI18N
-                    "${javac.classpath}:", // NOI18N
-                    "${build.classes.dir}",         // NOI18N
+                    "${javac.classpath}", // NOI18N
                 });
         ep.setProperty("debug.classpath", new String[]{ // NOI18N
                     "${run.classpath}", // NOI18N
