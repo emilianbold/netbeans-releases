@@ -62,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
@@ -311,7 +312,9 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
 
         @Override
         public Action getDefaultAction() {
-            return new AbstractAction() {
+            String name = this.getStatus().name();
+            Icon icon = UI.getIcon(hudsonJob);
+            return new AbstractAction(name, icon) {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     UI.selectNode(hudsonInstance.getUrl(),

@@ -5,8 +5,10 @@
 
 package org.netbeans.modules.team.ui.spi;
 
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
 
 /**
  * Main access point to Teams's Build API.
@@ -37,4 +39,29 @@ public abstract class BuildAccessor<P> {
      */
     public abstract Action getNewBuildAction( ProjectHandle<P> project );
 
+    /**
+     * Determines the most interresting build handle from a collection of
+     * handles. The default implementation returns build with the worst status.
+     * If all builds are successful or unknown, null is returned.
+     *
+     * Note that default action of the returned build handle (see
+     * {@link BuildHandle#getDefaultAction()}) should have an icon.
+     *
+     * @return Build handle that deserves user's attention the most, or null if
+     * there is no interresting build.
+     */
+    public BuildHandle chooseMostInterrestingBuild(
+            Collection<? extends BuildHandle> builds) {
+        BuildHandle worst = null;
+        for (BuildHandle bh : builds) {
+            Status status = bh.getStatus();
+            if ((status == Status.FAILED || status == Status.UNSTABLE)
+                    && (worst == null
+                    || (worst.getStatus() == Status.UNSTABLE
+                    && status == Status.FAILED))) {
+                worst = bh;
+            }
+        }
+        return worst;
+    }
 }
