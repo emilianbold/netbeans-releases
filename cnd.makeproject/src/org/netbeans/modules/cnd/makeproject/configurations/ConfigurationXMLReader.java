@@ -92,7 +92,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // LATER configurationDescriptor = new
     }
 
-
     /*
      * was: readFromDisk
      */
@@ -207,6 +206,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 try {
                     inputStream = xml.getInputStream();
                     success = read(inputStream, projectDirectory.getName());
+                    SPIAccessor.get().setDefaultConfigurationsRestored(configurationDescriptor, true);
                 } finally {
                     if (inputStream != null) {
                         inputStream.close();
