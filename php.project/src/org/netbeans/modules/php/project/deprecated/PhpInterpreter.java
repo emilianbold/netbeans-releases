@@ -42,10 +42,9 @@
 
 package org.netbeans.modules.php.project.deprecated;
 
-import java.io.File;
 import java.util.regex.Pattern;
 import org.netbeans.modules.php.api.phpmodule.PhpOptions;
-import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -94,23 +93,10 @@ public final class PhpInterpreter extends PhpProgram {
         return new PhpInterpreter(command);
     }
 
+    @NbBundle.Messages("PhpInterpreter.label=Php interpreter")
     @Override
     public String validate() {
-        if (!StringUtils.hasText(getProgram())) {
-            return NbBundle.getMessage(PhpInterpreter.class, "MSG_NoPhpInterpreter");
-        }
-
-        File file = new File(getProgram());
-        if (!file.isAbsolute()) {
-            return NbBundle.getMessage(PhpInterpreter.class, "MSG_PhpInterpreterNotAbsolutePath");
-        }
-        if (!file.isFile()) {
-            return NbBundle.getMessage(PhpInterpreter.class, "MSG_PhpInterpreterNotFile");
-        }
-        if (!file.canRead()) {
-            return NbBundle.getMessage(PhpInterpreter.class, "MSG_PhpInterpreterCannotRead");
-        }
-        return null;
+        return FileUtils.validateFile(Bundle.PhpInterpreter_label(), getProgram(), false);
     }
 
     /**
