@@ -51,8 +51,6 @@ public abstract class AbstractBreakpoint extends Breakpoint {
     private String myId;
     private boolean isEnabled;
     
-    private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint webkitBreakpoint;
-    
     protected AbstractBreakpoint() {
         isEnabled = true;
     }
@@ -111,13 +109,4 @@ public abstract class AbstractBreakpoint extends Breakpoint {
         return false;
     }
 
-    public org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint getWebkitBreakpoint() {
-        return webkitBreakpoint;
-    }
-
-    public void setWebkitBreakpoint(org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint webkitBreakpoint) {
-        this.webkitBreakpoint = webkitBreakpoint;
-    }
-
-    
 }

@@ -44,11 +44,20 @@
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;
-import java.net.URL;
-import org.netbeans.api.debugger.*;
-import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
+import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
-import org.openide.filesystems.FileObject;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.RequestProcessor;
 
 
@@ -58,10 +67,47 @@ import org.openide.util.RequestProcessor;
  * @author ads
  *
  */
-public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
+@LazyActionsManagerListener.Registration(path="javascript-debuggerengine")
+public class BreakpointRuntimeSetter extends LazyActionsManagerListener
+                                     implements LazyDebuggerManagerListener {
 
     private static final RequestProcessor RP = new RequestProcessor("Breakpoint updater");
-            
+    
+    private final Debugger d;
+    private final Map<AbstractBreakpoint, WebKitBreakpointManager> breakpointImpls =
+            new HashMap<AbstractBreakpoint, WebKitBreakpointManager>();
+    
+    public BreakpointRuntimeSetter(ContextProvider lookupProvider) {
+        d = lookupProvider.lookupFirst(null, Debugger.class);
+        DebuggerManager.getDebuggerManager().addDebuggerListener(this);
+        createBreakpointImpls();
+    }
+    
+    private void createBreakpointImpls() {
+        Breakpoint[] breakpoints = DebuggerManager.getDebuggerManager().getBreakpoints();
+        List<WebKitBreakpointManager> toAdd = new ArrayList<WebKitBreakpointManager>();
+        synchronized (breakpointImpls) {
+            for (Breakpoint breakpoint : breakpoints) {
+                if (breakpoint instanceof AbstractBreakpoint) {
+                    AbstractBreakpoint ab = (AbstractBreakpoint) breakpoint;
+                    WebKitBreakpointManager bm = createWebKitBreakpointManager(ab);
+                    breakpointImpls.put(ab, bm);
+                    toAdd.add(bm);
+                }
+            }
+        }
+        for (WebKitBreakpointManager bm : toAdd) {
+            bm.add();
+        }
+    }
+    
+    private WebKitBreakpointManager createWebKitBreakpointManager(AbstractBreakpoint ab) {
+        if (ab instanceof LineBreakpoint) {
+            return new WebKitLineBreakpointManager(d, (LineBreakpoint) ab);
+        }
+        throw new IllegalArgumentException("Unknown breakpoint: "+ab);
+    }
+    
     /* (non-Javadoc)
      * @see org.netbeans.api.debugger.LazyDebuggerManagerListener#getProperties()
      */
@@ -75,35 +121,22 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
      */
     @Override
     public void breakpointAdded( Breakpoint breakpoint ) {
-        if (!(breakpoint instanceof LineBreakpoint)) {
+        if (!(breakpoint instanceof AbstractBreakpoint)) {
             return;
         }
-        breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
-        final LineBreakpoint lb = (LineBreakpoint)breakpoint;
+        final AbstractBreakpoint ab = (AbstractBreakpoint) breakpoint;
+        final WebKitBreakpointManager bm = createWebKitBreakpointManager(ab);
+        synchronized (breakpointImpls) {
+            breakpointImpls.put(ab, bm);
+        }
         RP.post(new Runnable() {
             @Override
             public void run() {
-                addBreakpoint(lb);
+                bm.add();
             }
         });
     }
     
-    private static void addBreakpoint(LineBreakpoint lb) {
-        for (Session se: DebuggerManager.getDebuggerManager().getSessions()) {
-            Debugger d = se.lookupFirst("", Debugger.class);
-            if (d != null) {
-                addBreakpoint(d, lb);
-            }
-        }
-    }
-    public static void addBreakpoint(Debugger d, LineBreakpoint lb) {
-        String url = lb.getURLString();
-        url = reformatFileURL(url);
-        org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
-                d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
-        lb.setWebkitBreakpoint(b);
-    }
-
     // changes "file:/some" to "file:///some"
     private static String reformatFileURL(String tabToDebug) {
         if (!tabToDebug.startsWith("file:")) {
@@ -121,51 +154,118 @@ public class BreakpointRuntimeSetter extends DebuggerManagerAdapter  {
      */
     @Override
     public void breakpointRemoved( Breakpoint breakpoint ) {
-        if (!(breakpoint instanceof LineBreakpoint)) {
+        if (!(breakpoint instanceof AbstractBreakpoint)) {
             return;
         }
-        breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
-        final LineBreakpoint lb = (LineBreakpoint)breakpoint;
+        //breakpoint.removePropertyChangeListener(Breakpoint.PROP_ENABLED, this);
+        final AbstractBreakpoint ab = (AbstractBreakpoint) breakpoint;
+        final WebKitBreakpointManager bm;
+        synchronized (breakpointImpls) {
+            bm = breakpointImpls.remove(ab);
+        }
         RP.post(new Runnable() {
             @Override
             public void run() {
-                removeBreakpoint(lb);
+                bm.destroy();
             }
         });
     }
-    
-    private void removeBreakpoint(LineBreakpoint lb) {
-        for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
-            Debugger d = de.lookupFirst("", Debugger.class);
-            if (d != null) {
-                d.removeLineBreakpoint(lb.getWebkitBreakpoint());
-            }
+
+    @Override
+    protected void destroy() {
+        DebuggerManager.getDebuggerManager().removeDebuggerListener(this);
+        List<WebKitBreakpointManager> toDestroy;
+        synchronized (breakpointImpls) {
+            toDestroy = new ArrayList<WebKitBreakpointManager>(breakpointImpls.values());
+            breakpointImpls.clear();
+        }
+        for (WebKitBreakpointManager bm : toDestroy) {
+            bm.destroy();
         }
     }
 
-    /* (non-Javadoc)
-     * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-     */
     @Override
-    public void propertyChange( PropertyChangeEvent event ) {
-        if (!Breakpoint.PROP_ENABLED.equals(event.getPropertyName())) {
-            return;
+    public Breakpoint[] initBreakpoints() {
+        return new Breakpoint[] {};
+    }
+    @Override
+    public void initWatches() {}
+    @Override
+    public void watchAdded(Watch watch) {}
+    @Override
+    public void watchRemoved(Watch watch) {}
+    @Override
+    public void sessionAdded(Session session) {}
+    @Override
+    public void sessionRemoved(Session session) {}
+    @Override
+    public void engineAdded(DebuggerEngine engine) {}
+    @Override
+    public void engineRemoved(DebuggerEngine engine) {}
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {}
+    
+    
+    private static abstract class WebKitBreakpointManager implements PropertyChangeListener {
+        
+        protected final Debugger d;
+        private final AbstractBreakpoint ab;
+        
+        protected WebKitBreakpointManager(Debugger d, AbstractBreakpoint ab) {
+            this.d = d;
+            this.ab = ab;
+            ab.addPropertyChangeListener(this);
         }
-        Breakpoint b = (Breakpoint)event.getSource();
-        if (!(b instanceof LineBreakpoint)) {
-            return;
+        
+        public abstract void add();
+        
+        public abstract void remove();
+        
+        public void destroy() {
+            remove();
+            ab.removePropertyChangeListener(this);
         }
-        LineBreakpoint lb = (LineBreakpoint)b;
-        for (DebuggerEngine de: DebuggerManager.getDebuggerManager().getDebuggerEngines()) {
-            Debugger d = de.lookupFirst("", Debugger.class);
-            if (d != null) {
-                if (lb.getWebkitBreakpoint() != null) {
-                    d.removeLineBreakpoint(lb.getWebkitBreakpoint());
-                    lb.setWebkitBreakpoint(null);
-                } else {
-                    breakpointAdded(b);
-                }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            if (!Breakpoint.PROP_ENABLED.equals(event.getPropertyName())) {
+                return;
             }
+            Breakpoint b = (Breakpoint) event.getSource();
+            if (b.isEnabled()) {
+                add();
+            } else {
+                remove();
+            }
+        }
+    }
+    
+    private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager {
+        
+        private final LineBreakpoint lb;
+        private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+        
+        public WebKitLineBreakpointManager(Debugger d, LineBreakpoint lb) {
+            super(d, lb);
+            this.lb = lb;
+        }
+
+        @Override
+        public void add() {
+            if (b != null) {
+                return ;
+            }
+            String url = lb.getURLString();
+            url = reformatFileURL(url);
+            b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+        }
+
+        @Override
+        public void remove() {
+            if (b == null) {
+                return ;
+            }
+            d.removeLineBreakpoint(b);
         }
     }
 
