@@ -64,6 +64,8 @@ public class DOMNode extends AbstractNode {
     private Node node;
     /** Property sets of the node. */
     private PropertySet[] propertySets;
+    /** Determines whether nodeId should be appended to display name. */
+    private boolean nodeIdInDisplayName = Boolean.getBoolean("org.netbeans.modules.web.inspect.nodeIdInDisplayName"); // NOI18N
 
     /**
      * Creates a new {@code DOMNode}.
@@ -94,6 +96,9 @@ public class DOMNode extends AbstractNode {
         } else {
             // Not used by now
             displayName = node.getNodeType() + " " + node.getNodeName() + " " + node.getNodeValue(); // NOI18N
+        }
+        if (nodeIdInDisplayName) {
+            displayName += " (" + getNode().getNodeId() + ")"; // NOI18N
         }
         return displayName;
     }
@@ -180,7 +185,8 @@ public class DOMNode extends AbstractNode {
     /**
      * Forces update of the children/sub-nodes.
      */
-    void updateChildren() {
+    void updateChildren(Node node) {
+        this.node = node;
         DOMChildren children = (DOMChildren)getChildren();
         children.updateKeys(node);
     }

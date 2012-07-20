@@ -165,7 +165,7 @@ public class WebKitPageModel extends PageModel {
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
                         updateNodes(parent);
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
                 }
             }
@@ -176,15 +176,18 @@ public class WebKitPageModel extends PageModel {
                     int nodeId = parent.getNodeId();
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
                     // Nodes with a content document are removed and added
                     // again when a content document changes (and sometimes
                     // even when it doesn't change) => we are not removing
                     // them from 'nodes' collection to be able to reuse
                     // them once they are back.
-                    if (child.getContentDocument() == null) {
+                    Node contentDocument = child.getContentDocument();
+                    if (contentDocument == null) {
                         nodes.remove(child.getNodeId());
+                    } else {
+                        contentDocumentMap.remove(contentDocument.getNodeId());
                     }
                 }
             }
@@ -196,7 +199,7 @@ public class WebKitPageModel extends PageModel {
                     updateNodes(child);
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
                 }
             }
@@ -325,7 +328,7 @@ public class WebKitPageModel extends PageModel {
             });
         }
         if (updateChildren) {
-            domNode.updateChildren();
+            domNode.updateChildren(node);
         }
         return domNode;
     }
