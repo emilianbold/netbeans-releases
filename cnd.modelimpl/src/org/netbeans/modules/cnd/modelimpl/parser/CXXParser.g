@@ -1354,11 +1354,11 @@ scope Declaration;
     ;
 
 member_bitfield_declarator:
-        IDENT? virt_specifier+ COLON constant_expression
+        IDENT? virt_specifier* COLON constant_expression
     ;
 
 member_declarator:
-        declarator virt_specifier+ brace_or_equal_initializer
+        declarator virt_specifier* brace_or_equal_initializer
     |
         member_bitfield_declarator
     ;
