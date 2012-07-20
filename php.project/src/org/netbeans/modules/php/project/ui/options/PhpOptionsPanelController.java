@@ -43,7 +43,7 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.project.deprecated.PhpInterpreter;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;

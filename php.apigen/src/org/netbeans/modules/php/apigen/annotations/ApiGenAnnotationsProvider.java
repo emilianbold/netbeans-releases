@@ -42,10 +42,9 @@
 package org.netbeans.modules.php.apigen.annotations;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle.Messages;
 
 /**

@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.project.annotations;
 
 import java.util.EnumSet;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
