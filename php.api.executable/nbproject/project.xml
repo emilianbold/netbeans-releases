@@ -72,6 +72,7 @@
                 <friend>org.netbeans.modules.php.doctrine2</friend>
                 <friend>org.netbeans.modules.php.phpdoc</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
+                <friend>org.netbeans.modules.php.symfony2</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
                 <package>org.netbeans.modules.php.api.executable</package>
             </friend-packages>

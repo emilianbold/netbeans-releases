@@ -41,23 +41,12 @@
  */
 package org.netbeans.modules.php.symfony2.commands;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
@@ -71,9 +60,6 @@ import org.openide.util.NbBundle.Messages;
  */
 public final class Symfony2CommandSupport extends FrameworkCommandSupport {
 
-    static final Logger LOGGER = Logger.getLogger(Symfony2CommandSupport.class.getName());
-
-
     public Symfony2CommandSupport(PhpModule phpModule) {
         super(phpModule);
     }
@@ -85,12 +71,17 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
     }
 
     @Override
-    public void runCommand(CommandDescriptor commandDescriptor) {
-        Callable<Process> callable = createCommand(commandDescriptor.getFrameworkCommand().getCommands(), commandDescriptor.getCommandParams());
-        ExecutionDescriptor descriptor = getDescriptor();
-        String displayName = getOutputTitle(commandDescriptor);
-        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
-        service.run();
+    public void runCommand(CommandDescriptor commandDescriptor, Runnable postExecution) {
+        String[] commands = commandDescriptor.getFrameworkCommand().getCommands();
+        String[] commandParams = commandDescriptor.getCommandParams();
+        List<String> params = new ArrayList<String>(commands.length + commandParams.length);
+        params.addAll(Arrays.asList(commands));
+        params.addAll(Arrays.asList(commandParams));
+        try {
+            Symfony2Script.forPhpModule(phpModule, true).runCommand(phpModule, params, postExecution);
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), Symfony2OptionsPanelController.OPTIONS_SUBPATH);
+        }
     }
 
     @Override
@@ -108,63 +99,18 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
     }
 
     @Override
-    protected ExternalProcessBuilder getProcessBuilder(boolean warnUser) {
-        ExternalProcessBuilder processBuilder = super.getProcessBuilder(warnUser);
-        if (processBuilder == null) {
-            return null;
-        }
-
-        Symfony2Script symfony2Script;
-        try {
-            symfony2Script = Symfony2Script.forPhpModule(phpModule, warnUser);
-        } catch (InvalidPhpProgramException ex) {
-            if (warnUser) {
-                UiUtils.invalidScriptProvided(ex.getMessage(), Symfony2OptionsPanelController.OPTIONS_SUBPATH);
-            }
-            return null;
-        }
-        assert symfony2Script.isValid();
-
-        processBuilder = processBuilder
-                .workingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
-                .addArgument(symfony2Script.getProgram());
-        for (String param : symfony2Script.getParameters()) {
-            processBuilder = processBuilder.addArgument(param);
-        }
-        processBuilder = processBuilder
-                .addArgument("--ansi"); // NOI18N
-        return processBuilder;
-    }
-
-    @Messages("Symfony2CommandSupport.error.listCommand=Symfony2 list commands")
-    @Override
     protected List<FrameworkCommand> getFrameworkCommandsInternal() {
-        // validate
-        if (getProcessBuilder(true) == null) {
-            return null;
-        }
-        InputStream output = redirectScriptOutput("list", "--xml"); // NOI18N
-        if (output == null) {
-            // perhaps some error? run it again and print the result in the output window
-            PhpProgram.executeLater(createCommand("list", "--xml"), // NOI18N
-                    new ExecutionDescriptor().frontWindow(true),
-                    Bundle.Symfony2CommandSupport_error_listCommand());
-            return null;
-        }
-        List<Symfony2CommandVO> commandsVO = new ArrayList<Symfony2CommandVO>();
+        Symfony2Script symfony2;
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(output));
-            Symfony2CommandsXmlParser.parse(reader, commandsVO);
-        } finally {
-            try {
-                output.close();
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
+            symfony2 = Symfony2Script.forPhpModule(phpModule, true);
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), Symfony2OptionsPanelController.OPTIONS_SUBPATH);
+            return null;
         }
-        if (commandsVO.isEmpty()) {
-            // ??? try to read them from output
-            LOGGER.info("Symfony commands from XML should be parsed");
+
+        List<Symfony2CommandVO> commandsVO = symfony2.getCommands(phpModule);
+        if (commandsVO == null) {
+            // some error
             return null;
         }
         List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>(commandsVO.size());

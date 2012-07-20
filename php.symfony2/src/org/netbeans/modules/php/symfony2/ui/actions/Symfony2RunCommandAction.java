@@ -68,7 +68,7 @@ public class Symfony2RunCommandAction extends RunCommandAction {
             return;
         }
 
-        Symfony2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+        Symfony2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).openPanel();
     }
 
     @Messages({

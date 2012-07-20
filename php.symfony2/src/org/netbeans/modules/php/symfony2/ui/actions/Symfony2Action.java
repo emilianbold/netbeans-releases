@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.php.symfony2.ui.actions;
 
-import java.util.concurrent.Callable;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.framework.actions.BaseAction;
-import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.symfony2.Symfony2PhpFrameworkProvider;
+import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
 
 /**
  * Base class for Symfony2 separate commands.
@@ -55,20 +54,18 @@ import org.netbeans.modules.php.symfony2.Symfony2PhpFrameworkProvider;
 abstract class Symfony2Action extends BaseAction {
 
 
-    protected abstract String getCommand();
+    protected abstract void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException;
 
     @Override
     public void actionPerformed(PhpModule phpModule) {
         if (!Symfony2PhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
             return;
         }
-
-        FrameworkCommandSupport commandSupport = Symfony2PhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        Callable<Process> callable = commandSupport.createCommand(getCommand());
-        ExecutionDescriptor descriptor = commandSupport.getDescriptor();
-        String displayName = commandSupport.getOutputTitle(getCommand());
-        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
-        service.run();
+        try {
+            runCommand(phpModule);
+        } catch (InvalidPhpExecutableException ex) {
+            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), Symfony2OptionsPanelController.OPTIONS_SUBPATH);
+        }
     }
 
     @Override
