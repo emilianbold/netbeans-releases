@@ -49,10 +49,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.api.annotations.PhpAnnotations;
+import org.netbeans.modules.php.api.annotation.PhpAnnotations;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
-import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 

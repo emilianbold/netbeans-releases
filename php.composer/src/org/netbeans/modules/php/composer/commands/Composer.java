@@ -41,15 +41,15 @@
  */
 package org.netbeans.modules.php.composer.commands;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
-import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.openide.DialogDescriptor;
@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
 /**
  * Represents <a href="http://getcomposer.org/">Composer</a> command line tool.
  */
-public final class Composer extends PhpProgram {
+public final class Composer {
 
     public static final String NAME = "composer"; // NOI18N
     public static final String LONG_NAME = NAME + ".phar"; // NOI18N
@@ -76,16 +76,18 @@ public final class Composer extends PhpProgram {
     private static final String VALIDATE_COMMAND = "validate"; // NOI18N
     private static final String SELF_UPDATE_COMMAND = "self-update"; // NOI18N
     // params
-    private static final String[] DEFAULT_PARAMS = {
+    private static final List<String> DEFAULT_PARAMS = Arrays.asList(
         "--ansi", // NOI18N
-        "--no-interaction", // NOI18N
-    };
+        "--no-interaction" // NOI18N
+    );
     private static final String NAME_PARAM = "--name=%s"; // NOI18N
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
 
+    private final String composerPath;
 
-    public Composer(String command) {
-        super(command);
+
+    public Composer(String composerPath) {
+        this.composerPath = composerPath;
     }
 
     /**
@@ -93,27 +95,22 @@ public final class Composer extends PhpProgram {
      * @return the default, <b>valid only</b> Composer.
      * @throws InvalidPhpProgramException if Composer is not valid.
      */
-    public static Composer getDefault() throws InvalidPhpProgramException {
+    public static Composer getDefault() throws InvalidPhpExecutableException {
         String composerPath = ComposerOptions.getInstance().getComposerPath();
         String error = validate(composerPath);
         if (error != null) {
-            throw new InvalidPhpProgramException(error);
+            throw new InvalidPhpExecutableException(error);
         }
         return new Composer(composerPath);
     }
 
-    public static String validate(String command) {
-        return new Composer(command).validate();
-    }
-
     @NbBundle.Messages("Composer.script.label=Composer")
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(Bundle.Composer_script_label(), getProgram(), false);
+    public static String validate(String composerPath) {
+        return PhpExecutableValidator.validateCommand(composerPath, Bundle.Composer_script_label());
     }
 
     @NbBundle.Messages({
-        "Composer.run.init=Composer init",
+        "Composer.run.init=Composer (init)",
         "Composer.lockFile.exists=Composer lock file already exists - overwrite it?"
     })
     public void init(PhpModule phpModule) {
@@ -131,22 +128,22 @@ public final class Composer extends PhpProgram {
         runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init(), params);
     }
 
-    @NbBundle.Messages("Composer.run.install=Composer install")
+    @NbBundle.Messages("Composer.run.install=Composer (install)")
     public void install(PhpModule phpModule) {
         runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_install());
     }
 
-    @NbBundle.Messages("Composer.run.update=Composer update")
+    @NbBundle.Messages("Composer.run.update=Composer (update)")
     public void update(PhpModule phpModule) {
         runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_update());
     }
 
-    @NbBundle.Messages("Composer.run.validate=Composer validate")
+    @NbBundle.Messages("Composer.run.validate=Composer (validate)")
     public void validate(PhpModule phpModule) {
         runCommand(phpModule, VALIDATE_COMMAND, Bundle.Composer_run_validate());
     }
 
-    @NbBundle.Messages("Composer.run.selfUpdate=Composer self-update")
+    @NbBundle.Messages("Composer.run.selfUpdate=Composer (self-update)")
     public void selfUpdate(PhpModule phpModule) {
         runCommand(phpModule, SELF_UPDATE_COMMAND, Bundle.Composer_run_selfUpdate());
     }
@@ -156,45 +153,29 @@ public final class Composer extends PhpProgram {
     }
 
     private void runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
-        ExternalProcessBuilder processBuilder = getBuilder(phpModule, command, commandParams);
-        if (processBuilder == null) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
             warnNoSources(phpModule.getDisplayName());
             return;
         }
-        PhpProgram.executeLater(processBuilder, getDescriptor(), title);
+        new PhpExecutable(composerPath)
+                .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH)
+                .workDir(FileUtil.toFile(sourceDirectory))
+                .displayName(title)
+                .additionalParameters(getAllParameters(command, commandParams))
+                .run(getDescriptor());
     }
 
-    private ExternalProcessBuilder getBuilder(PhpModule phpModule, String command, List<String> commandParams) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
-            return null;
-        }
-        // run file via php interpreter
-        try {
-            ExternalProcessBuilder processBuilder = PhpInterpreter.getDefault()
-                    .getProcessBuilder()
-                    .workingDirectory(FileUtil.toFile(sourceDirectory))
-                    .redirectErrorStream(true)
-                    .addArgument(getProgram());
-            for (String param : getParameters()) {
-                processBuilder = processBuilder.addArgument(param);
-            }
-            for (String param : DEFAULT_PARAMS) {
-                processBuilder = processBuilder.addArgument(param);
-            }
-            processBuilder = processBuilder.addArgument(command);
-            for (String param : commandParams) {
-                processBuilder = processBuilder.addArgument(param);
-            }
-            return processBuilder;
-        } catch (InvalidPhpProgramException ex) {
-            // ignored, should not happen
-        }
-        return super.getProcessBuilder();
+    private List<String> getAllParameters(String command, List<String> commandParams) {
+        List<String> allParams = new ArrayList<String>(DEFAULT_PARAMS.size() + commandParams.size() + 1);
+        allParams.addAll(DEFAULT_PARAMS);
+        allParams.add(command);
+        allParams.addAll(commandParams);
+        return allParams;
     }
 
     private ExecutionDescriptor getDescriptor() {
-        return getExecutionDescriptor()
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(ComposerOptionsPanelController.getOptionsPath())
                 .inputVisible(false);
     }
@@ -203,7 +184,7 @@ public final class Composer extends PhpProgram {
         "# {0} - project name",
         "Composer.project.noSources=Project {0} has no Source Files."
     })
-    public static void warnNoSources(String projectName) {
+    private static void warnNoSources(String projectName) {
         DialogDisplayer.getDefault().notifyLater(
                 new NotifyDescriptor.Message(Bundle.Composer_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
     }

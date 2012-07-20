@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.project.deprecated.PhpInterpreter;
+import org.netbeans.modules.php.project.deprecated.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
