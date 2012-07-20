@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.doctrine2.ui.actions;
 
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.openide.util.NbBundle.Messages;
 
 /**

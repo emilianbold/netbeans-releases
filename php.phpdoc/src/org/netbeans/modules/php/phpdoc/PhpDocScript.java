@@ -42,22 +42,27 @@
 
 package org.netbeans.modules.php.phpdoc;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.phpdoc.ui.PhpDocPreferences;
@@ -69,7 +74,9 @@ import org.openide.util.Utilities;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 
-public class PhpDocScript extends PhpProgram {
+public final class PhpDocScript {
+
+    private static final Logger LOGGER = Logger.getLogger(PhpDocScript.class.getName());
 
     public static final String SCRIPT_NAME = "phpdoc"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
@@ -77,43 +84,37 @@ public class PhpDocScript extends PhpProgram {
 
     private static final boolean IS_WINDOWS = Utilities.isWindows();
 
+    private final String phpDocPath;
 
-    private PhpDocScript(String command) {
-        super(command);
+
+    private PhpDocScript(String phpDocPath) {
+        this.phpDocPath = phpDocPath;
     }
 
     /**
      * Get the default, <b>valid only</b> PhpDoc script.
      * @return the default, <b>valid only</b> PhpDoc script.
-     * @throws InvalidPhpProgramException if PhpDoc script is not valid.
+     * @throws InvalidPhpExecutableException if PhpDoc script is not valid.
      */
-    public static PhpDocScript getDefault() throws InvalidPhpProgramException {
-        return getCustom(PhpDocOptions.getInstance().getPhpDoc());
-    }
-
-    /**
-     * Get the default, <b>valid only</b> PhpDoc script.
-     * @return the default, <b>valid only</b> PhpDoc script.
-     * @throws InvalidPhpProgramException if PhpDoc script is not valid.
-     */
-    private static PhpDocScript getCustom(String command) throws InvalidPhpProgramException {
-        String error = validate(command);
+    public static PhpDocScript getDefault() throws InvalidPhpExecutableException {
+        String phpDocPath = PhpDocOptions.getInstance().getPhpDoc();
+        String error = validate(phpDocPath);
         if (error != null) {
-            throw new InvalidPhpProgramException(error);
+            throw new InvalidPhpExecutableException(error);
         }
-        return new PhpDocScript(command);
+        return new PhpDocScript(phpDocPath);
     }
 
     public static String getOptionsPath() {
         return UiUtils.OPTIONS_PATH + "/" + OPTIONS_SUB_PATH; // NOI18N
     }
 
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(NbBundle.getMessage(PhpDocScript.class, "LBL_PhpDocScript"), getProgram(), false);
+    public static String validate(String composerPath) {
+        return PhpExecutableValidator.validateCommand(composerPath, NbBundle.getMessage(PhpDocScript.class, "LBL_PhpDocScript"));
     }
 
     public void generateDocumentation(final PhpModule phpModule) {
+        assert !EventQueue.isDispatchThread();
         String phpDocTarget = PhpDocPreferences.getPhpDocTarget(phpModule, true);
         if (phpDocTarget == null) {
             // canceled
@@ -121,31 +122,18 @@ public class PhpDocScript extends PhpProgram {
         }
 
         String sanitizedPhpDocTarget = sanitizePath(phpDocTarget);
-        ExternalProcessBuilder processBuilder = getProcessBuilder()
-                // from
-                .addArgument("-d") // NOI18N
-                .addArgument(sanitizePath(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath()))
-                // to
-                .addArgument("-t") // NOI18N
-                .addArgument(sanitizedPhpDocTarget)
-                // title
-                .addArgument("--title") // NOI18N
-                .addArgument(PhpDocPreferences.getPhpDocTitle(phpModule));
-        ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
-                .frontWindow(false)
-                .outConvertorFactory(new ErrorFileLineConvertorFactory(sanitizedPhpDocTarget))
-                .optionsPath(getOptionsPath());
+        Future<Integer> result = new PhpExecutable(phpDocPath)
+                .optionsSubcategory(OPTIONS_SUB_PATH)
+                .displayName(NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()))
+                .additionalParameters(getParameters(sanitizedPhpDocTarget, phpModule))
+                .run(getExecutionDescriptor(sanitizedPhpDocTarget));
 
         try {
-            int status = executeAndWait(
-                    processBuilder,
-                    executionDescriptor,
-                    NbBundle.getMessage(PhpDocScript.class, "LBL_GeneratingPhpDocForProject", phpModule.getDisplayName()));
-            if (status == 0) {
+            if (result.get() == 0) {
                 File index = new File(phpDocTarget, "index.html"); // NOI18N
                 if (index.isFile()) {
                     // false for pdf e.g.
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(index.toURI().toURL());
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(Utilities.toURI(index).toURL());
                 }
             }
         } catch (CancellationException ex) {
@@ -159,12 +147,32 @@ public class PhpDocScript extends PhpProgram {
         }
     }
 
+    private ExecutionDescriptor getExecutionDescriptor(String sanitizedPhpDocTarget) {
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .frontWindow(false)
+                .outConvertorFactory(new ErrorFileLineConvertorFactory(sanitizedPhpDocTarget))
+                .optionsPath(getOptionsPath());
+    }
+
     // #199449
     private String sanitizePath(String path) {
         if (IS_WINDOWS) {
             return path.replace(File.separatorChar, '/'); // NOI18N
         }
         return path;
+    }
+
+    private List<String> getParameters(String sanitizedPhpDocTarget, PhpModule phpModule) {
+        return Arrays.asList(
+                // from
+                "-d", // NOI18N
+                sanitizePath(FileUtil.toFile(phpModule.getSourceDirectory()).getAbsolutePath()),
+                // to
+                "-t", // NOI18N
+                sanitizedPhpDocTarget,
+                // title
+                "--title", // NOI18N
+                PhpDocPreferences.getPhpDocTitle(phpModule));
     }
 
     private class ErrorFileLineConvertorFactory implements ExecutionDescriptor.LineConvertorFactory {
@@ -239,7 +247,4 @@ public class PhpDocScript extends PhpProgram {
 
     }
 
-    public static String validate(String command) {
-        return new PhpDocScript(command).validate();
-    }
 }

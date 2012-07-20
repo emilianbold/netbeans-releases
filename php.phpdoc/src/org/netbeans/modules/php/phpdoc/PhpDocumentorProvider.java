@@ -42,13 +42,13 @@
 
 package org.netbeans.modules.php.phpdoc;
 
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
+import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.openide.util.NbBundle;
 
-public final class PhpDocumentorProvider extends PhpDocProvider {
+public final class PhpDocumentorProvider extends PhpDocumentationProvider {
     public static final String PHPDOC_LAST_FOLDER_SUFFIX = ".phpdoc.dir"; // NOI18N
 
     private static final PhpDocumentorProvider INSTANCE = new PhpDocumentorProvider();
@@ -57,7 +57,7 @@ public final class PhpDocumentorProvider extends PhpDocProvider {
         super("phpDocumentor", NbBundle.getMessage(PhpDocumentorProvider.class, "LBL_Name")); // NOI18N
     }
 
-    @PhpDocProvider.Registration(position=100)
+    @PhpDocumentationProvider.Registration(position=100)
     public static PhpDocumentorProvider getInstance() {
         return INSTANCE;
     }
@@ -66,7 +66,7 @@ public final class PhpDocumentorProvider extends PhpDocProvider {
     public void generateDocumentation(PhpModule phpModule) {
         try {
             PhpDocScript.getDefault().generateDocumentation(phpModule);
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), PhpDocScript.OPTIONS_SUB_PATH);
         }
     }

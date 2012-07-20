@@ -44,17 +44,16 @@ package org.netbeans.modules.php.symfony2;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
+import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.spi.editor.EditorExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.symfony2.annotations.extra.Symfony2ExtraAnnotationsProvider;
 import org.netbeans.modules.php.symfony2.annotations.security.Symfony2SecurityAnnotationsProvider;
 import org.netbeans.modules.php.symfony2.commands.Symfony2CommandSupport;
@@ -157,11 +156,6 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public FrameworkCommandSupport getFrameworkCommandSupport(PhpModule phpModule) {
         return new Symfony2CommandSupport(phpModule);
-    }
-
-    @Override
-    public EditorExtender getEditorExtender(PhpModule phpModule) {
-        return null;
     }
 
     @Override

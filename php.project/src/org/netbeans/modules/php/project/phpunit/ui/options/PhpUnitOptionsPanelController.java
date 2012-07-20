@@ -47,7 +47,7 @@ import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;

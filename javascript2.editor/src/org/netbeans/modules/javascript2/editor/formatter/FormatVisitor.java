@@ -397,6 +397,7 @@ public class FormatVisitor extends NodeVisitor {
             FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
             }
 
             List<CaseNode> nodes = new ArrayList<CaseNode>(switchNode.getCases());
@@ -578,7 +579,6 @@ public class FormatVisitor extends NodeVisitor {
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark

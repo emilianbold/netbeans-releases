@@ -42,26 +42,38 @@
 
 package org.netbeans.modules.php.symfony;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.lang.reflect.Array;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
-import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
-import org.netbeans.modules.php.symfony.commands.SymfonyCommandSupport;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
+import org.netbeans.modules.php.symfony.commands.SymfonyCommand;
+import org.netbeans.modules.php.symfony.commands.SymfonyCommandVO;
+import org.netbeans.modules.php.symfony.commands.SymfonyCommandsXmlParser;
 import org.netbeans.modules.php.symfony.ui.options.SymfonyOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -73,30 +85,41 @@ import org.openide.windows.InputOutput;
 /**
  * @author Tomas Mysik
  */
-public class SymfonyScript extends PhpProgram {
+public class SymfonyScript {
+
+    private static final Logger LOGGER = Logger.getLogger(SymfonyScript.class.getName());
+
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
     public static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
 
-    public static final String CMD_INIT_PROJECT = "generate:project"; // NOI18N
-    public static final String CMD_CLEAR_CACHE = "cache:clear"; // NOI18N
-    public static final String CMD_INIT_APP = "generate:app"; // NOI18N
+    private static final String DEFAULT_PARAM = "--color"; // NOI18N
 
-    SymfonyScript(String command) {
-        super(command);
+    private static final String INIT_PROJECT_COMMAND = "generate:project"; // NOI18N
+    private static final String CLEAR_CACHE_COMMAND = "cache:clear"; // NOI18N
+    private static final String INIT_APP_COMMAND = "generate:app"; // NOI18N
+    private static final String HELP_COMMAND = "help"; // NOI18N
+    private static final String LIST_COMMAND = "list"; // NOI18N
+    private static final List<String> LIST_XML_COMMAND = Arrays.asList("list", "--xml"); // NOI18N
+
+    private final String symfonyPath;
+
+
+    private SymfonyScript(String symfonyPath) {
+        this.symfonyPath = symfonyPath;
     }
 
     /**
      * Get the default, <b>valid only</b> Symfony script.
      * @return the default, <b>valid only</b> Symfony script.
-     * @throws InvalidPhpProgramException if Symfony script is not valid.
+     * @throws InvalidPhpExecutableException if Symfony script is not valid.
      */
-    public static SymfonyScript getDefault() throws InvalidPhpProgramException {
+    public static SymfonyScript getDefault() throws InvalidPhpExecutableException {
         String symfony = SymfonyOptions.getInstance().getSymfony();
         String error = validate(symfony);
         if (error != null) {
-            throw new InvalidPhpProgramException(error);
+            throw new InvalidPhpExecutableException(error);
         }
         return new SymfonyScript(symfony);
     }
@@ -106,10 +129,10 @@ public class SymfonyScript extends PhpProgram {
      * @param phpModule PHP module for which Symfony script is taken
      * @param warn <code>true</code> if user is warned when the {@link #getDefault() default} Symfony script is returned.
      * @return the project specific, <b>valid only</b> Symfony script.
-     * @throws InvalidPhpProgramException if Symfony script is not valid. If not found, the {@link #getDefault() default} Symfony script is returned.
+     * @throws InvalidPhpExecutableException if Symfony script is not valid. If not found, the {@link #getDefault() default} Symfony script is returned.
      * @see #getDefault()
      */
-    public static SymfonyScript forPhpModule(PhpModule phpModule, boolean warn) throws InvalidPhpProgramException {
+    public static SymfonyScript forPhpModule(PhpModule phpModule, boolean warn) throws InvalidPhpExecutableException {
         String symfony = new File(FileUtil.toFile(phpModule.getSourceDirectory()), SCRIPT_NAME).getAbsolutePath();
         String error = validate(symfony);
         if (error != null) {
@@ -122,6 +145,11 @@ public class SymfonyScript extends PhpProgram {
             return getDefault();
         }
         return new SymfonyScript(symfony);
+    }
+
+    @NbBundle.Messages("SymfonyScript.script.label=Symfony script")
+    public static String validate(String command) {
+        return PhpExecutableValidator.validateCommand(command, Bundle.SymfonyScript_script_label());
     }
 
     /**
@@ -138,28 +166,38 @@ public class SymfonyScript extends PhpProgram {
         return OPTIONS_SUB_PATH;
     }
 
-    @NbBundle.Messages("SymfonyScript.script.label=Symfony script")
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(Bundle.SymfonyScript_script_label(), getProgram(), false);
+    public void runCommand(PhpModule phpModule, List<String> parameters, Runnable postExecution) {
+        createPhpExecutable(phpModule)
+                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .additionalParameters(getAllParams(parameters))
+                .run(getDescriptor(postExecution));
     }
 
-    public static String validate(String command) {
-        return new SymfonyScript(command).validate();
+    public void clearCache(PhpModule phpModule) {
+        runCommand(phpModule, Collections.singletonList(CLEAR_CACHE_COMMAND), null);
     }
 
     public boolean initProject(PhpModule phpModule, String[] params) {
         String projectName = phpModule.getDisplayName();
+        List<String> allParams = new ArrayList<String>();
+        allParams.add(INIT_PROJECT_COMMAND);
+        allParams.add(projectName);
+        allParams.addAll(Arrays.asList(params));
 
-        String[] cmdParams = mergeArrays(new String[]{projectName}, params);
-        SymfonyCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, cmdParams);
-        if (processBuilder == null) {
-            // #172777
-            return false;
+        try {
+        createPhpExecutable(phpModule)
+                .displayName(getDisplayName(phpModule, allParams.get(0)))
+                .additionalParameters(getAllParams(allParams))
+                .warnUser(false)
+                .run(getDescriptor(null))
+                .get();
+        } catch (CancellationException ex) {
+            // canceled
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            // wizard handles it
         }
-        ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
-        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_PROJECT, cmdParams), false);
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
 
@@ -167,24 +205,89 @@ public class SymfonyScript extends PhpProgram {
         assert StringUtils.hasText(app);
         assert params != null;
 
-        String[] cmdParams = mergeArrays(params, new String[]{app});
-        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createCommand(CMD_INIT_APP, cmdParams);
-        assert processBuilder != null;
-        ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
-        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_APP, cmdParams), true);
+        List<String> allParams = new ArrayList<String>();
+        allParams.add(INIT_APP_COMMAND);
+        allParams.add(app);
+        allParams.addAll(Arrays.asList(params));
+
+        createPhpExecutable(phpModule)
+                .displayName(getDisplayName(phpModule, allParams.get(0)))
+                .additionalParameters(getAllParams(allParams))
+                .warnUser(false)
+                .run(getDescriptor(null));
     }
 
-    public static String getHelp(PhpModule phpModule, FrameworkCommand command) {
+    public String getHelp(PhpModule phpModule, String[] params) {
         assert phpModule != null;
-        assert command != null;
 
-        FrameworkCommandSupport commandSupport = SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand("help", command.getCommands()); // NOI18N
-        assert processBuilder != null;
+        List<String> allParams = new ArrayList<String>();
+        allParams.add(HELP_COMMAND);
+        allParams.addAll(Arrays.asList(params));
 
-        final HelpLineProcessor lineProcessor = new HelpLineProcessor();
-        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
+        HelpLineProcessor lineProcessor = new HelpLineProcessor();
+        Future<Integer> result = createPhpExecutable(phpModule)
+                .displayName(getDisplayName(phpModule, allParams.get(0)))
+                .additionalParameters(getAllParams(allParams))
+                .pureOutputOnly(true)
+                .run(getDescriptorWithLineProcessor(lineProcessor));
+        try {
+            result.get();
+        } catch (CancellationException ex) {
+            // canceled
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, getOptionsSubPath());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
+        return lineProcessor.getHelp();
+    }
+
+    public List<FrameworkCommand> getCommands(PhpModule phpModule) {
+        List<FrameworkCommand> freshCommands = getFrameworkCommandsInternalXml(phpModule);
+        if (freshCommands != null) {
+            return freshCommands;
+        }
+        freshCommands = getFrameworkCommandsInternalConsole(phpModule);
+        if (freshCommands != null) {
+            return freshCommands;
+        }
+        // some error => rerun command with console
+        runCommand(phpModule, Collections.singletonList(LIST_COMMAND), null);
+        return null;
+    }
+
+    private PhpExecutable createPhpExecutable(PhpModule phpModule) {
+        return new PhpExecutable(symfonyPath)
+                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()));
+    }
+
+    private List<String> getAllParams(List<String> params) {
+        List<String> allParams = new ArrayList<String>();
+        allParams.add(DEFAULT_PARAM);
+        allParams.addAll(params);
+        return allParams;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "# {1} - command",
+        "SymfonyScript.command.title={0} ({1})"
+    })
+    private String getDisplayName(PhpModule phpModule, String command) {
+        return Bundle.SymfonyScript_command_title(phpModule.getDisplayName(), command);
+    }
+
+    private ExecutionDescriptor getDescriptor(Runnable postExecution) {
+        ExecutionDescriptor executionDescriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(OPTIONS_SUB_PATH);
+        if (postExecution != null) {
+            executionDescriptor = executionDescriptor.postExecution(postExecution);
+        }
+        return executionDescriptor;
+    }
+
+    private ExecutionDescriptor getDescriptorWithLineProcessor(final LineProcessor lineProcessor) {
+        return new ExecutionDescriptor()
                 .inputOutput(InputOutput.NULL)
                 .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
             @Override
@@ -192,35 +295,88 @@ public class SymfonyScript extends PhpProgram {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
         });
-        runService(processBuilder, executionDescriptor, "getting help for: " + command.getPreview(), true); // NOI18N
-        return lineProcessor.getHelp();
     }
 
-    static <T> T[] mergeArrays(T[]... arrays) {
-        List<T> list = new LinkedList<T>();
-        for (T[] array : arrays) {
-            list.addAll(Arrays.asList(array));
-        }
-        @SuppressWarnings("unchecked")
-        T[] merged = (T[]) Array.newInstance(arrays[0].getClass().getComponentType(), list.size());
-        return list.toArray(merged);
+    private ExecutionDescriptor getSilentDescriptor() {
+        return new ExecutionDescriptor();
     }
 
-    private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {
+    private List<FrameworkCommand> getFrameworkCommandsInternalXml(PhpModule phpModule) {
+        File tmpFile;
         try {
-            executeAndWait(processBuilder, executionDescriptor, title);
+            tmpFile = File.createTempFile("nb-symfony-commands-", ".xml"); // NOI18N
+            tmpFile.deleteOnExit();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            return null;
+        }
+        Future<Integer> result = createPhpExecutable(phpModule)
+                .fileOutput(tmpFile)
+                .pureOutputOnly(true)
+                .warnUser(false)
+                .additionalParameters(LIST_XML_COMMAND)
+                .run(getSilentDescriptor());
+        try {
+            if (result.get() != 0) {
+                // error
+                return null;
+            }
         } catch (CancellationException ex) {
             // canceled
+            return null;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return null;
         } catch (ExecutionException ex) {
-            if (warnUser) {
-                UiUtils.processExecutionException(ex, SymfonyScript.getOptionsSubPath());
+            // ignored
+            return null;
+        }
+        List<SymfonyCommandVO> commandsVO = new ArrayList<SymfonyCommandVO>();
+        try {
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile)));
+            SymfonyCommandsXmlParser.parse(reader, commandsVO);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } finally {
+            tmpFile.delete();
+        }
+        if (commandsVO.isEmpty()) {
+            // error
+            return null;
+        }
+        List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>(commandsVO.size());
+        for (SymfonyCommandVO command : commandsVO) {
+            commands.add(new SymfonyCommand(phpModule, command.getCommand(), command.getDescription(), command.getCommand()));
+        }
+        return commands;
+    }
+
+    private List<FrameworkCommand> getFrameworkCommandsInternalConsole(PhpModule phpModule) {
+        CommandsLineProcessor lineProcessor = new CommandsLineProcessor(phpModule);
+        List<FrameworkCommand> freshCommands;
+        Future<Integer> task = createPhpExecutable(phpModule)
+                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .additionalParameters(Collections.singletonList(LIST_COMMAND))
+                .pureOutputOnly(true)
+                .run(getDescriptorWithLineProcessor(lineProcessor));
+        try {
+            if (task.get().intValue() == 0) {
+                freshCommands = lineProcessor.getCommands();
+                if (!freshCommands.isEmpty()) {
+                    return freshCommands;
+                }
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
+        return null;
     }
 
-    static class HelpLineProcessor implements LineProcessor {
+    //~ Inner classes
+
+    static final class HelpLineProcessor implements LineProcessor {
         private final StringBuilder buffer = new StringBuilder(500);
 
         @Override
@@ -241,4 +397,65 @@ public class SymfonyScript extends PhpProgram {
             return buffer.toString().trim() + "\n"; // NOI18N
         }
     }
+
+    //~ Inner classes
+
+    static final class CommandsLineProcessor implements LineProcessor {
+
+        private static final Pattern COMMAND_PATTERN = Pattern.compile("^\\:(\\S+)\\s+(.+)$"); // NOI18N
+        private static final Pattern PREFIX_PATTERN = Pattern.compile("^(\\w+)$"); // NOI18N
+
+        // @GuardedBy(commands)
+        private final List<FrameworkCommand> commands = new ArrayList<FrameworkCommand>();
+        private final PhpModule phpModule;
+        private String prefix;
+
+
+        public CommandsLineProcessor(PhpModule phpModule) {
+            this.phpModule = phpModule;
+        }
+
+        @Override
+        public void processLine(String line) {
+            if (!StringUtils.hasText(line)) {
+                prefix = null;
+                return;
+            }
+
+            String trimmed = line.trim();
+            Matcher prefixMatcher = PREFIX_PATTERN.matcher(trimmed);
+            if (prefixMatcher.matches()) {
+                prefix = prefixMatcher.group(1);
+            }
+            Matcher commandMatcher = COMMAND_PATTERN.matcher(trimmed);
+            if (commandMatcher.matches()) {
+                String command = commandMatcher.group(1);
+                if (prefix != null) {
+                    command = prefix + ":" + command; // NOI18N
+                }
+                String description = commandMatcher.group(2);
+                synchronized (commands) {
+                    commands.add(new SymfonyCommand(phpModule, command, description, command));
+                }
+            }
+        }
+
+        public List<FrameworkCommand> getCommands() {
+            List<FrameworkCommand> copy;
+            synchronized (commands) {
+                copy = new ArrayList<FrameworkCommand>(commands);
+            }
+            return copy;
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
+        public void reset() {
+        }
+
+    }
+
 }
