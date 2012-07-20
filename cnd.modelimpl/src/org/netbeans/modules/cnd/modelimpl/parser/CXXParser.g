@@ -1932,8 +1932,9 @@ new_placement:
  *  new (int(*p)) int; // new-placement expression
  */
 new_type_id:
-        type_specifier+
-        ((ptr_operator)=>
+        type_specifier
+        (type_specifier)*
+        ((LSQUARE | ptr_operator)=>
             new_declarator)?
     ;
 
