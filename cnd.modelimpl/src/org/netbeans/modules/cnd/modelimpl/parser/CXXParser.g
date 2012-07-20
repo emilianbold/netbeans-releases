@@ -939,14 +939,14 @@ noptr_declarator:
 
 declarator returns [declarator_type_t type]
     :
-        noptr_declarator 
-//            {{ type = $noptr_declarator.type; }}
-    |
         (ptr_operator)=>
             ptr_operator nested=declarator
 //                {{ type = $nested.type;
 //                   type.apply_ptr($ptr_operator.type);
 //                }}
+    |
+        noptr_declarator 
+//            {{ type = $noptr_declarator.type; }}
     ;
 
 // is quite unpretty because of left recursion removed here
