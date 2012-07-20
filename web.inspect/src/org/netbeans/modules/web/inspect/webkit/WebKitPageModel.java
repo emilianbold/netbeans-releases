@@ -165,7 +165,7 @@ public class WebKitPageModel extends PageModel {
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
                         updateNodes(parent);
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
                 }
             }
@@ -176,7 +176,7 @@ public class WebKitPageModel extends PageModel {
                     int nodeId = parent.getNodeId();
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
                     // Nodes with a content document are removed and added
                     // again when a content document changes (and sometimes
@@ -196,7 +196,7 @@ public class WebKitPageModel extends PageModel {
                     updateNodes(child);
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
                 }
             }
@@ -325,7 +325,7 @@ public class WebKitPageModel extends PageModel {
             });
         }
         if (updateChildren) {
-            domNode.updateChildren();
+            domNode.updateChildren(node);
         }
         return domNode;
     }

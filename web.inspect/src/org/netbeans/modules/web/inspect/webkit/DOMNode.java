@@ -185,7 +185,8 @@ public class DOMNode extends AbstractNode {
     /**
      * Forces update of the children/sub-nodes.
      */
-    void updateChildren() {
+    void updateChildren(Node node) {
+        this.node = node;
         DOMChildren children = (DOMChildren)getChildren();
         children.updateKeys(node);
     }
