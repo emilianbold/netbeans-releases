@@ -180,16 +180,17 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                             }
                         }
                         dashboard.myProjectsProgressFinished();
+                        
                     }
                 });
 
 
                 component.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-                btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
+                btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/open.png", true), getOpenAction()); //NOI18N
                 btnOpen.setText(null);
                 btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
                 btnOpen.setRolloverEnabled(true);
-                btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_over.png", true)); // NOI18N
+                btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/open_over.png", true)); // NOI18N
                 component.add( btnOpen, new GridBagConstraints(7,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
             }
             lbl.setForeground(foreground);
@@ -270,7 +271,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 if (btnBugs!=null) {
                     component.remove(btnBugs);
                 }
-                btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
+                btnBugs = new LinkButton(bug.getText(), ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/bug.png", true), qaccessor.getOpenQueryResultAction(bug)); // NOI18N
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
                 btnBugs.setToolTipText(bug.getToolTipText());
                 component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
