@@ -133,7 +133,8 @@ class JSClientGenerator {
             return Collections.emptyMap();
         }
         Map<String,String> result = new HashMap<String, String>();
-        myModels = new StringBuilder();               
+        myModels = new StringBuilder();        
+        myRouters = new StringBuilder();
         JavaSource javaSource = JavaSource.forFileObject( restSource);
         final String restClass = myDescription.getClassName();
         Task<CompilationController> task = new Task<CompilationController>(){
@@ -199,9 +200,9 @@ class JSClientGenerator {
         if ( !isModelGenerated ){
             myModels.append("// No JSON media type is detected in GET RESTful methods\n");
         }
-        result.put("models",myModels.toString());           // NOI18N
-        //TODO : fill other template attributes 
-        result.put("routers", "");
+        result.put("models",myModels.toString());           // NOI18N 
+        result.put("routers", myRouters.toString());        // NOI18N 
+        //TODO : fill other template attributes
         result.put("header", "");
         result.put("sidebar", "");
         result.put("content", "");
@@ -275,7 +276,7 @@ class JSClientGenerator {
                         returnType , controller));
                 paths.put(HttpRequests.DELETE, parseNoIdPath(deleteMethods,
                         returnType, controller ));
-                generateBackendModel( (TypeElement)returnElement , path , 
+                generate( (TypeElement)returnElement , path , 
                         null, paths , Collections.<HttpRequests, Boolean>emptyMap(), 
                         controller );
             }
@@ -317,7 +318,7 @@ class JSClientGenerator {
                         HttpRequests.PUT, controller );
                 parsePath(deleteMethods, returnType, paths, ids, 
                         HttpRequests.DELETE, controller );
-                generateBackendModel( (TypeElement)returnElement , path , 
+                generate( (TypeElement)returnElement , path , 
                         collectionPath, paths, ids, controller );
             }
         }
@@ -412,8 +413,73 @@ class JSClientGenerator {
             }
         }
     }
+    
+    private void generate( TypeElement entity, String path,
+            String collectionPath, Map<HttpRequests, String> httpPaths ,
+            Map<HttpRequests, Boolean> useIds,
+            CompilationController controller ) throws IOException
+    {
+        Set<ModelAttribute> modelAttributes = generateBackboneModel(entity, path, 
+                collectionPath, httpPaths, useIds, controller);
+        generateRouters(entity, path, collectionPath, httpPaths, useIds, 
+                controller);
+    }
 
-    private void generateBackendModel( TypeElement entity, String path,
+    private void generateRouters( TypeElement entity, String path,
+            String collectionPath, Map<HttpRequests, String> httpPaths,
+            Map<HttpRequests, Boolean> useIds, CompilationController controller )
+    {
+        if ( myModelsCount >0 ){
+            myRouters.append("/*");                                       // NOI18N
+        }
+        myRouters.append("var AppRouter");                                // NOI18N
+        if ( myModelsCount >0 ){
+            myRouters.append(myModelsCount);                              // NOI18N
+        }
+        myRouters.append(" = Backbone.Router.extend({\n");                // NOI18N
+        
+        boolean hasCollection = collectionPath != null; 
+        /*
+         *  Fill routes
+         */
+        // default route used on page loading 
+        myRouters.append("routes:{\n");                                   // NOI18N
+        if ( hasCollection ){
+            myRouters.append("'':'list'");                                // NOI18N
+        }
+        else {
+            myRouters.append("'':'details'");                             // NOI18N
+        }
+        // #new route if there is a POST request in the REST
+        if ( httpPaths.containsKey( HttpRequests.POST)){
+            myRouters.append(",\n'new':'create'");                        // NOI18N
+        }
+        // #id route if REST has a method for collection
+        if ( hasCollection ){
+            myRouters.append(",\n':id':'details'\n");                     // NOI18N
+        }
+        myRouters.append("},\n");                                         // NOI18N
+        
+        // add method getData which returns composite object data got from HTML controls 
+        myRouters.append("getData: function(){\n");                       // NOI18N
+        myRouters.append("return {\n");                                   // NOI18N
+        // TODO : put here comments with some code suggestion based on the model
+        myRouters.append("};\n}\n");                                      // NOI18N
+        
+        myRouters.append("});\n");                                        // NOI18N
+        myRouters.append("new AppRouter");                                // NOI18N
+        if ( myModelsCount >0 ){
+            myRouters.append(myModelsCount);                              // NOI18N
+        }
+        myRouters.append("();\n");                                        // NOI18N
+        
+        if ( myModelsCount >0 ){
+            myRouters.append("*/"); 
+        }
+        myModelsCount++;
+    }
+
+    private Set<ModelAttribute> generateBackboneModel( TypeElement entity, String path,
             String collectionPath, Map<HttpRequests, String> httpPaths ,
             Map<HttpRequests, Boolean> useIds,
             CompilationController controller ) throws IOException
@@ -440,21 +506,45 @@ class JSClientGenerator {
         myModels.append("urlRoot : \"");                       // NOI18N
         myModels.append( url );
         myModels.append("\"");                                 // NOI18N
-        String parsedData = parse(entity, controller);
+        Set<ModelAttribute> set = new HashSet<ModelAttribute>();
+        String parsedData = parse(entity, set , controller);
+        String displayNameAlias=null;
         if ( parsedData != null ){
             myModels.append(',');                              
             myModels.append(parsedData);
         }
-        String sync = overrideSync( url, httpPaths , useIds ); 
+        if ( !set.isEmpty() ){
+            // suggest what attribute could be used as displayName 
+            
+            ModelAttribute preffered  = ModelAttribute.getPreffered();
+            if ( set.contains( preffered )){
+                displayNameAlias = preffered.getName();
+            }
+            else {
+                for( ModelAttribute attr : set ){
+                    displayNameAlias = attr.getName();
+                    if ( attr.isId() ){
+                        break;
+                    }
+                }
+            }
+            myModels.append(",\n initialize: function(){\n");      // NOI18N
+            myModels.append("// displayName property is used to render item in the list\n");// NOI18N
+            myModels.append("this.set('displayName', this.get('"); // NOI18N
+            myModels.append(displayNameAlias);
+            myModels.append("'));\n}");                          // NOI18N
+        }
+          
+        String sync = overrideSync( url, httpPaths , useIds, displayNameAlias ); 
         if ( sync != null && sync.length()>0 ){
-            myModels.append(",\n");                             // NOI18N
+            myModels.append(",\n");                            // NOI18N
             myModels.append(sync);
             myModels.append("\n");                             // NOI18N
         }
         myModels.append("\n});\n\n");                          // NOI18N
         
         if ( collectionPath == null){
-            return;
+            return set;
         }
         myModels.append("\n// Collection class for ");          // NOI18N
         if ( name.equals(modelName)){
@@ -474,11 +564,12 @@ class JSClientGenerator {
         myModels.append( getUrl( collectionPath ));
         myModels.append("\"\n");                               // NOI18N
         myModels.append("});\n\n");                            // NOI18N
+        return set;
     }
 
     private String overrideSync( String url,
             Map<HttpRequests, String> httpPaths,
-            Map<HttpRequests, Boolean> useIds ) throws IOException 
+            Map<HttpRequests, Boolean> useIds, String displayName ) throws IOException 
     {
         StringBuilder builder = new StringBuilder();
         for( Entry<HttpRequests,String> entry : httpPaths.entrySet() ){
@@ -490,9 +581,15 @@ class JSClientGenerator {
         for( HttpRequests request : set  ){
             overrideMethod(url, null, null, request, builder);
         }
-        if ( builder.length()>0 ){
+        if ( builder.length()>0 || displayName != null){
             builder.insert(0, "sync: function(method, model, options){\n");         // NOI18N
-            builder.append("return Backbone.sync(method, model, options);\n}\n");   // NOI18N
+            builder.append("var result = Backbone.sync(method, model, options);\n");// NOI18N
+            if ( displayName!= null ){
+                builder.append("this.set('displayName',this.get('");                // NOI18N
+                builder.append(displayName);
+                builder.append("'));\n");                                           // NOI18N
+            }
+            builder.append("return result;\n}\n");                                  // NOI18N
         }
         return builder.toString();
     }
@@ -523,7 +620,9 @@ class JSClientGenerator {
         }
     }
 
-    private String parse( TypeElement entity, CompilationController controller ) {
+    private String parse( TypeElement entity, Set<ModelAttribute> set,
+            CompilationController controller ) 
+    {
         /*
          *  parse entity and generate attributes:
          *  1) idAttribute
@@ -553,11 +652,13 @@ class JSClientGenerator {
             if ( attributes.size() >0 ){
                 builder.append(',');                                  
             }
+            set.add( new ModelAttribute(true, idAttr));
         }
         
         if (attributes.size() > 0) {
             builder.append("\ndefaults: {");                            // NOI18N
             for (String attribute : attributes) {
+                set.add( new ModelAttribute(attribute));
                 builder.append("\n");                                   // NOI18N
                 builder.append(attribute);
                 builder.append(": \"\",");                              // NOI18N
@@ -919,7 +1020,9 @@ class JSClientGenerator {
     
     private RestServiceDescription myDescription;
     private StringBuilder myModels;
+    private StringBuilder myRouters;
     private Set<String> myEntities  = new HashSet<String>();
     private boolean isModelGenerated;
+    private int myModelsCount;
 
 }
