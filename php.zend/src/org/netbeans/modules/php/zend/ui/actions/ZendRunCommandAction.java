@@ -66,7 +66,7 @@ public final class ZendRunCommandAction extends RunCommandAction {
         if (!ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule)) {
             return;
         }
-        ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+        ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).openPanel();
     }
 
     @Override

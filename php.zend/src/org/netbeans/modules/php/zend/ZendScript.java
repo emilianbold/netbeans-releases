@@ -42,70 +42,117 @@
 
 package org.netbeans.modules.php.zend;
 
+import java.awt.EventQueue;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
 import org.netbeans.modules.php.zend.commands.ZendCommand;
-import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.ui.options.ZendOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
  * @author Tomas Mysik
  */
-public class ZendScript extends PhpProgram {
+public final class ZendScript {
+
+    private static final Logger LOGGER = Logger.getLogger(ZendScript.class.getName());
+
     public static final String SCRIPT_NAME = "zf"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
     public static final String OPTIONS_SUB_PATH = "Zend"; // NOI18N
 
-    public static final String ENV_INCLUDE_PATH_PREPEND = "ZEND_TOOL_INCLUDE_PATH_PREPEND"; // NOI18N
+    static final String COMMANDS_SEPARATOR = ":NB:"; // NOI18N
 
-    public static final String CMD_INIT_PROJECT = "create"; // NOI18N
-    public static final String[] CMD_INIT_PROJECT_ARGS = new String[] {"project", "."}; // NOI18N
-    public static final String[] CMD_INIT_PROJECT_ARGS_TITLE = new String[] {"project"}; // NOI18N
+    // environment variables
+    private static final String ENV_INCLUDE_PATH_PREPEND = "ZEND_TOOL_INCLUDE_PATH_PREPEND"; // NOI18N
+    private static final Map<String, String> ENVIRONMENT_VARIABLES;
 
-    private static final String[] CMD_CREATE_CONFIG = new String[] {"create", "config"}; // NOI18N
-    private static final String[] CMD_ENABLE_CONFIG = new String[] {"enable", "config.provider", "NetBeansCommandsProvider"}; // NOI18N
+    // commands
+    private static final String HELP_COMMAND = "?"; // NOI18N
+    private static final List<String> INIT_PROJECT_COMMAND = Arrays.asList("create", "project"); // NOI18N
+    private static final List<String> CREATE_CONFIG_COMMAND = Arrays.asList("create", "config"); // NOI18N
+    private static final List<String> ENABLE_CONFIG_COMMAND = Arrays.asList("enable", "config.provider", "NetBeansCommandsProvider"); // NOI18N
+    private static final List<String> SHOW_COMMANDS_COMMAND = Arrays.asList("show", "nb-commands", COMMANDS_SEPARATOR); // NOI18N
 
-    private ZendScript(String command) {
-        super(command);
+    // commands provider
+    private static final String COMMANDS_PROVIDER_REL_PATH = "zend/NetBeansCommandsProvider.php"; // NOI18N
+    private static final File COMMANDS_PROVIDER;
+
+    static {
+        File commandsProvider = null;
+        try {
+            commandsProvider = FileUtil.normalizeFile(
+                    InstalledFileLocator.getDefault().locate(COMMANDS_PROVIDER_REL_PATH, "org.netbeans.modules.php.zend", false).getCanonicalFile()); // NOI18N
+            if (commandsProvider == null || !commandsProvider.isFile()) {
+                throw new IllegalStateException("Could not locate file " + COMMANDS_PROVIDER_REL_PATH);
+            }
+        } catch (IOException ex) {
+            throw new IllegalStateException("Could not locate file " + COMMANDS_PROVIDER_REL_PATH, ex);
+        }
+        COMMANDS_PROVIDER = commandsProvider;
+        ENVIRONMENT_VARIABLES = Collections.singletonMap(ZendScript.ENV_INCLUDE_PATH_PREPEND, COMMANDS_PROVIDER.getParentFile().getAbsolutePath());
+    }
+
+    private final String zendPath;
+
+
+    private ZendScript(String zendPath) {
+        this.zendPath = zendPath;
     }
 
     /**
      * Get the default, <b>valid only</b> Zend script.
      * @return the default, <b>valid only</b> Zend script.
-     * @throws InvalidPhpProgramException if Zend script is not valid.
+     * @throws InvalidPhpExecutableException if Zend script is not valid.
      */
-    public static ZendScript getDefault() throws InvalidPhpProgramException {
+    public static ZendScript getDefault() throws InvalidPhpExecutableException {
         return getCustom(ZendOptions.getInstance().getZend());
     }
 
     /**
-     * Get the default, <b>valid only</b> Zend script.
-     * @return the default, <b>valid only</b> Zend script.
-     * @throws InvalidPhpProgramException if Zend script is not valid.
+     * Get custom, <b>valid only</b> Zend script.
+     * @return the custom, <b>valid only</b> Zend script.
+     * @throws InvalidPhpExecutableException if Zend script is not valid.
      */
-    private static ZendScript getCustom(String command) throws InvalidPhpProgramException {
-        String error = validate(command);
+    public static ZendScript getCustom(String zendPath) throws InvalidPhpExecutableException {
+        String error = validate(zendPath);
         if (error != null) {
-            throw new InvalidPhpProgramException(error);
+            throw new InvalidPhpExecutableException(error);
         }
-        return new ZendScript(command);
+        return new ZendScript(zendPath);
+    }
+
+    @NbBundle.Messages("ZendScript.script.label=Zend script")
+    public static String validate(String zendPath) {
+        return PhpExecutableValidator.validateCommand(zendPath, Bundle.ZendScript_script_label());
     }
 
     /**
@@ -122,62 +169,49 @@ public class ZendScript extends PhpProgram {
         return OPTIONS_SUB_PATH;
     }
 
-    public static String getHelp(PhpModule phpModule, ZendCommand zendCommand) {
+    public String getHelp(PhpModule phpModule, List<String> parameters) {
+        assert !EventQueue.isDispatchThread();
         assert phpModule != null;
-        assert zendCommand != null;
 
-        FrameworkCommandSupport commandSupport = ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(zendCommand.getCommands(), "?"); // NOI18N
-        assert processBuilder != null;
-
-        final HelpLineProcessor lineProcessor = new HelpLineProcessor();
-        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-            @Override
-            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
-            }
-        });
-        runService(processBuilder, executionDescriptor, "getting help for: " + zendCommand.getPreview(), true); // NOI18N
+        List<String> allParameters = new ArrayList<String>(parameters);
+        allParameters.add(HELP_COMMAND);
+        HelpLineProcessor lineProcessor = new HelpLineProcessor();
+        Future<Integer> result = createPhpExecutable()
+                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .additionalParameters(allParameters)
+                .pureOutputOnly(true)
+                .run(getDescriptorWithLineProcessor(lineProcessor));
+        try {
+            result.get();
+        } catch (CancellationException ex) {
+            // canceled
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, getOptionsSubPath());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
         return lineProcessor.getHelp();
     }
 
-    @NbBundle.Messages("ZendScript.script.label=Zend script")
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(Bundle.ZendScript_script_label(), getProgram(), false);
-    }
-
-    public static String validate(String command) {
-        return new ZendScript(command).validate();
-    }
-
-    // 180184, needed for ZF 1.10+
-    public static void registerNetBeansProvider() {
-        registerNetBeansProvider(null);
-    }
-
-    public static void registerNetBeansProvider(String command) {
+    @NbBundle.Messages("ZendScript.register.provider=Zend provider registration")
+    public void registerNetBeansProvider() {
+        ExecutionDescriptor descriptor = getDescriptor(null);
         try {
-            ZendScript zendScript = command != null ? getCustom(command) : getDefault();
-
-            ExecutionDescriptor executionDescriptor = getExecutionDescriptor()
-                    .optionsPath(getOptionsPath());
-
             // create config
-            ExternalProcessBuilder processBuilder = ZendCommandSupport.registerIncludePathPrepend(zendScript.getProcessBuilder());
-            for (String arg : CMD_CREATE_CONFIG) {
-                processBuilder = processBuilder.addArgument(arg);
-            }
-            executeAndWait(processBuilder, executionDescriptor, StringUtils.implode(Arrays.asList(CMD_CREATE_CONFIG), " ")); // NOI18N
+            createPhpExecutable()
+                    .displayName(Bundle.ZendScript_register_provider())
+                    .additionalParameters(CREATE_CONFIG_COMMAND)
+                    .run(descriptor)
+                    .get();
 
+            descriptor = descriptor.noReset(true);
             // enable config
-            processBuilder = ZendCommandSupport.registerIncludePathPrepend(zendScript.getProcessBuilder());
-            for (String arg : CMD_ENABLE_CONFIG) {
-                processBuilder = processBuilder.addArgument(arg);
-            }
-            executeAndWait(processBuilder, executionDescriptor, StringUtils.implode(Arrays.asList(CMD_ENABLE_CONFIG), " ")); // NOI18N
+            createPhpExecutable()
+                    .displayName(Bundle.ZendScript_register_provider())
+                    .additionalParameters(ENABLE_CONFIG_COMMAND)
+                    .run(descriptor)
+                    .get();
 
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                 NbBundle.getMessage(ZendScript.class, "MSG_ProviderRegistrationInfo"),
@@ -188,35 +222,102 @@ public class ZendScript extends PhpProgram {
             UiUtils.processExecutionException(ex, getOptionsSubPath());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-        } catch (InvalidPhpProgramException ex) {
-            UiUtils.invalidScriptProvided(ex.getLocalizedMessage(), getOptionsSubPath());
         }
     }
 
     public boolean initProject(PhpModule phpModule) {
-        ZendCommandSupport commandSupport = ZendPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule);
-        ExternalProcessBuilder processBuilder = commandSupport.createSilentCommand(CMD_INIT_PROJECT, CMD_INIT_PROJECT_ARGS);
-        if (processBuilder == null) {
-            return false;
-        }
-        ExecutionDescriptor executionDescriptor = commandSupport.getDescriptor();
-        runService(processBuilder, executionDescriptor, commandSupport.getOutputTitle(CMD_INIT_PROJECT, CMD_INIT_PROJECT_ARGS_TITLE), false);
-        return ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
-    }
-
-    private static void runService(ExternalProcessBuilder processBuilder, ExecutionDescriptor executionDescriptor, String title, boolean warnUser) {
         try {
-            executeAndWait(processBuilder, executionDescriptor, title);
+            createPhpExecutable()
+                    .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                    .displayName(getDisplayName(phpModule, INIT_PROJECT_COMMAND.get(0)))
+                    .additionalParameters(INIT_PROJECT_COMMAND)
+                    .run(getDescriptor(null))
+                    .get();
         } catch (CancellationException ex) {
             // canceled
         } catch (ExecutionException ex) {
-            if (warnUser) {
-                UiUtils.processExecutionException(ex, getOptionsSubPath());
-            }
+            UiUtils.processExecutionException(ex, getOptionsSubPath());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
+        return ZendPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
+
+    @NbBundle.Messages("ZendScript.noCommands.registerProvider=No commands found. Do you want to register NetBeans provider (for ZF 1.10 or newer)?")
+    public List<FrameworkCommand> getCommands(PhpModule phpModule) {
+        CommandsLineProcessor lineProcessor = new CommandsLineProcessor(phpModule);
+        List<FrameworkCommand> freshCommands;
+        Future<Integer> task = createPhpExecutable()
+                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .additionalParameters(SHOW_COMMANDS_COMMAND)
+                .pureOutputOnly(true)
+                .run(getDescriptorWithLineProcessor(lineProcessor));
+        try {
+            if (task.get().intValue() == 0) {
+                freshCommands = lineProcessor.getCommands();
+                if (!freshCommands.isEmpty()) {
+                    return freshCommands;
+                }
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        // error => rerun with output window
+        runCommand(phpModule, SHOW_COMMANDS_COMMAND, null);
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                Bundle.ZendScript_noCommands_registerProvider(),
+                NotifyDescriptor.YES_NO_OPTION);
+        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+            registerNetBeansProvider();
+        }
+        return null;
+    }
+
+    public void runCommand(PhpModule phpModule, List<String> parameters, Runnable postExecution) {
+        createPhpExecutable()
+                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .additionalParameters(parameters)
+                .run(getDescriptor(postExecution));
+    }
+
+    private PhpExecutable createPhpExecutable() {
+        return new PhpExecutable(zendPath)
+                .viaPhpInterpreter(false)
+                .viaAutodetection(false)
+                .environmentVariables(ENVIRONMENT_VARIABLES);
+    }
+
+    private ExecutionDescriptor getDescriptor(Runnable postExecution) {
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(getOptionsPath())
+                .inputVisible(false)
+                .postExecution(postExecution);
+    }
+
+    private ExecutionDescriptor getDescriptorWithLineProcessor(final LineProcessor lineProcessor) {
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            @Override
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
+            }
+        });
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "# {1} - command",
+        "ZendScript.command.title={0} ({1})"
+    })
+    private String getDisplayName(PhpModule phpModule, String command) {
+        return Bundle.ZendScript_command_title(phpModule.getDisplayName(), command);
+    }
+
+    //~ Inner classes
 
     static class HelpLineProcessor implements LineProcessor {
         private final StringBuilder buffer = new StringBuilder(2000);
@@ -239,4 +340,58 @@ public class ZendScript extends PhpProgram {
             return buffer.toString().trim() + "\n"; // NOI18N
         }
     }
+
+    static final class CommandsLineProcessor implements LineProcessor {
+
+        private final PhpModule phpModule;
+
+        // @GuardedBy(commands)
+        private final List<FrameworkCommand> commands = new LinkedList<FrameworkCommand>();
+
+
+        public CommandsLineProcessor(PhpModule phpModule) {
+            this.phpModule = phpModule;
+        }
+
+        @Override
+        public void processLine(String line) {
+            if (!StringUtils.hasText(line)) {
+                return;
+            }
+            // # 179255
+            if (!line.contains(COMMANDS_SEPARATOR)) {
+                // error occured
+                return;
+            }
+            String trimmed = line.trim();
+            List<String> exploded = StringUtils.explode(trimmed, COMMANDS_SEPARATOR);
+            assert exploded.size() > 0;
+            String command = exploded.get(0);
+            String description = ""; // NOI18N
+            if (exploded.size() > 1) {
+                description = exploded.get(1);
+            }
+            synchronized (commands) {
+                commands.add(new ZendCommand(phpModule, StringUtils.explode(command, " ").toArray(new String[0]), description, command)); // NOI18N
+            }
+        }
+
+        public List<FrameworkCommand> getCommands() {
+            List<FrameworkCommand> copy;
+            synchronized (commands) {
+                copy = new ArrayList<FrameworkCommand>(commands);
+            }
+            return copy;
+        }
+
+        @Override
+        public void close() {
+        }
+
+        @Override
+        public void reset() {
+        }
+
+    }
+
 }

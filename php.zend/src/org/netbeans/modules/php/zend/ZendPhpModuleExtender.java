@@ -48,8 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.zend.ui.wizards.NewProjectConfigurationPanel;
 import org.openide.filesystems.FileObject;
@@ -70,11 +70,10 @@ public class ZendPhpModuleExtender extends PhpModuleExtender {
         ZendScript zendScript = null;
         try {
             zendScript = ZendScript.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             // should not happen, must be handled in the wizard
             Exceptions.printStackTrace(ex);
         }
-        assert zendScript.isValid() : "Zend script has to be valid!";
 
         if (!zendScript.initProject(phpModule)) {
             // can happen if zend script was not chosen
@@ -133,7 +132,7 @@ public class ZendPhpModuleExtender extends PhpModuleExtender {
     public String getErrorMessage() {
         try {
             ZendScript.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             return NbBundle.getMessage(ZendPhpModuleExtender.class, "MSG_CannotExtend", ex.getMessage());
         }
         return getPanel().getErrorMessage();
