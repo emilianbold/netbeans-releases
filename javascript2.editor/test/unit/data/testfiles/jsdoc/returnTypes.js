@@ -38,3 +38,8 @@ var MyObj = {
 function martion () {
     return MyObj.getVersion;
 }
+
+/**
+ * @returns {Number}
+ */
+Math.E;
