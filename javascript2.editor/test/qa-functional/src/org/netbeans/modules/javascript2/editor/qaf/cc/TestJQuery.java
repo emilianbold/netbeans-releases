@@ -87,7 +87,7 @@ public class TestJQuery extends GeneralJavaScript {
 
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects(projectName);
-        Thread.sleep(10000);
+        evt.waitNoEvent(10000);
         // open all files
         Node rootNode = new ProjectsTabOperator().getProjectRootNode(projectName);
         Node sourceFiles = new Node(rootNode, "Source Files");

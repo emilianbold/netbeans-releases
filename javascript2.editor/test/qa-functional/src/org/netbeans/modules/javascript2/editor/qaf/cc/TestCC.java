@@ -55,10 +55,6 @@ import org.openide.util.Exceptions;
  */
 public class TestCC extends GeneralJavaScript {
 
-    static final String TEST_BASE_NAME = "js2_";
-    static String currentFile = "";
-    static int name_iterator = 0;
-
     public TestCC(String args) {
         super(args);
     }
@@ -81,7 +77,7 @@ public class TestCC extends GeneralJavaScript {
 
     public void createApplication() {
         startTest();
-        TestCC.name_iterator++;
+        this.name_iterator++;
         createPhpApplication(TEST_BASE_NAME + name_iterator);
         endTest();
     }
@@ -89,7 +85,7 @@ public class TestCC extends GeneralJavaScript {
     public void testSimplePrototype() {
         startTest();
 
-        TestCC.currentFile = "cc.js";
+        this.currentFile = "cc.js";
         EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "JavaScript File");
         eo.setCaretPositionToLine(5);
         type(eo, "function Foo(){\n this.x=1; \n var foo = 2;");
@@ -124,7 +120,7 @@ public class TestCC extends GeneralJavaScript {
     public void testPrototypeInheritance() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(this.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -155,7 +151,7 @@ public class TestCC extends GeneralJavaScript {
     public void testCallAndApply() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(this.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -179,7 +175,7 @@ public class TestCC extends GeneralJavaScript {
     public void testDOMReferences() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(this.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -202,7 +198,7 @@ public class TestCC extends GeneralJavaScript {
         try {
             startTest();
 
-            EditorOperator eo = new EditorOperator(TestCC.currentFile);
+            EditorOperator eo = new EditorOperator(this.currentFile);
             cleanFile(eo);
 
             eo.setCaretPositionToLine(1);
@@ -224,7 +220,7 @@ public class TestCC extends GeneralJavaScript {
     public void testObjectLiteral() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(this.currentFile);
         cleanFile(eo);
         type(eo, "var foo = {\n value:0,\nincrement: function(inc){\nthis.value += typeof inc === 'number' ? inc : 1;");
         eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 2);
@@ -247,7 +243,7 @@ public class TestCC extends GeneralJavaScript {
     public void testObjectFunction() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(this.currentFile);
         cleanFile(eo);
         type(eo, "function Foo(param1){\n this.name = ");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
@@ -322,7 +318,7 @@ public class TestCC extends GeneralJavaScript {
     public void testIssue215393() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(this.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -344,7 +340,7 @@ public class TestCC extends GeneralJavaScript {
     public void testAllCompletionSingleFile() {
         startTest();
 
-        EditorOperator eo = new EditorOperator(TestCC.currentFile);
+        EditorOperator eo = new EditorOperator(this.currentFile);
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
@@ -379,7 +375,7 @@ public class TestCC extends GeneralJavaScript {
 
     public void testAllCompletionMultipleFiles() {
         startTest();
-        TestCC.currentFile = "other.js";
+        this.currentFile = "other.js";
         EditorOperator eo = createWebFile("other", TEST_BASE_NAME + name_iterator, "JavaScript File");
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
