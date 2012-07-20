@@ -452,14 +452,14 @@ public class WebKitPageModel extends PageModel {
     Node convertNode(Node node) {
         Node result = node;
         int type = node.getNodeType();
-        if (type == 9) { // document node
+        if (type == org.w3c.dom.Node.DOCUMENT_NODE) {
             // Highlight/select document element
             synchronized (node) {
                 List<Node> subNodes = node.getChildren();
                 if (subNodes != null) {
                     for (Node subNode : subNodes) {
                         // There should be just one element
-                        if (subNode.getNodeType() == 1) { // element
+                        if (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                             result = subNode;
                             break;
                         }

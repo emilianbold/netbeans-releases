@@ -83,13 +83,13 @@ public class DOMNode extends AbstractNode {
         ResourceBundle bundle = NbBundle.getBundle(DOMNode.class);
         String displayName;
         int nodeType = node.getNodeType();
-        if (nodeType == 1) {
+        if (nodeType == org.w3c.dom.Node.ELEMENT_NODE) {
             // Element
             String pattern = bundle.getString("DOMNode.elementDisplayName"); //NOI18N
             String tagName = node.getNodeName().toLowerCase();
             String selector = getSelector();
             displayName = MessageFormat.format(pattern, tagName, selector);
-        } else if (nodeType == 9) {
+        } else if (nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
             displayName = bundle.getString("DOMNode.documentDisplayName"); //NOI18N
         } else {
             // Not used by now
@@ -216,7 +216,7 @@ public class DOMNode extends AbstractNode {
             List<Integer> keys = new ArrayList<Integer>();
             if (subNodes != null) {
                 for (Node subNode : subNodes) {
-                    boolean isElement = (subNode.getNodeType() == 1);
+                    boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
                     if (isElement && !subNode.isInjectedByNetBeans()) {
                         keys.add(subNode.getNodeId());
                     }
