@@ -39,39 +39,59 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject;
+package org.netbeans.modules.web.clientproject.spi.platform;
 
-import javax.swing.JComponent;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.ui.ClientSideProjectPanel;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
 
 /**
- *
- * @author Jan Becicka
+ * Implementation of project configuration and associated actions, customizer, etc.
  */
-public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
 
-    @Override
-    public Category createCategory(Lookup context) {
-            return ProjectCustomizer.Category.create(
-                    "buildConfig",
-                    "Run",
-                    null);
-    }
-
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        return new ClientSideProjectPanel((ClientSideProject)context.lookup(Project.class));
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = ClientSideProjectType.TYPE,
-            position = 100)
-    public static ClientSideProjectPanelProvider createRunConfigs() {
-        return new ClientSideProjectPanelProvider();
-    }
+    /**
+     * Configuration's unique ID used to persist selected configuration etc.
+     */
+    @NonNull String getId();
     
+    /**
+     * Configuration's customizer.
+     * @return can return null if none
+     */
+    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
+
+    /**
+     * Persist changes done in configuration's customizer.
+     */
+    void save();
+    
+    /**
+     * Configuration's action provider.
+     * @return can return null
+     */
+    ActionProvider getActionProvider();
+
+    /**
+     * Can this platform be deleted?
+     */
+    boolean canBeDeleted();
+
+    /**
+     * Delete this configuration.
+     */
+    void delete();
+
+
+    /**
+     * Configuration's handler changes in project sources.
+     * @return can return null
+     */
+    RefreshOnSaveListener getRefreshOnSaveListener();
+
+    /**
+     * Notification that configuration is not active anymore.
+     */
+    public void deactivate();
+
 }

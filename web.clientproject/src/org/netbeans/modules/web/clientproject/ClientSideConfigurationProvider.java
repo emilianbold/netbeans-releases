@@ -45,11 +45,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,87 +57,46 @@ import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowsers;
-import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ClientSideConfigurationProvider extends AbstractListModel implements ProjectConfigurationProvider<ClientProjectConfiguration>, ComboBoxModel {
+public class ClientSideConfigurationProvider extends AbstractListModel implements ProjectConfigurationProvider<ClientProjectConfigurationImplementation>, ComboBoxModel, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideConfigurationProvider.class.getName());
 
     public static final String PROP_CONFIG = "config";
     public static final String CONFIG_PROPS_PATH = AntProjectHelper.PRIVATE_PROPERTIES_PATH; // NOI18N
 
+    private Lookup.Result<ClientProjectPlatformProvider> res = 
+            Lookup.getDefault().lookupResult(ClientProjectPlatformProvider.class);
+    
     private final ClientSideProject p;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private final FileChangeListener fcl = new FileChangeAdapter() {
-        public void fileFolderCreated(FileEvent fe) {
-            update(fe);
-        }
-        public void fileDataCreated(FileEvent fe) {
-            update(fe);
-        }
-        public void fileDeleted(FileEvent fe) {
-            update(fe);
-        }
-        public void fileRenamed(FileRenameEvent fe) {
-            update(fe);
-        }
-        private void update(FileEvent ev) {
-            LOGGER.log(Level.FINEST, "Received {0}", ev);
-            Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
-            configDir = p.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
-            if (configDir != null) {
-                configDir.removeFileChangeListener(fclWeak);
-                configDir.addFileChangeListener(fclWeak);
-                LOGGER.log(Level.FINEST, "(Re-)added listener to {0}", configDir);
-            } else {
-                LOGGER.log(Level.FINEST, "No nbproject/configs exists");
-            }
-            calculateConfigs();
-            Set<String> newConfigs = configs.keySet();
-            if (!oldConfigs.equals(newConfigs)) {
-                LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs});
-                pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
-                // XXX also fire PROP_ACTIVE_CONFIGURATION?
-                fireContentsChanged(this, 0, newConfigs.size()-1);
-            }
-        }
-    };
-    private final FileChangeListener fclWeak;
-    private FileObject configDir;
-    private Map<String,ClientProjectConfiguration> configs;
-    private FileObject nbp;
+    private Map<String,ClientProjectConfigurationImplementation> configs;
+    private List<ClientProjectConfigurationImplementation> orderedConfigurations;
     
     public ClientSideConfigurationProvider(ClientSideProject p) {
         this.p = p;
-        fclWeak = FileUtil.weakFileChangeListener(fcl, null);
-        nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
-        if (nbp != null) {
-            nbp.addFileChangeListener(fclWeak);
-            LOGGER.log(Level.FINEST, "Added listener to {0}", nbp);
-            configDir = nbp.getFileObject("configs"); // NOI18N
-            if (configDir != null) {
-                configDir.addFileChangeListener(fclWeak);
-                LOGGER.log(Level.FINEST, "Added listener to {0}", configDir);
+        res.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                refreshConfigurations();
             }
-        }
+        });
         p.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PROP_CONFIG.equals(evt.getPropertyName())) {
@@ -151,53 +108,44 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
     }
 
     private void calculateConfigs() {
-        configs = new HashMap<String,ClientProjectConfiguration>();
-        if (configDir != null) {
-            for (FileObject kid : configDir.getChildren()) {
-                if (!kid.hasExt("properties")) {
-                    continue;
+        configs = new HashMap<String,ClientProjectConfigurationImplementation>();
+        orderedConfigurations = new ArrayList<ClientProjectConfigurationImplementation>();
+        for (ClientProjectPlatformProvider prov : res.allInstances()) {
+            for (ClientProjectPlatformImplementation platform : prov.getPlatforms(p)) {
+                platform.removePropertyChangeListener(this);
+                platform.addPropertyChangeListener(this);
+                for (ClientProjectConfigurationImplementation cfg : platform.getConfigurations()) {
+                    configs.put(cfg.getId(), cfg);
+                    orderedConfigurations.add(cfg);
                 }
-                ClientProjectConfiguration conf = ClientProjectConfiguration.create(kid);
-                configs.put(conf.getName(), conf);
             }
         }
-        addBrowsers(configs);
         LOGGER.log(Level.FINEST, "Calculated configurations: {0}", configs);
     }
     
-    private void addBrowsers(Map<String,ClientProjectConfiguration> cfgs) {
-        for (WebBrowser browser : WebBrowsers.getInstance().getAll()) {
-            ClientProjectConfiguration c = ClientProjectConfiguration.create(browser);
-            if (c != null) {
-                cfgs.put(c.getName(), c);
-            }
-        }
-    }
-
     @Override
-    public Collection<ClientProjectConfiguration> getConfigurations() {
-        if (configs==null)
+    public Collection<ClientProjectConfigurationImplementation> getConfigurations() {
+        if (configs==null) {
             calculateConfigs();
-        List<ClientProjectConfiguration> l = new ArrayList<ClientProjectConfiguration>();
-        l.addAll(configs.values());
-        Collections.sort(l, ClientProjectConfiguration.COMPARATOR);
+            }
+        List<ClientProjectConfigurationImplementation> l = new ArrayList<ClientProjectConfigurationImplementation>();
+        l.addAll(orderedConfigurations);
         return l;
     }
 
     @Override
-    public ClientProjectConfiguration getActiveConfiguration() {
-        if (configs == null)
+    public ClientProjectConfigurationImplementation getActiveConfiguration() {
+        if (configs == null) {
             calculateConfigs();
+        }
         String config = p.getEvaluator().getProperty(PROP_CONFIG);
         if(config==null || !configs.containsKey(config)) {
             // return first in the list:
-            List<ClientProjectConfiguration> l = new ArrayList<ClientProjectConfiguration>();
-            l.addAll(configs.values());
+            Collection<ClientProjectConfigurationImplementation> l = configs.values();
             if (l.isEmpty()) {
                 return null;
             }
-            Collections.sort(l, ClientProjectConfiguration.COMPARATOR);
-            return l.get(0);
+            return l.iterator().next();
         }
         if (configs.containsKey(config)) {
             return configs.get(config);
@@ -206,11 +154,11 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
     }
 
     @Override
-    public void setActiveConfiguration(ClientProjectConfiguration c) throws IllegalArgumentException, IOException {
+    public void setActiveConfiguration(ClientProjectConfigurationImplementation c) throws IllegalArgumentException, IOException {
         if ( !configs.values().contains(c)) {
             throw new IllegalArgumentException();
         }
-        final String n = c.getName();
+        final String n = c.getId();
         EditableProperties ep = p.getHelper().getProperties(CONFIG_PROPS_PATH);
         if (Utilities.compareObjects(n, ep.getProperty(PROP_CONFIG))) {
             return;
@@ -269,7 +217,7 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
     @Override
     public void setSelectedItem(Object anItem) {
         try {
-            setActiveConfiguration((ClientProjectConfiguration) anItem);
+            setActiveConfiguration((ClientProjectConfigurationImplementation) anItem);
         } catch (IllegalArgumentException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
@@ -280,5 +228,46 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
     @Override
     public Object getSelectedItem() {
         return getActiveConfiguration();
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent e) {
+        LOGGER.log(Level.FINEST, "Received {0}", e);
+        refreshConfigurations();
+    }
+    
+    private void refreshConfigurations() {
+        Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
+        calculateConfigs();
+        Set<String> newConfigs = configs.keySet();
+        if (!oldConfigs.equals(newConfigs)) {
+            LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs});
+            pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
+            // XXX also fire PROP_ACTIVE_CONFIGURATION?
+            fireContentsChanged(this, 0, newConfigs.size()-1);
+        }
+    }
+
+    public String[] getNewConfigurationTypes() {
+        List<String> types = new ArrayList<String>();
+        for (ClientProjectPlatformProvider prov : res.allInstances()) {
+            for (ClientProjectPlatformImplementation platform : prov.getPlatforms(p)) {
+                types.addAll(platform.getNewConfigurationTypes());
+            }
+        }
+        return types.toArray(new String[types.size()]);
+    }
+
+    public String createNewConfiguration(String type, String newName) {
+        for (ClientProjectPlatformProvider prov : res.allInstances()) {
+            for (ClientProjectPlatformImplementation platform : prov.getPlatforms(p)) {
+                String id = platform.createConfiguration(type, newName);
+                if (id != null) {
+                    return id;
+                }
+            }
+        }
+        assert false : "should never happen: no platform can create configuration of type "+type+" and name it "+newName;
+        return null;
     }
 }

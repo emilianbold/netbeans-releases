@@ -58,6 +58,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="configCombo">
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="configComboItemStateChanged"/>
+      </Events>
     </Component>
     <Container class="javax.swing.JPanel" name="customizerArea">
 

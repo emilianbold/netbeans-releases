@@ -39,39 +39,14 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi;
+package org.netbeans.modules.web.clientproject.spi.platform;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.EditableProperties;
+import javax.swing.JPanel;
 
 /**
  *
  * @author Jan Becicka
  */
-public final class ConfigUtils {
-
-    public static FileObject createConfigFile(FileObject projectRoot, final String name, final EditableProperties props) throws IOException {
-        final File f = new File(projectRoot.getPath() + "/nbproject/configs");
-        final FileObject[] config = new FileObject[1];
-        projectRoot.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-            @Override
-            public void run() throws IOException {
-                FileObject configs = FileUtil.createFolder(f);
-                String freeName = FileUtil.findFreeFileName(configs, name, "properties");
-                config[0] = configs.createData(freeName + ".properties");
-                final OutputStream outputStream = config[0].getOutputStream();
-                try {
-                    props.store(outputStream);
-                } finally {
-                    outputStream.close();
-                }
-            }
-        });
-        return config[0];
-    }
+public interface ProjectConfigurationCustomizer {
+    JPanel createPanel();
 }
