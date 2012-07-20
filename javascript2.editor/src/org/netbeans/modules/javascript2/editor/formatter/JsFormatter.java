@@ -368,6 +368,7 @@ public class JsFormatter implements Formatter {
                                 break;
                             }
                         case AFTER_FUNCTION_DECLARATION:
+                        case AFTER_CASE:
                         case AFTER_BLOCK_START:
                         case AFTER_STATEMENT:
                             if (!NEW_LINE_BREAKS) {
