@@ -11,6 +11,7 @@ FormattingToken{kind=WHITESPACE, offset=16, text= }
 FormattingToken{kind=BEFORE_SWITCH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=17, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=18, text=
 }
 FormattingToken{kind=WHITESPACE, offset=19, text=  }
@@ -41,7 +42,6 @@ FormattingToken{kind=TEXT, offset=66, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=67, text=
 }
 FormattingToken{kind=WHITESPACE, offset=68, text=         }
@@ -81,6 +81,7 @@ FormattingToken{kind=WHITESPACE, offset=128, text= }
 FormattingToken{kind=BEFORE_SWITCH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=129, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=130, text=
 }
 FormattingToken{kind=WHITESPACE, offset=131, text=  }
@@ -101,7 +102,6 @@ FormattingToken{kind=TEXT, offset=157, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=158, text=
 }
 FormattingToken{kind=WHITESPACE, offset=159, text=         }
@@ -144,6 +144,7 @@ FormattingToken{kind=WHITESPACE, offset=219, text= }
 FormattingToken{kind=BEFORE_SWITCH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=220, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=221, text=
 }
 FormattingToken{kind=WHITESPACE, offset=222, text=  }
@@ -164,7 +165,6 @@ FormattingToken{kind=TEXT, offset=248, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=249, text=
 }
 FormattingToken{kind=WHITESPACE, offset=250, text=         }
@@ -206,6 +206,7 @@ FormattingToken{kind=WHITESPACE, offset=306, text= }
 FormattingToken{kind=BEFORE_SWITCH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=307, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=308, text=
 }
 FormattingToken{kind=WHITESPACE, offset=309, text=  }
@@ -226,7 +227,6 @@ FormattingToken{kind=TEXT, offset=336, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=337, text=
 }
 FormattingToken{kind=WHITESPACE, offset=338, text=         }
@@ -277,6 +277,7 @@ FormattingToken{kind=WHITESPACE, offset=404, text= }
 FormattingToken{kind=BEFORE_SWITCH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=405, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=406, text=
 }
 FormattingToken{kind=WHITESPACE, offset=407, text=    }
@@ -297,7 +298,6 @@ FormattingToken{kind=TEXT, offset=439, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=440, text=
 }
 FormattingToken{kind=WHITESPACE, offset=441, text=            }

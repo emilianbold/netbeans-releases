@@ -312,6 +312,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/switch4.js");
     }
 
+    public void testSwitch5() throws Exception {
+        reformatFileContents("testfiles/formatter/switch5.js",new IndentPrefs(4, 4));
+    }
+
+    public void testSwitch5Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/switch5.js");
+    }
+
     public void testIf1() throws Exception {
         reformatFileContents("testfiles/formatter/if1.js",new IndentPrefs(4, 4));
     }
