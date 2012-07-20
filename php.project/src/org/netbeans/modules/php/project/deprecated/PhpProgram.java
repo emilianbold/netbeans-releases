@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.phpmodule;
+package org.netbeans.modules.php.project.deprecated;
 
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;

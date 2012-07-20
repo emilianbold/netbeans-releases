@@ -40,10 +40,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.phpmodule;
+package org.netbeans.modules.php.project.deprecated;
 
 import java.io.File;
 import java.util.regex.Pattern;
+import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;

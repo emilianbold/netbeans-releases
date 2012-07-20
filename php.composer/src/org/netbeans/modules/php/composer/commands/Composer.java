@@ -50,7 +50,6 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.composer.options.ComposerOptions;
 import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelController;
 import org.openide.DialogDescriptor;

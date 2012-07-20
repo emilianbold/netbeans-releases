@@ -43,14 +43,14 @@
 package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.project.deprecated.PhpInterpreter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;

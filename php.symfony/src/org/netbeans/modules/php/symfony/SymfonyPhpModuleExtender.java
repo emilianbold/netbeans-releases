@@ -49,9 +49,8 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.ui.wizards.NewProjectConfigurationPanel;
@@ -146,7 +145,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
     public String getErrorMessage() {
         try {
             PhpInterpreter.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             return ex.getLocalizedMessage();
         }
         try {

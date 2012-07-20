@@ -59,7 +59,7 @@ import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.project.deprecated.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpActionProvider;
