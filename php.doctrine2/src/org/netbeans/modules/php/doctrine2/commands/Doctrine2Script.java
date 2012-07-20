@@ -128,7 +128,7 @@ public final class Doctrine2Script {
         Future<Integer> result = new PhpExecutable(doctrine2Path)
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .fileOutput(tmpFile)
-                .fileOutputOnly(true)
+                .pureOutputOnly(true)
                 .additionalParameters(LIST_PARAMS)
                 .run(getSilentDescriptor());
         try {
