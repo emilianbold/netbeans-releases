@@ -67,7 +67,7 @@ public final class SymfonyRunCommandAction extends RunCommandAction {
             return;
         }
 
-        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).runCommand();
+        SymfonyPhpFrameworkProvider.getInstance().getFrameworkCommandSupport(phpModule).openPanel();
     }
 
     @Override

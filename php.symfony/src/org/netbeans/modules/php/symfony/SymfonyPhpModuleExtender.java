@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
@@ -72,11 +73,10 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         SymfonyScript symfonyScript = null;
         try {
             symfonyScript = SymfonyScript.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             // should not happen, must be handled in the wizard
             Exceptions.printStackTrace(ex);
         }
-        assert symfonyScript.isValid() : "Symfony script has to be valid!";
 
         if (!symfonyScript.initProject(phpModule, getPanel().getProjectParams())) {
             // can happen if symfony script was not chosen
@@ -151,7 +151,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         }
         try {
             SymfonyScript.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             return NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_CannotExtend", ex.getMessage());
         }
         return getPanel().getErrorMessage();

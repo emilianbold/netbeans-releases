@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.symfony.commands;
+package org.netbeans.modules.php.symfony;
 
 import java.util.prefs.Preferences;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -49,20 +49,19 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.openide.filesystems.FileObject;
 
 /**
  * @author Tomas Mysik
  */
-public class HelpLineProcessorTest extends NbTestCase {
+public class CommandsLineProcessorTest extends NbTestCase {
 
-    public HelpLineProcessorTest(String name) {
+    public CommandsLineProcessorTest(String name) {
         super(name);
     }
 
     public void testCommands() {
-        SymfonyCommandSupport.CommandsLineProcessor processor = new SymfonyCommandSupport(new PhpModuleImpl()).new CommandsLineProcessor();
+        SymfonyScript.CommandsLineProcessor processor = new SymfonyScript.CommandsLineProcessor(new PhpModuleImpl());
         for (String s : getCommands()) {
             processor.processLine(s);
         }
