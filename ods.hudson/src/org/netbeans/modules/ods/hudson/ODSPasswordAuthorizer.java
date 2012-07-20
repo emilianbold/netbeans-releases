@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.ods.hudson;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.util.Base64;
@@ -53,7 +57,6 @@ import org.netbeans.modules.team.ods.api.CloudServer;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSClient;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -72,19 +75,31 @@ public class ODSPasswordAuthorizer implements ConnectionAuthenticator {
      */
     public static class ProjectHandleRegistry {
 
-        private static final Set<ProjectHandle<ODSProject>> handles =
-                new WeakSet<ProjectHandle<ODSProject>>();
+        /**
+         * Cache of project handles, implemented as list of weak references to
+         * project handles. Assuming there is not too much open ODS projects.
+         */
+        private static final List<Reference<ProjectHandle<ODSProject>>> cache =
+                new ArrayList<Reference<ProjectHandle<ODSProject>>>();
 
         public static synchronized void registerProjectHandle(
                 ProjectHandle<ODSProject> prj) {
 
-            handles.add(prj);
-        }
-
-        public static synchronized void unregisterProjectHandle(
-                ProjectHandle<ODSProject> prj) {
-
-            handles.remove(prj);
+            boolean found = false;
+            Iterator<Reference<ProjectHandle<ODSProject>>> iterator =
+                    cache.iterator();
+            while (iterator.hasNext()) {
+                Reference<ProjectHandle<ODSProject>> next = iterator.next();
+                ProjectHandle<ODSProject> projectHandle = next.get();
+                if (projectHandle == prj) {
+                    found = true; // do not break here, keep cleaning
+                } else if (projectHandle == null) {
+                    iterator.remove();
+                }
+            }
+            if (!found) {
+                cache.add(new WeakReference<ProjectHandle<ODSProject>>(prj));
+            }
         }
 
         /**
@@ -93,9 +108,11 @@ public class ODSPasswordAuthorizer implements ConnectionAuthenticator {
         public static synchronized ProjectHandle<ODSProject> findProjectHandle(
                 URL hudsonHome) {
             String url = hudsonHome.toString();
-            for (ProjectHandle<ODSProject> project : handles) {
-                if (url.equals(project.getTeamProject().getBuildUrl())) {
-                    return project;
+            for (Reference<ProjectHandle<ODSProject>> projectRef : cache) {
+                ProjectHandle<ODSProject> ph = projectRef.get();
+                if (ph != null
+                        && url.equals(ph.getTeamProject().getBuildUrl())) {
+                    return ph;
                 }
             }
             return null;
