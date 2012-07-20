@@ -406,9 +406,9 @@ public class FormatVisitor extends NodeVisitor {
             }
 
             for (CaseNode caseNode : nodes) {
-                int finish = getFinish(caseNode);
+                int start = getStart(caseNode.getBody());
 
-                formatToken = getPreviousToken(finish, JsTokenId.OPERATOR_COLON);
+                formatToken = getPreviousToken(start, JsTokenId.OPERATOR_COLON);
                 if (formatToken != null) {
                     appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CASE));
                 }
@@ -901,7 +901,7 @@ public class FormatVisitor extends NodeVisitor {
      */
     private FormatToken getCaseBlockEndToken(Block block) {
         int start = getStart(block);
-        int finish = getFinish(block);
+        int finish = getFinish(block) - 1;
         ts.move(finish);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
