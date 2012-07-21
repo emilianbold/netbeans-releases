@@ -226,6 +226,12 @@ public class WebKitPageModel extends PageModel {
                     final boolean selected = ":netbeans_selected".equals(attrName); // NOI18N
                     final boolean highlighted = ":netbeans_highlighted".equals(attrName); // NOI18N
                     if (selected || highlighted) {
+                        if (!isSelectionMode()) {
+                            // Some delayed selection/highlight modifications
+                            // can appear after deactivation of the selection mode
+                            // => ignore these delayed events
+                            return;
+                        }
                         Node.Attribute attr = node.getAttribute(attrName);
                         String attrValue = attr.getValue();
                         DOMNode n = getNode(node.getNodeId());
