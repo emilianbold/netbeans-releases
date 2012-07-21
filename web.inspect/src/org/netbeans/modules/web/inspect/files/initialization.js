@@ -696,7 +696,27 @@ NetBeans.insertGlassPane = function() {
     document.body.appendChild(canvas);
 
     window.addEventListener('scroll', this.repaintGlassPane);
-    window.addEventListener('resize', this.repaintGlassPane);
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+    if (MutationObserver) {
+        var observer = new MutationObserver(function(mutations) {
+            var importantChange = false;
+            for (var i=0; i<mutations.length; i++) {
+                var target = mutations[i].target;
+                // Ignore changes in elements injected by NetBeans
+                if (!target.hasAttribute(self.ATTR_ARTIFICIAL)) {
+                    importantChange = true;
+                    break;
+                }
+            }
+            if (importantChange) {
+                self.repaintGlassPane();
+            }
+        });
+        observer.observe(document, { childList: true, subtree: true, attributes: true });
+    } else {
+        window.addEventListener('resize', this.repaintGlassPane);
+        window.setInterval(this.repaintGlassPane, 500);
+    }
     this.repaintGlassPane();
 }
 
