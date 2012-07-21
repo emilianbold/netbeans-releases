@@ -733,8 +733,12 @@ NetBeans.repaintGlassPane = function() {
         var ctx = canvas.getContext('2d'); 
         var width = window.innerWidth;
         var height = window.innerHeight;
-        ctx.canvas.width = width;
-        ctx.canvas.height = height;
+        if (ctx.canvas.width === width && ctx.canvas.height === height) {
+            ctx.clearRect(0, 0, width, height);
+        } else {
+            ctx.canvas.width = width;
+            ctx.canvas.height = height;
+        }
         ctx.globalAlpha = 0.5;
         ctx.fillStyle = "#0000FF";
         NetBeans.paintElements(ctx, NetBeans.selection);
