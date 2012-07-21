@@ -305,7 +305,10 @@ public class WebKitPageModel extends PageModel {
         boolean updateChildren = false;
         List<Node> subNodes = node.getChildren();
         if (subNodes == null) {
-            webKit.getDOM().requestChildNodes(nodeId);
+            int nodeType = node.getNodeType();
+            if (nodeType == org.w3c.dom.Node.ELEMENT_NODE || nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
+                webKit.getDOM().requestChildNodes(nodeId);
+            }
         } else {
             for (Node subNode : subNodes) {
                 updateNodes(subNode);
