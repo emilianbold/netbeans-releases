@@ -535,6 +535,7 @@ public class DOM {
             int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
             parent = nodes.get(parentId);
             JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
+            parent.initChildren();
             for (Object child : children) {
                 Node node = new Node((JSONObject)child);
                 parent.addChild(node);

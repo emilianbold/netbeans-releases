@@ -169,7 +169,7 @@ public class Node {
     /**
      * Initializes {@code children} field.
      */
-    private synchronized void initChildren() {
+    final synchronized void initChildren() {
         children = new ArrayList<Node>();
     }
 
