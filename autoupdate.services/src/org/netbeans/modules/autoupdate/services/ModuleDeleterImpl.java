@@ -459,7 +459,7 @@ public final class ModuleDeleterImpl  {
     
     private Set<String> readModuleFiles (Node version) {
         if (version == null) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
         Set<String> files = new HashSet<String> ();
         NodeList fileNodes = version.getChildNodes ();
