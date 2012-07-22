@@ -227,7 +227,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
                     return false;
                 }
             }
-            while(size<2);
+            while(byteBuffer.position()<2);
             byteBuffer.flip();
             length = byteBuffer.getShort()&0xFFFF;
             return readData(byteBuffer, socketChannel, frameType, length);
@@ -242,7 +242,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
                     return false;
                 }
             }
-            while(size<8);
+            while(byteBuffer.position()<8);
             byteBuffer.flip();
             long longLength = byteBuffer.getLong();
             return readData(byteBuffer, socketChannel, frameType, longLength );
