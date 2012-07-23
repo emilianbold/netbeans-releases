@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.parser.annotation;
 
-package org.netbeans.modules.php.api.editor;
-
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
- * Class representing a PHP global function.
- * @author Tomas Mysik
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class PhpFunction extends PhpBaseElement {
+class LinkLineParser implements AnnotationLineParser {
+    static final String ANNOTATION_NAME = "link"; //NOI18N
+    private static final String ANNOTATION_START = ANNOTATION_NAME + " ";
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
-        super(name, fullyQualifiedName, description);
+    @Override
+    public AnnotationParsedLine parse(final String line) {
+        AnnotationParsedLine result = null;
+        if (line.startsWith(ANNOTATION_START)) {
+            result = new LinkParsedLine(line.substring(ANNOTATION_START.length()).trim());
+        }
+        return result;
     }
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName) {
-        super(name, fullyQualifiedName);
-    }
-
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
-        super(name, fullyQualifiedName, offset, description);
-    }
-
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
-        super(name, fullyQualifiedName, offset);
-    }
 }
