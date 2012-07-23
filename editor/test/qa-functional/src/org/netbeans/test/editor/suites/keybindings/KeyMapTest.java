@@ -46,11 +46,8 @@ package org.netbeans.test.editor.suites.keybindings;
 import java.awt.event.KeyEvent;
 import java.util.Vector;
 import junit.framework.Test;
-import org.netbeans.test.editor.lib.EditorTestCase.ValueResolver;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
-import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.KeyMapOperator;
@@ -58,6 +55,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.editor.lib.EditorTestCase;
+import org.netbeans.test.editor.lib.EditorTestCase.ValueResolver;
 
 /**
  *
@@ -66,7 +64,7 @@ import org.netbeans.test.editor.lib.EditorTestCase;
 public class KeyMapTest extends EditorTestCase {
     public static final String PROFILE_DEFAULT = "NetBeans";
 
-    public static final String SRC_PACKAGES_PATH = Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
+    public static final String SRC_PACKAGES_PATH = "src";
     private static String PROJECT_NAME;
     private static EditorOperator editor;
 
@@ -103,17 +101,6 @@ public class KeyMapTest extends EditorTestCase {
         System.out.println("----");
     }
 
-// TODO: Verify if all shortcuts are contained in profile...
-/*
-    public void testAllKeyMapNetbeans() throws IOException {
-    }
-    public void testAllKeyMapNetbeans55() throws IOException {
-    }
-    public void testAllKeyMapEmacs() throws IOException {
-    }
-    public void testAllKeyMapEclipse() throws IOException {
-    }
-     */
     public void testVerify() {
         KeyMapOperator kmo = null;
         boolean closed = true;
@@ -340,6 +327,7 @@ public class KeyMapTest extends EditorTestCase {
             editor.setCaretPosition(12, 1);
             ValueResolver vr = new ValueResolver() {
 
+                @Override
                 public Object getValue() {
                     editor.pushKey(KeyEvent.VK_F9, KeyEvent.ALT_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
                     String selected = editor.txtEditorPane().getSelectedText();
@@ -381,6 +369,7 @@ public class KeyMapTest extends EditorTestCase {
             final HelpOperator help = new HelpOperator();
             ValueResolver vr = new ValueResolver() {
 
+                @Override
                 public Object getValue() {
                     return help.getContentText().contains("Options Window: Keymap");
                 }
@@ -391,7 +380,7 @@ public class KeyMapTest extends EditorTestCase {
                 log(help.getContentText());
             }
             assertTrue("Wrong help page opened", ok);
-            help.close();
+            help.requestClose();
         } finally {
             if (!closed && kmo != null) {
                 kmo.cancel().push();
