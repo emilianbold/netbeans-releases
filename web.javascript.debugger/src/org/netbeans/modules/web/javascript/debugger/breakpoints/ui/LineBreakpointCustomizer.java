@@ -42,13 +42,15 @@
 package org.netbeans.modules.web.javascript.debugger.breakpoints.ui;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.HelpCtx;
 
 /**
  *
  * @author david
  */
-public class LineBreakpointCustomizer extends javax.swing.JPanel {
+public class LineBreakpointCustomizer extends javax.swing.JPanel implements ControllerProvider, HelpCtx.Provider {
 
     private CustomizerController controller;
     
@@ -56,10 +58,18 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel {
      * Creates new form LineBreakpointCustomizer
      */
     public LineBreakpointCustomizer() {
+        
+    }
+    
+    /**
+     * Creates new form LineBreakpointCustomizer
+     */
+    public LineBreakpointCustomizer(LineBreakpoint lb) {
         initComponents();
         controller = new CustomizerController();
     }
     
+    @Override
     public Controller getController() {
         return controller;
     }
@@ -98,7 +108,12 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
-    public class CustomizerController implements Controller {
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx("NetbeansDebuggerBreakpointLineJavaScript"); // NOI18N
+    }
+    
+    private class CustomizerController implements Controller {
 
         @Override
         public boolean ok() {
