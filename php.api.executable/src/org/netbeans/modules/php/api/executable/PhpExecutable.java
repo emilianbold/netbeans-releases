@@ -144,11 +144,6 @@ public final class PhpExecutable {
      * @param command command to parse, can be {@code null}.
      */
     public PhpExecutable(String command) {
-        if (command == null) {
-            // avoid NPE
-            command = ""; // NOI18N
-        }
-
         Pair<String, List<String>> parsedCommand = parseCommand(command);
         executable = parsedCommand.first;
         parameters = parsedCommand.second;
@@ -156,6 +151,10 @@ public final class PhpExecutable {
     }
 
     static Pair<String, List<String>> parseCommand(String command) {
+        if (command == null) {
+            // avoid NPE
+            command = ""; // NOI18N
+        }
         // try to find program (search for " -" or " /" after space)
         String[] tokens = command.split(" * (?=\\-|/)", 2); // NOI18N
         if (tokens.length == 1) {
