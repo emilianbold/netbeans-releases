@@ -47,8 +47,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
@@ -81,7 +83,7 @@ public final class FxModel extends FxNode {
     /**
      * Instance with IDs; both definitions and ordinary instances with fx:id
      */
-    private Map<String, FxNewInstance>  namedInstances = Collections.emptyMap();
+    private Map<String, ? extends FxInstance>  namedInstances = Collections.emptyMap();
     
     public List<ImportDecl> getImports() {
         return imports;
@@ -154,8 +156,18 @@ public final class FxModel extends FxNode {
         super.detachChild(child);
     }
     
-    void setNamedInstances(Map<String, FxInstance> instances) {
+    void setNamedInstances(Map<String, ? extends FxInstance> instances) {
         this.namedInstances = instances;
+    }
+    
+    @NonNull
+    public Set<String> getInstanceNames() {
+        return Collections.unmodifiableSet(this.namedInstances.keySet());
+    }
+    
+    @CheckForNull
+    public FxInstance getInstance(String id ) {
+        return namedInstances.get(id);
     }
     
 }

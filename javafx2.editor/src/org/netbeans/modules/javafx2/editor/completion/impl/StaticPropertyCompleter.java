@@ -286,6 +286,7 @@ public class StaticPropertyCompleter extends InstanceCompleter {
                         AttachedPropertyItem api = new AttachedPropertyItem(
                                 ctx, replacementText, 
                                 propName, type, primitive);
+                        api.setAttribute(attribute);
                         result.add(api);
                     }
                 } else {
@@ -317,7 +318,7 @@ public class StaticPropertyCompleter extends InstanceCompleter {
                     
                     AttachedPropertyItem api = new AttachedPropertyItem(ctx, 
                             replacementText, sn, sb.toString());
-                    
+                    api.setAttribute(attribute);
                     result.add(api);
                 }
             }

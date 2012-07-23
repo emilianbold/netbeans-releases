@@ -41,11 +41,151 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Callable;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBeanInfo;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
+import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
+import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.util.NbBundle;
+
+import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
+import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
+import org.openide.nodes.Node;
+
 /**
  * Suggests fx:reference and/or fx:copy appropriate for the context.
  *
  * @author sdedic
  */
-public class FxCopyReferenceCompleter {
+@MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
+public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
+    private CompletionContext   context;
+
+    public FxCopyReferenceCompleter() {
+    }
+
+    public FxCopyReferenceCompleter(CompletionContext context) {
+        this.context = context;
+    }
     
+    @NbBundle.Messages({
+        "FMT_fxReferenceCompletionItem=<fx:reference source=\"\"",
+        "FMT_fxCopyCompletionItem=<fx:copy source=\"\"",
+    })
+    @Override
+    public List<CompletionItem> complete() {
+        Callable<String> fxNs = CompletionUtils.makeFxNamespaceCreator(context);
+        List<CompletionItem> items = new ArrayList<CompletionItem>(2);
+        
+        FxInstructionItem inst = new FxInstructionItem(
+                "fx:reference",  // NOI18N
+                context, 
+                FMT_fxReferenceCompletionItem(), 
+                fxNs);
+        items.add(inst);
+
+        inst = new FxInstructionItem(
+                "fx:copy",  // NOI18N
+                context, 
+                FMT_fxCopyCompletionItem(), 
+                fxNs);
+        items.add(inst);
+        return items;
+    }
+
+    @Override
+    public boolean hasMoreItems() {
+        return false;
+    }
+
+    @Override
+    public Completer createCompleter(CompletionContext ctx) {
+        switch (ctx.getType()) {
+            case BEAN:
+            case CHILD_ELEMENT:
+                break;
+            default:
+                return null;
+        }
+        
+        // try to find at least 1 item that matches the contents:
+        if (!matchingInstanceExists(ctx)) {
+            return null;
+        }
+        return new FxCopyReferenceCompleter(ctx);
+    }
+    
+    private static boolean matchingInstanceExists(CompletionContext ctx) {
+        Collection<String> instanceNames = ctx.getModel().getInstanceNames();
+        // check that we have at least SOME named items:
+        if (instanceNames.isEmpty()) {
+            return false;
+        }
+        FxNode parentNode = ctx.getElementParent();
+        if (parentNode.getKind() == FxNode.Kind.Instance) {
+            /*
+            boolean def = false;
+            
+            FxInstance i = (FxInstance)parentNode;
+            for (PropertyValue pv : (Collection<PropertyValue>)i.getProperties()) {
+                if (pv instanceof PropertySetter) {
+                    PropertySetter setter = (PropertySetter)pv;
+                    if (def = setter.isImplicit()) {
+                        break;
+                    }
+                }
+            }
+            if (!def) {
+                // may need to introduce such a property:
+                return false;
+            }
+            */
+            FxBeanInfo bi = ctx.getBeanInfo((FxInstance)parentNode);
+            if (bi == null) {
+                return true;
+            }
+            return bi.getDefaultProperty() != null;
+        } else if (parentNode.getKind() != FxNode.Kind.Property) {
+            // !! the Node may have a default property !
+            return false;
+        }
+        PropertyValue v = (PropertyValue)parentNode;
+        TypeMirror t;
+        
+        if (v.getTypeHandle() == null) {
+            // can offer any type
+            t = null;
+        } else {
+            t = v.getTypeHandle().resolve(ctx.getCompilationInfo());
+        }
+        for (String n : instanceNames) {
+            FxInstance inst = ctx.getModel().getInstance(n);
+            ElementHandle<TypeElement> tHandle = inst.getJavaType();
+            if (t == null) {
+                return true;
+            }
+            if (tHandle == null) {
+                continue;
+            }
+            TypeElement instType = tHandle.resolve(ctx.getCompilationInfo());
+            if (instType == null) {
+                continue;
+            }
+            if (ctx.getCompilationInfo().getTypes().isAssignable(
+                    t,
+                    instType.asType())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

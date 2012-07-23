@@ -48,7 +48,7 @@ import org.netbeans.api.java.source.ElementHandle;
  *
  * @author sdedic
  */
-public final class FxReference extends FxObjectBase {
+public final class FxReference extends FxObjectBase implements FxElement {
     private String        targetId;
     private FxNewInstance    target;
     
@@ -91,7 +91,7 @@ public final class FxReference extends FxObjectBase {
 
     @Override
     public Kind getKind() {
-        return Kind.Instance;
+        return Kind.Reference;
     }
 
     @Override

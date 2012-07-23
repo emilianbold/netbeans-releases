@@ -42,51 +42,28 @@
 package org.netbeans.modules.javafx2.editor.completion.model;
 
 /**
- * Basic FXML node
- * 
+ *
  * @author sdedic
  */
-public abstract class FxNode {
-    private boolean error;
-    
-    public enum Kind {
-        Source,
-        Import,
-        Include,
-        Language,
-        Instance,
-        Reference,
-        Property,
-        Event,
-        
-        Error,
-    }
-    
-    private NodeInfo    info;
-    
-    void attach(NodeInfo info) {
-        this.info = info;
-    }
-    
-    NodeInfo i() {
-        return info;
-    }
-    
-    public abstract Kind    getKind();
-    
-    public abstract void accept(FxNodeVisitor v);
-    
-    void detachChild(FxNode child) {
-    }
-    
-    protected abstract String getTagName();
+public class Dummy extends FxNode implements FxElement {
+    private String tagName;
 
-    public boolean hasError() {
-        return error;
+    public Dummy(String tagName) {
+        this.tagName = tagName;
     }
     
-    void markError() {
-        this.error = true;
+    
+    @Override
+    public Kind getKind() {
+        return Kind.Error;
     }
 
+    @Override
+    public void accept(FxNodeVisitor v) {
+        v.visitNode(this);
+    }
+
+    public String getTagName() {
+        return tagName;
+    }
 }

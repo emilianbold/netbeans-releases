@@ -87,7 +87,9 @@ public class NamedInstancesCollector extends FxNodeVisitor.ModelTreeTraversal im
     @Override
     public void visitSource(FxModel source) {
         super.visitSource(source);
-        source.setNamedInstances(instances);
+        if (instances != null) {
+            source.setNamedInstances(instances);
+        }
     }
 
     @Override

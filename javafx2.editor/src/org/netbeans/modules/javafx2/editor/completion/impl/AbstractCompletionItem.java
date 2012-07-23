@@ -49,6 +49,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -64,6 +65,7 @@ public abstract class AbstractCompletionItem implements CompletionItem {
     private final int length;
     private final String text;
     protected final CompletionContext ctx;
+    private Position  substPos;
     
     protected AbstractCompletionItem(CompletionContext ctx, String text) {
         this.substOffset = ctx.getStartOffset();
@@ -99,12 +101,20 @@ public abstract class AbstractCompletionItem implements CompletionItem {
     protected int getCaretShift() {
         return getSubstituteText().length();
     }
+
+    public int getSubstOffset() {
+        if (substPos != null) {
+            return substPos.getOffset();
+        }
+        return substOffset;
+    }
     
     protected void substituteText(final JTextComponent c, final String text) {
         final Document d = c.getDocument();
         BaseDocument bd = (BaseDocument)d;
         bd.extWriteLock();
         try {
+            substPos = bd.createPosition(substOffset);
             doSubstituteText(c, d, text);
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
@@ -114,13 +124,14 @@ public abstract class AbstractCompletionItem implements CompletionItem {
     }
     
     protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
-        String old = d.getText(substOffset, length);
+        int offset = getSubstOffset();
+        String old = d.getText(offset, length);
         if (text.equals(old)) {
-            c.setCaretPosition(substOffset + getCaretShift());
+            c.setCaretPosition(offset + getCaretShift());
         } else {
-            d.remove(substOffset, length);
-            d.insertString(substOffset, text, null);
-            c.setCaretPosition(substOffset + getCaretShift());
+            d.remove(offset, length);
+            d.insertString(offset, text, null);
+            c.setCaretPosition(offset + getCaretShift());
         }
     }
 

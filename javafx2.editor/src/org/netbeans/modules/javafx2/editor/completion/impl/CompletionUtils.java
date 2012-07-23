@@ -118,7 +118,7 @@ public class CompletionUtils {
      * @param doc document to modify
      * @param h token hierarchy - to find the root element
      */
-    public static Callable<String> addRootFxNamespace(CompletionContext ctx) {
+    public static Callable<String> makeFxNamespaceCreator(CompletionContext ctx) {
         final String existingPrefix = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
         if (existingPrefix != null) {
             return new Callable<String>() {
@@ -139,7 +139,7 @@ public class CompletionUtils {
         return new Callable<String>() {
             public String call() throws Exception {
                 doc.insertString(offset, "xmlns:" + prefix + "=\"" +
-                        JavaFXEditorUtils.FXML_FX_NAMESPACE + "\"\n", null);
+                        JavaFXEditorUtils.FXML_FX_NAMESPACE + "\" ", null);
                 return prefix;
             }
         };

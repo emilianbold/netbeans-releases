@@ -68,6 +68,7 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportProcessor;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
+import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.nodes.ChildFactory;
@@ -284,6 +285,31 @@ public final class CompletionContext {
         processNamespaces();
         
         processPath();
+        
+        // try to narrow the CHILD_ELEMENT if possible:
+        if (getType() == Type.CHILD_ELEMENT) {
+            List<? extends FxNode> parents = getParents();
+            FxNode n = parents.get(0);
+            if (n.getKind() == FxNode.Kind.Property) {
+                type = Type.BEAN;
+            } else if (n.getKind() == FxNode.Kind.Instance) {
+                FxInstance inst = (FxInstance)n;
+                FxBeanInfo bi = getBeanInfo(inst);
+                if (bi != null) {
+                    if (bi.getDefaultProperty() == null) {
+                        type = Type.PROPERTY_ELEMENT;
+                    } else {
+                        for (PropertyValue pv : (Collection<PropertyValue>)inst.getProperties()) {
+                            if ((pv instanceof PropertySetter) &&
+                                ((PropertySetter)pv).isImplicit()) {
+                                type = Type.PROPERTY_ELEMENT;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public List<? extends FxNode> getParents() {
@@ -972,9 +998,12 @@ public final class CompletionContext {
                         type = Type.UNKNOWN;
                         break;
                     }
-                    s = s.subSequence(1, s.length());
+                    s = getUnprefixed(s.subSequence(1, s.length()));
+                    // check if there's a prefix; if so, return the unprefixed tagname.
                     if (wsFound) {
                         type = Type.PROPERTY;
+                    } else if (s.length() == 0) {
+                        type = Type.CHILD_ELEMENT;
                     } else if (isClassTagName(s)) {
                         type = Type.BEAN;
                     } else {
@@ -1103,5 +1132,14 @@ public final class CompletionContext {
         }
         Result r = typeWhiteList.check(ElementHandle.create(elem), WhiteListQuery.Operation.USAGE);
         return r != null && !r.isAllowed();
+    }
+    
+    private static CharSequence getUnprefixed(CharSequence s) {
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == ':') {
+                return s.subSequence(i + 1, s.length());
+            }
+        }
+        return s;
     }
 }

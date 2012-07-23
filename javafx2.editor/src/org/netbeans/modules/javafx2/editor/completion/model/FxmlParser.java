@@ -145,6 +145,7 @@ public class FxmlParser extends Parser implements ErrorReporter {
     
     private void initModelSteps() {
         steps = new ArrayList<ModelBuilderStep>();
+        steps.add(new NamedInstancesCollector());
         steps.add(new TypeResolver());
         steps.add(new ReferenceResolver());
         steps.add(new PropertyResolver());

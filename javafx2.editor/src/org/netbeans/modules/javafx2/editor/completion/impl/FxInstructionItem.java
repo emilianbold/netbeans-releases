@@ -39,54 +39,78 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.completion.model;
+package org.netbeans.modules.javafx2.editor.completion.impl;
+
+import java.util.concurrent.Callable;
+import javax.swing.ImageIcon;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.openide.util.NbBundle;
+import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
- * Basic FXML node
- * 
+ *
  * @author sdedic
  */
-public abstract class FxNode {
-    private boolean error;
-    
-    public enum Kind {
-        Source,
-        Import,
-        Include,
-        Language,
-        Instance,
-        Reference,
-        Property,
-        Event,
-        
-        Error,
-    }
-    
-    private NodeInfo    info;
-    
-    void attach(NodeInfo info) {
-        this.info = info;
-    }
-    
-    NodeInfo i() {
-        return info;
-    }
-    
-    public abstract Kind    getKind();
-    
-    public abstract void accept(FxNodeVisitor v);
-    
-    void detachChild(FxNode child) {
-    }
-    
-    protected abstract String getTagName();
+public class FxInstructionItem extends AbstractCompletionItem {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/instruction.png"; // NOI18N
 
-    public boolean hasError() {
-        return error;
-    }
+    private String instruction;
+    private Callable<String>  fxNamespaceDecl;
     
-    void markError() {
-        this.error = true;
+    public FxInstructionItem(String instruction, CompletionContext ctx, 
+            String text, Callable<String> declarator) {
+        super(ctx, text);
+        this.instruction = instruction;
+        this.fxNamespaceDecl = declarator;
     }
 
+    @NbBundle.Messages({
+        "# {0} - instruction / special element name",
+        "FMT_fxmlInstructionItem=<b><font color='#000099'>{0}</font></b>",
+    })
+    @Override
+    protected String getLeftHtmlText() {
+        return FMT_fxmlInstructionItem(instruction);
+    }
+
+    @Override
+    protected int getCaretShift() {
+        int index = getSubstituteText().indexOf('"');
+        if (index == -1) {
+            return super.getCaretShift();
+        } else {
+            return index + 1;
+        }
+    }
+
+    @Override
+    protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
+        String prefix = "fx";
+        if (fxNamespaceDecl != null) {
+            try {
+                prefix = fxNamespaceDecl.call();
+            } catch (Exception ex) {
+                throw new BadLocationException("", 0);
+            }
+        }
+        if (!"fx".equals(prefix)) {
+            text = text.replace("fx:", prefix + ":");
+        }
+        super.doSubstituteText(c, d, text);
+    }
+    
+    private static ImageIcon ICON;
+
+    @Override
+    protected ImageIcon getIcon() {
+        if (ICON == null) {
+            ICON = ImageUtilities.loadImageIcon(ICON_RESOURCE, false);
+        }
+        return ICON;
+    }
+    
 }

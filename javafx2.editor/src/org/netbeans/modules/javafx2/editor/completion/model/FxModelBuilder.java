@@ -314,6 +314,11 @@ public class FxModelBuilder implements ContentHandler, ContentLocator.Receiver {
             handleFxReference(atts);
         } else {
             // error, invalid fx: element
+            FxNode n = new Dummy(localName);
+            NodeInfo ni = createElementInfo();
+            n.attach(ni);
+            attachChildNode(n);
+            nodeStack.push(n);
             addError("invalid-fx-element", ERR_invalidFxElement(localName), localName);
         }
     }
@@ -451,11 +456,17 @@ public class FxModelBuilder implements ContentHandler, ContentLocator.Receiver {
                 pushInstance(instance);
             }
         } else {
-            addError(new ErrorMark(
-                off, contentLocator.getEndOffset() - off,
-                "parent-not-support-instance",
-                ERR_instanceInMapProperty()
-            ));
+            if (parent.getKind() != Kind.Error) {
+                addError(new ErrorMark(
+                    off, contentLocator.getEndOffset() - off,
+                    "parent-not-support-instance",
+                    ERR_instanceInMapProperty()
+                ));
+            }
+            NodeInfo ni = new NodeInfo(contentLocator.getElementOffset());
+            instance.attach(ni);
+            attachChildNode(instance);
+            pushInstance(instance);
         }
     }
 

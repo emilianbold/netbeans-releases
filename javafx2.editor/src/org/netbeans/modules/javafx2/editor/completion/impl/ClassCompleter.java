@@ -107,7 +107,8 @@ public class ClassCompleter implements Completer, Completer.Factory {
     @Override
     public Completer createCompleter(CompletionContext ctx) {
         if (ctx.getType() == CompletionContext.Type.BEAN ||
-            ctx.getType() == CompletionContext.Type.ROOT) {
+            ctx.getType() == CompletionContext.Type.ROOT ||
+            ctx.getType() == CompletionContext.Type.CHILD_ELEMENT) {
             return new ClassCompleter(ctx);
         }
         

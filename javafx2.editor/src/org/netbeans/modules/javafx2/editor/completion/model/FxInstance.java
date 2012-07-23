@@ -113,7 +113,7 @@ public abstract class FxInstance<T extends FxInstance> extends FxObjectBase {
         return Collections.unmodifiableCollection(eventHandlers.values());
     }
 
-    public Collection<? extends PropertyValue>    getProperties() {
+    public Collection<PropertyValue>    getProperties() {
         return Collections.unmodifiableCollection(properties.values());
     }
     

@@ -324,6 +324,7 @@ public class XmlLexerParser implements ContentLocator {
                     whitespacePossible = true;
                     break;
                 }
+                case ERROR:
                 case CHARACTER:
                     // character entity - will be reported as usual characters data
                 case TEXT: {
@@ -341,7 +342,7 @@ public class XmlLexerParser implements ContentLocator {
         }
         int saveEndOffset = endOffset;
         
-        while (!levelStack.isEmpty()) {
+        while (!levelStack.isEmpty() && currentLevel != null) {
             markUnclosedElement(currentLevel.tagQName);
             String[] nsName = parseQName(currentLevel.tagQName);
             resetAndSetErrorOffsets();
@@ -732,6 +733,7 @@ public class XmlLexerParser implements ContentLocator {
         parser.seq = seq;
         parser.levelStack = new LinkedList<Level>(levelStack);
         parser.levelBound = levelStack.size();
+        parser.currentLevel = this.currentLevel;
         
         return parser;
     }

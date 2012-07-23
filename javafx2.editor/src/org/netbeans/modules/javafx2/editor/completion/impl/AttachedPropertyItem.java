@@ -105,9 +105,13 @@ final class AttachedPropertyItem extends AbstractCompletionItem {
     @Override
     protected String getSubstituteText() {
         if (attribute) {
-            return super.getSubstituteText() + "=\"\""; // NOI18N
+            if (type == null) {
+                return super.getSubstituteText();
+            } else {
+                return super.getSubstituteText() + "=\"\" "; // NOI18N
+            } 
         } else {
-            return "<" + super.getSubstituteText();
+            return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
         }
     }
     
@@ -129,11 +133,13 @@ final class AttachedPropertyItem extends AbstractCompletionItem {
 
     @Override
     protected int getCaretShift() {
-        if (classPrefix != null || !attribute) {
+        if (classPrefix != null) {
             return super.getCaretShift();
+        } else if (!attribute) {
+            return 2 + super.getSubstituteText().length();
         } else {
             // position the caret into apostrophes:
-            return super.getCaretShift() - 1;
+            return super.getCaretShift() - 2;
         }
     }
 

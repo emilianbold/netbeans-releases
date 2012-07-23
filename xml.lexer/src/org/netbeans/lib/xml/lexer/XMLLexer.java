@@ -314,7 +314,9 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     
                 case ISI_ERROR_TAG:
                     state = ISP_TAG_X;
-                    input.backup(1);
+                    if (input.readLength() > 1) {
+                        input.backup(1);
+                    }
                     return token(XMLTokenId.ERROR);
                 
                 case ISA_LT:         // DONE
