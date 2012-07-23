@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.parser.annotation.LinkParsedLine;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
@@ -299,6 +300,10 @@ class DocRenderer {
                     PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
                     String type = composeType(typeTag.getTypes());
                     others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
+                } else if (kind instanceof LinkParsedLine) {
+                    String line = String.format("<a href=\"%s\">%s</a><br>\n", kind.getDescription(), kind.getDescription()); //NOI18N
+                    links.append(line);
+                    break;
                 } else {
                     String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
                             processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getValue().trim()));

@@ -162,7 +162,7 @@ public final class ApiGenScript {
                 .run(getDescriptor());
         try {
             File targetDir = new File(target);
-            if (result.get() == 0) {
+            if (result != null && result.get() == 0) {
                 if (targetDir.isDirectory()) {
                     File index = new File(target, "index.html"); // NOI18N
                     if (index.isFile()) {

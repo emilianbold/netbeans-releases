@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.parser.annotation;
 
-package org.netbeans.modules.php.api.editor;
-
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
- * Class representing a PHP global function.
- * @author Tomas Mysik
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class PhpFunction extends PhpBaseElement {
+public class LinkParsedLine implements AnnotationParsedLine {
+    private final String description;
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
-        super(name, fullyQualifiedName, description);
+    public LinkParsedLine(final String description) {
+        this.description = description;
     }
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName) {
-        super(name, fullyQualifiedName);
+    @Override
+    public String getName() {
+        return LinkLineParser.ANNOTATION_NAME;
     }
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
-        super(name, fullyQualifiedName, offset, description);
+    @Override
+    public String getDescription() {
+        return description;
     }
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
-        super(name, fullyQualifiedName, offset);
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return Collections.EMPTY_MAP;
     }
+
 }

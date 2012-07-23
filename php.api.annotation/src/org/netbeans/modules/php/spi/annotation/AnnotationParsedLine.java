@@ -41,8 +41,13 @@
  */
 package org.netbeans.modules.php.spi.annotation;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.openide.util.Parameters;
 
 /**
  * Encapsulates parsed annotation line.
@@ -71,5 +76,126 @@ public interface AnnotationParsedLine {
      * @return offset range of a parsed type and its textual representation
      */
     public Map<OffsetRange, String> getTypes();
+
+    /**
+     * Dummy implementation of {@link AnnotationParsedLine}.
+     */
+    static final class ParsedLine implements AnnotationParsedLine {
+        private final String name;
+        private final String description;
+        private final Map<OffsetRange, String> types;
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation; never {@code null}
+         */
+        public ParsedLine(@NonNull final String name) {
+            this(name, null, null);
+        }
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation; never {@code null}
+         * @param types types of the annotation; can be {@code null}
+         */
+        public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types) {
+            this(name, types, null);
+        }
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation; never {@code null}
+         * @param description description of the annotation; can be {@code null}
+         */
+        public ParsedLine(@NonNull final String name, @NullAllowed final String description) {
+            this(name, null, description);
+        }
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation; never {@code null}
+         * @param types types of the annotation; can be {@code null}
+         * @param description description of the annotation; can be {@code null}
+         */
+        public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types, @NullAllowed final String description) {
+            Parameters.notNull("name", name); //NOI18N
+            this.name = name;
+            this.types = types;
+            this.description = description;
+        }
+
+        /**
+         * Returns a name of an annotation without the "at" sign.
+         *
+         * @return name; never {@code null}
+         */
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Returns an offset-ranges and their types.
+         *
+         * @return offset range of a parsed type and its textual representation; never {@code null}
+         */
+        @Override
+        public Map<OffsetRange, String> getTypes() {
+            Map<OffsetRange, String> result = Collections.EMPTY_MAP;
+            if (types != null) {
+                result = new HashMap<OffsetRange, String>(types);
+            }
+            return result;
+        }
+
+        /**
+         * Returns a description of the parsed annotation.
+         *
+         * @return description; never {@code null}
+         */
+        @Override
+        public String getDescription() {
+            String result = "";
+            if (description != null) {
+                result = description;
+            }
+            return result;
+        }
+
+        @Override
+        public boolean equals(@NullAllowed final Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ParsedLine other = (ParsedLine) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            if ((this.description == null) ? (other.description != null) : !this.description.equals(other.description)) {
+                return false;
+            }
+            if (this.types != other.types && (this.types == null || !this.types.equals(other.types))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 59 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 59 * hash + (this.description != null ? this.description.hashCode() : 0);
+            hash = 59 * hash + (this.types != null ? this.types.hashCode() : 0);
+            return hash;
+        }
+
+    }
 
 }

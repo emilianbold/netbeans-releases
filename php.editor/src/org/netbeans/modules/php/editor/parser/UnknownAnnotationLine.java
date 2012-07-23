@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -53,9 +54,16 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 public class UnknownAnnotationLine implements AnnotationParsedLine {
 
     private final String name;
+    private final String description;
+
+    public UnknownAnnotationLine(final String name, final String description) {
+        Parameters.notEmpty("name", name); //NOI18N
+        this.name = name;
+        this.description = description;
+    }
 
     public UnknownAnnotationLine(final String name) {
-        this.name = name;
+        this(name, null);
     }
 
     @Override
@@ -65,7 +73,11 @@ public class UnknownAnnotationLine implements AnnotationParsedLine {
 
     @Override
     public String getDescription() {
-        return "";
+        String result = "";
+        if (description != null) {
+            result = description;
+        }
+        return result;
     }
 
     @Override

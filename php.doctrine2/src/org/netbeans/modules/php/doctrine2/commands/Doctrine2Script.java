@@ -133,7 +133,7 @@ public final class Doctrine2Script {
                 .additionalParameters(LIST_PARAMS)
                 .run(getSilentDescriptor());
         try {
-            if (result.get() != 0) {
+            if (result == null || result.get() != 0) {
                 // error => rerun with output window
                 runCommand(phpModule, LIST_PARAMS);
                 return null;

@@ -49,6 +49,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.openide.util.Parameters;
 
@@ -80,9 +82,9 @@ public abstract class AnnotationCompletionTagProvider {
      *         never {@code null}
      * @param  description the description of this PHP annotations provider (e.g., "PHP annotations
      *        for an open source framework based on the MVC pattern."); can be {@code null}
-     * @throws NullPointerException if the {@ code identifier} or {@code name} parameter is {@code null}
+     * @throws NullPointerException if the {@code identifier} or {@code name} parameter is {@code null}
      */
-    public AnnotationCompletionTagProvider(String identifier, String name, String description) {
+    public AnnotationCompletionTagProvider(@NonNull String identifier, @NonNull String name, @NullAllowed String description) {
         Parameters.notNull("identifier", identifier); // NOI18N
         Parameters.notNull("name", name); // NOI18N
 

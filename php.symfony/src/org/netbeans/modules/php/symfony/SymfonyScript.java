@@ -185,12 +185,14 @@ public class SymfonyScript {
         allParams.addAll(Arrays.asList(params));
 
         try {
-        createPhpExecutable(phpModule)
-                .displayName(getDisplayName(phpModule, allParams.get(0)))
-                .additionalParameters(getAllParams(allParams))
-                .warnUser(false)
-                .run(getDescriptor(null))
-                .get();
+            Future<Integer> result = createPhpExecutable(phpModule)
+                    .displayName(getDisplayName(phpModule, allParams.get(0)))
+                    .additionalParameters(getAllParams(allParams))
+                    .warnUser(false)
+                    .run(getDescriptor(null));
+            if (result != null) {
+                result.get();
+            }
         } catch (CancellationException ex) {
             // canceled
         } catch (InterruptedException ex) {
@@ -231,7 +233,9 @@ public class SymfonyScript {
                 .pureOutputOnly(true)
                 .run(getDescriptorWithLineProcessor(lineProcessor));
         try {
-            result.get();
+            if (result != null) {
+                result.get();
+            }
         } catch (CancellationException ex) {
             // canceled
         } catch (ExecutionException ex) {
@@ -317,7 +321,7 @@ public class SymfonyScript {
                 .additionalParameters(LIST_XML_COMMAND)
                 .run(getSilentDescriptor());
         try {
-            if (result.get() != 0) {
+            if (result == null || result.get() != 0) {
                 // error
                 return null;
             }
@@ -360,7 +364,7 @@ public class SymfonyScript {
                 .pureOutputOnly(true)
                 .run(getDescriptorWithLineProcessor(lineProcessor));
         try {
-            if (task.get().intValue() == 0) {
+            if (task != null && task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
                 if (!freshCommands.isEmpty()) {
                     return freshCommands;
