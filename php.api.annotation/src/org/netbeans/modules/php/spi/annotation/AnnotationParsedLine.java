@@ -122,7 +122,7 @@ public interface AnnotationParsedLine {
          * @param description description of the annotation; can be {@code null}
          */
         public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types, @NullAllowed final String description) {
-            Parameters.notNull("name", name);
+            Parameters.notNull("name", name); //NOI18N
             this.name = name;
             this.types = types;
             this.description = description;
