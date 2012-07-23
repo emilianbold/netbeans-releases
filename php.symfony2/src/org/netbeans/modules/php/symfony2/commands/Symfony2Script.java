@@ -179,7 +179,7 @@ public final class Symfony2Script {
                 .additionalParameters(LIST_COMMANDS_COMMAND)
                 .run(getSilentDescriptor());
         try {
-            if (result.get() != 0) {
+            if (result == null || result.get() != 0) {
                 // error => rerun with output window
                 runCommand(phpModule, LIST_COMMANDS_COMMAND, null);
                 return null;

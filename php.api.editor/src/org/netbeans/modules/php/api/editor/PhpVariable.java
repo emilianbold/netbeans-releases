@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.api.editor;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -50,35 +52,35 @@ import org.openide.filesystems.FileObject;
  */
 public final class PhpVariable extends PhpBaseElement {
 
-    public PhpVariable(String name, String fullyQualifiedName, String description) {
+    public PhpVariable(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         super(name, fullyQualifiedName, description);
     }
 
-    public PhpVariable(String name, String fullyQualifiedName, FileObject file) {
+    public PhpVariable(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed FileObject file) {
         super(name, fullyQualifiedName, file);
     }
 
-    public PhpVariable(String name, String fullyQualifiedName, FileObject file, int offset) {
+    public PhpVariable(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed FileObject file, int offset) {
         super(name, fullyQualifiedName, file, offset, null);
     }
 
-    public PhpVariable(String name, PhpClass type, FileObject file, int offset) {
+    public PhpVariable(@NonNull String name, @NullAllowed PhpClass type, @NullAllowed FileObject file, int offset) {
         super(name, null, type, file, offset, null);
     }
 
-    public PhpVariable(String name, String fullyQualifiedName) {
+    public PhpVariable(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         super(name, fullyQualifiedName);
     }
 
-    public PhpVariable(String name, PhpClass type) {
+    public PhpVariable(@NonNull String name, @NullAllowed PhpClass type) {
         super(name, type);
     }
 
-    public PhpVariable(String name, String fullyQualifiedName, int offset, String description) {
+    public PhpVariable(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         super(name, fullyQualifiedName, offset, description);
     }
 
-    public PhpVariable(String name, String fullyQualifiedName, int offset) {
+    public PhpVariable(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         super(name, fullyQualifiedName, offset);
     }
 }

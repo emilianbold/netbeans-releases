@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.parser.annotation;
 
-package org.netbeans.modules.php.api.editor;
-
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
+import java.util.Collections;
+import org.netbeans.modules.php.editor.PHPTestBase;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
- * Class representing a PHP global function.
- * @author Tomas Mysik
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class PhpFunction extends PhpBaseElement {
+public class LinkLineParserTest extends PHPTestBase {
+    private LinkLineParser parser;
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
-        super(name, fullyQualifiedName, description);
+    public LinkLineParserTest(String testName) {
+        super(testName);
     }
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName) {
-        super(name, fullyQualifiedName);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        parser = new LinkLineParser();
     }
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
-        super(name, fullyQualifiedName, offset, description);
+    public void testValidUseCase_01() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("link http://www.seznam.cz");
+        assertEquals("link", parsedLine.getName());
+        assertEquals("http://www.seznam.cz", parsedLine.getDescription());
+        assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
     }
 
-    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
-        super(name, fullyQualifiedName, offset);
+    public void testValidUseCase_02() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("link ");
+        assertEquals("link", parsedLine.getName());
+        assertEquals("", parsedLine.getDescription());
+        assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
     }
+
+    public void testInvalidUseCase_01() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("@link http://www.seznam.cz");
+        assertNull(parsedLine);
+    }
+
+    public void testInvalidUseCase_02() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("foo http://www.seznam.cz");
+        assertNull(parsedLine);
+    }
+
+    public void testInvalidUseCase_03() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("linked http://www.seznam.cz");
+        assertNull(parsedLine);
+    }
+
 }
