@@ -82,7 +82,7 @@ public abstract class AnnotationCompletionTagProvider {
      *         never {@code null}
      * @param  description the description of this PHP annotations provider (e.g., "PHP annotations
      *        for an open source framework based on the MVC pattern."); can be {@code null}
-     * @throws NullPointerException if the {@ code identifier} or {@code name} parameter is {@code null}
+     * @throws NullPointerException if the {@code identifier} or {@code name} parameter is {@code null}
      */
     public AnnotationCompletionTagProvider(@NonNull String identifier, @NonNull String name, @NullAllowed String description) {
         Parameters.notNull("identifier", identifier); // NOI18N

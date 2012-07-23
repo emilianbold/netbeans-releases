@@ -88,9 +88,9 @@ public interface AnnotationParsedLine {
         /**
          * Creates new annotation parsed line.
          *
-         * @param name name of the annotation
-         * @param description description of the annotation
-         * @param types types of the annotation
+         * @param name name of the annotation; can be {@code null}
+         * @param description description of the annotation; can be {@code null}
+         * @param types types of the annotation; never {@code null}
          */
         public ParsedLine(@NullAllowed final String name, @NullAllowed final String description, @NonNull final Map<OffsetRange, String> types) {
             Parameters.notNull("types", types);
@@ -102,7 +102,7 @@ public interface AnnotationParsedLine {
         /**
          * Returns a name of an annotation without the "at" sign.
          *
-         * @return name
+         * @return name; can be {@code null}
          */
         @Override
         @CheckForNull
@@ -113,7 +113,7 @@ public interface AnnotationParsedLine {
         /**
          * Returns a description of the parsed annotation.
          *
-         * @return description
+         * @return description; can be {@code null}
          */
         @Override
         @CheckForNull
@@ -124,7 +124,7 @@ public interface AnnotationParsedLine {
         /**
          * Returns an offset-ranges and their types.
          *
-         * @return offset range of a parsed type and its textual representation
+         * @return offset range of a parsed type and its textual representation; never {@code null}
          */
         @Override
         public Map<OffsetRange, String> getTypes() {

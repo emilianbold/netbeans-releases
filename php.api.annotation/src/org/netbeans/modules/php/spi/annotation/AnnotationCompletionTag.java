@@ -59,8 +59,8 @@ public class AnnotationCompletionTag {
 
     /**
      * Create new annotation tag without documentation.
-     * @param name tag name, cannot
-     * @param insertTemplate text that it inserted to the source file
+     * @param name tag name; never {@code null}
+     * @param insertTemplate text that it inserted to the source file; can't be {@code null}
      */
     public AnnotationCompletionTag(@NonNull String name, @NonNull String insertTemplate) {
         this(name, insertTemplate, null);
@@ -68,8 +68,8 @@ public class AnnotationCompletionTag {
 
     /**
      * Create new annotation tag with documentation.
-     * @param name tag name, cannot
-     * @param insertTemplate text that it inserted to the source file
+     * @param name tag name; never {@code null}
+     * @param insertTemplate text that it inserted to the source file; never {@code null}
      * @param documentation documentation of the tag, HTML allowed; can be {@code null}
      */
     public AnnotationCompletionTag(@NonNull String name, @NonNull String insertTemplate, @NullAllowed String documentation) {

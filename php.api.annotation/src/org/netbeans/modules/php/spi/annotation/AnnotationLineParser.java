@@ -67,7 +67,7 @@ public interface AnnotationLineParser {
      * {@code null} otherwise.</p>
      *
      * @param line
-     * @return parsed line, or {@code null}
+     * @return parsed line; can be {@code null}
      */
     @CheckForNull
     public AnnotationParsedLine parse(String line);
