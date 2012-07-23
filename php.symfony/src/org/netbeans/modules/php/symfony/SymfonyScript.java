@@ -231,7 +231,7 @@ public class SymfonyScript {
                 .displayName(getDisplayName(phpModule, allParams.get(0)))
                 .additionalParameters(getAllParams(allParams))
                 .pureOutputOnly(true)
-                .run(getDescriptorWithLineProcessor(lineProcessor));
+                .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
             if (result != null) {
                 result.get();
@@ -290,19 +290,18 @@ public class SymfonyScript {
         return executionDescriptor;
     }
 
-    private ExecutionDescriptor getDescriptorWithLineProcessor(final LineProcessor lineProcessor) {
-        return new ExecutionDescriptor()
-                .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+    private ExecutionDescriptor.InputProcessorFactory getOutProcessorFactory(final LineProcessor lineProcessor) {
+        return new ExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
-        });
+        };
     }
 
     private ExecutionDescriptor getSilentDescriptor() {
-        return new ExecutionDescriptor();
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL);
     }
 
     private List<FrameworkCommand> getFrameworkCommandsInternalXml(PhpModule phpModule) {
@@ -362,7 +361,7 @@ public class SymfonyScript {
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .additionalParameters(Collections.singletonList(LIST_COMMAND))
                 .pureOutputOnly(true)
-                .run(getDescriptorWithLineProcessor(lineProcessor));
+                .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
             if (task != null && task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();

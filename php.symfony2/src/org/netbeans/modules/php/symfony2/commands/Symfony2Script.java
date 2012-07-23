@@ -71,6 +71,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents Symfony2 command line tool.
@@ -243,7 +244,8 @@ public final class Symfony2Script {
     }
 
     private ExecutionDescriptor getSilentDescriptor() {
-        return new ExecutionDescriptor();
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL);
     }
 
 }

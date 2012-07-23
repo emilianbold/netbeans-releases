@@ -123,7 +123,7 @@ public class SymfonyOptionsPanelController extends OptionsPanelController implem
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(SymfonyOptions.class);
+        return new HelpCtx("org.netbeans.modules.php.symfony.ui.options.SymfonyOptions"); // NOI18N
     }
 
     @Override
