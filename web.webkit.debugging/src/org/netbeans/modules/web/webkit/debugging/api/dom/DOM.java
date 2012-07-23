@@ -95,9 +95,7 @@ public class DOM {
      * @return document node.
      */
     public synchronized Node getDocument() {
-// Temporary? workaround: Not caching documentNode because WebKitDebugging
-// is reused for different tabs in external browser (that have different documents).
-//        if (documentNode == null) {
+        if (documentNode == null) {
             Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
             if (response != null) {
                 JSONObject result = response.getResult();
@@ -107,7 +105,7 @@ public class DOM {
                     updateNodesMap(documentNode);
                 }
             }
-//        }
+        }
         return documentNode;
     }
 
@@ -451,6 +449,13 @@ public class DOM {
      */
     public void removeListener(Listener listener) {
         listeners.remove(listener);
+    }
+
+    /**
+     * Resets cached data.
+     */
+    public synchronized void reset() {
+        documentNode = null;
     }
 
     /**

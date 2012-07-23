@@ -144,6 +144,15 @@ public class WebKitDebugging {
         }
         return network;
     }
+
+    /**
+     * Resets cached data.
+     */
+    public synchronized void reset() {
+        if (dom != null) {
+            dom.reset();
+        }
+    }
     
     // other parts of Remote WebKit Debugging like CSS, DOMDebugger, 
     // Inspector will be introduced here in time
