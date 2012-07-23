@@ -304,8 +304,8 @@ class DocRenderer {
                     String line = String.format("<a href=\"%s\">%s</a><br>\n", kind.getDescription(), kind.getDescription()); //NOI18N
                     links.append(line);
                 } else {
-                    String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
-                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getValue().trim()));
+                    String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>\n", //NOI18N
+                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getKind().getDescription()));
                     others.append(oline);
                 }
             }
