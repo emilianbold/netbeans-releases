@@ -112,7 +112,8 @@ public abstract class SocketFramework implements Runnable {
                 }
                 else {
                     if (key.isValid()) {
-                        key.interestOps(SelectionKey.OP_WRITE);
+                        int currentOps = key.interestOps();
+                        key.interestOps(currentOps|SelectionKey.OP_WRITE);
                     }
                 }
             }
@@ -147,7 +148,7 @@ public abstract class SocketFramework implements Runnable {
         if (key.isReadable()) {
             readData(key);
         }
-        else if (key.isWritable()) {
+        if (key.isValid() && key.isWritable()) {
             writeData(key);
         }        
     }
