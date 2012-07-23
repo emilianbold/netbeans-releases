@@ -45,6 +45,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
  * Encapsulates annotation line parser.
@@ -68,6 +69,7 @@ public interface AnnotationLineParser {
      * @param line
      * @return parsed line, or {@code null}
      */
+    @CheckForNull
     public AnnotationParsedLine parse(String line);
 
     /**

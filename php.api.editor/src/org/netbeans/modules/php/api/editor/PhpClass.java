@@ -45,6 +45,8 @@ package org.netbeans.modules.php.api.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -56,58 +58,58 @@ public final class PhpClass extends PhpBaseElement {
     private final Collection<Field> fields = new LinkedList<Field>();
     private final Collection<Method> methods = new LinkedList<Method>();
 
-    public PhpClass(String name, String fullyQualifiedName, String description) {
+    public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         super(name, fullyQualifiedName, description);
     }
 
-    public PhpClass(String name, String fullyQualifiedName) {
+    public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         super(name, fullyQualifiedName);
     }
 
-    public PhpClass(String name, String fullyQualifiedName, int offset) {
+    public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         this(name, fullyQualifiedName, offset, null);
     }
 
-    public PhpClass(String name, String fullyQualifiedName, int offset, String description) {
+    public PhpClass(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         super(name, fullyQualifiedName, offset, description);
     }
 
-    public PhpClass addField(String name, String fullyQualifiedName, int offset, String description) {
+    public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         fields.add(new Field(name, fullyQualifiedName, offset, description));
         return this;
     }
 
-    public PhpClass addField(String name, String fullyQualifiedName, int offset) {
+    public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         return addField(name, fullyQualifiedName, offset, null);
     }
 
-    public PhpClass addField(String name, String fullyQualifiedName) {
+    public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         return addField(name, fullyQualifiedName, -1, null);
     }
 
-    public PhpClass addField(String name, String fullyQualifiedName, String description) {
+    public PhpClass addField(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         return addField(name, fullyQualifiedName, -1, description);
     }
 
-    public PhpClass addField(String name, PhpClass type, FileObject file, int offset) {
+    public PhpClass addField(@NonNull String name, @NullAllowed PhpClass type, @NullAllowed FileObject file, int offset) {
         fields.add(new Field(name, type, file, offset));
         return this;
     }
 
-    public PhpClass addMethod(String name, String fullyQualifiedName, int offset, String description) {
+    public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         methods.add(new Method(name, fullyQualifiedName, offset, description));
         return this;
     }
 
-    public PhpClass addMethod(String name, String fullyQualifiedName, int offset) {
+    public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         return addMethod(name, fullyQualifiedName, offset, null);
     }
 
-    public PhpClass addMethod(String name, String fullyQualifiedName) {
+    public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         return addMethod(name, fullyQualifiedName, -1, null);
     }
 
-    public PhpClass addMethod(String name, String fullyQualifiedName, String description) {
+    public PhpClass addMethod(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         return addMethod(name, fullyQualifiedName, -1, description);
     }
 
@@ -124,11 +126,11 @@ public final class PhpClass extends PhpBaseElement {
      * @author Tomas Mysik
      */
     public final class Field extends PhpBaseElement {
-        Field(String name, String fullyQualifiedName, int offset, String description) {
+        Field(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
             super(name, fullyQualifiedName, offset, description);
         }
 
-        Field(String name, PhpClass type, FileObject file, int offset) {
+        Field(@NonNull String name, @NullAllowed PhpClass type, @NullAllowed FileObject file, int offset) {
             super(name, null, type, file, offset, null);
         }
 
@@ -142,7 +144,7 @@ public final class PhpClass extends PhpBaseElement {
      * @author Tomas Mysik
      */
     public final class Method extends PhpBaseElement {
-        Method(String name, String fullyQualifiedName, int offset, String description) {
+        Method(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
             super(name, fullyQualifiedName, offset, description);
         }
 

@@ -43,7 +43,11 @@ package org.netbeans.modules.php.spi.annotation;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.openide.util.Parameters;
 
 /**
  * Encapsulates parsed annotation line.
@@ -88,7 +92,8 @@ public interface AnnotationParsedLine {
          * @param description description of the annotation
          * @param types types of the annotation
          */
-        public ParsedLine(final String name, final String description, final Map<OffsetRange, String> types) {
+        public ParsedLine(@NullAllowed final String name, @NullAllowed final String description, @NonNull final Map<OffsetRange, String> types) {
+            Parameters.notNull("types", types);
             this.name = name;
             this.description = description;
             this.types = types;
@@ -100,6 +105,7 @@ public interface AnnotationParsedLine {
          * @return name
          */
         @Override
+        @CheckForNull
         public String getName() {
             return name;
         }
@@ -110,6 +116,7 @@ public interface AnnotationParsedLine {
          * @return description
          */
         @Override
+        @CheckForNull
         public String getDescription() {
             return description;
         }

@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.spi.annotation;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.openide.util.Parameters;
 
@@ -59,7 +62,7 @@ public class AnnotationCompletionTag {
      * @param name tag name, cannot
      * @param insertTemplate text that it inserted to the source file
      */
-    public AnnotationCompletionTag(String name, String insertTemplate) {
+    public AnnotationCompletionTag(@NonNull String name, @NonNull String insertTemplate) {
         this(name, insertTemplate, null);
     }
 
@@ -69,7 +72,7 @@ public class AnnotationCompletionTag {
      * @param insertTemplate text that it inserted to the source file
      * @param documentation documentation of the tag, HTML allowed; can be {@code null}
      */
-    public AnnotationCompletionTag(String name, String insertTemplate, String documentation) {
+    public AnnotationCompletionTag(@NonNull String name, @NonNull String insertTemplate, @NullAllowed String documentation) {
         Parameters.notEmpty("name", name);
         Parameters.notEmpty("insertTemplate", insertTemplate);
 
@@ -98,6 +101,7 @@ public class AnnotationCompletionTag {
      * Get documentation of the tag.
      * @return documentation of the tag; can be {@code null}
      */
+    @CheckForNull
     public final String getDocumentation() {
         return documentation;
     }
@@ -110,7 +114,7 @@ public class AnnotationCompletionTag {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@NullAllowed Object obj) {
         if (obj == null) {
             return false;
         }
