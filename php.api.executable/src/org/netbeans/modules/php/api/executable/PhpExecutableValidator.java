@@ -46,17 +46,28 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.util.FileUtils;
 
 /**
- *
+ * Validator for {@link PhpExecutable}.
  */
 public final class PhpExecutableValidator {
 
     private PhpExecutableValidator() {
     }
 
+    /**
+     * Return {@code true} if the given command is {@link #validateCommand(String, String) valid}.
+     * @param command command to be validated, can be {@code null}
+     * @return {@code true} if the given command is {@link #validateCommand(String, String) valid}, {@code false} otherwise
+     */
     public static boolean isValidCommand(@NullAllowed String command) {
         return validateCommand(command, (String) null) == null;
     }
 
+    /**
+     * Validate the given command and return error if it is not valid, {@code null} otherwise.
+     * @param command command to be validated, can be {@code null}
+     * @param executableName the name of the executable (e.g. "Doctrine script"), can be {@code null} (in such case, "File" is used)
+     * @return error if it is not valid, {@code null} otherwise
+     */
     public static String validateCommand(@NullAllowed String command, @NullAllowed String executableName) {
         String executable = null;
         if (command != null) {
@@ -69,10 +80,10 @@ public final class PhpExecutableValidator {
     }
 
     /**
-     * Get the error message if the PHP program is not valid or <code>null</code> if it's valid.
-     * @return the error message if the PHP program is not valid or <code>null</code> if it's valid.
-     * @see #isValid()
-     * @see InvalidPhpExecutableException
+     * Validate the given command and return error if it is not valid, {@code null} otherwise.
+     * @param command command to be validated
+     * @param validationHandler handler to be used for validation
+     * @return error if it is not valid, {@code null} otherwise
      */
     public static String validateCommand(@NonNull String command, @NonNull ValidationHandler validationHandler) {
         return validationHandler.validate(PhpExecutable.parseCommand(command).first);
@@ -80,8 +91,16 @@ public final class PhpExecutableValidator {
 
     //~ Inner classes
 
+    /**
+     * Handler for {@link PhpExecutableValidator#validateCommand(String, PhpExecutableValidator.ValidationHandler) custom validation}.
+     */
     public interface ValidationHandler {
 
+        /**
+         * Validate the given executable.
+         * @param executable executable to be validated (typically the full path of a file)
+         * @return error if it is not valid, {@code null} otherwise
+         */
         String validate(String executable);
 
     }

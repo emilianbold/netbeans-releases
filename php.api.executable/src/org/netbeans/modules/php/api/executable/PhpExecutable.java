@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.api.extexecution.ExecutionService;
@@ -91,9 +92,8 @@ public final class PhpExecutable {
      * <p>
      * <b>In fact, it is not needed anymore since the Output window understands ANSI escape sequences.</b>
      * @see InputProcessors#ansiStripping(InputProcessor)
-     * @since 1.10
      */
-    public static final InputProcessorFactory ANSI_STRIPPING_FACTORY = new InputProcessorFactory() {
+    public static final ExecutionDescriptor.InputProcessorFactory ANSI_STRIPPING_FACTORY = new ExecutionDescriptor.InputProcessorFactory() {
         @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
             return InputProcessors.ansiStripping(defaultProcessor);
@@ -110,7 +110,6 @@ public final class PhpExecutable {
      *   <li>{@link ExecutionDescriptor#showProgress() shows progress}</li>
      * </ul>
      * @return the default {@link ExecutionDescriptor execution descriptor}.
-     * @since 1.10
      */
     public static final ExecutionDescriptor DEFAULT_EXECUTION_DESCRIPTOR = new ExecutionDescriptor()
             .controllable(true)
@@ -122,7 +121,7 @@ public final class PhpExecutable {
     private final String executable;
     private final List<String> parameters;
     private final String command;
-    private final List<String> fullCommand = new CopyOnWriteArrayList<String>();
+    final List<String> fullCommand = new CopyOnWriteArrayList<String>();
 
     private String executableName = null;
     private String displayName = null;
@@ -142,7 +141,7 @@ public final class PhpExecutable {
     /**
      * Parse command which can be just binary or binary with parameters.
      * As a parameter separator, "-" or "/" is used.
-     * @param command command to parse, can be <code>null</code>.
+     * @param command command to parse, can be {@code null}.
      */
     public PhpExecutable(String command) {
         if (command == null) {
@@ -169,16 +168,16 @@ public final class PhpExecutable {
     }
 
     /**
-     * Get PHP executable, never <code>null</code>.
-     * @return PHP program, never <code>null</code>.
+     * Get PHP executable, never {@code null}.
+     * @return PHP program, never {@code null}.
      */
     public String getExecutable() {
         return executable;
     }
 
     /**
-     * Get parameters, can be an empty array but never <code>null</code>.
-     * @return parameters, can be an empty array but never <code>null</code>.
+     * Get parameters, can be an empty array but never {@code null}.
+     * @return parameters, can be an empty array but never {@code null}.
      */
     public List<String> getParameters() {
         return new ArrayList<String>(parameters);
@@ -192,81 +191,220 @@ public final class PhpExecutable {
         return command;
     }
 
-    public PhpExecutable executableName(String executableName) {
+    /**
+     * Set name of the executable. This name is used for {@link PhpExecutableValidator validation} only (before running).
+     * <p>
+     * The default value is {@code null} (it means "File").
+     * @param executableName name of the executable
+     * @return the PHP Executable instance itself
+     */
+    public PhpExecutable executableName(@NonNull String executableName) {
+        Parameters.notEmpty("executableName", executableName); // NOI18N
         this.executableName = executableName;
         return this;
     }
 
+    /**
+     * Set display name that is used for executable running (as a title of the Output window).
+     * <p>
+     * The default value is {@link #getExecutable() executable} with {@link #getParameters() parameters}.
+     * @param displayName display name that is used for executable running
+     * @return the PHP Executable instance itself
+     */
     public PhpExecutable displayName(String displayName) {
+        Parameters.notEmpty("displayName", displayName); // NOI18N
         this.displayName = displayName;
         return this;
     }
 
+    /**
+     * Set identifier of the IDE PHP Options. If the executable is not {@link PhpExecutableValidator valid} and user should be
+     * {@link #warnUser(boolean) warned} about it, IDE Options are opened with this category selected.
+     * <p>
+     * The default value is {@code null} (the General PHP category).
+     * @param optionsSubcategory identifier of the IDE PHP Options
+     * @return the PHP Executable instance itself
+     */
     public PhpExecutable optionsSubcategory(String optionsSubcategory) {
+        Parameters.notEmpty("optionsSubcategory", optionsSubcategory); // NOI18N
         this.optionsSubcategory = optionsSubcategory;
         return this;
     }
 
+    /**
+     * Set running this executable via {@link PhpInterpreter}.
+     * <p>
+     * The default value is {@code false} (it means use {@link #viaAutodetection(boolean) autodetection}).
+     * @param viaPhpInterpreter {@code true} if running via {@link PhpInterpreter} should be forced, {@code false} otherwise
+     * @return the PHP Executable instance itself
+     */
     public PhpExecutable viaPhpInterpreter(boolean viaPhpInterpreter) {
         this.viaPhpInterpreter = viaPhpInterpreter;
         return this;
     }
 
+    /**
+     * Set running this executable via autodetection.
+     * <p>
+     * The default value is {@code true} (it means only <i>*.bat</i> files are run directly; the others are run via {@link PhpInterpreter}).
+     * @param viaAutodetection {@code true} if running via autodetection should be forced, {@code false} otherwise
+     * @return the PHP Executable instance itself
+     */
     public PhpExecutable viaAutodetection(boolean viaAutodetection) {
         this.viaAutodetection = viaAutodetection;
         return this;
     }
 
+    /**
+     * Set error stream redirection.
+     * <p>
+     * The default value is {@code true} (it means that the error stream is redirected to the standard output).
+     * @param viaAutodetection {@code true} if error stream should be redirected, {@code false} otherwise
+     * @return the PHP Executable instance itself
+     */
     public PhpExecutable redirectErrorStream(boolean redirectErrorStream) {
         this.redirectErrorStream = redirectErrorStream;
         return this;
     }
 
-    public PhpExecutable workDir(File workDir) {
+    /**
+     * Set working directory for {@link #run() running} this executable.
+     * <p>
+     * The default value is {@code null} ("unknown" directory).
+     * @param workDir working directory for {@link #run() running} this executable
+     * @return the PHP Executable instance itself
+     */
+    public PhpExecutable workDir(@NonNull File workDir) {
+        Parameters.notNull("workDir", workDir); // NOI18N
         this.workDir = workDir;
         return this;
     }
 
+    /**
+     * Set whether user should be warned before {@link #run() running} in case of invalid command.
+     * <p>
+     * The default value is {@code true} (it means that the user is informed).
+     * @param warnUser {@code true} if user should be warned, {@code false} otherwise
+     * @return the PHP Executable instance itself
+     */
     public PhpExecutable warnUser(boolean warnUser) {
         this.warnUser = warnUser;
         return this;
     }
 
-    public PhpExecutable additionalParameters(List<String> additionalParameters) {
-        Parameters.notNull("additionalParameters", additionalParameters);
+    /**
+     * Set addition parameters for {@link #run() running}.
+     * <p>
+     * The default value is empty list (it means no additional parameters).
+     * @param additionalParameters addition parameters for {@link #run() running}.
+     * @return the PHP Executable instance itself
+     */
+    public PhpExecutable additionalParameters(@NonNull List<String> additionalParameters) {
+        Parameters.notNull("additionalParameters", additionalParameters); // NOI18N
         this.additionalParameters = additionalParameters;
         return this;
     }
 
+    /**
+     * Set addition parameters for {@link #run() running}.
+     * <p>
+     * The default value is empty list (it means no additional parameters).
+     * @param additionalParameters addition parameters for {@link #run() running}.
+     * @return the PHP Executable instance itself
+     */
     public PhpExecutable environmentVariables(Map<String, String> environmentVariables) {
-        Parameters.notNull("environmentVariables", environmentVariables);
+        Parameters.notNull("environmentVariables", environmentVariables); // NOI18N
         this.environmentVariables = environmentVariables;
         return this;
     }
 
-    public PhpExecutable validationHandler(PhpExecutableValidator.ValidationHandler validationHandler) {
+    /**
+     * Set {@link PhpExecutableValidator.ValidationHandler validation handler} for executable {@link PhpExecutableValidator validator}.
+     * <p>
+     * The default value is {@code null} (it means use {@link PhpExecutableValidator#validateCommand(String, String) default validation}).
+     * @param validationHandler validation handler for executable validation
+     * @return the PHP Executable instance itself
+     */
+    public PhpExecutable validationHandler(@NonNull PhpExecutableValidator.ValidationHandler validationHandler) {
+        Parameters.notNull("validationHandler", validationHandler); // NOI18N
         this.validationHandler = validationHandler;
         return this;
     }
 
-    public PhpExecutable fileOutput(File fileOutput) {
+    /**
+     * Set file for executable output; if set, {@link #pureOutputOnly pure output} is set as well.
+     * <p>
+     * The default value is {@code null} (it means no output is stored).
+     * @param fileOutput file for executable output
+     * @return the PHP Executable instance itself
+     * @see #pureOutputOnly(boolean)
+     */
+    public PhpExecutable fileOutput(@NonNull File fileOutput) {
+        Parameters.notNull("fileOutput", fileOutput); // NOI18N
         this.fileOutput = fileOutput;
         this.pureOutputOnly = true;
         return this;
     }
 
+    /**
+     * Set pure output only. If Output window is used, no info about this executable is printed. If
+     * {@link #fileOutput file output} is set, it means that no Output window will be used.
+     * <p>
+     * The default value is {@code false} (it means print info about this executable).
+     * @param fileOutput file for executable output
+     * @return the PHP Executable instance itself
+     * @see #fileOutput(File)
+     */
     public PhpExecutable pureOutputOnly(boolean pureOutputOnly) {
         this.pureOutputOnly = pureOutputOnly;
         return this;
     }
 
+    /**
+     * Run this executable with the {@link #DEFAULT_EXECUTION_DESCRIPTOR default execution descriptor}.
+     * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
+     * or {@code null} if the executable cannot be run
+     * @see #run(ExecutionDescriptor)
+     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     * @see ExecutionService#run()
+     */
     @CheckForNull
     public Future<Integer> run() {
         return run(DEFAULT_EXECUTION_DESCRIPTOR);
     }
 
+    /**
+     * Run this executable with the given execution descriptor.
+     * <p>
+     * <b>WARNING:</b> If any {@link InputProcessorFactory output processor factory} should be used, use
+     * {@link PhpExecutable#run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)} instead.
+     * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
+     * or {@code null} if the executable cannot be run
+     * @see #run()
+     * @see #run(ExecutionDescriptor)
+     * @see ExecutionService#run()
+     */
     @CheckForNull
     public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor) {
+        return run(DEFAULT_EXECUTION_DESCRIPTOR, null);
+    }
+
+    /**
+     * Run this executable with the given execution descriptor and optional output processor factory.
+     * <p>
+     * @param executionDescriptor execution descriptor to be used
+     * @param outProcessorFactory output processor factory to be used, can be {@code null}
+     * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
+     * or {@code null} if the executable cannot be run
+     * @see #run()
+     * @see #run(ExecutionDescriptor)
+     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     * @see ExecutionService#run()
+     * @since 0.2
+     */
+    @CheckForNull
+    public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
+        Parameters.notNull("executionDescriptor", executionDescriptor); // NOI18N
         String error;
         if (validationHandler == null) {
             error = PhpExecutableValidator.validateCommand(executable, executableName);
@@ -284,48 +422,57 @@ public final class PhpExecutable {
         if (processBuilder == null) {
             return null;
         }
-        // colors
-        executionDescriptor = decorateExecutionDescriptorWithInfo(executionDescriptor);
-        // file output
-        executionDescriptor = decorateExecutionDescriptorWithFileOutput(executionDescriptor);
+        executionDescriptor = getExecutionDescriptor(executionDescriptor, outProcessorFactory);
         return ExecutionService.newService(processBuilder, executionDescriptor, getDisplayName()).run();
     }
 
     /**
-     * Execute process, <b>blocking but not blocking EDT</b>. It is just a wrapper for {@link ExecutionService#run()} which waits for the return code and displays
-     * progress dialog if it is run in EDT.
-     * <p>
-     * {@link ExecutionException} is logged with INFO level, {@link InterruptedException} is simply propagated.
-     * @param processBuilder {@link ExternalProcessBuilder process builder}
-     * @param executionDescriptor {@link ExecutionDescriptor descriptor} describing the configuration of service
-     * @param title display name of this service
-     * @param progressMessage message displayed if the task is run in EDT
+     * Run this executable with the {@link #DEFAULT_EXECUTION_DESCRIPTOR default execution descriptor}, <b>blocking but not blocking the UI thread</b>
+     * (it displays progress dialog if it is running in it).
+     * @param progressMessage message displayed if the task is running in the UI thread
      * @return exit code of the process or {@code null} if any error occured
-     * @see #executeLater(ExternalProcessBuilder, ExecutionDescriptor, String)
-     * @see #executeAndWait(ExternalProcessBuilder, ExecutionDescriptor, String)
-     * @since 1.48
+     * @throws ExecutionException if any error occurs
+     * @see #runAndWait(ExecutionDescriptor, String)
+     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)
      */
     @CheckForNull
-    public Integer runAndWait(String progressMessage) throws ExecutionException {
+    public Integer runAndWait(@NonNull String progressMessage) throws ExecutionException {
         return runAndWait(DEFAULT_EXECUTION_DESCRIPTOR, progressMessage);
     }
 
     /**
-     * Execute process, <b>blocking but not blocking EDT</b>. It is just a wrapper for {@link ExecutionService#run()} which waits for the return code and displays
-     * progress dialog if it is run in EDT.
+     * Run this executable with the given execution descriptor, <b>blocking but not blocking the UI thread</b>
+     * (it displays progress dialog if it is running in it).
      * <p>
-     * {@link ExecutionException} is logged with INFO level, {@link InterruptedException} is simply propagated.
-     * @param processBuilder {@link ExternalProcessBuilder process builder}
-     * @param executionDescriptor {@link ExecutionDescriptor descriptor} describing the configuration of service
-     * @param title display name of this service
-     * @param progressMessage message displayed if the task is run in EDT
+     * <b>WARNING:</b> If any {@link InputProcessorFactory output processor factory} should be used, use
+     * {@link PhpExecutable#runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)} instead.
+     * @param executionDescriptor execution descriptor to be used
+     * @param progressMessage message displayed if the task is running in the UI thread
      * @return exit code of the process or {@code null} if any error occured
-     * @see #executeLater(ExternalProcessBuilder, ExecutionDescriptor, String)
-     * @see #executeAndWait(ExternalProcessBuilder, ExecutionDescriptor, String)
-     * @since 1.48
+     * @throws ExecutionException if any error occurs
+     * @see #runAndWait(String)
+     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)
      */
     @CheckForNull
-    public Integer runAndWait(ExecutionDescriptor executionDescriptor, final String progressMessage) throws ExecutionException {
+    public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NonNull String progressMessage) throws ExecutionException {
+        return runAndWait(DEFAULT_EXECUTION_DESCRIPTOR, progressMessage);
+    }
+
+    /**
+     * Run this executable with the given execution descriptor and optional output processor factory, <b>blocking but not blocking the UI thread</b>
+     * (it displays progress dialog if it is running in it).
+     * @param executionDescriptor execution descriptor to be used
+     * @param outProcessorFactory output processor factory to be used, can be {@code null}
+     * @param progressMessage message displayed if the task is running in the UI thread
+     * @return exit code of the process or {@code null} if any error occured
+     * @throws ExecutionException if any error occurs
+     * @see #runAndWait(String)
+     * @see #runAndWait(ExecutionDescriptor, String)
+     */
+    @CheckForNull
+    public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory,
+            @NonNull final String progressMessage) throws ExecutionException {
+        Parameters.notNull("progressMessage", progressMessage); // NOI18N
         final Future<Integer> result = run(executionDescriptor);
         if (result == null) {
             return null;
@@ -356,13 +503,6 @@ public final class PhpExecutable {
         return getResult(result);
     }
 
-    /**
-     * Get {@link ExternalProcessBuilder process builder} with {@link #getExecutable() program}
-     * and {@link #getParameters() parameters}.
-     * @return {@link ExternalProcessBuilder process builder} with {@link #getExecutable() program}
-     *         and {@link #getParameters() parameters}.
-     * @since 1.10
-     */
     @CheckForNull
     private ExternalProcessBuilder getProcessBuilder() {
         ExternalProcessBuilder processBuilder = createProcessBuilder();
@@ -391,7 +531,7 @@ public final class PhpExecutable {
         fullCommand.clear();
         boolean useInterpreter = viaPhpInterpreter;
         if (viaAutodetection) {
-            useInterpreter = !executable.endsWith(".bat");
+            useInterpreter = !executable.toLowerCase().endsWith(".bat"); // NOI18N
         }
         if (!useInterpreter) {
             fullCommand.add(executable);
@@ -456,33 +596,64 @@ public final class PhpExecutable {
         return null;
     }
 
-    private ExecutionDescriptor decorateExecutionDescriptorWithInfo(ExecutionDescriptor executionDescriptor) {
+    private ExecutionDescriptor getExecutionDescriptor(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
+        final List<ExecutionDescriptor.InputProcessorFactory> inputProcessors = new CopyOnWriteArrayList<ExecutionDescriptor.InputProcessorFactory>();
+        // colors
+        ExecutionDescriptor.InputProcessorFactory infoOutProcessorFactory = getInfoOutputProcessorFactory();
+        if (infoOutProcessorFactory != null) {
+            inputProcessors.add(infoOutProcessorFactory);
+        }
+        // file output
+        ExecutionDescriptor.InputProcessorFactory fileOutProcessorFactory = getFileOutputProcessorFactory();
+        if (fileOutProcessorFactory != null) {
+            inputProcessors.add(fileOutProcessorFactory);
+            if (pureOutputOnly) {
+                executionDescriptor = executionDescriptor
+                        .inputOutput(InputOutput.NULL)
+                        .frontWindow(false);
+            }
+        }
+        if (outProcessorFactory != null) {
+            inputProcessors.add(outProcessorFactory);
+        }
+        if (!inputProcessors.isEmpty()) {
+            executionDescriptor = executionDescriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+                @Override
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    InputProcessor[] processors = new InputProcessor[inputProcessors.size()];
+                    for (int i = 0; i < inputProcessors.size(); ++i) {
+                        processors[i] = inputProcessors.get(i).newInputProcessor(defaultProcessor);
+                    }
+                    return InputProcessors.proxy(processors);
+                }
+            });
+        }
+        return executionDescriptor;
+    }
+
+    private ExecutionDescriptor.InputProcessorFactory getInfoOutputProcessorFactory() {
         if (fileOutput != null || pureOutputOnly) {
             // no info for file or pure output
-            return executionDescriptor;
+            return null;
         }
-        return executionDescriptor.outProcessorFactory(new InputProcessorFactory() {
+        return new ExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.proxy(new InfoInputProcessor(defaultProcessor, fullCommand), defaultProcessor);
             }
-        });
+        };
     }
 
-    private ExecutionDescriptor decorateExecutionDescriptorWithFileOutput(ExecutionDescriptor executionDescriptor) {
+    private ExecutionDescriptor.InputProcessorFactory getFileOutputProcessorFactory() {
         if (fileOutput == null) {
-            return executionDescriptor;
+            return null;
         }
-        if (pureOutputOnly) {
-            executionDescriptor = executionDescriptor.inputOutput(InputOutput.NULL)
-                    .frontWindow(false);
-        }
-        return executionDescriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+        return new ExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return new RedirectOutputProcessor(fileOutput);
             }
-        });
+        };
     }
 
     @Override
