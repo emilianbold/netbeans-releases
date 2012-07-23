@@ -67,6 +67,7 @@ import org.netbeans.modules.php.doctrine2.options.Doctrine2Options;
 import org.netbeans.modules.php.doctrine2.ui.options.Doctrine2OptionsPanelController;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents <a href="http://doctrine-project.org/">doctrine</a> command line tool.
@@ -196,7 +197,8 @@ public final class Doctrine2Script {
     }
 
     private ExecutionDescriptor getSilentDescriptor() {
-        return new ExecutionDescriptor();
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL);
     }
 
 }
