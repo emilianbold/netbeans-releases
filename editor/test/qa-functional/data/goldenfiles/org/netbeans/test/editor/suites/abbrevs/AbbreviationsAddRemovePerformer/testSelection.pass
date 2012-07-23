@@ -12,8 +12,8 @@ public class Test2 {
      * @param col
      */
     public void method(Collection<Integer> col) {
-        /*List<String> list = null;*/
         
+        /*List<String> list = null;*/
         
     }
 
