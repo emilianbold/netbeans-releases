@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.spi.annotation;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 
@@ -71,5 +72,58 @@ public interface AnnotationParsedLine {
      * @return offset range of a parsed type and its textual representation
      */
     public Map<OffsetRange, String> getTypes();
+
+    /**
+     * Dummy implementation of {@link AnnotationParsedLine}.
+     */
+    static final class ParsedLine implements AnnotationParsedLine {
+        private final String name;
+        private final String description;
+        private final Map<OffsetRange, String> types;
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation
+         * @param description description of the annotation
+         * @param types types of the annotation
+         */
+        public ParsedLine(final String name, final String description, final Map<OffsetRange, String> types) {
+            this.name = name;
+            this.description = description;
+            this.types = types;
+        }
+
+        /**
+         * Returns a name of an annotation without the "at" sign.
+         *
+         * @return name
+         */
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * Returns a description of the parsed annotation.
+         *
+         * @return description
+         */
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        /**
+         * Returns an offset-ranges and their types.
+         *
+         * @return offset range of a parsed type and its textual representation
+         */
+        @Override
+        public Map<OffsetRange, String> getTypes() {
+            return new HashMap<OffsetRange, String>(types);
+        }
+
+    }
 
 }
