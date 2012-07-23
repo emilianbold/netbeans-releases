@@ -161,8 +161,12 @@ class ModelGenerator {
         }
         myCommonModels.append(" entities\n");                        // NOI18N
         myCommonModels.append("models.");
-        myCommonModels.append(myModelName);
-        myCommonModels.append("Collection");                         // NOI18N
+        
+        StringBuilder builder = new StringBuilder(myModelName);
+        builder.append("Collection");                                // NOI18N
+        myCollectionModelName = builder.toString();
+        myCommonModels.append(myCollectionModelName);
+        
         myCommonModels.append(" = Backbone.Collection.extend({\n");  // NOI18N
         myCommonModels.append("model: ");                            // NOI18N
         myCommonModels.append(myModelName);
@@ -484,10 +488,15 @@ class ModelGenerator {
         return myModelName;
     }
     
+    String getCollectionModelName(){
+        return myCollectionModelName;
+    }
+    
     private StringBuilder myCommonModels;
     private RestServiceDescription myDescription;
     private Set<String> myEntities ;
     private Set<ModelAttribute> myAttributes;
     private String myDisplayNameAlias;
     private String myModelName;
+    private String myCollectionModelName;
 }

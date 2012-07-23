@@ -95,12 +95,25 @@ class RouterGenerator {
         // CTOR ( initialize ) function assign CreateView for "tpl-create" template
         myRouters.append("initialize:function(){\n");                     // NOI18N
         myRouters.append("var self = this;\n");                           // NOI18N
-        myRouters.append("$('#header').html(new views.CreateView({\n");   // NOI18N
+        myRouters.append("$('#");                                         // NOI18N
+        myRouters.append(getHeaderId());
+        myRouters.append("').html(new views.CreateView({\n");             // NOI18N
         myRouters.append("// tpl-create is template identifier for 'create' block\n");// NOI18N
-        myRouters.append("templateName :'#tpl-create',\n");               // NOI18N
+        myRouters.append("templateName :'#");                             // NOI18N
+        myRouters.append(getCreateTemplate());
+        myRouters.append("',\n");                                         // NOI18N
         myRouters.append("navigate: function(){\n");                      // NOI18N
         myRouters.append("self.navigate('new', true);\n}\n");             // NOI18N
         myRouters.append("}).render().el);\n},\n");                       // NOI18N
+        
+        if ( hasCollection ){
+            mySideBarId = "sidebar";                                      // NOI18N
+            myRouters.append("list:function () {\n");
+            myRouters.append("},\n");
+        }
+        else {
+            
+        }
         
         if ( httpPaths.containsKey( HttpRequests.POST)){
             myRouters.append("create:function () {\n");                   // NOI18N
@@ -129,7 +142,9 @@ class RouterGenerator {
             myRouters.append("getHashObject: function(){\n");              // NOI18N
             myRouters.append("return self.getData();\n}\n");               // NOI18N
             myRouters.append("});\n");                                     // NOI18N
-            myRouters.append("$('#content').html(this.view.render().el);\n},\n");// NOI18N
+            myRouters.append("$('#");                                      // NOI18N
+            myRouters.append(getContentId());                               
+            myRouters.append("').html(this.view.render().el);\n},\n");     // NOI18N
         }
         
         // add method getData which returns composite object data got from HTML controls 
@@ -148,7 +163,24 @@ class RouterGenerator {
         return myDetailsTemplateName;
     }
     
+    String getCreateTemplate(){
+        return "tpl-create";                                               // NOI18N
+    }
+    
+    String getHeaderId(){
+        return "header";                                                   // NOI18N
+    }
+    
+    String getContentId(){
+        return "content";                                                  // NOI18N
+    }
+    
+    String getSideBarId(){
+        return mySideBarId;
+    }
+    
     private StringBuilder myRouters;
     private String myRouterName;
     private String myDetailsTemplateName;
+    private String mySideBarId;
 }
