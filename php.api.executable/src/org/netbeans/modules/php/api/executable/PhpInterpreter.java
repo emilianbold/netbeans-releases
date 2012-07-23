@@ -67,9 +67,9 @@ public final class PhpInterpreter {
 
     /**
      * Get the {@link PhpOptions#getPhpInterpreter() default}, <b>valid only</b> PHP interpreter.
-     * @return the {@link PhpOptions#getPhpInterpreter() default}, <b>valid only</b> PHP interpreter.
-     * @throws PhpProgram.InvalidPhpProgramException if PHP interpreter is not valid.
-     *         The reason can be found in the {@link PhpProgram.InvalidPhpProgramException#getLocalizedMessage exception's message}.
+     * @return the {@link PhpOptions#getPhpInterpreter() default}, <b>valid only</b> PHP interpreter
+     * @throws InvalidPhpExecutableException if PHP interpreter is not valid
+     *         The reason can be found in the {@link InvalidPhpExecutableException#getLocalizedMessage exception's message}.
      */
     public static PhpInterpreter getDefault() throws InvalidPhpExecutableException {
         return getCustom(Lookup.getDefault().lookup(PhpOptions.class).getPhpInterpreter());
@@ -79,9 +79,9 @@ public final class PhpInterpreter {
      * Get the custom, <b>valid only</b> PHP interpreter. This method is used by projects
      * that have their own PHP interpreter specified (using Run Script configuration).
      * @param command command which represents path to PHP interpreter (arguments allowed)
-     * @return the custom, <b>valid only</b> PHP interpreter.
-     * @throws org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException if PHP interpreter is not valid.
-     *         The reason can be found in the {@link org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException#getLocalizedMessage exception's message}.
+     * @return the custom, <b>valid only</b> PHP interpreter
+     * @throws InvalidPhpExecutableException if PHP interpreter is not valid.
+     *         The reason can be found in the {@link InvalidPhpExecutableException#getLocalizedMessage exception's message}.
      */
     @NbBundle.Messages("PhpInterpreter.name=PHP interpreter")
     public static PhpInterpreter getCustom(String command) throws InvalidPhpExecutableException {
@@ -92,10 +92,18 @@ public final class PhpInterpreter {
         return new PhpInterpreter(command);
     }
 
+    /**
+     * Get the interpreter itself.
+     * @return the interpreter itself
+     */
     public String getInterpreter() {
         return executable.getExecutable();
     }
 
+    /**
+     * Get parameters.
+     * @return parameters
+     */
     public List<String> getParameters() {
         return executable.getParameters();
     }

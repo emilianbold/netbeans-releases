@@ -62,6 +62,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.UnionType;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.matching.Matcher;
@@ -142,10 +143,19 @@ public class JoinCatches {
 
                     for (Iterator<TypeMirror> it = duplicates.keySet().iterator(); it.hasNext();) {
                         TypeMirror existingType = it.next();
-
-                        if (ctx.getInfo().getTypes().isSubtype(existingType, varType)) {
-                            subtype = true;
-                            it.remove();
+                        Iterable<? extends TypeMirror> caughtList;
+                        
+                        if (existingType.getKind() == TypeKind.UNION) {
+                            caughtList = ((UnionType) existingType).getAlternatives();
+                        } else {
+                            caughtList = Collections.singletonList(existingType);
+                        }
+                        
+                        for (TypeMirror caught : caughtList) {
+                            if (ctx.getInfo().getTypes().isSubtype(caught, varType)) {
+                                subtype = true;
+                                it.remove();
+                            }
                         }
                     }
 

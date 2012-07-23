@@ -43,6 +43,7 @@ package org.netbeans.modules.php.api.annotation;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.openide.util.Lookup;
@@ -103,7 +104,7 @@ public final class PhpAnnotations {
      * @param listener {@link LookupListener listener} to be added
      * @see #removeCompletionTagProvidersListener(LookupListener)
      */
-    public static void addCompletionTagProvidersListener(LookupListener listener) {
+    public static void addCompletionTagProvidersListener(@NonNull LookupListener listener) {
         Parameters.notNull("listener", listener);
         COMPLETION_TAG_PROVIDERS.addLookupListener(listener);
     }
@@ -113,7 +114,7 @@ public final class PhpAnnotations {
      * @param listener {@link LookupListener listener} to be removed
      * @see #addCompletionTagProvidersListener(LookupListener)
      */
-    public static void removeCompletionTagProvidersListener(LookupListener listener) {
+    public static void removeCompletionTagProvidersListener(@NonNull LookupListener listener) {
         Parameters.notNull("listener", listener);
         COMPLETION_TAG_PROVIDERS.removeLookupListener(listener);
     }
@@ -137,7 +138,7 @@ public final class PhpAnnotations {
      * @param listener {@link LookupListener listener} to be added
      * @see #removeLineParsersListener(LookupListener)
      */
-    public static void addLineParsersListener(LookupListener listener) {
+    public static void addLineParsersListener(@NonNull LookupListener listener) {
         Parameters.notNull("listener", listener);
         LINE_PARSERS.addLookupListener(listener);
     }
@@ -148,7 +149,7 @@ public final class PhpAnnotations {
      * @param listener {@link LookupListener listener} to be removed
      * @see #addLineParsersListener(LookupListener)
      */
-    public static void removeLineParsersListener(LookupListener listener) {
+    public static void removeLineParsersListener(@NonNull LookupListener listener) {
         Parameters.notNull("listener", listener);
         LINE_PARSERS.removeLookupListener(listener);
     }

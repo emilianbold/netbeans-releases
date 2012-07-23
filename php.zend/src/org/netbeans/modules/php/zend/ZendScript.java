@@ -181,7 +181,11 @@ public final class ZendScript {
                 .displayName(getDisplayName(phpModule, parameters.get(0)))
                 .additionalParameters(allParameters)
                 .pureOutputOnly(true)
-                .run(getDescriptorWithLineProcessor(lineProcessor));
+                .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
+        if (result == null) {
+            // some error
+            return ""; // NOI18N
+        }
         try {
             result.get();
         } catch (CancellationException ex) {
@@ -199,19 +203,23 @@ public final class ZendScript {
         ExecutionDescriptor descriptor = getDescriptor(null);
         try {
             // create config
-            createPhpExecutable()
+            Future<Integer> result = createPhpExecutable()
                     .displayName(Bundle.ZendScript_register_provider())
                     .additionalParameters(CREATE_CONFIG_COMMAND)
-                    .run(descriptor)
-                    .get();
+                    .run(descriptor);
+            if (result != null) {
+                result.get();
+            }
 
             descriptor = descriptor.noReset(true);
             // enable config
-            createPhpExecutable()
+            result = createPhpExecutable()
                     .displayName(Bundle.ZendScript_register_provider())
                     .additionalParameters(ENABLE_CONFIG_COMMAND)
-                    .run(descriptor)
-                    .get();
+                    .run(descriptor);
+            if (result != null) {
+                result.get();
+            }
 
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                 NbBundle.getMessage(ZendScript.class, "MSG_ProviderRegistrationInfo"),
@@ -227,13 +235,15 @@ public final class ZendScript {
 
     public boolean initProject(PhpModule phpModule) {
         try {
-            createPhpExecutable()
+            Future<Integer> result = createPhpExecutable()
                     .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                     .displayName(getDisplayName(phpModule, INIT_PROJECT_COMMAND.get(0)))
                     .additionalParameters(INIT_PROJECT_COMMAND)
                     .warnUser(false)
-                    .run(getDescriptor(null))
-                    .get();
+                    .run(getDescriptor(null));
+            if (result != null) {
+                result.get();
+            }
         } catch (CancellationException ex) {
             // canceled
         } catch (ExecutionException ex) {
@@ -252,9 +262,9 @@ public final class ZendScript {
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .additionalParameters(SHOW_COMMANDS_COMMAND)
                 .pureOutputOnly(true)
-                .run(getDescriptorWithLineProcessor(lineProcessor));
+                .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
-            if (task.get().intValue() == 0) {
+            if (task != null && task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
                 if (!freshCommands.isEmpty()) {
                     return freshCommands;
@@ -298,15 +308,18 @@ public final class ZendScript {
                 .postExecution(postExecution);
     }
 
-    private ExecutionDescriptor getDescriptorWithLineProcessor(final LineProcessor lineProcessor) {
+    private ExecutionDescriptor getSilentDescriptor() {
         return new ExecutionDescriptor()
-                .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+                .inputOutput(InputOutput.NULL);
+    }
+
+    private ExecutionDescriptor.InputProcessorFactory getOutProcessorFactory(final LineProcessor lineProcessor) {
+        return new ExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
-        });
+        };
     }
 
     @NbBundle.Messages({

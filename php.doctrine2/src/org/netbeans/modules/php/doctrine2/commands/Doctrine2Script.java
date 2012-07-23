@@ -67,6 +67,7 @@ import org.netbeans.modules.php.doctrine2.options.Doctrine2Options;
 import org.netbeans.modules.php.doctrine2.ui.options.Doctrine2OptionsPanelController;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents <a href="http://doctrine-project.org/">doctrine</a> command line tool.
@@ -133,7 +134,7 @@ public final class Doctrine2Script {
                 .additionalParameters(LIST_PARAMS)
                 .run(getSilentDescriptor());
         try {
-            if (result.get() != 0) {
+            if (result == null || result.get() != 0) {
                 // error => rerun with output window
                 runCommand(phpModule, LIST_PARAMS);
                 return null;
@@ -196,7 +197,8 @@ public final class Doctrine2Script {
     }
 
     private ExecutionDescriptor getSilentDescriptor() {
-        return new ExecutionDescriptor();
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL);
     }
 
 }

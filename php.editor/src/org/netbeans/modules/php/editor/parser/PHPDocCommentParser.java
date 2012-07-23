@@ -213,7 +213,7 @@ public class PHPDocCommentParser {
             }
             return new PHPDocTag(start, end, type, description);
         } else {
-            return new PHPDocTypeTag(start, end, type, description, resolveTypes(types, start));
+            return new PHPDocTypeTag(start, end, type, type.getDescription(), resolveTypes(types, start + 1));
         }
     }
 
@@ -367,7 +367,7 @@ public class PHPDocCommentParser {
                     // we are not able to thread such tag
                     result = fetchCustomAnnotationLine(line.substring(1));
                     if (result == null) {
-                        result = new UnknownAnnotationLine(name);
+                        result = new UnknownAnnotationLine(name, tokens.length > 1 ? tokens[1] : "");
                     }
                 }
             }
