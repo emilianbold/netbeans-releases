@@ -181,7 +181,7 @@ public final class ZendScript {
                 .displayName(getDisplayName(phpModule, parameters.get(0)))
                 .additionalParameters(allParameters)
                 .pureOutputOnly(true)
-                .run(getDescriptorWithLineProcessor(lineProcessor));
+                .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         if (result == null) {
             // some error
             return ""; // NOI18N
@@ -262,7 +262,7 @@ public final class ZendScript {
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .additionalParameters(SHOW_COMMANDS_COMMAND)
                 .pureOutputOnly(true)
-                .run(getDescriptorWithLineProcessor(lineProcessor));
+                .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
             if (task != null && task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
@@ -308,15 +308,18 @@ public final class ZendScript {
                 .postExecution(postExecution);
     }
 
-    private ExecutionDescriptor getDescriptorWithLineProcessor(final LineProcessor lineProcessor) {
+    private ExecutionDescriptor getSilentDescriptor() {
         return new ExecutionDescriptor()
-                .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+                .inputOutput(InputOutput.NULL);
+    }
+
+    private ExecutionDescriptor.InputProcessorFactory getOutProcessorFactory(final LineProcessor lineProcessor) {
+        return new ExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
-        });
+        };
     }
 
     @NbBundle.Messages({
