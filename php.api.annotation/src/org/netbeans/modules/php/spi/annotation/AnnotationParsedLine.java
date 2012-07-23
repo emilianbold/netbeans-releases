@@ -167,7 +167,7 @@ public interface AnnotationParsedLine {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@NullAllowed final Object obj) {
             if (obj == null) {
                 return false;
             }
