@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.hudson.api;
 
+import org.netbeans.modules.hudson.api.HudsonInstance.Persistence;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.netbeans.modules.hudson.impl.HudsonInstanceProperties;
 import org.netbeans.modules.hudson.impl.HudsonManagerImpl;
@@ -62,7 +63,23 @@ public class HudsonManager {
      * @param persistent if true, persist this configuration; if false, will be transient
      * @return a new or existing instance
      */
-    public static HudsonInstance addInstance(String name, String url, int sync, final boolean persistent) {
+    public static HudsonInstance addInstance(String name, String url, int sync,
+            boolean persistent) {
+        return addInstance(name, url, sync, Persistence.instance(persistent));
+    }
+
+    /**
+     * Adds a Hudson instance to the system (if not already registered).
+     *
+     * @param name a name by which the instance will be identified (e.g.
+     * {@code Deadlock})
+     * @param url the master URL (e.g.
+     * {@code http://deadlock.netbeans.org/hudson/})
+     * @param sync interval (in minutes) between refreshes, or 0 to disable
+     * @param persistence persistence settings for the new instance
+     */
+    public static HudsonInstance addInstance(String name, String url, int sync,
+            final Persistence persistence) {
         for (HudsonInstance existing : HudsonManagerImpl.getDefault().getInstances()) {
             if (existing.getUrl().equals(url)) {
                 return existing;
@@ -70,9 +87,9 @@ public class HudsonManager {
         }
         HudsonInstanceImpl nue = HudsonInstanceImpl.createHudsonInstance(new HudsonInstanceProperties(name, url, Integer.toString(sync)) {
             public @Override boolean isPersisted() {
-                return persistent;
+                return persistence.isPersistent();
             }
-        }, true);
+        }, true, persistence.getInfo(null));
         HudsonManagerImpl.getDefault().addInstance(nue);
         return nue;
     }

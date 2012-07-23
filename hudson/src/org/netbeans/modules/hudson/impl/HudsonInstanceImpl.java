@@ -96,6 +96,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
 
     private HudsonInstanceProperties properties;
     private BuilderConnector builderConnector;
+    private String info; // additional info for transient instances
     
     private HudsonVersion version;
     private boolean connected;
@@ -117,9 +118,10 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private final Map<String,Reference<RemoteFileSystem>> workspaces = new HashMap<String,Reference<RemoteFileSystem>>();
     private final Map<String,Reference<RemoteFileSystem>> artifacts = new HashMap<String,Reference<RemoteFileSystem>>();
     
-    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive, BuilderConnector builderConnector) {
+    private HudsonInstanceImpl(HudsonInstanceProperties properties, boolean interactive, BuilderConnector builderConnector, String info) {
         this.builderConnector = builderConnector;
         this.properties = properties;
+        this.info = info;
 
         RP = new RequestProcessor(getUrl(), 1, true);
         final AtomicBoolean firstSynch = new AtomicBoolean(interactive); // #200643
@@ -209,7 +211,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                     }
                 };
         HudsonInstanceImpl instance = new HudsonInstanceImpl(
-                hudsonInstanceProperties, true, client);
+                hudsonInstanceProperties, true, client, null);
         if (null == HudsonManagerImpl.getDefault().addInstance(instance)) {
             return null;
         }
@@ -217,12 +219,16 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
 
     public static HudsonInstanceImpl createHudsonInstance(String name, String url, String sync) {
-        return createHudsonInstance(new HudsonInstanceProperties(name, url, sync), true);
+        return createHudsonInstance(new HudsonInstanceProperties(name, url, sync), true, null);
     }
     
     public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive) {
+        return createHudsonInstance(properties, interactive, null);
+    }
+
+    public static HudsonInstanceImpl createHudsonInstance(HudsonInstanceProperties properties, boolean interactive, String info) {
         HudsonConnector connector = new HudsonConnector(properties.get(HudsonInstanceConstants.INSTANCE_URL));
-        HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive, connector);
+        HudsonInstanceImpl instance = new HudsonInstanceImpl(properties, interactive, connector, info);
 
         assert instance.getName() != null;
         assert instance.getUrl() != null;
@@ -572,5 +578,9 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
             }
         }
         this.setViews(viewList, foundPrimaryView);
+    }
+
+    public String getInfo() {
+        return info;
     }
 }
