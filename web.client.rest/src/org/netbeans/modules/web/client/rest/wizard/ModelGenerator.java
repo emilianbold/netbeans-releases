@@ -87,17 +87,17 @@ class ModelGenerator {
         myEntities = entities;
     }
 
-    Set<ModelAttribute> generateModel(TypeElement entity, String path,
+    void generateModel(TypeElement entity, String path,
             String collectionPath, Map<HttpRequests, String> httpPaths ,
             Map<HttpRequests, Boolean> useIds,
             CompilationController controller ) throws IOException
     {
         String fqn = entity.getQualifiedName().toString();
         String name = entity.getSimpleName().toString();
-        String modelName = suggestModelName(name );
+        myModelName = suggestModelName(name );
         
         myCommonModels.append("\n// Model for ");                    // NOI18N
-        if ( name.equals(modelName)){
+        if ( name.equals(myModelName)){
             myCommonModels.append( name );
         }
         else {
@@ -108,28 +108,27 @@ class ModelGenerator {
         String url = getUrl( path );
         
         myCommonModels.append("models.");                            // NOI18N
-        myCommonModels.append(modelName);
+        myCommonModels.append(myModelName);
         myCommonModels.append(" = Backbone.Model.extend({\n");       // NOI18N
         myCommonModels.append("urlRoot : \"");                       // NOI18N
         myCommonModels.append( url );
         myCommonModels.append("\"");                                 // NOI18N
-        Set<ModelAttribute> set = new HashSet<ModelAttribute>();
-        String parsedData = parse(entity, set , controller);
-        String displayNameAlias=null;
+        myAttributes = new HashSet<ModelAttribute>();
+        String parsedData = parse(entity, myAttributes , controller);
         if ( parsedData != null ){
             myCommonModels.append(',');                              
             myCommonModels.append(parsedData);
         }
-        if ( !set.isEmpty() ){
+        if ( !myAttributes.isEmpty() ){
             // suggest what attribute could be used as displayName 
             
             ModelAttribute preffered  = ModelAttribute.getPreffered();
-            if ( set.contains( preffered )){
-                displayNameAlias = preffered.getName();
+            if ( myAttributes.contains( preffered )){
+                myDisplayNameAlias = preffered.getName();
             }
             else {
-                for( ModelAttribute attr : set ){
-                    displayNameAlias = attr.getName();
+                for( ModelAttribute attr : myAttributes ){
+                    myDisplayNameAlias = attr.getName();
                     if ( attr.isId() ){
                         break;
                     }
@@ -138,11 +137,11 @@ class ModelGenerator {
             myCommonModels.append(",\n initialize: function(){\n");      // NOI18N
             myCommonModels.append("// displayName property is used to render item in the list\n");// NOI18N
             myCommonModels.append("this.set('displayName', this.get('"); // NOI18N
-            myCommonModels.append(displayNameAlias);
+            myCommonModels.append(myDisplayNameAlias);
             myCommonModels.append("'));\n}");                          // NOI18N
         }
           
-        String sync = overrideSync( url, httpPaths , useIds, displayNameAlias ); 
+        String sync = overrideSync( url, httpPaths , useIds); 
         if ( sync != null && sync.length()>0 ){
             myCommonModels.append(",\n");                            // NOI18N
             myCommonModels.append(sync);
@@ -151,10 +150,10 @@ class ModelGenerator {
         myCommonModels.append("\n});\n\n");                          // NOI18N
         
         if ( collectionPath == null){
-            return set;
+            return;
         }
         myCommonModels.append("\n// Collection class for ");          // NOI18N
-        if ( name.equals(modelName)){
+        if ( name.equals(myModelName)){
             myCommonModels.append( name );
         }
         else {
@@ -162,21 +161,20 @@ class ModelGenerator {
         }
         myCommonModels.append(" entities\n");                        // NOI18N
         myCommonModels.append("models.");
-        myCommonModels.append(modelName);
+        myCommonModels.append(myModelName);
         myCommonModels.append("Collection");                         // NOI18N
         myCommonModels.append(" = Backbone.Collection.extend({\n");  // NOI18N
         myCommonModels.append("model: ");                            // NOI18N
-        myCommonModels.append(modelName);
+        myCommonModels.append(myModelName);
         myCommonModels.append(",\nurl : \"");                        // NOI18N
         myCommonModels.append( getUrl( collectionPath ));
         myCommonModels.append("\"\n");                               // NOI18N
         myCommonModels.append("});\n\n");                            // NOI18N
-        return set;
     }
     
     private String overrideSync( String url,
             Map<HttpRequests, String> httpPaths,
-            Map<HttpRequests, Boolean> useIds, String displayName ) throws IOException 
+            Map<HttpRequests, Boolean> useIds ) throws IOException 
     {
         StringBuilder builder = new StringBuilder();
         for( Entry<HttpRequests,String> entry : httpPaths.entrySet() ){
@@ -188,12 +186,12 @@ class ModelGenerator {
         for( HttpRequests request : set  ){
             overrideMethod(url, null, null, request, builder);
         }
-        if ( builder.length()>0 || displayName != null){
+        if ( builder.length()>0 || getDisplayNameAlias() != null){
             builder.insert(0, "sync: function(method, model, options){\n");         // NOI18N
             builder.append("var result = Backbone.sync(method, model, options);\n");// NOI18N
-            if ( displayName!= null ){
+            if ( getDisplayNameAlias()!= null ){
                 builder.append("this.set('displayName',this.get('");                // NOI18N
-                builder.append(displayName);
+                builder.append(getDisplayNameAlias());
                 builder.append("'));\n");                                           // NOI18N
             }
             builder.append("return result;\n}\n");                                  // NOI18N
@@ -474,7 +472,22 @@ class ModelGenerator {
         return path;
     }
     
+    Set<ModelAttribute> getAttributes(){
+        return myAttributes;
+    }
+    
+    String getDisplayNameAlias(){
+        return myDisplayNameAlias;
+    }
+    
+    String getModelName(){
+        return myModelName;
+    }
+    
     private StringBuilder myCommonModels;
     private RestServiceDescription myDescription;
     private Set<String> myEntities ;
+    private Set<ModelAttribute> myAttributes;
+    private String myDisplayNameAlias;
+    private String myModelName;
 }

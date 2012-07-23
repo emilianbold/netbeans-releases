@@ -43,7 +43,6 @@
 package org.netbeans.modules.web.client.rest.wizard;
 
 import java.util.Map;
-import java.util.Set;
 
 import javax.lang.model.element.TypeElement;
 
@@ -65,7 +64,7 @@ class RouterGenerator {
     void generateRouter( TypeElement entity, String path,
             String collectionPath, Map<HttpRequests, String> httpPaths,
             Map<HttpRequests, Boolean> useIds, CompilationController controller, 
-            Set<ModelAttribute> attributes )
+            ModelGenerator modelGenerator )
     {
         myRouters.append("var ");                                         // NOI18N
         myRouters.append(myRouterName);
@@ -93,8 +92,45 @@ class RouterGenerator {
         }
         myRouters.append("},\n");                                         // NOI18N
         
+        // CTOR ( initialize ) function assign CreateView for "tpl-create" template
         myRouters.append("initialize:function(){\n");                     // NOI18N
-        myRouters.append("},\n");                                         // NOI18N
+        myRouters.append("var self = this;\n");                           // NOI18N
+        myRouters.append("$('#header').html(new views.CreateView({\n");   // NOI18N
+        myRouters.append("// tpl-create is template identifier for 'create' block\n");// NOI18N
+        myRouters.append("templateName :'#tpl-create',\n");               // NOI18N
+        myRouters.append("navigate: function(){\n");                      // NOI18N
+        myRouters.append("self.navigate('new', true);\n}\n");             // NOI18N
+        myRouters.append("}).render().el);\n},\n");                       // NOI18N
+        
+        if ( httpPaths.containsKey( HttpRequests.POST)){
+            myRouters.append("create:function () {\n");                   // NOI18N
+            myRouters.append("if (this.view) {\n");                       // NOI18N
+            myRouters.append("this.view.close();\n}\n");                  // NOI18N
+            myRouters.append("var self = this;\n");                       // NOI18N
+            myRouters.append("this.view = new views.ModelView({");        // NOI18N
+            myRouters.append("model: new models.");
+            myRouters.append( modelGenerator.getModelName());
+            myRouters.append("(),\n");                                    // NOI18N
+            if ( hasCollection ){
+                myRouters.append("collection: this.collection,\n");       // NOI18N
+            }
+            myRouters.append("// ");                                      // NOI18N
+            StringBuilder builder = new StringBuilder("tpl-");            // NOI18N
+            builder.append(modelGenerator.getModelName().toLowerCase());  // NOI18N
+            builder.append("-details");                                   // NOI18N
+            myDetailsTemplateName = builder.toString();
+            myRouters.append(builder);
+            myRouters.append(" is a template identifier for chosen model element\n");// NOI18N
+            myRouters.append("templateName: '#");                          // NOI18N
+            myRouters.append(myDetailsTemplateName);
+            myRouters.append("',\n");                                      // NOI18N
+            myRouters.append("navigate: function( id ){\n");               // NOI18N
+            myRouters.append("self.navigate(id, false);\n},\n\n");         // NOI18N
+            myRouters.append("getHashObject: function(){\n");              // NOI18N
+            myRouters.append("return self.getData();\n}\n");               // NOI18N
+            myRouters.append("});\n");                                     // NOI18N
+            myRouters.append("$('#content').html(this.view.render().el);\n},\n");// NOI18N
+        }
         
         // add method getData which returns composite object data got from HTML controls 
         myRouters.append("getData: function(){\n");                       // NOI18N
@@ -108,6 +144,11 @@ class RouterGenerator {
         myRouters.append("();\n");                                        // NOI18N
     }
     
+    String getDetailsTemplate(){
+        return myDetailsTemplateName;
+    }
+    
     private StringBuilder myRouters;
     private String myRouterName;
+    private String myDetailsTemplateName;
 }

@@ -127,7 +127,7 @@ var app = {
             // TODO : put save code here
             var hash = this.options.getHashObject();
             this.model.set(hash);
-            if (this.model.isNew()) {
+            if (this.model.isNew() && this.collection) {
                 var self = this;
                 this.collection.create(this.model,{
                     success: function(){

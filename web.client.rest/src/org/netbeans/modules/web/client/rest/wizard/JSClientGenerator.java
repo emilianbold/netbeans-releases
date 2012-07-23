@@ -411,16 +411,16 @@ class JSClientGenerator {
     {
         ModelGenerator generator = new ModelGenerator(myDescription,
                 myModels, myEntities);
-        Set<ModelAttribute> modelAttributes = generator.generateModel(entity, path, 
+        generator.generateModel(entity, path, 
                 collectionPath, httpPaths, useIds, controller);
         generateRouter(entity, path, collectionPath, httpPaths, useIds, 
-                controller, modelAttributes);
+                controller, generator);
     }
 
     private void generateRouter( TypeElement entity, String path,
             String collectionPath, Map<HttpRequests, String> httpPaths,
             Map<HttpRequests, Boolean> useIds, CompilationController controller, 
-            Set<ModelAttribute> attributes )
+            ModelGenerator modelGenerator )
     {
         if ( myModelsCount >0 ){
             myRouters.append("/*");                                       // NOI18N
@@ -431,7 +431,7 @@ class JSClientGenerator {
         }
         RouterGenerator generator = new RouterGenerator(myRouters, name);
         generator.generateRouter(entity, path, collectionPath, httpPaths, useIds, 
-                controller, attributes);
+                controller, modelGenerator );
         
         if ( myModelsCount >0 ){
             myRouters.append("*/"); 
