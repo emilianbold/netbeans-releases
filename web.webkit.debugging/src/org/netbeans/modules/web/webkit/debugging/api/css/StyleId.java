@@ -82,4 +82,16 @@ public class StyleId {
         return ordinal;
     }
 
+    /**
+     * Returns a {@code JSONObject} that corresponds to this {@code StyleId}.
+     *
+     * @return {@code JSONObject} that corresponds to this {@code StyleId}.
+     */
+    JSONObject toJSONObject() {
+        JSONObject json = new JSONObject();
+        json.put("styleSheetId", getStyleSheetId()); // NOI18N
+        json.put("ordinal", getOrdinal()); // NOI18N
+        return json;
+    }
+
 }

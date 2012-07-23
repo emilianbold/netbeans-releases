@@ -267,6 +267,84 @@ public class CSS {
     }
 
     /**
+     * Sets a new text of the specified property.
+     *
+     * @param styleId ID of the style to modify.
+     * @param propertyIndex index of the property in the style.
+     * @param propertyText text of the property in the form {@code name:value;}.
+     * @param overwrite if {@code true} then the property at the given position
+     * is overwritten, otherwise it is inserted.
+     * @return the resulting style after the property text modification.
+     */
+    public Style setPropertyText(StyleId styleId, int propertyIndex, String propertyText, boolean overwrite) {
+        Style resultingStyle = null;
+        JSONObject params = new JSONObject();
+        params.put("styleId", styleId.toJSONObject()); // NOI18N
+        params.put("propertyIndex", propertyIndex); // NOI18N
+        params.put("text", propertyText); // NOI18N
+        params.put("overwrite", overwrite); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("CSS.setPropertyText", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                JSONObject style = (JSONObject)result.get("style"); // NOI18N
+                resultingStyle = new Style(style);
+            }
+        }
+        return resultingStyle;
+    }
+
+    /**
+     * Toggles a property in a style.
+     *
+     * @param styleId ID of the style to modify.
+     * @param propertyIndex index of the property in the style.
+     * @param disable detemines whether the property should be disabled
+     * (i.e. removed from the style declaration). If {@code disable} is
+     * {@code false} then the property is returned back into the style declaration.
+     * @return the resulting style after the property toggling.
+     */
+    public Style toggleProperty(StyleId styleId, int propertyIndex, boolean disable) {
+        Style resultingStyle = null;
+        JSONObject params = new JSONObject();
+        params.put("styleId", styleId.toJSONObject()); // NOI18N
+        params.put("propertyIndex", propertyIndex); // NOI18N
+        params.put("disable", disable); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("CSS.toggleProperty", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                JSONObject style = (JSONObject)result.get("style"); // NOI18N
+                resultingStyle = new Style(style);
+            }
+        }
+        return resultingStyle;
+    }
+
+    /**
+     * Sets the selector of a rule.
+     *
+     * @param ruleId ID of the rule to modify.
+     * @param selector new selector of the rule.
+     * @return the resulting rule after the selector modification.
+     */
+    public Rule setRuleSelector(RuleId ruleId, String selector) {
+        Rule resultingRule = null;
+        JSONObject params = new JSONObject();
+        params.put("ruleId", ruleId.toJSONObject()); // NOI18N
+        params.put("selector", selector); // NOI18N
+        Response response = transport.sendBlockingCommand(new Command("CSS.setRuleSelector", params)); // NOI18N
+        if (response != null) {
+            JSONObject result = response.getResult();
+            if (result != null) {
+                JSONObject rule = (JSONObject)result.get("rule"); // NOI18N
+                resultingRule = new Rule(rule);
+            }
+        }
+        return resultingRule;
+    }
+
+    /**
      * Registers CSS domain listener.
      * 
      * @param listener listener to register.
