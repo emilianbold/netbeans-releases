@@ -66,6 +66,7 @@ import javax.swing.Icon;
 import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
+import org.netbeans.modules.hudson.api.HudsonInstance.Persistence;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonManager;
@@ -77,6 +78,7 @@ import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -103,6 +105,9 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         return projectHandle.getTeamProject().hasBuild();
     }
 
+    @NbBundle.Messages(
+            {"MSG_from_cloud_project=(from cloud project)"}
+    )
     @Override
     public List<BuildHandle> getBuilds(ProjectHandle<ODSProject> projectHandle) {
         ODSPasswordAuthorizer.ProjectHandleRegistry.registerProjectHandle(
@@ -110,7 +115,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         HudsonInstance hi = HudsonManager.addInstance(
                 projectHandle.getDisplayName(),
                 projectHandle.getTeamProject().getBuildUrl(),
-                1, false);
+                1, Persistence.tranzient(Bundle.MSG_from_cloud_project()));
         if (hi == null) {
             return Collections.emptyList();
         }
