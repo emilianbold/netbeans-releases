@@ -213,7 +213,7 @@ public class PHPDocCommentParser {
             }
             return new PHPDocTag(start, end, type, description);
         } else {
-            return new PHPDocTypeTag(start, end, type, description, resolveTypes(types, start));
+            return new PHPDocTypeTag(start, end, type, type.getDescription(), resolveTypes(types, start + 1));
         }
     }
 
