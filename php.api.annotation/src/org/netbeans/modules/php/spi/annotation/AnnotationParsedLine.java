@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.spi.annotation;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -88,37 +88,54 @@ public interface AnnotationParsedLine {
         /**
          * Creates new annotation parsed line.
          *
-         * @param name name of the annotation; can be {@code null}
-         * @param description description of the annotation; can be {@code null}
-         * @param types types of the annotation; never {@code null}
+         * @param name name of the annotation; never {@code null}
          */
-        public ParsedLine(@NullAllowed final String name, @NullAllowed final String description, @NonNull final Map<OffsetRange, String> types) {
-            Parameters.notNull("types", types);
+        public ParsedLine(@NonNull final String name) {
+            this(name, null, null);
+        }
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation; never {@code null}
+         * @param types types of the annotation; can be {@code null}
+         */
+        public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types) {
+            this(name, types, null);
+        }
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation; never {@code null}
+         * @param description description of the annotation; can be {@code null}
+         */
+        public ParsedLine(@NonNull final String name, @NullAllowed final String description) {
+            this(name, null, description);
+        }
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation; never {@code null}
+         * @param types types of the annotation; can be {@code null}
+         * @param description description of the annotation; can be {@code null}
+         */
+        public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types, @NullAllowed final String description) {
+            Parameters.notNull("name", name);
             this.name = name;
-            this.description = description;
             this.types = types;
+            this.description = description;
         }
 
         /**
          * Returns a name of an annotation without the "at" sign.
          *
-         * @return name; can be {@code null}
+         * @return name; never {@code null}
          */
         @Override
-        @CheckForNull
         public String getName() {
             return name;
-        }
-
-        /**
-         * Returns a description of the parsed annotation.
-         *
-         * @return description; can be {@code null}
-         */
-        @Override
-        @CheckForNull
-        public String getDescription() {
-            return description;
         }
 
         /**
@@ -128,7 +145,25 @@ public interface AnnotationParsedLine {
          */
         @Override
         public Map<OffsetRange, String> getTypes() {
-            return new HashMap<OffsetRange, String>(types);
+            Map<OffsetRange, String> result = Collections.EMPTY_MAP;
+            if (types != null) {
+                result = new HashMap<OffsetRange, String>(types);
+            }
+            return result;
+        }
+
+        /**
+         * Returns a description of the parsed annotation.
+         *
+         * @return description; never {@code null}
+         */
+        @Override
+        public String getDescription() {
+            String result = "";
+            if (description != null) {
+                result = description;
+            }
+            return result;
         }
 
     }
