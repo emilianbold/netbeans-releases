@@ -62,6 +62,9 @@ public final class PhpExecutableValidator {
         if (command != null) {
             executable = PhpExecutable.parseCommand(command).first;
         }
+        if (executableName == null) {
+            return FileUtils.validateFile(executable, false);
+        }
         return FileUtils.validateFile(executableName, executable, false);
     }
 
