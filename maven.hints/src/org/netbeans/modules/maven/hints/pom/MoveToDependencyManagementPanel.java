@@ -164,7 +164,7 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
             List<POMNode> nds = new ArrayList<POMNode>();
             for (MavenEmbedder.ModelDescription mdl : key) {
                 if(mdl.getLocation() != null ) {
-                    File fl = FileUtil.normalizeFile(mdl.getLocation());
+                    File fl = mdl.getLocation();
                     FileObject fo = FileUtil.toFileObject(fl);
                     Lookup lookup;
                     if (fo != null && !"pom".equals(fo.getExt())) { //NOI18N
