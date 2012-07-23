@@ -1208,7 +1208,7 @@ public class ActionFactory {
                 EditorFindSupport findSupport = EditorFindSupport.getInstance();
                 Caret caret = target.getCaret();
                 int dotPos = caret.getDot();
-                HashMap props = new HashMap(findSupport.getFindProperties());
+                HashMap props = new HashMap(findSupport.createDefaultFindProperties());
                 String searchWord = null;
                 boolean revert = false;
                 Boolean originalValue = null;
