@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import com.sun.xml.internal.ws.wsdl.writer.document.ParamType;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
