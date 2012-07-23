@@ -92,12 +92,12 @@ public final class ComposerOptionsValidator {
     private void validateAuthor(String authorName, String authorEmail) {
         // author
         if (!StringUtils.hasText(authorName)) {
-            errors.add(new Message("authorName", Bundle.ComposerOptionsValidator_error_noAuthorName()));
+            errors.add(new Message("authorName", Bundle.ComposerOptionsValidator_error_noAuthorName())); // NOI18N
         }
         // email
         if (!StringUtils.hasText(authorEmail)
                 || !authorEmail.contains("@")) { // NOI18N
-            errors.add(new Message("authorName", Bundle.ComposerOptionsValidator_error_invalidAuthorEmail()));
+            errors.add(new Message("authorEmail", Bundle.ComposerOptionsValidator_error_invalidAuthorEmail())); // NOI18N
         }
     }
 
