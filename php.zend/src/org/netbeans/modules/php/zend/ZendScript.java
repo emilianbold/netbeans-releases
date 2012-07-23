@@ -182,6 +182,10 @@ public final class ZendScript {
                 .additionalParameters(allParameters)
                 .pureOutputOnly(true)
                 .run(getDescriptorWithLineProcessor(lineProcessor));
+        if (result == null) {
+            // some error
+            return ""; // NOI18N
+        }
         try {
             result.get();
         } catch (CancellationException ex) {
@@ -199,19 +203,23 @@ public final class ZendScript {
         ExecutionDescriptor descriptor = getDescriptor(null);
         try {
             // create config
-            createPhpExecutable()
+            Future<Integer> result = createPhpExecutable()
                     .displayName(Bundle.ZendScript_register_provider())
                     .additionalParameters(CREATE_CONFIG_COMMAND)
-                    .run(descriptor)
-                    .get();
+                    .run(descriptor);
+            if (result != null) {
+                result.get();
+            }
 
             descriptor = descriptor.noReset(true);
             // enable config
-            createPhpExecutable()
+            result = createPhpExecutable()
                     .displayName(Bundle.ZendScript_register_provider())
                     .additionalParameters(ENABLE_CONFIG_COMMAND)
-                    .run(descriptor)
-                    .get();
+                    .run(descriptor);
+            if (result != null) {
+                result.get();
+            }
 
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
                 NbBundle.getMessage(ZendScript.class, "MSG_ProviderRegistrationInfo"),
@@ -227,13 +235,15 @@ public final class ZendScript {
 
     public boolean initProject(PhpModule phpModule) {
         try {
-            createPhpExecutable()
+            Future<Integer> result = createPhpExecutable()
                     .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                     .displayName(getDisplayName(phpModule, INIT_PROJECT_COMMAND.get(0)))
                     .additionalParameters(INIT_PROJECT_COMMAND)
                     .warnUser(false)
-                    .run(getDescriptor(null))
-                    .get();
+                    .run(getDescriptor(null));
+            if (result != null) {
+                result.get();
+            }
         } catch (CancellationException ex) {
             // canceled
         } catch (ExecutionException ex) {
@@ -254,7 +264,7 @@ public final class ZendScript {
                 .pureOutputOnly(true)
                 .run(getDescriptorWithLineProcessor(lineProcessor));
         try {
-            if (task.get().intValue() == 0) {
+            if (task != null && task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
                 if (!freshCommands.isEmpty()) {
                     return freshCommands;
