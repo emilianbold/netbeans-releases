@@ -76,124 +76,437 @@ public class GlassFishCloudDeploymentManager implements DeploymentManager2 {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Distribute method performs three tasks: it validates the deployment
+     * configuration data, generates all container specific classes and
+     * interfaces, and moves the fully baked archive to the designated
+     * deployment targets. 
+     * <p/>
+     * @param targetList  A list of server targets the user is specifying
+     *                    this application be deployed to.
+     * @param deployment  Context describing everything necessary for a module
+     *                    deployment.
+     * @return An object that tracks and reports the status of the distribution
+     *         process. 
+     */
     @Override
-    public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
+    public ProgressObject distribute(Target[] targetList,
+            DeploymentContext deployment) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Retrieve the list of deployment targets supported by this
+     * DeploymentManager.
+     * <p/>
+     * @return List of deployment Target designators the user may select for
+     *         application deployment or <code>null</code> if there are none. 
+     * @throws IllegalStateException Is thrown when the method is called when
+     *         running in disconnected mode.
+     */
     @Override
     public Target[] getTargets() throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Retrieve the list of Java EE application modules distributed to
+     * the identified targets and that are currently running on the
+     * associated server or servers.
+     * <p/>
+     * @param moduleType Predefined designator for a Java EE module type.
+     * @param targetList List of deployment Target designators the user wants
+     *                   checked for module running status.
+     * @return An array of TargetModuleID objects representing the running
+     *         modules or <code>null</code> if there are none. 
+     * @throws TargetException Is thrown when the method is called when running
+     *         in disconnected mode. 
+     * @throws IllegalStateException An invalid Target designator encountered.
+     */
     @Override
-    public TargetModuleID[] getRunningModules(ModuleType mt, Target[] targets) throws TargetException, IllegalStateException {
+    public TargetModuleID[] getRunningModules(ModuleType mt, Target[] targets)
+            throws TargetException, IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Retrieve the list of Java EE application modules distributed to
+     * the identified targets and that are currently not running on the
+     * associated server or servers.
+     * <p/>
+     * @param moduleType Predefined designator for a Java EE module type.
+     * @param targetList List of deployment Target designators the user wants
+     *                   checked for module not running status.
+     * @return An array of TargetModuleID objects representing the non running
+     *         modules or <code>null</code> if there are none. 
+     * @throws TargetException Is thrown when the method is called when running
+     *         in disconnected mode. 
+     * @throws IllegalStateException An invalid Target designator encountered.
+     */
     @Override
-    public TargetModuleID[] getNonRunningModules(ModuleType mt, Target[] targets) throws TargetException, IllegalStateException {
+    public TargetModuleID[] getNonRunningModules(ModuleType moduleType,
+            Target[] targetList) throws TargetException, IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Retrieve the list of all Java EE application modules running or not
+     * running on the identified targets.
+     * <p/>
+     * @param moduleType Predefined designator for a Java EE module type.
+     * @param targetList List of deployment Target designators the user wants
+     *                   checked for module not running status. 
+     * @return An array of TargetModuleID objects representing all deployed
+     *         modules running or not or <code>null</code> if there are no
+     *         deployed modules. 
+     * @throws TargetException An invalid Target designator encountered.
+     * @throws IllegalStateException Is thrown when the method is called when
+     *         running in disconnected mode. 
+     */
     @Override
-    public TargetModuleID[] getAvailableModules(ModuleType mt, Target[] targets) throws TargetException, IllegalStateException {
+    public TargetModuleID[] getAvailableModules(ModuleType moduleType,
+            Target[] targetList) throws TargetException, IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Retrieve an object that provides server-specific deployment
+     * configuration information for the Java EE deployable component.
+     * <p/>
+     * @param dObj An object representing a Java EE deployable component.
+     * @return An object that provides server-specific deployment
+     *         configuration information for the Java EE deployable component.
+     * @throws InvalidModuleException DeployableObject is an unknown or
+     *         unsupported component for this configuration tool.
+     */
     @Override
-    public DeploymentConfiguration createConfiguration(DeployableObject d) throws InvalidModuleException {
+    public DeploymentConfiguration createConfiguration(DeployableObject dObj)
+            throws InvalidModuleException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Distribute method performs three tasks: it validates the deployment
+     * configuration data, generates all container specific classes and
+     * interfaces, and moves the fully baked archive to the designated
+     * deployment targets. 
+     * <p/>
+     * @param targetList     A list of server targets the user is specifying
+     *                       this application be deployed to.
+     * @param moduleArchive  The file name of the application archive to be
+     *                       disTributed.
+     * @param deploymentPlan The XML file containing the runtime configuration
+     *                       information associated with this application
+     *                       archive.
+     * @return An object that tracks and reports the status of the distribution
+     *         process. 
+     * @throws IllegalStateException Is thrown when the method is called when
+     *         running in disconnected mode.
+     */
     @Override
-    public ProgressObject distribute(Target[] targets, File file, File file1) throws IllegalStateException {
+    public ProgressObject distribute(Target[] targetList, File moduleArchive,
+            File deploymentPlan) throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Distribute method performs three tasks: it validates the deployment
+     * configuration data, generates all container specific classes and
+     * interfaces, and moves the fully baked archive to the designated
+     * deployment targets. 
+     * <p/>
+     * This method is no more supported and will always throw
+     * <code>UnsupportedOperationException</code>
+     * <p/>
+     * @param targetList     A list of server targets the user is specifying
+     *                       this application be deployed to.
+     * @param moduleArchive  Input stream containing the application archive
+     *                       to be distributed.
+     * @param deploymentPlan Input stream containing the deployment
+     *                       configuration information associated with this
+     *                       application archive.
+     * @return An object that tracks and reports the status of the distribution
+     *         process.
+     * @throws IllegalStateException Is thrown when the method is called when
+     *         running in disconnected mode.
+     * @deprecated as of Java EE 5, replaced with {@link #distribute(
+     *             javax.enterprise.deploy.spi.Target[],
+     *             javax.enterprise.deploy.shared.ModuleType,
+     *             java.io.InputStream, java.io.InputStream)}
+     */
+    @Deprecated
     @Override
-    public ProgressObject distribute(Target[] targets, InputStream in, InputStream in1) throws IllegalStateException {
+    public ProgressObject distribute(Target[] targetList,
+            InputStream moduleArchive, InputStream deploymentPlan)
+            throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Distribute method performs three tasks: it validates the deployment
+     * configuration data, generates all container specific classes and
+     * interfaces, and moves the fully baked archive to the designated
+     * deployment targets. 
+     * <p/>
+     * @param targetList     A list of server targets the user is specifying
+     *                       this application be deployed to.
+     * @param type           Module type of this application archive.
+     * @param moduleArchive  Input stream containing the application archive
+     *                       to be distributed.
+     * @param deploymentPlan Input stream containing the deployment
+     *                       configuration information associated with this
+     *                       application archive.
+     * @return An object that tracks and reports the status of the distribution
+     *         process.
+     * @throws IllegalStateException Is thrown when the method is called when
+     *         running in disconnected mode.
+     */
     @Override
-    public ProgressObject distribute(Target[] targets, ModuleType mt, InputStream in, InputStream in1) throws IllegalStateException {
+    public ProgressObject distribute(Target[] targetList, ModuleType type,
+            InputStream moduleArchive, InputStream deploymentPlan)
+            throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Start the application running.
+     * <p/>
+     * Only the TargetModuleIDs which represent a root module are valid for
+     * being started. A root TargetModuleID has no parent. A TargetModuleID
+     * with a parent can not be individually started. A root TargetModuleID
+     * module and all its child modules will be started.
+     * @param moduleIDList An array of TargetModuleID objects representing
+     *                     the modules to be started. 
+     * @return An object that tracks and reports the status of the start
+     *         operation. 
+     * @throws IllegalStateException Is thrown when the method is called when
+     *                               running in disconnected mode.
+     */
     @Override
-    public ProgressObject start(TargetModuleID[] tmids) throws IllegalStateException {
+    public ProgressObject start(TargetModuleID[] moduleIDList) throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Stop the application running.
+     * <p/>
+     * @param moduleIDList An array of TargetModuleID objects representing
+     *                     the modules to be stopped.
+     * @return An object that tracks and reports the status of the stop
+     *         operation. 
+     * @throws IllegalStateException Is thrown when the method is called when
+     *                               running in disconnected mode.
+     */
     @Override
-    public ProgressObject stop(TargetModuleID[] tmids) throws IllegalStateException {
+    public ProgressObject stop(TargetModuleID[] moduleIDList)
+            throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Remove the application from the target server.
+     * <p/>
+     * Only the TargetModuleIDs which represent a root module are valid for
+     * undeployment. A root TargetModuleID has no parent. A TargetModuleID with
+     * a parent can not be undeployed. A root TargetModuleID module and all its
+     * child modules will be undeployed. The root TargetModuleID module and all
+     * its child modules must stopped before they can be undeployed.
+     * <p/>
+     * @param moduleIDList An array of TargetModuleID objects representing
+     *                     the root modules to be stopped. 
+     * @return Object that tracks and reports the status of the stop operation. 
+     * @throws IllegalStateException Is thrown when the method is called when
+     *                               running in disconnected mode.
+     */
     @Override
-    public ProgressObject undeploy(TargetModuleID[] tmids) throws IllegalStateException {
+    public ProgressObject undeploy(TargetModuleID[] moduleIDList)
+            throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * This method designates whether this platform vendor provides application
+     * redeployment functionality.
+     * <p/>
+     * @return Value of <true>true</true> means redeployment is supported
+     *         by this vendor's DeploymentManager. Value of <code>false</code>
+     *         means it is not.
+     */
     @Override
     public boolean isRedeploySupported() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * The redeploy method provides a means for updating currently deployed
+     * Java EE applications.
+     * <p/>
+     * This is an optional method for GlassFish cloud implementation.
+     * <p/>
+     * @param moduleIDList   An array of designators of the applications to
+     *                       be updated.
+     * @param moduleArchive  The file name of the application archive to
+     *                       be disrtibuted.
+     * @param deploymentPlan The deployment configuration information associated
+     *                       with this application archive.
+     * @returns An object that tracks and reports the status of the redeploy
+     *          operation.
+     * @throws IllegalStateException         Is thrown when the method is called
+     *                                       when running in disconnected mode.
+     * @throws UnsupportedOperationException This optional command is not
+     *                                       supported by this implementation.
+     */    
     @Override
-    public ProgressObject redeploy(TargetModuleID[] tmids, File file, File file1) throws UnsupportedOperationException, IllegalStateException {
+    public ProgressObject redeploy(TargetModuleID[] moduleIDList,
+            File moduleArchive, File file1)
+            throws UnsupportedOperationException, IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * The redeploy method provides a means for updating currently deployed
+     * Java EE applications.
+     * <p/>
+     * This is an optional method for GlassFish cloud implementation.
+     * <p/>
+     * @param moduleIDList   An array of designators of the applications
+     *                       to be updated.
+     * @param moduleArchive  The input stream containing the application archive
+     *                       to be distributed.
+     * @param deploymentPlan The input stream containing the runtime
+     *                       configuration information associated with this
+     *                       application archive. 
+     * @returns An object that tracks and reports the status of the redeploy
+     *          operation.
+     * @throws IllegalStateException         Is thrown when the method is called
+     *                                       when running in disconnected mode.
+     * @throws UnsupportedOperationException This optional command is not
+     *                                       supported by this implementation.
+     */
     @Override
     public ProgressObject redeploy(TargetModuleID[] tmids, InputStream in, InputStream in1) throws UnsupportedOperationException, IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+
+    /**
+     * The release method is the mechanism by which the tool signals to the
+     * DeploymentManager that the tool does not need it to continue running
+     * connected to the platform.
+     * <p/>
+     * The tool may be signaling it wants to run in a disconnected mode
+     * or it is planning to shutdown. When release is called
+     * the DeploymentManager may close any Java EE resource connections
+     * it had for deployment configuration and perform other related
+     * resource cleanup. It should not accept any new operation requests
+     * (i.e., distribute, start stop, undeploy, redeploy. It should finish
+     * any operations that are currently in process. Each ProgressObject
+     * associated with a running operation should be marked as released.
+     */
     @Override
     public void release() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the default locale supported by this implementation of
+     * <code>javax.enterprise.deploy.spi</code> sub packages. 
+     * <p/>
+     * @return Default locale for this implementation.
+     */
     @Override
     public Locale getDefaultLocale() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the active locale this implementation of
+     * <code>javax.enterprise.deploy.spi<code> sub packages is running.
+     * <p/>
+     * @return Active locale of this implementation.
+     */
     @Override
     public Locale getCurrentLocale() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Set the active locale for this implementation of
+     * <code>javax.enterprise.deploy.spi</code> sub packages to run.
+     * <p/>
+     * @param locale Locale to set for this implementation.
+     * @throws UnsupportedOperationException Provided locale is not supported.
+     */
     @Override
     public void setLocale(Locale locale) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns an array of supported locales for this implementation.
+     * <p/>
+     * @return List of supported locales.
+     */
     @Override
     public Locale[] getSupportedLocales() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Reports if this implementation supports the designated locale.
+     * <p/>
+     * @param locale
+     * @return Value of <code>true</code> means it is supported and
+     *         <code>false</code> it is not.
+     */
     @Override
     public boolean isLocaleSupported(Locale locale) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns the Java EE platform version number for which the configuration
+     * beans are provided.
+     * <p/>
+     * The beans must have been compiled with the J2SE version required by the
+     * Java EE platform.
+     * <p/>
+     * @return DConfigBeanVersionType object representing the platform version
+     *         number for which these beans are provided.
+     */
     @Override
     public DConfigBeanVersionType getDConfigBeanVersion() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Returns if the configuration beans support the Java EE platform
+     * version specified.
+     * <p/>
+     * @param version DConfigBeanVersionType object representing the Java EE
+     *                platform version for which support is requested.
+     * @return Value of <code>true</code> if the version is supported
+     *         and <code>false</code> if is not.
+     */
     @Override
-    public boolean isDConfigBeanVersionSupported(DConfigBeanVersionType dcbvt) {
+    public boolean isDConfigBeanVersionSupported(
+            DConfigBeanVersionType version) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    /**
+     * Set the configuration beans to be used to the Java EE platform version
+     * specified.
+     * <p/>
+     * @param version DConfigBeanVersionType object representing the Java EE
+     *                platform version for which support is requested. 
+     * @throws DConfigBeanVersionUnsupportedException When the requested bean
+     *                                                version is not supported.
+     */
     @Override
-    public void setDConfigBeanVersion(DConfigBeanVersionType dcbvt) throws DConfigBeanVersionUnsupportedException {
+    public void setDConfigBeanVersion(DConfigBeanVersionType version)
+            throws DConfigBeanVersionUnsupportedException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
 }
