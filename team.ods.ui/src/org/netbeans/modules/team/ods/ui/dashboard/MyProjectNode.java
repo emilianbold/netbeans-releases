@@ -313,9 +313,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         }
                         BuildHandle bh = buildAccessor
                                 .chooseMostInterrestingBuild(builds);
-                        if (bh != null) {
-                            setBuildsLater(bh);
-                        }
+                        setBuildsLater(bh);
                     }
                 }
             }
