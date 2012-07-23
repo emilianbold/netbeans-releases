@@ -1,0 +1,86 @@
+[40 - 60]         import: name=java.lang, wildcard=true
+[63 - 94]         import: name=javafx.scene.control, wildcard=true
+[97 - 127]        import: name=javafx.scene.effect, wildcard=true
+[130 - 160]       import: name=javafx.scene.layout, wildcard=true
+[164 - 1822]      instance: id=null, className=AnchorPane
+[176 - -1]          setter: name=id, content=SimpleForm
+[245 - -1]          setter: name=prefWidth, content=400.0
+[192 - -1]          setter: name=minHeight, content=90.0
+[209 - -1]          setter: name=minWidth, content=220.0
+[226 - -1]          setter: name=prefHeight, content=300.0
+[299 - 1808]        setter: name=children, content=null
+[314 - -1]            instance: id=null, className=CheckBox
+[-1 - -1]               setter: name=null, content=null
+[432 - 533]               instance: id=null, className=Button
+[440 - -1]                  setter: name=id, content=SubmitButton
+[458 - -1]                  setter: name=text, content=Submit
+[502 - -1]                  attached: name=rightAnchor, source=AnchorPane, content=5.0
+[472 - -1]                  attached: name=bottomAnchor, source=AnchorPane, content=5.0
+[538 - -1]                instance: id=null, className=AnchorPane
+[-1 - 1324]                 setter: name=null, content=null
+[740 - 857]                   instance: id=null, className=Text
+[752 - -1]                      setter: name=id, content=NameTextField
+[746 - -1]                      setter: name=Field, content=null
+[799 - -1]                      attached: name=rightAnchor, source=AnchorPane, content=0.0
+[828 - -1]                      attached: name=topAnchor, source=AnchorPane, content=0.0
+[771 - -1]                      attached: name=leftAnchor, source=AnchorPane, content=0.0
+[866 - 1161]                  instance: id=newTextField, className=TextField
+[1040 - -1]                     setter: name=id, content=newTextField
+[1028 - -1]                     setter: name=text, content=Ahoj
+[1010 - -1]                     setter: name=promptText, content=asdf
+[992 - -1]                      setter: name=prefWidth, content=321.0
+[924 - -1]                      setter: name=minHeight, content=21.310546875
+[1072 - 1140]                   setter: name=effect, content=null
+[1093 - 1120]                     instance: id=null, className=MotionBlur
+[1105 - -1]                         setter: name=radius, content=5.0
+[895 - -1]                      setter: name=layoutX, content=1.0
+[949 - -1]                      setter: name=minWidth, content=321.0
+[909 - -1]                      setter: name=layoutY, content=72.0
+[966 - -1]                      setter: name=prefHeight, content=21.310546875
+[1170 - 1288]                 instance: id=null, className=TextField
+[1181 - -1]                     setter: name=id, content=EmailTextField
+[1229 - -1]                     attached: name=rightAnchor, source=AnchorPane, content=0.0
+[1258 - -1]                     attached: name=topAnchor, source=AnchorPane, content=33.0
+[1201 - -1]                     attached: name=leftAnchor, source=AnchorPane, content=0.0
+[550 - -1]                  setter: name=id, content=ValuePane
+[619 - -1]                  setter: name=prefWidth, content=330.0
+[565 - -1]                  setter: name=minHeight, content=127.0
+[583 - -1]                  setter: name=minWidth, content=330.0
+[600 - -1]                  setter: name=prefHeight, content=127.0
+[666 - -1]                  attached: name=rightAnchor, source=AnchorPane, content=-2.0
+[696 - -1]                  attached: name=topAnchor, source=AnchorPane, content=5.0
+[637 - -1]                  attached: name=leftAnchor, source=AnchorPane, content=72.0
+[1329 - 1727]             instance: id=null, className=AnchorPane
+[1341 - -1]                 setter: name=id, content=LabelPane
+[1418 - 1709]               setter: name=children, content=null
+[1437 - 1558]                 instance: id=null, className=Label
+[1444 - -1]                     setter: name=id, content=NameLabel
+[1459 - -1]                     setter: name=text, content=Name:
+[1500 - -1]                     attached: name=rightAnchor, source=AnchorPane, content=0.0
+[1529 - -1]                     attached: name=topAnchor, source=AnchorPane, content=0.0
+[1472 - -1]                     attached: name=leftAnchor, source=AnchorPane, content=0.0
+[1567 - 1691]                 instance: id=null, className=Label
+[1574 - -1]                     setter: name=id, content=EmailLabel
+[1590 - -1]                     setter: name=text, content=Email:
+[1632 - -1]                     attached: name=rightAnchor, source=AnchorPane, content=0.0
+[1661 - -1]                     attached: name=topAnchor, source=AnchorPane, content=34.0
+[1604 - -1]                     attached: name=leftAnchor, source=AnchorPane, content=0.0
+[1384 - -1]                 attached: name=topAnchor, source=AnchorPane, content=8.0
+[1356 - -1]                 attached: name=leftAnchor, source=AnchorPane, content=5.0
+[1732 - 1794]             instance: id=null, className=Label
+[1739 - -1]                 setter: name=id, content=Label
+[1779 - -1]                 setter: name=text, content=Label
+[1750 - -1]                 setter: name=layoutX, content=5.0
+[1764 - -1]                 setter: name=layoutY, content=77.0
+[324 - -1]              setter: name=id, content=OptOutCheckBox
+[344 - -1]              setter: name=text, content=Keep Me Informed
+[368 - -1]              attached: name=bottomAnchor, source=AnchorPane, content=8.0
+[398 - -1]              attached: name=leftAnchor, source=AnchorPane, content=5.0
+
+
+Error{type: tag-not-finished, pos: 299, len: 9, message: Open tag is not terminated: AnchorPane, [AnchorPane]}
+Error{type: unexpected-token, pos: 425, len: 2, message: Unexpected token: " /", []}
+Error{type: unexpected-token, pos: 751, len: 1, message: Unexpected token: " ", []}
+Error{type: unexpected-token, pos: 751, len: 1, message: Unexpected token: " ", []}
+Error{type: unexpected-tag, pos: 1305, len: 1, message: children, []}
+Error{type: missing-end-tag, pos: 1807, len: 1, message: Element is not closed: CheckBox, [CheckBox]}

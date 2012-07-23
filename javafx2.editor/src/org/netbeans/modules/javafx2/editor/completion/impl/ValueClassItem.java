@@ -75,6 +75,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.text.NbDocument;
 
@@ -198,7 +199,7 @@ public class ValueClassItem extends SimpleClassItem {
     
     /* test */ static boolean acceptsType(TypeElement elem, CompilationInfo ci) {
         LOG.log(Level.FINE, "Checking class: {0}", elem.getQualifiedName());
-        return findValueOf(elem, ci) != null;
+        return FxClassUtils.findValueOf(elem, ci) != null;
     }
     
 }

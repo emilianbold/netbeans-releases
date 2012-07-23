@@ -188,7 +188,7 @@ public class TaskProcessor {
             try {
                 parserLock.lock();
                 try {
-                    if (lockCount < 1) {
+                    if (true || lockCount < 1) {
                         for (Source source : sources) {
                             SourceAccessor.getINSTANCE ().invalidate(source,false);
                         }

@@ -41,15 +41,36 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
+import java.util.Collection;
+import java.util.List;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
+
 /**
  *
  * @author sdedic
  */
 public interface ContentLocator {
+    public static final int NOPOS = -1;
+    public static final int APPROX = -2;
+    
+    /**
+     * Pseudo-attribute name, to get offset of the target in processing instruction
+     */
+    public static final String ATTRIBUTE_TARGET = "*target";
+    
+    /**
+     * Pseudo-attribute name, to get offset of the 'data' part in processing instruction
+     */
+    public static final String ATTRIBUTE_DATA = "*data";
+    
     /**
      * @return start of the element's text
      */
     public int getElementOffset();
+    
+    public int getEndOffset();
 
     /**
      * 
@@ -61,5 +82,13 @@ public interface ContentLocator {
     /**
      * @return true, if the element contains some errors
      */
-    public int hasError();
+    public Collection<ErrorMark>    getErrors();
+    
+    public List<Token<XMLTokenId>>  getMatchingTokens();
+    
+    public TokenSequence    getTokenSequence();
+    
+    public interface Receiver {
+        public void setContentLocator(ContentLocator l);
+    }
 }

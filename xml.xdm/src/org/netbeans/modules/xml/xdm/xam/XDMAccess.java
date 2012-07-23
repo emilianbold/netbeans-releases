@@ -190,47 +190,6 @@ public class XDMAccess extends DocumentModelAccess {
         return areSameNodes;
     }
     
-    /**
-     * @Returns true if both nodes have same list of tokens and attributes.
-     * Since children list are not used, only use this comparison in specific
-     * context.
-     */
-    private boolean compareTokens(NodeImpl n1, NodeImpl n2) {
-        List<Token> n1Tokens = n1.getTokens();
-        List<Token> n2Tokens = n2.getTokens();
-        if (n1Tokens.size() != n2Tokens.size()) {
-            return false;
-        }
-         
-        for( int i=0;i<n1Tokens.size();i++) {
-            if (! n1Tokens.get(i).getValue().equals(n2Tokens.get(i).getValue())) {
-                return false;
-            }
-        }
-			
-        NamedNodeMap n1Attrs = n1.getAttributes();
-        NamedNodeMap n2Attrs = n2.getAttributes();
-        if (n1Attrs.getLength() != n2Attrs.getLength()) {
-            return false;
-        }
-
-        for(int i=0;i<n1Attrs.getLength();i++) {
-            List<Token> n1AttrTokens = ((NodeImpl)n1Attrs.item(i)).getTokens();
-            List<Token> n2AttrTokens = ((NodeImpl)n2Attrs.item(i)).getTokens();						
-            if (n1AttrTokens.size() != n2AttrTokens.size()) {
-                return false;
-            }
-             
-            for (int j=0;j<n1AttrTokens.size();j++) {
-                if (! n1AttrTokens.get(j).getValue().equals(n2AttrTokens.get(j).getValue())) {
-                    return false;
-                }
-            }
-        }
-        
-        return true;
-    }
-    
     @Override
     public int getElementIndexOf(org.w3c.dom.Node parent, org.w3c.dom.Element child) {
         if (child == null) return -1;

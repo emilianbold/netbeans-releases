@@ -96,6 +96,10 @@ public abstract class AbstractCompletionItem implements CompletionItem {
         return text;
     }
     
+    protected int getCaretShift() {
+        return getSubstituteText().length();
+    }
+    
     protected void substituteText(final JTextComponent c, final String text) {
         final Document d = c.getDocument();
         BaseDocument bd = (BaseDocument)d;
@@ -112,10 +116,11 @@ public abstract class AbstractCompletionItem implements CompletionItem {
     protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
         String old = d.getText(substOffset, length);
         if (text.equals(old)) {
-            c.setCaretPosition(substOffset + length);
+            c.setCaretPosition(substOffset + getCaretShift());
         } else {
             d.remove(substOffset, length);
             d.insertString(substOffset, text, null);
+            c.setCaretPosition(substOffset + getCaretShift());
         }
     }
 
@@ -129,7 +134,7 @@ public abstract class AbstractCompletionItem implements CompletionItem {
     }
     
     protected String getLeftHtmlText() {
-        return null;
+        return text;
     }
     
     protected String getRightHtmlText() {

@@ -99,6 +99,10 @@ public class ImportCompleter implements Completer, Completer.Factory {
         return false;
     }
     
+    public boolean hasMoreItems() {
+        return false;
+    }
+
     private CompletionItem completeTarget() {
         String prefix = ctx.getPrefix();
         if (!("".equals(prefix) || PI_IMPORT.startsWith(prefix))) {

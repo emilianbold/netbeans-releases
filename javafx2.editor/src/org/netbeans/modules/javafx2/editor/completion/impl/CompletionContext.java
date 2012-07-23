@@ -42,9 +42,11 @@
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import com.sun.istack.internal.NotNull;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.swing.text.Document;
@@ -58,8 +60,17 @@ import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBeanInfo;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
+import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
+import org.netbeans.modules.javafx2.editor.completion.model.ImportProcessor;
+import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.openide.nodes.ChildFactory;
 
 /**
  * Provides information about the soruce, caret position etc to the individual
@@ -70,6 +81,8 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
  * @author sdedic
  */
 public final class CompletionContext {
+    private boolean attribute;
+    
     /**
      * Caret offset where the completion was invoked
      */
@@ -127,7 +140,6 @@ public final class CompletionContext {
     private boolean currentIsRoot;
     
     public enum Type {
-
         /**
          * The context is not known, probably empty completion
          */
@@ -168,7 +180,7 @@ public final class CompletionContext {
         PROPERTY,
         
         /**
-         * Property value contents
+         * Property value contents, either in attribute, or in element content
          */
         PROPERTY_VALUE,
         
@@ -190,25 +202,77 @@ public final class CompletionContext {
         /**
          * Reference to resources inside property values
          */
-        RESOURCE_REF,
+        RESOURCE_REF;
     }
-
-    public CompletionContext(CompletionResultSet set, Document doc, int offset) {
+    
+    private int completionType;
+    
+    private FxmlParserResult    fxmlParserResult;
+    
+    private List<? extends FxNode>  parents;
+    
+    private FxNode  elementParent;
+    
+    public CompletionContext(CompletionResultSet set, Document doc, int offset, int completionType) {
         this.doc = doc;
         this.caretOffset = offset;
+        this.completionType = completionType;
     }
     
-    CompletionContext(TokenHierarchy h, int offset) {
+    CompletionContext(TokenHierarchy h, int offset, int completionType) {
         this.caretOffset = offset;
+        this.completionType = completionType;
         processTokens(h);
     }
+
+    public int getCompletionType() {
+        return completionType;
+    }
     
-    public void init(TokenHierarchy h, CompilationInfo info) {
+    public void init(TokenHierarchy h, CompilationInfo info, FxmlParserResult fxmlResult) {
         this.compilationInfo = info;
         this.cpInfo = info.getClasspathInfo();
+        this.fxmlParserResult = fxmlResult;
         processTokens(h);
     }
     
+    
+    public FxModel    getModel() {
+        return fxmlParserResult.getSourceModel();
+    }
+    
+    public FxBeanInfo   getBeanInfo(String className) {
+        return BeanModelBuilder.getBeanInfo(compilationInfo, className);
+    }
+    
+    public FxBeanInfo   getBeanInfo(FxInstance inst) {
+        return BeanModelBuilder.getBeanInfo(compilationInfo, inst.getClassName());
+    }
+    
+    private ImportProcessor importProcessor;
+    
+    public String getSimpleClassName(String fqn) {
+        int lastDot = fqn.lastIndexOf('.');
+        String sn = fqn.substring(lastDot + 1);
+        if (fqn.equals(resolveClassName(sn))) {
+            return sn;
+        } else {
+            return null;
+        }
+    }
+    
+    public String resolveClassName(String name) {
+        if (importProcessor == null) {
+            importProcessor = new ImportProcessor(compilationInfo, fxmlParserResult.getSnapshot().getTokenHierarchy(), null);
+            getModel().accept(importProcessor);
+        }
+        Collection<String> names = importProcessor.resolveName(name);
+        if (names == null || names.size() > 1) {
+            return null;
+        }
+        return names.iterator().next();
+    }
+
     private void processTokens(TokenHierarchy h) {
         TokenSequence ts = h.tokenSequence();
         processType(ts);
@@ -218,6 +282,46 @@ public final class CompletionContext {
         readCurrentContent(ts);
 
         processNamespaces();
+        
+        processPath();
+    }
+
+    public List<? extends FxNode> getParents() {
+        return Collections.unmodifiableList(parents);
+    }
+    
+    /**
+     * Node, which will host inserted elements. Because of 'default properties', 
+     * content inserted into a PropertySetter may become actually a peer of the setter.
+     * 
+     * @return FxNode which will act as a parent for inserted elements.
+     */
+    public FxNode getElementParent() {
+        return elementParent;
+    }
+    
+    private void processPath() {
+        parents = fxmlParserResult.getTreeUtilities().findEnclosingElements(
+                getCaretOffset(), getType() != CompletionContext.Type.PROPERTY);
+        FxNode parent = parents.get(0);
+        
+        if (parent instanceof PropertySetter) {
+            PropertySetter ps = (PropertySetter)parent;
+            // if default property = content of the instance element, another
+            // properties may be defined in the same content.
+            if (ps.isImplicit()) {
+                // the caret is inside some char content. It's legal to suggest 
+                // a property element here
+                if (parents.size() > 1) {
+                    FxNode superParent = parents.get(1);
+                    if (superParent.getKind() != FxNode.Kind.Instance) {
+                        throw new IllegalStateException();
+                    }
+                    parent = (FxInstance)superParent;
+                }
+            }
+        } 
+        this.elementParent = parent;
     }
  
     /**
@@ -762,7 +866,7 @@ public final class CompletionContext {
         this.startOffset = start;
         this.tokenTail = end - caretOffset;
     }
-
+    
     private void processType(TokenSequence ts) {
         int diff = ts.move(caretOffset);
         boolean hasToken;
@@ -823,7 +927,16 @@ public final class CompletionContext {
                     String nonWh = t.text().toString().trim();
                     if (!nonWh.isEmpty()) {
                         if (nonWh.startsWith("<")) {
-                            type = Type.BEAN;
+                            // correct start & end offset:
+                            int nonWhPos = t.text().toString().indexOf(nonWh);
+                            startOffset = ts.offset() + nonWhPos;
+                            if (caretOffset > startOffset + nonWh.length()) {
+                                type = Type.UNKNOWN;
+                            } else {
+                                tokenTail = nonWh.length() - (caretOffset - startOffset);
+                                type = Type.CHILD_ELEMENT;
+                            }
+                            tagName = t.text().subSequence(nonWhPos, t.length()).toString();
                             break;
                         }
                         // some content; assume it is a property value
@@ -834,14 +947,16 @@ public final class CompletionContext {
                         break;
                     }
                     // fall through to whitespace
+                case ERROR:
                 case WS:
                     wsFound = true;
                     middle = false;
+                    tokenTail = 0;
                     // replacement will start at the caret offset, whitespaces preserved
                     startOffset = caretOffset;
                     prefix = ""; // NOI18N
                     break;
-
+                    
                 case TAG:
                     CharSequence s = t.text();
                     if (s.length() == 1 && s.charAt(0) == '>') {
@@ -858,7 +973,13 @@ public final class CompletionContext {
                         break;
                     }
                     s = s.subSequence(1, s.length());
-                    type = isClassTagName(s) ? Type.BEAN : Type.PROPERTY_ELEMENT;
+                    if (wsFound) {
+                        type = Type.PROPERTY;
+                    } else if (isClassTagName(s)) {
+                        type = Type.BEAN;
+                    } else {
+                        type = Type.PROPERTY_ELEMENT;
+                    }
                     
                     int l = s.length();
                     if (s.length() > 1 && s.charAt(l - 2) == '/') {
@@ -872,6 +993,7 @@ public final class CompletionContext {
             }
             if (type == null) {
                 hasToken = ts.movePrevious();
+                middle = false;
             }
         }
 
@@ -904,18 +1026,28 @@ public final class CompletionContext {
             t = ts.token();
             XMLTokenId id = (XMLTokenId)t.id();
             switch (id) {
-                case TAG:
+                case TAG: {
                     CharSequence s = t.text();
                     if (s.length() == 1 && s.charAt(0) == '>') {
                         // closing >, go on
                         break;
                     }
-                    if (s.charAt(1) != '/' && s.charAt(t.length() - 1) != '>') {
-                        tagName = s.subSequence(1, s.length() - 1).toString();
-                        tagStartOffset = ts.offset();
+                    int start = 0;
+                    int end = s.length();
+                    if (s.charAt(0) == '<') {
+                        start++;
+                        if (s.length() > 1 && s.charAt(1) == '/') {
+                            start++;
+                        }
                     }
+                    if (s.charAt(s.length() - 1) == '>') {
+                        end--;
+                    }
+                    tagName = s.subSequence(start, end).toString();
+                    tagStartOffset = ts.offset();
                     cont = false;
                     break;
+                }
                 
                 case PI_END:
                     cont = false;
@@ -928,7 +1060,6 @@ public final class CompletionContext {
                             
                 case TEXT:
                 case BLOCK_COMMENT:
-                    cont = false;
                     break;
                     
                 case PI_TARGET:
@@ -941,6 +1072,13 @@ public final class CompletionContext {
                 case WS:
                     break;
             }
+        }
+        
+        // CHILD_ELEMENT in a clearly non-instance content means that instance should be present,
+        // if anything.
+        if (type == Type.CHILD_ELEMENT && tagName != null && !isClassTagName(tagName)) {
+            // assume bean
+            type = Type.BEAN;
         }
     }
     

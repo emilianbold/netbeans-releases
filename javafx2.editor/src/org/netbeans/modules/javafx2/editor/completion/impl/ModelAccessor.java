@@ -43,7 +43,7 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.net.URL;
 import java.util.List;
-import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.IncludeDecl;
@@ -54,7 +54,7 @@ import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
  * @author sdedic
  */
 public abstract class ModelAccessor {
-    public abstract  FxModel    newModel(List<ImportDecl> imports, List<FxInstance> defs);
+    public abstract  FxModel    newModel(List<ImportDecl> imports, List<FxNewInstance> defs);
     public abstract  ImportDecl createImport(String imported, boolean wildcard);
     public abstract  LanguageDecl createLanguage(String lang);
     public abstract  IncludeDecl createInclude(URL base, String included);

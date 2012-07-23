@@ -67,6 +67,8 @@ public interface Completer {
      */
     @CheckForNull
     public List<CompletionItem> complete();
+    
+    public boolean hasMoreItems();
      
     /**
      * Factory interface should be registered into MIME lookup using {@link MimeRegistration}

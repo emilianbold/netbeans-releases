@@ -67,15 +67,18 @@ import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
- *
+ * Completer for class names. Activates at places, where a class name may be inserted:
+ * - in tag names
+ * - in attribute names, either blank or starting with capital letter
+ * 
  * @author sdedic
  */
 @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
 public class ClassCompleter implements Completer, Completer.Factory {
     private static final Logger LOG = Logger.getLogger(ClassCompleter.class.getName());
     
-    private static final int NODE_PRIORITY = 100;
     private static final int IMPORTED_PRIORITY = 50;
+    private static final int NODE_PRIORITY = 100;
     private static final int OTHER_PRIORITY = 200;
     private static final int PACKAGE_PRIORITY = 150;
     
@@ -97,6 +100,10 @@ public class ClassCompleter implements Completer, Completer.Factory {
         this.ctx = ctx;
     }
 
+    public boolean hasMoreItems() {
+        return false;
+    }
+    
     @Override
     public Completer createCompleter(CompletionContext ctx) {
         if (ctx.getType() == CompletionContext.Type.BEAN ||

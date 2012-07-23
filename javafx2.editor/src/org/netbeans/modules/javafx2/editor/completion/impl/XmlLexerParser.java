@@ -53,10 +53,12 @@ import java.util.Map;
 import java.util.Stack;
 import javax.print.attribute.SetOfIntegerSyntax;
 import javax.xml.namespace.QName;
+import javax.xml.stream.events.EndDocument;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -65,8 +67,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
+import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
+
 /**
- * Parses the XML using the lexer.
+ * SAX-like parser, which uses XML lexer to tokenize the text and 
+ * attempts to recover from simple "in the middle of typing" errors.
  *
  * Error recovery strategies:
  * 
@@ -76,9 +81,6 @@ import org.xml.sax.ext.LexicalHandler;
  * Unclosed end tag:
  * emit subsequent child tags (going to level N+1 and deeper). 
  * 
- * The Parser will, in addition to normal instructions, emit also "error" tokens, 
- * which are portions of erroneous content, i.e. tokens after last attribute assignment
- * and before unexpected opening tag.
  * 
  * @author sdedic
  */
@@ -101,8 +103,6 @@ public class XmlLexerParser implements ContentLocator {
     
     private LinkedList<Level>    levelStack = new LinkedList<Level>();
     
-    private int error;
-    
     private int errorCount;
     
     private static class Level {
@@ -111,91 +111,74 @@ public class XmlLexerParser implements ContentLocator {
         private Collection<String>  newPrefixes = new LinkedList<String>();
     }
     
-    /**
-     * Error marker attached to an Element
-     */
-    public static class ErrorMark {
-        /**
-         * Offset of the error mark
-         */
-        private int offset;
-        
-        /**
-         * Length of the offending text
-         */
-        private int len;
-        
-        /**
-         * Type / classification of the error
-         */
-        private ErrorType errorType;
-        
-        /**
-         * Custom message, if any
-         */
-        private String  message;
+    private static final String ERR_UnexpectedToken = "unexpected-token"; // NOI18N
+    private static final String ERR_DuplicateAttribute = "duplicate-attribute"; // NOI18N
+    private static final String ERR_UnclosedValue = "unclosed-value"; // NOI18N
+    private static final String ERR_InvalidTagContent = "invalid-tag-content"; // NOI18N
+    private static final String ERR_TagNotFinished = "tag-not-finished"; // NOI18N
+    private static final String ERR_MissingEndTag = "missing-end-tag"; // NOI18N
+    private static final String ERR_UnexpectedTag = "unexpected-tag"; // NOI18N
 
-        public ErrorMark(int offset, int len, ErrorType errorType, String message) {
-            this.offset = offset;
-            this.len = len;
-            this.errorType = errorType;
-            this.message = message;
-        }
-    }
-
-    private enum ErrorType {
-        UnexpectedToken,
-        DuplicateAttribute,
-        UnclosedValue,
-        /**
-         * Tag content is invalid, e.g. attributes in closing tag
-         */
-        InvalidTagContent,
-        /**
-         * Reported on tags, which are not finished, instead a new tag starts
-         */
-        TagNotFinished,
-        /**
-         * Reported on artifical END TAGS, which do not correspond to anything in the source.
-         * Actually the error is on their counterpart start tags.
-         */
-        MissingEndTag,
-        /**
-         * Closing tag which could not be mapped onto a start tag.
-         */
-        UnexpectedTag,
-    }
-    
     private List<ErrorMark>     errors = Collections.emptyList();
+    
+    private List<ErrorMark>     leftErrors = Collections.emptyList();
     
     private Level currentLevel;
     
     private void markError() {
-        addError(ErrorType.UnexpectedToken, null);
+        addError(ERR_UnexpectedToken, ERR_unexpectedToken(currentToken.text().toString()));
     }
     
-    private void addError(ErrorType type, String msg) {
+    @NbBundle.Messages({
+        "ERR_elementNotClosed=Element is not closed: {0}"
+    })
+    private void markUnclosedElement(String qName) {
+        addError(ERR_MissingEndTag, ERR_elementNotClosed(qName), qName);
+    }
+
+    @Override
+    public int getEndOffset() {
+        return endOffset;
+    }
+
+    @Override
+    public TokenSequence getTokenSequence() {
+        return hierarchy.tokenSequence();
+    }
+    
+    private void addError(String type, String msg, Object... params) {
         if (errors.isEmpty()) {
             errors = new LinkedList<ErrorMark>();
         }
         Token t = seq.token();
         
         ErrorMark mark = new ErrorMark(seq.offset(), t == null ? 1 : t.length(),
-                type, msg);
+                type, msg, params);
         errors.add(mark);
         errorCount++;
     }
     
     private void resetOffsets() {
         elementOffset = -1;
+        endOffset = -1;
         if (attrOffsets != null && attrOffsets.isEmpty()) {
             attrOffsets = null;
         }
-        flushErrors();
+        flush();
     }
     
-    private void flushErrors() {
+    private boolean errorsFetched = false;
+    
+    private void flush() {
+        if (!errorsFetched) {
+            if (leftErrors.isEmpty()) {
+                leftErrors = new ArrayList<ErrorMark>();
+            }
+            leftErrors.addAll(errors);
+        }
         errors = Collections.emptyList();
+        matchedTokens = Collections.emptyList();
+        tokenOffsets = Collections.emptyList();
     }
 
     public XmlLexerParser(TokenHierarchy hierarchy) {
@@ -208,19 +191,29 @@ public class XmlLexerParser implements ContentLocator {
 
     public void setContentHandler(ContentHandler contentHandler) {
         this.contentHandler = contentHandler;
+        if (contentHandler instanceof ContentLocator.Receiver) {
+            ((ContentLocator.Receiver)contentHandler).setContentLocator(this);
+        }
     }
+    
+    private int targetOffset;
+    private int dataOffset;
     
     private void parseProcessingInstruction() throws SAXException {
         StringBuilder content = new StringBuilder();
         String target = null;
-
+        
+        targetOffset = -1;
+        dataOffset = -1;
+        
         skipWhitespace();
         
         Token<XMLTokenId> t = nextToken();
         if (t == null || t.id() != XMLTokenId.PI_TARGET) {
-            markError();
+            markUnexpectedToken();
             return;
         }
+        targetOffset = seq.offset();
         target = t.text().toString();
         consume();
         
@@ -228,16 +221,22 @@ public class XmlLexerParser implements ContentLocator {
         while ((t = nextToken()) != null) {
             switch (t.id()) {
                 case WS:
+                    if (dataOffset != -1) {
+                        content.append(t.text().toString());
+                    }
                     skipWhitespace();
                     break;
 
                 case PI_CONTENT:
+                    if (dataOffset == -1) {
+                        dataOffset = seq.offset();
+                    }
                     content.append(t.text().toString());
                     consume();
                     break;
                 case PI_END:
                     contentHandler.processingInstruction(target, content.toString().trim());
-                    flushErrors();
+                    flush();
                     consume();
                     resetOffsets();
                     return;
@@ -246,11 +245,15 @@ public class XmlLexerParser implements ContentLocator {
                     // bail out, the current processing instruction ends
                     contentHandler.processingInstruction(target, content.toString().trim());
                     // FIXME - add error info
-                    resetOffsets();
-                    flushErrors();
+                    endOffset = makeErrorOffset();
+                    flush();
                     return;
             }
         }
+    }
+    
+    private int makeErrorOffset() {
+        return (- seq.offset()) - 1;
     }
     
     private XMLTokenId  forcedId;
@@ -274,15 +277,19 @@ public class XmlLexerParser implements ContentLocator {
         seq.move(0);
         parse2();
     }
-
-    public void parse2() throws SAXException {
+    
+    void parse2() throws SAXException {
         boolean whitespacePossible = true;
         
         Token<XMLTokenId> t;
         
+        elementOffset = 0;
+        contentHandler.startDocument();
+        
         while ((t = nextToken()) != null) {
-            XMLTokenId id = getTokenId();
+            resetOffsets();
             elementOffset = seq.offset();
+            endOffset = elementOffset + t.length();
             switch (t.id()) {
                 case PI_START:
                     consume();
@@ -331,8 +338,21 @@ public class XmlLexerParser implements ContentLocator {
                     break;
                 }
             }
-            resetOffsets();
         }
+        int saveEndOffset = endOffset;
+        
+        while (!levelStack.isEmpty()) {
+            markUnclosedElement(currentLevel.tagQName);
+            String[] nsName = parseQName(currentLevel.tagQName);
+            resetAndSetErrorOffsets();
+            contentHandler.endElement(prefix2Uri.get(nsName[0]), nsName[1], currentLevel.tagQName);
+            terminateLevel();
+        }
+        elementOffset = saveEndOffset;
+        contentHandler.endDocument();
+        
+        // report leftover errors
+        this.errors = leftErrors;
     }
     
     private Map<String, String> prefix2Uri = new HashMap<String, String>();
@@ -422,6 +442,20 @@ public class XmlLexerParser implements ContentLocator {
         }
     }
     
+    private Object[] save() {
+        return new Object[] {
+            elementOffset, endOffset, tokenOffsets, matchedTokens
+        };
+    }
+    
+    private void restore(Object[] o) {
+        this.elementOffset = (Integer)o[0];
+        this.endOffset = (Integer)o[1];
+        this.tokenOffsets = (List<Integer>)o[2];
+        this.matchedTokens = (List<Token<XMLTokenId>>)o[3];
+    }
+    
+    private int endOffset;
     private int elementOffset;
     
     private String tagName;
@@ -455,7 +489,8 @@ public class XmlLexerParser implements ContentLocator {
                     if (s.equals(TAG_CLOSE)) {
                         consume();
                     } else {
-                       addError(ErrorType.TagNotFinished, null);
+                       addError(ERR_TagNotFinished, null);
+                       markApproxEnd();
                     }
                     break out;
                     
@@ -463,12 +498,12 @@ public class XmlLexerParser implements ContentLocator {
                 case OPERATOR:
                 case VALUE:
                     // just mark error, but consume and ignore
-                    addError(ErrorType.InvalidTagContent, null);
                     consume();
+                    addError(ERR_InvalidTagContent, null);
                     break;
                     
                 default:
-                    markError();
+                    markUnexpectedToken();
                     break out;
             }
         }
@@ -479,11 +514,13 @@ public class XmlLexerParser implements ContentLocator {
             terminateLevel();
             return;
         }
+        
+        Object[] o = save();
 
         // case 1: the tagName may equal to a tag on the stack. This would indicate
         // one or more unclosed tags, which should be reported as "closed - error"
         if (findUpperOpening(tagName)) {
-
+            restore(o);
             contentHandler.endElement(tagUri, this.tagName, qName);
             terminateLevel();
             return;
@@ -492,7 +529,17 @@ public class XmlLexerParser implements ContentLocator {
         // ignore the tag completely; the content handler does not have a callback for this,
         // just ignore the end tag completely, and go on. If this tag was a mismatch for an existing open tag,
         // the next close tag will be hopefully found and the incorrectly opened open tag will be closed.
-        addError(ErrorType.UnexpectedTag, tagName);
+        addError(ERR_UnexpectedTag, tagName);
+    }
+    
+    private void markApproxEnd() {
+        this.endOffset = APPROX;
+    }
+    
+    private void resetAndSetErrorOffsets() {
+        resetOffsets();
+        elementOffset = (- seq.offset()) - 1;
+        endOffset = elementOffset;
     }
     
     /**
@@ -522,11 +569,11 @@ public class XmlLexerParser implements ContentLocator {
         if (depth == 1) {
             // simple case, the immediate parent matches the closing tagname
             // mark error, close this level etc
-            addError(ErrorType.MissingEndTag, null);
+            markUnclosedElement(currentLevel.tagQName);
             String[] nsName = parseQName(currentLevel.tagQName);
+            resetAndSetErrorOffsets();
             contentHandler.endElement(prefix2Uri.get(nsName[0]), nsName[1], currentLevel.tagQName);
             terminateLevel();
-            flushErrors();
             return true;
         }
         
@@ -584,16 +631,26 @@ public class XmlLexerParser implements ContentLocator {
         }
 
         for (int i = 0; i <= count; i++) {
-            markError();
+            processTagName(qName = currentLevel.tagQName);
+            markUnclosedElement(qName);
+            // the elements are artifical; discard all offset information
+            resetAndSetErrorOffsets();
+            contentHandler.endElement(tagUri, this.tagName, qName);
+            terminateLevel();
+            /*
+            markUnclosedElement(qName);
+            // the elements are artifical; discard all offset information
+            resetAndSetErrorOffsets();
             contentHandler.endElement(tagUri, this.tagName, qName);
             terminateLevel();
             processTagName(qName = currentLevel.tagQName);
-            flushErrors();
+            */
         }
+        resetOffsets();
         
         return true;
     }
-    
+        
     static class StopParseException extends SAXException {
         private boolean success;
 
@@ -683,6 +740,7 @@ public class XmlLexerParser implements ContentLocator {
     
     private Token<XMLTokenId> currentToken;
     
+    
     private Token<XMLTokenId> nextToken() {
         if (currentToken == null) {
             if (seq.moveNext()) {
@@ -696,6 +754,17 @@ public class XmlLexerParser implements ContentLocator {
     }
     
     private void consume() {
+        if (currentToken != null) {
+            if (matchedTokens.isEmpty()) {
+                matchedTokens = new ArrayList<Token<XMLTokenId>>();
+                tokenOffsets = new ArrayList<Integer>();
+            }
+            tokenOffsets.add(seq.offset());
+            matchedTokens.add(currentToken);
+            if (endOffset != APPROX) {
+                endOffset = seq.offset() + currentToken.length();
+            }
+        }
         currentToken = null;
     }
     
@@ -712,7 +781,7 @@ public class XmlLexerParser implements ContentLocator {
         boolean ignore;
         
         if (attrs.containsKey(argName)) {
-            addError(ErrorType.DuplicateAttribute, null);
+            addError(ERR_DuplicateAttribute, null);
             ignore = true;
         } else {
             attrOffsets.put(argName, seq.offset());
@@ -725,14 +794,14 @@ public class XmlLexerParser implements ContentLocator {
         skipWhitespace();
         t = nextToken();
         if (t == null || t.id() != XMLTokenId.OPERATOR) {
-            markError();
+            markUnexpectedToken();
             return false;
         }
         consume();
         skipWhitespace();
         t = nextToken();
         if (t == null ||t.id() != XMLTokenId.VALUE) {
-            markError();
+            markUnexpectedToken();
             return false;
         }
         
@@ -762,8 +831,18 @@ public class XmlLexerParser implements ContentLocator {
      * Handles stat tag that appears in a tagname. Suppose the user did not yet type
      * the closing brace (>). Report tag open with attributes.
      */
+    @NbBundle.Messages({
+        "ERR_tagNotTerminated=Open tag is not terminated: {0}"
+    })
     private void errorStartTagInTagName() throws SAXException {
-        markError();
+        // remove the last error, it was surely some unexpected token:
+        if (!errors.isEmpty()) {
+            ErrorMark em = errors.get(errors.size() - 1);
+            if (em.getErrorType().equals(ERR_UnexpectedToken)) {
+                errors.remove(errors.size() - 1);
+            }
+        }
+        addError(ERR_TagNotFinished, ERR_tagNotTerminated(this.qName), this.qName);
     }
     
     /**
@@ -771,8 +850,16 @@ public class XmlLexerParser implements ContentLocator {
      */
     private boolean selfClosed;
     
+    @NbBundle.Messages({
+        "ERR_unexpectedToken=Unexpected token: \"{0}\"",
+        "TOKEN_newline=< new line >",
+        "TOKEN_tab=< tab >",
+    })
     private void markUnexpectedToken() {
-        markError();
+        String s = currentToken.text().toString();
+        s = s.replaceAll("\\\n", TOKEN_newline()).replaceAll("\\\t", TOKEN_tab());
+        
+        addError(ERR_UnexpectedToken, ERR_unexpectedToken(s));
     }
     
     private void parseTag(Token<XMLTokenId> t) throws SAXException {
@@ -848,7 +935,7 @@ public class XmlLexerParser implements ContentLocator {
         
         contentHandler.startElement(tagUri, tagName, qName, 
                 new Attrs(attrNames, attrs, prefix2Uri));
-        flushErrors();
+        flush();
         if (selfClosed) {
             contentHandler.endElement(tagUri, tagName, qName);
             terminateLevel();
@@ -862,6 +949,11 @@ public class XmlLexerParser implements ContentLocator {
 
     @Override
     public int getAttributeOffset(String attribute) {
+        if (attribute == ATTRIBUTE_TARGET) {
+            return targetOffset;
+        } else if (attribute == ATTRIBUTE_DATA) {
+            return dataOffset;
+        }
         if (attrOffsets == null) {
             return -1;
         }
@@ -870,8 +962,25 @@ public class XmlLexerParser implements ContentLocator {
     }
 
     @Override
-    public int hasError() {
-        return error;
+    public Collection<ErrorMark> getErrors() {
+        return errors.isEmpty() ? errors : Collections.unmodifiableList(errors);
+    }
+
+    /**
+     * Token offsets
+     */
+    private List<Integer>           tokenOffsets = Collections.emptyList();
+    
+    /**
+     * Tokens matched for the currently reported tag.
+     */
+    private List<Token<XMLTokenId>> matchedTokens = Collections.emptyList();
+
+    @Override
+    public List<Token<XMLTokenId>> getMatchingTokens() {
+        return matchedTokens.isEmpty() ? 
+                Collections.<Token<XMLTokenId>>emptyList() : 
+                Collections.unmodifiableList(matchedTokens);
     }
 
     private static final class Attrs implements Attributes {

@@ -74,6 +74,7 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserFactory;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
@@ -107,6 +108,10 @@ public class FXMLCompletionTestBase extends NbTestCase {
     }
 
     static final int FINISH_OUTTIME = 5 * 60 * 1000;
+    
+    protected ClasspathInfo cpInfo;
+    
+    protected ClassPathProvider cpProvider;
     
     public static class Lkp extends ProxyLookup {
         
@@ -179,16 +184,26 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 return null;
             }
         };
+        this.cpProvider = cpp;
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
         MimeDataProvider mdp = new MimeDataProvider() {
             @Override
             public Lookup getLookup(MimePath mimePath) {
-                return Lookups.fixed(
-                        new XMLKit(), 
-                        new JavacParserFactory(), 
-                        new XMLDocumentModelProvider(), 
-                        XMLTokenId.language()
-                        );
+                if (mimePath.toString().contains("/x-fxml")) {
+                    return Lookups.fixed(
+                            new XMLKit(), 
+                            new FxmlParserFactory(), 
+                            new XMLDocumentModelProvider(), 
+                            XMLTokenId.language()
+                            );
+                } else {
+                    return Lookups.fixed(
+                            new XMLKit(), 
+                            new JavacParserFactory(), 
+                            new XMLDocumentModelProvider(), 
+                            XMLTokenId.language()
+                            );
+                }
             }
         };
         Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
@@ -206,7 +221,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 tx.commit();
             }
         }
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, fxPath, sourcePath);
+        cpInfo = ClasspathInfo.create(bootPath, fxPath, sourcePath);
         assertNotNull(cpInfo);
         final JavaSource js = JavaSource.create(cpInfo);
         assertNotNull(js);

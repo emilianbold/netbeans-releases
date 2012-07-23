@@ -73,6 +73,27 @@ public abstract class NodeImpl implements Node, Cloneable {
     /* id of this node */
     private int id;
     
+    /**
+     * Starting offset of this Node. If the Node contains children,
+     * the start and end offset correspond to the start offset of the Node's
+     * start delimiter (tag), and end offset of the Node's end delimiter (tag).
+     * The end offset MAY be unset (= -1), to indicate the end offset is uncertain
+     */
+    private int     startOffset = TextPositions.NOPOS;
+    
+    private int     endOffset = TextPositions.NOPOS;
+    
+    /**
+     * Starting offset of the node's contents. Should be the same
+     * as start offset of the 1st node's child, in valid models.
+     */
+    private int     contentStartOffset = TextPositions.NOPOS;
+    
+    /**
+     * Ending offset of the node's contents.
+     */
+    private int     contentEndOffset = TextPositions.NOPOS;
+    
     /* tokens */
     private List<Token> tokens;
     
@@ -87,6 +108,22 @@ public abstract class NodeImpl implements Node, Cloneable {
         model = null;
         inTree = false;
         id = -1;
+    }
+
+    int getStartOffset() {
+        return startOffset;
+    }
+
+    int getEndOffset() {
+        return endOffset;
+    }
+
+    int getContentStartOffset() {
+        return contentStartOffset;
+    }
+
+    int getContentEndOffset() {
+        return contentEndOffset;
     }
     
     /**

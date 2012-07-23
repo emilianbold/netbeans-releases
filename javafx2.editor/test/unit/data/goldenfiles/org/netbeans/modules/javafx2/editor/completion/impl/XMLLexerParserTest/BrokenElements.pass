@@ -1,3 +1,4 @@
+[doc]
 [instruction] target=xml, data=version="1.0" encoding="UTF-8"
 [instruction] target=import, data=java.lang.*
 [instruction] target=import, data=javafx.scene.control.*
@@ -48,3 +49,4 @@
  [end-elem] children]
 [end-elem] AnchorPane]
 [end-prefix xmlns:fx
+[end-doc]
