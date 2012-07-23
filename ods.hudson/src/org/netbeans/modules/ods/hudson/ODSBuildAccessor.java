@@ -373,9 +373,8 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
 
     /**
      * Listener that listens to various ProjectHandle-related events. It is
-     * notified when the team project is closed or user logs out from the team
-     * server. In this case the listener unregisters itself from objects that
-     * hold references to it.
+     * notified when user logs out from the team server. In this case the
+     * listener unregisters itself from objects that hold references to it.
      *
      * It is also notified when a content of the Hudson build instance is
      * changed. Then it checks whether the list of jobs has changed, and if so,
@@ -421,9 +420,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          */
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (isTeamClosedEvent(evt)) {
-                removeHudsonAndClean();
-            } else if (isUserLoggedOutEvent(evt)) {
+            if (isUserLoggedOutEvent(evt)) {
                 removeHudsonAndClean();
                 CACHE.clear();
             } else if (projectHandle.get() == null) {
@@ -435,16 +432,6 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             cleanup();
             if (!instance.isPersisted()) {
                 HudsonManager.removeInstance(instance);
-            }
-        }
-
-        private boolean isTeamClosedEvent(PropertyChangeEvent evt) {
-            ProjectHandle<ODSProject> ph = projectHandle.get();
-            if (ph == null) {
-                return false;
-            } else {
-                return evt.getPropertyName().equals(ProjectHandle.PROP_CLOSE)
-                        && evt.getSource() == ph;
             }
         }
 
