@@ -145,7 +145,11 @@ public class DOM {
     public void requestChildNodes(int nodeId) {
         JSONObject params = new JSONObject();
         params.put("nodeId", nodeId); // NOI18N
-        transport.sendCommand(new Command("DOM.requestChildNodes", params)); // NOI18N
+        if (transport.isVersionUnknownBeforeRequestChildNodes()) {
+            transport.sendCommand(new Command("DOM.getChildNodes", params)); // NOI18N
+        } else {
+            transport.sendCommand(new Command("DOM.requestChildNodes", params)); // NOI18N
+        }
     }
 
     /**

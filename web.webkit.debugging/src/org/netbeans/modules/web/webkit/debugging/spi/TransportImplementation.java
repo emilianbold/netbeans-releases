@@ -48,6 +48,11 @@ import java.net.URL;
  */
 public interface TransportImplementation {
 
+    // requestChildNodes was introduced in 
+    // http://trac.webkit.org/changeset/93396/trunk/Source/WebCore/inspector/Inspector.json
+    public static final String VERSION_UNKNOWN_BEFORE_requestChildNodes = "version without requestChildNodes";
+    public static final String VERSION_1 = "version 1.0";
+    
     /**
      * Activate transport.
      */
@@ -77,5 +82,11 @@ public interface TransportImplementation {
      * URL being debugged.
      */
     URL getConnectionURL();
+    
+    /**
+     * Returns version of the protocol supported on browser side. See constants
+     * above.
+     */
+    String getVersion();
     
 }
