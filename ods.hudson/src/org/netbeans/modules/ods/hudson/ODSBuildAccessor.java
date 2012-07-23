@@ -313,7 +313,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
         @Override
         public Action getDefaultAction() {
             String name = this.getStatus().name();
-            Icon icon = UI.getIcon(hudsonJob);
+            Icon icon = ODSHudsonUtils.centerIcon(UI.getIcon(hudsonJob));
             return new AbstractAction(name, icon) {
                 @Override
                 public void actionPerformed(ActionEvent e) {

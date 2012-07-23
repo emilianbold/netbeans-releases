@@ -41,10 +41,19 @@
  */
 package org.netbeans.modules.ods.hudson;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.team.ods.api.CloudServer;
 import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
 import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.team.ods.client.api.ODSFactory;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
@@ -52,6 +61,9 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
  * @author jhavlin
  */
 public final class ODSHudsonUtils {
+
+    private static Map<Icon, Icon> CENTERED_ICON_CACHE =
+            new WeakHashMap<Icon, Icon>();
 
     private ODSHudsonUtils() {
     }
@@ -72,5 +84,29 @@ public final class ODSHudsonUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Center Hudson status icon.
+     *
+     * Standard Hudson icons have the circle in them biased towards bottom right
+     * corner. This method creates another icon with the same image, but in the
+     * center of the area.
+     */
+    public static Icon centerIcon(Icon icon) {
+        Icon cachedIcon = CENTERED_ICON_CACHE.get(icon);
+        if (cachedIcon != null) {
+            return cachedIcon;
+        } else {
+            Image img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+            Graphics g = img.getGraphics();
+            if (g instanceof Graphics2D) {
+                Graphics2D g2d = (Graphics2D) g;
+                icon.paintIcon(null, g2d, -3, -2);
+            }
+            Icon centeredIcon = new ImageIcon(img);
+            CENTERED_ICON_CACHE.put(icon, centeredIcon);
+            return centeredIcon;
+        }
     }
 }
