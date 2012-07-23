@@ -134,6 +134,11 @@ public class WebKitDebuggingTransport implements TransportImplementation {
             return null;
         }
     }
+
+    @Override
+    public String getVersion() {
+        return VERSION_1;
+    }
     
     private static class FXCallback implements Callback<String, Void> {
 
