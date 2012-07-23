@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.team.ods.ui.dashboard;
 
-import com.tasktop.c2c.server.profile.domain.project.Project;
-import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -52,18 +50,22 @@ import javax.swing.*;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.openide.awt.Notification;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * My Project's root node
@@ -76,6 +78,8 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private final ProjectHandle<ODSProject> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
+    private final BuildAccessor<ODSProject> buildAccessor;
+    private PropertyChangeListener buildHandleStatusListener;
     private QueryHandle allIssuesQuery;
     private PropertyChangeListener notificationListener = new PropertyChangeListener() {
 
@@ -96,6 +100,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private JLabel lbl = null;
     private LinkButton btnOpen = null;
     private LinkButton btnBugs = null;
+    private LinkButton btnBuilds = null;
 
     private boolean isMemberProject = false;
 
@@ -104,6 +109,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private final PropertyChangeListener projectListener;
     private TreeLabel rightPar;
     private TreeLabel leftPar;
+    private TreeLabel delim;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
     private final DefaultDashboard<CloudUiServer, ODSProject> dashboard;
 
@@ -130,12 +136,16 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                             return;
                         }
                     }
+                } else if (ProjectHandle.PROP_BUILD_LIST.equals(evt.getPropertyName())) {
+                    scheduleUpdateBuilds();
                 }
             }
         };
         this.project = project;
         this.accessor = dashboard.getDashboardProvider().getProjectAccessor();
         this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor();
+        this.buildAccessor = dashboard.getDashboardProvider()
+                .getBuildAccessor(ODSProject.class);
         this.project.addPropertyChangeListener( projectListener );
         project.getTeamProject().getServer().addPropertyChangeListener(projectListener);
         project.getTeamProject().addPropertyChangeListener(projectListener);
@@ -159,9 +169,11 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 lbl = new TreeLabel(project.getDisplayName());
                 component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,16,0,3), 0,0) );
                 leftPar = new TreeLabel("("); // NOI18N
+                delim = new TreeLabel("|"); //NOI18N
                 rightPar = new TreeLabel(")"); // NOI18N
                 component.add(leftPar, new GridBagConstraints(1, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                component.add(delim, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                component.add(rightPar, new GridBagConstraints(6, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 setOnline(false);
                 
                 issuesRP.post(new Runnable() {
@@ -183,15 +195,15 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         
                     }
                 });
+                scheduleUpdateBuilds();
 
-
-                component.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
+                component.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
                 btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/open.png", true), getOpenAction()); //NOI18N
                 btnOpen.setText(null);
                 btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
                 btnOpen.setRolloverEnabled(true);
                 btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/open_over.png", true)); // NOI18N
-                component.add( btnOpen, new GridBagConstraints(7,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                component.add( btnOpen, new GridBagConstraints(8,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
             }
             lbl.setForeground(foreground);
             return component;
@@ -207,9 +219,12 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                if (btnBugs == null || "0".equals(btnBugs.getText())) { // NOI18N
+                if ((btnBugs == null || "0".equals(btnBugs.getText())) && btnBuilds == null) { // NOI18N
                     if (leftPar != null) {
                         leftPar.setVisible(b);
+                    }
+                    if (delim != null) {
+                        delim.setVisible(b);
                     }
                     if (rightPar != null) {
                         rightPar.setVisible(b);
@@ -275,14 +290,93 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 btnBugs.setHorizontalTextPosition(JLabel.LEFT);
                 btnBugs.setToolTipText(bug.getToolTipText());
                 component.add( btnBugs, new GridBagConstraints(3,0,1,1,0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                boolean visible = !"0".equals(bug.getText()); // NOI18N
-                leftPar.setVisible(visible);
-                rightPar.setVisible(visible);
-                btnBugs.setVisible(!"0".equals(bug.getText())); // NOI18N
-                component.validate();
-                dashboard.myProjectsProgressFinished();
-                dashboard.dashboardComponent.repaint();
+                updateDetailsVisible();
             }
         });
+    }
+
+    private void scheduleUpdateBuilds() {
+        issuesRP.post(new Runnable() {
+            @Override
+            public void run() {
+                if (buildAccessor != null) {
+                    if (buildAccessor.isEnabled(project)) {
+                        if (buildHandleStatusListener == null) {
+                            initBuildHandleStatusListener();
+                        }
+                        List<BuildHandle> builds =
+                                buildAccessor.getBuilds(project);
+                        for (BuildHandle buildHandle : builds) {
+                            buildHandle.addPropertyChangeListener(
+                                    WeakListeners.propertyChange(
+                                    buildHandleStatusListener, buildHandle));
+                        }
+                        BuildHandle bh = buildAccessor
+                                .chooseMostInterrestingBuild(builds);
+                        if (bh != null) {
+                            setBuildsLater(bh);
+                        }
+                    }
+                }
+            }
+
+            private void initBuildHandleStatusListener() {
+                buildHandleStatusListener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(
+                            PropertyChangeEvent evt) {
+                        if (evt.getPropertyName().equals(
+                                BuildHandle.PROP_STATUS)) {
+                            scheduleUpdateBuilds();
+                        }
+                    }
+                };
+            }
+        });
+    }
+
+    /**
+     * Set interresting builds button.
+     *
+     * @param buildHandle Handle of the interresting build.
+     */
+    private void setBuildsLater(final BuildHandle buildHandle) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (btnBuilds != null) {
+                    component.remove(btnBuilds);
+                }
+                if (buildHandle != null) {
+                    Action action = buildHandle.getDefaultAction();
+                    Icon actionIcon = (Icon) action.getValue(Action.SMALL_ICON);
+                    String actionName = (String) action.getValue(Action.NAME);
+                    btnBuilds = new LinkButton(actionName, actionIcon, action);
+                    btnBuilds.setHorizontalTextPosition(JLabel.LEFT);
+                    btnBuilds.setVerticalAlignment(JButton.CENTER);
+                    btnBuilds.setToolTipText(buildHandle.getDisplayName());
+                    component.add(btnBuilds, new GridBagConstraints(5, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+                } else {
+                    btnBuilds = null;
+                }
+                updateDetailsVisible();
+            }
+        });
+    }
+
+    private void updateDetailsVisible() {
+        boolean bugsVisible = !"0".equals(btnBugs.getText()); //NOI18N
+        boolean buildsVisible = btnBuilds != null;
+        boolean visible = bugsVisible || buildsVisible;
+        leftPar.setVisible(visible);
+        rightPar.setVisible(visible);
+        btnBugs.setVisible(bugsVisible);
+        if (btnBuilds != null) {
+            btnBuilds.setVisible(buildsVisible);
+        }
+        delim.setVisible(bugsVisible && buildsVisible);
+        component.validate();
+        dashboard.myProjectsProgressFinished();
+        dashboard.dashboardComponent.repaint();
     }
 }
