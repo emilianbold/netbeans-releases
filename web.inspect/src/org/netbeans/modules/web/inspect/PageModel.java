@@ -43,7 +43,6 @@ package org.netbeans.modules.web.inspect;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
@@ -122,37 +121,6 @@ public abstract class PageModel {
      * @return CSS Styles view for this page.
      */
     public abstract JComponent getCSSStylesView();
-
-    /**
-     * Returns computed style of the specified element.
-     * 
-     * @param element element whose computed style should be returned.
-     * @return map with computed style information, it maps the name
-     * of the style property to its value.
-     */
-    public abstract Map<String,String> getComputedStyle(ElementHandle element);
-
-    /**
-     * Returns resources (like scripts, images and style sheets) used by the page.
-     * 
-     * @return resources used by the page.
-     */
-    public abstract Collection<ResourceInfo> getResources();
-
-    /**
-     * Returns style rules that match the specified element.
-     * 
-     * @param element element whose matching style rules should be returned.
-     * @return style rules that match the specified element.
-     */
-    public abstract List<RuleInfo> getMatchedRules(ElementHandle element);
-
-    /**
-     * Reloads the specified resource in the page.
-     * 
-     * @param resource resource to reload.
-     */
-    public abstract void reloadResource(ResourceInfo resource);
 
     /**
      * Disposes this page model.

@@ -57,7 +57,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.CSSUtils;
-import org.netbeans.modules.web.inspect.ElementHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -74,25 +73,25 @@ public class GoToElementSourceAction extends NodeAction  {
 
     @Override
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
-        Element element = activatedNodes[0].getLookup().lookup(Element.class);
-        String uriTxt = element.getOwnerDocument().getDocumentURI();
-        try {
-            URI uri = new URI(uriTxt);
-            // 208252: Workaround for file://localhost/<path> URIs that appear on Mac
-            if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
-                uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
-            }
-            File file = new File(uri);
-            file = FileUtil.normalizeFile(file);
-            FileObject fob = FileUtil.toFileObject(file);
-            Source source = Source.create(fob);
-            ElementHandle handle = ElementHandle.forElement(element);
-            ParserManager.parse(Collections.singleton(source), new GoToElementTask(handle, fob));
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
-        } catch (ParseException ex) {
-            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
-        }
+//        Element element = activatedNodes[0].getLookup().lookup(Element.class);
+//        String uriTxt = element.getOwnerDocument().getDocumentURI();
+//        try {
+//            URI uri = new URI(uriTxt);
+//            // 208252: Workaround for file://localhost/<path> URIs that appear on Mac
+//            if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
+//                uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
+//            }
+//            File file = new File(uri);
+//            file = FileUtil.normalizeFile(file);
+//            FileObject fob = FileUtil.toFileObject(file);
+//            Source source = Source.create(fob);
+//            ElementHandle handle = ElementHandle.forElement(element);
+//            ParserManager.parse(Collections.singleton(source), new GoToElementTask(handle, fob));
+//        } catch (URISyntaxException ex) {
+//            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
+//        } catch (ParseException ex) {
+//            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
+//        }
     }
 
     @Override
@@ -130,42 +129,40 @@ public class GoToElementSourceAction extends NodeAction  {
      * in the document in the given file.
      */
     static class GoToElementTask extends UserTask {
-        /** Element to jump to. */
-        private ElementHandle element;
+//        /** Element to jump to. */
+//        private ElementHandle element;
         /** File to jump into. */
         private FileObject fob;
 
         /**
          * Creates a new {@code GoToElementTask} for the specified file and element.
          * 
-         * @param element element to jump to.
          * @param fob file to jump into.
          */
-        GoToElementTask(ElementHandle element, FileObject fob) {
-            this.element = element;
+        GoToElementTask(FileObject fob) {
             this.fob = fob;
         }
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
-            Node root = result.root();
-            Node[] searchResult = element.locateInAst(root);
-            Node node = searchResult[0];
-            if (node == null) {
-                // Exact match not found, use the nearest node
-                node = searchResult[1];
-            }
-            while (ElementUtils.isVirtualNode(node)) {
-                node = node.parent();
-            }
-            final Node nodeToShow = node;
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    CSSUtils.open(fob, nodeToShow.from());
-                }
-            });
+//            HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
+//            Node root = result.root();
+//            Node[] searchResult = element.locateInAst(root);
+//            Node node = searchResult[0];
+//            if (node == null) {
+//                // Exact match not found, use the nearest node
+//                node = searchResult[1];
+//            }
+//            while (ElementUtils.isVirtualNode(node)) {
+//                node = node.parent();
+//            }
+//            final Node nodeToShow = node;
+//            EventQueue.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    CSSUtils.open(fob, nodeToShow.from());
+//                }
+//            });
         }
         
     }

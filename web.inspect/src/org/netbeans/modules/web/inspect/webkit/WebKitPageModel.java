@@ -44,7 +44,6 @@ package org.netbeans.modules.web.inspect.webkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +51,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
@@ -354,30 +352,6 @@ public class WebKitPageModel extends PageModel {
         synchronized(WebKitPageModel.this) {
             return nodes.get(nodeId);
         }
-    }
-
-    @Override
-    public Map<String, String> getComputedStyle(ElementHandle element) {
-        // PENDING
-        return Collections.EMPTY_MAP;
-    }
-
-    @Override
-    public Collection<ResourceInfo> getResources() {
-        // PENDING
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<RuleInfo> getMatchedRules(ElementHandle element) {
-        // PENDING
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public void reloadResource(ResourceInfo resource) {
-        // PENDING
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

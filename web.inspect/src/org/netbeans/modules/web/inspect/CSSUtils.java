@@ -354,34 +354,6 @@ public class CSSUtils {
     }
 
     /**
-     * Returns selector for the specified element. The selector contains
-     * the ID, classes and tag name (optionally).
-     * 
-     * @param element element whose selector should be returned.
-     * @param includeTagName determines whether the tag name should be included.
-     * @return selector for the specified element.
-     */
-    public static String selectorFor(ElementHandle element, boolean includeTagName) {
-        StringBuilder sb = new StringBuilder();
-        if (includeTagName) {
-            sb.append(element.getTagName());
-        }
-        String id = element.getID();
-        if (id != null) {
-            sb.append('#').append(id);
-        }
-        String className = element.getClassName();
-        if (className != null && !className.trim().isEmpty()) {
-            StringTokenizer st = new StringTokenizer(className, " \t\n\r\f,"); // NOI18N
-            while (st.hasMoreTokens()) {
-                String clazz = st.nextToken();
-                sb.append('.').append(clazz);
-            }
-        }
-        return sb.toString();
-    }
-
-    /**
      * Opens the specified file at the given offset. This method has been
      * copied (with minor modifications) from UiUtils class in csl.api module.
      * This method is not CSS-specific. It was placed into this file just
