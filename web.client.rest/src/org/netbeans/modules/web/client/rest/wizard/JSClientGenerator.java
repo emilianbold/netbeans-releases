@@ -125,6 +125,13 @@ class JSClientGenerator {
         Map<String,String> result = new HashMap<String, String>();
         myModels = new StringBuilder();        
         myRouters = new StringBuilder();
+        myContent = new StringBuilder();
+        myHeader =  new StringBuilder();
+        mySidebar = new StringBuilder();
+        myTmplCreate = new StringBuilder();
+        myTmplList = new StringBuilder();;
+        myTmplDetails = new StringBuilder();
+        
         JavaSource javaSource = JavaSource.forFileObject( restSource);
         final String restClass = myDescription.getClassName();
         Task<CompilationController> task = new Task<CompilationController>(){
@@ -192,13 +199,12 @@ class JSClientGenerator {
         }
         result.put("models",myModels.toString());           // NOI18N 
         result.put("routers", myRouters.toString());        // NOI18N 
-        //TODO : fill other template attributes
-        result.put("header", "");
-        result.put("sidebar", "");
-        result.put("content", "");
-        result.put("tpl_create", "");
-        result.put("tpl_list_item", "");
-        result.put("tpl_details", "");
+        result.put("header", myHeader.toString());          // NOI18N 
+        result.put("sidebar", mySidebar.toString());        // NOI18N 
+        result.put("content", myContent.toString());        // NOI18N 
+        result.put("tpl_create", myTmplCreate.toString());  // NOI18N 
+        result.put("tpl_list_item", myTmplList.toString()); // NOI18N 
+        result.put("tpl_details", myTmplDetails.toString());// NOI18N 
         
         return result;
     }
@@ -423,9 +429,9 @@ class JSClientGenerator {
             ModelGenerator modelGenerator )
     {
         if ( myModelsCount >0 ){
-            myRouters.append("/*");                                       // NOI18N
+            myRouters.append("/*");                                 // NOI18N
         }
-        String name = "AppRouter";                                        // NOI18N
+        String name = "AppRouter";                                  // NOI18N
         if ( myModelsCount >0 ){
             name = name +myModelsCount;                              
         }
@@ -433,8 +439,56 @@ class JSClientGenerator {
         generator.generateRouter(entity, path, collectionPath, httpPaths, useIds, 
                 controller, modelGenerator );
         
-        if ( myModelsCount >0 ){
-            myRouters.append("*/"); 
+        if ( myModelsCount == 0 ){
+            // Create HTML "view" for header identifier 
+            myHeader.append("<div id='");                           // NOI18N
+            myHeader.append(generator.getHeaderId());
+            myHeader.append("'></div>\n");                          // NOI18N
+            
+            if ( generator.getSideBarId()!= null) {
+                // Create HTML "view" for sidebar identifier
+                mySidebar.append("<div id='");                      // NOI18N
+                mySidebar.append(generator.getSideBarId());
+                mySidebar.append("'></div>\n");                     // NOI18N
+            }
+            
+            // Create HTML "view" for content identifier
+            myContent.append("<div id='");                          // NOI18N
+            myContent.append(generator.getContentId());
+            myContent.append("'></div>\n");                         // NOI18N
+            
+            if ( generator.getCreateTemplate()!= null){
+                // Create HTML "view" for "create new item" template
+                myTmplCreate.append("<script type='text/template' id='");               // NOI18N
+                myTmplCreate.append(generator.getCreateTemplate());
+                myTmplCreate.append("'>\n");                                            // NOI18N
+                myTmplCreate.append("<!--\n");                                          // NOI18N
+                myTmplCreate.append("\tPut your controls to create new entity here.\n");// NOI18N
+                myTmplCreate.append("\tClass 'new' is used to listen on events in JS code.\n");// NOI18N
+                myTmplCreate.append("-->\n");                                           // NOI18N
+                myTmplCreate.append("<button class='new'>Create</button>\n");           // NOI18N
+                myTmplCreate.append("</script>\n");                                     // NOI18N
+            }
+            
+            if ( generator.getListItemTemplate()!= null){
+                // Create HTML "view" for list item
+                myTmplList.append("<script type='text/template' id='");                 // NOI18N
+                myTmplList.append(generator.getListItemTemplate());
+                myTmplList.append("'>\n");                                              // NOI18N
+                myTmplList.append("<!-- modify output display name for item here");     // NOI18N
+                myTmplList.append(" or change displayName in the JS model code -->\n"); // NOI18N
+                myTmplList.append("<a href='#<%= ");                                    // NOI18N
+                myTmplList.append(modelGenerator.getIdAttribute().getName());
+                myTmplList.append(" %>'><%= displayName %></a>\n");                     // NOI18N
+                myTmplList.append("</script>\n");                                       // NOI18N
+            }
+            
+            if ( generator.getDetailsTemplate()!= null){
+                // Create HTML "view" for details of chosen item
+            }
+        }
+        else {
+            myRouters.append("*/");                                 // NOI18N
         }
         myModelsCount++;
     }
@@ -593,6 +647,12 @@ class JSClientGenerator {
     private RestServiceDescription myDescription;
     private StringBuilder myModels;
     private StringBuilder myRouters;
+    private StringBuilder myHeader;
+    private StringBuilder myContent;
+    private StringBuilder mySidebar;
+    private StringBuilder myTmplCreate;
+    private StringBuilder myTmplList;
+    private StringBuilder myTmplDetails;
     private Set<String> myEntities  = new HashSet<String>();
     private boolean isModelGenerated;
     private int myModelsCount;

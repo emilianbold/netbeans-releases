@@ -114,7 +114,7 @@ class ModelGenerator {
         myCommonModels.append( url );
         myCommonModels.append("\"");                                 // NOI18N
         myAttributes = new HashSet<ModelAttribute>();
-        String parsedData = parse(entity, myAttributes , controller);
+        String parsedData = parse(entity, controller);
         if ( parsedData != null ){
             myCommonModels.append(',');                              
             myCommonModels.append(parsedData);
@@ -126,13 +126,11 @@ class ModelGenerator {
             if ( myAttributes.contains( preffered )){
                 myDisplayNameAlias = preffered.getName();
             }
+            else if ( myIdAttribute == null){
+                myDisplayNameAlias = myAttributes.iterator().next().getName();
+            }
             else {
-                for( ModelAttribute attr : myAttributes ){
-                    myDisplayNameAlias = attr.getName();
-                    if ( attr.isId() ){
-                        break;
-                    }
-                }
+                myDisplayNameAlias = myIdAttribute.getName();
             }
             myCommonModels.append(",\n initialize: function(){\n");      // NOI18N
             myCommonModels.append("// displayName property is used to render item in the list\n");// NOI18N
@@ -239,8 +237,7 @@ class ModelGenerator {
         return name;
     }
     
-    private String parse( TypeElement entity, Set<ModelAttribute> set,
-            CompilationController controller ) 
+    private String parse( TypeElement entity, CompilationController controller ) 
     {
         /*
          *  parse entity and generate attributes:
@@ -271,13 +268,14 @@ class ModelGenerator {
             if ( attributes.size() >0 ){
                 builder.append(',');                                  
             }
-            set.add( new ModelAttribute(true, idAttr));
+            myIdAttribute = new ModelAttribute(idAttr);
+            myAttributes.add( myIdAttribute);
         }
         
         if (attributes.size() > 0) {
             builder.append("\ndefaults: {");                            // NOI18N
             for (String attribute : attributes) {
-                set.add( new ModelAttribute(attribute));
+                myAttributes.add( new ModelAttribute(attribute));
                 builder.append("\n");                                   // NOI18N
                 builder.append(attribute);
                 builder.append(": \"\",");                              // NOI18N
@@ -492,6 +490,10 @@ class ModelGenerator {
         return myCollectionModelName;
     }
     
+    ModelAttribute getIdAttribute(){
+        return myIdAttribute;
+    }
+    
     private StringBuilder myCommonModels;
     private RestServiceDescription myDescription;
     private Set<String> myEntities ;
@@ -499,4 +501,5 @@ class ModelGenerator {
     private String myDisplayNameAlias;
     private String myModelName;
     private String myCollectionModelName;
+    private ModelAttribute myIdAttribute;
 }
