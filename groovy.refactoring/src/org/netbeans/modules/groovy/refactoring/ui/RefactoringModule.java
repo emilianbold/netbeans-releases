@@ -39,45 +39,58 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.annotations.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+package org.netbeans.modules.groovy.refactoring.ui;
+
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
+ * Module installation class for Refactoring module.
+ * Copied from Java Refactoring module because it isn't a part of public API.
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Jan Becicka
+ * @author Pavel Flaska
  */
-public class ApiGenAnnotationLineParser implements AnnotationLineParser {
+public final class RefactoringModule {
 
-    private static final AnnotationLineParser INSTANCE = new ApiGenAnnotationLineParser();
+    /** Holds the file objects whose attributes represents options */
+    private static Preferences preferences = NbPreferences.forModule(RefactoringModule.class);
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ThrowsLineParser());
-        PARSERS.add(new SeeLineParser());
+    /**
+     * Gets the attribute of options fileobject. Attribute name is represented
+     * by key parameter. If attribute value is not found, defaultValue parameter
+     * is used in method return.
+     *
+     * @param  key           key whose associated value is to be returned.
+     * @param  defaultValue  value used when attribute is not found
+     *
+     * @return attribute value or defaultValue if attribute is not found
+     */
+    public static boolean getOption(String key, boolean defaultValue) {
+        return preferences.getBoolean(key, defaultValue);
     }
 
-    private ApiGenAnnotationLineParser() {
+    /**
+     * Sets the attribute to options fileobject. This attribute is persitent
+     * and allows to re-read it when IDE is restarted. Key and value pair
+     * is used in the same way as Map works.
+     *
+     * @param key    key with which the specified value is to be associated.
+     * @param value  value to be associated with the specified key.
+     */
+    public static void setOption(String key, boolean value) {
+        preferences.putBoolean(key, value);
     }
 
-    @AnnotationLineParser.Registration(position=100)
-    public static AnnotationLineParser getInstance() {
-        return INSTANCE;
+    public static void setOption(String key, int value) {
+        preferences.putInt(key, value);
     }
 
-    @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    public static int getOption(String key, int defaultValue) {
+        return preferences.getInt(key, defaultValue);
     }
 
+    private RefactoringModule() {
+    }
 }

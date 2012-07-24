@@ -39,45 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.annotations.parser;
+package org.netbeans.modules.php.apigen.annotations;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ApiGenAnnotationLineParser implements AnnotationLineParser {
+public class ThrowsTag extends AnnotationCompletionTag {
 
-    private static final AnnotationLineParser INSTANCE = new ApiGenAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ThrowsLineParser());
-        PARSERS.add(new SeeLineParser());
-    }
-
-    private ApiGenAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=100)
-    public static AnnotationLineParser getInstance() {
-        return INSTANCE;
-    }
-
-    @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    public ThrowsTag() {
+        super("throws", "@throws ${Exception}", //NOI18N
+                NbBundle.getMessage(ThrowsTag.class, "ThrowsTag.documentation"));
     }
 
 }

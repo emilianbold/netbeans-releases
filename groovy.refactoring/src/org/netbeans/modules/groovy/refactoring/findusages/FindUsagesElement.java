@@ -39,45 +39,72 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.annotations.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+package org.netbeans.modules.groovy.refactoring.findusages;
+
+import javax.swing.text.Position;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.Line;
+import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Janicek
  */
-public class ApiGenAnnotationLineParser implements AnnotationLineParser {
+public class FindUsagesElement extends SimpleRefactoringElementImplementation {
 
-    private static final AnnotationLineParser INSTANCE = new ApiGenAnnotationLineParser();
+    private final GroovyRefactoringElement element;
+    private final BaseDocument doc;
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ThrowsLineParser());
-        PARSERS.add(new SeeLineParser());
-    }
-
-    private ApiGenAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=100)
-    public static AnnotationLineParser getInstance() {
-        return INSTANCE;
+    public FindUsagesElement(GroovyRefactoringElement element, BaseDocument doc) {
+        this.element = element;
+        this.doc = doc;
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    public String getText() {
+        return element.getName() + " -";
     }
 
+    @Override
+    public String getDisplayText() {
+        Line line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
+        return line.getText().trim();
+    }
+
+    @Override
+    public void performChange() {
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
+
+    @Override
+    public FileObject getParentFile() {
+        return element.getFileObject();
+    }
+
+    @Override
+    public PositionBounds getPosition() {
+        OffsetRange range = AstUtilities.getRange(element.getNode(), doc);
+        if (range == OffsetRange.NONE) {
+            return null;
+        }
+
+        CloneableEditorSupport ces = GroovyProjectUtil.findCloneableEditorSupport(element.getFileObject());
+        PositionRef ref1 = ces.createPositionRef(range.getStart(), Position.Bias.Forward);
+        PositionRef ref2 = ces.createPositionRef(range.getEnd(), Position.Bias.Forward);
+        return new PositionBounds(ref1, ref2);
+    }
 }

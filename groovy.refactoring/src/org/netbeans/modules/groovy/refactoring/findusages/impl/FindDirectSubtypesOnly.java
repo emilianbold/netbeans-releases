@@ -39,45 +39,46 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.annotations.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+package org.netbeans.modules.groovy.refactoring.findusages.impl;
+
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
+ * Find only direct subtypes for the given declaration class.
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Janicek
  */
-public class ApiGenAnnotationLineParser implements AnnotationLineParser {
+public class FindDirectSubtypesOnly extends AbstractFindUsages {
 
-    private static final AnnotationLineParser INSTANCE = new ApiGenAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ThrowsLineParser());
-        PARSERS.add(new SeeLineParser());
-    }
-
-    private ApiGenAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=100)
-    public static AnnotationLineParser getInstance() {
-        return INSTANCE;
+    public FindDirectSubtypesOnly(GroovyRefactoringElement element) {
+        super(element);
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    protected AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String defClass) {
+        return new FindDirectSubtypesOnlyVisitor(moduleNode, defClass);
     }
 
+
+    private class FindDirectSubtypesOnlyVisitor extends AbstractFindUsagesVisitor {
+
+        private final String findingFqn;
+
+        
+        public FindDirectSubtypesOnlyVisitor(ModuleNode moduleNode, String findingFqn) {
+            super(moduleNode);
+            this.findingFqn = findingFqn;
+        }
+
+        @Override
+        public void visitClass(ClassNode node) {
+            if (findingFqn.equals(node.getSuperClass().getName())) {
+                usages.add(node);
+            }
+            super.visitClass(node);
+        }
+    }
 }

@@ -39,45 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.annotations.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+package org.netbeans.modules.groovy.refactoring.findusages.impl;
+
+import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Janicek
  */
-public class ApiGenAnnotationLineParser implements AnnotationLineParser {
+public class FindMethodUsages extends AbstractFindUsages {
 
-    private static final AnnotationLineParser INSTANCE = new ApiGenAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ThrowsLineParser());
-        PARSERS.add(new SeeLineParser());
-    }
-
-    private ApiGenAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=100)
-    public static AnnotationLineParser getInstance() {
-        return INSTANCE;
+    public FindMethodUsages(GroovyRefactoringElement element) {
+        super(element);
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    protected AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String defClass) {
+        return new FindMethodUsagesVisitor(moduleNode, element.getDeclaratingClassName(), element.getName());
     }
+    
 
+    private class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
+
+        private final String declaringClass;
+        private final String findingMethod;
+
+
+        public FindMethodUsagesVisitor(ModuleNode moduleNode, String declaringClass, String findingMethod) {
+           super(moduleNode);
+           this.declaringClass = declaringClass;
+           this.findingMethod = findingMethod;
+        }
+
+        @Override
+        public void visitMethodCallExpression(MethodCallExpression methodCall) {
+            if (declaringClass.equals(methodCall.getDeclaringClass().getName()) &&
+                findingMethod.equals(methodCall.getMethodAsString())) {
+                
+                usages.add(methodCall);
+            }
+            super.visitMethodCallExpression(methodCall);
+        }
+    }
 }

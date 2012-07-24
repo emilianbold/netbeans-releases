@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,50 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.annotations.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+package org.netbeans.modules.groovy.refactoring;
+
+import java.util.Collection;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Janicek
  */
-public class ApiGenAnnotationLineParser implements AnnotationLineParser {
+@ServiceProvider(service = ActionsImplementationProvider.class, position=100)
+public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
-    private static final AnnotationLineParser INSTANCE = new ApiGenAnnotationLineParser();
+    @Override
+    public boolean canFindUsages(Lookup lookup) {
+        /*Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ThrowsLineParser());
-        PARSERS.add(new SeeLineParser());
-    }
+        Node node = nodes.iterator().next();
+        DataObject dob = node.getLookup().lookup(DataObject.class);
+        if (dob == null) {
+            return false;
+        }
 
-    private ApiGenAnnotationLineParser() {
-    }
+        FileObject fo = dob.getPrimaryFile();
 
-    @AnnotationLineParser.Registration(position=100)
-    public static AnnotationLineParser getInstance() {
-        return INSTANCE;
+        if ((dob!=null) && GroovyProjectUtil.isGroovyFile(fo)) {
+            return true;
+        }*/
+        return false;
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    public void doFindUsages(Lookup lookup) {
+        RefactoringTask.createRefactoringTask(lookup).run();
     }
-
 }
