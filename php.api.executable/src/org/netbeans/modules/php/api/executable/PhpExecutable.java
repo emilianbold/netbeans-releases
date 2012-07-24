@@ -135,7 +135,8 @@ public final class PhpExecutable {
     private Map<String, String> environmentVariables = Collections.<String, String>emptyMap();
     private PhpExecutableValidator.ValidationHandler validationHandler = null;
     private File fileOutput = null;
-    private boolean pureOutputOnly = false;
+    private boolean fileOutputOnly = false;
+    private boolean noInfo = false;
 
 
     /**
@@ -331,31 +332,33 @@ public final class PhpExecutable {
     }
 
     /**
-     * Set file for executable output; if set, {@link #pureOutputOnly pure output} is set as well.
+     * Set file for executable output; also set whether only output to file should be used (no Output window).
      * <p>
-     * The default value is {@code null} (it means no output is stored).
+     * The default value is {@code null} and {@code false} (it means no output is stored to any file
+     * and info is printed in Output window).
      * @param fileOutput file for executable output
+     * @param fileOutputOnly {@code true} for only file output, {@code false} otherwise
      * @return the PHP Executable instance itself
-     * @see #pureOutputOnly(boolean)
+     * @see #noInfo(boolean)
+     * @since 0.3
      */
-    public PhpExecutable fileOutput(@NonNull File fileOutput) {
+    public PhpExecutable fileOutput(@NonNull File fileOutput, boolean fileOutputOnly) {
         Parameters.notNull("fileOutput", fileOutput); // NOI18N
         this.fileOutput = fileOutput;
-        this.pureOutputOnly = true;
+        this.fileOutputOnly = fileOutputOnly;
         return this;
     }
 
     /**
-     * Set pure output only. If Output window is used, no info about this executable is printed. If
-     * {@link #fileOutput file output} is set, it means that no Output window will be used.
+     * Set no information. If Output window is used, no info about this executable is printed.
      * <p>
      * The default value is {@code false} (it means print info about this executable).
-     * @param fileOutput file for executable output
+     * @param noInfo {@code true} for pure output only (no info about executable)
      * @return the PHP Executable instance itself
-     * @see #fileOutput(File)
+     * @since 0.3
      */
-    public PhpExecutable pureOutputOnly(boolean pureOutputOnly) {
-        this.pureOutputOnly = pureOutputOnly;
+    public PhpExecutable noInfo(boolean noInfo) {
+        this.noInfo = noInfo;
         return this;
     }
 
@@ -606,10 +609,11 @@ public final class PhpExecutable {
         ExecutionDescriptor.InputProcessorFactory fileOutProcessorFactory = getFileOutputProcessorFactory();
         if (fileOutProcessorFactory != null) {
             inputProcessors.add(fileOutProcessorFactory);
-            if (pureOutputOnly) {
+            if (fileOutputOnly) {
                 executionDescriptor = executionDescriptor
                         .inputOutput(InputOutput.NULL)
-                        .frontWindow(false);
+                        .frontWindow(false)
+                        .frontWindowOnError(false);
             }
         }
         if (outProcessorFactory != null) {
@@ -631,8 +635,8 @@ public final class PhpExecutable {
     }
 
     private ExecutionDescriptor.InputProcessorFactory getInfoOutputProcessorFactory() {
-        if (fileOutput != null || pureOutputOnly) {
-            // no info for file or pure output
+        if (noInfo) {
+            // no info
             return null;
         }
         return new ExecutionDescriptor.InputProcessorFactory() {

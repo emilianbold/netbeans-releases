@@ -40,97 +40,15 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.deprecated;
+package org.netbeans.modules.php.api.executable;
 
-import org.netbeans.modules.php.project.deprecated.PhpInterpreter;
 import java.util.regex.Matcher;
 import org.netbeans.junit.NbTestCase;
-import static org.junit.Assert.*;
 
-/**
- * @author Tomas Mysik
- */
 public class PhpInterpreterTest extends NbTestCase {
 
     public PhpInterpreterTest(String name) {
         super(name);
-    }
-
-    public void testPhpInterpreter1() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter(null);
-        assertEquals("", phpInterpreter.getProgram());
-        assertEquals("", phpInterpreter.getFullCommand());
-        assertEquals(0, phpInterpreter.getParameters().length);
-
-        phpInterpreter = new PhpInterpreter("");
-        assertEquals("", phpInterpreter.getProgram());
-        assertEquals("", phpInterpreter.getFullCommand());
-        assertEquals(0, phpInterpreter.getParameters().length);
-    }
-
-    public void testPhpInterpreter2() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php");
-        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getProgram());
-        assertEquals(0, phpInterpreter.getParameters().length);
-    }
-
-    public void testPhpInterpreter3() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php /q");
-        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getProgram());
-        String[] parameters = phpInterpreter.getParameters();
-        assertEquals(1, parameters.length);
-        assertEquals("/q", parameters[0]);
-    }
-
-    public void testPhpInterpreter4() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program Files\\php\\bin\\php    -q     ");
-        assertEquals("C:\\Program Files\\php\\bin\\php", phpInterpreter.getProgram());
-        String[] parameters = phpInterpreter.getParameters();
-        assertEquals(1, parameters.length);
-        assertEquals("-q", parameters[0]);
-    }
-
-    public void testPhpInterpreter5() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter("C:\\Program-Files\\php\\bin\\php   -q    -a");
-        assertEquals("C:\\Program-Files\\php\\bin\\php", phpInterpreter.getProgram());
-        String[] parameters = phpInterpreter.getParameters();
-        assertEquals(2, parameters.length);
-        assertEquals("-q", parameters[0]);
-        assertEquals("-a", parameters[1]);
-    }
-
-    public void testPhpInterpreter6() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/php");
-        assertEquals("/usr/bin/php", phpInterpreter.getProgram());
-        assertEquals(0, phpInterpreter.getParameters().length);
-    }
-
-    public void testPhpInterpreter7() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/php -q");
-        assertEquals("/usr/bin/php", phpInterpreter.getProgram());
-        String[] parameters = phpInterpreter.getParameters();
-        assertEquals(1, parameters.length);
-        assertEquals("-q", parameters[0]);
-    }
-
-    public void testPhpInterpreter8() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/b-i-n/php -q -a");
-        assertEquals("/usr/b-i-n/php", phpInterpreter.getProgram());
-        String[] parameters = phpInterpreter.getParameters();
-        assertEquals(2, parameters.length);
-        assertEquals("-q", parameters[0]);
-        assertEquals("-a", parameters[1]);
-    }
-
-    public void testPhpInterpreter9() {
-        PhpInterpreter phpInterpreter = new PhpInterpreter("/usr/bin/phpunit --repeat 3   \"--repeat 3\"  MyTest   ");
-        assertEquals("/usr/bin/phpunit", phpInterpreter.getProgram());
-        String[] parameters = phpInterpreter.getParameters();
-        assertEquals(4, parameters.length);
-        assertEquals("--repeat", parameters[0]);
-        assertEquals("3", parameters[1]);
-        assertEquals("--repeat 3", parameters[2]);
-        assertEquals("MyTest", parameters[3]);
     }
 
     public void testLinePattern0() {
@@ -154,4 +72,5 @@ public class PhpInterpreterTest extends NbTestCase {
 
         assertFalse(PhpInterpreter.LINE_PATTERNS[1].matcher("").matches());
     }
+
 }

@@ -180,7 +180,6 @@ public final class ZendScript {
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .displayName(getDisplayName(phpModule, parameters.get(0)))
                 .additionalParameters(allParameters)
-                .pureOutputOnly(true)
                 .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         if (result == null) {
             // some error
@@ -261,7 +260,6 @@ public final class ZendScript {
         Future<Integer> task = createPhpExecutable()
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .additionalParameters(SHOW_COMMANDS_COMMAND)
-                .pureOutputOnly(true)
                 .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
             if (task != null && task.get().intValue() == 0) {
