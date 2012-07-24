@@ -51,9 +51,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
+import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
@@ -480,6 +482,20 @@ public class WebKitPageModel extends PageModel {
             }
         }
         return result;
+    }
+
+    @Override
+    public JComponent getCSSStylesView() {
+        if (!Boolean.getBoolean("org.netbeans.modules.web.inspect.showCSSStyles")) {
+            javax.swing.JLabel label = new javax.swing.JLabel("Coming soon ...");
+            label.setBackground(java.awt.Color.WHITE);
+            label.setEnabled(false);
+            label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            label.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+            label.setOpaque(true);
+            return label;
+        }
+        return CSSStylesPanel.getDefault();
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {

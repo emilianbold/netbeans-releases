@@ -47,6 +47,7 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.json.simple.JSONArray;
@@ -322,6 +323,11 @@ public class PageModelImpl extends PageModel {
 
     @Override
     public boolean isSelectionMode() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public JComponent getCSSStylesView() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
