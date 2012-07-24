@@ -40,29 +40,25 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.findusages;
+package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import java.util.HashSet;
 import java.util.Set;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
 
 /**
  *
  * @author Martin Janicek
  */
-public class FindUsagesVisitor extends ClassCodeVisitorSupport {
+public abstract class AbstractFindUsagesVisitor extends ClassCodeVisitorSupport {
 
-    private final ModuleNode moduleNode;
-    private final String findingFqn;
-    private final Set<ASTNode> usages;
+    protected final ModuleNode moduleNode;
+    protected final Set<ASTNode> usages;
 
-    
-    public FindUsagesVisitor(ModuleNode moduleNode, String findingFqn) {
+
+    public AbstractFindUsagesVisitor(ModuleNode moduleNode) {
         this.moduleNode = moduleNode;
-        this.findingFqn = findingFqn;
         this.usages = new HashSet<ASTNode>();
     }
 
@@ -76,30 +72,5 @@ public class FindUsagesVisitor extends ClassCodeVisitorSupport {
     @Override
     protected SourceUnit getSourceUnit() {
         return moduleNode.getContext();
-    }
-
-    @Override
-    public void visitDeclarationExpression(DeclarationExpression expression) {
-        VariableExpression variable = expression.getVariableExpression();
-        if (findingFqn.equals(variable.getType().getName())) {
-            usages.add(variable);
-        }
-        super.visitDeclarationExpression(expression);
-    }
-
-    @Override
-    public void visitField(FieldNode field) {
-        if (findingFqn.equals(field.getType().getName())) {
-            usages.add(field);
-        }
-        super.visitField(field);
-    }
-
-    @Override
-    public void visitProperty(PropertyNode property) {
-        if (findingFqn.equals(property.getType().getName())) {
-            usages.add(property);
-        }
-        super.visitProperty(property);
     }
 }
