@@ -8,9 +8,6 @@
                 <attribute name="Bundle-SymbolicName" value="org.eclipse.mylyn.commons.workbench;singleton:=true"/>
                 <attribute name="Bundle-Version" value="3.7.1"/>
                 <attribute 
-                    name="Require-Bundle" 
-                    value="org.eclipse.mylyn.tasks.ui;bundle-version=&quot;[3.0.0,4.0.0)&quot;"/>
-                <attribute 
                     name="Export-Package" 
                     value="org.eclipse.mylyn.commons.workbench"/>
             </manifest>
