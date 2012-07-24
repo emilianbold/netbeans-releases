@@ -131,13 +131,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
+    private final boolean publicLocation;
 
-    public ConfigurationXMLCodec(String tag,
-            FileObject projectDirectory,
-            MakeConfigurationDescriptor projectDescriptor,
-            String relativeOffset) {
-        super(projectDescriptor, true, false);
+    public ConfigurationXMLCodec(String tag, boolean shared, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
+        super(projectDescriptor, shared, false);
         this.tag = tag;
+        this.publicLocation = shared;
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
         this.remoteProject = projectDescriptor.getProject().getLookup().lookup(RemoteProject.class);
@@ -220,7 +219,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             ConfigurationAuxObject[] profileAuxObjects = currentConf.getAuxObjects();
             decoders = new ArrayList<XMLDecoder>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
-                if (profileAuxObjects[i].shared()) {
+                if (profileAuxObjects[i].shared() == publicLocation) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
                     registerXMLDecoder(newDecoder);
                     decoders.add(newDecoder);
