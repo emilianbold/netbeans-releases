@@ -61,11 +61,6 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.tasks.ui</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.springframework.web</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
