@@ -42,8 +42,11 @@
 package org.netbeans.modules.php.apigen.annotations.parser;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -51,14 +54,16 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class ThrowsLineParser implements AnnotationLineParser {
-
-    static final String ANNOTATION_NAME = "throws"; //NOI18N
+class SeeLineParser implements AnnotationLineParser {
+    static String ANNOTATION_NAME = "see"; //NOI18N
+    private static final String HTTP_PREFIX = "http://"; //NOI18N
+    private static final String DELIMITER = " ";
+    private static final char SCOPE_OPERATOR_PART = ':';
     private String line;
     private String[] tokens;
 
     @Override
-    public AnnotationParsedLine parse(final String line) {
+    public AnnotationParsedLine parse(String line) {
         this.line = line;
         AnnotationParsedLine result = null;
         tokens = line.split("[ \t]+"); //NOI18N
@@ -72,12 +77,28 @@ class ThrowsLineParser implements AnnotationLineParser {
         String description = "";
         Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
         if (tokens.length > 1) {
-            description = tokens[1];
+            description = createDescription();
+            types = fetchTypes(description);
+        }
+        return new SeeParsedLine(description, types);
+    }
+
+    private String createDescription() {
+        List<String> descriptionTokens = new LinkedList<String>();
+        for (int i = 1; i < tokens.length; i++) {
+            descriptionTokens.add(tokens[i]);
+        }
+        return StringUtils.implode(descriptionTokens, DELIMITER);
+    }
+
+    private Map<OffsetRange, String> fetchTypes(final String description) {
+        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        if (!description.startsWith(HTTP_PREFIX)) {
             int start = ANNOTATION_NAME.length() + countSpacesToFirstNonWhitespace(line.substring(ANNOTATION_NAME.length()));
-            int end = start + description.length();
+            int end = start + countTypeLength(description);
             types.put(new OffsetRange(start, end), line.substring(start, end));
         }
-        return new ThrowsParsedLine(description, types);
+        return types;
     }
 
     private static int countSpacesToFirstNonWhitespace(final String line) {
@@ -88,6 +109,18 @@ class ThrowsLineParser implements AnnotationLineParser {
             } else {
                 break;
             }
+        }
+        return result;
+    }
+
+    private static int countTypeLength(final String line) {
+        int result = 0;
+        for (int i = 0; i < line.length(); i++) {
+            char ch = line.charAt(i);
+            if (Character.isWhitespace(ch) || ch == SCOPE_OPERATOR_PART) {
+                break;
+            }
+            result++;
         }
         return result;
     }

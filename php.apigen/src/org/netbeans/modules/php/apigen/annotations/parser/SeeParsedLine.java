@@ -41,43 +41,40 @@
  */
 package org.netbeans.modules.php.apigen.annotations.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ApiGenAnnotationLineParser implements AnnotationLineParser {
+public class SeeParsedLine implements AnnotationParsedLine {
+    private final String description;
+    private final Map<OffsetRange, String> types;
 
-    private static final AnnotationLineParser INSTANCE = new ApiGenAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ThrowsLineParser());
-        PARSERS.add(new SeeLineParser());
-    }
-
-    private ApiGenAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=100)
-    public static AnnotationLineParser getInstance() {
-        return INSTANCE;
+    public SeeParsedLine(final String description, final Map<OffsetRange, String> types) {
+        Parameters.notNull("description", types);
+        Parameters.notNull("types", types);
+        this.description = description;
+        this.types = types;
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    public String getName() {
+        return SeeLineParser.ANNOTATION_NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return new HashMap<OffsetRange, String>(types);
     }
 
 }
