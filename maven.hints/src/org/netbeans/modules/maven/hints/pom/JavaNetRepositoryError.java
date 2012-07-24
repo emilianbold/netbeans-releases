@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import static org.netbeans.modules.maven.hints.pom.Bundle.*;
@@ -71,17 +72,16 @@ import org.openide.util.NbBundle;
  * @author mkleint
  */
 public class JavaNetRepositoryError implements POMErrorFixProvider {
+    static final String PROP_SELECTED = "selectedOnly";
+    static final String PROP_URLS = "urls";
+    
+    static final String DEFAULT_URLS = "http://download.java.net/maven/2/ http://download.java.net/maven/1/";
+    
     private Configuration configuration;
-    private static final Set<String> forbidden; 
-    static{
-        forbidden = new HashSet<String>();
-        forbidden.add("http://download.java.net/maven/2/");
-        forbidden.add("http://download.java.net/maven/1/");
-    }
 
     @NbBundle.Messages({
-        "TIT_JavaNetRepositoryError=Uses java.net repository",
-        "DESC_JavaNetRepositoryError=References the deprecated java.net repository which was merged into central."
+        "TIT_JavaNetRepositoryError=Uses blacklisted repository",
+        "DESC_JavaNetRepositoryError=Use of blacklisted repositories, repositories merged into central like java.net repositories or repositories that should not be used because they contain wrong artifacts etc."
     })
     public JavaNetRepositoryError() {
         configuration = new Configuration("JavaNetRepositoryError", //NOI18N
@@ -111,23 +111,27 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
         return toRet;
 
     }
-    @NbBundle.Messages("TXT_UsesJavanetRepository=References an obsolete repository at java.net")
+    @NbBundle.Messages("TXT_UsesJavanetRepository=References a blacklisted repository")
     private void checkRepositoryList( List<Repository> repositories, POMModel model, RepositoryContainer container, boolean isPlugin, List<ErrorDescription> toRet) {
         if (repositories != null) {
+            boolean justSelected = configuration.getPreferences().getBoolean(PROP_SELECTED, true);
+            Set<String> forbidden = getForbidden();
             for (Repository rep : repositories) {
                 String url = rep.getUrl();
                 if (url != null) {
                     if (!url.endsWith("/")) {
                         url = url + "/"; //just to make queries consistent
                     }
-                    if (forbidden.contains(url)) {
+                    if (!justSelected || forbidden.contains(url)) {
                         int position = rep.findChildElementPosition(model.getPOMQNames().URL.getQName());
                         Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
+                        OverrideFix basefix = new OverrideFix(rep, container, isPlugin);
                         toRet.add(ErrorDescriptionFactory.createErrorDescription(
-                                       configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
-                                TXT_UsesJavanetRepository(),
-                                Collections.<Fix>singletonList(new OverrideFix(rep, container, isPlugin)),
-                                model.getBaseDocument(), line.getLineNumber() + 1));
+                                                        configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
+                                                 TXT_UsesJavanetRepository(),
+                                                 Collections.<Fix>singletonList(ErrorDescriptionFactory.attachSubfixes(basefix, Collections.singletonList(new Configure(configuration)))),
+                                                 model.getBaseDocument(), line.getLineNumber() + 1));
+                        
                     }
                 }
             }
@@ -137,12 +141,25 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
 
     @Override
     public JComponent getCustomizer(Preferences preferences) {
-        return null;
+        return new JavaNetRepositoryErrorCustomizer(preferences);
     }
 
     @Override
     public Configuration getConfiguration() {
         return configuration;
+    }
+
+    private Set<String> getForbidden() {
+        String urls = configuration.getPreferences().get(PROP_URLS, DEFAULT_URLS);
+        HashSet<String> toRet = new HashSet<String>();
+        for (String s : urls.split("([\\s])+")) {
+            s = s.trim();
+            if (!s.endsWith("/")) {
+                s = s + "/";
+            }
+            toRet.add(s);
+        }
+        return toRet;
     }
 
     private static class OverrideFix implements Fix, Runnable {
@@ -157,7 +174,7 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
         }
 
         @Override
-        @NbBundle.Messages("TEXT_UseJavanetRepository=Remove repository delegating to java.net")
+        @NbBundle.Messages("TEXT_UseJavanetRepository=Remove blacklisted repository declaration")
         public String getText() {
             return TEXT_UseJavanetRepository();
         }
@@ -181,6 +198,27 @@ public class JavaNetRepositoryError implements POMErrorFixProvider {
             PomModelUtils.implementInTransaction(mdl, this);
             return info;
         }
+    }
+    
+    @NbBundle.Messages("TXT_Configure=Configure \"{0}\" hint")
+    private static class Configure implements Fix {
+        private final Configuration config;
+
+        Configure(Configuration configuration) {
+            this.config = configuration;
+        }
+        
+        @Override
+        public String getText() {
+            return TXT_Configure(config.getDisplayName());
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            OptionsDisplayer.getDefault().open("Editor/Hints/text/x-maven-pom+xml/" + config.getId());
+            return new ChangeInfo();
+        }
+        
     }
 
 }
