@@ -289,11 +289,17 @@ public final class Debugger {
     }
     
     // TODO: this method is used only internally so far and it needs to be revisisted
-    public void addDOMBreakpoint(Node node, String type) {
+    public Breakpoint addDOMBreakpoint(Node node, String type) {
         JSONObject params = new JSONObject();
         params.put("nodeId", node.getNodeId());
         params.put("type", type);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setDOMBreakpoint", params));
+        if (resp != null) {
+            Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
+            currentBreakpoints.add(b);
+            return b;
+        }
+        return null;
     }
     
     public void removeDOMBreakpoint(Node node, String type) {

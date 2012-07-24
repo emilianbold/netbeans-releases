@@ -47,8 +47,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -56,7 +58,10 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint.Type;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.openide.util.RequestProcessor;
 
@@ -74,11 +79,13 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     private static final RequestProcessor RP = new RequestProcessor("Breakpoint updater");
     
     private final Debugger d;
+    private final WebKitDebugging wd;
     private final Map<AbstractBreakpoint, WebKitBreakpointManager> breakpointImpls =
             new HashMap<AbstractBreakpoint, WebKitBreakpointManager>();
     
     public BreakpointRuntimeSetter(ContextProvider lookupProvider) {
         d = lookupProvider.lookupFirst(null, Debugger.class);
+        wd = lookupProvider.lookupFirst(null, WebKitDebugging.class);
         DebuggerManager.getDebuggerManager().addDebuggerListener(this);
         createBreakpointImpls();
     }
@@ -104,6 +111,9 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     private WebKitBreakpointManager createWebKitBreakpointManager(AbstractBreakpoint ab) {
         if (ab instanceof LineBreakpoint) {
             return new WebKitLineBreakpointManager(d, (LineBreakpoint) ab);
+        }
+        if (ab instanceof DOMBreakpoint) {
+            return new WebKitDOMBreakpointManager(d, wd, (DOMBreakpoint) ab);
         }
         throw new IllegalArgumentException("Unknown breakpoint: "+ab);
     }
@@ -267,6 +277,48 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             }
             d.removeLineBreakpoint(b);
             b = null;
+        }
+    }
+
+    private static final class WebKitDOMBreakpointManager extends WebKitBreakpointManager {
+        
+        private final WebKitDebugging wd;
+        private final DOMBreakpoint db;
+        private Set<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint> bps;
+        
+        public WebKitDOMBreakpointManager(Debugger d, WebKitDebugging wd, DOMBreakpoint db) {
+            super(d, db);
+            this.wd = wd;
+            this.db = db;
+        }
+
+        @Override
+        public void add() {
+            if (bps != null) {
+                return ;
+            }
+            Node node = db.getNode();
+            Set<Type> types = db.getTypes();
+            if (types.isEmpty()) {
+                return ;
+            }
+            bps = new HashSet<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint>(types.size());
+            for (Type type : types) {
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
+                        d.addDOMBreakpoint(node, type.getTypeString());
+                bps.add(b);
+            }
+        }
+
+        @Override
+        public void remove() {
+            if (bps == null) {
+                return ;
+            }
+            for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps) {
+                d.removeLineBreakpoint(b);
+            }
+            bps = null;
         }
     }
 

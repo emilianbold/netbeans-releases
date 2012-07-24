@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.ControllerProvider;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.DOMBreakpointCustomizer;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.LineBreakpointCustomizer;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Controller;
@@ -77,11 +78,17 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
             throws UnknownTypeException 
     {
         Action[] actions = original.getActions(node);
-        if(node instanceof LineBreakpoint) {
+        if (node instanceof LineBreakpoint) {
             Action[] newActions = new Action [actions.length + 4];
             newActions [0] = GO_TO_SOURCE_ACTION;
             newActions [1] = null;
             System.arraycopy (actions, 0, newActions, 2, actions.length);
+            newActions [newActions.length - 2] = null;
+            newActions [newActions.length - 1] = CUSTOMIZE_ACTION;
+            actions = newActions;
+        } else if (node instanceof AbstractBreakpoint) {
+            Action[] newActions = new Action [actions.length + 2];
+            System.arraycopy (actions, 0, newActions, 0, actions.length);
             newActions [newActions.length - 2] = null;
             newActions [newActions.length - 1] = CUSTOMIZE_ACTION;
             actions = newActions;
@@ -113,6 +120,8 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
         JComponent c;
         if (ab instanceof LineBreakpoint) {
             c = new LineBreakpointCustomizer ((LineBreakpoint) ab);
+        } else if (ab instanceof DOMBreakpoint) {
+            c = new DOMBreakpointCustomizer((DOMBreakpoint) ab);
         } else {
             throw new IllegalArgumentException("Unknown breakpoint "+ab);
         }

@@ -92,24 +92,46 @@ public class BreakpointModel extends ViewModelSupport
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getDisplayName(java.lang.Object)
      */
+    @NbBundle.Messages({
+        "# {0} - The file name and line number",
+        "LBL_LineBreakpoint_on=Line {0}",
+        "# {0} - The name of the DOM node",
+        "# {1} - The type of modification, one more of the three listed below (comma separated)",
+        "LBL_DOMBreakpoint_on=DOM node {0} on modifications of: {1}",
+        "LBL_DOM_Subtree=subtree",
+        "LBL_DOM_Attributes=attributes",
+        "LBL_DOM_Removal=removal"
+    })
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node instanceof LineBreakpoint) {
             LineBreakpoint breakpoint = (LineBreakpoint)node;
             FileObject fileObject = breakpoint.getLine().getLookup().
                 lookup(FileObject.class);
-            return fileObject.getNameExt() + ":" + 
-                (breakpoint.getLine().getLineNumber() + 1);
+            return Bundle.LBL_LineBreakpoint_on(fileObject.getNameExt() + ":" + 
+                (breakpoint.getLine().getLineNumber() + 1));
         }
-        /*else if ( node instanceof FunctionBreakpoint ) {
-            FunctionBreakpoint breakpoint = (FunctionBreakpoint)node;
-            StringBuilder builder = new StringBuilder( 
-                    NbBundle.getMessage( BreakpointModel.class, METHOD ) );
-            builder.append( " ");
-            builder.append( breakpoint.getFunction() );
-            builder.append( PARENS );
-            return builder.toString() ;
-        }*/
+        if (node instanceof DOMBreakpoint) {
+            DOMBreakpoint breakpoint = (DOMBreakpoint) node;
+            String nodeName = breakpoint.getNode().getLocalName();
+            StringBuilder modifications = new StringBuilder();
+            if (breakpoint.isOnSubtreeModification()) {
+                modifications.append(Bundle.LBL_DOM_Subtree());
+            }
+            if (breakpoint.isOnAttributeModification()) {
+                if (modifications.length() > 0) {
+                    modifications.append(", ");
+                }
+                modifications.append(Bundle.LBL_DOM_Attributes());
+            }
+            if (breakpoint.isOnNodeRemoval()) {
+                if (modifications.length() > 0) {
+                    modifications.append(", ");
+                }
+                modifications.append(Bundle.LBL_DOM_Removal());
+            }
+            return Bundle.LBL_DOMBreakpoint_on(nodeName, modifications);
+        }
         throw new UnknownTypeException(node);
     }
 
