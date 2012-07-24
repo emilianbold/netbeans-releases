@@ -446,6 +446,7 @@ public class TopSecurityManager extends SecurityManager {
         wl.add("org.netbeans.core.output2.FileMapStorage");             //NOI18N
         wl.add("com.sun.tools.javac.util.CloseableURLClassLoader");     //NOI18N
         wl.add("java.lang.Thread$1");                                   //NOI18N
+        wl.add("org.apache.lucene.store.MMapDirectory$1");              //NOI18N
         return wl;
     }
     
