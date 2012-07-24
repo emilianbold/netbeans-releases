@@ -43,22 +43,16 @@
  */
 package org.openide.explorer.view;
 
-import org.openide.nodes.Node;
-
-import java.awt.Dialog;
 import java.awt.datatransfer.Transferable;
 import java.awt.dnd.*;
-
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-
 import java.util.TooManyListenersException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -153,16 +147,9 @@ abstract class ExplorerDragSupport implements DragSourceListener, DragGestureLis
 
             exDnD.setDraggedNodes(nodes);
 
-            Dialog d = (Dialog) SwingUtilities.getAncestorOfClass(Dialog.class, comp);
-
-            if ((d != null) && d.isModal()) {
-                exDnD.setDnDActive(false);
-
-                return;
-            } else {
-                exDnD.setDnDActive(true);
-                dge.startDrag(null, transferable, this);
-            }
+            exDnD.setDnDActive(true);
+            dge.startDrag(null, transferable, this);
+            
         } catch (InvalidDnDOperationException exc) {
             // cannot start the drag, notify as informational
             Logger.getLogger(ExplorerDragSupport.class.getName()).log(Level.INFO, exc.getMessage());
