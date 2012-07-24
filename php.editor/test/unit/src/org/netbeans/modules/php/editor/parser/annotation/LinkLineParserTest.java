@@ -76,6 +76,41 @@ public class LinkLineParserTest extends PHPTestBase {
         assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
     }
 
+    public void testValidUseCase_03() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("link\t");
+        assertEquals("link", parsedLine.getName());
+        assertEquals("", parsedLine.getDescription());
+        assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
+    }
+
+    public void testValidUseCase_04() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("link\thttp://www.seznam.cz");
+        assertEquals("link", parsedLine.getName());
+        assertEquals("http://www.seznam.cz", parsedLine.getDescription());
+        assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
+    }
+
+    public void testValidUseCase_05() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("link           http://www.seznam.cz     ");
+        assertEquals("link", parsedLine.getName());
+        assertEquals("http://www.seznam.cz", parsedLine.getDescription());
+        assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
+    }
+
+    public void testValidUseCase_06() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("link\t    \thttp://www.seznam.cz   \t   ");
+        assertEquals("link", parsedLine.getName());
+        assertEquals("http://www.seznam.cz", parsedLine.getDescription());
+        assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
+    }
+
+    public void testValidUseCase_07() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("link");
+        assertEquals("link", parsedLine.getName());
+        assertEquals("", parsedLine.getDescription());
+        assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
+    }
+
     public void testInvalidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("@link http://www.seznam.cz");
         assertNull(parsedLine);

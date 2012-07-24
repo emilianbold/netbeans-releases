@@ -149,18 +149,18 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         boolean success;
 
-        XMLDecoder decoder = new ConfigurationXMLCodec(tag, projectDirectory, configurationDescriptor, relativeOffset);
+        XMLDecoder decoder = new ConfigurationXMLCodec(tag, true, projectDirectory, configurationDescriptor, relativeOffset);
         registerXMLDecoder(decoder);
         InputStream inputStream = null;
         try {
             inputStream = xml.getInputStream();
             success = read(inputStream, xml.getPath());
         } finally {
+            deregisterXMLDecoder(decoder);
             if (inputStream != null) {
                 inputStream.close();
             }
         }
-        deregisterXMLDecoder(decoder);
 
         if (!success) {
             displayErrorDialog();
@@ -176,21 +176,18 @@ public class ConfigurationXMLReader extends XMLDocReader {
         if (xml != null) {
             // Don't post an error.
             // It's OK to sometimes not have a private config
-            XMLDecoder auxDecoder = new AuxConfigurationXMLCodec(tag, configurationDescriptor, false);
-            registerXMLDecoder(auxDecoder);
-            decoder = new ConfigurationXMLCodec(tag, projectDirectory, configurationDescriptor, relativeOffset);
+            decoder = new ConfigurationXMLCodec(tag, false, projectDirectory, configurationDescriptor, relativeOffset);
             registerXMLDecoder(decoder);
             inputStream = null;
             try {
                 inputStream = xml.getInputStream();
                 success = read(inputStream, projectDirectory.getName());
             } finally {
+                deregisterXMLDecoder(decoder);
                 if (inputStream != null) {
                     inputStream.close();
                 }
             }
-            deregisterXMLDecoder(decoder);
-            deregisterXMLDecoder(auxDecoder);
 
             if (!success) {
                 return null;
@@ -198,9 +195,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         } else {
             xml = projectDirectory.getFileObject("nbproject/default_configurations.xml"); // NOI18N
             if (xml != null) {
-                XMLDecoder auxDecoder = new AuxConfigurationXMLCodec(tag, configurationDescriptor, false);
-                registerXMLDecoder(auxDecoder);
-                decoder = new ConfigurationXMLCodec(tag, projectDirectory, configurationDescriptor, relativeOffset);
+                decoder = new ConfigurationXMLCodec(tag, false, projectDirectory, configurationDescriptor, relativeOffset);
                 registerXMLDecoder(decoder);
                 inputStream = null;
                 try {
@@ -208,12 +203,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     success = read(inputStream, projectDirectory.getName());
                     SPIAccessor.get().setDefaultConfigurationsRestored(configurationDescriptor, true);
                 } finally {
+                    deregisterXMLDecoder(decoder);
                     if (inputStream != null) {
                         inputStream.close();
                     }
                 }
-                deregisterXMLDecoder(decoder);
-                deregisterXMLDecoder(auxDecoder);
 
                 //if (!success) {
                 //    return null;

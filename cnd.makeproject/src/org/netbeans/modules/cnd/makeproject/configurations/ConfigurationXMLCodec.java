@@ -125,19 +125,18 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
     private QmakeConfiguration currentQmakeConfiguration = null;
     private List<String> currentList = null;
-    private int defaultConf = 0;
+    private int defaultConf = -1;
     private Stack<Folder> currentFolderStack = new Stack<Folder>();
     private Folder currentFolder = null;
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
+    private final boolean publicLocation;
 
-    public ConfigurationXMLCodec(String tag,
-            FileObject projectDirectory,
-            MakeConfigurationDescriptor projectDescriptor,
-            String relativeOffset) {
-        super(projectDescriptor, true, false);
+    public ConfigurationXMLCodec(String tag, boolean shared, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
+        super(projectDescriptor, shared, false);
         this.tag = tag;
+        this.publicLocation = shared;
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
         this.remoteProject = projectDescriptor.getProject().getLookup().lookup(RemoteProject.class);
@@ -168,6 +167,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void end() {
         Configuration[] confsA = new Configuration[confs.size()];
         confsA = confs.toArray(confsA);
+        if (defaultConf < 0) {
+            defaultConf = 0;
+            for(int i = 0; i < confsA.length; i++) {
+                if (confsA[i].isDefault()) {
+                    defaultConf = i;
+                }
+            }
+        }
         projectDescriptor.init(confsA, defaultConf);
     }
 
@@ -220,7 +227,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             ConfigurationAuxObject[] profileAuxObjects = currentConf.getAuxObjects();
             decoders = new ArrayList<XMLDecoder>();
             for (int i = 0; i < profileAuxObjects.length; i++) {
-                if (profileAuxObjects[i].shared()) {
+                if (profileAuxObjects[i].shared() == publicLocation) {
                     XMLDecoder newDecoder = profileAuxObjects[i].getXMLDecoder();
                     registerXMLDecoder(newDecoder);
                     decoders.add(newDecoder);

@@ -50,13 +50,13 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  */
 class LinkLineParser implements AnnotationLineParser {
     static final String ANNOTATION_NAME = "link"; //NOI18N
-    private static final String ANNOTATION_START = ANNOTATION_NAME + " ";
 
     @Override
     public AnnotationParsedLine parse(final String line) {
         AnnotationParsedLine result = null;
-        if (line.startsWith(ANNOTATION_START)) {
-            result = new LinkParsedLine(line.substring(ANNOTATION_START.length()).trim());
+        String[] tokens = line.split("[ \t]+"); //NOI18N
+        if (tokens.length > 0 && ANNOTATION_NAME.equals(tokens[0])) {
+            result = new LinkParsedLine(tokens.length > 1 ? tokens[1].trim() : "");
         }
         return result;
     }
