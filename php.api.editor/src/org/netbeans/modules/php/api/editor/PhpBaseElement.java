@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.api.editor;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -56,35 +59,35 @@ public abstract class PhpBaseElement {
     private final String description;
     private final PhpClass type;
 
-    protected PhpBaseElement(String name, PhpClass type) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed PhpClass type) {
         this(name, null, type, null, -1, null);
     }
 
-    protected PhpBaseElement(String name, String fullyQualifiedName) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         this(name, fullyQualifiedName, -1, null);
     }
 
-    protected PhpBaseElement(String name, String fullyQualifiedName, FileObject file) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed FileObject file) {
         this(name, fullyQualifiedName, file, -1, null);
     }
 
-    protected PhpBaseElement(String name, String fullyQualifiedName, String description) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         this(name, fullyQualifiedName, -1, description);
     }
 
-    protected PhpBaseElement(String name, String fullyQualifiedName, int offset) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         this(name, fullyQualifiedName, offset, null);
     }
 
-    protected PhpBaseElement(String name, String fullyQualifiedName, int offset, String description) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         this(name, fullyQualifiedName, null, offset, description);
     }
 
-    protected PhpBaseElement(String name, String fullyQualifiedName, FileObject file, int offset, String description) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed FileObject file, int offset, @NullAllowed String description) {
         this(name, fullyQualifiedName, null, file, offset, description);
     }
 
-    protected PhpBaseElement(String name, String fullyQualifiedName, PhpClass type, FileObject file, int offset, String description) {
+    protected PhpBaseElement(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed PhpClass type, @NullAllowed FileObject file, int offset, @NullAllowed String description) {
         Parameters.notEmpty("name", name);
 
         this.name = name;
@@ -99,14 +102,17 @@ public abstract class PhpBaseElement {
         return name;
     }
 
+    @CheckForNull
     public String getFullyQualifiedName() {
         return fullyQualifiedName;
     }
 
+    @CheckForNull
     public PhpClass getType() {
         return type;
     }
 
+    @CheckForNull
     public FileObject getFile() {
         return file;
     }
@@ -115,6 +121,7 @@ public abstract class PhpBaseElement {
         return offset;
     }
 
+    @CheckForNull
     public String getDescription() {
         return description;
     }

@@ -71,6 +71,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents Symfony2 command line tool.
@@ -179,7 +180,7 @@ public final class Symfony2Script {
                 .additionalParameters(LIST_COMMANDS_COMMAND)
                 .run(getSilentDescriptor());
         try {
-            if (result.get() != 0) {
+            if (result == null || result.get() != 0) {
                 // error => rerun with output window
                 runCommand(phpModule, LIST_COMMANDS_COMMAND, null);
                 return null;
@@ -243,7 +244,8 @@ public final class Symfony2Script {
     }
 
     private ExecutionDescriptor getSilentDescriptor() {
-        return new ExecutionDescriptor();
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL);
     }
 
 }

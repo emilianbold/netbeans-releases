@@ -3,7 +3,7 @@ MyObj.create().get|Info().big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getInfo(): String               [PUBLIC]   methodChainSimple.js
-METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyNames(obj: Strin  [PUBLIC,   stub_CORE_Object.js
-METHOD     getPrototypeOf(object: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
 METHOD     getVersion(): Number            [PUBLIC]   methodChainSimple.js

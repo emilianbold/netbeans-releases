@@ -67,6 +67,7 @@ import java.util.List;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -759,6 +760,7 @@ public class CommitAction extends ContextAction {
                 CommitCmd cmd = new CommitCmd(client, support, message, handleHooks ? logs : null);
                 // handle recursive commits - deleted and copied folders can't be commited non recursively
                 List<File> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);
+                Logger.getLogger(CommitAction.class.getName()).log(Level.FINEST, "Committing files: {0}", commitList); //NOI18N
                 if(recursiveCommits.size() > 0) {
                     // remove from the commits list all files which are supposed to be commited recursively
                     // or are children from recursively commited folders
@@ -767,6 +769,7 @@ public class CommitAction extends ContextAction {
                     // moreover svn 1.7 complains when we list the children for copied folder
                     recursiveCommits = filterChildren(recursiveCommits);
                     // commit recursively
+                    Logger.getLogger(CommitAction.class.getName()).log(Level.FINEST, "Committing files recursively: {0}", recursiveCommits); //NOI18N
                     cmd.commitFiles(recursiveCommits, true);
                     if(support.isCanceled()) {
                         return;
@@ -775,6 +778,7 @@ public class CommitAction extends ContextAction {
 
                 // commit the remaining files non recursively
                 if(commitList.size() > 0) {
+                    Logger.getLogger(CommitAction.class.getName()).log(Level.FINEST, "Committing files non-recursively: {0}", commitList); //NOI18N
                     cmd.commitFiles(commitList, false);
                     if(support.isCanceled()) {
                         return;

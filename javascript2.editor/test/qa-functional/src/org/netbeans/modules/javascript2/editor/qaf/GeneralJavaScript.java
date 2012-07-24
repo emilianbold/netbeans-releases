@@ -69,6 +69,9 @@ public class GeneralJavaScript extends JellyTestCase {
     static final String PHP_PROJECT_NAME = "PHP Application";
     static final String OTHER_CATEGORY_NAME = "Other";
     protected EventTool evt;
+    public String currentFile = "";
+    public final String TEST_BASE_NAME = "js2_";
+    public int name_iterator = 0;
 
     public GeneralJavaScript(String arg0) {
         super(arg0);
@@ -158,15 +161,11 @@ public class GeneralJavaScript extends JellyTestCase {
 //        jcPath.setTimeouts(t);
 
         opNewProjectWizard.finish();
-//        waitScanFinished();
-        
+        waitScanFinished();
+
     }
 
     protected EditorOperator createWebFile(String fileName, String project, String fileType) {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(project);
-        prn.select();
-        NewFileWizardOperator.invoke().cancel();
 
         NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke();
         opNewFileWizard.selectCategory(OTHER_CATEGORY_NAME);
@@ -326,10 +325,10 @@ public class GeneralJavaScript extends JellyTestCase {
             }
         }
     }
-    
+
     protected void cleanFile(EditorOperator eo){
-         eo.typeKey('a', InputEvent.CTRL_MASK);
-         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
+        eo.typeKey('a', InputEvent.CTRL_MASK);
+        eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
     }
 
     protected void checkCompletionItems(

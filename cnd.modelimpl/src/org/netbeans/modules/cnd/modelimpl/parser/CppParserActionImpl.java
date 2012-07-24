@@ -149,6 +149,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                 } else {
                     break;
                 }
+            } else if (aToken.getType() == APTTokenTypes.STAR) {
+                return true;
+            } else { 
+                entry = null;
+                break;
             }
             input.consume();
         }
@@ -156,7 +161,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             globalSymTab.pop();
         }
         input.rewind(index);
-        return entry != null && entry.getAttribute(CppAttributes.TYPE) != null;
+        if(entry != null && entry.getAttribute(CppAttributes.TYPE) != null) {
+            return true;
+        }
+        return false;
     }
     
     @Override
@@ -350,24 +358,28 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void class_body(Token token) {
-        globalSymTab.push();
+        SymTab st = globalSymTab.push();
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof ClassBuilder) {
+            ClassBuilder classBuilder = (ClassBuilder) top;
+            CharSequence name = classBuilder.getName();
+            if(name != null) {
+                SymTabEntry classEntry = globalSymTab.lookup(name);
+                if (classEntry != null) {
+                    classEntry.setAttribute(CppAttributes.SYM_TAB, st);
+                }                 
+            }
+        }
     }
 
     @Override
     public void end_class_body(Token token) {
-        SymTab st = globalSymTab.pop();
+        globalSymTab.pop();
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof ClassBuilder) {
             ClassBuilder classBuilder = (ClassBuilder) top;
             if(token instanceof APTToken) {
                 classBuilder.setEndOffset(((APTToken)token).getEndOffset());
-            }
-            CharSequence name = classBuilder.getName();
-            if(name != null) {
-                SymTabEntry classEntry = globalSymTab.lookupLocal(name);
-                if (classEntry != null) {
-                    classEntry.setAttribute(CppAttributes.SYM_TAB, st);
-                }                 
             }
         }
     }
@@ -430,18 +442,14 @@ public class CppParserActionImpl implements CppParserActionEx {
         if(st != null) {
             globalSymTab.push(st);
         } else {
-            globalSymTab.push();
+            st = globalSymTab.push();
+            classEntry.setAttribute(CppAttributes.SYM_TAB, st);
         }
     }
 
     @Override
     public void end_namespace_body(Token token) {
-        SymTab st = globalSymTab.pop();
-        NamespaceBuilder nsBuilder = builderContext.getNamespaceBuilder();
-        SymTabEntry classEntry = globalSymTab.lookupLocal(nsBuilder.getName());
-        if (classEntry != null) {
-            classEntry.setAttribute(CppAttributes.SYM_TAB, st);
-        }            
+        globalSymTab.pop();
     }
 
     @Override
@@ -539,7 +547,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         if(top instanceof SimpleDeclarationBuilder && ((SimpleDeclarationBuilder)top).hasTypedefSpecifier() && !((SimpleDeclarationBuilder)top).isInDeclSpecifiers()) {
             APTToken aToken = (APTToken) token;
             final CharSequence name = aToken.getTextID();
-            SymTabEntry classEntry = globalSymTab.lookupLocal(name);
+            SymTabEntry classEntry = globalSymTab.lookup(name);
             if (classEntry == null) {
                 classEntry = globalSymTab.enterLocal(name);
                 classEntry.setAttribute(CppAttributes.TYPE, true);
@@ -594,7 +602,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void elaborated_type_specifier(Token token) {
         APTToken aToken = (APTToken) token;
         final CharSequence name = aToken.getTextID();
-        SymTabEntry classEntry = globalSymTab.lookupLocal(name);
+        SymTabEntry classEntry = globalSymTab.lookup(name);
         if (classEntry == null) {
             classEntry = globalSymTab.enterLocal(name);
             classEntry.setAttribute(CppAttributes.TYPE, true);

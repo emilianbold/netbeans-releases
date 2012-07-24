@@ -373,7 +373,7 @@ block_declaration:
 // IDs
 id_expression:
         // TODO: review temp predicate
-        (simple_template_id_or_IDENT SCOPE) => qualified_id
+        ((simple_template_id_or_IDENT)? SCOPE) => qualified_id
     |
         unqualified_id
     ;
@@ -446,13 +446,13 @@ nested_name_specifier returns [ name_specifier_t namequal ]
 
 lookup_nested_name_specifier:
         IDENT SCOPE
-        (
-            IDENT SCOPE
-        |
-            LITERAL_template lookup_simple_template_id SCOPE
-        |
-            lookup_simple_template_id SCOPE
-        )*
+//        (
+//            IDENT SCOPE
+//        |
+//            LITERAL_template lookup_simple_template_id SCOPE
+//        |
+//            lookup_simple_template_id SCOPE
+//        )*
     ;
 
 //[gram.dcl]
@@ -520,7 +520,7 @@ simple_declaration_or_function_definition [decl_kind kind]
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
-                { /*$greedy_declarator.type.is_function()*/ true }?
+                { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
                     function_definition_after_declarator
             |
                 // this is a continuation of init_declarator_list after greedy_declarator
@@ -939,14 +939,14 @@ noptr_declarator:
 
 declarator returns [declarator_type_t type]
     :
-        noptr_declarator 
-//            {{ type = $noptr_declarator.type; }}
-    |
         (ptr_operator)=>
             ptr_operator nested=declarator
 //                {{ type = $nested.type;
 //                   type.apply_ptr($ptr_operator.type);
 //                }}
+    |
+        noptr_declarator 
+//            {{ type = $noptr_declarator.type; }}
     ;
 
 // is quite unpretty because of left recursion removed here
@@ -1327,7 +1327,7 @@ scope Declaration;
         |
             declarator
             (
-                { /*$declarator.type.is_function()*/ true }?
+                { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
                     function_definition_after_declarator
             |
                 // this was member_declarator_list
@@ -1354,11 +1354,11 @@ scope Declaration;
     ;
 
 member_bitfield_declarator:
-        IDENT? virt_specifier+ COLON constant_expression
+        IDENT? virt_specifier* COLON constant_expression
     ;
 
 member_declarator:
-        declarator virt_specifier+ brace_or_equal_initializer
+        declarator virt_specifier* brace_or_equal_initializer
     |
         member_bitfield_declarator
     ;
@@ -1932,8 +1932,9 @@ new_placement:
  *  new (int(*p)) int; // new-placement expression
  */
 new_type_id:
-        type_specifier+
-        ((ptr_operator)=>
+        type_specifier
+        (type_specifier)*
+        ((LSQUARE | ptr_operator)=>
             new_declarator)?
     ;
 

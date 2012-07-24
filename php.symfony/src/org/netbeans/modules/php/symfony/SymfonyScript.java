@@ -185,12 +185,14 @@ public class SymfonyScript {
         allParams.addAll(Arrays.asList(params));
 
         try {
-        createPhpExecutable(phpModule)
-                .displayName(getDisplayName(phpModule, allParams.get(0)))
-                .additionalParameters(getAllParams(allParams))
-                .warnUser(false)
-                .run(getDescriptor(null))
-                .get();
+            Future<Integer> result = createPhpExecutable(phpModule)
+                    .displayName(getDisplayName(phpModule, allParams.get(0)))
+                    .additionalParameters(getAllParams(allParams))
+                    .warnUser(false)
+                    .run(getDescriptor(null));
+            if (result != null) {
+                result.get();
+            }
         } catch (CancellationException ex) {
             // canceled
         } catch (InterruptedException ex) {
@@ -229,9 +231,11 @@ public class SymfonyScript {
                 .displayName(getDisplayName(phpModule, allParams.get(0)))
                 .additionalParameters(getAllParams(allParams))
                 .pureOutputOnly(true)
-                .run(getDescriptorWithLineProcessor(lineProcessor));
+                .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
-            result.get();
+            if (result != null) {
+                result.get();
+            }
         } catch (CancellationException ex) {
             // canceled
         } catch (ExecutionException ex) {
@@ -286,19 +290,18 @@ public class SymfonyScript {
         return executionDescriptor;
     }
 
-    private ExecutionDescriptor getDescriptorWithLineProcessor(final LineProcessor lineProcessor) {
-        return new ExecutionDescriptor()
-                .inputOutput(InputOutput.NULL)
-                .outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+    private ExecutionDescriptor.InputProcessorFactory getOutProcessorFactory(final LineProcessor lineProcessor) {
+        return new ExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return InputProcessors.ansiStripping(InputProcessors.bridge(lineProcessor));
             }
-        });
+        };
     }
 
     private ExecutionDescriptor getSilentDescriptor() {
-        return new ExecutionDescriptor();
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL);
     }
 
     private List<FrameworkCommand> getFrameworkCommandsInternalXml(PhpModule phpModule) {
@@ -317,7 +320,7 @@ public class SymfonyScript {
                 .additionalParameters(LIST_XML_COMMAND)
                 .run(getSilentDescriptor());
         try {
-            if (result.get() != 0) {
+            if (result == null || result.get() != 0) {
                 // error
                 return null;
             }
@@ -358,9 +361,9 @@ public class SymfonyScript {
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .additionalParameters(Collections.singletonList(LIST_COMMAND))
                 .pureOutputOnly(true)
-                .run(getDescriptorWithLineProcessor(lineProcessor));
+                .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
-            if (task.get().intValue() == 0) {
+            if (task != null && task.get().intValue() == 0) {
                 freshCommands = lineProcessor.getCommands();
                 if (!freshCommands.isEmpty()) {
                     return freshCommands;

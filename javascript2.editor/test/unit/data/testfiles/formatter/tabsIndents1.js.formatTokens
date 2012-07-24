@@ -121,7 +121,6 @@ FormattingToken{kind=EOL, offset=219, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=220, text=    }
 FormattingToken{kind=TEXT, offset=224, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=225, text=
 }
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}

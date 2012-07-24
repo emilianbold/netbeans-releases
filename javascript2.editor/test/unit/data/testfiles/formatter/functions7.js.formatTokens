@@ -20,7 +20,7 @@ FormattingToken{kind=TEXT, offset=27, text=x}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=28, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=29, text=function}
 FormattingToken{kind=WHITESPACE, offset=37, text= }
 FormattingToken{kind=TEXT, offset=38, text=cu}
@@ -44,6 +44,6 @@ FormattingToken{kind=TEXT, offset=56, text=]}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=57, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=58, text=
 }

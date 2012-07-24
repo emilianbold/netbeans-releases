@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.spi.annotation;
 
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.openide.util.Parameters;
 
@@ -56,20 +59,20 @@ public class AnnotationCompletionTag {
 
     /**
      * Create new annotation tag without documentation.
-     * @param name tag name, cannot
-     * @param insertTemplate text that it inserted to the source file
+     * @param name tag name; never {@code null}
+     * @param insertTemplate text that it inserted to the source file; can't be {@code null}
      */
-    public AnnotationCompletionTag(String name, String insertTemplate) {
+    public AnnotationCompletionTag(@NonNull String name, @NonNull String insertTemplate) {
         this(name, insertTemplate, null);
     }
 
     /**
      * Create new annotation tag with documentation.
-     * @param name tag name, cannot
-     * @param insertTemplate text that it inserted to the source file
+     * @param name tag name; never {@code null}
+     * @param insertTemplate text that it inserted to the source file; never {@code null}
      * @param documentation documentation of the tag, HTML allowed; can be {@code null}
      */
-    public AnnotationCompletionTag(String name, String insertTemplate, String documentation) {
+    public AnnotationCompletionTag(@NonNull String name, @NonNull String insertTemplate, @NullAllowed String documentation) {
         Parameters.notEmpty("name", name);
         Parameters.notEmpty("insertTemplate", insertTemplate);
 
@@ -98,6 +101,7 @@ public class AnnotationCompletionTag {
      * Get documentation of the tag.
      * @return documentation of the tag; can be {@code null}
      */
+    @CheckForNull
     public final String getDocumentation() {
         return documentation;
     }
@@ -110,7 +114,7 @@ public class AnnotationCompletionTag {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@NullAllowed Object obj) {
         if (obj == null) {
             return false;
         }

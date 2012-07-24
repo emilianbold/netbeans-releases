@@ -129,7 +129,7 @@ public final class PhpDocScript {
                 .run(getExecutionDescriptor(sanitizedPhpDocTarget));
 
         try {
-            if (result.get() == 0) {
+            if (result != null && result.get() == 0) {
                 File index = new File(phpDocTarget, "index.html"); // NOI18N
                 if (index.isFile()) {
                     // false for pdf e.g.

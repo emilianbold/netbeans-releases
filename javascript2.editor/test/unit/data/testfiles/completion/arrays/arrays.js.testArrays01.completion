@@ -3,56 +3,47 @@ arr01.|pop();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   stub_CORE_Array.js
-METHOD     apply(thisArg: String): Array   [PUBLIC]   stub_CORE_Function.js
-METHOD     bind(thisArg: String): String   [PUBLIC]   stub_CORE_Function.js
-METHOD     call(thisArg: String): String   [PUBLIC]   stub_CORE_Function.js
-METHOD     concat(value1, value2): Array   [PUBLIC]   stub_CORE_Array.js
-METHOD     create(proto: Object): Object   [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperties(obj: String,   [PUBLIC,   stub_CORE_Object.js
-METHOD     defineProperty(obj: String, pr  [PUBLIC,   stub_CORE_Object.js
-METHOD     eval(string: String): Object    [PUBLIC]   stub_CORE_Object.js
-METHOD     every(callback: String): Boole  [PUBLIC]   stub_CORE_Array.js
-METHOD     filter(callback: Array): Array  [PUBLIC]   stub_CORE_Array.js
-METHOD     forEach(callback: String): und  [PUBLIC]   stub_CORE_Array.js
-METHOD     freeze(obj: String): Object     [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyDescriptor(obj:   [PUBLIC,   stub_CORE_Object.js
-METHOD     getOwnPropertyNames(obj: Strin  [PUBLIC,   stub_CORE_Object.js
-METHOD     getPrototypeOf(object: Object)  [PUBLIC,   stub_CORE_Object.js
-METHOD     hasOwnProperty(prop: String):   [PUBLIC]   stub_CORE_Object.js
+METHOD     apply(thisArg: String, argArra  [PUBLIC]   stub_CORE_Function.js
+METHOD     bind(thisArg: Object): String   [PUBLIC]   stub_CORE_Function.js
+METHOD     call(thisArg: Object): String   [PUBLIC]   stub_CORE_Function.js
+METHOD     concat(): Array                 [PUBLIC]   stub_CORE_Array.js
+METHOD     create(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   stub_CORE_Object.js
+METHOD     every(callbackfn: Function): B  [PUBLIC]   stub_CORE_Array.js
+METHOD     filter(callbackfn: Function):   [PUBLIC]   stub_CORE_Array.js
+METHOD     forEach(callbackfn: Function):  [PUBLIC]   stub_CORE_Array.js
+METHOD     freeze(O: Object): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   stub_CORE_Object.js
 METHOD     indexOf(searchElement: Array):  [PUBLIC]   stub_CORE_Array.js
-METHOD     isArray(obj: String): Boolean   [PUBLIC,   stub_CORE_Array.js
-METHOD     isExtensible(obj: String): Boo  [PUBLIC,   stub_CORE_Object.js
-METHOD     isFrozen(obj: String): Boolean  [PUBLIC,   stub_CORE_Object.js
-METHOD     isGenerator(): Boolean          [PUBLIC]   stub_CORE_Function.js
-METHOD     isPrototypeOf(object: Object):  [PUBLIC]   stub_CORE_Object.js
-METHOD     isSealed(obj: String): Boolean  [PUBLIC,   stub_CORE_Object.js
-METHOD     join(separator: Array): String  [PUBLIC]   stub_CORE_Array.js
-METHOD     keys(obj: String): Array        [PUBLIC,   stub_CORE_Object.js
-METHOD     lastIndexOf(searchElement: Arr  [PUBLIC]   stub_CORE_Array.js
-METHOD     map(callback: Array): Array     [PUBLIC]   stub_CORE_Array.js
+METHOD     isArray(arg: Object): Boolean   [PUBLIC,   stub_CORE_Array.js
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   stub_CORE_Object.js
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   stub_CORE_Object.js
+METHOD     join(separator: String): Strin  [PUBLIC]   stub_CORE_Array.js
+METHOD     keys(O: Object): Array          [PUBLIC,   stub_CORE_Object.js
+METHOD     lastIndexOf(searchElement: Obj  [PUBLIC]   stub_CORE_Array.js
+METHOD     map(callbackfn: Function): Arr  [PUBLIC]   stub_CORE_Array.js
 METHOD     pop(): Object                   [PUBLIC]   stub_CORE_Array.js
-METHOD     preventExtensions(obj: String)  [PUBLIC,   stub_CORE_Object.js
-METHOD     propertyIsEnumerable(prop: Str  [PUBLIC]   stub_CORE_Object.js
-METHOD     push(element1): Number          [PUBLIC]   stub_CORE_Array.js
-METHOD     reduce(callback: Array): Objec  [PUBLIC]   stub_CORE_Array.js
-METHOD     reduceRight(callback: Array):   [PUBLIC]   stub_CORE_Array.js
+METHOD     preventExtensions(O: Object):   [PUBLIC,   stub_CORE_Object.js
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   stub_CORE_Object.js
+METHOD     push(): Number                  [PUBLIC]   stub_CORE_Array.js
+METHOD     reduce(callbackfn: Function):   [PUBLIC]   stub_CORE_Array.js
+METHOD     reduceRight(callbackfn: Functi  [PUBLIC]   stub_CORE_Array.js
 METHOD     reverse(): Array                [PUBLIC]   stub_CORE_Array.js
-METHOD     seal(obj: String): Object       [PUBLIC,   stub_CORE_Object.js
+METHOD     seal(O: Object): Object         [PUBLIC,   stub_CORE_Object.js
 METHOD     shift(): Object                 [PUBLIC]   stub_CORE_Array.js
-METHOD     slice(begin: String): Array     [PUBLIC]   stub_CORE_Array.js
-METHOD     some(callback: String): Boolea  [PUBLIC]   stub_CORE_Array.js
-METHOD     sort(): Array                   [PUBLIC]   stub_CORE_Array.js
-METHOD     splice(index: Array, howMany:   [PUBLIC]   stub_CORE_Array.js
+METHOD     slice(start: Number, end: Numb  [PUBLIC]   stub_CORE_Array.js
+METHOD     some(callbackfn: Function): Bo  [PUBLIC]   stub_CORE_Array.js
+METHOD     sort(comparefn: Array): Array   [PUBLIC]   stub_CORE_Array.js
+METHOD     splice(start: Number, deleteCo  [PUBLIC]   stub_CORE_Array.js
 METHOD     toLocaleString(): String        [PUBLIC]   stub_CORE_Object.js
-METHOD     toSource(): String              [PUBLIC]   stub_CORE_Array.js
 METHOD     toString(): String              [PUBLIC]   stub_CORE_Array.js
-METHOD     unshift(element1): Number       [PUBLIC]   stub_CORE_Array.js
-METHOD     unwatch(prop: String): undefin  [PUBLIC]   stub_CORE_Object.js
+METHOD     unshift(): Number               [PUBLIC]   stub_CORE_Array.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
-METHOD     watch(prop: String, handler: S  [PUBLIC]   stub_CORE_Object.js
-FIELD      arguments                       [PUBLIC]   stub_CORE_Function.js
-FIELD      arity                           [PUBLIC]   stub_CORE_Function.js
-FIELD      caller                          [PUBLIC]   stub_CORE_Function.js
 FIELD      constructor                     [PUBLIC]   stub_CORE_Array.js
 FIELD      length                          [PUBLIC]   stub_CORE_Array.js
-FIELD      name                            [PUBLIC]   stub_CORE_Function.js

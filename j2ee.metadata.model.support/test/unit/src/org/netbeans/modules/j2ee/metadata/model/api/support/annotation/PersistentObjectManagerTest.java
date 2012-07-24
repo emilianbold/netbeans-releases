@@ -78,7 +78,7 @@ import org.openide.util.test.MockChangeListener;
  */
 public class PersistentObjectManagerTest extends PersistenceTestCase {
     
-    private static final int EVENT_TIMEOUT = 15; // seconds
+    private static final int EVENT_TIMEOUT = 30; // seconds
 
     private PersistentObjectManager<EntityImpl> manager;
 

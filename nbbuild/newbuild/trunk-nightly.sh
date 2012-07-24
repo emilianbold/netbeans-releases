@@ -10,20 +10,23 @@ source init.sh
 
 rm -rf $DIST
 
-#if [ ! -z $WORKSPACE ]; then
-#    #I'm under hudson and have sources here, I need to clone them
-#    #Clean obsolete sources first
-#    rm -rf $NB_ALL
-#    hg clone -U $WORKSPACE $NB_ALL
-#    hg -R $NB_ALL update $NB_BRANCH
-#fi
+if [ ! -z $WORKSPACE ]; then
+    #I'm under hudson and have sources here, I need to clone them
+    #Clean obsolete sources first
+    rm -rf $NB_ALL
+    hg clone -U $WORKSPACE $NB_ALL
+    hg -R $NB_ALL update $NB_BRANCH
+fi
 TIP=`hg tip --template '{rev}'`
 export TIP
+
+cd $NB_ALL
+hg clone $ML_REPO $NB_ALL/l10n
 
 if [ $ML_BUILD == 1 ]; then
     cd $NB_ALL
     hg clone -r $L10N_BRANCH $ML_REPO $NB_ALL/l10n
- fi
+fi
 
 #if [ $ML_BUILD == 1 ]; then
 #    cd $NB_ALL

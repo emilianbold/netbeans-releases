@@ -42,25 +42,28 @@
 
 package org.netbeans.modules.php.api.editor;
 
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+
 /**
  * Class representing a PHP global function.
  * @author Tomas Mysik
  */
 public final class PhpFunction extends PhpBaseElement {
 
-    public PhpFunction(String name, String fullyQualifiedName, String description) {
+    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, @NullAllowed String description) {
         super(name, fullyQualifiedName, description);
     }
 
-    public PhpFunction(String name, String fullyQualifiedName) {
+    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName) {
         super(name, fullyQualifiedName);
     }
 
-    public PhpFunction(String name, String fullyQualifiedName, int offset, String description) {
+    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset, @NullAllowed String description) {
         super(name, fullyQualifiedName, offset, description);
     }
 
-    public PhpFunction(String name, String fullyQualifiedName, int offset) {
+    public PhpFunction(@NonNull String name, @NullAllowed String fullyQualifiedName, int offset) {
         super(name, fullyQualifiedName, offset);
     }
 }
