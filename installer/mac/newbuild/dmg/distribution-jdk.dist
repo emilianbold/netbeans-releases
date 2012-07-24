@@ -103,6 +103,8 @@ function checkChoiceUpgradeAction() {
             <bundle id="com.oracle.java.Java-Updater"/>
         </relocate>
     </pkg-ref>
+    <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
     <locator>
         <search id="pkmktoken18-1" type="component">
             <bundle CFBundleIdentifier="com.oracle.java.Java-Updater" path="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Resources/Java Updater.app"/>
