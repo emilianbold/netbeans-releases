@@ -187,6 +187,7 @@ public final class FormatToken {
         // around comma
         BEFORE_COMMA,
         AFTER_COMMA,
+        VAR_AFTER_COMMA,
 
         // keywords with possible space before parentheses
         AFTER_IF_KEYWORD,
