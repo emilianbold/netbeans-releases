@@ -164,6 +164,7 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
+import org.netbeans.modules.web.project.classpath.DelagatingProjectClassPathModifierImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilter;
 import org.netbeans.modules.web.project.spi.BrokenLibraryRefFilterProvider;
@@ -230,7 +231,7 @@ public final class WebProject implements Project {
     private final UpdateHelper updateHelper;
     private final UpdateProjectImpl updateProject;
     private final AuxiliaryConfiguration aux;
-    private final ClassPathModifier cpMod;
+    private final DelagatingProjectClassPathModifierImpl cpMod;
     private final WebProjectLibrariesModifierImpl libMod;
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
@@ -393,9 +394,10 @@ public final class WebProject implements Project {
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport (webProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
-        cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
+        ClassPathModifier cpModTemp = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
+        cpMod = new DelagatingProjectClassPathModifierImpl(cpModTemp, libMod);
         lookup = createLookup(aux, cpProvider);
         css = new CopyOnSaveSupport();
         artifactSupport = new ArtifactCopySupport();
@@ -414,7 +416,7 @@ public final class WebProject implements Project {
         this.projectPropertiesSave.set(value);
     }
     
-    public ClassPathModifier getClassPathModifier() {
+    public DelagatingProjectClassPathModifierImpl getClassPathModifier() {
         return cpMod;
     }
 

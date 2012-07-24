@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
                 <include name="libs.antlr3.devel/external/binaries-list"/>
             </manifest>
         </downloadbinaries>
-        <property name="antlr3.jar" location="${nb_all}/libs.antlr3.devel/external/antlr-3.3.jar"/>
+        <property name="antlr3.jar" location="${nb_all}/libs.antlr3.devel/external/antlr-3.4.jar"/>
         <property name="antlr3.evaluator.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser"/>
 
          <!-- New C++ Parser -->
@@ -172,12 +172,12 @@ made subject to such option by the copyright holder.
         </java>
 
         <replaceregexp file="${antlr.output.dir}/FortranParser.java"
-            match='^public class FortranParser (.*)'
-            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class FortranParser \1'
+            match='^@SuppressWarnings.*'
+            replace='@SuppressWarnings({"all", "warnings", "unchecked", "cast", "fallthrough"})'
             flags="mg" />
         <replaceregexp file="${antlr.output.dir}/FortranParser_FortranParser2.java"
-            match='^public class FortranParser_FortranParser2 (.*)'
-            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class FortranParser_FortranParser2 \1'
+            match='^@SuppressWarnings.*'
+            replace='@SuppressWarnings({"all", "warnings", "unchecked", "cast", "fallthrough"})'
             flags="mg" />
 
         <!-- CXX Parser -->
@@ -195,8 +195,8 @@ made subject to such option by the copyright holder.
         </java>
 
         <replaceregexp file="${antlr3.cppparser.output.dir}/CXXParser.java"
-            match='^public class CXXParser (.*)'
-            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class CXXParser \1'
+            match='^@SuppressWarnings.*'
+            replace='@SuppressWarnings({"all", "warnings", "unchecked", "cast", "fallthrough"})'
             flags="mg" />
 
 
@@ -215,8 +215,8 @@ made subject to such option by the copyright holder.
         </java>
 
         <replaceregexp file="${antlr3.evaluator.output.dir}/EvaluatorParser.java"
-            match='^public class EvaluatorParser (.*)'
-            replace='@SuppressWarnings({"unchecked", "cast", "fallthrough"}) public class EvaluatorParser \1'
+            match='^@SuppressWarnings.*'
+            replace='@SuppressWarnings({"all", "warnings", "unchecked", "cast", "fallthrough"})'
             flags="mg" />
 
         <delete file="${antlr3.evaluator.output.dir}/EvaluatorLexer.java" />

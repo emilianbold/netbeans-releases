@@ -64,7 +64,7 @@ public class ClientSideProjectPanelProvider implements ProjectCustomizer.Composi
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        return new ClientSideProjectPanel(context.lookup(Project.class));
+        return new ClientSideProjectPanel((ClientSideProject)context.lookup(Project.class));
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

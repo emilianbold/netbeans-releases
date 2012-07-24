@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ExampleTag extends PhpAnnotationTag {
+public class ExampleTag extends AnnotationCompletionTag {
 
     public ExampleTag() {
         super("example", "@example ${path} ${description}", //NOI18N

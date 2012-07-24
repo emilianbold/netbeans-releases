@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -48,6 +49,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
@@ -64,6 +66,9 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.cookies.EditorCookie;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -73,7 +78,12 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -105,8 +115,7 @@ public class HtmlElementProperties {
             if (node != null) {
                 if (node.type() == ElementType.OPEN_TAG) { //may be root node!
                     OpenTag ot = (OpenTag) node;
-                    org.openide.nodes.Node elementNode = new OpenTagNode(result, ot);
-                    control.setNode(elementNode);
+                    control.setNode(createOpenTagNode(result, ot, file, dobj));
                 }
             }
         } catch (DataObjectNotFoundException ex) {
@@ -114,14 +123,49 @@ public class HtmlElementProperties {
         }
 
     }
+    
+    public static org.openide.nodes.Node createOpenTagNode(HtmlParserResult result, OpenTag openTag) {
+        try {
+            FileObject file = result.getSnapshot().getSource().getFileObject();
+            DataObject dobj = DataObject.find(file);
+            return createOpenTagNode(result, openTag, file, dobj);
+            
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return null;
+    }
+    
+    private static org.openide.nodes.Node createOpenTagNode(HtmlParserResult result, OpenTag openTag, Object... nodeLookupContent) {
+        InstanceContent ic = new InstanceContent();
+        for(Object o : nodeLookupContent) {
+            ic.add(o);
+        }
+        return new OpenTagNode(result, openTag, new AbstractLookup(ic));
+    }
 
-    private static class OpenTagNode extends AbstractNode {
+    /**
+     * A {@link Node} representing an HTML source code element.
+     * 
+     * The node needs to provide its own lookup with at least
+     * {@link DataObject} since the NavigatorController's {@link Lookup} 
+     * provided to the clients in NavigatorPanel.panelActivated(...)
+     * contains content of lookups from all activated nodes got from the
+     * active {@link TopComponent}. 
+     * 
+     * Then the CSL navigator listens on {@link Lookup#lookupAll(DataObject.class)} 
+     * result to ensure content update when editor's {@link TopComponent}s bound 
+     * to the same {@link NavigatorPanel} are switched.
+     *
+     */
+    public static class OpenTagNode extends AbstractNode {
 
         private OpenTag openTag;
         private HtmlParserResult res;
 
-        public OpenTagNode(HtmlParserResult res, OpenTag openTag) {
-            super(Children.LEAF);
+        public OpenTagNode(HtmlParserResult res, OpenTag openTag, Lookup nodeLookup) {
+            super(Children.LEAF, nodeLookup);
             this.res = res;
             this.openTag = openTag;
 
@@ -135,6 +179,8 @@ public class HtmlElementProperties {
             };
             return sets;
         }
+        
+        
     }
     
     private static class PropertiesPropertySet extends PropertySet {

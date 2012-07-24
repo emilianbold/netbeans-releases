@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
-import org.netbeans.modules.web.clientproject.spi.ProjectConfigurationCustomizer;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.openide.DialogDisplayer;
@@ -73,16 +73,20 @@ public class ClientSideProjectActionProvider implements ActionProvider {
                 };
     }
 
+    private ActionProvider getActionProvider() {
+        ClientProjectConfigurationImplementation cfg = p.getProjectConfigurations().getActiveConfiguration();
+        if (cfg != null) {
+            return cfg.getActionProvider();
+        } else {
+            return null;
+        }
+    }
+
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        ClientSideConfigurationProvider provider = p.getLookup().lookup(ClientSideConfigurationProvider.class);
-        final ClientProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
-        String type = activeConfiguration == null || activeConfiguration.getBrowser() != null ? "browser" : activeConfiguration.getType();
-
-        Lookup providers = LookupProviderSupport.createCompositeLookup(Lookups.fixed(p), "Projects/" + ProjectConfigurationCustomizer.PATH + "/"+ type + "/Lookup");
-        ActionProvider action = providers.lookup(ActionProvider.class);
-        if (action != null) {
-            action.invokeAction(command, context);
+        ActionProvider ap = getActionProvider();
+        if (ap != null) {
+            ap.invokeAction(command, context);
             return;
         }
         NotifyDescriptor desc = new NotifyDescriptor("Action not supported for this configuration",

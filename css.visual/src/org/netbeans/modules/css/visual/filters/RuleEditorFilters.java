@@ -69,12 +69,13 @@ public final class RuleEditorFilters {
 
     public static final String SHOW_ALL_PROPERTIES = "show.all.properties"; //NOI18N
     public static final String SHOW_CATEGORIES = "show.property.categories"; //NOI18N
-    
     private RuleEditorPanel ruleEditorPanel;
     private FiltersManager filters;
+    private FiltersSettings settings;
 
-    public RuleEditorFilters(RuleEditorPanel ruleEditorPanel) {
+    public RuleEditorFilters(RuleEditorPanel ruleEditorPanel, FiltersSettings settings) {
         this.ruleEditorPanel = ruleEditorPanel;
+        this.settings = settings;
     }
 
     public FiltersManager getInstance() {
@@ -83,16 +84,19 @@ public final class RuleEditorFilters {
         }
         return filters;
     }
+    
+    public FiltersSettings getSettings() {
+        return settings;
+    }
 
-    public JComponent getComponent() {        
-        FiltersManager f = getInstance();                        
-        return f.getComponent( createSortButtons() );
-        
+    public JComponent getComponent() {
+        FiltersManager f = getInstance();
+        return f.getComponent(createSortButtons());
     }
 
     void setSortMode(SortMode mode) {
         ruleEditorPanel.setSortMode(mode);
-        
+
         //update the toggle bottons (they are switching)
         sortNaturalToggleButton.setSelected(mode == SortMode.NATURAL);
         sortAlphaToggleButton.setSelected(mode == SortMode.ALPHABETICAL);
@@ -106,47 +110,55 @@ public final class RuleEditorFilters {
     /**
      * Creates filter descriptions and filters itself
      */
-    private static FiltersManager createFilters() {
+    private FiltersManager createFilters() {
         FiltersDescription desc = new FiltersDescription();
 
-        desc.addFilter(SHOW_ALL_PROPERTIES,
-                Bundle.filters_show_all_properties(),
-                Bundle.filters_show_all_properties_tooltip(),
-                false,
-                new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/showAllProperties.png")), //NOI18N
-                null);
-        desc.addFilter(SHOW_CATEGORIES,
-                Bundle.filters_show_categories(),
-                Bundle.filters_show_categories_tooltip(),
-                true,
-                new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/showCategories.gif")), //NOI18N
-                null);
+        if (settings.isShowAllPropertiesEnabled()) {
+            desc.addFilter(SHOW_ALL_PROPERTIES,
+                    Bundle.filters_show_all_properties(),
+                    Bundle.filters_show_all_properties_tooltip(),
+                    false,
+                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/showAllProperties.png")), //NOI18N
+                    null);
+        }
+
+        if (settings.isShowCategoriesEnabled()) {
+            desc.addFilter(SHOW_CATEGORIES,
+                    Bundle.filters_show_categories(),
+                    Bundle.filters_show_categories_tooltip(),
+                    true,
+                    new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/showCategories.gif")), //NOI18N
+                    null);
+        }
 
         return FiltersDescription.createManager(desc);
     }
-    
     private JToggleButton sortNaturalToggleButton;
     private JToggleButton sortAlphaToggleButton;
 
     private JToggleButton[] createSortButtons() {
-        JToggleButton[] res = new JToggleButton[2];
-        if (null == sortNaturalToggleButton) {
-            sortNaturalToggleButton = new JToggleButton(new SortActionSupport.NaturalSortAction(this));
-            sortNaturalToggleButton.setToolTipText(sortNaturalToggleButton.getText());
-            sortNaturalToggleButton.setText(null);
-            sortNaturalToggleButton.setSelected(getSortMode() == SortMode.NATURAL);
-            sortNaturalToggleButton.setFocusable(false);
+        if (!settings.isSortingEnabled()) {
+            return new JToggleButton[0];
+        } else {
+            JToggleButton[] res = new JToggleButton[2];
+            if (null == sortNaturalToggleButton) {
+                sortNaturalToggleButton = new JToggleButton(new SortActionSupport.NaturalSortAction(this));
+                sortNaturalToggleButton.setToolTipText(sortNaturalToggleButton.getText());
+                sortNaturalToggleButton.setText(null);
+                sortNaturalToggleButton.setSelected(getSortMode() == SortMode.NATURAL);
+                sortNaturalToggleButton.setFocusable(false);
+            }
+            res[0] = sortNaturalToggleButton;
+
+            if (null == sortAlphaToggleButton) {
+                sortAlphaToggleButton = new JToggleButton(new SortActionSupport.AlphabeticalSortAction(this));
+                sortAlphaToggleButton.setToolTipText(sortAlphaToggleButton.getText());
+                sortAlphaToggleButton.setText(null);
+                sortAlphaToggleButton.setSelected(getSortMode() == SortMode.ALPHABETICAL);
+                sortAlphaToggleButton.setFocusable(false);
+            }
+            res[1] = sortAlphaToggleButton;
+            return res;
         }
-        res[0] = sortNaturalToggleButton;
-        
-        if (null == sortAlphaToggleButton) {
-            sortAlphaToggleButton = new JToggleButton(new SortActionSupport.AlphabeticalSortAction(this));
-            sortAlphaToggleButton.setToolTipText(sortAlphaToggleButton.getText());
-            sortAlphaToggleButton.setText(null);
-            sortAlphaToggleButton.setSelected(getSortMode() == SortMode.ALPHABETICAL);
-            sortAlphaToggleButton.setFocusable(false);
-        }
-        res[1] = sortAlphaToggleButton;
-        return res;
     }
 }

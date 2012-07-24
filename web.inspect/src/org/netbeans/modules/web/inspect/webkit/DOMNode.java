@@ -64,6 +64,8 @@ public class DOMNode extends AbstractNode {
     private Node node;
     /** Property sets of the node. */
     private PropertySet[] propertySets;
+    /** Determines whether nodeId should be appended to display name. */
+    private boolean nodeIdInDisplayName = Boolean.getBoolean("org.netbeans.modules.web.inspect.nodeIdInDisplayName"); // NOI18N
 
     /**
      * Creates a new {@code DOMNode}.
@@ -83,17 +85,20 @@ public class DOMNode extends AbstractNode {
         ResourceBundle bundle = NbBundle.getBundle(DOMNode.class);
         String displayName;
         int nodeType = node.getNodeType();
-        if (nodeType == 1) {
+        if (nodeType == org.w3c.dom.Node.ELEMENT_NODE) {
             // Element
             String pattern = bundle.getString("DOMNode.elementDisplayName"); //NOI18N
             String tagName = node.getNodeName().toLowerCase();
             String selector = getSelector();
             displayName = MessageFormat.format(pattern, tagName, selector);
-        } else if (nodeType == 9) {
+        } else if (nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
             displayName = bundle.getString("DOMNode.documentDisplayName"); //NOI18N
         } else {
             // Not used by now
             displayName = node.getNodeType() + " " + node.getNodeName() + " " + node.getNodeValue(); // NOI18N
+        }
+        if (nodeIdInDisplayName) {
+            displayName += " (" + getNode().getNodeId() + ")"; // NOI18N
         }
         return displayName;
     }
@@ -180,9 +185,15 @@ public class DOMNode extends AbstractNode {
     /**
      * Forces update of the children/sub-nodes.
      */
-    void updateChildren() {
+    void updateChildren(Node node) {
+        this.node = node;
         DOMChildren children = (DOMChildren)getChildren();
         children.updateKeys(node);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString() + "[nodeId=" + getNode().getNodeId() + "]"; // NOI18N
     }
 
     /**
@@ -211,7 +222,7 @@ public class DOMNode extends AbstractNode {
             List<Integer> keys = new ArrayList<Integer>();
             if (subNodes != null) {
                 for (Node subNode : subNodes) {
-                    boolean isElement = (subNode.getNodeType() == 1);
+                    boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
                     if (isElement && !subNode.isInjectedByNetBeans()) {
                         keys.add(subNode.getNodeId());
                     }

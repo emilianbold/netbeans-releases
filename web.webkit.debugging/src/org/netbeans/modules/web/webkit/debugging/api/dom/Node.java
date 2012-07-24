@@ -61,6 +61,8 @@ public class Node {
     private List<Attribute> attributes;
     /** Content document (for {@code Frame} nodes). */
     private Node contentDocument;
+    /** Parent node. */
+    private Node parent;
 
     /**
      * Creates a new {@code Node} that corresponds to the given JSONObject.
@@ -94,6 +96,14 @@ public class Node {
         JSONObject document = (JSONObject)getProperties().get("contentDocument"); // NOI18N
         if (document != null) {
             contentDocument = new Node(document);
+            contentDocument.parent = this;
+            // A node cannot have both children and content document.
+            // FRAME doesn't support children at all and children
+            // of IFRAME are interpreted when frames are not supported
+            // only (i.e. when the content document is null)
+            // => no need to ask for children of a node with a content
+            // document. We can set children to empty collection immediately.
+            initChildren();
         }
 
         // Cleanup
@@ -169,7 +179,7 @@ public class Node {
     /**
      * Initializes {@code children} field.
      */
-    private synchronized void initChildren() {
+    final synchronized void initChildren() {
         children = new ArrayList<Node>();
     }
 
@@ -196,6 +206,7 @@ public class Node {
             initChildren();
         }
         children.add(child);
+        child.parent = this;
     }
 
     /**
@@ -205,6 +216,7 @@ public class Node {
      */
     synchronized final void removeChild(Node child) {
         children.remove(child);
+        child.parent = null;
     }
 
     /**
@@ -225,6 +237,7 @@ public class Node {
             index = children.indexOf(previousChild)+1;
         }
         children.add(index, child);
+        child.parent = this;
     }
 
     /**
@@ -364,9 +377,15 @@ public class Node {
     public Node getContentDocument() {
         return contentDocument;
     }
-    
-    // PENDING
-    //getShadowRoots()
+
+    /**
+     * Returns the parent of this node.
+     *
+     * @return parent of this node.
+     */
+    public Node getParent() {
+        return parent;
+    }
 
     @Override
     public boolean equals(Object obj) {

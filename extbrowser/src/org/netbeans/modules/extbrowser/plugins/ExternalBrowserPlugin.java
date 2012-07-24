@@ -696,6 +696,7 @@ public final class ExternalBrowserPlugin {
             if (webkitDebugger.getDebugger().isEnabled()) {
                 webkitDebugger.getDebugger().disable();
             }
+            webkitDebugger.reset();
             transport.detach();
 
             MessageDispatcherImpl dispatcher = browserImpl.getLookup().lookup(MessageDispatcherImpl.class);

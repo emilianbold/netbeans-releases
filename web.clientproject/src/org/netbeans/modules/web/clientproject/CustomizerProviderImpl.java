@@ -55,7 +55,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Exceptions;
@@ -140,7 +140,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         }
         
         public void actionPerformed(ActionEvent e) {
-            for (ClientProjectConfiguration config: project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
+            for (ClientProjectConfigurationImplementation config: project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
                 config.save();
             }   
             //            uiProperties.save();

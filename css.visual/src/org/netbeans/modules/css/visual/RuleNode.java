@@ -150,6 +150,10 @@ public class RuleNode extends AbstractNode {
     public SortMode getSortMode() {
         return panel.getSortMode();
     }
+    
+    public boolean isAddPropertyMode() {
+        return panel.isAddPropertyMode();
+    }
 
     //called by the RuleEditorPanel when any of the properties affecting 
     //the PropertySet-s generation changes.
@@ -370,9 +374,16 @@ public class RuleNode extends AbstractNode {
         @Override
         public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             //add a new declaration to the rule
-            Declarations declarations = getRule().getDeclarations();
-
             ElementFactory factory = getModel().getElementFactory();
+            
+            Rule rule = getRule();
+            Declarations declarations = rule.getDeclarations();
+
+            if(declarations == null) {
+                //empty rule, create declarations node as well
+                declarations = factory.createDeclarations();
+                rule.setDeclarations(declarations);
+            }
 
             org.netbeans.modules.css.model.api.Property property = factory.createProperty(def.getName());
             Expression expr = factory.createExpression(val);
@@ -382,7 +393,11 @@ public class RuleNode extends AbstractNode {
             declarations.addDeclaration(newDeclaration);
 
             //save the model to the source
-            applyModelChanges();
+            if(!isAddPropertyMode()) {
+                applyModelChanges();
+            } else {
+                fireContextChanged();
+            }
         }
     }
 
@@ -394,7 +409,7 @@ public class RuleNode extends AbstractNode {
             super(declaration.getProperty().getContent().toString(),
                     String.class,
                     declaration.getProperty().getContent().toString(),
-                    null, true, getRule().isValid());
+                    null, true, getRule().isValid() && !isAddPropertyMode());
             this.declaration = declaration;
         }
 
@@ -402,11 +417,19 @@ public class RuleNode extends AbstractNode {
         public String getHtmlDisplayName() {
             return isShowAllProperties() 
                     ? new StringBuilder()
-                    .append("<b>")
+                    .append(getHtmlPrefix())
                     .append(declaration.getProperty().getContent())
-                    .append("</b>")
+                    .append(getHtmlPostfix())
                     .toString()
                     : super.getHtmlDisplayName();
+        }
+        
+        private String getHtmlPrefix() {
+            return isAddPropertyMode() ? "<font color=777777>" : "<b>"; //NOI18N
+        }
+        
+        private String getHtmlPostfix() {
+            return isAddPropertyMode() ? "</font>" : "</b>"; //NOI18N
         }
 
         @Override
@@ -416,8 +439,20 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-            declaration.getPropertyValue().getExpression().setContent(val);
-            applyModelChanges();
+            if(val.isEmpty()) {
+                //remove the whole declaration
+                Declarations declarations = (Declarations)declaration.getParent();
+                declarations.removeDeclaration(declaration);
+            } else {
+                //update the value
+                declaration.getPropertyValue().getExpression().setContent(val);
+            }
+            
+            if(!isAddPropertyMode()) {
+                applyModelChanges();
+            } else {
+                fireContextChanged();
+            }
         }
     }
 

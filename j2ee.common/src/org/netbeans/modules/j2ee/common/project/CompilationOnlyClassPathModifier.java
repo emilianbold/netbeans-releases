@@ -57,6 +57,8 @@ import org.netbeans.api.project.libraries.Library;
  * project's build artifact.
  *
  * @since org.netbeans.modules.j2ee.common/1 1.53
+ * @deprecated use regular classpath modifier with classpath type
+ *    JavaClassPathConstants.COMPILE_ONLY instead
  */
 public interface CompilationOnlyClassPathModifier {
     

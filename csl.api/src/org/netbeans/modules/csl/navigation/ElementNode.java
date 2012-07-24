@@ -59,6 +59,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -67,7 +68,10 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureItem.CollapsedDefault;
+import org.netbeans.modules.csl.api.StructureItemDecorator;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.navigation.actions.OpenAction;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
@@ -112,7 +116,40 @@ public class ElementNode extends AbstractNode {
         this.ui = ui;
         this.fileObject = fileObject;
     }
-    
+
+    @Override
+    public PropertySet[] getPropertySets() {
+        PropertySet[] def = super.getPropertySets();
+        if(description instanceof ElementScanningTask.MimetypeRootNode) {
+            return def;
+        }
+        ElementHandle handle = description.getElementHandle();
+        if(handle == null) {
+            return def;
+        }
+        Language lang = LanguageRegistry.getInstance().getLanguageByMimeType(handle.getMimeType());
+        if(lang == null) {
+            return def;
+        }
+        GsfLanguage gsfLanguage = lang.getGsfLanguage();
+        if(!(gsfLanguage instanceof DefaultLanguageConfig)) {
+            return def;
+        }
+        StructureItemDecorator decorator = ((DefaultLanguageConfig)gsfLanguage).getStructureItemDecorator();
+        if(decorator == null) {
+            return def;
+        }
+        
+        PropertySet[] custom = decorator.getPropertySets(description);
+        if(custom.length == 0) {
+            return def;
+        }
+        PropertySet[] all = new PropertySet[def.length + custom.length];
+        System.arraycopy(def, 0, all, 0, def.length);
+        System.arraycopy(custom, def.length, all, def.length, custom.length);
+        
+        return all;
+    }
     
     @Override
     public Image getIcon(int type) {

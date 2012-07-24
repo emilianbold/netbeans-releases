@@ -161,9 +161,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
             return getBootClassPath();
         } else if (type.equals(ClassPathSupport.ENDORSED)) {
             return getEndorsedClassPath();
-        } else if (type.equals("classpath/packaged")) { //NOI18N
-            //a semi-private contract with visual web.
-            return getProvidedClassPath();
         } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
             // XXX read <processorpath> from maven-compiler-plugin config
             return getCompileTimeClasspath(fileType);
@@ -172,16 +169,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, ActiveJ2S
         }
     }
 
-    private synchronized ClassPath getProvidedClassPath() {
-        ClassPath cp = cache[7];
-        if (cp == null) {
-            cp = ClassPathFactory.createClassPath(new PackagedClassPathImpl(proj.getLookup().lookup(NbMavenProjectImpl.class)));
-            cache[7] = cp;
-        }
-        return cp;
-    }
-    
-    
     private boolean isChildOf(FileObject child, URI[] uris) {
         for (int i = 0; i < uris.length; i++) {
             FileObject fo = FileUtilities.convertURItoFileObject(uris[i]);

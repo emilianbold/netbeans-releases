@@ -55,16 +55,20 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
-import org.netbeans.modules.web.clientproject.spi.ClientProjectConfiguration;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
+import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.GenericSources;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -74,11 +78,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
-
-/**
- *
- * @author david
- */
 
 @AntBasedProjectRegistration(
     type=ClientSideProjectType.TYPE,
@@ -92,10 +91,11 @@ public class ClientSideProject implements Project {
     private final ReferenceHelper refHelper;
     private final PropertyEvaluator eval;
     private final Lookup lookup;
-    private BrowserSupport browserSupport;
+    private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
     private RemoteFiles remoteFiles;
     private ClientSideConfigurationProvider configurationProvider;
+    private ClientProjectConfigurationImplementation lastActiveConfiguration;
     
     public ClientSideProject(AntProjectHelper helper) {
         this.helper = helper;
@@ -109,30 +109,28 @@ public class ClientSideProject implements Project {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName())) {
-                    if (browserSupport != null) {
-                        browserSupport.close(true);
+                    refreshOnSaveListener = null;
+                    if (lastActiveConfiguration != null) {
+                        lastActiveConfiguration.deactivate();
+                        lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
                     }
-                    browserSupport = null;
                 }
             }
         });
     }
 
-    public synchronized BrowserSupport getBrowserSupport() {
-        if (browserSupport == null) {
-            ClientProjectConfiguration cfg = configurationProvider.getActiveConfiguration();
+    public ClientSideConfigurationProvider getProjectConfigurations() {
+        return configurationProvider;
+    }
             
-            //TODO: this is wrong. Get browser should not be on configuration at all
-            //assert cfg.getBrowser() != null : "cannot call getBrowserSupport on configuration which does not have browser";
-
-            if (cfg.getBrowser() == null) {
-                browserSupport = BrowserSupport.create();
+    private RefreshOnSaveListener getRefreshOnSaveListener() {
+        ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
+        if (cfg != null) {
+            return cfg.getRefreshOnSaveListener();
             } else {
-                browserSupport = BrowserSupport.create(cfg.getBrowser());
+            return null;
             }
         }
-        return browserSupport;
-    }
 
     public RemoteFiles getRemoteFiles() {
         return remoteFiles;
@@ -293,18 +291,17 @@ public class ClientSideProject implements Project {
 
         @Override
         public void fileChanged(FileEvent fe) {
-            refreshInBrowser(fe.getFile());
+            RefreshOnSaveListener r = p.getRefreshOnSaveListener();
+            if (r != null) {
+                r.fileChanged(fe.getFile());
+            }
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
-            FileObject fo = fe.getFile();
-            BrowserSupport bs = p.getBrowserSupport();
-            if (bs != null) {
-                URL u = bs.getBrowserURL(fo, false);
-                if (u != null) {
-                    // XXX: close browser's tab ???
-                }
+            RefreshOnSaveListener r = p.getRefreshOnSaveListener();
+            if (r != null) {
+                r.fileDeleted(fe.getFile());
             }
         }
 
@@ -317,15 +314,5 @@ public class ClientSideProject implements Project {
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
-        private void refreshInBrowser(FileObject fo) {
-            BrowserSupport bs = p.getBrowserSupport();
-            if (bs != null) {
-                URL u = bs.getBrowserURL(fo, true);
-                if (u != null) {
-                    assert bs.canReload(u) : u;
-                    bs.reload(u);
-                }
-            }
-        }
     }
 }

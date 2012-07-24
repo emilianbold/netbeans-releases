@@ -48,14 +48,15 @@ import javax.swing.JComponent;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
-import org.openide.loaders.DataObject;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -96,6 +97,10 @@ public class ClassMemberPanel implements NavigatorPanel {
         INSTANCE = this;
         getClassMemberPanelUI().showWaitNode();
 
+        //workaround #1: initialize schedulers, resp. the CSLNavigatorScheduler
+        for(Scheduler s : Lookup.getDefault().lookupAll(Scheduler.class)) {
+        }
+        
         //Bugfix BZ#191289 - switching between files doesn't change navigator content
         selection = context.lookup(new Lookup.Template(DataObject.class));
         selection.addLookupListener(selectionListener);

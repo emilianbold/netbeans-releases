@@ -215,7 +215,7 @@ abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
                     return false;
                 }
             }
-            while(size<2 && !isStopped());
+            while(byteBuffer.position()<byteBuffer.limit() && !isStopped());
             if ( isStopped() ){
                 close();
                 return false;
@@ -234,7 +234,7 @@ abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
                     return false;
                 }
             }
-            while(size<8 && !isStopped());
+            while(byteBuffer.position()<byteBuffer.limit() && !isStopped());
             if ( isStopped() ){
                 close();
                 return false;

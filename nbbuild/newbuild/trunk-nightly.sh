@@ -10,15 +10,20 @@ source init.sh
 
 rm -rf $DIST
 
-if [ ! -z $WORKSPACE ]; then
-    #I'm under hudson and have sources here, I need to clone them
-    #Clean obsolete sources first
-    rm -rf $NB_ALL
-    hg clone -U $WORKSPACE $NB_ALL
-    hg -R $NB_ALL update $NB_BRANCH
-fi
+#if [ ! -z $WORKSPACE ]; then
+#    #I'm under hudson and have sources here, I need to clone them
+#    #Clean obsolete sources first
+#    rm -rf $NB_ALL
+#    hg clone -U $WORKSPACE $NB_ALL
+#    hg -R $NB_ALL update $NB_BRANCH
+#fi
 TIP=`hg tip --template '{rev}'`
 export TIP
+
+if [ $ML_BUILD == 1 ]; then
+    cd $NB_ALL
+    hg clone -r $L10N_BRANCH $ML_REPO $NB_ALL/l10n
+ fi
 
 #if [ $ML_BUILD == 1 ]; then
 #    cd $NB_ALL
@@ -64,11 +69,11 @@ fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}/zip
-    cp -rp $DIST/zip/stableuc-l10n-*.zip  $DIST_SERVER2/${BUILD_ID}/zip/
-    cp -rp $DIST/uc  $DIST_SERVER2/${BUILD_ID}
-    cp -rp $DIST/ml/*  $DIST_SERVER2/${BUILD_ID}
-    cp $DIST/uc/catalog.*  $DIST_SERVER2/${BUILD_ID}/uc/
-    cp -rp $DIST/uc2  $DIST_SERVER2/${BUILD_ID}
+#    cp -rp $DIST/zip/stableuc-l10n-*.zip  $DIST_SERVER2/${BUILD_ID}/zip/
+#    cp -rp $DIST/uc  $DIST_SERVER2/${BUILD_ID}
+    cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
+#    cp $DIST/uc/catalog.*  $DIST_SERVER2/${BUILD_ID}/uc/
+#    cp -rp $DIST/uc2  $DIST_SERVER2/${BUILD_ID}
     if [ -n "${TESTING_SCRIPT}" ]; then
         cd $NB_ALL
         TIP_REV=`hg tip --template "{node}"`
@@ -99,11 +104,11 @@ fi
 
 if [ -n $BUILD_ID ]; then
     mkdir -p $DIST_SERVER2/${BUILD_ID}/zip
-    cp -rp $DIST/zip/stableuc-l10n-*.zip  $DIST_SERVER2/${BUILD_ID}/zip/
-    cp -rp $DIST/uc  $DIST_SERVER2/${BUILD_ID}
-    cp -rp $DIST/ml/*  $DIST_SERVER2/${BUILD_ID}
-    cp $DIST/uc/catalog.*  $DIST_SERVER2/${BUILD_ID}/uc/
-    cp -rp $DIST/uc2  $DIST_SERVER2/${BUILD_ID}
+#    cp -rp $DIST/zip/stableuc-l10n-*.zip  $DIST_SERVER2/${BUILD_ID}/zip/
+#    cp -rp $DIST/uc  $DIST_SERVER2/${BUILD_ID}
+    cp -rp $DIST/*  $DIST_SERVER2/${BUILD_ID}
+#    cp $DIST/uc/catalog.*  $DIST_SERVER2/${BUILD_ID}/uc/
+#    cp -rp $DIST/uc2  $DIST_SERVER2/${BUILD_ID}
     rm $DIST_SERVER2/latest.old
     mv $DIST_SERVER2/latest $DIST_SERVER2/latest.old
     ln -s $DIST_SERVER2/${BUILD_ID} $DIST_SERVER2/latest

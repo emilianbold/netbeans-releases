@@ -42,13 +42,13 @@
 package org.netbeans.modules.php.project.annotations;
 
 import java.util.EnumSet;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  * Tag for user annotation.
  */
-public class UserAnnotationTag extends PhpAnnotationTag {
+public class UserAnnotationTag extends AnnotationCompletionTag {
 
     @NbBundle.Messages({
         "UserAnnotationTag.type.function.title=Function",

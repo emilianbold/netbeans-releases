@@ -112,7 +112,8 @@ public abstract class SocketFramework implements Runnable {
                 }
                 else {
                     if (key.isValid()) {
-                        key.interestOps(SelectionKey.OP_WRITE);
+                        int currentOps = key.interestOps();
+                        key.interestOps(currentOps|SelectionKey.OP_WRITE);
                     }
                 }
             }
@@ -147,7 +148,7 @@ public abstract class SocketFramework implements Runnable {
         if (key.isReadable()) {
             readData(key);
         }
-        else if (key.isWritable()) {
+        if (key.isValid() && key.isWritable()) {
             writeData(key);
         }        
     }
@@ -176,16 +177,28 @@ public abstract class SocketFramework implements Runnable {
     
     protected void writeData( SelectionKey key ) throws IOException  {
         Queue<ByteBuffer> queue = getWriteQueue(key);
+        int ops = SelectionKey.OP_READ;
         while( queue!= null ){
-            ByteBuffer buffer = queue.poll();
+            ByteBuffer buffer = queue.peek();
             if ( buffer == null ){
                 break;
             }
             else {
-                ((SocketChannel)key.channel()).write( buffer);
+                int length = buffer.remaining();
+                int written = ((SocketChannel)key.channel()).write(buffer);
+                if (written < length) {
+                    // Not all bytes written. Socket's output buffer is full probably.
+                    // Keep the rest of this buffer in the write queue and wait until
+                    // the channel is writable again.
+                    ops |= SelectionKey.OP_WRITE;
+                    break;
+                } else {
+                    // The whole content of the buffer written => remove it from the queue
+                    queue.poll();
+                }
             }
         }
-        key.interestOps(SelectionKey.OP_READ);
+        key.interestOps(ops);
     }
     
     private Selector selector;

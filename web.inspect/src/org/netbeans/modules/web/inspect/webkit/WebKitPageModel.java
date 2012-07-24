@@ -165,7 +165,7 @@ public class WebKitPageModel extends PageModel {
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
                         updateNodes(parent);
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
                 }
             }
@@ -176,9 +176,19 @@ public class WebKitPageModel extends PageModel {
                     int nodeId = parent.getNodeId();
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
-                    nodes.remove(child.getNodeId());
+                    // Nodes with a content document are removed and added
+                    // again when a content document changes (and sometimes
+                    // even when it doesn't change) => we are not removing
+                    // them from 'nodes' collection to be able to reuse
+                    // them once they are back.
+                    Node contentDocument = child.getContentDocument();
+                    if (contentDocument == null) {
+                        nodes.remove(child.getNodeId());
+                    } else {
+                        contentDocumentMap.remove(contentDocument.getNodeId());
+                    }
                 }
             }
 
@@ -189,7 +199,7 @@ public class WebKitPageModel extends PageModel {
                     updateNodes(child);
                     DOMNode domNode = nodes.get(nodeId);
                     if (domNode != null) {
-                        domNode.updateChildren();
+                        domNode.updateChildren(parent);
                     }
                 }
             }
@@ -216,6 +226,12 @@ public class WebKitPageModel extends PageModel {
                     final boolean selected = ":netbeans_selected".equals(attrName); // NOI18N
                     final boolean highlighted = ":netbeans_highlighted".equals(attrName); // NOI18N
                     if (selected || highlighted) {
+                        if (!isSelectionMode()) {
+                            // Some delayed selection/highlight modifications
+                            // can appear after deactivation of the selection mode
+                            // => ignore these delayed events
+                            return;
+                        }
                         Node.Attribute attr = node.getAttribute(attrName);
                         String attrValue = attr.getValue();
                         DOMNode n = getNode(node.getNodeId());
@@ -289,7 +305,10 @@ public class WebKitPageModel extends PageModel {
         boolean updateChildren = false;
         List<Node> subNodes = node.getChildren();
         if (subNodes == null) {
-            webKit.getDOM().requestChildNodes(nodeId);
+            int nodeType = node.getNodeType();
+            if (nodeType == org.w3c.dom.Node.ELEMENT_NODE || nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
+                webKit.getDOM().requestChildNodes(nodeId);
+            }
         } else {
             for (Node subNode : subNodes) {
                 updateNodes(subNode);
@@ -318,7 +337,7 @@ public class WebKitPageModel extends PageModel {
             });
         }
         if (updateChildren) {
-            domNode.updateChildren();
+            domNode.updateChildren(node);
         }
         return domNode;
     }
@@ -445,14 +464,14 @@ public class WebKitPageModel extends PageModel {
     Node convertNode(Node node) {
         Node result = node;
         int type = node.getNodeType();
-        if (type == 9) { // document node
+        if (type == org.w3c.dom.Node.DOCUMENT_NODE) {
             // Highlight/select document element
             synchronized (node) {
                 List<Node> subNodes = node.getChildren();
                 if (subNodes != null) {
                     for (Node subNode : subNodes) {
                         // There should be just one element
-                        if (subNode.getNodeType() == 1) { // element
+                        if (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                             result = subNode;
                             break;
                         }

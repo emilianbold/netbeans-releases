@@ -290,6 +290,13 @@ public class FormatVisitor extends NodeVisitor {
                         }
                     }
                 }
+
+                FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
+                        JsTokenId.BRACKET_RIGHT_CURLY, leftBrace.getOffset());
+                if (rightBrace != null) {
+                    appendToken(rightBrace, FormatToken.forFormat(
+                            FormatToken.Kind.AFTER_FUNCTION_DECLARATION));
+                }
             }
 
         }

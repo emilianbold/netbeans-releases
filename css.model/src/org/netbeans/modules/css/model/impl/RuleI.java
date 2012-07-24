@@ -43,9 +43,12 @@ package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.PlainElement;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -102,6 +105,43 @@ public class RuleI extends ModelElement implements Rule {
 
     @Override
     public void setDeclarations(Declarations declarations) {
+        if(!isArtificialElement()) {
+            if(getDeclarations() == null) {
+                //XXX this code is really not nice and should be possibly be
+                //generified somehow
+                
+                int rightCBIndex = -1;
+                int leftCBIndex = -1;
+                //the element has been created from a source code, 
+                //but there was no content between the { } curly braces
+                //so there's no Declarations node inside
+                for(int i = 0; i < getElementsCount(); i++) {
+                    Element e = getElementAt(i);
+                    if(e instanceof PlainElement) {
+                        PlainElement pe = (PlainElement)e;
+                        if(LexerUtils.equals("{", pe.getContent(), true, true)) {
+                            rightCBIndex = i;
+                        }
+                        if(LexerUtils.equals("}", pe.getContent(), true, true)) {
+                            leftCBIndex = i;
+                        }
+                    }
+                }
+                
+                if(rightCBIndex == (leftCBIndex - 1)) {
+                    //nothing between the curly braces
+                } else {
+                    //remove the plain elements from the { } content
+                    for(int i = rightCBIndex + 1; i < leftCBIndex - 1; i++) {
+                        removeElement(i);
+                    }
+                }
+                //insert the declarations between the left curly brace
+                insertElement(leftCBIndex, declarations);
+                
+                return ;
+            }
+        }
         setElement(declarations);
     }
 

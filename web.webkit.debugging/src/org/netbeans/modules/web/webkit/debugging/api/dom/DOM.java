@@ -95,9 +95,7 @@ public class DOM {
      * @return document node.
      */
     public synchronized Node getDocument() {
-// Temporary? workaround: Not caching documentNode because WebKitDebugging
-// is reused for different tabs in external browser (that have different documents).
-//        if (documentNode == null) {
+        if (documentNode == null) {
             Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
             if (response != null) {
                 JSONObject result = response.getResult();
@@ -107,7 +105,7 @@ public class DOM {
                     updateNodesMap(documentNode);
                 }
             }
-//        }
+        }
         return documentNode;
     }
 
@@ -145,7 +143,11 @@ public class DOM {
     public void requestChildNodes(int nodeId) {
         JSONObject params = new JSONObject();
         params.put("nodeId", nodeId); // NOI18N
-        transport.sendCommand(new Command("DOM.requestChildNodes", params)); // NOI18N
+        if (transport.isVersionUnknownBeforeRequestChildNodes()) {
+            transport.sendCommand(new Command("DOM.getChildNodes", params)); // NOI18N
+        } else {
+            transport.sendCommand(new Command("DOM.requestChildNodes", params)); // NOI18N
+        }
     }
 
     /**
@@ -450,6 +452,13 @@ public class DOM {
     }
 
     /**
+     * Resets cached data.
+     */
+    public synchronized void reset() {
+        documentNode = null;
+    }
+
+    /**
      * Notify listeners about {@code childNodesSet} event.
      * 
      * @param parent parent whose children have been set.
@@ -535,6 +544,7 @@ public class DOM {
             int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
             parent = nodes.get(parentId);
             JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
+            parent.initChildren();
             for (Object child : children) {
                 Node node = new Node((JSONObject)child);
                 parent.addChild(node);

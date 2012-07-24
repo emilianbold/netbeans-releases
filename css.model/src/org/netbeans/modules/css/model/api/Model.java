@@ -352,12 +352,28 @@ public final class Model {
             switch (d.getType()) {
 
                 case Difference.CHANGE:
-                    int len = d.getFirstText().length();
+                    //Bug in internal diff workaround:
+                    //
+                    //if there's a change at the last line the returned 
+                    //change diff contains first and second texts with endline
+                    //at the text end which doesn't exist.
+                    //
+                    //caused by a bug at HuntDiff:284-298
+                    
+                    String first = d.getFirstText();
+                    String second = d.getSecondText();
+                    
+                    if(first.endsWith("\n") && second.endsWith("\n")) {
+                        first = first.substring(0, first.length() - 1);
+                        second = second.substring(0, second.length() - 1);
+                    }
+                    
+                    int len = first.length();
 
                     document.remove(sourceDelta + from, len);
-                    document.insertString(sourceDelta + from, d.getSecondText(), null);
+                    document.insertString(sourceDelta + from, second, null);
 
-                    int insertLen = d.getSecondText().length();
+                    int insertLen = second.length();
                     sourceDelta += insertLen - len;
                     break;
 

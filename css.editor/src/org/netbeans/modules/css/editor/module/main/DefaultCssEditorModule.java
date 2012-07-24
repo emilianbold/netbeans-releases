@@ -467,7 +467,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
         final Set<StructureItem> ids = new HashSet<StructureItem>();
         final Set<StructureItem> elements = new HashSet<StructureItem>();
 
-        result.add(new TopLevelStructureItem.Rules(rules));
+        result.add(new TopLevelStructureItem.Rules(rules, context));
         result.add(new TopLevelStructureItem.AtRules(atrules));
         result.add(new TopLevelStructureItem.Classes(classes));
         result.add(new TopLevelStructureItem.Ids(ids));

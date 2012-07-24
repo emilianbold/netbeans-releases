@@ -76,15 +76,16 @@ abstract class AbstractWSHandler75 implements WebSocketChanelHandler {
             }
             byteBuffer.flip();
             byteBuffer.get(bytes, 0, byteBuffer.limit() );
+            int start =0;
             if (bytes[0] == 0 && !newMessage) {
+                start =1;
                 newMessage = true;
                 if (!message.isEmpty()) {
                     messages.add(new ArrayList<Byte>(message));
                 }
                 message.clear();
             }
-            int i;
-            for (i = 1; i < byteBuffer.limit(); i++) {
+            for (int i = start; i < byteBuffer.limit(); i++) {
                 if (bytes[i] == (byte) 255) {
                     messages.add(new ArrayList<Byte>(message));
                     message.clear();

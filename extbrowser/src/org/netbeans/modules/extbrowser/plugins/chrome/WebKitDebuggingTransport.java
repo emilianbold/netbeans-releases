@@ -100,4 +100,9 @@ public class WebKitDebuggingTransport implements TransportImplementation {
         }
     }
     
+    @Override
+    public String getVersion() {
+        return VERSION_1;
+    }
+    
 }

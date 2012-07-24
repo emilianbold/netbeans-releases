@@ -172,6 +172,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
                                 List<? extends StructureItem> children = findCachedStructure(resultIterator.getSnapshot(), r);
                                 if (children == null) {
                                     long startTime = System.currentTimeMillis();
+//                                    children = convert(scanner.scan((ParserResult) r), language);
                                     children = scanner.scan((ParserResult) r);
                                     long endTime = System.currentTimeMillis();
                                     Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
@@ -271,7 +272,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
     public synchronized boolean isCancelled() {
         return canceled;
     }
-
+    
     private static final class RootStructureItem implements StructureItem {
 
         private final List<? extends StructureItem> items;
@@ -289,7 +290,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
         }
 
         public ElementHandle getElementHandle() {
-            throw new UnsupportedOperationException("Not supported on the Root Node.");
+            return null;
         }
 
         public ElementKind getKind() {

@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Platform;
@@ -68,11 +69,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.*;
 import javafx.util.Callback;
-import javax.swing.AbstractAction;
-import javax.swing.JComponent;
-import javax.swing.JPopupMenu;
-import javax.swing.JToolBar;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import org.netbeans.core.HtmlBrowserComponent;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserEvent;
@@ -114,6 +111,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     //toolbar for extra buttons (e.g. for developer tools)
     private final JToolBar toolbar = new JToolBar();
 
+    private final Semaphore INIT_LOCK = new Semaphore( -1 );
+
     /**
      * Creates a new {@code WebBrowserImpl}.
      */
@@ -123,11 +122,21 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     private WebBrowserImpl( WebView webView ) {
         this.browser = webView;
+        INIT_LOCK.release();
     }
 
     WebEngine getEngine() {
-        assert browser != null;
-        return browser.getEngine();
+        WebEngine res = null;
+        try {
+            INIT_LOCK.acquire();
+            assert browser != null;
+            res = browser.getEngine();
+        } catch( InterruptedException iE ) {
+            Exceptions.printStackTrace( iE );
+        } finally {
+            INIT_LOCK.release();
+        }
+        return res;
     }
     
     
@@ -182,7 +191,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         javafx.application.Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.getEngine().reload();
+                getEngine().reload();
             }
         });
     }
@@ -194,7 +203,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         javafx.application.Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.getEngine().getLoadWorker().cancel();
+                getEngine().getLoadWorker().cancel();
             }
         });
     }
@@ -216,7 +225,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 if (!(url.startsWith( "http://") || url.startsWith( "https://") || url.startsWith("file:/"))) { // NOI18N
                     fullUrl = "http://" + url; // NOI18N
                 }
-                browser.getEngine().load( fullUrl );
+                getEngine().load( fullUrl );
             }
         });
     }
@@ -253,7 +262,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             javafx.application.Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    browser.getEngine().getHistory().go( 1 );
+                    getEngine().getHistory().go( 1 );
                 }
             });
         }
@@ -270,7 +279,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             javafx.application.Platform.runLater(new Runnable() {
                 @Override
                 public void run() {
-                    browser.getEngine().getHistory().go( -1 );
+                    getEngine().getHistory().go( -1 );
                 }
             });
         }
@@ -304,7 +313,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         javafx.application.Platform.runLater( new Runnable() {
             @Override
             public void run() {
-                browser.getEngine().loadContent( content );
+                getEngine().loadContent( content );
             }
         });
     }
@@ -316,7 +325,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             document = runInFXThread(new Callable<Document>() {
                 @Override
                 public Document call() throws Exception {
-                    return browser.getEngine().getDocument();
+                    return getEngine().getDocument();
                 }
             });
         }
@@ -381,7 +390,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             result = runInFXThread(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {
-                    return browser.getEngine().executeScript(script);
+                    return getEngine().executeScript(script);
                 }
             });
         }
@@ -423,6 +432,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             initBrowser( view );
 
             browser = view;
+            INIT_LOCK.release();
         }
 
         HBox.setHgrow( browser, Priority.ALWAYS );
@@ -629,14 +639,14 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private boolean _isForward() {
         if( null == browser )
             return false;
-        WebHistory history = browser.getEngine().getHistory();
+        WebHistory history = getEngine().getHistory();
         return history.getCurrentIndex() < history.getEntries().size()-1;
     }
 
     private boolean _isBackward() {
         if( null == browser )
             return false;
-        WebHistory history = browser.getEngine().getHistory();
+        WebHistory history = getEngine().getHistory();
         return history.getCurrentIndex() > 0;
     }
 

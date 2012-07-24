@@ -92,6 +92,14 @@ public class TransportHelper {
         impl.sendCommand(command);
     }
     
+    public boolean isVersionUnknownBeforeRequestChildNodes() {
+        return TransportImplementation.VERSION_UNKNOWN_BEFORE_requestChildNodes.equals(impl.getVersion());
+    }
+    
+    public boolean isVersion1() {
+        return TransportImplementation.VERSION_1.equals(impl.getVersion());
+    }
+    
     public Response sendBlockingCommand(Command command) {
         assert !EventQueue.isDispatchThread();
         log("blocking send "+command.toString()); // NOI18N

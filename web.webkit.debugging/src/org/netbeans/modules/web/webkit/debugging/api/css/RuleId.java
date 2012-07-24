@@ -81,4 +81,17 @@ public class RuleId {
     public int getOrdinal() {
         return ordinal;
     }
+
+    /**
+     * Returns a {@code JSONObject} that corresponds to this {@code RuleId}.
+     *
+     * @return {@code JSONObject} that corresponds to this {@code RuleId}.
+     */
+    JSONObject toJSONObject() {
+        JSONObject json = new JSONObject();
+        json.put("styleSheetId", getStyleSheetId()); // NOI18N
+        json.put("ordinal", getOrdinal()); // NOI18N
+        return json;
+    }
+
 }

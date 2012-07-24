@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentF
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 
@@ -88,7 +89,7 @@ public final class DeepReparsingUtils {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnlyOneFile {0}", fileImpl.getAbsolutePath());
         }
-        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+        project.markAsParsingPreprocStates(fileImpl);
         fileImpl.markReparseNeeded(false);
         ParserQueue.instance().addToBeParsedNext(fileImpl);
     }
@@ -121,7 +122,7 @@ public final class DeepReparsingUtils {
             if (TRACE) {
                 LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
             }
-            changedFileProject.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+            changedFileProject.markAsParsingPreprocStates(fileImpl);
             fileImpl.markReparseNeeded(false);
             ParserQueue.instance().addForPartialReparse(fileImpl);
         } else {
@@ -423,7 +424,7 @@ public final class DeepReparsingUtils {
 
     private static void addCompilationUnitToReparse(final FileImpl fileImpl, final boolean invalidateCache) {
         ProjectBase project = fileImpl.getProjectImpl(true);
-        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+        project.markAsParsingPreprocStates(fileImpl);
         fileImpl.markReparseNeeded(invalidateCache);
         ParserQueue.instance().add(fileImpl, fileImpl.getPreprocHandlersForParse(), ParserQueue.Position.HEAD);
         if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
@@ -435,10 +436,14 @@ public final class DeepReparsingUtils {
         if (nativeFile.getFileObject() != null && nativeFile.getFileObject().isValid()) {
             file.markReparseNeeded(true);
             APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
-            if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
-                System.out.println("Add file to reparse " + file.getAbsolutePath() + " from " + project); // NOI18N
+            if (state == null) {
+                CndUtils.assertTrue(!file.isValid(), "setChangedFileState returned null for valid file ", file); //NOI18N
+            } else {
+                if (TraceFlags.USE_DEEP_REPARSING_TRACE) {
+                    System.out.println("Add file to reparse " + file.getAbsolutePath() + " from " + project); // NOI18N
+                }
+                ParserQueue.instance().add(file, state, ParserQueue.Position.HEAD);
             }
-            ParserQueue.instance().add(file, state, ParserQueue.Position.HEAD);
         } else {
             assert false;
         }

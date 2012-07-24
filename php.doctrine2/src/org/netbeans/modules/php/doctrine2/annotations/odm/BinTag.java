@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.odm;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class BinTag extends PhpAnnotationTag {
+public class BinTag extends AnnotationCompletionTag {
 
     public BinTag() {
         super("Bin", // NOI18N
