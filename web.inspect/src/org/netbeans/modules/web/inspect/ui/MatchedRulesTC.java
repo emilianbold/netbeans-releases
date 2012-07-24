@@ -42,11 +42,9 @@
 package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.swing.JScrollPane;
-import javax.swing.UIManager;
+import javax.swing.JComponent;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.awt.ActionID;
@@ -76,8 +74,8 @@ import org.openide.util.NbBundle.Messages;
         displayName = "#CTL_MatchedRulesAction", // NOI18N
         preferredID = MatchedRulesTC.ID)
 @Messages({
-    "CTL_MatchedRulesAction=Matched Rules", // NOI18N
-    "CTL_MatchedRulesTC=Matched Rules", // NOI18N
+    "CTL_MatchedRulesAction=CSS Styles", // NOI18N
+    "CTL_MatchedRulesTC=CSS Styles", // NOI18N
     "HINT_MatchedRulesTC=This window shows matched style rules of an element." // NOI18N
 })
 public final class MatchedRulesTC extends TopComponent {
@@ -85,8 +83,6 @@ public final class MatchedRulesTC extends TopComponent {
     static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
     /** TopComponent ID. */
     public static final String ID = "MatchedRulesTC"; // NOI18N
-    /** Scrollpane in the root of component hierarchy.  */
-    private JScrollPane scrollPane;
 
     /**
      * Creates a new {@code MatchedRulesTC}.
@@ -94,23 +90,9 @@ public final class MatchedRulesTC extends TopComponent {
     public MatchedRulesTC() {
         setName(Bundle.CTL_MatchedRulesTC());
         setToolTipText(Bundle.HINT_MatchedRulesTC());
-        initComponents();
+        setLayout(new BorderLayout());
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
         update();
-    }
-
-    /**
-     * Initializes the components in this {@code TopComponent}.
-     */
-    private void initComponents() {
-        setLayout(new BorderLayout());
-        scrollPane = new JScrollPane();
-        scrollPane.setBorder(null);
-        Font font = UIManager.getFont("Label.font"); // NOI18N
-        int unitIncrement = (int)(font.getSize()*1.5);
-        scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
-        add(scrollPane);
     }
 
     /**
@@ -118,8 +100,12 @@ public final class MatchedRulesTC extends TopComponent {
      */
     private void update() {
         PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-        MatchedRulesPanel panel = new MatchedRulesPanel(pageModel);
-        scrollPane.setViewportView(panel);
+        if (pageModel == null) {
+            // PENDING
+        } else {
+            JComponent stylesView = pageModel.getCSSStylesView();
+            add(stylesView, BorderLayout.CENTER);
+        }
     }
 
     /**

@@ -46,6 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JComponent;
 import org.openide.nodes.Node;
 
 /**
@@ -114,6 +115,13 @@ public abstract class PageModel {
      * @return highlighted nodes.
      */
     public abstract List<? extends Node> getHighlightedNodes();
+
+    /**
+     * Returns CSS Styles view for this page.
+     *
+     * @return CSS Styles view for this page.
+     */
+    public abstract JComponent getCSSStylesView();
 
     /**
      * Returns computed style of the specified element.
