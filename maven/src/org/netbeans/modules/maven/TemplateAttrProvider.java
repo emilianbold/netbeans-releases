@@ -43,7 +43,9 @@
 package org.netbeans.modules.maven;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -80,7 +82,7 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
     }
     
     public @Override Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
-        Map<String,String> values = new TreeMap<String,String>();
+        Map<String,Object> values = new TreeMap<String,Object>();
         String license = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_LICENSE, true); //NOI18N
         MavenProject mp = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
         if (license == null) {
@@ -126,11 +128,45 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         ProjectInformation pi = ProjectUtils.getInformation(project);
         values.put("name", mp.getArtifactId()); // NOI18N
         values.put("displayName", pi.getDisplayName()); // NOI18N
+        
+        //#206321
+        if (mp.getProperties() != null) {
+            Map<String, Object> props = new HashMap<String, Object>();
+            for (String prop : mp.getProperties().stringPropertyNames()) {
+                String[] split = prop.split("\\.");
+                String value = mp.getProperties().getProperty(prop);
+                putProp(split, props, value);        
+            }
+            values.put("property", props);
+        }
 
         if (values.size() > 0) {
             return Collections.singletonMap("project", values); // NOI18N
         } else {
             return null;
+        }
+    }
+
+    private void putProp(String[] split, Map<String, Object> props, String value) {
+        if (split.length > 0) {
+            if (split.length == 1) {
+                props.put(split[0], value);
+            } else {
+                Object valu = props.get(split[0]);
+                Map<String, Object> childProp;
+                if (valu == null) {
+                    childProp = new HashMap<String, Object>();
+                    props.put(split[0], childProp);
+                } else {
+                    if (valu instanceof Map) {
+                        childProp = (Map<String, Object>) valu;
+                    } else {
+                        //cannot have both maven.test and maven.test.skip properties defined :(
+                        return;
+                    }
+                }
+                putProp(Arrays.copyOfRange(split, 1, split.length), childProp, value);
+            }
         }
     }
 }
