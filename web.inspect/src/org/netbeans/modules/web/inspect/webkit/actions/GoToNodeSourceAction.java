@@ -151,8 +151,9 @@ public class GoToNodeSourceAction extends NodeAction  {
         private FileObject fob;
 
         /**
-         * Creates a new {@code GoToElementTask} for the specified file and element.
-         * 
+         * Creates a new {@code GoToNodeTask} for the specified file and node.
+         *
+         * @param node node to jump to.
          * @param fob file to jump into.
          */
         GoToNodeTask(org.netbeans.modules.web.webkit.debugging.api.dom.Node node, FileObject fob) {
