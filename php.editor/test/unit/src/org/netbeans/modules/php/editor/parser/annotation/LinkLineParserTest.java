@@ -104,6 +104,13 @@ public class LinkLineParserTest extends PHPTestBase {
         assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
     }
 
+    public void testValidUseCase_07() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("link");
+        assertEquals("link", parsedLine.getName());
+        assertEquals("", parsedLine.getDescription());
+        assertEquals(Collections.EMPTY_MAP, parsedLine.getTypes());
+    }
+
     public void testInvalidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("@link http://www.seznam.cz");
         assertNull(parsedLine);
