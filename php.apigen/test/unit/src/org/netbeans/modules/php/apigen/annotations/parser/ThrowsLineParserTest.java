@@ -142,6 +142,38 @@ public class ThrowsLineParserTest extends NbTestCase {
         }
     }
 
+    public void testValidUseCase_07() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("throws\t\\My\\Cool\\Exception");
+        assertEquals("throws", parsedLine.getName());
+        assertEquals("\\My\\Cool\\Exception", parsedLine.getDescription());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertNotNull(types);
+        assertEquals(1, types.size());
+        for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
+            OffsetRange offsetRange = entry.getKey();
+            String typeName = entry.getValue();
+            assertEquals(7, offsetRange.getStart());
+            assertEquals(25, offsetRange.getEnd());
+            assertEquals("\\My\\Cool\\Exception", typeName);
+        }
+    }
+
+    public void testValidUseCase_08() throws Exception {
+        AnnotationParsedLine parsedLine = parser.parse("throws\tMy\\Cool\\Exception");
+        assertEquals("throws", parsedLine.getName());
+        assertEquals("My\\Cool\\Exception", parsedLine.getDescription());
+        Map<OffsetRange, String> types = parsedLine.getTypes();
+        assertNotNull(types);
+        assertEquals(1, types.size());
+        for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
+            OffsetRange offsetRange = entry.getKey();
+            String typeName = entry.getValue();
+            assertEquals(7, offsetRange.getStart());
+            assertEquals(24, offsetRange.getEnd());
+            assertEquals("My\\Cool\\Exception", typeName);
+        }
+    }
+
     public void testInvalidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("@throws Exception");
         assertNull(parsedLine);
