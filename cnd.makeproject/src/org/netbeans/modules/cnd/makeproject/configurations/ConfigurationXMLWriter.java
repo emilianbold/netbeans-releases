@@ -74,7 +74,7 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
 
         String tag = CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT;
 
-        encoder = new ConfigurationXMLCodec(tag, null, projectDescriptor, null);
+        encoder = new ConfigurationXMLCodec(tag, true, null, projectDescriptor, null);
         assert projectDescriptor.getState() != State.READING;
         write("nbproject/configurations.xml"); // NOI18N
 
