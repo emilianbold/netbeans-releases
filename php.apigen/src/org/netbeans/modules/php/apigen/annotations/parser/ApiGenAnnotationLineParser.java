@@ -57,6 +57,7 @@ public class ApiGenAnnotationLineParser implements AnnotationLineParser {
     private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
     static {
         PARSERS.add(new ThrowsLineParser());
+        PARSERS.add(new SeeLineParser());
     }
 
     private ApiGenAnnotationLineParser() {

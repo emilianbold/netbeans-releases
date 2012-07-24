@@ -772,6 +772,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/ternary2.js");
     }
 
+    public void testVar1() throws Exception {
+        reformatFileContents("testfiles/formatter/var1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testVar1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/var1.js");
+    }
+
     protected void dumpFormatTokens(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);

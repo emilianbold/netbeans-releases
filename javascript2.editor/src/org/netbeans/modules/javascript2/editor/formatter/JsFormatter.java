@@ -168,6 +168,7 @@ public class JsFormatter implements Formatter {
                                     !CodeStyle.get(formatContext).spaceBeforeComma());
                             break;
                         case AFTER_COMMA:
+                        case VAR_AFTER_COMMA:
                             offsetDiff = handleSpaceAfter(tokens, i, formatContext, offsetDiff,
                                     !CodeStyle.get(formatContext).spaceAfterComma());
                             break;
@@ -499,6 +500,7 @@ public class JsFormatter implements Formatter {
         }
         return value;
     }
+
     private int handleSpaceAfter(List<FormatToken> tokens, int index,
             FormatContext formatContext, int offsetDiff, boolean remove) {
 

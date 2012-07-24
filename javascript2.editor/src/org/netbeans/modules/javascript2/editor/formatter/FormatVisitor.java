@@ -547,6 +547,24 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(literalNode, onset);
     }
 
+    @Override
+    public Node visit(VarNode varNode, boolean onset) {
+        if (onset) {
+            int finish = getFinish(varNode) - 1;
+            Token nextToken = getNextNonEmptyToken(finish);
+            if (nextToken != null && nextToken.id() == JsTokenId.OPERATOR_COMMA) {
+                FormatToken formatToken = tokenStream.getToken(ts.offset());
+                if (formatToken != null) {
+                    FormatToken next = formatToken.next();
+                    assert next.getKind() == FormatToken.Kind.AFTER_COMMA : next.getKind();
+                    tokenStream.removeToken(next);
+                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.VAR_AFTER_COMMA));
+                }
+            }
+        }
+        return super.visit(varNode, onset);
+    }
+
     private boolean handleWhile(WhileNode whileNode) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {
@@ -667,6 +685,7 @@ public class FormatVisitor extends NodeVisitor {
              * last one and the proper finish token.
              */
             if (statement instanceof VarNode) {
+                int index = i + 1;
                 Node lastVarNode = statement;
 
                 while (i + 1 < statements.size()) {
@@ -685,6 +704,10 @@ public class FormatVisitor extends NodeVisitor {
                 }
 
                 assert lastVarNode instanceof VarNode;
+                for (int j = index; j < i; j++) {
+                    Node skipped = statements.get(j);
+                    skipped.accept(this);
+                }
 
                 Token token = getNextNonEmptyToken(getFinish(lastVarNode) - 1);
                 if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
