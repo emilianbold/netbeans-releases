@@ -54,27 +54,38 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 class ThrowsLineParser implements AnnotationLineParser {
 
     static final String ANNOTATION_NAME = "throws"; //NOI18N
-    private static final String ANNOTATION_START = ANNOTATION_NAME + " ";
+    private String line;
+    private String[] tokens;
 
     @Override
     public AnnotationParsedLine parse(final String line) {
+        this.line = line;
         AnnotationParsedLine result = null;
-        if (line.startsWith(ANNOTATION_START)) {
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-            int start = ANNOTATION_START.length();
-            String description = line.substring(start);
-            int end = start + findEndOfType(description);
-            types.put(new OffsetRange(start, end), line.substring(start, end));
-            result = new ThrowsParsedLine(description, types);
+        tokens = line.split("[ \t]+"); //NOI18N
+        if (tokens.length > 0 && ANNOTATION_NAME.equals(tokens[0])) {
+            result = handleAnnotation();
         }
         return result;
     }
 
-    private static int findEndOfType(final String line) {
-        int result = line.length();
+    private AnnotationParsedLine handleAnnotation() {
+        String description = "";
+        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        if (tokens.length > 1) {
+            description = tokens[1];
+            int start = ANNOTATION_NAME.length() + countSpacesToFirstNonWhitespace(line.substring(ANNOTATION_NAME.length()));
+            int end = start + description.length();
+            types.put(new OffsetRange(start, end), line.substring(start, end));
+        }
+        return new ThrowsParsedLine(description, types);
+    }
+
+    private static int countSpacesToFirstNonWhitespace(final String line) {
+        int result = 0;
         for (int i = 0; i < line.length(); i++) {
             if (Character.isWhitespace(line.charAt(i))) {
-                result = i;
+                result++;
+            } else {
                 break;
             }
         }
