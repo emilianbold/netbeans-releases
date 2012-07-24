@@ -46,7 +46,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.web.inspect.actions.GoToElementSourceAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -378,8 +377,8 @@ public class CSSUtils {
                     doc = ec.openDocument();
                 } catch (UserQuestionException uqe) {
                     String title = NbBundle.getMessage(
-                            GoToElementSourceAction.class,
-                            "GoToElementSourceAction.question"); // NOI18N
+                            CSSUtils.class,
+                            "CSSUtils.openQuestion"); // NOI18N
                     Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
                             uqe.getLocalizedMessage(),
                             title,
@@ -410,7 +409,7 @@ public class CSSUtils {
                 return true;
             }
         } catch (IOException ioe) {
-            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ioe);
+            Logger.getLogger(CSSUtils.class.getName()).log(Level.INFO, null, ioe);
         }
 
         return false;
