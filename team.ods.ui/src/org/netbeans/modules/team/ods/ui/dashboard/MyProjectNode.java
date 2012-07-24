@@ -54,6 +54,7 @@ import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
+import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
@@ -313,7 +314,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         }
                         BuildHandle bh = buildAccessor
                                 .chooseMostInterrestingBuild(builds);
-                        setBuildsLater(bh);
+                        setBuildsLater(bh, prepareTooltipText(bh, builds));
                     }
                 }
             }
@@ -333,12 +334,62 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         });
     }
 
+      @NbBundle.Messages({
+        "# {0} - name of single failed build",
+        "MSG_failed_single=Build {0} has failed",
+        "# {0} - number of failed builds",
+        "MSG_failed_multiple={0} builds have failed",
+        "# {0} - name of single unstable build",
+        "MSG_unstable_single=Build {0} is unstable",
+        "# {0} - number of unstable builds",
+        "MSG_unstable_multiple={0} builds are unstable"
+    })
+    private String prepareTooltipText(BuildHandle interrestingBuild,
+            List<BuildHandle> allBuilds) {
+        if (interrestingBuild == null) {
+            return null;
+        }
+        BuildHandle unstable = null;
+        BuildHandle failed = null;
+        int countUnstable = 0;
+        int countFailed = 0;
+        for (BuildHandle bh : allBuilds) {
+            if (bh.getStatus().equals(Status.UNSTABLE)) {
+                countUnstable++;
+                unstable = bh;
+            } else if (bh.getStatus().equals(Status.FAILED)) {
+                countFailed++;
+                failed = bh;
+            }
+        }
+        if (countFailed + countUnstable == 0) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder("<html>");                 //NOI18N
+        if (countFailed == 1 && failed != null) {
+            sb.append(Bundle.MSG_failed_single(failed.getDisplayName()));
+        } else if (countFailed > 1) {
+            sb.append(Bundle.MSG_failed_multiple(countFailed));
+        }
+        if (countFailed > 0 && countUnstable > 0) {
+            sb.append("<br/>");                                         //NOI18N
+        }
+        if (countUnstable == 1 && unstable != null) {
+            sb.append(Bundle.MSG_unstable_single(unstable.getDisplayName()));
+        } else if (countUnstable > 1) {
+            sb.append(Bundle.MSG_unstable_multiple(countUnstable));
+        }
+        sb.append("</html>");                                           //NOI18N
+        return sb.toString();
+    }
+
     /**
      * Set interresting builds button.
      *
      * @param buildHandle Handle of the interresting build.
      */
-    private void setBuildsLater(final BuildHandle buildHandle) {
+    private void setBuildsLater(final BuildHandle buildHandle,
+            final String tooltipText) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -352,7 +403,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                     btnBuilds = new LinkButton(actionName, actionIcon, action);
                     btnBuilds.setHorizontalTextPosition(JLabel.LEFT);
                     btnBuilds.setVerticalAlignment(JButton.CENTER);
-                    btnBuilds.setToolTipText(buildHandle.getDisplayName());
+                    btnBuilds.setToolTipText(tooltipText);
                     component.add(btnBuilds, new GridBagConstraints(5, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
                 } else {
                     btnBuilds = null;
