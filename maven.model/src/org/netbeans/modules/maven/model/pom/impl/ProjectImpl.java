@@ -333,7 +333,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     @Override
     public void removeRepository(Repository repo) {
-        remove(repo, getModel().getPOMQNames().REPOSITORIES.getName(), RepositoryImpl.PluginRepoList.class);
+        remove(repo, getModel().getPOMQNames().REPOSITORIES.getName(), RepositoryImpl.RepoList.class);
     }
 
     @Override
