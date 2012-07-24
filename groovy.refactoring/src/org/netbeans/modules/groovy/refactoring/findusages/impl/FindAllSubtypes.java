@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring;
+package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
-import java.util.Collection;
-import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
-import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ModuleNode;
+import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
  *
  * @author Martin Janicek
  */
-@ServiceProvider(service = ActionsImplementationProvider.class, position=100)
-public class RefactoringActionsProvider extends ActionsImplementationProvider {
+public class FindAllSubtypes extends AbstractFindUsages {
 
-    @Override
-    public boolean canFindUsages(Lookup lookup) {
-        /*Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        if (nodes.size() != 1) {
-            return false;
-        }
-
-        Node node = nodes.iterator().next();
-        DataObject dob = node.getLookup().lookup(DataObject.class);
-        if (dob == null) {
-            return false;
-        }
-
-        FileObject fo = dob.getPrimaryFile();
-
-        if ((dob!=null) && GroovyProjectUtil.isGroovyFile(fo)) {
-            return true;
-        }*/
-        return false;
+    public FindAllSubtypes(GroovyRefactoringElement element) {
+        super(element);
     }
 
     @Override
-    public void doFindUsages(Lookup lookup) {
-        RefactoringTask.createRefactoringTask(lookup).run();
+    protected AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String defClass) {
+        return new FindAllSubtypesVisitor(moduleNode, defClass);
+    }
+
+    
+    private class FindAllSubtypesVisitor extends AbstractFindUsagesVisitor {
+
+        private final String findingFqn;
+
+        
+        public FindAllSubtypesVisitor(ModuleNode moduleNode, String findingFqn) {
+            super(moduleNode);
+            this.findingFqn = findingFqn;
+        }
+
+        @Override
+        public void visitClass(ClassNode node) {
+            ClassNode superClass = node.getSuperClass();
+            while (superClass != null) {
+                if (findingFqn.equals(superClass.getName())) {
+                    usages.add(node);
+                    break;
+                } else {
+                    superClass = superClass.getSuperClass();
+                }
+            }
+            super.visitClass(node);
+        }
     }
 }

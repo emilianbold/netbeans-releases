@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.refactoring;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
@@ -83,13 +84,16 @@ public class GroovyRefactoringElement extends ASTElement {
             return ((PropertyNode) node).getName();
         } else if (node instanceof VariableExpression) {
             return ((VariableExpression) node).getName();
+        } else if (node instanceof ClassExpression) {
+            return ((ClassExpression) node).getType().getNameWithoutPackage();
         }
-        return "Not implemented yet - GroovyRefactoringElement.getName() needs to be improve!\n";
+        return "Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName();
     }
 
     @Override
     public ElementKind getKind() {
-        if (node instanceof ClassNode) {
+        if ((node instanceof ClassNode) ||
+            (node instanceof ClassExpression)) {
             return ElementKind.CLASS;
         } else if (node instanceof MethodNode) {
             return ElementKind.METHOD;
@@ -103,7 +107,11 @@ public class GroovyRefactoringElement extends ASTElement {
         return super.getKind();
     }
 
-    public ClassNode getDeclaringClass() {
+    public final String getDeclaratingClassName() {
+        return getDeclaringClass().getNameWithoutPackage();
+    }
+
+    public final ClassNode getDeclaringClass() {
         if (node instanceof ClassNode) {
             return (ClassNode) node;
         } else if (node instanceof MethodNode) {
@@ -114,8 +122,14 @@ public class GroovyRefactoringElement extends ASTElement {
             return ((PropertyNode) node).getDeclaringClass();
         } else if (node instanceof VariableExpression) {
             return ((VariableExpression) node).getDeclaringClass();
+        } else if (node instanceof ClassExpression) {
+            return ((ClassExpression) node).getType().getDeclaringClass();
         }
-        throw new IllegalStateException("Something isn't implemented yet - see GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + "isn't handled at the moment!");
+        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + "isn't handled at the moment!");
+    }
+
+    public final String getFQN() {
+        return AstUtilities.getFqnName(path);
     }
 
     @Override
@@ -144,15 +158,7 @@ public class GroovyRefactoringElement extends ASTElement {
         return super.getSignature();
     }
 
-    public String getDefClass() {
-        try {
-            return getDeclaringClass().getNameWithoutPackage();
-        } catch (IllegalStateException ex) {
-            return AstUtilities.getFqnName(path);
-        }
-    }
-
-    public String getType() {
+    public final String getType() {
         ClassNode type;
         if (node instanceof ClassNode) {
             type = ((ClassNode) node);
