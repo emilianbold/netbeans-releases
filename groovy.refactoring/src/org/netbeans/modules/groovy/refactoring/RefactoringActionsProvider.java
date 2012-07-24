@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,54 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.groovy.refactoring;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesPlugin;
+import java.util.Collection;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Groovy refactoring plugin factory implementation.
- * This is the place where is decided which plugin should be used in which cases.
  *
  * @author Martin Janicek
  */
-@ServiceProvider(service = RefactoringPluginFactory.class)
-public class GroovyRefactoringFactory implements RefactoringPluginFactory {
+@ServiceProvider(service = ActionsImplementationProvider.class, position=100)
+public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     @Override
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup lookup = refactoring.getRefactoringSource();
-        NonRecursiveFolder pkg = lookup.lookup(NonRecursiveFolder.class);
-        FileObject sourceFO = lookup.lookup(FileObject.class);
-        GroovyRefactoringElement element = lookup.lookup(GroovyRefactoringElement.class);
-
-        if (sourceFO == null){
-            if (pkg != null){
-                sourceFO = pkg.getFolder();
-            } else if (element != null) {
-                sourceFO = element.getFileObject();
-            }
+    public boolean canFindUsages(Lookup lookup) {
+        /*Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
         }
 
-        if (sourceFO == null){
-            return null;
+        Node node = nodes.iterator().next();
+        DataObject dob = node.getLookup().lookup(DataObject.class);
+        if (dob == null) {
+            return false;
         }
 
-        boolean supportedFile = GroovyProjectUtil.isInGroovyProject(sourceFO) && GroovyProjectUtil.isGroovyFile(sourceFO);
+        FileObject fo = dob.getPrimaryFile();
 
-        if (refactoring instanceof WhereUsedQuery && supportedFile){
-            return new FindUsagesPlugin(sourceFO, element, (WhereUsedQuery) refactoring);
-        }
-        return null;
+        if ((dob!=null) && GroovyProjectUtil.isGroovyFile(fo)) {
+            return true;
+        }*/
+        return false;
+    }
+
+    @Override
+    public void doFindUsages(Lookup lookup) {
+        RefactoringTask.createRefactoringTask(lookup).run();
     }
 }

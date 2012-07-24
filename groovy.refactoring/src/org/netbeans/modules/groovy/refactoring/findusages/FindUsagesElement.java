@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,54 +34,77 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring;
+package org.netbeans.modules.groovy.refactoring.findusages;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesPlugin;
+import javax.swing.text.Position;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
+import org.openide.text.Line;
+import org.openide.text.PositionBounds;
+import org.openide.text.PositionRef;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Groovy refactoring plugin factory implementation.
- * This is the place where is decided which plugin should be used in which cases.
  *
  * @author Martin Janicek
  */
-@ServiceProvider(service = RefactoringPluginFactory.class)
-public class GroovyRefactoringFactory implements RefactoringPluginFactory {
+public class FindUsagesElement extends SimpleRefactoringElementImplementation {
+
+    private final GroovyRefactoringElement element;
+    private final BaseDocument doc;
+
+    public FindUsagesElement(GroovyRefactoringElement element, BaseDocument doc) {
+        this.element = element;
+        this.doc = doc;
+    }
 
     @Override
-    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        Lookup lookup = refactoring.getRefactoringSource();
-        NonRecursiveFolder pkg = lookup.lookup(NonRecursiveFolder.class);
-        FileObject sourceFO = lookup.lookup(FileObject.class);
-        GroovyRefactoringElement element = lookup.lookup(GroovyRefactoringElement.class);
+    public String getText() {
+        return element.getName() + " -";
+    }
 
-        if (sourceFO == null){
-            if (pkg != null){
-                sourceFO = pkg.getFolder();
-            } else if (element != null) {
-                sourceFO = element.getFileObject();
-            }
-        }
+    @Override
+    public String getDisplayText() {
+        Line line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
+        return line.getText().trim();
+    }
 
-        if (sourceFO == null){
+    @Override
+    public void performChange() {
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
+
+    @Override
+    public FileObject getParentFile() {
+        return element.getFileObject();
+    }
+
+    @Override
+    public PositionBounds getPosition() {
+        OffsetRange range = AstUtilities.getRange(element.getNode(), doc);
+        if (range == OffsetRange.NONE) {
             return null;
         }
 
-        boolean supportedFile = GroovyProjectUtil.isInGroovyProject(sourceFO) && GroovyProjectUtil.isGroovyFile(sourceFO);
-
-        if (refactoring instanceof WhereUsedQuery && supportedFile){
-            return new FindUsagesPlugin(sourceFO, element, (WhereUsedQuery) refactoring);
-        }
-        return null;
+        CloneableEditorSupport ces = GroovyProjectUtil.findCloneableEditorSupport(element.getFileObject());
+        PositionRef ref1 = ces.createPositionRef(range.getStart(), Position.Bias.Forward);
+        PositionRef ref2 = ces.createPositionRef(range.getEnd(), Position.Bias.Forward);
+        return new PositionBounds(ref1, ref2);
     }
 }
