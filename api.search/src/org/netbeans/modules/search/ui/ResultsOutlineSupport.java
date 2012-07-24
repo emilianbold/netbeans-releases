@@ -372,7 +372,9 @@ public class ResultsOutlineSupport {
         }
 
         public void setHtmlAndRawDisplayName(String htmlName) {
-            htmlDisplayName = htmlName;
+            htmlDisplayName = htmlName == null
+                    ? null
+                    : "<html>" + htmlName + "</html>";       // #214330 //NOI18N
             String stripped = (htmlName == null)
                     ? null
                     : htmlName.replaceAll("<b>", "").replaceAll( //NOI18N
