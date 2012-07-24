@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.client.rest.wizard;
 
+import java.util.Locale;
 import java.util.Map;
 
 import javax.lang.model.element.TypeElement;
@@ -71,6 +72,7 @@ class RouterGenerator {
         myRouters.append(" = Backbone.Router.extend({\n");                // NOI18N
         
         boolean hasCollection = collectionPath != null; 
+        String modelVar = modelGenerator.getModelName().toLowerCase(Locale.ENGLISH);
         /*
          *  Fill routes
          */
@@ -108,11 +110,70 @@ class RouterGenerator {
         
         if ( hasCollection ){
             mySideBarId = "sidebar";                                      // NOI18N
-            myRouters.append("list:function () {\n");
-            myRouters.append("},\n");
+            myRouters.append("list:function () {\n");                     // NOI18N
+            myRouters.append("this.collection = new models.");            // NOI18N
+            myRouters.append(modelGenerator.getCollectionModelName());
+            myRouters.append("();\nvar self = this;\n");                  // NOI18N
+            myRouters.append("this.collection.fetch({\n");                // NOI18N
+            myRouters.append("success:function () {\n");                  // NOI18N
+            myRouters.append("self.listView = new views.ListView({\n");   // NOI18N
+            myRouters.append("model:self.collection,\n");
+            StringBuilder builder = new StringBuilder("tpl-");            // NOI18N
+            builder.append(modelVar);
+            builder.append("-list-item");                                 // NOI18N
+            myListItemTemplate = builder.toString();
+            myRouters.append("// ");                                      // NOI18N
+            myRouters.append(myListItemTemplate);
+            myRouters.append("is template identifier for item\n");        // NOI18N
+            myRouters.append("templateName : '#");                        // NOI18N
+            myRouters.append(myListItemTemplate);
+            myRouters.append("'\n});\n");                                 // NOI18N
+            myRouters.append("$('#");                                      // NOI18N
+            myRouters.append(mySideBarId);
+            myRouters.append("').html(self.listView.render().el);\n");    // NOI18N
+            myRouters.append("if (self.requestedId) {\n");                // NOI18N
+            myRouters.append("self.details(self.requestedId);\n");        // NOI18N
+            myRouters.append("}\n}\n});\n},\n");                          // NOI18N
+        }
+        
+        StringBuilder builder = new StringBuilder("tpl-");                // NOI18N
+        builder.append(modelVar);
+        builder.append("-details");                                       // NOI18N
+        myDetailsTemplateName = builder.toString();
+        
+        // details function
+        myRouters.append("details:function (");                           // NOI18N
+        if ( hasCollection ){
+            myRouters.append("id");                                       // NOI18N
+        }
+        myRouters.append("){\n");                                         // NOI18N
+        if ( hasCollection ){
+            myRouters.append("if (this.collection) {\n");                 // NOI18N
+            myRouters.append("this.");                                    // NOI18N
+            myRouters.append(modelVar);
+            myRouters.append("= this.collection.get(id);\n");             // NOI18N
+            myRouters.append("if (this.view) {\n");                       // NOI18N
+            myRouters.append("this.view.close();\n}\n");                  // NOI18N
+            myRouters.append("var self = this;\n");                       // NOI18N  
+            myRouters.append("this.view = new views.ModelView({\n");      // NOI18N
+            myRouters.append("model:this.");                              // NOI18N
+            myRouters.append(modelVar);
+            myRouters.append(",\n// ");                                   // NOI18N
+            myRouters.append( myDetailsTemplateName );
+            myRouters.append(" is template identifier for chosen model element\n");// NOI18N
+            myRouters.append("templateName: '#");                         // NOI18N
+            myRouters.append( myDetailsTemplateName );
+            myRouters.append("',\ngetHashObject: function(){\n");         // NOI18N
+            myRouters.append("return self.getData();\n}\n});\n");         // NOI18N
+            myRouters.append("$('#");                                      // NOI18N
+            myRouters.append(getContentId());
+            myRouters.append("').html(this.view.render().el);");          // NOI18N
+            myRouters.append("} else {\n");                               // NOI18N
+            myRouters.append("this.requestedId = id;\n");                 // NOI18N          
+            myRouters.append("this.list();\n}\n},\n");                    // NOI18N
         }
         else {
-            
+            // TODO : handle no-collection case
         }
         
         if ( httpPaths.containsKey( HttpRequests.POST)){
@@ -128,11 +189,7 @@ class RouterGenerator {
                 myRouters.append("collection: this.collection,\n");       // NOI18N
             }
             myRouters.append("// ");                                      // NOI18N
-            StringBuilder builder = new StringBuilder("tpl-");            // NOI18N
-            builder.append(modelGenerator.getModelName().toLowerCase());  // NOI18N
-            builder.append("-details");                                   // NOI18N
-            myDetailsTemplateName = builder.toString();
-            myRouters.append(builder);
+            myRouters.append(myDetailsTemplateName);
             myRouters.append(" is a template identifier for chosen model element\n");// NOI18N
             myRouters.append("templateName: '#");                          // NOI18N
             myRouters.append(myDetailsTemplateName);
@@ -163,6 +220,10 @@ class RouterGenerator {
         return myDetailsTemplateName;
     }
     
+    String getListItemTemplate(){
+        return myListItemTemplate;
+    }
+    
     String getCreateTemplate(){
         return "tpl-create";                                               // NOI18N
     }
@@ -183,4 +244,5 @@ class RouterGenerator {
     private String myRouterName;
     private String myDetailsTemplateName;
     private String mySideBarId;
+    private String myListItemTemplate;
 }
