@@ -43,9 +43,9 @@ function volumeCheckTiger() {
 function checkSystemversion() {
 	var result = false;
 	var version;	
-        if(!(/* >= */ system.compareVersions(system.version.ProductVersion, '10.7.0') >= 0)) {
+        if(!(/* >= */ system.compareVersions(system.version.ProductVersion, '10.7.3') >= 0)) {
             my.result.title = 'OS X Lion required';
-            my.result.message = 'This Installer is supported only on OS X Lion (10.7.0)';
+            my.result.message = 'This Installer is supported only on OS X Lion (10.7.3)';
             my.result.type = 'Fatal';
             return false;
         }
@@ -77,14 +77,18 @@ function checkChoiceUpgradeAction() {
     <choices-outline>
         <line choice="netbeans">
             <line choice="choice0"/>
+            <line choice="choice1"/>
             <line choice="baseide"/>
             <line choice="javase"/>
         </line>       
       
     </choices-outline>
     <choice id="netbeans" title="netbeans-title" description="netbeans-description" start_selected="true" start_enabled="true" start_visible="true"></choice>
-    <choice id="choice0" title="1.7.0">
+    <choice id="choice0" title="JDK_VERSION">
         <pkg-ref id="com.oracle.jdk"/>
+    </choice>
+    <choice id="choice1" title="plugin">
+        <pkg-ref id="com.oracle.jre"/>
     </choice>
     <choice id="baseide" title="baseide-title" description="baseide-description" start_selected="true" start_enabled="true" start_visible="true">
         <pkg-ref id="ident.pkg.baseide"></pkg-ref>
@@ -92,7 +96,39 @@ function checkChoiceUpgradeAction() {
     <choice id="javase" title="javase-title" description="javase-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.javase.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.javase"></pkg-ref>
     </choice> 
-    <pkg-ref id="com.oracle.jdk" installKBytes="234104" version="1.0" auth="Root">file:./Contents/Packages/JDK%207%20Update%2006.pkg#jdk17006.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">file:./Contents/Packages/baseide-@NB_ID@.pkg</pkg-ref>
-    <pkg-ref id="ident.pkg.javase" version="0.0.0.0.1" installKBytes="@SIZE_JAVASE@" auth="Root" onConclusion="None">file:./Contents/Packages/javase-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jdk" installKBytes="234332" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2006.pkg#jdk17006.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jre" installKBytes="145312" version="1.1" auth="Root">file:./Contents/Packages/JDK%207%20Update%2006.pkg#javaappletplugin.pkg</pkg-ref>
+    <pkg-ref id="com.oracle.jre">
+        <relocate search-id="pkmktoken18">
+            <bundle id="com.oracle.java.Java-Updater"/>
+        </relocate>
+    </pkg-ref>
+    <locator>
+        <search id="pkmktoken18-1" type="component">
+            <bundle CFBundleIdentifier="com.oracle.java.Java-Updater" path="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Resources/Java Updater.app"/>
+        </search>
+        <search id="pkmktoken18-0" type="script" script="pkmktoken18_combined()">
+            <script>
+function pkmktoken18_combined() {
+	function pkmk_add_results_to_array(results, array) {
+		for(i = 0; i &lt; results.length; i++)
+			array.push(results[i]);
+	}
+	var result = new Array();
+	var search;
+	search = my.search.results['pkmktoken18-1'];
+	if(search) pkmk_add_results_to_array(search, result);
+	return result;
+}
+</script>
+        </search>
+        <search type="script" id="pkmktoken18" script="pkmktoken18_final()">
+            <script>
+function pkmktoken18_final() {
+	var combined = my.search.results['pkmktoken18-0'];
+	return combined;
+}
+</script>
+        </search>
+    </locator>
 </installer-gui-script>
