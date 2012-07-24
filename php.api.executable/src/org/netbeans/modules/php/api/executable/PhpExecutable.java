@@ -385,7 +385,7 @@ public final class PhpExecutable {
      */
     @CheckForNull
     public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor) {
-        return run(DEFAULT_EXECUTION_DESCRIPTOR, null);
+        return run(executionDescriptor, null);
     }
 
     /**
