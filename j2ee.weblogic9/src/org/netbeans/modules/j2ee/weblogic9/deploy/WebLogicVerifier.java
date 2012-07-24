@@ -45,7 +45,7 @@ import java.io.OutputStream;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.whitelist.WhiteListQuery;
-import org.netbeans.libs.oracle.cloud.api.WhiteListTool;
+//import org.netbeans.libs.oracle.cloud.api.WhiteListTool;
 import org.netbeans.modules.j2ee.deployment.common.api.ValidationException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.VerifierSupport;
 import org.openide.filesystems.FileObject;
@@ -60,7 +60,7 @@ public class WebLogicVerifier extends VerifierSupport {
             return;
         }
         if (WhiteListQuery.isWhiteListEnabledInProject(p, "oracle")) { // NOI18N
-            WhiteListTool.execute(FileUtil.toFile(target));
+//            WhiteListTool.execute(FileUtil.toFile(target));
         }
     }
 
