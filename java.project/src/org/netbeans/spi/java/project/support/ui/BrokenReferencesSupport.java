@@ -48,6 +48,7 @@ import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -270,7 +271,7 @@ public class BrokenReferencesSupport {
     public static ProjectProblemsProvider createPlatformVersionProblemProvider(
             @NonNull final AntProjectHelper projectHelper,
             @NonNull final PropertyEvaluator evaluator,
-            @NullAllowed final Runnable postPlatformSetHook,
+            @NullAllowed final PlatformUpdatedCallBack postPlatformSetHook,
             @NonNull final String platformType,
             @NonNull final String platformProperty,
             @NonNull final String... versionProperties) {
@@ -300,6 +301,19 @@ public class BrokenReferencesSupport {
          */
         @CheckForNull Callable<Library> missingLibrary(String name);
 
+    }
+
+    /**
+     * Callback called after the project platform has been updated.
+     * The implementor can do project specific changes required by platform change.
+     * @since 1.48
+     */
+    public interface PlatformUpdatedCallBack {
+        /**
+         * Called by resolution of project problem when platform was changed.
+         * @param platform the new platform
+         */
+        void platformPropertyUpdated(@NonNull final JavaPlatform platform);
     }
 
 

@@ -144,7 +144,7 @@ public class ProjectProblemsProviders {
     public static ProjectProblemsProvider createPlatformVersionProblemProvider(
             @NonNull final AntProjectHelper helper,
             @NonNull final PropertyEvaluator evaluator,
-            @NullAllowed final Runnable hook,
+            @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack hook,
             @NonNull final String platformType,
             @NonNull final String platformProperty,
             @NonNull final String... platformVersionProperties) {
@@ -864,11 +864,11 @@ public class ProjectProblemsProviders {
         private final SpecificationVersion minVersion;
         private final SpecificationVersion platformVersion;
         private final Reference<AntProjectHelper> helperRef;
-        private final Runnable hook;
+        private final BrokenReferencesSupport.PlatformUpdatedCallBack hook;
 
         SourceTargetResolver(
             @NonNull final AntProjectHelper helper,
-            @NullAllowed final Runnable hook,
+            @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack hook,
             @NonNull final String type,
             @NonNull final String platformProp,
             @NonNull final Collection<? extends String> invalidVersionProps,
@@ -920,7 +920,7 @@ public class ProjectProblemsProviders {
                                         props.setProperty(platformProp, antName);
                                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                         if (hook != null) {
-                                            hook.run();
+                                            hook.platformPropertyUpdated(jp);
                                         }
                                         ProjectManager.getDefault().saveProject(project);
                                         return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
@@ -1155,7 +1155,7 @@ public class ProjectProblemsProviders {
 
         private final AntProjectHelper helper;
         private final PropertyEvaluator eval;
-        private final Runnable hook;
+        private final BrokenReferencesSupport.PlatformUpdatedCallBack hook;
         private final String platformType;
         private final String platformProp;
         private final Set<String> versionProps;
@@ -1163,7 +1163,7 @@ public class ProjectProblemsProviders {
         PlatformVersionProblemProviderImpl(
                 @NonNull final AntProjectHelper helper,
                 @NonNull final PropertyEvaluator eval,
-                @NullAllowed final Runnable hook,
+                @NullAllowed final BrokenReferencesSupport.PlatformUpdatedCallBack hook,
                 @NonNull final String platformType,
                 @NonNull final String platformProp,
                 @NonNull final String... versionProps) {

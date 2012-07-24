@@ -359,7 +359,6 @@ public final class J2SEProject implements Project {
     private Lookup createLookup(final AuxiliaryConfiguration aux) {
         final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
         final J2SELogicalViewProvider lvp = new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper);
-        final Runnable hook = new PlatformChangedHook();
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
@@ -403,7 +402,7 @@ public final class J2SEProject implements Project {
             LookupProviderSupport.createActionProviderMerger(),
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
-            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, hook, JavaPlatform.getDefault().getSpecification().getName(), J2SEProjectProperties.JAVA_PLATFORM, J2SEProjectProperties.JAVAC_SOURCE, J2SEProjectProperties.JAVAC_TARGET),
+            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, new PlatformChangedHook(), JavaPlatform.getDefault().getSpecification().getName(), J2SEProjectProperties.JAVA_PLATFORM, J2SEProjectProperties.JAVAC_SOURCE, J2SEProjectProperties.JAVAC_TARGET),
             UILookupMergerSupport.createProjectProblemsProviderMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
@@ -1036,23 +1035,10 @@ public final class J2SEProject implements Project {
 
     }
 
-    private final class PlatformChangedHook implements Runnable {
+    private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
+
         @Override
-        public void run() {
-            final String platformId = evaluator().getProperty(J2SEProjectProperties.JAVA_PLATFORM);
-            if (platformId == null) {
-                return;
-            }
-            JavaPlatform platform = null;
-            for (JavaPlatform jp : JavaPlatformManager.getDefault().getPlatforms(null, null)) {
-                if (platformId.equals(jp.getProperties().get("platform.ant.name"))) {   //NOI18N
-                    platform = jp;
-                    break;
-                }
-            }
-            if (platform == null) {
-                return;
-            }
+        public void platformPropertyUpdated(@NonNull final JavaPlatform platform) {
             final boolean remove = platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform());
             final Element root = helper.getPrimaryConfigurationData(true);
             boolean changed = false;
