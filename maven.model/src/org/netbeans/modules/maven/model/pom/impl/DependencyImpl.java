@@ -87,10 +87,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
 
     @Override
     public void removeExclusion(Exclusion exclusion) {
-        ModelList<Exclusion> childs = getChild(ExclusionImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(exclusion);
-        }
+        remove(exclusion, getModel().getPOMQNames().EXCLUSIONS.getName(), ExclusionImpl.List.class);
     }
 
     @Override

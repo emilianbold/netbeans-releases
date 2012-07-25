@@ -43,7 +43,8 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import javax.swing.JComponent;
-import org.netbeans.modules.php.project.deprecated.PhpInterpreter;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -98,9 +99,10 @@ public class PhpOptionsPanelController extends BaseOptionsPanelController {
 
         // warnings
         // #144680
-        String warning = PhpInterpreter.validate(phpOptionsPanel.getPhpInterpreter());
-        if (warning != null) {
-            phpOptionsPanel.setWarning(warning);
+        try {
+            PhpInterpreter.getCustom(phpOptionsPanel.getPhpInterpreter());
+        } catch (InvalidPhpExecutableException ex) {
+            phpOptionsPanel.setWarning(ex.getLocalizedMessage());
             return true;
         }
 

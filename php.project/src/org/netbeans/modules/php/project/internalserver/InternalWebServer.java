@@ -47,18 +47,20 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.php.project.deprecated.PhpInterpreter;
-import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -221,7 +223,7 @@ public final class InternalWebServer implements PropertyChangeListener {
         PhpInterpreter phpInterpreter;
         try {
             phpInterpreter = PhpInterpreter.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
             return null;
         }
@@ -231,35 +233,13 @@ public final class InternalWebServer implements PropertyChangeListener {
             return null;
         }
         // run
-        ExternalProcessBuilder externalProcessBuilder = phpInterpreter.getProcessBuilder()
-                .workingDirectory(runConfig.getWorkDir())
-                .redirectErrorStream(true)
-                .addArgument(WEB_SERVER_PARAM)
-                .addArgument(runConfig.getServer());
-        String relativeDocumentRoot = runConfig.getRelativeDocumentRoot();
-        if (relativeDocumentRoot != null) {
-            externalProcessBuilder = externalProcessBuilder
-                .addArgument(DOCUMENT_ROOT_PARAM)
-                .addArgument(relativeDocumentRoot);
-        }
-        String routerRelativePath = runConfig.getRouterRelativePath();
-        if (StringUtils.hasText(routerRelativePath)) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(routerRelativePath);
-        }
-        ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
-                .controllable(true)
-                .frontWindow(true)
-                .frontWindowOnError(true)
-                .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY) // NOI18N
-                .preExecution(new Runnable() {
-                    @Override
-                    public void run() {
-                        // needs to be called even from the output window (rerun button)
-                        startingInstance(InternalWebServer.this);
-                    }
-                });
-        return PhpInterpreter.executeLater(externalProcessBuilder, executionDescriptor, Bundle.InternalWebServer_output_title(project.getName()));
+        return new PhpExecutable(phpInterpreter.getInterpreter())
+                .viaAutodetection(false)
+                .viaPhpInterpreter(false)
+                .workDir(runConfig.getWorkDir())
+                .additionalParameters(getParameters(runConfig))
+                .displayName(Bundle.InternalWebServer_output_title(project.getName()))
+                .run(getDescriptor());
     }
 
     @Override
@@ -275,6 +255,35 @@ public final class InternalWebServer implements PropertyChangeListener {
     @Override
     public String toString() {
         return "InternalWebServer[" + project.getName() + "]"; // NOI18N
+    }
+
+    private List<String> getParameters(RunConfigInternal runConfig) {
+        List<String> params = new ArrayList<String>(3);
+        params.add(WEB_SERVER_PARAM);
+        params.add(runConfig.getServer());
+        String relativeDocumentRoot = runConfig.getRelativeDocumentRoot();
+        if (relativeDocumentRoot != null) {
+            params.add(DOCUMENT_ROOT_PARAM);
+            params.add(relativeDocumentRoot);
+        }
+        String routerRelativePath = runConfig.getRouterRelativePath();
+        if (StringUtils.hasText(routerRelativePath)) {
+            params.add(routerRelativePath);
+        }
+        return params;
+    }
+
+    private ExecutionDescriptor getDescriptor() {
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY) // NOI18N
+                .preExecution(new Runnable() {
+                    @Override
+                    public void run() {
+                        // needs to be called even from the output window (rerun button)
+                        startingInstance(InternalWebServer.this);
+                    }
+                });
+
     }
 
 }

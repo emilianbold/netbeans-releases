@@ -175,8 +175,7 @@ public final class Symfony2Script {
             return null;
         }
         Future<Integer> result = createExecutable(phpModule)
-                .fileOutput(tmpFile)
-                .pureOutputOnly(true)
+                .fileOutput(tmpFile, true)
                 .additionalParameters(LIST_COMMANDS_COMMAND)
                 .run(getSilentDescriptor());
         try {

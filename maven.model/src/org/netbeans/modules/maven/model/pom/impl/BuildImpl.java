@@ -97,10 +97,7 @@ public class BuildImpl extends BuildBaseImpl implements Build {
 
     @Override
     public void removeExtension(Extension extension) {
-        ModelList<Extension> childs = getChild(ExtensionImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(extension);
-        }
+        remove(extension, getModel().getPOMQNames().EXTENSIONS.getName(), ExtensionImpl.List.class);
     }
 
 

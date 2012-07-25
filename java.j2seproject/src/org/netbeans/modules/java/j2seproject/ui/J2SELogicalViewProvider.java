@@ -46,24 +46,15 @@ package org.netbeans.modules.java.j2seproject.ui;
 
 import java.awt.Color;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -71,40 +62,33 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.awt.DynamicMenuContent;
+import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
-import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
@@ -113,9 +97,32 @@ import org.openide.xml.XMLUtil;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
+@ActionReferences({
+    @ActionReference(
+        id=@ActionID(id="org.netbeans.modules.project.ui.problems.BrokenProjectActionFactory",category="Project"),
+        position = 2600,
+        path = "Projects/org-netbeans-modules-java-j2seproject/Actions")
+})
 public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     
     private static final RequestProcessor RP = new RequestProcessor(J2SELogicalViewProvider.class);
+    private static final String[] BREAKABLE_PROPERTIES = {
+        ProjectProperties.JAVAC_CLASSPATH,
+        ProjectProperties.RUN_CLASSPATH,
+        J2SEProjectProperties.DEBUG_CLASSPATH,
+        ProjectProperties.RUN_TEST_CLASSPATH,
+        J2SEProjectProperties.DEBUG_TEST_CLASSPATH,
+        ProjectProperties.ENDORSED_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
+    };
+    private static final String COMPILE_ON_SAVE_DISABLED_BADGE_PATH = "org/netbeans/modules/java/j2seproject/ui/resources/compileOnSaveDisabledBadge.gif";
+    private static final Image compileOnSaveDisabledBadge;
+
+    static {
+        URL errorBadgeIconURL = J2SELogicalViewProvider.class.getClassLoader().getResource(COMPILE_ON_SAVE_DISABLED_BADGE_PATH);
+        String compileOnSaveDisabledTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + NbBundle.getMessage(J2SELogicalViewProvider.class, "TP_CompileOnSaveDisabled");
+        compileOnSaveDisabledBadge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(COMPILE_ON_SAVE_DISABLED_BADGE_PATH), compileOnSaveDisabledTP); // NOI18N
+    }
     
     private final J2SEProject project;
     private final UpdateHelper helper;
@@ -123,8 +130,16 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     private final ReferenceHelper resolver;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final PropertyChangeListener pcl;
-    private Map<URL,Object[]> activeLibManLocs;
+    private final RequestProcessor.Task task = RP.create(new Runnable() {
+        public @Override void run() {
+            setBroken(ProjectProblems.isBroken(project));
+            setCompileOnSaveDisabled(isCompileOnSaveDisabled());
+        }
+    });
+
     private volatile boolean listenersInited;
+    private volatile boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
+    private volatile boolean compileOnSaveDisabled;  //true iff Compile-on-Save is disabled
     
     public J2SELogicalViewProvider(J2SEProject project, UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper resolver) {
         this.project = project;
@@ -137,10 +152,13 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         assert resolver != null;
         pcl = new PropertyChangeListener() {
             public @Override void propertyChange(PropertyChangeEvent evt) {
-                if (LibraryManager.PROP_OPEN_LIBRARY_MANAGERS.equals(evt.getPropertyName())) {
-                    addLibraryManagerListener();
+                final String propName = evt.getPropertyName();
+                if (propName == null ||
+                    ProjectProblemsProvider.PROP_PROBLEMS.equals(evt.getPropertyName()) ||
+                    ProjectProperties.COMPILE_ON_SAVE.equals(evt.getPropertyName()) ||
+                    propName.startsWith(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX)) {
+                    testBroken();
                 }
-                testBroken();
             }
         };
     }
@@ -155,58 +173,19 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
                 synchronized (J2SELogicalViewProvider.class) {
                     if (!listenersInited) {
                         evaluator.addPropertyChangeListener(pcl);
-                        JavaPlatformManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(pcl, JavaPlatformManager.getDefault()));
-                        LibraryManager.addOpenManagersPropertyChangeListener(new OpenManagersWeakListener(pcl));
-                        addLibraryManagerListener();
+                        final ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
+                        if (ppp != null) {
+                            ppp.addPropertyChangeListener(pcl);
+                        }
                         listenersInited = true;
                     }
                 }
             }
         });
     }
-
-    private void addLibraryManagerListener() {
-        final Map<URL,Object[]> oldLMs;
-        final boolean attachToDefault;
-        synchronized (this) {
-            attachToDefault = activeLibManLocs == null;
-            if (attachToDefault) {
-                activeLibManLocs = new HashMap<URL,Object[]>();
-            }
-            oldLMs = new HashMap<URL,Object[]>(activeLibManLocs);
-        }
-        if (attachToDefault) {
-            final LibraryManager manager = LibraryManager.getDefault();
-            manager.addPropertyChangeListener(WeakListeners.propertyChange(pcl, manager));
-        }
-        final Collection<? extends LibraryManager> managers = LibraryManager.getOpenManagers();
-        final Map<URL,LibraryManager> managerByLocation = new HashMap<URL, LibraryManager>();
-        for (LibraryManager manager : managers) {
-            final URL url = manager.getLocation();
-            if (url != null) {
-                managerByLocation.put(url, manager);
-            }
-        }
-        final HashMap<URL,Object[]> toRemove = new HashMap<URL,Object[]>(oldLMs);
-        toRemove.keySet().removeAll(managerByLocation.keySet());
-        for (Object[] pair : toRemove.values()) {
-            ((LibraryManager)pair[0]).removePropertyChangeListener((PropertyChangeListener)pair[1]);
-        }
-        managerByLocation.keySet().removeAll(oldLMs.keySet());
-        final HashMap<URL,Object[]> toAdd = new HashMap<URL,Object[]>();
-        for (Map.Entry<URL,LibraryManager> e : managerByLocation.entrySet()) {
-            final LibraryManager manager = e.getValue();
-            final PropertyChangeListener listener = WeakListeners.propertyChange(pcl, manager);
-            manager.addPropertyChangeListener(listener);
-            toAdd.put(e.getKey(), new Object[] {manager, listener});
-        }
-        synchronized (this) {
-            activeLibManLocs.keySet().removeAll(toRemove.keySet());
-            activeLibManLocs.putAll(toAdd);
-        }
-    }
     
-    @Override public Node createLogicalView() {
+    @Override
+    public Node createLogicalView() {
         initListeners();
         return new J2SELogicalViewRootNode();
     }
@@ -264,9 +243,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         }
         return false;
     }
-    
-    
-    
+            
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
@@ -274,80 +251,12 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
-    
-    private final RequestProcessor.Task task = RP.create(new Runnable() {
-        public @Override void run() {
-            boolean old = broken;
-            boolean _broken = hasBrokenLinks();
-            if (old != _broken) {
-                setBroken(_broken);
-            }
-            old = illegalState;
-            boolean _illegalState = hasInvalidJdkVersion();
-            if (old != _illegalState) {
-                setIllegalState(_illegalState);
-            }
-            old = compileOnSaveDisabled;
-            boolean _compileOnSaveDisabled = isCompileOnSaveDisabled();
-            if (old != _compileOnSaveDisabled) {
-                setCompileOnSaveDisabled(_compileOnSaveDisabled);
-            }
-        }
-    });
 
-    /**
-     * Used by J2SEProjectCustomizer to mark the project as broken when it warns user
-     * about project's broken references and advises him to use BrokenLinksAction to correct it.
-     */
-    public @Override void testBroken() {
+    @Override
+    public void testBroken() {
         task.schedule(500);
     }
-    
-    // Private innerclasses ----------------------------------------------------
-    
-    private static final String[] BREAKABLE_PROPERTIES = {
-        ProjectProperties.JAVAC_CLASSPATH,
-        ProjectProperties.RUN_CLASSPATH,
-        J2SEProjectProperties.DEBUG_CLASSPATH,
-        ProjectProperties.RUN_TEST_CLASSPATH,
-        J2SEProjectProperties.DEBUG_TEST_CLASSPATH,
-        ProjectProperties.ENDORSED_CLASSPATH,
-        ProjectProperties.JAVAC_TEST_CLASSPATH,
-    };
-    
-    public boolean hasBrokenLinks () {
-        return BrokenReferencesSupport.isBroken(helper.getAntProjectHelper(), resolver, getBreakableProperties(),
-                new String[] {J2SEProjectProperties.JAVA_PLATFORM});
-    }
-    
-    private boolean hasInvalidJdkVersion () {
-        String javaSource = this.evaluator.getProperty("javac.source");     //NOI18N
-        String javaTarget = this.evaluator.getProperty("javac.target");    //NOI18N
-        if (javaSource == null && javaTarget == null) {
-            //No need to check anything
-            return false;
-        }
-        
-        final String platformId = this.evaluator.getProperty("platform.active");  //NOI18N
-        final JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform (platformId);
-        if (activePlatform == null) {
-            return true;
-        }        
-        SpecificationVersion platformVersion = activePlatform.getSpecification().getVersion();
-        try {
-            return (javaSource != null && new SpecificationVersion (javaSource).compareTo(platformVersion)>0)
-                   || (javaTarget != null && new SpecificationVersion (javaTarget).compareTo(platformVersion)>0);
-        } catch (NumberFormatException nfe) {
-            ErrorManager.getDefault().log("Invalid javac.source: "+javaSource+" or javac.target: "+javaTarget+" of project:"
-                +this.project.getProjectDirectory().getPath());
-            return true;
-        }
-    }
 
-    private boolean isCompileOnSaveDisabled() {
-         return !J2SEProjectUtil.isCompileOnSaveEnabled(project) && J2SEProjectUtil.isCompileOnSaveSupported(project);
-    }
-    
     public String[] getBreakableProperties() {
         SourceRoots roots = this.project.getSourceRoots();
         String[] srcRootProps = roots.getRootProperties();
@@ -364,31 +273,20 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         return new String[] {J2SEProjectProperties.JAVA_PLATFORM};
     }
     
-    private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif", true);
-    private static final String COMPILE_ON_SAVE_DISABLED_BADGE_PATH = "org/netbeans/modules/java/j2seproject/ui/resources/compileOnSaveDisabledBadge.gif";
-    private static final Image compileOnSaveDisabledBadge;
-
-    static {
-        URL errorBadgeIconURL = J2SELogicalViewProvider.class.getClassLoader().getResource(COMPILE_ON_SAVE_DISABLED_BADGE_PATH);
-        String compileOnSaveDisabledTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + NbBundle.getMessage(J2SELogicalViewProvider.class, "TP_CompileOnSaveDisabled");
-        compileOnSaveDisabledBadge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(COMPILE_ON_SAVE_DISABLED_BADGE_PATH), compileOnSaveDisabledTP); // NOI18N
-    }
+    private boolean isCompileOnSaveDisabled() {
+         return !J2SEProjectUtil.isCompileOnSaveEnabled(project) && J2SEProjectUtil.isCompileOnSaveSupported(project);
+    }                
 
     private final class J2SELogicalViewRootNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
 
-        private final ProjectInformation info = ProjectUtils.getInformation(project);
+        private final ProjectInformation info = ProjectUtils.getInformation(project);        
         
         @SuppressWarnings("LeakingThisInConstructor")
         public J2SELogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-java-j2seproject/Nodes"), 
                   Lookups.singleton(project));
             setIconBaseWithExtension("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png");
-            if (hasBrokenLinks()) {
-                broken = true;
-            }
-            else if (hasInvalidJdkVersion ()) {
-                illegalState = true;
-            }
+            broken = ProjectProblems.isBroken(project);
             compileOnSaveDisabled = isCompileOnSaveDisabled();
             addChangeListener(WeakListeners.change(this, J2SELogicalViewProvider.this));
             info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));
@@ -408,29 +306,19 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
             } catch (CharConversionException ex) {
                 return dispName;
             }            
-            return broken || illegalState ? "<font color=\"#"+Integer.toHexString(getErrorForeground().getRGB() & 0xffffff) +"\">" + dispName + "</font>" : null; //NOI18N
+            return broken ? "<font color=\"#"+Integer.toHexString(getErrorForeground().getRGB() & 0xffffff) +"\">" + dispName + "</font>" : null; //NOI18N
         }
         
         @Override
         public Image getIcon(int type) {
-            Image original = super.getIcon(type);
-
-            if (broken || illegalState) {
-                return ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0);
-            } else {
-                return compileOnSaveDisabled ? ImageUtilities.mergeImages(original, compileOnSaveDisabledBadge, 8, 0) : original;
-            }
+            final Image original = super.getIcon(type);
+            return !broken && compileOnSaveDisabled ? ImageUtilities.mergeImages(original, compileOnSaveDisabledBadge, 8, 0) : original;
         }
         
         @Override
         public Image getOpenedIcon(int type) {
-            Image original = super.getOpenedIcon(type);
-            
-            if (broken || illegalState) {
-                return ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0);
-            } else {
-                return compileOnSaveDisabled ? ImageUtilities.mergeImages(original, compileOnSaveDisabledBadge, 8, 0) : original;
-            }
+            final Image original = super.getOpenedIcon(type);
+            return !broken && compileOnSaveDisabled ? ImageUtilities.mergeImages(original, compileOnSaveDisabledBadge, 8, 0) : original;
         }
         
         public @Override void stateChanged(ChangeEvent e) {
@@ -472,27 +360,24 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
             return new HelpCtx(J2SELogicalViewRootNode.class);
         }
 
-    }
-
-    private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
-    private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
-    private boolean compileOnSaveDisabled;  //true iff Compile-on-Save is disabled
+    }    
 
     // Private methods -------------------------------------------------
 
     private void setBroken(boolean broken) {
-        this.broken = broken;
-        changeSupport.fireChange();
-    }
-
-    private void setIllegalState (boolean illegalState) {
-        this.illegalState = illegalState;
-        changeSupport.fireChange();
-    }
+        //Weak consistent, only visibility required
+        if (this.broken != broken) {
+            this.broken = broken;
+            changeSupport.fireChange();
+        }
+    }    
 
     private void setCompileOnSaveDisabled (boolean value) {
-        this.compileOnSaveDisabled = value;
-        changeSupport.fireChange();
+        //Weak consistent, only visibility required
+        if (this.compileOnSaveDisabled != value) {
+            this.compileOnSaveDisabled = value;
+            changeSupport.fireChange();
+        }
     }
 
     private static @NonNull Color getErrorForeground() {
@@ -501,80 +386,5 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
             result = Color.RED;
         }
         return result;
-    }
-
-    @ActionID(id = "org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$BrokenLinksActionFactory", category = "Project")
-    @ActionRegistration(displayName = "#LBL_Fix_Broken_Links_Action", lazy=false)
-    @ActionReference(position = 2600, path = "Projects/org-netbeans-modules-java-j2seproject/Actions")
-    public static final class BrokenLinksActionFactory extends AbstractAction implements ContextAwareAction {
-
-        /** for layer registration */
-        public BrokenLinksActionFactory() {
-            putValue(Action.NAME, NbBundle.getMessage(J2SELogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
-            setEnabled(false);
-            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        }
-
-        public @Override void actionPerformed(ActionEvent e) {
-            assert false;
-        }
-
-        public @Override Action createContextAwareInstance(Lookup actionContext) {
-            Collection<? extends Project> p = actionContext.lookupAll(Project.class);
-            if (p.size() != 1) {
-                return this;
-            }
-            J2SELogicalViewProvider lvp = p.iterator().next().getLookup().lookup(J2SELogicalViewProvider.class);
-            if (lvp == null) {
-                return this;
-            }
-            return lvp.new BrokenLinksAction();
-        }
-
-    }
-
-    /** This action is created only when project has broken references.
-     * Once these are resolved the action is disabled.
-     */
-    private class BrokenLinksAction extends AbstractAction {
-
-        public BrokenLinksAction() {
-            putValue(Action.NAME, NbBundle.getMessage(J2SELogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
-            setEnabled(broken);
-            putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            try {
-                helper.requestUpdate();
-                BrokenReferencesSupport.showCustomizer(helper.getAntProjectHelper(), resolver, getBreakableProperties(), getPlatformProperties());
-                testBroken();
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            }
-        }
-
-    }
-
-    private static class OpenManagersWeakListener extends WeakReference<PropertyChangeListener> implements Runnable, PropertyChangeListener {
-
-        public OpenManagersWeakListener(final PropertyChangeListener listener) {
-            super(listener, Utilities.activeReferenceQueue());
-        }
-
-        @Override
-        public void run() {
-            LibraryManager.removeOpenManagersPropertyChangeListener(this);
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            final PropertyChangeListener listener = get();
-            if (listener != null) {
-                listener.propertyChange(evt);
-            }
-        }
-
-    }
-
+    }    
 }

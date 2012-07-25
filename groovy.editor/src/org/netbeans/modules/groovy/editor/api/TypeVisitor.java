@@ -64,17 +64,13 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 public class TypeVisitor extends ClassCodeVisitorSupport {
 
     protected final SourceUnit sourceUnit;
-
     protected final AstPath path;
-
     protected final ASTNode leaf;
-
     protected final BaseDocument doc;
-
     protected final int cursorOffset;
-
     private final boolean visitOtherClasses;
 
+    
     public TypeVisitor(SourceUnit sourceUnit, AstPath path, BaseDocument doc,
             int cursorOffset, boolean visitOtherClasses) {
         this.sourceUnit = sourceUnit;
@@ -166,12 +162,6 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
                 visitClass((ClassNode) object);
             }
         }
-        // XXX it seems to me that this is not needed, it is just causing whole visitor
-        // to run twice, but it needs to be checked again for scripts maybe?
-//        for (Object object : moduleNode.getMethods()) {
-//            visitMethod((MethodNode)object);
-//        }
-//        visitBlockStatement(moduleNode.getStatementBlock());
     }
 
     /**

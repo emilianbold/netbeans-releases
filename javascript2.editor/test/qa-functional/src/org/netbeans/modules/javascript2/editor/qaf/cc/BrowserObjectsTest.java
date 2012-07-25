@@ -92,7 +92,6 @@ public class BrowserObjectsTest extends GeneralJavaScript {
     public void testObject(String[] lines, String[] result) {
 
         EditorOperator eo = new EditorOperator(this.currentFile);
-        System.out.println("FILE IS "+this.currentFile);
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
         for (String line : lines) {
