@@ -5,14 +5,6 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.eclipse.mylyn.commons.workbench</code-name-base>
             <module-dependencies>
-                <dependency>
-                    <code-name-base>org.eclipse.mylyn.tasks.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>3.5.0</specification-version>
-                    </run-dependency>
-                </dependency>
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
