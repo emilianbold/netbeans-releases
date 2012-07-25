@@ -46,5 +46,17 @@ class ClassName1 {
 
 }
 
+
+use MyNamespace\MyClass1;
+use MyNamespace\MyClass2;
+use MyNamespace\MyClass3;
+
+trait MyTrait {
+    public function method(MyClass1 $o1) {
+        $o2 = new MyClass2;
+        $o3 = new MyClass3;
+    }
+}
+
 //END
 ?>

@@ -39,46 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.glassfish.cloud.javaee;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import javax.enterprise.deploy.spi.DeploymentManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 
 /**
- * Stores named and unnamed documentation parameters.
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Factory class producing SPI interface for Java EE platform registered with
+ * GlassFish cloud.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
-public interface DocParameter {
+public class GlassFishCloudPlatformFactory extends J2eePlatformFactory {
 
     /**
-     * Gets name of the parameter.
-     * @return parameter name
+     * Return Java EE platform SPI interface implementation for Java EE platform
+     * registered with GlassFish cloud.
+     * <p/>
+     * @param dm GlassFish cloud deployment manager.
+     * @return Java EE platform registered with GlassFish cloud.
      */
-    DocIdentifier getParamName();
-
-    /**
-     * Gets default value of the parameter.
-     * @return default value, {@code null} if no default value set
-     */
-    String getDefaultValue();
-
-    /**
-     * Get information if the parameter is optional or not.
-     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
-     */
-    boolean isOptional();
-
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description, can be empty string, never {@code null}
-     */
-    String getParamDescription();
-
-    /**
-     * Gets the parameter type.
-     * @return parameter type, or {@code null} when no type is set
-     */
-    List<Type> getParamTypes();
-
+    @Override
+    public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
 }

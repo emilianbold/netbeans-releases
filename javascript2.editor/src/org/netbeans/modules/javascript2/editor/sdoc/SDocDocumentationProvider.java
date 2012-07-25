@@ -41,55 +41,27 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc;
 
-import com.oracle.nashorn.ir.Node;
-import java.util.List;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * Provider for the SDoc documentations.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocDocumentationProvider extends JsDocumentationProvider {
+public class SDocDocumentationProvider implements JsDocumentationProvider {
 
-    public SDocDocumentationProvider(JsParserResult parserResult) {
-        super(parserResult);
+    @Override
+    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
+        return new SDocDocumentationHolder(snapshot);
     }
 
     @Override
-    public List<Type> getReturnType(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<DocParameter> getParameters(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String getDocumentation(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isDeprecated(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Set<JsModifier> getModifiers(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected Map getCommentBlocks() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Set getSupportedTags() {
+        return Collections.emptySet();
     }
 
 }
