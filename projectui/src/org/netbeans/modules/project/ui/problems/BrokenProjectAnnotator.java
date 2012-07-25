@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +57,8 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -72,6 +75,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -105,6 +109,12 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
     //@GuardedBy("cacheLock")
     private final Map<ProjectProblemsProvider, Set<Reference<Project>>> problemsProvider2prj =
             new WeakHashMap<ProjectProblemsProvider, Set<Reference<Project>>>();
+    private final AtomicBoolean listensOnOpenProjects = new AtomicBoolean();
+    private final Object openedProjectsLock = new Object();
+    //@GuardedBy("openedProjectsLock")
+    private long eventId;
+    //@GuardedBy("openedProjectsLock")
+    private Set<URI> openedProjects;
 
 
     @NonNull
@@ -203,7 +213,8 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
 
     @Override
     public void propertyChange(@NonNull final PropertyChangeEvent evt) {
-        if (ProjectProblemsProvider.PROP_PROBLEMS.equals(evt.getPropertyName())) {
+        final String name = evt.getPropertyName();
+        if (ProjectProblemsProvider.PROP_PROBLEMS.equals(name)) {
             synchronized (cacheLock) {
                 final Set<Reference<Project>> toRefresh = problemsProvider2prj.get(evt.getSource());
                 if (toRefresh != null) {
@@ -223,6 +234,11 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
                 }
             }
             task.schedule(FIRE_DELAY);
+        } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(name)) {
+            synchronized (openedProjectsLock) {
+                eventId++;
+                openedProjects = null;
+            }
         }
     }
 
@@ -250,12 +266,29 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
     }
 
     private boolean isOpened(@NonNull final Project p) {
-        //Todo: Consider caching if needed.
-        for (Project op : OpenProjects.getDefault().getOpenProjects()) {
-            if (op.getProjectDirectory().equals(p.getProjectDirectory())) {
-                return true;
+        long curId;
+        Set<URI> ol;
+        synchronized (openedProjectsLock) {
+            ol = openedProjects;
+            curId = eventId;
+        }
+        if (ol == null) {
+            final OpenProjects opl = OpenProjects.getDefault();
+            if (listensOnOpenProjects.compareAndSet(false, true)) {
+                opl.addPropertyChangeListener(WeakListeners.propertyChange(this, opl));
+            }
+            ol = new HashSet<URI>();
+            for (Project op : OpenProjects.getDefault().getOpenProjects()) {
+                ol.add(op.getProjectDirectory().toURI());
+            }
+            synchronized (openedProjectsLock) {
+                if (curId == eventId) {
+                    openedProjects = ol;
+                } else if (openedProjects != null) {
+                    ol = openedProjects;
+                }
             }
         }
-        return false;
+        return ol.contains(p.getProjectDirectory().toURI());
     }
 }
