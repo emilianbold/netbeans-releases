@@ -52,16 +52,17 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.php.project.deprecated.PhpInterpreter;
-import org.netbeans.modules.php.project.deprecated.PhpProgram;
-import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.project.deprecated.PhpProgram;
+import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
+@Deprecated
 public class DefaultScriptProvider implements DebugScript.Provider {
     protected static final ExecutionDescriptor.LineConvertorFactory PHP_LINE_CONVERTOR_FACTORY = new PhpLineConvertorFactory();
 
@@ -120,8 +121,8 @@ public class DefaultScriptProvider implements DebugScript.Provider {
         return program != null && program.isValid();
     }
 
-    protected PhpProgram getPhpProgram() throws InvalidPhpProgramException {
-        return PhpInterpreter.getDefault();
+    protected PhpProgram getPhpProgram() throws PhpProgram.InvalidPhpProgramException {
+        return null;//PhpInterpreter.getDefault();
     }
 
     @Override
