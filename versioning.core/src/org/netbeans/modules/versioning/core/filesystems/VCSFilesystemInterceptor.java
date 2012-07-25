@@ -73,7 +73,6 @@ public final class VCSFilesystemInterceptor {
      * A versioned files remote repository or origin.
      */
     private static final String ATTRIBUTE_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
-    private static final String ATTRIBUTE_REMOTE_LOCATION_TEAM = "ProvidedExtensions.RemoteLocation.Team";
 
     /**
      * A Runnable to refresh the file given in {@link #getAttribute()}.
@@ -224,7 +223,6 @@ public final class VCSFilesystemInterceptor {
     public static Object getAttribute(VCSFileProxy file, String attrName) {
         LOG.log(Level.FINE, "getAttribute {0}, {1}", new Object[] {file, attrName});
         if (ATTRIBUTE_REMOTE_LOCATION.equals(attrName)
-                || ATTRIBUTE_REMOTE_LOCATION_TEAM.equals(attrName)
                 || ATTRIBUTE_REFRESH.equals(attrName)
                 || ATTRIBUTE_SEARCH_HISTORY.equals(attrName)) {
             return getInterceptor(file, file.isDirectory(), "getAttribute").getAttribute(attrName); // NOI18N

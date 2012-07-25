@@ -247,7 +247,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     }
 
     private boolean isUnder(FileObject projectDirectory) {
-        String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation.Team"); // NOI18N
+        String remoteLocation = (String) projectDirectory.getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
         if(remoteLocation == null) {
             return false;
         }
