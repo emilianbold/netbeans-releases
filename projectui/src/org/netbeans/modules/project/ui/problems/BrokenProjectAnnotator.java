@@ -121,6 +121,9 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
                 problemsCount = brokenCache.get(project);
                 LOG.log(Level.FINE, "In cache: {0}.", problemsCount);   //NOI18N
             } else {
+                if (!isOpened(project)) {
+                    return original;
+                }
                 firstTime = true;
                 brokenCache.put(project, problemsCount);
                 final ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
@@ -233,5 +236,15 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
                 ProjectProblems.showAlert(prj);
             }
         });
+    }
+
+    private boolean isOpened(@NonNull final Project p) {
+        //Todo: Consider caching if needed.
+        for (Project op : OpenProjects.getDefault().getOpenProjects()) {
+            if (op.getProjectDirectory().equals(p.getProjectDirectory())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
