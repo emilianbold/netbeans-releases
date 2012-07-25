@@ -39,46 +39,50 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.editor.doc;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Stores named and unnamed documentation parameters.
+ * Reads the documantation comments from the file and returns list of comment tags (like @private, @class, ...).
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocParameter {
+public class JsDocumentationReader {
 
-    /**
-     * Gets name of the parameter.
-     * @return parameter name
-     */
-    DocIdentifier getParamName();
+    public static Set<String> getAllTags(Snapshot snapshot) {
+        Set<String> tags = new HashSet<String>();
 
-    /**
-     * Gets default value of the parameter.
-     * @return default value, {@code null} if no default value set
-     */
-    String getDefaultValue();
+        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.javascriptLanguage());
+        if (tokenSequence == null) {
+            return tags;
+        }
 
-    /**
-     * Get information if the parameter is optional or not.
-     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
-     */
-    boolean isOptional();
+        while (tokenSequence.moveNext()) {
+            if (tokenSequence.token().id() == JsTokenId.DOC_COMMENT) {
+                tags.addAll(getCommentTags(tokenSequence.token().text()));
+                continue;
+            }
+        }
 
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description, can be empty string, never {@code null}
-     */
-    String getParamDescription();
+        return tags;
+    }
 
-    /**
-     * Gets the parameter type.
-     * @return parameter type, or {@code null} when no type is set
-     */
-    List<Type> getParamTypes();
-
+    protected static Set<String> getCommentTags(CharSequence commentText) {
+        Set<String> tags = new HashSet<String>();
+        String comment = commentText.toString();
+        // XXX - could be rewrite to lexer
+        Pattern pattern = Pattern.compile("[@][a-zA-Z]+"); //NOI18N
+        Matcher matcher = pattern.matcher(comment);
+        while (matcher.find()) {
+			tags.add(matcher.group());
+		}
+        return tags;
+    }
 }

@@ -42,26 +42,35 @@
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * Provider of the jsDoc documentation type.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocDocumentationProvider extends JsDocumentationProvider {
+public class JsDocDocumentationProvider implements JsDocumentationProvider {
 
-    private final Map<Integer, JsDocComment> blocks;
+    private Set<String> supportedTags;
 
-    public JsDocDocumentationProvider(JsParserResult parserResult) {
-        super(parserResult);
-        blocks = JsDocParser.parse(parserResult.getSnapshot());
+    @Override
+    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
+        return new JsDocDocumentationHolder(snapshot);
     }
 
     @Override
-    protected Map getCommentBlocks() {
-        return blocks;
+    public synchronized Set getSupportedTags() {
+        if (supportedTags == null) {
+            supportedTags = new HashSet<String>(JsDocElement.Type.values().length);
+            for (JsDocElement.Type type : JsDocElement.Type.values()) {
+                supportedTags.add(type.toString());
+            }
+            supportedTags.remove("unknown");
+            supportedTags.remove("contextSensitive");
+        }
+        return supportedTags;
     }
-
 }

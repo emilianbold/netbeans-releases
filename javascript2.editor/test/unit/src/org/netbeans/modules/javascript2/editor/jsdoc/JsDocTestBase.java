@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.jsdoc;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.Node;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Source;
 
@@ -63,8 +64,8 @@ public abstract class JsDocTestBase extends JsTestBase {
      * @param parserResult parser result of the JS file
      * @return {@code JsDocDocumentationProvider}
      */
-    public static JsDocDocumentationProvider getDocumentationProvider(JsParserResult parserResult) {
-        return new JsDocDocumentationProvider(parserResult);
+    public static JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult) {
+        return new JsDocDocumentationProvider().createDocumentationHolder(parserResult.getSnapshot());
     }
 
     /**
