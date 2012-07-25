@@ -166,12 +166,6 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
                 visitClass((ClassNode) object);
             }
         }
-        // XXX it seems to me that this is not needed, it is just causing whole visitor
-        // to run twice, but it needs to be checked again for scripts maybe?
-//        for (Object object : moduleNode.getMethods()) {
-//            visitMethod((MethodNode)object);
-//        }
-//        visitBlockStatement(moduleNode.getStatementBlock());
     }
 
     /**
