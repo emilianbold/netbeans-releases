@@ -97,6 +97,7 @@ public abstract class AbstractBreakpoint extends Breakpoint {
         return isEnabled;
     }
     
+    /* not used yet
     public void setBreakpointId( String id ) {
         myId = id ;
     }
@@ -104,6 +105,7 @@ public abstract class AbstractBreakpoint extends Breakpoint {
     public String getBreakpointId() {
         return myId;
     }
+    */
     
     public boolean isConditional() {
         return false;

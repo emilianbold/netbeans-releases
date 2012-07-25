@@ -52,6 +52,8 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
  * @author Martin
  */
 public class DOMBreakpoint extends AbstractBreakpoint {
+    
+    public static final String PROP_TYPES = "types";        // NOI18N
 
     public enum Type {
         
@@ -74,38 +76,74 @@ public class DOMBreakpoint extends AbstractBreakpoint {
     private boolean onAttributeModification;
     private boolean onNodeRemoval;
     private Set<Type> types;
-    private final Node node;
+    private final DOMNode node;
     
-    public DOMBreakpoint(Node node) {
+    public DOMBreakpoint(DOMNode node) {
         this.node = node;
     }
 
-    public Node getNode() {
+    public DOMNode getNode() {
         return node;
     }
 
-    public boolean isOnSubtreeModification() {
+    public synchronized boolean isOnSubtreeModification() {
         return onSubtreeModification;
     }
 
     public void setOnSubtreeModification(boolean onSubtreeModification) {
-        this.onSubtreeModification = onSubtreeModification;
+        Set<Type> oldTypes;
+        Set<Type> newTypes;
+        synchronized (this) {
+            oldTypes = types;
+            this.onSubtreeModification = onSubtreeModification;
+            if (types == null) {
+                newTypes = null;
+            } else {
+                types = createTypes();
+                newTypes = types;
+            }
+        }
+        firePropertyChange(PROP_TYPES, oldTypes, newTypes);
     }
 
-    public boolean isOnAttributeModification() {
+    public synchronized boolean isOnAttributeModification() {
         return onAttributeModification;
     }
 
     public void setOnAttributeModification(boolean onAttributeModification) {
-        this.onAttributeModification = onAttributeModification;
+        Set<Type> oldTypes;
+        Set<Type> newTypes;
+        synchronized (this) {
+            oldTypes = types;
+            this.onAttributeModification = onAttributeModification;
+            if (types == null) {
+                newTypes = null;
+            } else {
+                types = createTypes();
+                newTypes = types;
+            }
+        }
+        firePropertyChange(PROP_TYPES, oldTypes, newTypes);
     }
 
-    public boolean isOnNodeRemoval() {
+    public synchronized boolean isOnNodeRemoval() {
         return onNodeRemoval;
     }
 
     public void setOnNodeRemoval(boolean onNodeRemoval) {
-        this.onNodeRemoval = onNodeRemoval;
+        Set<Type> oldTypes;
+        Set<Type> newTypes;
+        synchronized (this) {
+            oldTypes = types;
+            this.onNodeRemoval = onNodeRemoval;
+            if (types == null) {
+                newTypes = null;
+            } else {
+                types = createTypes();
+                newTypes = types;
+            }
+        }
+        firePropertyChange(PROP_TYPES, oldTypes, newTypes);
     }
     
     public synchronized Set<Type> getTypes() {
@@ -127,5 +165,13 @@ public class DOMBreakpoint extends AbstractBreakpoint {
             ts.add(Type.NODE_REMOVED);
         }
         return Collections.unmodifiableSet(ts);
+    }
+    
+    void setValidity(DOMNode.PathNotFoundException pnfex) {
+        if (pnfex == null) {
+            setValidity(VALIDITY.VALID, null);
+        } else {
+            setValidity(VALIDITY.INVALID, pnfex.getLocalizedMessage());
+        }
     }
 }

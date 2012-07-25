@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.NotifyDescriptor;
@@ -65,7 +66,13 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
     
     private static DOMBreakpoint createBreakpoint() {
         Node node = Utilities.actionsGlobalContext().lookup(Node.class);
-        DOMBreakpoint b = new DOMBreakpoint(node);
+        DOMNode dn;
+        if (node != null) {
+            dn = DOMNode.create(node);
+        } else {
+            dn = DOMNode.create("[\u0003-1,]"); // root
+        }
+        DOMBreakpoint b = new DOMBreakpoint(dn);
         return b;
     }
     
@@ -84,8 +91,8 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
         this.db = db;
         initComponents();
         controller = new CustomizerController();
-        Node node = db.getNode();
-        nodeTextField.setText((node != null) ? node.getLocalName() : "");
+        DOMNode node = db.getNode();
+        nodeTextField.setText((node != null) ? node.getNodePathNames() : "");
         onSubtreeModifCheckBox.setSelected(db.isOnSubtreeModification());
         onAttrModifCheckBox.setSelected(db.isOnAttributeModification());
         onNodeRemoveCheckBox.setSelected(db.isOnNodeRemoval());
@@ -222,13 +229,13 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
             if (db.getNode() == null) {
                 return false;
             }
-            if (db.isOnAttributeModification() ||
-                db.isOnSubtreeModification() ||
-                db.isOnNodeRemoval()) {
+            if (onAttrModifCheckBox.isSelected() ||
+                onSubtreeModifCheckBox.isSelected() ||
+                onNodeRemoveCheckBox.isSelected()) {
                 
                 return true;
             } else {
-                return true;
+                return false;
             }
         }
         
@@ -242,9 +249,9 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
                 firePropertyChange(Controller.PROP_VALID, null, Boolean.FALSE);
                 return;
             }
-            if (db.isOnAttributeModification() ||
-                db.isOnSubtreeModification() ||
-                db.isOnNodeRemoval()) {
+            if (onAttrModifCheckBox.isSelected() ||
+                onSubtreeModifCheckBox.isSelected() ||
+                onNodeRemoveCheckBox.isSelected()) {
                 
                 firePropertyChange(NotifyDescriptor.PROP_ERROR_NOTIFICATION, null, null);
                 firePropertyChange(Controller.PROP_VALID, null, Boolean.TRUE);

@@ -97,7 +97,7 @@ public class BreakpointModel extends ViewModelSupport
         "LBL_LineBreakpoint_on=Line {0}",
         "# {0} - The name of the DOM node",
         "# {1} - The type of modification, one more of the three listed below (comma separated)",
-        "LBL_DOMBreakpoint_on=DOM node {0} on modifications of: {1}",
+        "LBL_DOMBreakpoint_on=DOM \"{0}\" on modifications of: {1}",
         "LBL_DOM_Subtree=subtree",
         "LBL_DOM_Attributes=attributes",
         "LBL_DOM_Removal=removal"
@@ -113,7 +113,7 @@ public class BreakpointModel extends ViewModelSupport
         }
         if (node instanceof DOMBreakpoint) {
             DOMBreakpoint breakpoint = (DOMBreakpoint) node;
-            String nodeName = breakpoint.getNode().getLocalName();
+            String nodeName = breakpoint.getNode().getNodeName();
             StringBuilder modifications = new StringBuilder();
             if (breakpoint.isOnSubtreeModification()) {
                 modifications.append(Bundle.LBL_DOM_Subtree());

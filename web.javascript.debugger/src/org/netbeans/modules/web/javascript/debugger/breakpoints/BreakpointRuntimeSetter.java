@@ -110,10 +110,10 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     
     private WebKitBreakpointManager createWebKitBreakpointManager(AbstractBreakpoint ab) {
         if (ab instanceof LineBreakpoint) {
-            return new WebKitLineBreakpointManager(d, (LineBreakpoint) ab);
+            return WebKitBreakpointManager.create(d, (LineBreakpoint) ab);
         }
         if (ab instanceof DOMBreakpoint) {
-            return new WebKitDOMBreakpointManager(d, wd, (DOMBreakpoint) ab);
+            return WebKitBreakpointManager.create(wd, (DOMBreakpoint) ab);
         }
         throw new IllegalArgumentException("Unknown breakpoint: "+ab);
     }
@@ -145,18 +145,6 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
                 bm.add();
             }
         });
-    }
-    
-    // changes "file:/some" to "file:///some"
-    private static String reformatFileURL(String tabToDebug) {
-        if (!tabToDebug.startsWith("file:")) {
-            return tabToDebug;
-        }
-        tabToDebug = tabToDebug.substring(5);
-        while (tabToDebug.length() > 0 && tabToDebug.startsWith("/")) {
-            tabToDebug = tabToDebug.substring(1);
-        }
-        return "file:///"+tabToDebug;
     }
     
     /* (non-Javadoc)
@@ -216,110 +204,4 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
     public void propertyChange(PropertyChangeEvent evt) {}
     
     
-    private static abstract class WebKitBreakpointManager implements PropertyChangeListener {
-        
-        protected final Debugger d;
-        private final AbstractBreakpoint ab;
-        
-        protected WebKitBreakpointManager(Debugger d, AbstractBreakpoint ab) {
-            this.d = d;
-            this.ab = ab;
-            ab.addPropertyChangeListener(this);
-        }
-        
-        public abstract void add();
-        
-        public abstract void remove();
-        
-        public void destroy() {
-            remove();
-            ab.removePropertyChangeListener(this);
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent event) {
-            if (!Breakpoint.PROP_ENABLED.equals(event.getPropertyName())) {
-                return;
-            }
-            Breakpoint b = (Breakpoint) event.getSource();
-            if (b.isEnabled()) {
-                add();
-            } else {
-                remove();
-            }
-        }
-    }
-    
-    private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager {
-        
-        private final LineBreakpoint lb;
-        private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
-        
-        public WebKitLineBreakpointManager(Debugger d, LineBreakpoint lb) {
-            super(d, lb);
-            this.lb = lb;
-        }
-
-        @Override
-        public void add() {
-            if (b != null) {
-                return ;
-            }
-            String url = lb.getURLString();
-            url = reformatFileURL(url);
-            b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
-        }
-
-        @Override
-        public void remove() {
-            if (b == null) {
-                return ;
-            }
-            d.removeLineBreakpoint(b);
-            b = null;
-        }
-    }
-
-    private static final class WebKitDOMBreakpointManager extends WebKitBreakpointManager {
-        
-        private final WebKitDebugging wd;
-        private final DOMBreakpoint db;
-        private Set<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint> bps;
-        
-        public WebKitDOMBreakpointManager(Debugger d, WebKitDebugging wd, DOMBreakpoint db) {
-            super(d, db);
-            this.wd = wd;
-            this.db = db;
-        }
-
-        @Override
-        public void add() {
-            if (bps != null) {
-                return ;
-            }
-            Node node = db.getNode();
-            Set<Type> types = db.getTypes();
-            if (types.isEmpty()) {
-                return ;
-            }
-            bps = new HashSet<org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint>(types.size());
-            for (Type type : types) {
-                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
-                        d.addDOMBreakpoint(node, type.getTypeString());
-                bps.add(b);
-            }
-        }
-
-        @Override
-        public void remove() {
-            if (bps == null) {
-                return ;
-            }
-            for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps) {
-                d.removeLineBreakpoint(b);
-            }
-            bps = null;
-        }
-    }
-
 }

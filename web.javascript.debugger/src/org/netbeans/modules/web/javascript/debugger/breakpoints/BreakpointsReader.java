@@ -44,19 +44,9 @@
 
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.modules.web.clientproject.api.RemoteFileCache;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
-import org.openide.cookies.LineCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.openide.text.Line;
 
 /**
@@ -65,22 +55,20 @@ import org.openide.text.Line;
  */
 public class BreakpointsReader implements Properties.Reader {
 
-    private static final String LINE_NUMBER    = "lineNumber";         // NOI18N
-
-    private static final String URL             = "url";               // NOI18N
+    private static final String LINE_NUMBER     = "lineNumber";                 // NOI18N
+    private static final String URL             = "url";                        // NOI18N
     
-    private static final String ENABED          = "enabled";           // NOI18N
-
-    private static final String FUNC_NAME       = "functionName";      // NOI18N
-
-    private static final String TYPE            = "type";              // NOI18N 
-    private static final String GROUP_NAME = "groupName"; // NOI18N
+    private static final String DOM_NODE_PATH   = "domNodePath";                // NOI18N
+    
+    private static final String ENABED          = "enabled";                    // NOI18N
+    private static final String GROUP_NAME      = "groupName";                  // NOI18N
 
 
     @Override
     public String [] getSupportedClassNames() {
         return new String[] {
             LineBreakpoint.class.getName(),
+            DOMBreakpoint.class.getName(),
         };
     }
 
@@ -94,30 +82,27 @@ public class BreakpointsReader implements Properties.Reader {
                 return null;
             }
             LineBreakpoint breakpoint = new LineBreakpoint(line);
-            if (!properties.getBoolean(ENABED, true)) {
-                breakpoint.disable();
-            }
-            breakpoint.setGroupName(properties.getString(GROUP_NAME, ""));
+            readGeneralProperties(properties, breakpoint);
             return breakpoint;
         }
-        /*else if (typeID.equals(FunctionBreakpoint.class.getName())){
-            String func = properties.getString( FUNC_NAME, null );
-            Type type = Type.forString( properties.getString( TYPE, null ));
-            if ( func == null || type == null ) {
+        else if (typeID.equals(DOMBreakpoint.class.getName())) {
+            String nodePathDefinition = properties.getString(DOM_NODE_PATH, null);
+            if (nodePathDefinition == null) {
                 return null;
             }
-            FunctionBreakpoint breakpoint = new FunctionBreakpoint(type, func);
-            if (!properties.getBoolean(ENABED, true)) {
-                breakpoint.disable();
-            }
-            breakpoint.setGroupName(properties.getString(GROUP_NAME, ""));
-            return breakpoint;
-        }*/
+            DOMNode node = DOMNode.create(nodePathDefinition);
+            DOMBreakpoint db = new DOMBreakpoint(node);
+            db.setOnSubtreeModification(properties.getBoolean(Debugger.DOM_BREAKPOINT_SUBTREE, false));
+            db.setOnAttributeModification(properties.getBoolean(Debugger.DOM_BREAKPOINT_ATTRIBUTE, false));
+            db.setOnNodeRemoval(properties.getBoolean(Debugger.DOM_BREAKPOINT_NODE, false));
+            readGeneralProperties(properties, db);
+            return db;
+        }
         else {
             return null;
         }
     }
-
+    
     @Override
     public void write(Object object, Properties properties) {
         if (object instanceof LineBreakpoint) {
@@ -125,17 +110,29 @@ public class BreakpointsReader implements Properties.Reader {
             
             properties.setString(URL, breakpoint.getURLString());
             properties.setInt(LINE_NUMBER, breakpoint.getLine().getLineNumber());
-            properties.setBoolean(ENABED, breakpoint.isEnabled());
-            properties.setString(GROUP_NAME, breakpoint.getGroupName());
+            writeGeneralProperties(properties, breakpoint);
         }
-/*        else if ( object instanceof FunctionBreakpoint ) {
-            FunctionBreakpoint breakpoint = (FunctionBreakpoint)object;
-            String func = breakpoint.getFunction();
-            properties.setString( FUNC_NAME , func );
-            properties.setString( TYPE , breakpoint.getType().toString() );
-            properties.setBoolean(ENABED, breakpoint.isEnabled());
-            properties.setString(GROUP_NAME, breakpoint.getGroupName());
-        }*/
+        else if (object instanceof DOMBreakpoint) {
+            DOMBreakpoint db = (DOMBreakpoint) object;
+            
+            properties.setString(DOM_NODE_PATH, db.getNode().getStringDefinition());
+            properties.setBoolean(Debugger.DOM_BREAKPOINT_SUBTREE, db.isOnSubtreeModification());
+            properties.setBoolean(Debugger.DOM_BREAKPOINT_ATTRIBUTE, db.isOnAttributeModification());
+            properties.setBoolean(Debugger.DOM_BREAKPOINT_NODE, db.isOnNodeRemoval());
+            writeGeneralProperties(properties, db);
+        }
+    }
+    
+    private void readGeneralProperties(Properties properties, AbstractBreakpoint breakpoint) {
+        if (!properties.getBoolean(ENABED, true)) {
+            breakpoint.disable();
+        }
+        breakpoint.setGroupName(properties.getString(GROUP_NAME, ""));
+    }
+
+    private void writeGeneralProperties(Properties properties, AbstractBreakpoint breakpoint) {
+        properties.setBoolean(ENABED, breakpoint.isEnabled());
+        properties.setString(GROUP_NAME, breakpoint.getGroupName());
     }
 
 }
