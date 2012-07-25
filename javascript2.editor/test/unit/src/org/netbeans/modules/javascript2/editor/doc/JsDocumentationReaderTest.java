@@ -39,46 +39,52 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.editor.doc;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import java.util.Set;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.parsing.api.Source;
 
 /**
- * Stores named and unnamed documentation parameters.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocParameter {
+public class JsDocumentationReaderTest extends JsTestBase {
 
-    /**
-     * Gets name of the parameter.
-     * @return parameter name
-     */
-    DocIdentifier getParamName();
+    public JsDocumentationReaderTest(String name) {
+        super(name);
+    }
 
-    /**
-     * Gets default value of the parameter.
-     * @return default value, {@code null} if no default value set
-     */
-    String getDefaultValue();
+    public void testGetCommentTags() throws Exception {
+        String commentText = "/**\n"
+                + " * Construct a new Shape object.\n"
+                + " * @class This is the basic {@link Shape} class.\n"
+                + " * It can be considered an abstract class, even though no such thing\n"
+                + " * really existing in JavaScript\n"
+                + " * @constructor\n"
+                + " * @throws MemoryException if there is no more memory\n"
+                + " * @throws GeneralShapeException rarely (if ever)\n"
+                + " * @return {Shape|Coordinate} A new shape.\n"
+                + " */";
+        Set<String> commentTags = JsDocumentationReader.getCommentTags(commentText);
+        assertEquals(5, commentTags.size());
+        assertTrue(commentTags.contains("@class"));
+        assertTrue(commentTags.contains("@link"));
+        assertTrue(commentTags.contains("@constructor"));
+        assertTrue(commentTags.contains("@throws"));
+        assertTrue(commentTags.contains("@return"));
+    }
 
-    /**
-     * Get information if the parameter is optional or not.
-     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
-     */
-    boolean isOptional();
-
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description, can be empty string, never {@code null}
-     */
-    String getParamDescription();
-
-    /**
-     * Gets the parameter type.
-     * @return parameter type, or {@code null} when no type is set
-     */
-    List<Type> getParamTypes();
-
+    public void testGetAllTags() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/doc/commonDocFile.js"));
+        Set<String> allTags = JsDocumentationReader.getAllTags(source.createSnapshot());
+        assertEquals(25, allTags.size());
+        // randomly check several tags
+        assertTrue(allTags.contains("@param"));
+        assertTrue(allTags.contains("@example"));
+        assertTrue(allTags.contains("@author"));
+        assertTrue(allTags.contains("@field"));
+        assertTrue(allTags.contains("@version"));
+        assertTrue(allTags.contains("@see"));
+    }
 }

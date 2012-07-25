@@ -44,6 +44,9 @@ package org.netbeans.modules.glassfish.cloud.data;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.glassfish.tools.ide.data.DataException;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishServerEntity;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloudEntity;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
@@ -78,9 +81,14 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     /** Host property name. */
     public static final String PROPERTY_HOST = "host";
 
-    /** CPort property name. */
+    /** Port property name. */
     public static final String PROPERTY_PORT = "port";
 
+    /** Local server directory property name. */
+    public static final String PROPERTY_LOCAL_SERVER = "localServer";
+
+    /** GlassFish cloud instance local URL_PREFIXserver URL prefix. */
+    public static final String URL_PREFIX = "gfcl";
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -102,13 +110,16 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     /**
      * Constructs GlassFish Cloud class instance with ALL values set.
      * <p/>
-     * @param name GlassFish cloud name to set.
-     * @param host GlassFish cloud host to set.
-     * @param port GlassFish server port to set.
+     * @param name        GlassFish cloud name to set.
+     * @param host        GlassFish cloud host to set.
+     * @param port        GlassFish server port to set.
+     * @param localServer GlassFish cloud local server to set.
+     * 
      */
     @SuppressWarnings("LeakingThisInConstructor")
-    public GlassFishCloudInstance(String name, String host, int port) {
-        super(name, host, port);
+    public GlassFishCloudInstance(String name, String host, int port,
+            GlassFishServer localServer) {
+        super(name, host, port, localServer);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);
@@ -234,6 +245,9 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
         props.putString(PROPERTY_NAME, name);
         props.putString(PROPERTY_HOST, host);
         props.putInt(PROPERTY_PORT, port);
+        props.putString(PROPERTY_LOCAL_SERVER,
+                getLocalServer() != null
+                ? getLocalServer().getServerHome() : null);
         LOG.log(Level.FINER,
                 "Stored GlassFishCloudInstance({0}, {1}, {2})",
                 new Object[]{name, host, port});
@@ -252,10 +266,21 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
         if (name != null) {
             String host = props.getString(PROPERTY_HOST, null);
             int port = props.getInt(PROPERTY_PORT, -1);
+            String localServerHome = props.getString(
+                    PROPERTY_LOCAL_SERVER, null);
+
             LOG.log(Level.FINER,
                     "Loaded GlassFishCloudInstance({0}, {1}, {2})",
                     new Object[]{name, host, port});
-            return new GlassFishCloudInstance(name, host, port);
+            GlassFishServerEntity localServer;
+            try {
+                localServer = new GlassFishServerEntity(localServerHome,
+                        GlassFishCloudUrl.url(GlassFishCloudInstance.URL_PREFIX,
+                        name));
+            } catch (DataException de) {
+                localServer = null;
+            }
+            return new GlassFishCloudInstance(name, host, port, localServer);
         } else {
             LOG.log(Level.WARNING,
                     "Stored GlassFishCloudInstance name is null, skipping");

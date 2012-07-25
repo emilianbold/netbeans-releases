@@ -39,46 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.editor.doc;
 
+import com.oracle.nashorn.ir.Node;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Stores named and unnamed documentation parameters.
+ * Can be returned by the {@link JsDocumentationFallbackProvider}. It provides
+ * empty data. It is used to prevent null checking in the model, visitor codes.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocParameter {
+class JsDocumentationFallbackHolder extends JsDocumentationHolder {
 
-    /**
-     * Gets name of the parameter.
-     * @return parameter name
-     */
-    DocIdentifier getParamName();
+    public JsDocumentationFallbackHolder(Snapshot snapshot) {
+        super(snapshot);
+    }
 
-    /**
-     * Gets default value of the parameter.
-     * @return default value, {@code null} if no default value set
-     */
-    String getDefaultValue();
+    @Override
+    public List getReturnType(Node node) {
+        return Collections.emptyList();
+    }
 
-    /**
-     * Get information if the parameter is optional or not.
-     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
-     */
-    boolean isOptional();
+    @Override
+    public List getParameters(Node node) {
+        return Collections.emptyList();
+    }
 
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description, can be empty string, never {@code null}
-     */
-    String getParamDescription();
+    @Override
+    public String getDocumentation(Node node) {
+        return "";
+    }
 
-    /**
-     * Gets the parameter type.
-     * @return parameter type, or {@code null} when no type is set
-     */
-    List<Type> getParamTypes();
+    @Override
+    public boolean isDeprecated(Node node) {
+        return false;
+    }
+
+    @Override
+    public Set getModifiers(Node node) {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Map getCommentBlocks() {
+        return Collections.emptyMap();
+    }
 
 }
