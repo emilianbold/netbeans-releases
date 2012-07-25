@@ -89,6 +89,7 @@
                 <friend>org.netbeans.modules.php.composer</friend>
                 <friend>org.netbeans.modules.php.doctrine2</friend>
                 <friend>org.netbeans.modules.php.phpdoc</friend>
+                <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <friend>org.netbeans.modules.php.symfony2</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
