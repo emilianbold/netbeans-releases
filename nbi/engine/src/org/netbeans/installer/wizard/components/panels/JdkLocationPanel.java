@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -206,6 +206,10 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             // the location to the list
             if ((!location.exists() || isJreAllowed() || JavaUtils.isJdk(location))) {
                 String vendor = JavaUtils.getInfo(location).getVendor();
+                if (JavaUtils.getInfo(location) == null) {
+                    LogManager.log("JdkLocationPanel - JavaUtils.getInfo(" + location + ") returns null!");
+                    continue;
+                }
                 
                 if(!version.olderThan(minimumVersion) &&
                         !version.newerThan(maximumVersion) &&

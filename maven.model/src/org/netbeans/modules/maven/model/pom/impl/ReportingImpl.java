@@ -87,10 +87,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
 
     @Override
     public void removeReportPlugin(ReportPlugin plugin) {
-        ModelList<ReportPlugin> childs = getChild(ReportPluginImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(plugin);
-        }
+        remove(plugin, getModel().getPOMQNames().REPORTPLUGINS.getName(), ReportPluginImpl.List.class);
     }
 
     @Override
