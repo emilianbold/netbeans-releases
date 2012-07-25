@@ -45,6 +45,7 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URI;
 import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JComponent;
@@ -52,7 +53,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -174,7 +174,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             return false;
         }
 
-        if(!BugzillaClient.isValidUrl(url) || "http://".equals(url) || "https://".equals(url)) {
+        if(!isValid(url) || "http://".equals(url) || "https://".equals(url)) {
             errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_WRONG_URL_FORMAT");  // NOI18N
             return false;
         }
@@ -350,6 +350,18 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
     void cancel() {
         if(taskRunner != null) {
             taskRunner.cancel();
+        }
+    }
+
+    private boolean isValid(String url) {
+        if (!url.startsWith("https://") || !url.startsWith("http://")) { 
+            return false;
+        }
+        try {
+            new URI(url); 
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 

@@ -42,15 +42,28 @@
 
 package org.netbeans.modules.kenai.ui.dashboard;
 
+import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.kenai.api.*;
-import org.netbeans.modules.kenai.ui.spi.*;
-import org.netbeans.modules.kenai.ui.treelist.LeafNode;
-import org.netbeans.modules.kenai.ui.treelist.TreeLabel;
+import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
+import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.ProjectProvider;
+import org.netbeans.modules.team.ui.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.spi.MessagingAccessor;
+import org.netbeans.modules.team.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.ui.spi.ProjectAccessor;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
@@ -62,10 +75,10 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Becicka
  */
-public class MyProjectNode extends LeafNode {
+public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements ProjectProvider {
 
     private Notification bugNotification;
-    private final ProjectHandle project;
+    private final ProjectHandle<KenaiProject> project;
     private final ProjectAccessor accessor;
     private final QueryAccessor qaccessor;
     private final MessagingAccessor maccessor;
@@ -101,12 +114,16 @@ public class MyProjectNode extends LeafNode {
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
+    private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
 
-    public MyProjectNode( final ProjectHandle project ) {
+    public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
         super( null );
-        if (project==null)
+        if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
+        }
+        dashboard = KenaiServer.getDashboard(project);
         this.projectListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if( ProjectHandle.PROP_CONTENT.equals( evt.getPropertyName()) ) {
                     refreshChildren();
@@ -119,7 +136,7 @@ public class MyProjectNode extends LeafNode {
                     }
                 } else if (KenaiProject.PROP_PROJECT_NOTIFICATION.equals(evt.getPropertyName())) {
                     KenaiNotification notification = (KenaiNotification) evt.getNewValue();
-                    if (notification.getType() == KenaiService.Type.ISSUES && !notification.getAuthor().equals(project.getKenaiProject().getKenai().getPasswordAuthentication().getUserName())) {
+                    if (notification.getType() == KenaiService.Type.ISSUES && !notification.getAuthor().equals(project.getTeamProject().getKenai().getPasswordAuthentication().getUserName())) {
                         showBugNotification(notification);
                     }
 
@@ -136,7 +153,7 @@ public class MyProjectNode extends LeafNode {
                     List<QueryResultHandle> queryResults = (List<QueryResultHandle>) evt.getNewValue();
                     for (QueryResultHandle queryResult : queryResults) {
                         if (queryResult.getResultType() == QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                            DashboardImpl.getInstance().myProjectsProgressStarted();
+                            dashboard.myProjectsProgressStarted();
                             setBugsLater(queryResult);
                             return;
                         }
@@ -145,17 +162,18 @@ public class MyProjectNode extends LeafNode {
             }
         };
         this.project = project;
-        this.accessor = ProjectAccessor.getDefault();
-        this.maccessor = MessagingAccessor.getDefault();
-        this.qaccessor = QueryAccessor.getDefault();
+        this.accessor = ProjectAccessorImpl.getDefault();
+        this.maccessor = MessagingAccessorImpl.getDefault();
+        this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class);
         this.project.addPropertyChangeListener( projectListener );
         this.mh = maccessor.getMessaging(project);
         this.mh.addPropertyChangeListener(projectListener);
-        project.getKenaiProject().getKenai().addPropertyChangeListener(projectListener);
-        project.getKenaiProject().addPropertyChangeListener(projectListener);
+        project.getTeamProject().getKenai().addPropertyChangeListener(projectListener);
+        project.getTeamProject().addPropertyChangeListener(projectListener);
     }
 
-    ProjectHandle getProject() {
+    @Override
+    public ProjectHandle getProject() {
         return project;
     }
 
@@ -186,7 +204,7 @@ public class MyProjectNode extends LeafNode {
                 issuesRP.post(new Runnable() {
 
                     public void run() {
-                        DashboardImpl.getInstance().myProjectsProgressStarted();
+                        dashboard.myProjectsProgressStarted();
                         allIssuesQuery = qaccessor.getAllIssuesQuery(project);
                         if (allIssuesQuery != null) {
                             allIssuesQuery.addPropertyChangeListener(projectListener);
@@ -198,7 +216,7 @@ public class MyProjectNode extends LeafNode {
                                 }
                             }
                         }
-                        DashboardImpl.getInstance().myProjectsProgressFinished();
+                        dashboard.myProjectsProgressFinished();
                     }
                 });
 
@@ -228,7 +246,7 @@ public class MyProjectNode extends LeafNode {
 
     private void setOnline(final boolean b) {
         Runnable run = new Runnable() {
-
+            @Override
             public void run() {
                 if (btnBugs == null || "0".equals(btnBugs.getText())) { // NOI18N
                     if (leftPar != null) {
@@ -241,7 +259,7 @@ public class MyProjectNode extends LeafNode {
                 if (btnMessages != null) {
                     btnMessages.setVisible(b);
                 }
-                DashboardImpl.getInstance().dashboardComponent.repaint();
+                dashboard.dashboardComponent.repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -264,8 +282,9 @@ public class MyProjectNode extends LeafNode {
     }
 
     void setMemberProject(boolean isMemberProject) {
-        if( isMemberProject == this.isMemberProject )
+        if( isMemberProject == this.isMemberProject ) {
             return;
+        }
         this.isMemberProject = isMemberProject;
         fireContentChanged();
         refreshChildren();
@@ -276,13 +295,13 @@ public class MyProjectNode extends LeafNode {
         super.dispose();
         if( null != project ) {
             project.removePropertyChangeListener( projectListener );
-            project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
-            project.getKenaiProject().removePropertyChangeListener(projectListener);
+            project.getTeamProject().getKenai().removePropertyChangeListener(projectListener);
+            project.getTeamProject().removePropertyChangeListener(projectListener);
         }
         if (null != mh) {
             mh.removePropertyChangeListener(projectListener);
         }
-        project.getKenaiProject().getKenai().removePropertyChangeListener(projectListener);
+        project.getTeamProject().getKenai().removePropertyChangeListener(projectListener);
         if (allIssuesQuery != null) {
             allIssuesQuery.removePropertyChangeListener(projectListener);
             allIssuesQuery=null;
@@ -308,9 +327,8 @@ public class MyProjectNode extends LeafNode {
                 rightPar.setVisible(visible);
                 btnBugs.setVisible(!"0".equals(bug.getText())); // NOI18N
                 component.validate();
-                DashboardImpl instance = DashboardImpl.getInstance();
-                instance.myProjectsProgressFinished();
-                instance.dashboardComponent.repaint();
+                dashboard.myProjectsProgressFinished();
+                dashboard.dashboardComponent.repaint();
             }
         });
     }

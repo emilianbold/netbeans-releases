@@ -9,18 +9,6 @@
                 <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#Actions/Team/org-netbeans-modules-kenai-ui-GetSourcesFromKenaiAction.instance"/>
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
             </file>
-            <file name="org-netbeans-modules-kenai-ui-LoginAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
-                <attr name="delegate" methodvalue="org.netbeans.modules.kenai.ui.LoginAction.getDefault"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_LoginAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.kenai.ui.LoginAction.getDefault"/>
-            </file>
-            <file name="org-netbeans-modules-kenai-ui-LogoutAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
-                <attr name="delegate" methodvalue="org.netbeans.modules.kenai.ui.LogoutAction.getDefault"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#CTL_LogoutAction"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.kenai.ui.LogoutAction.getDefault"/>
-            </file>
             <file name="org-netbeans-modules-kenai-ui-OpenKenaiProjectAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="delegate" newvalue="org.netbeans.modules.kenai.ui.OpenKenaiProjectAction"/>
@@ -68,13 +56,6 @@
             </file>
         </folder>
         <folder name="Window">
-            <file name="org-netbeans-modules-kenai-ui-KenaiAction.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
-                <attr name="component" methodvalue="org.netbeans.modules.kenai.ui.KenaiTopComponent.findInstance"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.kenai.ui.Bundle#Actions/Window/org-netbeans-modules-kenai-ui-KenaiAction.instance"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/kenai/ui/resources/kenai-small.png"/>
-                <attr name="instanceCreate" methodvalue="org.openide.windows.TopComponent.openAction"/>
-            </file>
             <file name="org-netbeans-modules-kenai-collab-chat-ChatAction.instance">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.collab.resources.Bundle"/>
                 <attr name="component" methodvalue="org.netbeans.modules.kenai.collab.chat.ChatTopComponent.findInstance"/>
@@ -98,40 +79,11 @@
             </file>
         </folder>
     </folder>
-<!--    <folder name="Loaders">
-        <folder name="folder">
-            <folder name="any">
-                <folder name="Actions">
-                    <file name="org-netbeans-modules-kenai-ui-ShareAction-separatorAfter.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="175"/>
-                    </file>
-                    <file name="org-netbeans-modules-kenai-ui-ShareAction-separatorBefore.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="125"/>
-                    </file>
-                    <file name="org-netbeans-modules-kenai-ui-ShareAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-ShareAction.instance"/>
-                        <attr name="position" intvalue="150"/>
-                    </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-    -->
     <folder name="Menu">
         <folder name="Versioning">
             <folder name="Kenai">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.kenai.ui.Bundle"/>
                 <attr name="position" intvalue="50"/>
-                <file name="org-netbeans-modules-kenai-ui-LoginAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-LoginAction.instance"/>
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="org-netbeans-modules-kenai-ui-LogoutAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-LogoutAction.instance"/>
-                    <attr name="position" intvalue="110"/>
-                </file>
                 <file name="org-netbeans-modules-kenai-ui-NewKenaiProjectAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Team/org-netbeans-modules-kenai-ui-NewKenaiProjectAction.instance"/>
                     <attr name="position" intvalue="200"/>
@@ -163,10 +115,6 @@
             </file>
         </folder>
         <folder name="Window">
-            <file name="KenaiAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-kenai-ui-KenaiAction.instance"/>
-                <attr name="position" intvalue="490"/>
-            </file>
             <file name="org-netbeans-modules-kenai-collab-chat-ChatAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-kenai-collab-chat-ChatAction.instance"/>
                 <attr name="position" intvalue="918"/>
@@ -181,7 +129,6 @@
     </folder>
     <folder name="Windows2">
         <folder name="Components">
-            <file name="KenaiTopComponent.settings" url="KenaiTopComponentSettings.xml"/>
             <file name="ChatTopComponent.settings" url="ChatTopComponentSettings.xml"/>
             <file name="kenaiProjectTopComponent.settings" url="kenaiProjectTopComponentSettings.xml"/>
         </folder>
@@ -189,20 +136,10 @@
             <folder name="editor">
                 <file name="kenaiProjectTopComponent.wstcref" url="kenaiProjectTopComponentWstcref.xml"/>
             </folder>
-            <folder name="explorer">
-                <file name="KenaiTopComponent.wstcref" url="KenaiTopComponentWstcref.xml">
-                    <attr name="position" intvalue="455"/>
-                </file>
-            </folder>
             <folder name="properties">
                 <file name="ChatTopComponent.wstcref" url="ChatTopComponentWstcref.xml">
                 </file>
             </folder>
         </folder>
-    </folder>
-    <folder name="Shortcuts">
-        <file name="D-8.shadow">
-            <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-kenai-ui-KenaiAction.instance"/>
-        </file>
     </folder>
 </filesystem>

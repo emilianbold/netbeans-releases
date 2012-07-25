@@ -51,6 +51,7 @@ import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.net.PasswordAuthentication;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
@@ -82,8 +83,8 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     private final RepositoryStepPanel panel;
     private final RemoteRepository repository;
 
-    public RepositoryStep (String forPath) {
-        repository = new RemoteRepository(forPath);
+    public RepositoryStep (PasswordAuthentication pa, String forPath) {
+        repository = new RemoteRepository(pa, forPath);
         repository.addChangeListener(this);
         this.panel = new RepositoryStepPanel(repository.getPanel());
         validateRepository();
@@ -96,6 +97,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
     @Override
     protected final void validateBeforeNext () {
+        waitPopulated();
         try {
             branches = null;
             if(!validateRepository()) return;
@@ -122,6 +124,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             support = null;
             repository.setEnabled(true);
         }
+    }
+
+    void waitPopulated () {
+        repository.waitPopulated();
     }
 
     private boolean validateRepository() {
