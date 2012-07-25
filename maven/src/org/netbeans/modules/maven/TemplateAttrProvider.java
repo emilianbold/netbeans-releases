@@ -137,7 +137,9 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
                 String value = mp.getProperties().getProperty(prop);
                 putProp(split, props, value);        
             }
-            values.put("property", props);
+            if (props.size() > 0) {
+                values.put("property", props);
+            }
         }
 
         if (values.size() > 0) {
