@@ -66,6 +66,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -135,8 +136,19 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     @Messages({
                "TIT_Project_Properties=Project Properties - {0}", 
-               "ERR_MissingPOM=Project's pom.xml file contains invalid xml content. Please fix the file before proceeding."})
+               "ERR_MissingPOM=Project's pom.xml file contains invalid xml content. Please fix the file before proceeding.",
+               "TXT_Unloadable=Project is unloadable, you have to fix the problems before accessing the project properties dialog. Show Problem Resolution dialog?",
+               "TIT_Unloadable=Project unlodable"
+    })
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
+        if (project.getLookup().lookup(NbMavenProject.class).isUnloadable()) {
+            NotifyDescriptor.Confirmation nd = new NotifyDescriptor.Confirmation(TXT_Unloadable(), TIT_Unloadable());
+            nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
+                ActionProviderImpl.showProblemsAction().createContextAwareInstance(Lookups.singleton(project)).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+            }
+            return;
+        }
         try {
             POMModel mdl = init();
             //#171958 start
