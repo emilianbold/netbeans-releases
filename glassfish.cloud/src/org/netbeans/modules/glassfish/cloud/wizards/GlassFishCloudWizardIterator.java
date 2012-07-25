@@ -44,9 +44,12 @@ package org.netbeans.modules.glassfish.cloud.wizards;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
+import org.glassfish.tools.ide.data.DataException;
+import org.glassfish.tools.ide.data.GlassFishServerEntity;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudUrl;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -100,15 +103,24 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
                 GlassFishCloudInstance.PROPERTY_HOST);
         String portStr = (String)wizard.getProperty(
                 GlassFishCloudInstance.PROPERTY_PORT);
+        String localServerHome = (String)wizard.getProperty(
+                GlassFishCloudInstance.PROPERTY_LOCAL_SERVER);
         int port;
         try {
             port = Integer.parseInt(portStr);
         } catch (NumberFormatException nfe) {
             port = -1;
         }
-        
+        GlassFishServerEntity localServer;
+        try {
+            localServer = new GlassFishServerEntity(localServerHome,
+                    GlassFishCloudUrl.url(GlassFishCloudInstance.URL_PREFIX,
+                    name));
+        } catch (DataException de) {
+            localServer = null;
+        }
         GlassFishCloudInstance cloudInstance
-                = new GlassFishCloudInstance(name, host, port);
+                = new GlassFishCloudInstance(name, host, port, localServer);
         GlassFishCloudInstanceProvider.addCloudInstance(cloudInstance);
         return Collections.singleton(cloudInstance.getServerInstance());
     }

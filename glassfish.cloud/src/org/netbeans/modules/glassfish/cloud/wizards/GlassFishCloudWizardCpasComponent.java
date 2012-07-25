@@ -41,9 +41,17 @@
  */
 package org.netbeans.modules.glassfish.cloud.wizards;
 
+import java.io.File;
+import javax.swing.JFileChooser;
 import javax.swing.event.DocumentListener;
+import org.glassfish.tools.ide.data.DataException;
+import org.glassfish.tools.ide.data.GlassFishServerEntity;
+import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudUrl;
+import org.openide.util.NbBundle;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -56,6 +64,27 @@ import static org.openide.util.NbBundle.getMessage;
  */
 public class GlassFishCloudWizardCpasComponent
         extends GlassFishWizardComponent {
+
+    private static class DirFilter extends javax.swing.filechooser.FileFilter {
+        DirFilter() {
+        }
+        
+        @Override
+        public boolean accept(File f) {
+            if(!f.exists() || !f.canRead() || !f.isDirectory()) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        
+        @Override
+        public String getDescription() {
+            return NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.CLOUD_PANEL_BROWSER_FILE_DIR_TYPE);
+        }
+        
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -71,6 +100,7 @@ public class GlassFishCloudWizardCpasComponent
      */
     private static void initInstance(
             GlassFishCloudWizardCpasComponent instance) {
+        // Local server location is validated during component initialization.
         instance.initComponents();
         instance.hostValid = instance.hostValid().isValid();
         instance.portValid = instance.portValid().isValid();
@@ -93,6 +123,15 @@ public class GlassFishCloudWizardCpasComponent
     /** Validity of <code>port</code> field. */
     private boolean portValid;
 
+    /** Validity of <code>localServer</code> field. */
+    private boolean localServerValid;
+
+    /** Version of GlassFish at <code>localServer</code> field.
+     *  Value is updated during field validation. Contains version when
+     *  something was found or <code>null</code> when no version was recognized.
+     */
+    private GlassFishVersion localServerVersion;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -110,6 +149,8 @@ public class GlassFishCloudWizardCpasComponent
                 .addDocumentListener(initHostValidateListener());
         portTextField.getDocument()
                 .addDocumentListener(initPortValidateListener());
+        localServerTextField.getDocument()
+                .addDocumentListener(initLocalServerValidateListener());
     }
 
     /**
@@ -130,6 +171,8 @@ public class GlassFishCloudWizardCpasComponent
                 .addDocumentListener(initHostUpdateListener());
         portTextField.getDocument()
                 .addDocumentListener(initPortUpdateListener());
+        localServerTextField.getDocument()
+                .addDocumentListener(initLocalServerUpdateListener());
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -183,6 +226,16 @@ public class GlassFishCloudWizardCpasComponent
     }
 
     /**
+     * Get local server location (directory).
+     * <p/>
+     * @return Local server location (directory).
+     */
+    public String getLocalServer() {
+        String text = localServerTextField.getText();
+        return text != null ? text.trim() : null;
+    }
+
+    /**
      * Get CPAS display name for GUI initialization.
      * <p/>
      * This method is used only in generated <code>initComponents</code> method.
@@ -221,6 +274,23 @@ public class GlassFishCloudWizardCpasComponent
         return instance != null ? Integer.toString(instance.getPort()) : "";
     }
 
+    /**
+     * Get local server location (directory) for GUI initialization.
+     */
+    private String initLocalServer() {
+        return instance != null && instance.getLocalServer() != null
+                && instance.getLocalServer().getServerHome()  != null
+                ? instance.getLocalServer().getServerHome() : "";
+    }
+
+    /**
+     * Get version of local server for GUI initialization.
+     */
+    private String initLocalVersion() {
+        localServerValid = localServerValid().isValid();
+        return getLocalVersion();
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Implemented abstract methods                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -248,7 +318,7 @@ public class GlassFishCloudWizardCpasComponent
      */
     @Override
     boolean valid() {
-        return displayNameValid && hostValid && portValid;
+        return displayNameValid && hostValid && portValid && localServerValid;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -280,6 +350,37 @@ public class GlassFishCloudWizardCpasComponent
     }
 
     /**
+     * Get content of GlassFish version field.
+     */
+    private String getLocalVersion() {
+        if (localServerVersion == null) {
+            return "";
+        } else {
+            String prefix = getMessage(GlassFishCloudWizardCpasComponent.class,
+                    Bundle.CLOUD_PANEL_LOCAL_SERVER_VERSION_PREFIX);
+            String version = localServerVersion.toString();
+            StringBuilder sb = new StringBuilder(prefix.length()
+                    + version.length());
+            sb.append(prefix);
+            sb.append(version);
+            return sb.toString();
+        }
+    }
+
+    /**
+     * Process port field validation event.
+     * <p/>
+     * This is internal event processing helper and should not be used outside
+     * listeners <code>processEvent</code> method.
+     */
+    void processLocalServerValidateEvent() {
+        ValidationResult result = localServerValid();
+        localServerValid = result.isValid();
+        update(result);
+        localVersionTextField.setText(getLocalVersion());
+    }
+
+    /**
      * Create event listener to validate host field on the fly.
      */
     private DocumentListener initHostValidateListener() {
@@ -299,6 +400,18 @@ public class GlassFishCloudWizardCpasComponent
             @Override
             void processEvent() {
                 processPortValidateEvent();
+            }
+        };
+    }
+
+    /**
+     * Create event listener to validate port field on the fly.
+     */
+    private DocumentListener initLocalServerValidateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processLocalServerValidateEvent();
             }
         };
     }
@@ -329,6 +442,31 @@ public class GlassFishCloudWizardCpasComponent
                 processPortValidateEvent();
                 if (portValid && instance != null) {
                     instance.setPort(getPort());
+                    GlassFishCloudInstanceProvider.persist(instance);
+                }
+            }
+        };
+    }
+
+    /**
+     * Create event listener to validate port field on the fly.
+     */
+    private DocumentListener initLocalServerUpdateListener() {
+        return new ComponentFieldListener() {
+            @Override
+            void processEvent() {
+                processLocalServerValidateEvent();
+                if (localServerValid && instance != null) {
+                    GlassFishServerEntity localServer;
+                    try {
+                        localServer = new GlassFishServerEntity(
+                                getLocalServer(), GlassFishCloudUrl.url(
+                                GlassFishCloudInstance.URL_PREFIX,
+                                getDisplayName()));
+                    } catch (DataException de) {
+                        localServer = null;
+                    }
+                    instance.setLocalServer(localServer);
                     GlassFishCloudInstanceProvider.persist(instance);
                 }
             }
@@ -430,6 +568,86 @@ public class GlassFishCloudWizardCpasComponent
         }
     }
 
+    /**
+     * Validate local GlassFish location (directory).
+     * <p/>
+     * Directory must exist and contain <code>modules/common-util.jar</code>
+     * library. This library is used to retrieve GlassFish version which must be
+     * at least 4.0.0.0.
+     * Validation also updates <code>localServerVersion</code> attribute value
+     * to contain last version findings.
+     * <p/>
+     * @return <code>true</code> when local GlassFish location (directory)
+     *         points to valid GlassFish 4.0.0.0 and later installation.
+     */
+    final ValidationResult localServerValid() {
+        String localServerDirText = getLocalServer();
+        if (localServerDirText == null) {
+            localServerVersion = null;
+            return new ValidationResult(false,
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_ERROR_LOCAL_SERVER_EMPTY));
+        }
+        File localServerDir = new File(localServerDirText);
+        if (!localServerDir.isDirectory()) {
+            localServerVersion = null;
+            return new ValidationResult(false,
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_ERROR_LOCAL_SERVER_NOT_EXISTS));            
+        }
+        localServerVersion = ServerUtils.getServerVersion(
+                localServerDir.getAbsolutePath());
+        if (localServerVersion == null) {
+            return new ValidationResult(false,
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_ERROR_LOCAL_SERVER_UNKNOWN));            
+        }
+        if (localServerVersion.ordinal() < GlassFishVersion.GF_4.ordinal()) {
+            return new ValidationResult(false,
+                        getMessage(GlassFishCloudWizardCpasPanel.class,
+                        Bundle.CLOUD_PANEL_ERROR_LOCAL_SERVER_LOW));            
+        }
+        return new ValidationResult(true, null);
+    }
+
+    private JFileChooser getJFileChooser() {
+        JFileChooser chooser = new JFileChooser();
+        String t = getMessage(GlassFishCloudWizardCpasComponent.class,
+                Bundle.CLOUD_PANEL_BROWSER_FILE_HEADER);
+        chooser.setDialogTitle(t); //NOI18N
+        chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setApproveButtonMnemonic("Choose_Button_Mnemonic".charAt(0)); //NOI18N
+        chooser.setMultiSelectionEnabled(false);
+        chooser.addChoosableFileFilter(new DirFilter());
+        chooser.setAcceptAllFileFilterUsed(false);
+        chooser.setApproveButtonToolTipText(t); //NOI18N
+        chooser.getAccessibleContext().setAccessibleName(t); //NOI18N
+        chooser.getAccessibleContext().setAccessibleDescription(t); //NOI18N
+        // Set the current directory
+        File currentLocation = new File(localServerTextField.getText());
+        File currentLocationParent = currentLocation.getParentFile();
+        if(currentLocationParent != null && currentLocationParent.exists()) {
+            chooser.setCurrentDirectory(currentLocationParent);
+        }
+        if (currentLocation.exists() && currentLocation.isDirectory()) {
+            chooser.setSelectedFile(currentLocation);
+        } 
+        return chooser;
+    }   
+
+    private String browseHomeLocation() {
+        String hk2Location = null;
+        JFileChooser chooser = getJFileChooser();
+        int returnValue = chooser.showDialog(this,
+                getMessage(GlassFishCloudWizardCpasComponent.class,
+                Bundle.CLOUD_PANEL_BROWSER_FILE_CHOOSE));
+        if(returnValue == JFileChooser.APPROVE_OPTION) {
+            hk2Location = chooser.getSelectedFile().getAbsolutePath();
+        }
+        return hk2Location;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Generated GUI code                                                     //
     ////////////////////////////////////////////////////////////////////////////
@@ -449,6 +667,11 @@ public class GlassFishCloudWizardCpasComponent
         portTextField = new javax.swing.JTextField();
         nameLabel = new javax.swing.JLabel();
         nameTextField = new javax.swing.JTextField();
+        localServerLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        localServerTextField = new javax.swing.JTextField();
+        localVersionTextField = new javax.swing.JTextField();
+        localServerBrowseButton = new javax.swing.JButton();
 
         hostLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.hostLabel.text")); // NOI18N
 
@@ -464,6 +687,21 @@ public class GlassFishCloudWizardCpasComponent
         nameTextField.setEditable(false);
         nameTextField.setText(initDisplayName());
 
+        localServerLabel.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.localServerLabel.text")); // NOI18N
+
+        localServerTextField.setText(initLocalServer());
+
+        localVersionTextField.setBackground(new java.awt.Color(238, 238, 238));
+        localVersionTextField.setEditable(false);
+        localVersionTextField.setText(initLocalVersion());
+
+        localServerBrowseButton.setText(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.localServerBrowseButton.text")); // NOI18N
+        localServerBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                localServerBrowseButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -477,9 +715,16 @@ public class GlassFishCloudWizardCpasComponent
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(12, 12, Short.MAX_VALUE))
-                    .addComponent(hostTextField)
+                        .addContainerGap())
+                    .addComponent(hostTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
                     .addComponent(nameTextField)))
+            .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
+            .addComponent(localServerTextField)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(localServerLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(localServerBrowseButton))
+            .addComponent(localVersionTextField)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -494,12 +739,37 @@ public class GlassFishCloudWizardCpasComponent
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(portLabel)
-                    .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(portTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(localServerLabel)
+                    .addComponent(localServerBrowseButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(localServerTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(localVersionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        localServerBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GlassFishCloudWizardCpasComponent.class, "GlassFishCloudWizardCpasComponent.localServerBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void localServerBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localServerBrowseButtonActionPerformed
+        String newLoc = browseHomeLocation();
+        if(newLoc != null && newLoc.length() > 0) {
+            localServerTextField.setText(newLoc);
+        }
+    }//GEN-LAST:event_localServerBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel hostLabel;
     private javax.swing.JTextField hostTextField;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JButton localServerBrowseButton;
+    private javax.swing.JLabel localServerLabel;
+    private javax.swing.JTextField localServerTextField;
+    private javax.swing.JTextField localVersionTextField;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameTextField;
     private javax.swing.JLabel portLabel;

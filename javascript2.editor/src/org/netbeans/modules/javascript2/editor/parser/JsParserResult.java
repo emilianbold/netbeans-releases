@@ -43,7 +43,7 @@ import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -57,14 +57,14 @@ public class JsParserResult extends ParserResult {
     private final FunctionNode root;
     private List<? extends Error> errors;
     private Model model;
-    private JsDocumentationProvider docProvider;
+    private JsDocumentationHolder docHolder;
     
     public JsParserResult(Snapshot snapshot, FunctionNode root) {
         super(snapshot);
         this.root = root;
         this.errors = Collections.<Error>emptyList();
         this.model = null;
-        this.docProvider = null;
+        this.docHolder = null;
     }
     
     @Override
@@ -94,13 +94,16 @@ public class JsParserResult extends ParserResult {
         return model;
     }
     
-    public JsDocumentationProvider getDocumentationProvider() {
+    public JsDocumentationHolder getDocumentationHolder() {
         synchronized(this) {
-            if (docProvider == null) {
-                docProvider = JsDocumentationSupport.getDocumentationProvider(this);
+            if (docHolder == null) {
+                System.err.println("===== CACHING: " + getSnapshot().getSource().getFileObject().getName());
+                docHolder = JsDocumentationSupport.getDocumentationHolder(this);
+            } else {
+                System.err.println("===== EXISTS: " + getSnapshot().getSource().getFileObject().getName());
             }
         }
-        return docProvider;
+        return docHolder;
     }
 
 }

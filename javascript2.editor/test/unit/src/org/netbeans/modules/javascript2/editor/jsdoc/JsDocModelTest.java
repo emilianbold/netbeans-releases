@@ -51,6 +51,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.AssignElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import java.util.*;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -107,8 +108,8 @@ public class JsDocModelTest extends JsDocTestBase {
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocDocumentationProvider documentationProvider = getDocumentationProvider(parserResult);
-                JsComment comment = documentationProvider.getCommentForOffset(offset, documentationProvider.getCommentBlocks());
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
+                JsComment comment = documentationHolder.getCommentForOffset(offset, documentationHolder.getCommentBlocks());
                 checkJsDocElements(expected, ((JsDocComment) comment).getTags());
             }
         });

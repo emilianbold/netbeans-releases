@@ -320,6 +320,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             Identifier name = node.getName();
             addOffsetRange(name, ColoringAttributes.CLASS_SET);
+            needToScan = new ArrayList<Block>();
+            if (node.getBody() != null) {
+                node.getBody().accept(this);
+                for (Block block : needToScan) {
+                    block.accept(this);
+                }
+            }
             super.visit(node);
         }
 

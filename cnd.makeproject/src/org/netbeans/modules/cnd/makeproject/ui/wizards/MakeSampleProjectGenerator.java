@@ -89,6 +89,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -125,8 +126,13 @@ public class MakeSampleProjectGenerator {
         }
         if (mainProject != null) {
             final String projectFolderPath = prjParams.getProjectFolderPath();
-            workAroundBug203507(projectFolderPath);
-            FileObject parentFolderLocation = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
+            FOPath fopath = new FOPath(projectFolderPath);
+            FileObject parentFolderLocation;
+            if (fopath.root != null) {
+                parentFolderLocation = FileUtil.createFolder(fopath.root, fopath.relPath);
+            } else {
+                parentFolderLocation = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
+            }
             FileObject mainProjectLocation;
             if (mainProject.equals(".")) { // NOI18N
                 mainProjectLocation = parentFolderLocation;
@@ -378,23 +384,47 @@ public class MakeSampleProjectGenerator {
                 "APPLICATION", flavor, family, host, platform, "SAMPLE_PROJECT"); //NOI18N
     }
 
-    public static void workAroundBug203507(String projectFolderPath) {
-        if (projectFolderPath.length()>1 && projectFolderPath.charAt(1) == ':') {
-            // This is ugly work around Bug #203507
-            try {
-                File driver = new File(projectFolderPath.substring(0,2));
-                URL url = driver.toURI().toURL();
-                /*FileObject driverFO =*/ URLMapper.findFileObject(url);
-            } catch (Throwable e) {
+    public static final class FOPath {
+        public FileObject root;
+        public String relPath;
+        public FOPath(String projectFolderPath) {
+            if (projectFolderPath.length()>1 && projectFolderPath.charAt(1) == ':') {
+                // This is ugly work around Bug #203507
+                try {
+                    File driver = new File(projectFolderPath.substring(0,2));
+                    URL url = Utilities.toURI(driver).toURL();
+                    root = URLMapper.findFileObject(url);
+                    relPath = projectFolderPath.substring(4);
+                } catch (Throwable e) {
+                }
+            } else if (projectFolderPath.startsWith("\\\\")) { //NOI18N
+                // This is ugly work around Bug #215790
+                int index = projectFolderPath.indexOf('\\', 2); //NOI18N
+                if (index > 0) {
+                    index = projectFolderPath.indexOf('\\', index+1); //NOI18N
+                    if (index > 0) {
+                        try {
+                            File server = new File(projectFolderPath.substring(0,index));
+                            URL url = Utilities.toURI(server).toURL();
+                            root = URLMapper.findFileObject(url);
+                            relPath = projectFolderPath.substring(index+1);
+                        } catch (Throwable e) {
+                        }
+                    }
+                }
             }
         }
-        
     }
     
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         String projectFolderPath = prjParams.getProjectFolderPath();
-        workAroundBug203507(projectFolderPath);
-        FileObject prjLoc = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
+        FOPath fopath = new FOPath(projectFolderPath);
+        FileObject prjLoc;
+        if (fopath.root != null) {
+            prjLoc = FileUtil.createFolder(fopath.root, fopath.relPath);
+        } else {
+            prjLoc = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
+        }
         unzip(inputStream, prjLoc);
         postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
         customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
