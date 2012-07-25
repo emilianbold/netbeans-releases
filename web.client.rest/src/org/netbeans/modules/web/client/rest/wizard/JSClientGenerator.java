@@ -415,6 +415,7 @@ class JSClientGenerator {
             Map<HttpRequests, Boolean> useIds,
             CompilationController controller ) throws IOException
     {
+        isModelGenerated = true;
         ModelGenerator generator = new ModelGenerator(myDescription,
                 myModels, myEntities);
         generator.generateModel(entity, path, 
@@ -463,7 +464,7 @@ class JSClientGenerator {
                 myTmplCreate.append(generator.getCreateTemplate());
                 myTmplCreate.append("'>\n");                                            // NOI18N
                 myTmplCreate.append("<!--\n");                                          // NOI18N
-                myTmplCreate.append("\tPut your controls to create new entity here.\n");// NOI18N
+                myTmplCreate.append("\tPut your controls to create new entity here.\n\n");// NOI18N
                 myTmplCreate.append("\tClass 'new' is used to listen on events in JS code.\n");// NOI18N
                 myTmplCreate.append("-->\n");                                           // NOI18N
                 myTmplCreate.append("<button class='new'>Create</button>\n");           // NOI18N
@@ -485,6 +486,65 @@ class JSClientGenerator {
             
             if ( generator.getDetailsTemplate()!= null){
                 // Create HTML "view" for details of chosen item
+                myTmplDetails.append("<script type='text/template' id='");              // NOI18N
+                myTmplDetails.append(generator.getDetailsTemplate());
+                myTmplDetails.append("'>\n");                                           // NOI18N
+                myTmplDetails.append("<div>\n");                                        // NOI18N
+                String idAttribute = null; 
+                if ( modelGenerator.getIdAttribute()!= null ){
+                    idAttribute = modelGenerator.getIdAttribute().getName();
+                    myTmplDetails.append("<label>Id:</label>\n");                       // NOI18N
+                    myTmplDetails.append("<input type='text' id='");                    // NOI18N
+                    myTmplDetails.append(idAttribute);
+                    myTmplDetails.append("' name='id' value='<%= ");                    // NOI18N
+                    myTmplDetails.append(idAttribute);
+                    myTmplDetails.append(" %>' disabled />\n");                         // NOI18N
+                }
+                String nameAttribute = modelGenerator.getDisplayNameAlias();
+                if ( !nameAttribute.equals( idAttribute )){
+                    myTmplDetails.append("<label>Name:</label>\n");                     // NOI18N
+                    myTmplDetails.append("<input type='text' id='");                    // NOI18N
+                    myTmplDetails.append(nameAttribute);
+                    myTmplDetails.append("' name='");                                   // NOI18N
+                    myTmplDetails.append(nameAttribute);
+                    myTmplDetails.append("' value='<%= ");                              // NOI18N
+                    myTmplDetails.append(nameAttribute);
+                    myTmplDetails.append(" %>'/>\n");                                   // NOI18N
+                }
+                
+                myTmplDetails.append("<!--\n");                                         // NOI18N
+                myTmplDetails.append("\tPut your editing controls for model\n");        // NOI18N
+                myTmplDetails.append("attribute data (text fields, ...) here\n");       // NOI18N
+                Set<ModelAttribute> attributes = modelGenerator.getAttributes();
+                for (ModelAttribute attribute : attributes) {
+                    String attrName = attribute.getName();
+                    if ( attrName.equals( nameAttribute)||
+                            attrName.equals(idAttribute))
+                    {
+                        continue;
+                    }
+                    myTmplDetails.append("<label>");                                    // NOI18N
+                    myTmplDetails.append(attrName);
+                    myTmplDetails.append(":</label>\n");                                // NOI18N
+                    myTmplDetails.append("<input type='text' id='");                    // NOI18N
+                    myTmplDetails.append(attrName);
+                    myTmplDetails.append("' name='");                                   // NOI18N
+                    myTmplDetails.append(attrName);
+                    myTmplDetails.append("' value='<%= ");                              // NOI18N
+                    myTmplDetails.append(attrName);
+                    myTmplDetails.append(" %>'/>\n");                                   // NOI18N
+                }
+                myTmplDetails.append("-->\n");                                          // NOI18N
+                
+                myTmplDetails.append("<!--\n");
+                myTmplDetails.append("\tPut your controls to create new entity here.\n");// NOI18N
+                myTmplDetails.append("\tClasses 'save' and 'delete' are used ");        // NOI18N
+                myTmplDetails.append("to listen on events in JS code.\n");              // NOI18N
+                myTmplDetails.append("-->\n");                                          // NOI18N
+                myTmplDetails.append("<button  class='save'>Save</button>\n");          // NOI18N
+                myTmplDetails.append("<button  class='delete'>Delete</button>\n");      // NOI18N
+                myTmplDetails.append("</div>\n");                                       // NOI18N
+                myTmplDetails.append("</script>\n");                                    // NOI18N
             }
         }
         else {

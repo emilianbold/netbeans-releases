@@ -166,7 +166,7 @@ class ModelGenerator {
         myCommonModels.append(myCollectionModelName);
         
         myCommonModels.append(" = Backbone.Collection.extend({\n");  // NOI18N
-        myCommonModels.append("model: ");                            // NOI18N
+        myCommonModels.append("model: models.");                     // NOI18N
         myCommonModels.append(myModelName);
         myCommonModels.append(",\nurl : \"");                        // NOI18N
         myCommonModels.append( getUrl( collectionPath ));
@@ -252,7 +252,7 @@ class ModelGenerator {
         VariableElement id = null;
         for (VariableElement field : fields) {
             if ( JSClientGenerator.getAnnotation(field, ID) != null ){
-                boolean has = attributes.remove(field.getSimpleName().toString());
+                boolean has = attributes.contains(field.getSimpleName().toString());
                 if ( has ){
                     id = field;
                     break;
@@ -269,7 +269,6 @@ class ModelGenerator {
                 builder.append(',');                                  
             }
             myIdAttribute = new ModelAttribute(idAttr);
-            myAttributes.add( myIdAttribute);
         }
         
         if (attributes.size() > 0) {
