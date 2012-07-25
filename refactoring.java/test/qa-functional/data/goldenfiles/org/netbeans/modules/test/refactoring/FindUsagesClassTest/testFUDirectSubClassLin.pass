@@ -1,0 +1,8 @@
+Find Direct SubTypes of <b>FindSubtype</b> [4 occurrences]
+    RefactoringTest
+        Subtype1.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;12:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>class</font>&nbsp;<b>Subtype1</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#3c3c3c>FindSubtype</font><font color=#3c3c3c>{</font>
+        Subtype2.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;14:&nbsp;&nbsp;</font><font color=#0000e6>class</font>&nbsp;<b>InnerClass</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#3c3c3c>FindSubtype</font>&nbsp;<font color=#3c3c3c>{</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;18:&nbsp;&nbsp;</font><font color=#3c3c3c>Object</font>&nbsp;<font color=#3c3c3c>o</font>&nbsp;<font color=#3c3c3c>=</font>&nbsp;<font color=#0000e6>new</font>&nbsp;<b>FindSubtype</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font>&nbsp;<font color=#3c3c3c>{</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;24:&nbsp;&nbsp;</font><font color=#0000e6>class</font>&nbsp;<b>TopLevel</b>&nbsp;<font color=#0000e6>extends</font>&nbsp;<font color=#3c3c3c>FindSubtype</font>&nbsp;<font color=#3c3c3c>{</font>
