@@ -52,6 +52,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +148,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
             if (listener.projectHandle.get() == projectHandle
                     && projectHandle.getTeamProject().getBuildUrl().equals(
                     listener.instance.getUrl())) {
-                synchronized (listener.buildHandles) {
+                synchronized (listener) {
                     listener.checkJobList(); //update job list
                     return new LinkedList<BuildHandle>(listener.buildHandles);
                 }
@@ -535,7 +536,9 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
          * server.
          */
         private void removeOrphanedHandles(Collection<HudsonJob> jobs) {
-            for (HudsonBuildHandle handle : buildHandles) {
+            for (Iterator<HudsonBuildHandle> it = buildHandles.iterator();
+                    it.hasNext();) {
+                HudsonBuildHandle handle = it.next();
                 boolean found = false;
                 for (HudsonJob job : jobs) {
                     if (job.getUrl().equals(handle.getJob().getUrl())) {
@@ -545,7 +548,7 @@ public class ODSBuildAccessor extends BuildAccessor<ODSProject> {
                 }
                 if (!found) {
                     handle.cleanup();
-                    buildHandles.remove(handle);
+                    it.remove();
                 }
             }
         }
