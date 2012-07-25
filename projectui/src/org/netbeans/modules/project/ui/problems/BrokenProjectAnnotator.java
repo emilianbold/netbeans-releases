@@ -121,22 +121,33 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
                 problemsCount = brokenCache.get(project);
                 LOG.log(Level.FINE, "In cache: {0}.", problemsCount);   //NOI18N
             } else {
-                if (!isOpened(project)) {
-                    return original;
-                }
                 firstTime = true;
-                brokenCache.put(project, problemsCount);
-                final ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
-                if (ppp != null) {
-                    ppp.addPropertyChangeListener(this);
-                    Set<Reference<Project>> projects = problemsProvider2prj.get(ppp);
-                    if (projects == null) {
-                        projects = new HashSet<Reference<Project>>();
-                        problemsProvider2prj.put(ppp, projects);
+            }
+        }
+        if (firstTime) {
+            //Threading: Aquires PM.mutex().RL -> Cannot be called under private lock.
+            if (!isOpened(project)) {
+                return original;
+            }
+            synchronized (cacheLock) {
+                if (!brokenCache.containsKey(project)) {
+                    brokenCache.put(project, problemsCount);
+                    final ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
+                    if (ppp != null) {
+                        ppp.addPropertyChangeListener(this);
+                        Set<Reference<Project>> projects = problemsProvider2prj.get(ppp);
+                        if (projects == null) {
+                            projects = new HashSet<Reference<Project>>();
+                            problemsProvider2prj.put(ppp, projects);
+                        }
+                        projects.add(new WeakReference<Project>(project));
                     }
-                    projects.add(new WeakReference<Project>(project));
+                    LOG.fine("Added listeners.");    //NOI18N
+                } else {
+                    firstTime = false;
+                    problemsCount = brokenCache.get(project);
+                    LOG.log(Level.FINE, "In cache: {0}.", problemsCount);   //NOI18N
                 }
-                LOG.fine("Added listeners.");    //NOI18N
             }
         }
 
