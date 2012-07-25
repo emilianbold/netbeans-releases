@@ -41,42 +41,21 @@
  */
 package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
-import java.io.File;
+import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.swing.SwingUtilities;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
-import javax.tools.ToolProvider;
-//import org.dom4j.DocumentException;
-//import org.hibernate.SessionFactory;
-//import org.hibernate.cfg.AnnotationConfiguration;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.hibernate.catalog.HibernateCatalog;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
 //import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 //import org.netbeans.modules.hibernate.util.HibernateUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -104,14 +83,23 @@ public class JPQLEditorController {
 //                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(pu.getName());
 //                        EntityManager em = emf.createEntityManager();
 
+        final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ph.progress(10);
             ph.setDisplayName(NbBundle.getMessage(JPQLEditorTopComponent.class, "queryExecutionPrepare"));
             // Construct custom classpath here.
             localResourcesURLList.addAll(pe.getProjectClassPath(pe.getLocation()));
+            localResourcesURLList.add(pe.getLocation().getParent().toURL());
+            localResourcesURLList.add(pe.getLocation().toURL());
+            localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
+
+//            for(URL url:localResourcesURLList){
+//                addURL(url);
+//            }
+            
             ClassLoader customClassLoader = pe.getProjectClassLoader(
                     localResourcesURLList.toArray(new URL[]{}));
-            final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
+            Thread.currentThread().setContextClassLoader(customClassLoader);
             Thread t = new Thread() {
 
                 @Override
@@ -151,7 +139,19 @@ public class JPQLEditorController {
             t.start();
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            Thread.currentThread().setContextClassLoader(defClassLoader);
         }
+    }
+    public void addURL(URL url) throws Exception {
+      URLClassLoader classLoader
+             = (URLClassLoader) ClassLoader.getSystemClassLoader();
+      Class clazz= URLClassLoader.class;
+
+      // Use reflection
+      Method method= clazz.getDeclaredMethod("addURL", new Class[] { URL.class });
+      method.setAccessible(true);
+      method.invoke(classLoader, new Object[] { url });
     }
 
     public void init(Node[] activatedNodes) {

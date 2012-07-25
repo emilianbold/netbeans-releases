@@ -56,6 +56,11 @@ import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
  */
 public class JPQLExecutor {
 
+    public JPQLExecutor(){
+        System.out.println("1###"+getClass().getClassLoader());
+        System.out.println("2###"+Thread.currentThread().getContextClassLoader());
+    }
+    
     /**
      * Executes given JPQL query and returns the result.
      * @param jpql the query
@@ -71,7 +76,10 @@ public class JPQLExecutor {
         try {
             ph.progress(60);
             
-                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(pu.getName());
+                        Class pClass = Thread.currentThread().getContextClassLoader().loadClass("javax.persistence.Persistence");
+                        javax.persistence.Persistence p = (javax.persistence.Persistence) pClass.newInstance();p.getClass().getClassLoader().loadClass("org.eclipse.persistence.jpa.PersistenceProvider");
+                        EntityManagerFactory emf = p.createEntityManagerFactory(pu.getName());
+                        
                         EntityManager em = emf.createEntityManager();
 
                         Query query = em.createQuery(jpql);

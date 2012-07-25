@@ -267,17 +267,4 @@ public class CustomClassLoader extends URLClassLoader {
         ByteArrayInputStream bIn = new ByteArrayInputStream("hibernate.connection.provider_class=org.netbeans.modules.hibernate.util.CustomJDBCConnectionProvider".getBytes());
         return bIn;
     }
-    @Override
-    public URL findResource(String name) {
-        return name.startsWith("META-INF/services") ? null : super.findResource(name); //NOI18N
-    }
-
-    @Override
-    public Enumeration<URL> findResources(String name) throws IOException {
-        if (name.startsWith("META-INF/services")) { //NOI18N
-            return Collections.enumeration(Collections.<URL>emptyList());
-        } else {
-            return super.findResources(name);
-        }
-    }
 }
