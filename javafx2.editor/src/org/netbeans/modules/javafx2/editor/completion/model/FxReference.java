@@ -48,11 +48,11 @@ import org.netbeans.api.java.source.ElementHandle;
  *
  * @author sdedic
  */
-public final class FxReference extends FxObjectBase implements FxElement {
+public final class FxReference extends FxObjectBase {
     private String        targetId;
     private FxNewInstance    target;
     
-    public FxReference(String targetId) {
+    FxReference(String targetId) {
         this.targetId = targetId;
     }
 
@@ -60,16 +60,15 @@ public final class FxReference extends FxObjectBase implements FxElement {
         this.target = inst;
     }
 
-    @Override
-    public String getClassName() {
+    public String getTargetName() {
         if (target == null) {
             return null;
         }
-        return target.getClassName();
+        return target.getSourceName();
     }
     
     @Override
-    public String getTagName() {
+    public String getSourceName() {
         return FxXmlSymbols.FX_REFERENCE;
     }
 

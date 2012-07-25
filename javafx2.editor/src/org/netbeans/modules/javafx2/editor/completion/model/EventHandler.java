@@ -41,43 +41,93 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
-import org.netbeans.modules.javafx2.editor.completion.beans.EventSourceInfo;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxEvent;
 
 /**
- *
+ * Represents an event handler attached to an {@link FxInstance}.
+ * The event handler's content may represent a script, or a method reference.
+ * 
  * @author sdedic
  */
-public class EventHandler extends FxNode {
+public final class EventHandler extends FxNode implements HasContent {
     private String event;
     
-    private String content;
+    /**
+     * Content - script code
+     */
+    private Object content;
+
+    /**
+     * If true, the content is actually a method name
+     */
+    private boolean methodRef;
+    
+    /**
+     * Handle to the actual method handler
+     */
+    private ElementHandle<ExecutableElement>    handler;
     
     /**
      * Resolved eventInfo
      */
-    private EventSourceInfo   eventInfo;
+    private FxEvent   eventInfo;
 
-    public EventHandler(String eventName) {
-        this.event = event;
+    EventHandler(String eventName) {
+        this.event = eventName;
     }
     
-    void setContent(String content) {
-        this.content = content;
+    EventHandler asMethodRef() {
+        this.methodRef = true;
+        return this;
     }
     
-    void setEventInfo(EventSourceInfo info) {
-        this.eventInfo = info;
+    void addContent(CharSequence content) {
+        this.content = PropertySetter.addCharContent(this.content, content);
     }
-
+    
     public String getEvent() {
         return event;
     }
 
-    public String getContent() {
-        return content;
+    /**
+     * Returns content of the event handler. As event handlers may
+     * contain whole script contents, the content may be quite large. 
+     * @return 
+     */
+    public CharSequence getContent() {
+        if (methodRef) {
+            return null;
+        }
+        return doGetContent();
+    }
+    
+    public boolean hasContent() {
+        return content != null;
+    }
+    
+    private CharSequence doGetContent() {
+        CharSequence s = PropertySetter.getValContent(this.content);
+        if (s != content) {
+            content = s;
+        }
+        return s;
     }
 
-    public EventSourceInfo getEventInfo() {
+    /**
+     * Provides access to the FxEvent definition, if it was found.
+     * Returns {@code null}, if the event name does not correspond to
+     * any event on the parent {@link FxInstance}
+     * 
+     * @return resolved FxEvent instance or {@code null}
+     */
+    @CheckForNull
+    public FxEvent getEventInfo() {
         return eventInfo;
     }
 
@@ -92,8 +142,47 @@ public class EventHandler extends FxNode {
     }
 
     @Override
-    protected String getTagName() {
+    public String getSourceName() {
         return "on" + Character.toUpperCase(event.charAt(0)) + event.substring(1);
     }
+    
+    public CharSequence getHandlerName() {
+        if (!methodRef) {
+            return null;
+        }
+        return doGetContent();
+    }
+    
+    void setEventInfo(FxEvent info) {
+        this.eventInfo = info;
+    }
+
+    void setHandler(ElementHandle<ExecutableElement> handler) {
+        this.handler = handler;
+    }
+    
+    /**
+     * Determines whether the event is processed using script, or controller method.
+     * If returns true, {@link #getContent()} should be used to extract script's
+     * contents. Language of the script must be declared in the document.
+     * <p/>
+     * On false, the {@link #getHandlerName()} provides name of the handler method,
+     * and {@link #getHandler()} handle to the Java element for the handler method.
+     * @return true, if the event handler contains script fragment.
+     */
+    public boolean isScript() {
+        return !methodRef;
+    }
+    
+    public ElementHandle<ExecutableElement> getHandler() {
+        return handler;
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+        this.eventInfo = (FxEvent)info;
+    }
+    
     
 }

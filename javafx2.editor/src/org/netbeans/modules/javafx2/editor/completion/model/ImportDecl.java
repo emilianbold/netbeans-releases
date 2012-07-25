@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
+
 /**
  * Represents a FXML ?import processing instruction
  * 
@@ -104,8 +109,14 @@ public final class ImportDecl extends FxNode {
         return Kind.Import;
     }
     
-    public String getTagName() {
+    public String getSourceName() {
         return FxXmlSymbols.FX_IMPORT;
     }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+    }
+    
     
 }

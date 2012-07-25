@@ -41,6 +41,12 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
+import org.netbeans.modules.javafx2.editor.completion.model.impl.NodeInfo;
+
 /**
  * Basic FXML node
  * 
@@ -49,20 +55,72 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 public abstract class FxNode {
     private boolean error;
     
+    private FxModel model;
+    
     public enum Kind {
+        /**
+         * Source model
+         */
         Source,
+        
+        /**
+         * Import directive
+         */
         Import,
-        Include,
+        
+        /**
+         * Language directive
+         */
         Language,
+
+        /**
+         * fx:include element
+         */
+        Include,
+        
+        /**
+         * Instance, either new or copy
+         */
         Instance,
+        
+        /**
+         * Reference to an instance
+         */
         Reference,
+        
+        /**
+         * Property
+         */
         Property,
+        
+        /**
+         * Event handler
+         */
         Event,
         
+        /**
+         * XML namespace declaration
+         */
+        Namespace,
+        
+        /**
+         * Definitions pseudo-node
+         */
+        Definitions,
+        
+        /**
+         * Erroneous Node
+         */
         Error,
     }
     
-    private NodeInfo    info;
+    private NodeInfo    info = NodeInfo.newNode();
+
+    FxNode() {
+        if (this instanceof FxModel) {
+            this.model = (FxModel)this;
+        }
+    }
     
     void attach(NodeInfo info) {
         this.info = info;
@@ -79,14 +137,30 @@ public abstract class FxNode {
     void detachChild(FxNode child) {
     }
     
-    protected abstract String getTagName();
+    public abstract String getSourceName();
 
-    public boolean hasError() {
+    /**
+     * True if the Node is badly broken. No further errors should be reported
+     * on this Node. Usually set by an attributing step, when the Node is considered
+     * broken enough to be removed from further processing.
+     * 
+     * @return true, if the node is broken and should be skipped.
+     */
+    public boolean isBroken() {
         return error;
     }
     
     void markError() {
         this.error = true;
     }
-
+    
+    void addChild(FxNode child) {
+        child.model = model;
+    }
+    
+    public FxModel  getRoot() {
+        return model;
+    }
+    
+    abstract void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info);
 }

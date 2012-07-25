@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
- * This cache collects {@link FxBeanInfo}s for individual classes
+ * This cache collects {@link FxBean}s for individual classes
  * encountered and introspected by Fx support.
  * The cache is invalidated when the {@link ClasspathInfo} changes.
  * 
@@ -98,7 +98,7 @@ class FxBeanCache implements ChangeListener {
         }
     }
     
-    public FxBeanInfo getBeanInfo(ClasspathInfo cp, String classname) {
+    public FxBean getBeanInfo(ClasspathInfo cp, String classname) {
         synchronized (cache) {
             Reference<ClasspathCache> c = cache.get(cp);
             if (c == null) {
@@ -113,7 +113,7 @@ class FxBeanCache implements ChangeListener {
         }
     }
     
-    public void addBeanInfo(ClasspathInfo cp, FxBeanInfo instance, Set<String> parents) {
+    public void addBeanInfo(ClasspathInfo cp, FxBean instance, Set<String> parents) {
         ClasspathCache cc = null;
         synchronized (cache) {
             Reference<ClasspathCache> c = cache.get(cp);
@@ -148,7 +148,7 @@ class FxBeanCache implements ChangeListener {
     }
             
     private static class ClasspathCache implements ClassIndexListener {
-        private final Map<String, FxBeanInfo>     classInfos = new HashMap<String, FxBeanInfo>();
+        private final Map<String, FxBean>     classInfos = new HashMap<String, FxBean>();
         private final Map<String, Object> dependencies = new HashMap<String, Object>();
         
         private ClasspathCache(ClasspathInfo cpInfo) {
@@ -215,7 +215,7 @@ class FxBeanCache implements ChangeListener {
             clearFrom(fqns);
         }
         
-        public synchronized FxBeanInfo getBean(String fqn) {
+        public synchronized FxBean getBean(String fqn) {
             return classInfos.get(fqn);
         }
         
@@ -241,7 +241,7 @@ class FxBeanCache implements ChangeListener {
             classInfos.keySet().removeAll(allDeps);
         }
         
-        public synchronized void addBeanInfo(FxBeanInfo info, Set<String> superClasses) {
+        public synchronized void addBeanInfo(FxBean info, Set<String> superClasses) {
             String clName = info.getClassName();
             if (classInfos.containsKey(clName)) {
                 return;

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
+import java.util.concurrent.Callable;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -49,6 +50,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -65,20 +67,18 @@ final class PropertyElementItem extends AbstractCompletionItem {
      */
     private boolean primitive;
     
-    /**
-     * true, if the property is static
-     */
-    private boolean staticProperty;
-    
     private boolean attribute;
     
     private boolean inherited;
     
-    private static final String RESOURCE_PROPERTY = "org/netbeans/modules/javafx2/editor/resources/property.png"; // NOI18N
-    private static final String RESOURCE_STATIC_PROPERTY = "org/netbeans/modules/javafx2/editor/resources/property-static.png"; // NOI18N
+    private boolean system;
     
-    private ImageIcon ICON_PROPERTY;
-    private ImageIcon ICON_STATIC_PROPERTY;
+    private static final String ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/property.png"; // NOI18N
+    private static final String SYSTEM_ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/system-property.png"; // NOI18N
+    
+    private ImageIcon ICON;
+
+    private Callable<String> namespaceCreator;
     
     public PropertyElementItem(CompletionContext ctx, String text, boolean attribute) {
         super(ctx, text);
@@ -93,10 +93,14 @@ final class PropertyElementItem extends AbstractCompletionItem {
         this.primitive = primitive;
     }
 
-    public void setStaticProperty(boolean staticProperty) {
-        this.staticProperty = staticProperty;
+    public void setSystem(boolean system) {
+        this.system = system;
     }
 
+    public void setNamespaceCreator(Callable<String> namespaceCreator) {
+        this.namespaceCreator = namespaceCreator;
+    }
+    
     public void setInherited(boolean inherited) {
         this.inherited = inherited;
     }
@@ -112,6 +116,21 @@ final class PropertyElementItem extends AbstractCompletionItem {
         } else {
             return super.getLeftHtmlText();
         }
+    }
+
+    @Override
+    protected void doSubstituteText(JTextComponent c, Document d, String text) throws BadLocationException {
+        if (namespaceCreator != null) {
+            try {
+                String s = namespaceCreator.call();
+                if (!"fx".equals(s)) {
+                    text = text.replace("fx:", s + ":");
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        super.doSubstituteText(c, d, text);
     }
     
     @Override
@@ -141,19 +160,21 @@ final class PropertyElementItem extends AbstractCompletionItem {
         return NbBundle.getMessage(PropertyElementItem.class, 
                 primitive ? "FMT_PrimitiveType" : "FMT_DeclaredType", propertyType);
     }
+    
+    private static ImageIcon SYSTEM_ICON;
 
     @Override
     protected ImageIcon getIcon() {
-        if (staticProperty) {
-            if (ICON_STATIC_PROPERTY == null) {
-                ICON_STATIC_PROPERTY = ImageUtilities.loadImageIcon(RESOURCE_STATIC_PROPERTY, false);
+        if (system) {
+            if (SYSTEM_ICON == null) {
+                SYSTEM_ICON = ImageUtilities.loadImageIcon(SYSTEM_ICON_RESOURCE, false);
             }
-            return ICON_STATIC_PROPERTY;
+            return SYSTEM_ICON;
         } else {
-            if (ICON_PROPERTY == null) {
-                ICON_PROPERTY = ImageUtilities.loadImageIcon(RESOURCE_PROPERTY, false);
+            if (ICON == null) {
+                ICON = ImageUtilities.loadImageIcon(ICON_RESOURCE, false);
             }
-            return ICON_PROPERTY;
+            return ICON;
         }
     }
     

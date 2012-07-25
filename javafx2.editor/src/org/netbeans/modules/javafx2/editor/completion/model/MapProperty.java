@@ -55,21 +55,17 @@ public class MapProperty extends PropertyValue {
     /**
      * Textual contents of values in the map.
      */
-    private Map<String, String> valueContents = Collections.emptyMap();
+    private Map<String, CharSequence> valueContents = Collections.emptyMap();
 
     MapProperty(String propertyName) {
         super(propertyName);
     }
-    
-    MapProperty addValue(String name, String val) {
-        if (valueContents.isEmpty()) {
-            valueContents = new HashMap<String, String>();
-        }
-        valueContents.put(name, val);
-        return this;
+
+    void setValues(Map<String, CharSequence> vals) {
+        this.valueContents = vals;
     }
     
-    public Map<String, String> getValueMap() {
+    public Map<String, CharSequence> getValueMap() {
         return Collections.unmodifiableMap(valueContents);
     }
 

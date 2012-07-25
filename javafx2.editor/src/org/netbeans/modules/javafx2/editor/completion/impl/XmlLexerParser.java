@@ -98,6 +98,7 @@ public class XmlLexerParser implements ContentLocator {
     
     private LexicalHandler  lexicalHandler;
     private ContentHandler  contentHandler;
+    private SequenceContentHandler seqHandler;
     private TokenHierarchy  hierarchy;
     private TokenSequence<XMLTokenId>   seq;
     
@@ -196,15 +197,15 @@ public class XmlLexerParser implements ContentLocator {
         }
     }
     
-    private int targetOffset;
-    private int dataOffset;
+    private int[] targetOffset;
+    private int[] dataOffset;
     
     private void parseProcessingInstruction() throws SAXException {
         StringBuilder content = new StringBuilder();
         String target = null;
         
-        targetOffset = -1;
-        dataOffset = -1;
+        targetOffset = new int[] { -1, -1, -1, -1 };
+        dataOffset  = new int[] { -1, -1, -1, -1 };
         
         skipWhitespace();
         
@@ -213,25 +214,30 @@ public class XmlLexerParser implements ContentLocator {
             markUnexpectedToken();
             return;
         }
-        targetOffset = seq.offset();
+        targetOffset[OFFSET_VALUE_START] =  targetOffset[OFFSET_START] = seq.offset();
+        targetOffset[OFFSET_VALUE_END] = targetOffset[OFFSET_END] = seq.offset() + t.length();
         target = t.text().toString();
         consume();
+        
+        boolean dataPresent = false;
         
         skipWhitespace();
         while ((t = nextToken()) != null) {
             switch (t.id()) {
                 case WS:
-                    if (dataOffset != -1) {
+                    if (dataPresent) {
                         content.append(t.text().toString());
                     }
                     skipWhitespace();
                     break;
 
                 case PI_CONTENT:
-                    if (dataOffset == -1) {
-                        dataOffset = seq.offset();
+                    if (!dataPresent) {
+                        dataPresent = true;
+                        dataOffset[OFFSET_START] = dataOffset[OFFSET_VALUE_START] = seq.offset();
                     }
                     content.append(t.text().toString());
+                    dataOffset[OFFSET_END] = dataOffset[OFFSET_VALUE_END] = seq.offset() + t.length();
                     consume();
                     break;
                 case PI_END:
@@ -278,6 +284,22 @@ public class XmlLexerParser implements ContentLocator {
         parse2();
     }
     
+    private void callCharacters(Token<XMLTokenId> t) throws SAXException {
+        if (seqHandler != null) {
+            seqHandler.characterSequence(t.text());
+        } else {
+            contentHandler.characters(t.text().toString().toCharArray(), 0, t.length());
+        }
+    }
+    
+    private void callIgnorableWhitespace(Token<XMLTokenId> t) throws SAXException {
+        if (seqHandler != null) {
+            seqHandler.ignorableWhitespaceSequence(t.text());
+        } else {
+            contentHandler.ignorableWhitespace(t.text().toString().toCharArray(), 0, t.length());
+        }
+    }
+    
     void parse2() throws SAXException {
         boolean whitespacePossible = true;
         
@@ -298,14 +320,20 @@ public class XmlLexerParser implements ContentLocator {
                     break;
                 case BLOCK_COMMENT:
                     consume();
-                    lexicalHandler.comment(t.text().toString().toCharArray(), 0, t.length());
+                    if (lexicalHandler != null) {
+                        lexicalHandler.comment(t.text().toString().toCharArray(), 0, t.length());
+                    }
                     break;
                 case CDATA_SECTION:
                     consume();
                     whitespacePossible = false;
-                    lexicalHandler.startCDATA();
-                    contentHandler.characters(t.text().toString().toCharArray(), 0, t.length());
-                    lexicalHandler.endCDATA();
+                    if (lexicalHandler != null) {
+                        lexicalHandler.startCDATA();
+                    }
+                    callCharacters(t);
+                    if (lexicalHandler != null) {
+                        lexicalHandler.endCDATA();
+                    }
                     break;
                 case TAG: {
                     CharSequence cs = t.text();
@@ -331,9 +359,9 @@ public class XmlLexerParser implements ContentLocator {
                     consume();
                     String s = t.text().toString();
                     if (whitespacePossible && s.trim().isEmpty()) {
-                        contentHandler.ignorableWhitespace(t.text().toString().toCharArray(), 0, t.length());
+                        callIgnorableWhitespace(t);
                     } else {
-                        contentHandler.characters(t.text().toString().toCharArray(), 0, t.length());
+                        callCharacters(t);
                         whitespacePossible = false;
                     }
                     break;
@@ -393,7 +421,7 @@ public class XmlLexerParser implements ContentLocator {
      */
     private void startLevel() {
         this.attrNames = new ArrayList<String>();
-        this.attrOffsets = new HashMap<String, Integer>();
+        this.attrOffsets = new HashMap<String, int[]>();
         this.attrs = new HashMap<String, String>();
 
         this.currentLevel = new Level();
@@ -465,8 +493,11 @@ public class XmlLexerParser implements ContentLocator {
     
     private Map<String, String>   attrs;
     private List<String>          attrNames;
-    private Map<String, Integer>  attrOffsets;
+    private Map<String, int[]>  attrOffsets;
     
+    @NbBundle.Messages({
+        "ERR_unexpectedTag=Unexpected closing tag: {0}"
+    })
     private void parseClosingTag(String tagName) throws SAXException {
         this.elementOffset = seq.offset();
         
@@ -530,7 +561,7 @@ public class XmlLexerParser implements ContentLocator {
         // ignore the tag completely; the content handler does not have a callback for this,
         // just ignore the end tag completely, and go on. If this tag was a mismatch for an existing open tag,
         // the next close tag will be hopefully found and the incorrectly opened open tag will be closed.
-        addError(ERR_UnexpectedTag, tagName);
+        addError(ERR_UnexpectedTag, ERR_unexpectedTag(tagName));
     }
     
     private void markApproxEnd() {
@@ -778,6 +809,22 @@ public class XmlLexerParser implements ContentLocator {
         }
     }
     
+    private int[] currentAttrOffsets;
+    
+    private int fuzzyOffset(int pos) {
+        return -pos - 1;
+    }
+    
+    private void markUnexpectedAttrToken() {
+        int offset = seq.offset();
+        
+        if (currentAttrOffsets[OFFSET_VALUE_START] == -1) {
+            currentAttrOffsets[OFFSET_VALUE_START] = fuzzyOffset(offset);
+        }
+        currentAttrOffsets[OFFSET_END] = currentAttrOffsets[OFFSET_VALUE_END] = fuzzyOffset(offset);
+        markUnexpectedToken();
+    }
+    
     private boolean parseAttribute(Token<XMLTokenId> t) {
         String argName = t.text().toString();
         boolean ignore;
@@ -786,7 +833,7 @@ public class XmlLexerParser implements ContentLocator {
             addError(ERR_DuplicateAttribute, null);
             ignore = true;
         } else {
-            attrOffsets.put(argName, seq.offset());
+            attrOffsets.put(argName, currentAttrOffsets = new int[] { seq.offset(), -1, -1, -1 });
             attrNames.add(argName);
             attrs.put(argName, null);
             ignore = false;
@@ -796,28 +843,34 @@ public class XmlLexerParser implements ContentLocator {
         skipWhitespace();
         t = nextToken();
         if (t == null || t.id() != XMLTokenId.OPERATOR) {
-            markUnexpectedToken();
+            markUnexpectedAttrToken();
             return false;
         }
         consume();
         skipWhitespace();
         t = nextToken();
         if (t == null ||t.id() != XMLTokenId.VALUE) {
-            markUnexpectedToken();
+            markUnexpectedAttrToken();
             return false;
         }
         
         CharSequence s = t.text();
+        int valStart = seq.offset();
+        int valEnd = seq.offset() + t.length();
         char quote = s.charAt(0);
         if (quote == '\'' || quote == '"') { // NOI18N
             if (s.charAt(t.length() - 1) == quote) {
                 s = s.subSequence(1, s.length() - 1);
-            } else {
-                s = s.subSequence(1, s.length() - 1);
-            }
+                valStart++;
+                valEnd--;
+            } 
         }
         if (!ignore) {
             attrs.put(argName, s.toString());
+            int[] offsets = attrOffsets.get(argName);
+            offsets[OFFSET_END] = seq.offset() + t.length();
+            offsets[OFFSET_VALUE_START] = valStart;
+            offsets[OFFSET_VALUE_END] = valEnd;
         }
         consume();
         return true;
@@ -950,17 +1003,16 @@ public class XmlLexerParser implements ContentLocator {
     }
 
     @Override
-    public int getAttributeOffset(String attribute) {
+    public int[] getAttributeOffsets(String attribute) {
         if (attribute == ATTRIBUTE_TARGET) {
             return targetOffset;
         } else if (attribute == ATTRIBUTE_DATA) {
             return dataOffset;
         }
         if (attrOffsets == null) {
-            return -1;
+            return null;
         }
-        Integer i = attrOffsets.get(attribute);
-        return i == null ? -1 : i;
+        return attrOffsets.get(attribute);
     }
 
     @Override

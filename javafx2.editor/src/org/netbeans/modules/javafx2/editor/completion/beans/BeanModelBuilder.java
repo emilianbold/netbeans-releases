@@ -91,21 +91,21 @@ public final class BeanModelBuilder {
     /**
      * Properties found on the Bean
      */
-    private Map<String, PropertyInfo>   allProperties = Collections.emptyMap();
+    private Map<String, FxProperty>   allProperties = Collections.emptyMap();
     
-    private Map<String, PropertyInfo>   staticProperties = Collections.emptyMap();
+    private Map<String, FxProperty>   staticProperties = Collections.emptyMap();
     
     /**
      * List of simple properties in the class
      */
-    private Map<String, PropertyInfo> simpleProperties = Collections.emptyMap();
+    private Map<String, FxProperty> simpleProperties = Collections.emptyMap();
     
     /**
      * Names of factory methods usable to create the bean instance
      */
     private Set<String> factoryMethods = Collections.emptySet();
     
-    private FxBeanInfo  resultInfo;
+    private FxBean  resultInfo;
     
     /**
      * Type element for the class.
@@ -142,10 +142,38 @@ public final class BeanModelBuilder {
         dependencies.add(name);
     }
     
-    public FxBeanInfo process() {
+    public FxBean process() {
         classElement = compilationInfo.getElements().getTypeElement(className);
-        FxBeanInfo declared = resultInfo = new FxBeanInfo(className);
+        if (classElement == null) {
+            return resultInfo = null;
+        }
+        boolean fxInstance = true;
+        boolean valueOf = FxClassUtils.findValueOf(classElement, compilationInfo) != null;
+        
+        if (!classElement.getModifiers().contains(Modifier.PUBLIC)) {
+            fxInstance = false;
+        } else {
+            boolean found = false;
+            
+            for (ExecutableElement c : ElementFilter.constructorsIn(classElement.getEnclosedElements())) {
+                if (c.getParameters().size() == 0 &&
+                    (c.getModifiers().contains(Modifier.PUBLIC) || FxClassUtils.isFxmlAnnotated(c)) ) {
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (found) {
+                fxInstance = true;
+            } else {
+                fxInstance = valueOf;
+            }
+        }
+        
+        FxBean declared = resultInfo = new FxBean(className);
         resultInfo.setJavaType(ElementHandle.create(classElement));
+        resultInfo.setFxInstance(fxInstance);
+        resultInfo.setValueOf(valueOf);
         inspectMembers();
         // try to find default property
         resultInfo.setProperties(allProperties);
@@ -153,11 +181,12 @@ public final class BeanModelBuilder {
         resultInfo.setAttachedProperties(staticProperties);
         resultInfo.setEvents(events);
         resultInfo.setFactoryNames(factoryMethods);
-        resultInfo.setValueOf(FxClassUtils.findValueOf(classElement, compilationInfo) != null);
         String defaultProperty = FxClassUtils.getDefaultProperty(classElement);
         resultInfo.setDefaultPropertyName(defaultProperty);
 
-        FxBeanInfo merge = new FxBeanInfo(className);
+        FxBean merge = new FxBean(className);
+        merge.setValueOf(resultInfo.hasValueOf());
+        merge.setFxInstance(resultInfo.isFxInstance());
         merge.setDeclaredInfo(resultInfo);
         
         resultInfo = merge;
@@ -173,7 +202,7 @@ public final class BeanModelBuilder {
         return resultInfo;
     }
     
-    public FxBeanInfo getBeanInfo() {
+    public FxBean getBeanInfo() {
         return resultInfo;
     }
     
@@ -255,7 +284,7 @@ public final class BeanModelBuilder {
         boolean simple = FxClassUtils.isSimpleType(paramType, compilationInfo);
         // analysis depends ont he paramType contents:
         addDependency(paramType);
-        PropertyInfo pi = new PropertyInfo(getPropertyName(name), PropertyInfo.Kind.ATTACHED);
+        FxProperty pi = new FxProperty(getPropertyName(name), FxDefinitionKind.ATTACHED);
         pi.setSimple(simple);
         pi.setType(TypeMirrorHandle.create(paramType));
         pi.setAccessor(ElementHandle.create(m));
@@ -264,7 +293,7 @@ public final class BeanModelBuilder {
         pi.setObjectType(ElementHandle.create(objectTypeEl));
         
         if (staticProperties.isEmpty()) {
-            staticProperties = new HashMap<String, PropertyInfo>();
+            staticProperties = new HashMap<String, FxProperty>();
         }
         staticProperties.put(pi.getName(), pi);
         
@@ -301,7 +330,7 @@ public final class BeanModelBuilder {
     }
     
     private void addMapProperty(ExecutableElement m, String propName) {
-        PropertyInfo pi = new PropertyInfo(propName, PropertyInfo.Kind.MAP);
+        FxProperty pi = new FxProperty(propName, FxDefinitionKind.MAP);
         pi.setSimple(false);
         pi.setAccessor(ElementHandle.create(m));
         
@@ -315,7 +344,7 @@ public final class BeanModelBuilder {
     }
 
     private void addListProperty(ExecutableElement m, String propName) {
-        PropertyInfo pi = new PropertyInfo(propName, PropertyInfo.Kind.LIST);
+        FxProperty pi = new FxProperty(propName, FxDefinitionKind.LIST);
         pi.setSimple(false);
         pi.setAccessor(ElementHandle.create(m));
         
@@ -330,7 +359,7 @@ public final class BeanModelBuilder {
 
     /**
      * Checks if the method represents a simple setter property. If so, it creates
-     * and registers the appropriate PropertyInfo
+     * and registers the appropriate FxProperty
      * @param m 
      */
     private void addProperty(ExecutableElement m) {
@@ -351,7 +380,7 @@ public final class BeanModelBuilder {
         TypeMirror paramType = m.getParameters().get(0).asType();
         boolean simple = FxClassUtils.isSimpleType(paramType, compilationInfo);
         addDependency(paramType);
-        PropertyInfo pi = new PropertyInfo(getPropertyName(name), PropertyInfo.Kind.SETTER);
+        FxProperty pi = new FxProperty(getPropertyName(name), FxDefinitionKind.SETTER);
         pi.setSimple(simple);
         pi.setType(TypeMirrorHandle.create(paramType));
         pi.setAccessor(ElementHandle.create(m));
@@ -359,16 +388,16 @@ public final class BeanModelBuilder {
         registerProperty(pi);
         if (simple) {
             if (simpleProperties.isEmpty()) {
-                simpleProperties = new HashMap<String, PropertyInfo>();
+                simpleProperties = new HashMap<String, FxProperty>();
             }
             simpleProperties.put(pi.getName(), pi);
         }
         consumed = true;
     }
     
-    private void registerProperty(PropertyInfo pi) {
+    private void registerProperty(FxProperty pi) {
         if (allProperties.isEmpty()) {
-            allProperties = new HashMap<String, PropertyInfo>();
+            allProperties = new HashMap<String, FxProperty>();
         }
         allProperties.put(pi.getName(), pi);
     }
@@ -499,19 +528,19 @@ public final class BeanModelBuilder {
         }
 
         String eventName = Character.toLowerCase(sn.charAt(EVENT_PREFIX_LEN)) + sn.substring(EVENT_PREFIX_LEN + 1);
-        EventSourceInfo ei = new EventSourceInfo(eventName);
+        FxEvent ei = new FxEvent(eventName);
         ei.setEventClassName(eventClassName);
         ei.setEventType(eventHandle);
         
         if (events.isEmpty()) {
-            events = new HashMap<String, EventSourceInfo>();
+            events = new HashMap<String, FxEvent>();
         }
         events.put(ei.getName(), ei);
         
         consumed = true;
     }
     
-    private Map<String, EventSourceInfo>    events = Collections.emptyMap();
+    private Map<String, FxEvent>    events = Collections.emptyMap();
     
     private FxBeanCache beanCache;
     
@@ -546,7 +575,7 @@ public final class BeanModelBuilder {
     
     private static final String JAVA_LANG_OBJECT = "java.lang.Object"; // NOI18N
     
-    private FxBeanInfo superBi;
+    private FxBean superBi;
     
     /**
      * Collects information from superclasses. Creates an additional instance of
@@ -574,11 +603,11 @@ public final class BeanModelBuilder {
         resultInfo.merge(superBi);
     }
     
-    public static FxBeanInfo getBeanInfo(CompilationInfo ci, String className) {
+    public static FxBean getBeanInfo(CompilationInfo ci, String className) {
         if (className == null) {
             return null;
         }
-        FxBeanInfo bi = FxBeanCache.instance().getBeanInfo(ci.getClasspathInfo(), className);
+        FxBean bi = FxBeanCache.instance().getBeanInfo(ci.getClasspathInfo(), className);
         if (bi != null) {
             return bi;
         }

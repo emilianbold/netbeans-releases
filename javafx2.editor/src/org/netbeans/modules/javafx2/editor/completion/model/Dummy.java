@@ -41,17 +41,23 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
+
 /**
+ * Node which represents unknown attributes or elements.
+ * Kind of this node is always {@code Error}.
  *
  * @author sdedic
  */
-public class Dummy extends FxNode implements FxElement {
+public final class Dummy extends FxNode  {
     private String tagName;
 
     public Dummy(String tagName) {
         this.tagName = tagName;
     }
-    
     
     @Override
     public Kind getKind() {
@@ -63,7 +69,12 @@ public class Dummy extends FxNode implements FxElement {
         v.visitNode(this);
     }
 
-    public String getTagName() {
+    public String getSourceName() {
         return tagName;
     }
+
+    @Override
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+    }
+    
 }

@@ -47,7 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
-import org.netbeans.modules.javafx2.editor.completion.beans.FxBeanInfo;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
@@ -71,7 +71,7 @@ public abstract class InstanceCompleter implements Completer, Completer.Factory 
     protected final CompletionContext   ctx;
     protected final TypeElement         instanceType;
     
-    private FxBeanInfo beanInfo;
+    private FxBean beanInfo;
     
     protected InstanceCompleter() {
         instance = null;
@@ -93,9 +93,9 @@ public abstract class InstanceCompleter implements Completer, Completer.Factory 
     
     protected abstract InstanceCompleter createCompleter(FxInstance instance, boolean attribute, CompletionContext ctx);
     
-    protected FxBeanInfo getBeanInfo() {
+    protected FxBean getBeanInfo() {
         if (beanInfo == null) {
-            beanInfo = BeanModelBuilder.getBeanInfo(ctx.getCompilationInfo(), instance.getClassName());
+            beanInfo = BeanModelBuilder.getBeanInfo(ctx.getCompilationInfo(), instance.getResolvedName());
         }
         return beanInfo;
     }

@@ -69,6 +69,7 @@ public final class FxClassUtils {
     
     private static final String DEFAULT_PROPERTY_TYPE_NAME = "javax.beans.DefaultProperty"; // NO18N
     private static final String DEFAULT_PROPERTY_VALUE_NAME = "value"; // NO18N
+    private static final String FXML_ANNOTATION_TYPE = "javafx.fxml.FXML"; // NOI18N
     
     /**
      * Attempts to find the {@code @DefaultProperty} annotation on the type, and returns
@@ -91,12 +92,25 @@ public final class FxClassUtils {
         }
         return null;
     }
+    
+    public static boolean isFxmlAnnotated(Element el) {
+        for (AnnotationMirror an : el.getAnnotationMirrors()) {
+            if (((TypeElement)an.getAnnotationType().asElement()).getQualifiedName().contentEquals(FXML_ANNOTATION_TYPE)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static ExecutableElement findValueOf(TypeElement te, CompilationInfo ci) {
         TypeElement stringType = ci.getElements().getTypeElement("java.lang.String"); // NOI18N        
          List<ExecutableElement> methods = ElementFilter.methodsIn(te.getEnclosedElements());
         for (ExecutableElement e : methods) {
             if (!e.getModifiers().contains(Modifier.STATIC)) {
+                //LOG.log(Level.FINE, "rejecting method: {0}; is not static", e);
+                continue;
+            }
+            if (!(e.getModifiers().contains(Modifier.PUBLIC) || isFxmlAnnotated(e))) {
                 //LOG.log(Level.FINE, "rejecting method: {0}; is not static", e);
                 continue;
             }

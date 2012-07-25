@@ -50,7 +50,7 @@ import java.util.Map;
  *
  * @author sdedic
  */
-public abstract class FxInstance<T extends FxInstance> extends FxObjectBase {
+public abstract class FxInstance extends FxObjectBase {
     private String          id;
 
     /**
@@ -76,14 +76,14 @@ public abstract class FxInstance<T extends FxInstance> extends FxObjectBase {
         if (properties.isEmpty()) {
             properties = new HashMap<String, PropertyValue>();
         }
-        properties.put(p.getName(), p);
+        properties.put(p.getPropertyName(), p);
     }
     
     void addStaticProperty(StaticProperty p) {
         if (staticProperties.isEmpty()) {
             staticProperties = new HashMap<String, StaticProperty>();
         }
-        staticProperties.put(p.getName(), p);
+        staticProperties.put(p.getPropertyName(), p);
     }
     
     void addEvent(EventHandler p) {
@@ -121,17 +121,31 @@ public abstract class FxInstance<T extends FxInstance> extends FxObjectBase {
         return Collections.unmodifiableCollection(staticProperties.values());
     }
 
-    T withId(String id) {
+    FxInstance withId(String id) {
         this.id = id;
-        return (T)this;
+        return this;
     }
     
     @Override
     void detachChild(FxNode child) {
         if (child instanceof StaticProperty) {
-            staticProperties.remove(((StaticProperty)child).getName());
+            staticProperties.remove(((StaticProperty)child).getPropertyName());
         } else if (child instanceof PropertySetter) {
-            properties.remove(((PropertySetter)child).getName());
+            properties.remove(((PropertySetter)child).getPropertyName());
+        }
+    }
+    
+    @Override
+    void addChild(FxNode child) {
+        super.addChild(child);
+        if (child instanceof StaticProperty) {
+            addStaticProperty((StaticProperty)child);
+        } else if (child instanceof PropertyValue) {
+            addProperty((PropertyValue)child);
+        } else if (child instanceof EventHandler) {
+            addEvent((EventHandler)child);
+        } else {
+            throw new IllegalArgumentException();
         }
     }
     

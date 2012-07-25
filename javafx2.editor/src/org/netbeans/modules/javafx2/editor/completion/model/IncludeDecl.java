@@ -43,7 +43,11 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 
 import com.sun.istack.internal.NotNull;
 import java.net.URL;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
 
 /**
  * Represents "include" processing instruction.
@@ -96,8 +100,13 @@ public final class IncludeDecl extends FxNode {
         v.visitInclude(this);
     }
 
-    public String getTagName() {
+    public String getSourceName() {
         return FxXmlSymbols.FX_INCLUDE;
+    }
+    
+    @Override
+    @SuppressWarnings("rawtypes")
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
     }
     
 }

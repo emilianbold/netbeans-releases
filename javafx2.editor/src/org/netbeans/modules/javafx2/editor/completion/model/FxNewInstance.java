@@ -41,10 +41,6 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 
@@ -53,7 +49,7 @@ import org.netbeans.api.java.source.ElementHandle;
  *
  * @author sdedic
  */
-public final class FxNewInstance extends FxInstance<FxNewInstance> implements FxElement {
+public final class FxNewInstance extends FxInstance {
     private String          sourceName;
     private String          initValue;
     private String          factoryMethod;
@@ -62,13 +58,9 @@ public final class FxNewInstance extends FxInstance<FxNewInstance> implements Fx
         return sourceName;
     }
 
-    public String getTagName() {
-        return getSourceName();
-    }
+    public FxNewInstance(String sourceName) {
 
-    public FxNewInstance(String sourceName, String className) {
         this.sourceName = sourceName;
-        setClassName(className);
     }
 
     @Override
@@ -81,8 +73,8 @@ public final class FxNewInstance extends FxInstance<FxNewInstance> implements Fx
         v.visitInstance(this);
     }
     
-    FxNewInstance fromValue(String val) {
-        this.initValue = val;
+    FxNewInstance fromValue(CharSequence val) {
+        this.initValue = val == null ? null : val.toString();
         return this;
     }
     
@@ -92,8 +84,16 @@ public final class FxNewInstance extends FxInstance<FxNewInstance> implements Fx
     }
     
     void resolveClass(String className, ElementHandle<TypeElement> handle) {
-        setClassName(className);
+        setSourceName(className);
         setJavaType(handle);
+    }
+
+    public String getInitValue() {
+        return initValue;
+    }
+
+    public String getFactoryMethod() {
+        return factoryMethod;
     }
 }
 

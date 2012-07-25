@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.util.Arrays;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 
 /**
  * Error marker attached to an Element produced by {@link XMLLexerParser}.
@@ -73,11 +74,21 @@ public final class ErrorMark {
      */
     private final String message;
     
+    /**
+     * Target of the error, possibly null for low-level errors
+     */
+    private final FxNode  target;
+    
     public ErrorMark(int offset, int len, String errorType, String message, Object... params) {
-        this(true, offset, len, errorType, message, params);
+        this(null, true, offset, len, errorType, message, params);
     }
 
-    ErrorMark(boolean error, int offset, int len, String errorType, String message, Object... params) {
+    public ErrorMark(FxNode target, int offset, int len, String errorType, String message, Object... params) {
+        this(null, true, offset, len, errorType, message, params);
+    }
+
+    ErrorMark(FxNode target, boolean error, int offset, int len, String errorType, String message, Object... params) {
+        this.target = target;
         this.error = error;
         this.offset = offset;
         this.len = len;
@@ -86,12 +97,16 @@ public final class ErrorMark {
         this.parameters = params;
     }
 
+    public static ErrorMark makeError(FxNode target, int offset, int len, String errorType, String message, Object... params) {
+        return new ErrorMark(target, true,  offset, len, errorType, message, params);
+    }
+
     public static ErrorMark makeError(int offset, int len, String errorType, String message, Object... params) {
-        return new ErrorMark(true,  offset, len, errorType, message, params);
+        return new ErrorMark(null, true,  offset, len, errorType, message, params);
     }
 
     public static ErrorMark makeWarning(int offset, int len, String errorType, String message, Object... params) {
-        return new ErrorMark(false,  offset, len, errorType, message, params);
+        return new ErrorMark(null, false,  offset, len, errorType, message, params);
     }
     
     public boolean isError() {

@@ -71,23 +71,41 @@ public interface ContentLocator {
     public int getElementOffset();
     
     public int getEndOffset();
+    
+    public static final int OFFSET_START = 0;
+    public static final int OFFSET_END = 1;
+    public static final int OFFSET_VALUE_START = 2;
+    public static final int OFFSET_VALUE_END = 3;
 
     /**
      * 
      * @param attribute
      * @return 
      */
-    public int getAttributeOffset(String attribute);
+    public int[] getAttributeOffsets(String attribute);
 
     /**
      * @return true, if the element contains some errors
      */
     public Collection<ErrorMark>    getErrors();
     
+    /**
+     * Return lexer tokens whcich correspond to the currently reported
+     * element.
+     * @return 
+     */
     public List<Token<XMLTokenId>>  getMatchingTokens();
     
-    public TokenSequence    getTokenSequence();
+    /**
+     * Provides access to the underlying TokenSequence.
+     * @return 
+     */
+    public TokenSequence<XMLTokenId>   getTokenSequence();
     
+    /**
+     * This interface should be implemented on the SAX ContentHandler, if it wants
+     * to receive extended content location info.
+     */
     public interface Receiver {
         public void setContentLocator(ContentLocator l);
     }

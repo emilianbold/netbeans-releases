@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import org.netbeans.modules.javafx2.editor.completion.model.impl.FxTreeUtilities;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.javafx2.editor.completion.impl.ErrorMark;
+import org.netbeans.modules.javafx2.editor.completion.model.impl.FxNodes;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 
@@ -52,7 +54,7 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author sdedic
  */
-public class FxmlParserResult extends Parser.Result {
+public abstract class FxmlParserResult extends Parser.Result {
     /**
      * The source model
      */
@@ -67,13 +69,11 @@ public class FxmlParserResult extends Parser.Result {
     
     private TokenHierarchy tokenHierarchy;
 
-    FxmlParserResult(Snapshot _snapshot, FxModel sourceModel, Collection<ErrorMark> problems) {
+    protected FxmlParserResult(Snapshot _snapshot, FxModel sourceModel, Collection<ErrorMark> problems, 
+            TokenHierarchy h) {
         super(_snapshot);
         this.sourceModel = sourceModel;
         this.problems = problems;
-    }
-    
-    void setTokenHierarchy(TokenHierarchy h) {
         this.tokenHierarchy = h;
     }
     
@@ -101,4 +101,5 @@ public class FxmlParserResult extends Parser.Result {
         return tokenHierarchy;
     }
     
+    public abstract FxNodes getNodes();
 }

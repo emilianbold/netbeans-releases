@@ -43,6 +43,8 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
 
 /**
  *
@@ -73,10 +75,21 @@ public final class StaticProperty extends PropertySetter {
     void setSourceType(ElementHandle<TypeElement> handle) {
         this.sourceType = handle;
     }
+    
+    public String getPropertyName() {
+        return super.getSourceName();
+    }
 
     @Override
-    public String getTagName() {
-        return sourceClassName + "." + getName();
+    public String getSourceName() {
+        return sourceClassName + "." + super.getSourceName();
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+        super.resolve(nameHandle, typeHandle, sourceTypeHandle, info);
+        sourceType = sourceTypeHandle;
     }
     
 }

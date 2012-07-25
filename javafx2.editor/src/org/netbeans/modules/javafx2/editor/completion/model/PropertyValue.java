@@ -41,18 +41,18 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.modules.javafx2.editor.completion.beans.PropertyInfo;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 
 /**
  *
  * @author sdedic
  */
 public abstract class PropertyValue extends FxNode {
-    private boolean error;
-    
     /**
      * Property name
      */
@@ -65,25 +65,25 @@ public abstract class PropertyValue extends FxNode {
     private TypeMirrorHandle typeHandle;
     
     /**
-     * Resolved PropertyInfo for this property
+     * Resolved FxProperty for this property
      */
-    private PropertyInfo    propertyInfo;
+    private FxProperty    propertyInfo;
     
     PropertyValue(String name) {
         this.name = name;
     }
     
-    public String getName() {
+    public String getSourceName() {
+        return name;
+    }
+    
+    public String getPropertyName() {
         return name;
     }
     
     @Override
     public Kind getKind() {
         return Kind.Property;
-    }
-
-    public String getTagName() {
-        return getName();
     }
 
     public TypeMirrorHandle getTypeHandle() {
@@ -94,12 +94,18 @@ public abstract class PropertyValue extends FxNode {
         this.typeHandle = handle;
     }
 
-    void setPropertyInfo(PropertyInfo info) {
+    void setPropertyInfo(FxProperty info) {
         this.propertyInfo = info;
     }
     
-    public PropertyInfo getPropertyInfo() {
+    public FxProperty getPropertyInfo() {
         return propertyInfo;
+    }
+    
+    @Override
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+        this.typeHandle = typeHandle;
+        this.propertyInfo = (FxProperty)info;
     }
     
 }

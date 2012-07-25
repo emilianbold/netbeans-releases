@@ -88,6 +88,11 @@ public final class FxXmlSymbols {
     public static final String FX_ID = "id";
     
     /**
+     * The fx:controller attribute permitted on the root element
+     */
+    public static final String FX_CONTROLLER = "controller"; // NOI18N
+    
+    /**
      * The fx:factory attribute
      */
     public static final String FX_FACTORY = "factory";
@@ -117,9 +122,30 @@ public final class FxXmlSymbols {
         return Character.isUpperCase(s.charAt(0));
     }
     
+    /**
+     * Determines whether the name corresponds to an event handler.
+     * Event handlers start with "on", followed by capitalized event name.
+     * 
+     * @param s
+     * @return event name or {@code null}.
+     */
+    public static String getEventHandlerName(CharSequence s) {
+       if (s.length() < 3) {
+           return null;
+       } 
+       if (!((s.charAt(0) == 'o' ) && s.charAt(1) == 'n' &&
+             Character.isUpperCase(s.charAt(2)))) {
+           return null;
+       }
+       return Character.toLowerCase(s.charAt(2)) + s.subSequence(3, s.length()).toString();
+    }
+    
     public static int findStaticProperty(CharSequence s) {
-        for (int i = s.length() - 1; i >= 0; i--) {
-            if (s.charAt(i) == '.') {
+        boolean allIdentifiers = true;
+        
+        for (int i = s.length() - 1; allIdentifiers && i >= 0; i--) {
+            char c = s.charAt(i);
+            if (c == '.') {
                 // check that the starting subsequence forms a class name
                 if (!isClassTagName(s.subSequence(0, i))) {
                     return -2;
@@ -128,9 +154,13 @@ public final class FxXmlSymbols {
                     return -2;
                 }
                 return Character.isLowerCase(s.charAt(i + 1)) ? i : -2;
+            } else {
+                if (!Character.isJavaIdentifierPart(c)) {
+                    allIdentifiers = false;
+                }
             }
         }
-        return -1;
+        return allIdentifiers ? -1 : -2;
     }
     
     public CharSequence[] splitPackageAndName(CharSequence qn) {

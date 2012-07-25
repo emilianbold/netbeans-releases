@@ -49,11 +49,11 @@ import java.util.List;
  *
  * @author sdedic
  */
-public class PropertySetter extends PropertyValue implements FxElement {
+public class PropertySetter extends PropertyValue implements HasContent {
     /**
      * Character content of the property value, if the value is simple
      */
-    private String  valueContent;
+    private Object  valueContent;
     
     /**
      * If true, this PE corresponds to the default property and its
@@ -87,8 +87,12 @@ public class PropertySetter extends PropertyValue implements FxElement {
      * Returns the content of the property value.
      * @return 
      */
-    public String getContent() {
-        return valueContent;
+    public CharSequence getContent() {
+        CharSequence c = getValContent(valueContent);
+        if (c != valueContent) {
+            valueContent = c;
+        }
+        return c;
     }
     
     void addValue(FxObjectBase instance) {
@@ -98,20 +102,50 @@ public class PropertySetter extends PropertyValue implements FxElement {
         valueBeans.add(instance);
     }
     
-    public String getTagName() {
-        return getName();
-    }
-
     @Override
     public void accept(FxNodeVisitor v) {
         v.visitPropertySetter(this);
     }
     
-    void addContent(String content) {
-        if (valueContent != null) {
-            valueContent += content;
-        } else {
+    static Object addCharContent(Object valueContent, CharSequence content) {
+        if (valueContent == null) {
             valueContent = content;
+        } else if (valueContent instanceof CharSequence) {
+            List<CharSequence> parts = new ArrayList<CharSequence>();
+            parts.add((CharSequence)valueContent);
+            parts.add(content);
+            valueContent = parts;
+        } else if (valueContent instanceof List) {
+            ((List<CharSequence>)valueContent).add(content);
+        }
+        return valueContent;
+    }
+    
+    static CharSequence getValContent(Object valueContent) {
+        if (valueContent == null) {
+            return null;
+        }
+        if (valueContent instanceof CharSequence) {
+            return (CharSequence)valueContent;
+        } else if (valueContent instanceof List) {
+            return new CompoundCharSequence(0, (List<CharSequence>)valueContent, -1);
+        }
+        throw new IllegalStateException();
+    }
+    
+    void addContent(CharSequence content) {
+        valueContent = addCharContent(valueContent, content);
+    }
+
+    @Override
+    void addChild(FxNode child) {
+        super.addChild(child);
+        if (child instanceof FxObjectBase) {
+            addValue((FxObjectBase)child);
+        } else {
+            throw new IllegalArgumentException();
         }
     }
+    
+    
 }

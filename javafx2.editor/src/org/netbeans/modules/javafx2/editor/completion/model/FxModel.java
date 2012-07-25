@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,9 +50,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
+import org.netbeans.modules.javafx2.editor.completion.model.impl.ModelAccessor;
+import org.netbeans.modules.javafx2.editor.completion.model.impl.NodeInfo;
 
 /**
  * Represents a single FXML source file.
@@ -62,12 +69,12 @@ public final class FxModel extends FxNode {
     /**
      * Import declarations
      */
-    private List<ImportDecl>           imports = Collections.EMPTY_LIST;
+    private List<ImportDecl>           imports = Collections.emptyList();
     
     /**
      * Definitions, keyed by ID
      */
-    private Map<String, FxNewInstance>    definitions = Collections.EMPTY_MAP;
+    private Map<String, FxNewInstance>    definitions = Collections.emptyMap();
     
     /**
      * The declared language for scripting
@@ -79,6 +86,13 @@ public final class FxModel extends FxNode {
      */
     @NullAllowed
     private FxObjectBase                 rootComponent;
+    
+    /**
+     * Value of the 'controller' attribute of the root element
+     */
+    private String                      controller;
+    
+    private ElementHandle<TypeElement>  controllerType;
     
     /**
      * Instance with IDs; both definitions and ordinary instances with fx:id
@@ -132,7 +146,7 @@ public final class FxModel extends FxNode {
         this.rootComponent = root;
     }
     
-    public String getTagName() {
+    public String getSourceName() {
         return "<source>"; // NOI18N
     }
 
@@ -169,5 +183,154 @@ public final class FxModel extends FxNode {
     public FxInstance getInstance(String id ) {
         return namedInstances.get(id);
     }
+
+    public String getController() {
+        return controller;
+    }
+
+    void setController(String controller) {
+        this.controller = controller;
+    }
+
+    public ElementHandle<TypeElement> getControllerType() {
+        return controllerType;
+    }
+
+    void setControllerType(ElementHandle<TypeElement> controllerType) {
+        this.controllerType = controllerType;
+    }
+
+    @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+        this.controllerType = nameHandle;
+    }
+
+    static {
+        ModelAccessor.setInstance(new AccessorImpl());
+    }
     
+    private static final class AccessorImpl extends ModelAccessor {
+
+        @Override
+        public FxModel newModel(List<ImportDecl> imports, List<FxNewInstance> defs) {
+            FxModel m = new FxModel();
+            m.setImports(imports);
+            m.setDefinitions(defs);
+            
+            return m;
+        }
+
+        @Override
+        public ImportDecl createImport(String imported, boolean wildcard) {
+            return new ImportDecl(imported, wildcard);
+        }
+
+        @Override
+        public LanguageDecl createLanguage(String lang) {
+            return new LanguageDecl(lang);
+        }
+
+        @Override
+        public IncludeDecl createInclude(URL base, String included) {
+            return new IncludeDecl(base, included);
+        }
+
+        @Override
+        public FxNewInstance createInstance(String sourceName, CharSequence value, String factory, String id) {
+            FxNewInstance n = new FxNewInstance(sourceName);
+            n.fromValue(value).usingFactory(factory).withId(id);
+            
+            return n;
+        }
+
+        @Override
+        public FxObjectBase createCopyReference(boolean copy, String targetName) {
+            return copy ?
+                    new FxInstanceCopy(targetName) :
+                    new FxReference(targetName);
+        }
+
+        @Override
+        public PropertySetter createProperty(String name, boolean implicit) {
+            PropertySetter s = new PropertySetter(name);
+            if (implicit) {
+                s = s.asImplicitDefault();
+            }
+            return s;
+        }
+
+        @Override
+        public StaticProperty createStaticProperty(String name, String sourceClassName) {
+            return new StaticProperty(sourceClassName, name);
+        }
+
+        @Override
+        public MapProperty createMapProperty(String name, Map<String, CharSequence> values) {
+            MapProperty m = new MapProperty(name);
+            m.setValues(values);
+            return m;
+        }
+
+        @Override
+        public EventHandler createEventHandler(String eventName) {
+            return new EventHandler(eventName);
+        }
+
+        @Override
+        public EventHandler asMethodRef(EventHandler h) {
+            return h.asMethodRef();
+        }
+
+        @Override
+        public void initModel(FxModel model, String controller, FxInstance rootInstance, LanguageDecl language) {
+            model.setController(controller);
+            model.setRootComponent(rootInstance);
+            model.setLanguage(language);
+        }
+
+        @Override
+        @SuppressWarnings("rawtypes")
+        public void resolve(FxNode n, ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+            n.resolve(nameHandle, typeHandle, sourceTypeHandle, info);
+        }
+
+        @Override
+        public void addContent(HasContent content, CharSequence additionalContent) {
+            if (content instanceof EventHandler) {
+                ((EventHandler)content).addContent(additionalContent);
+            } else if (content instanceof PropertySetter) {
+                ((PropertySetter)content).addContent(additionalContent);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        @Override
+        public void addChild(FxNode parent, FxNode child) throws IllegalArgumentException {
+            parent.addChild(child);
+        }
+
+        @Override
+        public void resolveResource(IncludeDecl decl, URL resolved) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public NodeInfo i(FxNode n) {
+            return n.i();
+        }
+
+        @Override
+        public <T extends FxNode> T makeBroken(T n) {
+            n.markError();
+            return n;
+        }
+
+        @Override
+        public void setNamedInstances(FxModel model, Map<String, FxInstance> instances) {
+            model.setNamedInstances(instances);
+        }
+        
+    }
 }

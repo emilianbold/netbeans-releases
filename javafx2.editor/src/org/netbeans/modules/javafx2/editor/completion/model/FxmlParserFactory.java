@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import org.netbeans.modules.javafx2.editor.completion.model.impl.FxmlParser;
 import java.util.Collection;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.parsing.api.Snapshot;

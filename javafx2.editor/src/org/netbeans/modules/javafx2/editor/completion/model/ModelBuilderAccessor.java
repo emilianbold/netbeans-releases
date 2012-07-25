@@ -44,7 +44,7 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 import java.net.URL;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.javafx2.editor.completion.beans.PropertyInfo;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 
 /**
  *
@@ -64,7 +64,7 @@ public class ModelBuilderAccessor {
     }
 
     public void resolveProperty(PropertyValue propValue, TypeMirroHandle type, 
-            PropertyInfo pi) {
+            FxProperty pi) {
     }
     
     public void invalidate(FxNode parent, FxNode child) {

@@ -53,8 +53,9 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
-import org.netbeans.modules.javafx2.editor.completion.beans.FxBeanInfo;
-import org.netbeans.modules.javafx2.editor.completion.beans.PropertyInfo;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
@@ -106,20 +107,20 @@ public class PropertyCompleter extends InstanceCompleter {
      * @param alreadyAdded
      * @param dontMark 
      */
-    private void addPropertiesFrom(FxBeanInfo beanInfo, Set<String> alreadyAdded, boolean dontMark) {
+    private void addPropertiesFrom(FxBean beanInfo, Set<String> alreadyAdded, boolean dontMark) {
         if (beanInfo == null) {
             return;
         }
         Collection<String> propNames = filterNames(new ArrayList<String>(attribute ? 
                 beanInfo.getSimplePropertyNames() : beanInfo.getPropertyNames()));
-        FxBeanInfo parentInfo = beanInfo.getParentBeanInfo();
+        FxBean parentInfo = beanInfo.getParentBeanInfo();
 
         for (String s : propNames) {
-            PropertyInfo pi = beanInfo.getProperty(s);
+            FxProperty pi = beanInfo.getProperty(s);
 
             boolean propInherited = parentInfo != null && parentInfo.getProperty(s) != null;
 
-            if (pi.getKind() != PropertyInfo.Kind.LIST &&
+            if (pi.getKind() != FxDefinitionKind.LIST &&
                 existingPropNames.contains(s)) {
                 continue;
             }
@@ -129,8 +130,8 @@ public class PropertyCompleter extends InstanceCompleter {
             }
 
             PropertyElementItem item = new PropertyElementItem(ctx, s, attribute);
-            item.setStaticProperty(pi.getKind() == PropertyInfo.Kind.ATTACHED);
 
+            @SuppressWarnings("rawtypes")
             TypeMirrorHandle typeH = pi.getType();
             if (typeH != null) {
                 TypeMirror tm = typeH.resolve(ctx.getCompilationInfo());
@@ -156,7 +157,7 @@ public class PropertyCompleter extends InstanceCompleter {
      * Stops when # of properties after adding certain beaninfo exceeds the treshold.
      */
     private void addImportantProperties() {
-        FxBeanInfo beanInfo = getBeanInfo();
+        FxBean beanInfo = getBeanInfo();
         if (beanInfo == null) {
             return;
         }
@@ -171,7 +172,7 @@ public class PropertyCompleter extends InstanceCompleter {
 
     private void init() {
         for (PropertyValue pv : (Collection<PropertyValue>)instance.getProperties()) {
-            existingPropNames.add(pv.getName());
+            existingPropNames.add(pv.getPropertyName());
         }
     }
     
@@ -186,6 +187,28 @@ public class PropertyCompleter extends InstanceCompleter {
             }
         } else if (ctx.getCompletionType() == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
             addPropertiesFrom(getBeanInfo(), new HashSet<String>(), false);
+        }
+        if (instance.getId() == null) {
+            // suggest also fx:id
+            PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id",
+                    true);
+            pi.setPrimitive(true);
+            pi.setInherited(false);
+            pi.setSystem(true);
+            pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+            pi.setPropertyType("String"); // NOI18N
+            resultItems.add(pi);
+        }
+        if (ctx.isRootElement() && ctx.getModel().getController() == null) {
+            // suggest also fx:id
+            PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller",
+                    true);
+            pi.setPrimitive(true);
+            pi.setInherited(false);
+            pi.setSystem(true);
+            pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+            pi.setPropertyType("Class"); // NOI18N
+            resultItems.add(pi);
         }
         return resultItems;
     }

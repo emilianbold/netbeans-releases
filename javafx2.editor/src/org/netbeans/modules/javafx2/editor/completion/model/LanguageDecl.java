@@ -41,6 +41,11 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
+
 /**
  *
  * @author sdedic
@@ -66,7 +71,12 @@ public final class LanguageDecl extends FxNode {
         v.visitLanguage(this);
     }
 
-    public String getTagName() {
+    public String getSourceName() {
         return FxXmlSymbols.FX_LANGUAGE;
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
     }
 }

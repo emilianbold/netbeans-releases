@@ -50,7 +50,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.beans.FxBeanInfo;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
@@ -149,7 +149,7 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
                 return false;
             }
             */
-            FxBeanInfo bi = ctx.getBeanInfo((FxInstance)parentNode);
+            FxBean bi = ctx.getBeanInfo((FxInstance)parentNode);
             if (bi == null) {
                 return true;
             }

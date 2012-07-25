@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import org.netbeans.modules.javafx2.editor.completion.model.impl.NodeInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

@@ -53,8 +53,9 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.beans.FxBeanInfo;
-import org.netbeans.modules.javafx2.editor.completion.beans.PropertyInfo;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
@@ -130,7 +131,7 @@ public class StaticPropertyCompleter extends InstanceCompleter {
                 continue;
             }
             FxInstance parentInstance = (FxInstance)p;
-            String parentClass = parentInstance.getClassName();
+            String parentClass = parentInstance.getResolvedName();
             if (parentClass != null) {
                 if (classPrefix != null && 
                     !CompletionUtils.startsWith(CompletionUtils.getSimpleName(parentClass), classPrefix)) {
@@ -150,7 +151,7 @@ public class StaticPropertyCompleter extends InstanceCompleter {
         }
     }
     
-    private Collection<String> findProperties(FxBeanInfo bi) {
+    private Collection<String> findProperties(FxBean bi) {
         Collection<String> c = null;
         
         for (String pn : bi.getAttachedPropertyNames()) {
@@ -174,8 +175,8 @@ public class StaticPropertyCompleter extends InstanceCompleter {
      * @param info
      * @return 
      */
-    private boolean acceptsProperty(FxBeanInfo owner, PropertyInfo info) {
-        if (info.getKind() != PropertyInfo.Kind.ATTACHED) {
+    private boolean acceptsProperty(FxBean owner, FxProperty info) {
+        if (info.getKind() != FxDefinitionKind.ATTACHED) {
             return false;
         }
         // if property prefix is present, the property must match the name.
@@ -193,7 +194,7 @@ public class StaticPropertyCompleter extends InstanceCompleter {
         // the property may have been already used - check
         Collection<StaticProperty> staticProps = instance.getStaticProperties();
         for (StaticProperty sp : staticProps) {
-            if (sp.getName() == null || !sp.getName().equals(info.getName())) {
+            if (sp.getSourceName() == null || !sp.getSourceName().equals(info.getName())) {
                 continue;
             }
             if (sp.getSourceClassName() == null) {
@@ -252,7 +253,7 @@ public class StaticPropertyCompleter extends InstanceCompleter {
             collectDirectClasses();
         }
         for (String classFullName : directClasses) {
-            FxBeanInfo beanInfo = ctx.getBeanInfo(classFullName);
+            FxBean beanInfo = ctx.getBeanInfo(classFullName);
             if (beanInfo == null) {
                 continue;
             }
@@ -261,7 +262,7 @@ public class StaticPropertyCompleter extends InstanceCompleter {
                 if (directClasses.size() == 1 || props.size() == 1 || ctx.getCompletionType() == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
                     // collect individual properties
                     for (String pn : props) {
-                        PropertyInfo pi = beanInfo.getAttachedProperty(pn);
+                        FxProperty pi = beanInfo.getAttachedProperty(pn);
                         TypeMirror pType = pi.getType().resolve(ctx.getCompilationInfo());
                         boolean primitive = FxClassUtils.isPrimitive(pType);
                         

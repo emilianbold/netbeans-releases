@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
+import org.netbeans.modules.javafx2.editor.completion.model.impl.ModelAccessor;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.SourceVersion;

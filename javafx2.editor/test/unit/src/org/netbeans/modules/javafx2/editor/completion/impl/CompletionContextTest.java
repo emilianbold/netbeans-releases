@@ -55,6 +55,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.javafx2.editor.FXMLCompletionTestBase;
+import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
  *
@@ -129,7 +130,7 @@ public class CompletionContextTest extends FXMLCompletionTestBase {
         prepareData(name);
         Language l = Language.find("text/fxml+xml");
         TokenHierarchy th = TokenHierarchy.create(text, l);
-        CompletionContext ctx = new CompletionContext(th, offset);
+        CompletionContext ctx = new CompletionContext(th, offset, CompletionProvider.COMPLETION_QUERY_TYPE);
         
         CompletionContext.Type type = CompletionContext.Type.valueOf(state);
         
@@ -139,7 +140,7 @@ public class CompletionContextTest extends FXMLCompletionTestBase {
     protected void xrunTest() throws Throwable {
         Language l = Language.find("text/fxml+xml");
         TokenHierarchy th = TokenHierarchy.create(text, l);
-        CompletionContext ctx = new CompletionContext(th, offset);
+        CompletionContext ctx = new CompletionContext(th, offset, CompletionProvider.COMPLETION_QUERY_TYPE);
         
         CompletionContext.Type type = CompletionContext.Type.valueOf(state);
         

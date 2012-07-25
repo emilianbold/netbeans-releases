@@ -46,8 +46,5 @@ package org.netbeans.modules.javafx2.editor.completion.model;
  * @author sdedic
  */
 public interface HasContent {
-    
-    public int getContentStart();
-    
-    public int getContentEnd();
+    public CharSequence getContent();
 }

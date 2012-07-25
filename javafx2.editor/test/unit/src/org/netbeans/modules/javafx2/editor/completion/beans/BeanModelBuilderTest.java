@@ -120,7 +120,7 @@ public class BeanModelBuilderTest extends FXMLCompletionTestBase {
             JavacParserResult res = (JavacParserResult)resultIterator.getParserResult();
             CompilationInfo ci = res.get(CompilationInfo.class);
 
-            FxBeanInfo bi = BeanModelBuilder.getBeanInfo(ci, "javafx.scene.layout.AnchorPane");
+            FxBean bi = BeanModelBuilder.getBeanInfo(ci, "javafx.scene.layout.AnchorPane");
             StringBuilder sb = new StringBuilder();
             printBeanInfo(sb, bi, ci);
             content = sb;
@@ -151,7 +151,7 @@ public class BeanModelBuilderTest extends FXMLCompletionTestBase {
         sb.append(ci.getTypeUtilities().getTypeName(tm, TypeNameOptions.PRINT_FQN, TypeNameOptions.PRINT_AS_VARARG));
     }
     
-    private static void printProperty(StringBuilder sb, PropertyInfo pi, CompilationInfo ci) {
+    private static void printProperty(StringBuilder sb, FxProperty pi, CompilationInfo ci) {
         if (pi == null) {
             sb.append("<null>");
             return;
@@ -172,7 +172,7 @@ public class BeanModelBuilderTest extends FXMLCompletionTestBase {
         sb.append("]");
     }
     
-    private static void printEvent(StringBuilder sb, EventSourceInfo ei, CompilationInfo ci) {
+    private static void printEvent(StringBuilder sb, FxEvent ei, CompilationInfo ci) {
         sb.append("Event[");
         sb.append("name: ").append(ei.getName()).
                 append("; type: ").append(ei.getEventType().resolve(ci));
@@ -184,7 +184,7 @@ public class BeanModelBuilderTest extends FXMLCompletionTestBase {
         Collections.sort(al);
         
         for (Object o : al) {
-            PropertyInfo v = (PropertyInfo)m.get(o);
+            FxProperty v = (FxProperty)m.get(o);
             sb.append("    ");
             printProperty(sb, v, ci);
             sb.append("\n");
@@ -196,14 +196,14 @@ public class BeanModelBuilderTest extends FXMLCompletionTestBase {
         Collections.sort(al);
         
         for (Object o : al) {
-            EventSourceInfo v = (EventSourceInfo)m.get(o);
+            FxEvent v = (FxEvent)m.get(o);
             sb.append("    ");
             printEvent(sb, v, ci);
             sb.append("\n");
         }
     }
 
-    private static void printBeanInfo(StringBuilder sb, FxBeanInfo bi, CompilationInfo ci) {
+    private static void printBeanInfo(StringBuilder sb, FxBean bi, CompilationInfo ci) {
         sb.append("BeanInfo[");
         sb.append("\n  className: ").append(bi.getClassName()).
                 append("; default: ");

@@ -53,7 +53,7 @@ public final class FxInstanceCopy extends FxInstance {
     
     private FxInstance blueprint;
 
-    public FxInstanceCopy(String blueprintId) {
+    FxInstanceCopy(String blueprintId) {
         this.blueprintId = blueprintId;
     }
 
@@ -79,7 +79,7 @@ public final class FxInstanceCopy extends FxInstance {
         this.blueprint = target;
     }
 
-    public String getTagName() {
+    public String getSourceName() {
         return FxXmlSymbols.FX_COPY;
     }
     
