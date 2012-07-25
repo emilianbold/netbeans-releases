@@ -166,7 +166,10 @@ public class AnnotateLine {
                 shortened = email.substring(0, pos);
             }
             if (shortened == null) {
-                shortened = author.toString().substring(0, 10) + "..."; //NOI18N
+                shortened = author.toString();
+                if (shortened.length() > 10) {
+                    shortened = shortened.substring(0, 7) + "..."; //NOI18N
+                }
             }
             return shortened;
         }

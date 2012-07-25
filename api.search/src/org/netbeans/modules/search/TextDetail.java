@@ -476,7 +476,7 @@ public final class TextDetail implements Selectable {
         public String getHtmlDisplayName() {
             try {
                 StringBuffer text = new StringBuffer();
-                text.append("<font color='!controlShadow'>");           //NOI18N
+                text.append("<html><font color='!controlShadow'>");     //NOI18N
                 text.append(txtDetail.lineNumberIndent);
                 text.append(txtDetail.getLine());
                 text.append(": ");                                      //NOI18N
@@ -490,7 +490,7 @@ public final class TextDetail implements Selectable {
                 text.append("      ");  // NOI18N
                 text.append("<font color='!controlShadow'>[");  // NOI18N
                 text.append(escape(DetailNode.getLinePos(txtDetail)));
-                text.append("]");  // NOI18N
+                text.append("]</html>");                                //NOI18N
                 return text.toString();
             } catch (CharConversionException e) {
                 return null; // exception in escape(String s)
