@@ -44,6 +44,7 @@ package org.netbeans.modules.team.ods.git;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.domain.ScmType;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
 import javax.swing.AbstractAction;
@@ -112,15 +113,16 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
                 if (repository.getType() == ScmType.GIT) {
 //                 XXX   UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
                     RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
                         public void run() {
                             try {
-                                
+                                File cloneDest;
                                 if (passwdAuth != null) {
-                                    Git.cloneRepository(repository.getUrl(), passwdAuth.getUserName(), passwdAuth.getPassword()); 
+                                    cloneDest = Git.cloneRepository(repository.getUrl(), passwdAuth.getUserName(), passwdAuth.getPassword()); 
                                 } else {
-                                    Git.cloneRepository(repository.getUrl());
+                                    cloneDest = Git.cloneRepository(repository.getUrl());
                                 }
-                                if (srcHandle != null) {
+                                if (cloneDest != null && srcHandle != null) {
                                     srcHandle.refresh();
                                 }
                             } catch (URISyntaxException ex) {
