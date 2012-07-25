@@ -39,46 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.editor.doc;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import java.util.Collections;
+import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Stores named and unnamed documentation parameters.
+ * This is fallback instance of the {@link JsDocumentationProvider}. It enables to not
+ * return {@code null} values anywhere where the {@code JsDocumentationProvider} is needed.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocParameter {
+public class JsDocumentationFallbackProvider implements JsDocumentationProvider {
 
-    /**
-     * Gets name of the parameter.
-     * @return parameter name
-     */
-    DocIdentifier getParamName();
+    private static final JsDocumentationHolder fallbackHolder = new JsDocumentationFallbackHolder(null);
 
-    /**
-     * Gets default value of the parameter.
-     * @return default value, {@code null} if no default value set
-     */
-    String getDefaultValue();
+    @Override
+    public Set getSupportedTags() {
+        return Collections.emptySet();
+    }
 
-    /**
-     * Get information if the parameter is optional or not.
-     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
-     */
-    boolean isOptional();
-
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description, can be empty string, never {@code null}
-     */
-    String getParamDescription();
-
-    /**
-     * Gets the parameter type.
-     * @return parameter type, or {@code null} when no type is set
-     */
-    List<Type> getParamTypes();
+    @Override
+    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
+        return fallbackHolder;
+    }
 
 }

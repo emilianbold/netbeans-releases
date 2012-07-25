@@ -39,46 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import java.util.Map;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Stores named and unnamed documentation parameters.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface DocParameter {
+class JsDocDocumentationHolder extends JsDocumentationHolder {
 
-    /**
-     * Gets name of the parameter.
-     * @return parameter name
-     */
-    DocIdentifier getParamName();
+    private final Map<Integer, JsDocComment> blocks;
 
-    /**
-     * Gets default value of the parameter.
-     * @return default value, {@code null} if no default value set
-     */
-    String getDefaultValue();
+    public JsDocDocumentationHolder(Snapshot snapshot) {
+        super(snapshot);
+        blocks = JsDocParser.parse(snapshot);
+    }
 
-    /**
-     * Get information if the parameter is optional or not.
-     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
-     */
-    boolean isOptional();
-
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description, can be empty string, never {@code null}
-     */
-    String getParamDescription();
-
-    /**
-     * Gets the parameter type.
-     * @return parameter type, or {@code null} when no type is set
-     */
-    List<Type> getParamTypes();
+    @Override
+    public Map getCommentBlocks() {
+        return blocks;
+    }
 
 }
