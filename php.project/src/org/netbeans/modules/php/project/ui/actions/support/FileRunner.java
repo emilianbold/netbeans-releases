@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -59,6 +58,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
@@ -67,13 +67,14 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -90,28 +91,46 @@ public final class FileRunner {
 
     private static final RequestProcessor RP = new RequestProcessor(FileRunner.class);
     private static final ExecutionDescriptor.LineConvertorFactory PHP_LINE_CONVERTOR_FACTORY = new PhpLineConvertorFactory();
+    // for debugger, let's treat all the files withour project under one dbg session
+    private static final Project DUMMY_PROJECT = new DummyProject();
 
-    final PhpProject project;
     final File file;
 
     // @GuardedBy("this")
-    Map<String, String> environmentVariables = Collections.emptyMap();
-    // @GuardedBy("this")
-    volatile boolean controllable = true;
+    PhpProject project;
+    volatile String command;
+    volatile String phpArgs;
+    volatile String fileArgs;
+    volatile String workDir;
+    volatile boolean debug = false;
 
 
-    public FileRunner(PhpProject project, File file) {
-        this.project = project;
+    public FileRunner(File file) {
         this.file = file;
     }
 
-    public synchronized FileRunner environmentVariables(Map<String, String> environmentVariables) {
-        this.environmentVariables = environmentVariables;
+    public synchronized FileRunner project(PhpProject project) {
+        this.project = project;
         return this;
     }
 
-    public FileRunner controllable(boolean controllable) {
-        this.controllable = controllable;
+    public FileRunner command(String command) {
+        this.command = command;
+        return this;
+    }
+
+    public FileRunner phpArgs(String phpArgs) {
+        this.phpArgs = phpArgs;
+        return this;
+    }
+
+    public FileRunner fileArgs(String fileArgs) {
+        this.fileArgs = fileArgs;
+        return this;
+    }
+
+    public FileRunner workDir(String workDir) {
+        this.workDir = workDir;
         return this;
     }
 
@@ -124,7 +143,7 @@ public final class FileRunner {
             @Override
             public void run() {
                 try {
-                    getRunCallable(Bundle.FileRunner_run_displayName(project.getName())).call();
+                    getRunCallable(Bundle.FileRunner_run_displayName(getDisplayName()), false).call();
                 } catch (Exception ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 }
@@ -145,16 +164,13 @@ public final class FileRunner {
         });
     }
 
-    Callable<Cancellable> getRunCallable(final String displayName) {
+    Callable<Cancellable> getRunCallable(final String displayName, final boolean debug) {
         return new Callable<Cancellable>() {
             @Override
             public Cancellable call() {
                 assert !EventQueue.isDispatchThread();
 
-                RunConfigScript configScript = RunConfigScript.forProject(project);
-                PhpExecutable executable = new PhpExecutable(configScript.getInterpreter());
-                // workdir
-                String workDir = configScript.getWorkDir();
+                PhpExecutable executable = new PhpExecutable(command);
                 if (StringUtils.hasText(workDir)) {
                     executable.workDir(new File(workDir));
                 } else {
@@ -169,14 +185,18 @@ public final class FileRunner {
                         postExecution = new PostExecution(tmpFile);
                     }
                 }
-                // run!
-                final Future<Integer> result = executable
+                executable
                         .displayName(displayName)
                         .viaAutodetection(false)
                         .viaPhpInterpreter(false)
-                        .environmentVariables(environmentVariables)
-                        .additionalParameters(getParams(configScript))
-                        .run(getDescriptor(postExecution));
+                        .additionalParameters(getParams());
+                if (debug) {
+                    executable
+                            .environmentVariables(Collections.singletonMap("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId())); // NOI18N
+                }
+                // run!
+                final Future<Integer> result = executable
+                        .run(getDescriptor(postExecution, !debug));
                 return new Cancellable() {
                     @Override
                     public boolean cancel() {
@@ -200,7 +220,7 @@ public final class FileRunner {
                 debugInternal();
             }
         } else {
-            Callable<Cancellable> callable = getRunCallable(Bundle.FileRunner_debug_displayName(project.getName()));
+            Callable<Cancellable> callable = getRunCallable(Bundle.FileRunner_debug_displayName(getDisplayName()), true);
             XDebugStarter.Properties props = XDebugStarter.Properties.create(
                     FileUtil.toFileObject(file),
                     true,
@@ -208,25 +228,27 @@ public final class FileRunner {
                     Collections.<Pair<String, String>>emptyList(),
                     null, // no debug proxy for files (valid only for server urls)
                     getEncoding());
-            dbgStarter.start(project, callable, props);
+            dbgStarter.start(project != null ? project : DUMMY_PROJECT, callable, props);
         }
     }
 
-    private List<String> getParams(RunConfigScript configScript) {
+    synchronized String getDisplayName() {
+        return project != null ? project.getName() : file.getName();
+    }
+
+    private List<String> getParams() {
         List<String> params = new ArrayList<String>();
-        String phpArgs = configScript.getOptions();
         if (StringUtils.hasText(phpArgs)) {
             params.addAll(Arrays.asList(Utilities.parseParameters(phpArgs)));
         }
         params.add(file.getAbsolutePath());
-        String scriptArgs = configScript.getArguments();
-        if (StringUtils.hasText(scriptArgs)) {
-            params.addAll(Arrays.asList(Utilities.parseParameters(scriptArgs)));
+        if (StringUtils.hasText(fileArgs)) {
+            params.addAll(Arrays.asList(Utilities.parseParameters(fileArgs)));
         }
         return params;
     }
 
-    ExecutionDescriptor getDescriptor(Runnable postExecution) {
+    ExecutionDescriptor getDescriptor(Runnable postExecution, boolean controllable) {
         ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .charset(Charset.forName(getEncoding()))
                 .controllable(controllable)
@@ -305,6 +327,20 @@ public final class FileRunner {
             }
         }
 
+    }
+
+    // needed for php debugger, used as a key in session map
+    private static final class DummyProject implements Project {
+
+        @Override
+        public FileObject getProjectDirectory() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
     }
 
 }

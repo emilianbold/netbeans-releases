@@ -43,13 +43,11 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
-import java.util.Collections;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptValidator;
-import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -101,22 +99,22 @@ class ConfigActionScript extends ConfigAction {
 
     @Override
     public void runProject() {
-        new FileRunner(project, getStartFile(null)).run();
+        createFileRunner(null).run();
     }
 
     @Override
     public void debugProject() {
-        createDebugFileRunner(null).debug();
+        createFileRunner(null).debug();
     }
 
     @Override
     public void runFile(Lookup context) {
-        new FileRunner(project, getStartFile(context)).run();
+        createFileRunner(context).run();
     }
 
     @Override
     public void debugFile(Lookup context) {
-        createDebugFileRunner(context).debug();
+        createFileRunner(context).debug();
     }
 
     private File getStartFile(Lookup context) {
@@ -130,10 +128,14 @@ class ConfigActionScript extends ConfigAction {
         return FileUtil.toFile(file);
     }
 
-    private FileRunner createDebugFileRunner(Lookup context) {
-        return new FileRunner(project, getStartFile(context))
-                .controllable(false)
-                .environmentVariables(Collections.singletonMap("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId()));
+    private FileRunner createFileRunner(Lookup context) {
+        RunConfigScript configScript = RunConfigScript.forProject(project);
+        return new FileRunner(getStartFile(context))
+                .project(project)
+                .command(configScript.getInterpreter())
+                .workDir(configScript.getWorkDir())
+                .phpArgs(configScript.getOptions())
+                .fileArgs(configScript.getArguments());
     }
 
 }
