@@ -44,12 +44,17 @@
 
 package org.netbeans.modules.project.ui.problems;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
@@ -61,28 +66,31 @@ import org.netbeans.api.project.ProjectUtils;
 import org.openide.util.ChangeSupport;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider.ProjectProblem;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
-public final class BrokenReferencesModel extends AbstractListModel {
+public final class BrokenReferencesModel extends AbstractListModel implements PropertyChangeListener, ChangeListener {
 
     private static final Logger LOG = Logger.getLogger(BrokenReferencesModel.class.getName());
 
     private final Context ctx;
     private final boolean global;
-    private List<ProblemReference> problems;
+    private final Object lock = new Object();
+    //@GuardedBy("lock")
+    private final Map<ProjectProblemsProvider,PropertyChangeListener> providers;
+    //@GuardedBy("lock")
+    private final List<ProblemReference> problems;
+
 
     BrokenReferencesModel(@NonNull final Context ctx, boolean global) {
         assert ctx != null;
         this.ctx = ctx;
         this.global = global;
         problems = new ArrayList<ProblemReference>();
+        providers = new WeakHashMap<ProjectProblemsProvider, PropertyChangeListener>();
         refresh();
-        ctx.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                refresh();
-            }
-        });
+        ctx.addChangeListener(this);
     }
 
     BrokenReferencesModel(@NonNull final Project project) {
@@ -97,26 +105,47 @@ public final class BrokenReferencesModel extends AbstractListModel {
 
     @Override
     public int getSize() {
-        return problems.size();
+        synchronized (lock) {
+            return problems.size();
+        }
     }
 
     void refresh() {
-        final Set<ProblemReference> all = new LinkedHashSet<ProblemReference>();
-        for (Project bprj : ctx.getBrokenProjects()) {
-            final ProjectProblemsProvider ppp = bprj.getLookup().lookup(ProjectProblemsProvider.class);
-            if (ppp != null) {
-                for (ProjectProblem problem : ppp.getProblems()) {
-                    all.add(new ProblemReference(problem, bprj, global));
+        final int size;
+        synchronized (lock) {
+            for (Iterator<Map.Entry<ProjectProblemsProvider,PropertyChangeListener>> it = providers.entrySet().iterator(); it.hasNext();) {
+                final Map.Entry<ProjectProblemsProvider,PropertyChangeListener> e = it.next();
+                e.getKey().removePropertyChangeListener(e.getValue());
+                it.remove();
+            }
+            final Set<ProblemReference> all = new LinkedHashSet<ProblemReference>();
+            for (Project bprj : ctx.getBrokenProjects()) {
+                final ProjectProblemsProvider ppp = bprj.getLookup().lookup(ProjectProblemsProvider.class);
+                if (ppp != null) {
+                    final PropertyChangeListener l = WeakListeners.propertyChange(this, ppp);
+                    ppp.addPropertyChangeListener(l);
+                    providers.put(ppp, l);
+                    for (ProjectProblem problem : ppp.getProblems()) {
+                        all.add(new ProblemReference(problem, bprj, global));
+                    }
                 }
             }
+            updateReferencesList(problems, all);
+            size = getSize();
         }
-        updateReferencesList(problems, all);
-        this.fireContentsChanged(this, 0, getSize());
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                fireContentsChanged(BrokenReferencesModel.this, 0, size);
+            }
+        });
     }
 
     private ProblemReference getOneReference(int index) {
-        assert index>=0 && index<problems.size();
-        return problems.get(index);
+        synchronized (lock) {
+            assert index>=0 && index<problems.size();
+            return problems.get(index);
+        }
     }
     
     private static void updateReferencesList(List<ProblemReference> oldBroken, Set<ProblemReference> newBroken) {
@@ -129,6 +158,18 @@ public final class BrokenReferencesModel extends AbstractListModel {
                 oldBroken.add(or);
             }
         }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (ProjectProblemsProvider.PROP_PROBLEMS.equals(evt.getPropertyName())) {
+            refresh();
+        }
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        refresh();
     }
 
     static final class ProblemReference {
