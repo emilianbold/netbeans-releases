@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>org.codehaus.groovy:groovy-all:1.8.6:jar</value>
+            <value>org.codehaus.groovy:groovy-all:2.0.1:jar</value>
         </property>
     </properties>
 </library>

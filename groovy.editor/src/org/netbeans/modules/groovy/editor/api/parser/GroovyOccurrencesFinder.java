@@ -45,20 +45,20 @@ package org.netbeans.modules.groovy.editor.api.parser;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.VariableScopeVisitor;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.filesystems.FileObject;
@@ -85,6 +85,7 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
         super();
     }
 
+    @Override
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
         LOG.log(Level.FINEST, "getOccurrences()\n"); //NOI18N
         return occurrences;
@@ -98,6 +99,7 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
         cancelled = false;
     }
 
+    @Override
     public final synchronized void cancel() {
         cancelled = true;
     }
@@ -180,6 +182,7 @@ public class GroovyOccurrencesFinder extends OccurrencesFinder<GroovyParserResul
      * 
      * @param position
      */
+    @Override
     public void setCaretPosition(int position) {
         this.caretPosition = position;
         LOG.log(Level.FINEST, "\n\nsetCaretPosition() = {0}\n", position); //NOI18N
