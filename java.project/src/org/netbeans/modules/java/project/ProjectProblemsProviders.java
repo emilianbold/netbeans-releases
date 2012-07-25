@@ -447,7 +447,7 @@ public class ProjectProblemsProviders {
         "LBL_BrokenLinksCustomizer_BrokenFileReference=\"{0}\" file/folder could not be found",
         "LBL_BrokenLinksCustomizer_BrokenVariable=\"{0}\" variable could not be found",
         "LBL_BrokenLinksCustomizer_BrokenVariableContent=\"{0}\" variable based file/folder could not be found",
-        "LBL_BrokenLinksCustomizer_BrokenPlatform=\"{0}\" platform could not be found",
+        "LBL_BrokenLinksCustomizer_BrokenPlatform=\"{0}\" platform could not be found"
     })
     private static String getDisplayName(
             @NonNull final RefType type,
@@ -779,7 +779,7 @@ public class ProjectProblemsProviders {
         @Override
         @NonNull
         @NbBundle.Messages({
-            "LBL_BrokenLinksCustomizer_Resolve_Project=Browse Project \"{0}\"",
+            "LBL_BrokenLinksCustomizer_Resolve_Project=Browse Project \"{0}\""
         })
         public Future<ProjectProblemsProvider.Result> resolve() {
             ProjectProblemsProvider.Status result = ProjectProblemsProvider.Status.UNRESOLVED;
