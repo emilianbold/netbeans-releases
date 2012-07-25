@@ -88,7 +88,7 @@ public class NameResolver implements StringResolver{
             }
             if (parsed.contains("$N{install_x64}")) {
                 try {
-                    String path = SystemUtils.getEnvironmentVariable("ProgramW6432Dir");
+                    String path = SystemUtils.getEnvironmentVariable("ProgramW6432");
                     LogManager.log("      --- Path " + path);
                     if (path != null) {
                         defaultApplicationsLocation = new File(path).getAbsoluteFile();
