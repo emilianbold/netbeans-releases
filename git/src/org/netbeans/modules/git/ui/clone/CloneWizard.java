@@ -55,6 +55,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitURI;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -84,12 +85,18 @@ class CloneWizard  implements ChangeListener {
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         if(pa != null && forPath != null) {
-            // url and credential already provided, so try 
-            // to reach the next step ...
-            EventQueue.invokeLater(new Runnable() {
+            Git.getInstance().getRequestProcessor().post(new Runnable() {
                 @Override
-                public void run() {
-                    wizardDescriptor.doNextClick();
+                public void run () {
+                    wizardIterator.repositoryStep.waitPopulated();
+                    // url and credential already provided, so try 
+                    // to reach the next step ...
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            wizardDescriptor.doNextClick();
+                        }
+                    });
                 }
             });
         }

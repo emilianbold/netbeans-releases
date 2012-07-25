@@ -51,7 +51,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -82,11 +81,9 @@ import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -387,19 +384,25 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         txt.moveCaretPosition(start);
     }
     
-    private Task populateTask;
+    private boolean initialized;
     public void waitPopulated() {
-        if(populateTask != null) {
-            populateTask.waitFinished();
+        synchronized (this) {
+            while (!initialized) {
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    
+                }
+            }
         }
     }
     
     private Map<String, ConnectionSettings> recentConnectionSettings = new HashMap<String, ConnectionSettings>();
     private void initUrlComboValues(final String forPath, final PasswordAuthentication pa) {
-        populateTask = Git.getInstance().getRequestProcessor().post(new Runnable() {
+        panel.urlComboBox.setEnabled(false);
+        Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                panel.urlComboBox.setEnabled(false);
                 try {
                     final DefaultComboBoxModel model = new DefaultComboBoxModel();
                     
@@ -436,9 +439,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                                 setComboText(forPath, 0, forPath.length());
                             }
                             ignoreComboEvents = false;
-                            findComboItem(true, true);
-                            updateCurrentSettingsType();
-                            if(pa != null) {
+                            if(pa == null) {
+                                findComboItem(true, true);
+                                updateCurrentSettingsType();
+                            } else {
+                                updateCurrentSettingsType();
                                 activeSettingsType.populateCredentials(pa);
                             }
                             validateFields();
@@ -450,6 +455,10 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                             @Override
                             public void run () {
                                 panel.urlComboBox.setEnabled(enabled);
+                                synchronized (RemoteRepository.this) {
+                                    initialized = true;
+                                    RemoteRepository.this.notifyAll();
+                                }
                             }
                         });
                     }

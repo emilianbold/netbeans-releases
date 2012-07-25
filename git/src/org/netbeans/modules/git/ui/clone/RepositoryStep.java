@@ -97,7 +97,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
     @Override
     protected final void validateBeforeNext () {
-        repository.waitPopulated();
+        waitPopulated();
         try {
             branches = null;
             if(!validateRepository()) return;
@@ -124,6 +124,10 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             support = null;
             repository.setEnabled(true);
         }
+    }
+
+    void waitPopulated () {
+        repository.waitPopulated();
     }
 
     private boolean validateRepository() {
