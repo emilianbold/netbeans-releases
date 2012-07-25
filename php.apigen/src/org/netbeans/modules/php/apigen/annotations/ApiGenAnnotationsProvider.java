@@ -42,10 +42,9 @@
 package org.netbeans.modules.php.apigen.annotations;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTagProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -90,6 +89,7 @@ public class ApiGenAnnotationsProvider extends AnnotationCompletionTagProvider {
                 new SinceTag(),
                 new StaticvarTag(),
                 new SubpackageTag(),
+                new ThrowsTag(),
                 new TodoTag(),
                 new TutorialTag(),
                 new UsesTag(),
@@ -176,6 +176,7 @@ public class ApiGenAnnotationsProvider extends AnnotationCompletionTagProvider {
                 new SinceTag(),
                 new StaticTag(),
                 new StaticvarTag(),
+                new ThrowsTag(),
                 new TodoTag(),
                 new TutorialTag(),
                 new UsesTag(),

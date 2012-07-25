@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm;
 
-import org.netbeans.modules.php.spi.annotations.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 public class PostPersistTag extends AnnotationCompletionTag {

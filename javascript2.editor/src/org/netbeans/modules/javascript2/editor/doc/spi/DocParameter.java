@@ -79,6 +79,6 @@ public interface DocParameter {
      * Gets the parameter type.
      * @return parameter type, or {@code null} when no type is set
      */
-    List<? extends Type> getParamTypes();
+    List<Type> getParamTypes();
 
 }

@@ -67,12 +67,10 @@ public final class UiUtils {
     public static final String OPTIONS_PATH = "org-netbeans-modules-php-project-ui-options-PHPOptionsCategory"; // NOI18N
     /**
      * SFS path where all the PHP customizer panels can be found.
-     * @since 1.38
      */
     public static final String CUSTOMIZER_PATH = "org-netbeans-modules-php-project"; // NOI18N
     /**
      * The General Options category ID.
-     * @since 1.60
      */
     public static final String GENERAL_OPTIONS_SUBCATEGORY = "General"; // NOI18N
 
@@ -142,7 +140,6 @@ public final class UiUtils {
     /**
      * Display Options dialog with PHP > General panel preselected.
      * @see #showOptions(String)
-     * @since 1.20
      */
     public static void showGeneralOptions() {
         showOptions(null);
@@ -152,7 +149,6 @@ public final class UiUtils {
      * Display Options dialog with PHP > &lt;subcategory> panel preselected.
      * @param optionsSubcategory PHP Options subcategory to be opened, can be <code>null</code> (then, the General panel is opened)
      * @see #showGeneralOptions()
-     * @since 1.20
      */
     public static void showOptions(String optionsSubcategory) {
         String path = OPTIONS_PATH;
@@ -165,7 +161,6 @@ public final class UiUtils {
     /**
      * Returns default folder icon as {@link Image}. Never returns {@code null}.
      * @param opened whether closed or opened icon should be returned
-     * @since 1.40
      */
     public static Image getTreeFolderIcon(boolean opened) {
         Image base = (Image) UIManager.get(opened ? OPENED_ICON_KEY_UIMANAGER_NB : ICON_KEY_UIMANAGER_NB); // #70263

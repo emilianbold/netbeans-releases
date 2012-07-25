@@ -66,6 +66,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.ModelUtils.Descriptor;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -173,10 +174,9 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
             return null;
         }
         Boolean modified = null;
-        for (URL pom : library.getContent("maven-pom")) {
-            ModelUtils.LibraryDescriptor result = ModelUtils.checkLibrary(pom);
-            LOG.log(Level.FINE, "found {0} for {1}", new Object[] {result, pom});
-            if (result != null) {
+        Descriptor d = ModelUtils.checkLibraries(library);
+        for (ModelUtils.LibraryDescriptor result : d.getDependencies()) {
+            LOG.log(Level.FINE, "found {0} for {1}", new Object[] {result, library.getName()});
                 //set dependency
                 modified = false;
                 Dependency dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), false);
@@ -198,6 +198,10 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
                     dep.setVersion(result.getVersion());
                     modified = true;
                 }
+                if (!Utilities.compareObjects(result.getType(), dep.getType()) && !Utilities.compareObjects("jar", result.getType())) {
+                    dep.setType(result.getType());
+                    modified = true;
+                }
                 if (!Utilities.compareObjects(scope, dep.getScope())) {
                     dep.setScope(scope);
                     modified = true;
@@ -206,6 +210,8 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
                     dep.setClassifier(result.getClassifier());
                     modified = true;
                 }
+        }
+        for (ModelUtils.RepositoryDescriptor result : d.getRepositories()) {
                 //set repository
                 org.netbeans.modules.maven.model.pom.Repository reposit = ModelUtils.addModelRepository(
                         project.getLookup().lookup(NbMavenProject.class).getMavenProject(), model, result.getRepoRoot());
@@ -215,7 +221,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
                     reposit.setName("Repository for library " + library.getDisplayName()); //NOI18N - content coming into the pom.xml file
                     modified = true;
                 }
-            }
+            
         }
         LOG.log(Level.FINE, "checkLibraryForPoms on {0} -> {1}", new Object[] {library, modified});
         return modified;

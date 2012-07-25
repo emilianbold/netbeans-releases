@@ -202,6 +202,14 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionDeclaration3.js");
     }
 
+    public void testFunctionDeclaration4() throws Exception {
+        reformatFileContents("testfiles/formatter/functionDeclaration4.js",new IndentPrefs(4, 4));
+    }
+
+    public void testFunctionDeclaration4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/functionDeclaration4.js");
+    }
+
     public void testFunctionCall1Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionCall1.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
@@ -310,6 +318,22 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testSwitch4Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/switch4.js");
+    }
+
+    public void testSwitch5() throws Exception {
+        reformatFileContents("testfiles/formatter/switch5.js",new IndentPrefs(4, 4));
+    }
+
+    public void testSwitch5Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/switch5.js");
+    }
+
+    public void testSwitch6() throws Exception {
+        reformatFileContents("testfiles/formatter/switch6.js",new IndentPrefs(4, 4));
+    }
+
+    public void testSwitch6Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/switch6.js");
     }
 
     public void testIf1() throws Exception {
@@ -746,6 +770,14 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testTernary2Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/ternary2.js");
+    }
+
+    public void testVar1() throws Exception {
+        reformatFileContents("testfiles/formatter/var1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testVar1Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/var1.js");
     }
 
     protected void dumpFormatTokens(String file) throws Exception {

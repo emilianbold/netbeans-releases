@@ -127,9 +127,9 @@ public final class APTMacroImpl implements APTMacro {
             return false;
         }
         // check files
-        if ((one.file == other.file) && (one.file != null) && !one.file.equals(other.file)) {
-            return false;
-        }
+//        if ((one.file == other.file) && (one.file != null) && !one.file.equals(other.file)) {
+//            return false;
+//        }
         return one.defineNode.equals(other.defineNode);
     }
     
@@ -139,7 +139,7 @@ public final class APTMacroImpl implements APTMacro {
         if (retValue == 0) {
             // init hash
             retValue = 31*retValue + macroType.ordinal();
-            retValue = 31*retValue + (file == null ? 0 : file.hashCode());
+            //retValue = 31*retValue + (file == null ? 0 : file.hashCode());
             retValue = 31*retValue + defineNode.hashCode();
             hashCode = APTUtils.hash(retValue);
             retValue = hashCode;

@@ -76,7 +76,6 @@ public final class PhpModuleProperties {
     /**
      * Get encoding of the {@link PhpModule}.
      * @return encoding of the {@link PhpModule}
-     * @since 1.58
      */
     public String getEncoding() {
         return encoding;
@@ -91,7 +90,6 @@ public final class PhpModuleProperties {
      *
      * @param encoding encoding of the {@link PhpModule}
      * @return new properties with configured encoding of the {@link PhpModule}
-     * @since 1.58
      */
     public PhpModuleProperties setEncoding(String encoding) {
         Parameters.notNull("encoding", encoding);
@@ -167,7 +165,6 @@ public final class PhpModuleProperties {
     /**
      * Get project URL.
      * @return project URL
-     * @since 1.19
      */
     public String getUrl() {
         return url;
@@ -181,7 +178,6 @@ public final class PhpModuleProperties {
      *
      * @param url project URL
      * @return new properties with configured project URL
-     * @since 1.19
      */
     public PhpModuleProperties setUrl(String url) {
         Parameters.notNull("url", url);
@@ -191,7 +187,6 @@ public final class PhpModuleProperties {
     /**
      * Get project Include path.
      * @return project Include path
-     * @since 1.50
      */
     public List<String> getIncludePath() {
         return includePath;
@@ -208,7 +203,6 @@ public final class PhpModuleProperties {
      *
      * @param includePath Include path
      * @return new properties with configured Include path
-     * @since 1.50
      */
     public PhpModuleProperties setIncludePath(List<String> includePath) {
         Parameters.notNull("includePath", includePath);

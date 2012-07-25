@@ -5,9 +5,10 @@
 
     <target name="release" depends="projectized.release">
         <!-- Generated JavaScript files for core libraries, used by code completion
-             etc. See the generatestubs project for details. -->
-        <unzip dest="${build.dir}" src="external/jsstubs.zip"/>
+             etc. See the JsStubsGenerator project (in main/misc repository) for details. -->
+        <unzip dest="${build.dir}" src="external/js-corestubs.zip"/>
         <unzip dest="${build.dir}" src="external/js-domstubs.zip"/>
+        <unzip dest="${build.dir}" src="external/js-reststubs.zip"/>
         <zip zipfile="${cluster}/jsstubs/allstubs.zip">
             <fileset dir="${build.dir}/jsstubs"/>
         </zip>

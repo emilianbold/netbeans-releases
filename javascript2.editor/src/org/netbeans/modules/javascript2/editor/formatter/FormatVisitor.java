@@ -291,11 +291,13 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
-                FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
-                        JsTokenId.BRACKET_RIGHT_CURLY, leftBrace.getOffset());
-                if (rightBrace != null) {
-                    appendToken(rightBrace, FormatToken.forFormat(
-                            FormatToken.Kind.AFTER_FUNCTION_DECLARATION));
+                if (functionNode.isStatement()) {
+                    FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
+                            JsTokenId.BRACKET_RIGHT_CURLY, leftBrace.getOffset());
+                    if (rightBrace != null) {
+                        appendToken(rightBrace, FormatToken.forFormat(
+                                FormatToken.Kind.AFTER_STATEMENT));
+                    }
                 }
             }
 
@@ -397,6 +399,7 @@ public class FormatVisitor extends NodeVisitor {
             FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
             }
 
             List<CaseNode> nodes = new ArrayList<CaseNode>(switchNode.getCases());
@@ -405,9 +408,9 @@ public class FormatVisitor extends NodeVisitor {
             }
 
             for (CaseNode caseNode : nodes) {
-                int finish = getFinish(caseNode);
+                int start = getStart(caseNode.getBody());
 
-                formatToken = getPreviousToken(finish, JsTokenId.OPERATOR_COLON);
+                formatToken = getPreviousToken(start, JsTokenId.OPERATOR_COLON);
                 if (formatToken != null) {
                     appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_CASE));
                 }
@@ -544,6 +547,24 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(literalNode, onset);
     }
 
+    @Override
+    public Node visit(VarNode varNode, boolean onset) {
+        if (onset) {
+            int finish = getFinish(varNode) - 1;
+            Token nextToken = getNextNonEmptyToken(finish);
+            if (nextToken != null && nextToken.id() == JsTokenId.OPERATOR_COMMA) {
+                FormatToken formatToken = tokenStream.getToken(ts.offset());
+                if (formatToken != null) {
+                    FormatToken next = formatToken.next();
+                    assert next.getKind() == FormatToken.Kind.AFTER_COMMA : next.getKind();
+                    tokenStream.removeToken(next);
+                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.VAR_AFTER_COMMA));
+                }
+            }
+        }
+        return super.visit(varNode, onset);
+    }
+
     private boolean handleWhile(WhileNode whileNode) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {
@@ -578,7 +599,6 @@ public class FormatVisitor extends NodeVisitor {
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_BLOCK_START));
         }
 
         // put indentation mark
@@ -665,6 +685,7 @@ public class FormatVisitor extends NodeVisitor {
              * last one and the proper finish token.
              */
             if (statement instanceof VarNode) {
+                int index = i + 1;
                 Node lastVarNode = statement;
 
                 while (i + 1 < statements.size()) {
@@ -683,6 +704,10 @@ public class FormatVisitor extends NodeVisitor {
                 }
 
                 assert lastVarNode instanceof VarNode;
+                for (int j = index; j < i; j++) {
+                    Node skipped = statements.get(j);
+                    skipped.accept(this);
+                }
 
                 Token token = getNextNonEmptyToken(getFinish(lastVarNode) - 1);
                 if (token != null && JsTokenId.OPERATOR_SEMICOLON == token.id()) {
@@ -901,7 +926,7 @@ public class FormatVisitor extends NodeVisitor {
      */
     private FormatToken getCaseBlockEndToken(Block block) {
         int start = getStart(block);
-        int finish = getFinish(block);
+        int finish = getFinish(block) - 1;
         ts.move(finish);
 
         if (!ts.moveNext() && !ts.movePrevious()) {

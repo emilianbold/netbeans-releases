@@ -128,10 +128,11 @@ public class ReactorChecker implements PrerequisitesChecker {
                     first = false;
                     continue;
                 }
-                if (model.getLocation() == null || model.getLocation().getName().endsWith(".pom")) {
+                File loc = model.getLocation();
+                if (loc == null || loc.getName().endsWith(".pom")) {
                     break;
                 }
-                File modelDir = model.getLocation().getParentFile();
+                File modelDir = loc.getParentFile();
                 if (listsModule(modelDir, current, model.getModules())) {
                     current = modelDir;
                 } else {

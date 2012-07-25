@@ -49,10 +49,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.api.annotations.PhpAnnotations;
+import org.netbeans.modules.php.api.annotation.PhpAnnotations;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
-import org.netbeans.modules.php.spi.annotations.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
@@ -213,7 +213,7 @@ public class PHPDocCommentParser {
             }
             return new PHPDocTag(start, end, type, description);
         } else {
-            return new PHPDocTypeTag(start, end, type, description, resolveTypes(types, start));
+            return new PHPDocTypeTag(start, end, type, type.getDescription(), resolveTypes(types, start + 1));
         }
     }
 
@@ -367,7 +367,7 @@ public class PHPDocCommentParser {
                     // we are not able to thread such tag
                     result = fetchCustomAnnotationLine(line.substring(1));
                     if (result == null) {
-                        result = new UnknownAnnotationLine(name);
+                        result = new UnknownAnnotationLine(name, tokens.length > 1 ? tokens[1] : "");
                     }
                 }
             }

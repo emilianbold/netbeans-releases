@@ -69,7 +69,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
-import org.netbeans.modules.php.spi.annotations.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;

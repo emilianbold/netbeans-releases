@@ -46,7 +46,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
 
 /**
  *
@@ -188,6 +187,7 @@ public final class FormatToken {
         // around comma
         BEFORE_COMMA,
         AFTER_COMMA,
+        VAR_AFTER_COMMA,
 
         // keywords with possible space before parentheses
         AFTER_IF_KEYWORD,
@@ -213,7 +213,6 @@ public final class FormatToken {
         AFTER_TERNARY_OPERATOR,
 
         BEFORE_FUNCTION_DECLARATION,
-        AFTER_FUNCTION_DECLARATION,
 
         BEFORE_FUNCTION_CALL,
 

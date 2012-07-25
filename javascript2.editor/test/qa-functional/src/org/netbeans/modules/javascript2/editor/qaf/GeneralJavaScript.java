@@ -69,6 +69,9 @@ public class GeneralJavaScript extends JellyTestCase {
     static final String PHP_PROJECT_NAME = "PHP Application";
     static final String OTHER_CATEGORY_NAME = "Other";
     protected EventTool evt;
+    public String currentFile = "";
+    public final String TEST_BASE_NAME = "js2_";
+    public int name_iterator = 0;
 
     public GeneralJavaScript(String arg0) {
         super(arg0);
@@ -158,15 +161,11 @@ public class GeneralJavaScript extends JellyTestCase {
 //        jcPath.setTimeouts(t);
 
         opNewProjectWizard.finish();
-//        waitScanFinished();
-        
+        waitScanFinished();
+
     }
 
     protected EditorOperator createWebFile(String fileName, String project, String fileType) {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(project);
-        prn.select();
-        NewFileWizardOperator.invoke().cancel();
 
         NewFileWizardOperator opNewFileWizard = NewFileWizardOperator.invoke();
         opNewFileWizard.selectCategory(OTHER_CATEGORY_NAME);
@@ -300,21 +299,26 @@ public class GeneralJavaScript extends JellyTestCase {
 
     protected void checkCompletionItems(CompletionJListOperator jlist, String[] asIdeal) {
         String completionList = "";
+        StringBuilder sb = new StringBuilder(":");
         for (String sCode : asIdeal) {
             int iIndex = jlist.findItemIndex(sCode, new CFulltextStringComparator());
             if (-1 == iIndex) {
-                try {
-                    List list = jlist.getCompletionItems();
-                    for (int i = 0; i < list.size(); i++) {
+                sb.append(sCode).append(",");
+                if (completionList.length() < 1) {
+                    try {
+                        List list = jlist.getCompletionItems();
+                        for (int i = 0; i < list.size(); i++) {
 
-                        completionList += list.get(i) + "\n";
+                            completionList += list.get(i) + "\n";
+                        }
+                    } catch (java.lang.Exception ex) {
+                        System.out.println("#" + ex.getMessage());
                     }
-                } catch (java.lang.Exception ex) {
-                    System.out.println("#" + ex.getMessage());
                 }
-                System.out.println("Unable to find " + sCode + " completion. Completion list is " + completionList);
-                fail("Unable to find " + sCode + " completion. Completion list is " + completionList);
             }
+        }
+        if (sb.toString().length() > 1) {
+            fail("Unable to find items " + sb.toString() + ". Completion list is " + completionList);
         }
     }
 
@@ -326,10 +330,10 @@ public class GeneralJavaScript extends JellyTestCase {
             }
         }
     }
-    
+
     protected void cleanFile(EditorOperator eo){
-         eo.typeKey('a', InputEvent.CTRL_MASK);
-         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
+        eo.typeKey('a', InputEvent.CTRL_MASK);
+        eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
     }
 
     protected void checkCompletionItems(

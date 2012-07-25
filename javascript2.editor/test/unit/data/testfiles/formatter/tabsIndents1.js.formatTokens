@@ -121,7 +121,6 @@ FormattingToken{kind=EOL, offset=219, text=
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=220, text=    }
 FormattingToken{kind=TEXT, offset=224, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=225, text=
 }
 FormattingToken{kind=AFTER_PROPERTY, offset=-1, text=null}
@@ -162,6 +161,7 @@ FormattingToken{kind=WHITESPACE, offset=271, text= }
 FormattingToken{kind=BEFORE_SWITCH_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=272, text={}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
+FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=273, text=
 }
 FormattingToken{kind=WHITESPACE, offset=274, text=    }
@@ -183,7 +183,6 @@ FormattingToken{kind=TEXT, offset=307, text='}
 FormattingToken{kind=TEXT, offset=308, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=309, text=
 }
 FormattingToken{kind=WHITESPACE, offset=310, text=        }
@@ -218,7 +217,6 @@ FormattingToken{kind=TEXT, offset=356, text='}
 FormattingToken{kind=TEXT, offset=357, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=358, text=
 }
 FormattingToken{kind=WHITESPACE, offset=359, text=        }
@@ -250,7 +248,6 @@ FormattingToken{kind=TEXT, offset=403, text=:}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=AFTER_CASE, offset=-1, text=null}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=404, text=
 }
 FormattingToken{kind=WHITESPACE, offset=405, text=        }

@@ -200,7 +200,7 @@ class RemoteSyncActions {
             if (errCnt == 0) {
                 tab.getOut().println(NbBundle.getMessage(RemoteSyncActions.class, "SUMMARY_SUCCESS", okCnt));
             } else if (cancelled) {
-                tab.getOut().println(NbBundle.getMessage(RemoteSyncActions.class, "SUMMARY_CANCELLED", okCnt));
+                tab.getOut().println(NbBundle.getMessage(RemoteSyncActions.class, "SUMMARY_CANCELED", okCnt));
             } else {
                 tab.getErr().println(NbBundle.getMessage(RemoteSyncActions.class, "SUMMARY_ERROR", okCnt));
             }

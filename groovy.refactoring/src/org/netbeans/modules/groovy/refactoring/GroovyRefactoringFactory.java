@@ -44,47 +44,35 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
-import org.netbeans.modules.groovy.refactoring.utils.RefactoringUtil;
-import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.TreePath;
-import java.io.IOException;
-import javax.lang.model.element.Element;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesPlugin;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Groovy refactoring plugin factory implementation.
+ * This is the place where is decided which plugin should be used in which cases.
  *
- * @author Martin Adamek
+ * @author Martin Janicek
  */
 @ServiceProvider(service = RefactoringPluginFactory.class)
 public class GroovyRefactoringFactory implements RefactoringPluginFactory {
 
     @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-
-        NonRecursiveFolder pkg = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
-        FileObject sourceFO = refactoring.getRefactoringSource().lookup(FileObject.class);
-        TreePathHandle handle = resolveTreePathHandle(refactoring);
-        GroovyRefactoringElement element = refactoring.getRefactoringSource().lookup(GroovyRefactoringElement.class);
-
-        boolean javaPackage = pkg != null && RefactoringUtil.isOnSourceClasspath(pkg.getFolder());
-        boolean folder = sourceFO != null && sourceFO.isFolder();
+        Lookup lookup = refactoring.getRefactoringSource();
+        NonRecursiveFolder pkg = lookup.lookup(NonRecursiveFolder.class);
+        FileObject sourceFO = lookup.lookup(FileObject.class);
+        GroovyRefactoringElement element = lookup.lookup(GroovyRefactoringElement.class);
 
         if (sourceFO == null){
-            if (handle != null){
-                sourceFO = handle.getFileObject();
-            } else if (pkg != null){
+            if (pkg != null){
                 sourceFO = pkg.getFolder();
             } else if (element != null) {
                 sourceFO = element.getFileObject();
@@ -95,107 +83,11 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
             return null;
         }
 
-        boolean supportedFile = sourceFO != null && GroovyProjectUtil.isInGroovyProject(sourceFO) &&
-                (RefactoringUtil.isJavaFile(sourceFO) || GroovyProjectUtil.isGroovyFile(sourceFO));
-
-
-        String clazz = null;
-        if (handle != null) {
-            clazz = resolveClass(handle);
-        } else if (element != null) {
-            clazz = element.getDefClass();
-        }
-
-        if (supportedFile && clazz == null) {
-            return null;
-        }
+        boolean supportedFile = GroovyProjectUtil.isInGroovyProject(sourceFO) && GroovyProjectUtil.isGroovyFile(sourceFO);
 
         if (refactoring instanceof WhereUsedQuery && supportedFile){
-            WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-
-            return new GroovyWhereUsed(sourceFO, clazz, whereUsedQuery);
+            return new FindUsagesPlugin(sourceFO, element, (WhereUsedQuery) refactoring);
         }
         return null;
-    }
-
-    private TreePathHandle resolveTreePathHandle(final AbstractRefactoring refactoring){
-        TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        if (tph != null) {
-            return tph;
-        }
-
-        FileObject sourceFO = refactoring.getRefactoringSource().lookup(FileObject.class);
-        if (sourceFO == null || !RefactoringUtil.isJavaFile(sourceFO)){
-            return null;
-        }
-        final TreePathHandle[] result = new TreePathHandle[1];
-        try{
-
-            JavaSource source = JavaSource.forFileObject(sourceFO);
-
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                @Override
-                public void cancel() {
-                }
-
-                @Override
-                public void run(CompilationController co) throws Exception {
-                    co.toPhase(JavaSource.Phase.RESOLVED);
-                    CompilationUnitTree cut = co.getCompilationUnit();
-                    if (cut.getTypeDecls().isEmpty()){
-                        return;
-                    }
-                    result[0] = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-                }
-
-            }, true);
-        }catch(IOException ioe){
-            Exceptions.printStackTrace(ioe);
-        }
-
-        return result[0];
-    }
-
-    /**
-     * @return the fully qualified name of the class that the given
-     * TreePathHandle represents or null if the FQN could not be resolved.
-     */
-    private String resolveClass(final TreePathHandle treePathHandle){
-        if (treePathHandle == null){
-            return null;
-        }
-
-        final String[] result = new String[1];
-        try{
-            JavaSource source = JavaSource.forFileObject(treePathHandle.getFileObject());
-
-            if (source == null) {
-                return null;
-            }
-
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                @Override
-                public void cancel() {
-                }
-
-                @Override
-                public void run(CompilationController parameter) throws Exception {
-                    parameter.toPhase(JavaSource.Phase.RESOLVED);
-
-                    // The treePathHandle seems to have been set to null
-                    // by another thread somewhere else. We have to put a guard here.
-                    // cf. # 151775
-
-                    if (treePathHandle != null) {
-                        Element element = treePathHandle.resolveElement(parameter);
-                        result[0] = element.asType().toString();
-                    }
-
-                }
-            }, true);
-        }catch(IOException ioe){
-            Exceptions.printStackTrace(ioe);
-        }
-        return result[0];
     }
 }

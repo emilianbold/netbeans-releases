@@ -50,7 +50,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
 import org.apache.maven.DefaultMaven;
 import org.apache.maven.Maven;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -79,6 +82,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.maven.model.pom.Parent;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
@@ -92,6 +96,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Annotation;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -153,29 +159,10 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
 
         static List<ErrorDescription> findHints(final @NonNull POMModel model, final Project project, final int selectionStart, final int selectionEnd) {
-            assert model != null;
-            if (!model.getModelSource().isEditable()) {
-                return new ArrayList<ErrorDescription>();
-            }
-            try {
-                model.getBaseDocument(); // #187615
-                model.sync();
-                // model.refresh();
-            } catch (IOException ex) {
-                LOG.log(Level.FINE, "Error while syncing pom model.", ex);
-            }
-
             final List<ErrorDescription> err = new ArrayList<ErrorDescription>();
-
-            if (!model.getState().equals(Model.State.VALID)) {
-                LOG.log(Level.FINE, "Pom model document is not valid, is {0}", model.getState());
+            if (!checkModelValid(model)) {
                 return err;
             }
-            if (model.getProject() == null) {
-                LOG.log(Level.FINE, "Pom model root element missing");
-                return err;
-            }
-
             runMavenValidation(model, err);
 
             return ProjectManager.mutex().readAccess(new Mutex.Action<List<ErrorDescription>>() {
@@ -224,6 +211,30 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 }
             });
         }
+        
+        private static boolean checkModelValid(POMModel model) {
+            assert model != null;
+            if (!model.getModelSource().isEditable()) {
+                return false;
+            }
+            try {
+                model.getBaseDocument(); // #187615
+                model.sync();
+                // model.refresh();
+            } catch (IOException ex) {
+                LOG.log(Level.FINE, "Error while syncing pom model.", ex);
+            }
+
+            if (!model.getState().equals(Model.State.VALID)) {
+                LOG.log(Level.FINE, "Pom model document is not valid, is {0}", model.getState());
+                return false;
+            }
+            if (model.getProject() == null) {
+                LOG.log(Level.FINE, "Pom model root element missing");
+                return false;
+            }
+            return true;
+        }
 
         private void initializeModel() {
             FileObject fo = NbEditorUtilities.getFileObject(document);
@@ -252,6 +263,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                         if (panes != null && panes.length > 0) {
                             final int selectionStart = panes[0].getSelectionStart();
                             final int selectionEnd = panes[0].getSelectionEnd();
+                            refreshLinkAnnotations(document, model, selectionStart, selectionEnd);
                             if (selectionStart != selectionEnd) {
                                 RP.post(new Runnable() {
                                     @Override public void run() {
@@ -263,6 +275,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                                         } else {
                                             HintsController.setErrors(document, LAYER_POM_SELECTION, Collections.<ErrorDescription>emptyList());
                                         }
+                                        
                                     }
                                 });
                                 ok = true;
@@ -280,6 +293,49 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 }
             }
             return UpToDateStatus.UP_TO_DATE_OK; // XXX should use UP_TO_DATE_PROCESSING if checkHints task is currently running
+        }
+
+        private void refreshLinkAnnotations(Document document, POMModel model, final int selectionStart, int selectionEnd) {
+            if (document instanceof StyledDocument) {
+                StyledDocument styled = (StyledDocument) document;
+                Annotation[] old = (Annotation[]) styled.getProperty("maven_annot");
+                if (old != null) {
+                    for (Annotation ann : old) {
+                        NbDocument.removeAnnotation(styled, ann);
+                    }
+                }
+                if (checkModelValid(model)) {
+                    boolean isInTransaction = model.isIntransaction();
+                    if (! isInTransaction) {
+                        if (! model.startTransaction()) {
+                            return;
+                        }
+                    }
+                    try {
+                        List<Annotation> anns = new ArrayList<Annotation>();
+                        //now add a link to parent pom.
+                        Parent p = model.findComponent(selectionStart, Parent.class, true);
+                        if (p != null) {
+                            Annotation ann = new ParentPomAnnotation();
+                            anns.add(ann);
+                            Position position = NbDocument.createPosition(document, selectionStart, Position.Bias.Forward);
+                            NbDocument.addAnnotation(styled, position, selectionEnd - selectionStart, ann);
+                        }
+                        styled.putProperty("maven_annot", anns.toArray(new Annotation[0]));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        if ((! isInTransaction) && model.isIntransaction()) {
+                            try {
+                                model.endTransaction();
+                            } catch (IllegalStateException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }                    
+                }
+            }
+ 
         }
 
     }
@@ -353,5 +409,17 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         }
         return problems;
     }
+    
+    public static class ParentPomAnnotation extends Annotation {
 
+        @Override
+        public String getAnnotationType() {
+            return "org-netbeans-modules-editor-annotations-implements";
+        }
+
+        @Override
+        public String getShortDescription() {
+            return "Go to parent POM declaration";
+        }
+    }
 }

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.symfony2.commands;
 
-import org.netbeans.modules.php.spi.commands.FrameworkCommand;
+import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
 
 /**
  * Symfony2 command.

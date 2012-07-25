@@ -517,12 +517,14 @@ public class Utilities {
     public static Set<UpdateElement> findRequiredUpdateElements (UpdateElement element,
             Collection<ModuleInfo> infos,
             Set<Dependency> brokenDependencies,
-            boolean topAggressive) {
+            boolean topAggressive,
+            Collection<UpdateElement> recommended) {
 
         Set<UpdateElement> retval = new HashSet<UpdateElement> ();
         switch (element.getUpdateUnit().getType ()) {
         case KIT_MODULE :
         case MODULE :
+            boolean avoidRecommended = recommended != null && ! recommended.isEmpty();
             ModuleUpdateElementImpl el = (ModuleUpdateElementImpl) Trampoline.API.impl(element);
             Set<Dependency> deps = new HashSet<Dependency> (el.getModuleInfo ().getDependencies ());
             Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (infos);
@@ -533,7 +535,7 @@ public class Utilities {
 
             Set<Dependency> all = new HashSet<Dependency>();
             for (;;) {
-                Set<Dependency> newones = processDependencies(deps, retval, availableInfos, brokenDependencies, element, aggressive);
+                Set<Dependency> newones = processDependencies(deps, retval, availableInfos, brokenDependencies, element, aggressive, recommended, avoidRecommended);
                 newones.removeAll(all);
                 if (newones.isEmpty()) {
                     break;
@@ -571,7 +573,7 @@ public class Utilities {
             FeatureUpdateElementImpl feature = (FeatureUpdateElementImpl) Trampoline.API.impl(element);
             aggressive = topAggressive;
             for (ModuleUpdateElementImpl module : feature.getContainedModuleElements ()) {
-                retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos, brokenDependencies, aggressive));
+                retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos, brokenDependencies, aggressive, recommended));
             }
             break;
         case CUSTOM_HANDLED_COMPONENT :
@@ -640,7 +642,7 @@ public class Utilities {
                                     Set<Dependency> deps = new HashSet<Dependency> (tryUpdated.getDependencies ());
                                     Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (forInstall);
                                     Set<Dependency> newones;
-                                    while (! (newones = processDependencies (deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive)).isEmpty ()) {
+                                    while (! (newones = processDependencies (deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive, null, false)).isEmpty ()) {
                                         deps = newones;
                                     }
                                     moreRequested.add (tryUE);
@@ -658,15 +660,25 @@ public class Utilities {
             Set<ModuleInfo> availableInfos,
             Set<Dependency> brokenDependencies,
             UpdateElement el,
-            boolean agressive) {
+            boolean agressive,
+            Collection<UpdateElement> recommended,
+            boolean avoidRecommended) {
         Set<Dependency> res = new HashSet<Dependency> ();
         AutomaticDependencies.Report rep = AutomaticDependencies.getDefault().refineDependenciesAndReport(el.getCodeName(), original);
         if (rep.isModified()) {
             err.warning(rep.toString());
         }
         for (Dependency dep : original) {
+            if (Dependency.TYPE_RECOMMENDS == dep.getType() && avoidRecommended) {
+                continue;
+            }
             Collection<UpdateElement> requestedElements = handleDependency (el, dep, availableInfos, brokenDependencies, agressive);
             if (requestedElements != null) {
+                if (Dependency.TYPE_RECOMMENDS == dep.getType()) {
+                    if (recommended != null) {
+                        recommended.addAll(requestedElements);
+                    }
+                }
                 for (UpdateElement req : requestedElements) {
                     ModuleUpdateElementImpl reqM = (ModuleUpdateElementImpl) Trampoline.API.impl (req);
                     availableInfos.add (reqM.getModuleInfo ());
@@ -789,7 +801,7 @@ public class Utilities {
         assert element != null : "UpdateElement cannot be null";
         Set<Dependency> brokenDependencies = new HashSet<Dependency> ();
         // create init collection of brokenDependencies
-        Utilities.findRequiredUpdateElements (element, infos, brokenDependencies, false);
+        Utilities.findRequiredUpdateElements (element, infos, brokenDependencies, false, new HashSet<UpdateElement>());
         // backward compatibility
         for (ModuleInfo mi : infos) {
             UpdateUnit u = UpdateManagerImpl.getInstance ().getUpdateUnit (mi.getCodeNameBase ());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -113,34 +113,35 @@ abstract class OperationValidator {
     public static List<UpdateElement> getRequiredElements (OperationContainerImpl.OperationType type,
             UpdateElement updateElement,
             List<ModuleInfo> moduleInfos,
-            Collection<String> brokenDependencies) {
+            Collection<String> brokenDependencies,
+            Collection<UpdateElement> recommendedElements) {
         List<UpdateElement> retval = Collections.emptyList ();
         switch(type){
         case INSTALL:
-            retval = FOR_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            retval = FOR_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies, recommendedElements);
             break;
         case DIRECT_UNINSTALL:
         case UNINSTALL:
-            retval = FOR_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            retval = FOR_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies, recommendedElements);
             break;
         case UPDATE:
-            retval = FOR_UPDATE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            retval = FOR_UPDATE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies, recommendedElements);
             break;
         case ENABLE:
-            retval = FOR_ENABLE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            retval = FOR_ENABLE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies, recommendedElements);
             break;
         case DIRECT_DISABLE:
         case DISABLE:
-            retval = FOR_DISABLE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            retval = FOR_DISABLE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies, recommendedElements);
             break;
         case CUSTOM_INSTALL:
-            retval = FOR_CUSTOM_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            retval = FOR_CUSTOM_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies, recommendedElements);
             break;
         case CUSTOM_UNINSTALL:
-            retval = FOR_CUSTOM_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            retval = FOR_CUSTOM_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies, recommendedElements);
             break;
         case INTERNAL_UPDATE:
-            retval = FOR_INTERNAL_UPDATE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            retval = FOR_INTERNAL_UPDATE.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies, recommendedElements);
             break;
         default:
             assert false;
@@ -166,7 +167,12 @@ abstract class OperationValidator {
             case INSTALL :
             case UPDATE :
             case INTERNAL_UPDATE:
-                getRequiredElements (type, updateElement, moduleInfos, broken);
+                Set<UpdateElement> recommeded = new HashSet<UpdateElement>();
+                getRequiredElements (type, updateElement, moduleInfos, broken, recommeded);
+                if (! recommeded.isEmpty() && ! broken.isEmpty()) {
+                    broken = new HashSet<String> ();
+                    getRequiredElements(type, updateElement, moduleInfos, broken, recommeded);
+                }
                 break;
             case UNINSTALL :
             case DIRECT_UNINSTALL :
@@ -185,7 +191,8 @@ abstract class OperationValidator {
     abstract boolean isValidOperationImpl(UpdateUnit updateUnit, UpdateElement uElement);
     abstract List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement,
             List<ModuleInfo> moduleInfos,
-            Collection<String> brokenDependencies);
+            Collection<String> brokenDependencies,
+            Collection<UpdateElement> recommendedElements);
     
     private static class InternalUpdateValidator extends UpdateValidator {
         @Override
@@ -200,9 +207,10 @@ abstract class OperationValidator {
         }
         
         @Override
-        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos,
+                                                    Collection<String> brokenDependencies, Collection<UpdateElement> recommendedElements) {
             Set<Dependency> brokenDeps = new HashSet<Dependency> ();
-            List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, false));
+            List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, false, recommendedElements));
             if (brokenDependencies != null) {
                 for (Dependency dep : brokenDeps) {
                     brokenDependencies.add (dep.toString ());
@@ -253,7 +261,7 @@ abstract class OperationValidator {
         }
         
         @Override
-        List<UpdateElement> getRequiredElementsImpl  (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+        List<UpdateElement> getRequiredElementsImpl  (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies, Collection<UpdateElement> recommendedElements) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
@@ -299,9 +307,10 @@ abstract class OperationValidator {
         }
         
         @Override
-        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos,
+                                                    Collection<String> brokenDependencies, Collection<UpdateElement> recommendedElements) {
             Set<Dependency> brokenDeps = new HashSet<Dependency> ();
-            List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, true));
+            List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, true, recommendedElements));
             if (brokenDependencies != null) {
                 for (Dependency dep : brokenDeps) {
                     brokenDependencies.add (dep.toString ());
@@ -369,7 +378,7 @@ abstract class OperationValidator {
         }
 
         @Override
-        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies, Collection<UpdateElement> recommendedElements) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
@@ -425,7 +434,7 @@ abstract class OperationValidator {
         }
         
         @Override
-        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies, Collection<UpdateElement> recommendedElements) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
             for (ModuleInfo moduleInfo : moduleInfos) {
@@ -486,7 +495,7 @@ abstract class OperationValidator {
         }
 
         @Override
-        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies, Collection<UpdateElement> recommendedElements) {
             LOGGER.log (Level.INFO, "CustomInstallValidator doesn't care about required elements."); // XXX
             return Collections.emptyList ();
         }
@@ -506,7 +515,7 @@ abstract class OperationValidator {
         }
 
         @Override
-        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies, Collection<UpdateElement> recommendedElements) {
             LOGGER.log (Level.INFO, "CustomUninstallValidator doesn't care about required elements."); // XXX
             return Collections.emptyList ();
             //return new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos));

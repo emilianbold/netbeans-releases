@@ -41,155 +41,26 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.spi;
 
-import com.oracle.nashorn.ir.Node;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
-import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class JsDocumentationProvider<T> {
-
-    protected final JsParserResult parserResult;
+public interface JsDocumentationProvider {
 
     /**
-     * Creates new JsDocumentationProvider.
-     * @param parserResult JavaScript parser result which should be provider created for
+     * Parses and gets {@code JsDocumentationHolder} with processed documentation comments.
+     * @param snapshot to be parsed and stored into holder
+     * @return JsDocumentationHolder
      */
-    protected JsDocumentationProvider(JsParserResult parserResult) {
-        this.parserResult = parserResult;
-    }
-
-    protected abstract Map<Integer, ? extends JsComment> getCommentBlocks();
+    public abstract JsDocumentationHolder createDocumentationHolder(Snapshot snapshot);
 
     /**
-     * Gets possible return types get for the node.
-     * @param node of the javaScript code
-     * @return list of potential return types, never {@code null}
+     * Gets all tags supported by the documentation tool (like @author, @link, ...)
+     * @return set of all supported tags
      */
-    public List<? extends Type> getReturnType(Node node) {
-        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
-        if (comment != null && comment.getReturnType() != null) {
-            return comment.getReturnType().getParamTypes();
-        }
-        return Collections.<Type>emptyList();
-    }
-
-    /**
-     * Gets parameters of the method.
-     * @param node of the javaScript code
-     * @return list of parameters, never {@code null}
-     */
-    public List<DocParameter> getParameters(Node node) {
-        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
-        if (comment != null) {
-            return comment.getParameters();
-        }
-        return Collections.<DocParameter>emptyList();
-    }
-
-    /**
-     * Gets documentation for given Node.
-     * @param node of the javaScript code
-     * @return documentation text if any {@code null} otherwise
-     */
-    public String getDocumentation(Node node) {
-        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
-        if (comment != null) {
-            return JsDocumentationPrinter.printDocumentation(comment);
-        }
-        return null;
-    }
-
-    /**
-     * Says whether is code at given code depricated or not.
-     * @param node examined node
-     * @return {@code true} if the comment says "it's deprecated", {@code false} otherwise
-     */
-    public boolean isDeprecated(Node node) {
-        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
-        if (comment != null) {
-            return comment.isDeprecated();
-        }
-        return false;
-    }
-
-    /**
-     * Gets the set of modifiers attached to given node.
-     * @param node examinded node
-     * @return {@code Set} of modifiers, never {@code null}
-     */
-    public Set<JsModifier> getModifiers(Node node) {
-        JsComment comment = getCommentForOffset(node.getStart(), getCommentBlocks());
-        if (comment != null) {
-            return comment.getModifiers();
-        }
-        return Collections.<JsModifier>emptySet();
-    }
-
-    /**
-     * Answers whether given token is whitespace or not.
-     * @param token examined token
-     * @return {@code true} if the token is whitespace, {@code false} otherwise
-     */
-    public boolean isWhitespaceToken(Token<? extends JsTokenId> token) {
-        return token.id() == JsTokenId.EOL || token.id() == JsTokenId.WHITESPACE
-                || token.id() == JsTokenId.BLOCK_COMMENT || token.id() == JsTokenId.DOC_COMMENT
-                || token.id() == JsTokenId.LINE_COMMENT;
-    }
-
-    /**
-     * Gets the closest documentation comment block to the given offset if any.
-     * @param offset where to start searching for the doc comment block
-     * @return documentation block
-     */
-    public JsComment getCommentForOffset(int offset, Map<Integer, ? extends JsComment> comments) {
-        int endOffset = getEndOffsetOfAssociatedComment(offset);
-        if (endOffset > 0) {
-            return comments.get(endOffset);
-        }
-        return null;
-    }
-
-    @SuppressWarnings("empty-statement")
-    private int getEndOffsetOfAssociatedComment(int offset) {
-        TokenHierarchy<?> tokenHierarchy = parserResult.getSnapshot().getTokenHierarchy();
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
-        if (ts != null) {
-            ts.move(offset);
-
-            // get to first EOL
-            while (ts.movePrevious()
-                    && ts.token().id() != JsTokenId.EOL
-                    && ts.token().id() != JsTokenId.OPERATOR_SEMICOLON) {
-                // do nothing - just search for interesting tokens
-            }
-
-            // search for DOC_COMMENT
-            while (ts.movePrevious()) {
-                if (ts.token().id() == JsTokenId.DOC_COMMENT) {
-                    return ts.token().offset(tokenHierarchy) + ts.token().length();
-                } else if (isWhitespaceToken(ts.token())) {
-                    continue;
-                } else {
-                    return -1;
-                }
-            }
-        }
-
-        return -1;
-    }
+    public abstract Set<String> getSupportedTags();
 
 }

@@ -249,6 +249,6 @@ FormattingToken{kind=EOL, offset=294, text=
 }
 FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=295, text=}}
-FormattingToken{kind=AFTER_FUNCTION_DECLARATION, offset=-1, text=null}
+FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=296, text=
 }

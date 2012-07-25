@@ -294,6 +294,20 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node visit(IdentNode identNode, boolean onset) {
+        if (onset) {
+            Node previousVisited = getPath().get(getPath().size() - 1);
+            if(!(previousVisited instanceof AccessNode
+                    || previousVisited instanceof VarNode
+                    || previousVisited instanceof BinaryNode
+                    || previousVisited instanceof PropertyNode)) {
+                addOccurence(identNode);
+            }
+        }
+        return super.visit(identNode, onset);
+    }
+
+    @Override
     public Node visit(IndexNode indexNode, boolean onset) {
         if (!onset && indexNode.getIndex() instanceof LiteralNode) {
             Node base = indexNode.getBase();
@@ -461,7 +475,7 @@ public class ModelVisitor extends PathNodeVisitor {
             
             if (fncScope != null) {
                 // check parameters and return types of the function.
-                List<Type> types = parserResult.getDocumentationProvider().getReturnType(functionNode);
+                List<Type> types = parserResult.getDocumentationHolder().getReturnType(functionNode);
                 if (types != null && !types.isEmpty()) {
                     for(Type type : types) {
                         fncScope.addReturnType(new TypeUsageImpl(type.getType(), -1, true));
@@ -472,7 +486,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
                 }
                 
-                List<DocParameter> docParams = parserResult.getDocumentationProvider().getParameters(functionNode);
+                List<DocParameter> docParams = parserResult.getDocumentationHolder().getParameters(functionNode);
                 for (DocParameter docParameter : docParams) {
                     JsObjectImpl param = (JsObjectImpl)fncScope.getParameter(docParameter.getParamName().getName());
                     if(param != null) {
@@ -539,9 +553,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     }
                     fqName = getName(binNode);
-                    if (binNode.lhs() instanceof AccessNode
+                    if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
                             && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
-                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this")) {
+                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
                         isDeclaredInParent = true;
                     }
                 }

@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.project.deprecated.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;

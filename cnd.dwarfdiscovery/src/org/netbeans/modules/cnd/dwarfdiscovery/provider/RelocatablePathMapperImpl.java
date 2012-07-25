@@ -229,7 +229,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
             return null;
         }
         for(int k = 1; k < unknownSegments.length; k++) {
-            for(int i = rootSegments.length - 1; i > 1; i--) {
+            loop:for(int i = rootSegments.length - 1; i > 1; i--) {
                 StringBuilder buf = new StringBuilder();
                 for(int j = 0; j < i; j++) {
                     buf.append('/'); //NOI18N
@@ -248,6 +248,18 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
                     path = path.substring(0, path.indexOf('|'))+path.substring(path.indexOf('|')+1); //NOI18N
                 }
                 if (fs.exists(path)) {
+                    if (k == i) {
+                        boolean startEquals = true;
+                        for(int l = 0; l < k; l++) {
+                            if (!unknownSegments[l].equals(rootSegments[l])) {
+                                startEquals = false;
+                                break;
+                            }
+                        }
+                        if (startEquals) {
+                            continue loop;
+                        }
+                    }
                     if (k < 2 && k < unknownSegments.length -1 && i < rootSegments.length - 1) {
                         if (unknownSegments[k].equals(rootSegments[i])) {
                             k++;

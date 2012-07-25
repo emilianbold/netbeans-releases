@@ -68,7 +68,7 @@ import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.ui.PathUiSupport;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;

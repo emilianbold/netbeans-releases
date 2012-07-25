@@ -146,6 +146,8 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
                     component.getHost());
             settings.putProperty(GlassFishCloudInstance.PROPERTY_PORT,
                     component.getPortText());
+            settings.putProperty(GlassFishCloudInstance.PROPERTY_LOCAL_SERVER,
+                    component.getLocalServer());
         }
     }
 
@@ -220,6 +222,10 @@ public class GlassFishCloudWizardCpasPanel extends GlassFishWizardPanel {
             return result.getErrorMessage();
         }
         result = component.portValid();
+        if (!result.isValid()) {
+            return result.getErrorMessage();
+        }
+        result = component.localServerValid();
         if (!result.isValid()) {
             return result.getErrorMessage();
         }
