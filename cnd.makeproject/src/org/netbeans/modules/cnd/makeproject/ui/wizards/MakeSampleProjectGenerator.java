@@ -397,10 +397,11 @@ public class MakeSampleProjectGenerator {
                     relPath = projectFolderPath.substring(4);
                 } catch (Throwable e) {
                 }
-            } else if (projectFolderPath.startsWith("\\\\")) {
-                int index = projectFolderPath.indexOf('\\', 2);
+            } else if (projectFolderPath.startsWith("\\\\")) { //NOI18N
+                // This is ugly work around Bug #215790
+                int index = projectFolderPath.indexOf('\\', 2); //NOI18N
                 if (index > 0) {
-                    index = projectFolderPath.indexOf('\\', index+1);
+                    index = projectFolderPath.indexOf('\\', index+1); //NOI18N
                     if (index > 0) {
                         try {
                             File server = new File(projectFolderPath.substring(0,index));
