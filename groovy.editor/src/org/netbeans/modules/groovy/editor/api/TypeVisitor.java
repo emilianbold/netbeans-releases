@@ -64,17 +64,13 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 public class TypeVisitor extends ClassCodeVisitorSupport {
 
     protected final SourceUnit sourceUnit;
-
     protected final AstPath path;
-
     protected final ASTNode leaf;
-
     protected final BaseDocument doc;
-
     protected final int cursorOffset;
-
     private final boolean visitOtherClasses;
 
+    
     public TypeVisitor(SourceUnit sourceUnit, AstPath path, BaseDocument doc,
             int cursorOffset, boolean visitOtherClasses) {
         this.sourceUnit = sourceUnit;
