@@ -255,7 +255,7 @@ public class GlassFishCloudInstanceProvider
             GlassFishCloudInstance value = cloudInstances.get(key);
             GlassFishCloudEntity copyOfValue
                     = new GlassFishCloudEntity(value.getName(), value.getHost(),
-                    value.getPort());
+                    value.getPort(), value.getLocalServer());
             clonedCloudInstances.add(copyOfValue);
         }
         return clonedCloudInstances;

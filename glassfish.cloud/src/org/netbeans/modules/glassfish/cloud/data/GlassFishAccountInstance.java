@@ -90,6 +90,9 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     /** Related GlassFish cloud entity name (selected from combo box). */
     public static final String PROPERTY_CLOUD_NAME="cloudName";
 
+    /** GlassFish cloud user account URL prefix. */
+    public static final String URL_PREFIX = "gfcr";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////

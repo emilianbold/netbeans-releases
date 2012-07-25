@@ -93,9 +93,41 @@ public class Bundle {
     static final String CLOUD_PANEL_ERROR_PORT_EMPTY
             = "GlassFishCloudWizardCpasPanel.error.port.empty";
 
+    /** Cloud panel validation error: Local server location value is empty. */
+    static final String CLOUD_PANEL_ERROR_LOCAL_SERVER_EMPTY
+            = "GlassFishCloudWizardCpasPanel.error.localServer.empty";
+
+    /** Cloud panel validation error: Local server location does not exist. */
+    static final String CLOUD_PANEL_ERROR_LOCAL_SERVER_NOT_EXISTS
+            = "GlassFishCloudWizardCpasPanel.error.localServer.notExists";
+
+    /** Cloud panel validation error: Local server version unknown. */
+    static final String CLOUD_PANEL_ERROR_LOCAL_SERVER_UNKNOWN
+            = "GlassFishCloudWizardCpasPanel.error.localServer.unknown";
+
+    /** Cloud panel validation error: Local server version too low. */
+    static final String CLOUD_PANEL_ERROR_LOCAL_SERVER_LOW
+            = "GlassFishCloudWizardCpasPanel.error.localServer.low";
+
     /** Cloud panel validation error: Port value is not a number. */
     static final String CLOUD_PANEL_ERROR_PORT_FORMAT
             = "GlassFishCloudWizardCpasPanel.error.port.format";
+
+    /** Cloud panel file browser header. */
+    static final String CLOUD_PANEL_BROWSER_FILE_HEADER
+            = "GlassFishCloudWizardCpasPanel.browser.file.header";
+
+    /** Cloud panel file browser choose button. */
+    static final String CLOUD_PANEL_BROWSER_FILE_CHOOSE
+            = "GlassFishCloudWizardCpasPanel.browser.file.choose";
+
+    /** Cloud panel file browser directory type. */
+    static final String CLOUD_PANEL_BROWSER_FILE_DIR_TYPE
+            = "GlassFishCloudWizardCpasPanel.browser.file.dirType";
+
+    /** Cloud panel GlassFish version field prefix. */
+    static final String CLOUD_PANEL_LOCAL_SERVER_VERSION_PREFIX
+            = "GlassFishCloudWizardCpasPanel.localServer.version.prefix";
 
     /** Add Cloud wizard name property. */
     static final String ADD_CLOUD_WIZARD_DISPLAY_NAME
