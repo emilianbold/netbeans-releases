@@ -402,6 +402,9 @@ final class UnitsCache {
         antiLoop.add(unitName);
         boolean result = true;
         Collection<RequiredUnit> reqUnits = unit2requnint.get(unitName);
+        if (reqUnits == null) {
+            return false;
+        }
         for (RequiredUnit rU : reqUnits) {
             if (!isUnitIndexLoaded(rU.getName())) {
                 loadUnitIndex(rU.getName(), antiLoop);
