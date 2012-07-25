@@ -4,8 +4,7 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.eclipse.mylyn.commons.workbench</code-name-base>
-            <module-dependencies>
-            </module-dependencies>
+            <module-dependencies/>
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org.eclipse.mylyn.commons.workbench.jar</runtime-relative-path>
