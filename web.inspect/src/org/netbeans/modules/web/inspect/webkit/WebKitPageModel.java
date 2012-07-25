@@ -44,16 +44,16 @@ package org.netbeans.modules.web.inspect.webkit;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.inspect.ElementHandle;
+import javax.swing.JComponent;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
+import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
@@ -355,30 +355,6 @@ public class WebKitPageModel extends PageModel {
     }
 
     @Override
-    public Map<String, String> getComputedStyle(ElementHandle element) {
-        // PENDING
-        return Collections.EMPTY_MAP;
-    }
-
-    @Override
-    public Collection<ResourceInfo> getResources() {
-        // PENDING
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<RuleInfo> getMatchedRules(ElementHandle element) {
-        // PENDING
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public void reloadResource(ResourceInfo resource) {
-        // PENDING
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void setSelectedNodes(List<? extends org.openide.nodes.Node> nodes) {
         synchronized (this) {
             if (selectedNodes.equals(nodes)) {
@@ -480,6 +456,20 @@ public class WebKitPageModel extends PageModel {
             }
         }
         return result;
+    }
+
+    @Override
+    public JComponent getCSSStylesView() {
+        if (!Boolean.getBoolean("org.netbeans.modules.web.inspect.showCSSStyles")) {
+            javax.swing.JLabel label = new javax.swing.JLabel("Coming soon ...");
+            label.setBackground(java.awt.Color.WHITE);
+            label.setEnabled(false);
+            label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            label.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+            label.setOpaque(true);
+            return label;
+        }
+        return CSSStylesPanel.getDefault();
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {

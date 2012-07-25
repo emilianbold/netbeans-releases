@@ -98,9 +98,9 @@ public class GoToRuleAction extends AbstractAction {
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToRuleTask(rule, fob));
         } catch (URISyntaxException ex) {
-            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(GoToRuleAction.class.getName()).log(Level.INFO, null, ex);
         } catch (ParseException ex) {
-            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(GoToRuleAction.class.getName()).log(Level.INFO, null, ex);
         }
     }
 

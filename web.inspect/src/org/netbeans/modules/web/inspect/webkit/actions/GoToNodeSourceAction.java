@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect.actions;
+package org.netbeans.modules.web.inspect.webkit.actions;
 
 import java.awt.EventQueue;
 import java.io.File;
@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -57,27 +56,26 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.CSSUtils;
-import org.netbeans.modules.web.inspect.ElementHandle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.w3c.dom.Element;
 
 /**
- * Go to source action for DOM elements.
+ * Go to source action for DOM nodes.
  *
  * @author Jan Stola
  */
-public class GoToElementSourceAction extends NodeAction  {
+public class GoToNodeSourceAction extends NodeAction  {
 
     @Override
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
-        Element element = activatedNodes[0].getLookup().lookup(Element.class);
-        String uriTxt = element.getOwnerDocument().getDocumentURI();
+        org.netbeans.modules.web.webkit.debugging.api.dom.Node node = activatedNodes[0]
+                .getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+        String documentURL = getDocumentURL(node);
         try {
-            URI uri = new URI(uriTxt);
+            URI uri = new URI(documentURL);
             // 208252: Workaround for file://localhost/<path> URIs that appear on Mac
             if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
                 uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
@@ -86,28 +84,45 @@ public class GoToElementSourceAction extends NodeAction  {
             file = FileUtil.normalizeFile(file);
             FileObject fob = FileUtil.toFileObject(file);
             Source source = Source.create(fob);
-            ElementHandle handle = ElementHandle.forElement(element);
-            ParserManager.parse(Collections.singleton(source), new GoToElementTask(handle, fob));
+            ParserManager.parse(Collections.singleton(source), new GoToNodeTask(node, fob));
         } catch (URISyntaxException ex) {
-            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(GoToNodeSourceAction.class.getName()).log(Level.INFO, null, ex);
         } catch (ParseException ex) {
-            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(GoToNodeSourceAction.class.getName()).log(Level.INFO, null, ex);
         }
     }
 
     @Override
     protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
-            Element element = activatedNodes[0].getLookup().lookup(Element.class);
-            if (element == null) {
+            org.netbeans.modules.web.webkit.debugging.api.dom.Node node = activatedNodes[0]
+                    .getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+            if (node == null) {
                 return false;
             }
-            String uri = element.getOwnerDocument().getDocumentURI();
-            if (uri == null || !uri.startsWith("file://")) { // NOI18N
+            String documentURL = getDocumentURL(node);
+            if (documentURL == null || !documentURL.startsWith("file://")) { // NOI18N
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Returns URL of a document the specified node belongs to.
+     *
+     * @param node node form the document in question.
+     * @return URL of a document the specified node belongs to.
+     */
+    private String getDocumentURL(org.netbeans.modules.web.webkit.debugging.api.dom.Node node) {
+        String documentURL = node.getDocumentURL();
+        org.netbeans.modules.web.webkit.debugging.api.dom.Node parent = node.getParent();
+        while ((documentURL == null) && (parent != null) && (parent.getContentDocument() == null)) {
+            node = parent;
+            documentURL = node.getDocumentURL();
+            parent = node.getParent();
+        }
+        return documentURL;
     }
 
     @Override
@@ -117,7 +132,7 @@ public class GoToElementSourceAction extends NodeAction  {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(GoToElementSourceAction.class, "GoToElementSourceAction.name"); // NOI18N
+        return NbBundle.getMessage(GoToNodeSourceAction.class, "GoToNodeSourceAction.name"); // NOI18N
     }
 
     @Override
@@ -126,23 +141,23 @@ public class GoToElementSourceAction extends NodeAction  {
     }
 
     /**
-     * Task that jumps on the source tag of the specified element
-     * in the document in the given file.
+     * Task that jumps to the source of the specified node in the document
+     * in the given file.
      */
-    static class GoToElementTask extends UserTask {
-        /** Element to jump to. */
-        private ElementHandle element;
+    static class GoToNodeTask extends UserTask {
+        /** Node to jump to. */
+        private org.netbeans.modules.web.webkit.debugging.api.dom.Node node;
         /** File to jump into. */
         private FileObject fob;
 
         /**
-         * Creates a new {@code GoToElementTask} for the specified file and element.
-         * 
-         * @param element element to jump to.
+         * Creates a new {@code GoToNodeTask} for the specified file and node.
+         *
+         * @param node node to jump to.
          * @param fob file to jump into.
          */
-        GoToElementTask(ElementHandle element, FileObject fob) {
-            this.element = element;
+        GoToNodeTask(org.netbeans.modules.web.webkit.debugging.api.dom.Node node, FileObject fob) {
+            this.node = node;
             this.fob = fob;
         }
 
@@ -150,16 +165,8 @@ public class GoToElementSourceAction extends NodeAction  {
         public void run(ResultIterator resultIterator) throws Exception {
             HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
             Node root = result.root();
-            Node[] searchResult = element.locateInAst(root);
-            Node node = searchResult[0];
-            if (node == null) {
-                // Exact match not found, use the nearest node
-                node = searchResult[1];
-            }
-            while (ElementUtils.isVirtualNode(node)) {
-                node = node.parent();
-            }
-            final Node nodeToShow = node;
+            // PENDING
+            final Node nodeToShow = root;
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {

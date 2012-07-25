@@ -46,10 +46,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import javax.swing.Action;
+import org.netbeans.modules.web.inspect.webkit.actions.GoToNodeSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -194,6 +197,18 @@ public class DOMNode extends AbstractNode {
     @Override
     public String toString() {
         return super.toString() + "[nodeId=" + getNode().getNodeId() + "]"; // NOI18N
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[] {
+            SystemAction.get(GoToNodeSourceAction.class)
+        };
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return SystemAction.get(GoToNodeSourceAction.class);
     }
 
     /**

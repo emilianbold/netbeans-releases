@@ -54,11 +54,6 @@ class ModelAttribute {
     private static final ModelAttribute PREFFERED = new ModelAttribute(NAME);
 
     ModelAttribute(String name){
-        this(false,name);
-    }
-    
-    ModelAttribute(boolean id , String name){
-        isId = id;
         myName = name;
     }
     
@@ -88,15 +83,10 @@ class ModelAttribute {
         return myName;
     }
     
-    boolean isId(){
-        return isId;
-    }
-    
     static ModelAttribute getPreffered(){
         return PREFFERED;
     }
     
-    private boolean isId;
     private String myName;
 
 }

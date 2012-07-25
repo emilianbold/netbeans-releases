@@ -46,7 +46,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.web.inspect.actions.GoToElementSourceAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -354,34 +353,6 @@ public class CSSUtils {
     }
 
     /**
-     * Returns selector for the specified element. The selector contains
-     * the ID, classes and tag name (optionally).
-     * 
-     * @param element element whose selector should be returned.
-     * @param includeTagName determines whether the tag name should be included.
-     * @return selector for the specified element.
-     */
-    public static String selectorFor(ElementHandle element, boolean includeTagName) {
-        StringBuilder sb = new StringBuilder();
-        if (includeTagName) {
-            sb.append(element.getTagName());
-        }
-        String id = element.getID();
-        if (id != null) {
-            sb.append('#').append(id);
-        }
-        String className = element.getClassName();
-        if (className != null && !className.trim().isEmpty()) {
-            StringTokenizer st = new StringTokenizer(className, " \t\n\r\f,"); // NOI18N
-            while (st.hasMoreTokens()) {
-                String clazz = st.nextToken();
-                sb.append('.').append(clazz);
-            }
-        }
-        return sb.toString();
-    }
-
-    /**
      * Opens the specified file at the given offset. This method has been
      * copied (with minor modifications) from UiUtils class in csl.api module.
      * This method is not CSS-specific. It was placed into this file just
@@ -406,8 +377,8 @@ public class CSSUtils {
                     doc = ec.openDocument();
                 } catch (UserQuestionException uqe) {
                     String title = NbBundle.getMessage(
-                            GoToElementSourceAction.class,
-                            "GoToElementSourceAction.question"); // NOI18N
+                            CSSUtils.class,
+                            "CSSUtils.openQuestion"); // NOI18N
                     Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
                             uqe.getLocalizedMessage(),
                             title,
@@ -438,7 +409,7 @@ public class CSSUtils {
                 return true;
             }
         } catch (IOException ioe) {
-            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ioe);
+            Logger.getLogger(CSSUtils.class.getName()).log(Level.INFO, null, ioe);
         }
 
         return false;
