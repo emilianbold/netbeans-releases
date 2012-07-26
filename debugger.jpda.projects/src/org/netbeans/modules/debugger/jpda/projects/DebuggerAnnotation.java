@@ -153,11 +153,13 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
             try {
                 DataObject dobj = DataObject.find(fo);
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                doc = ec.getDocument();
-                if (doc == null) {
-                    try {
-                        doc = ec.openDocument();
-                    } catch (java.io.IOException ioex) {}
+                if (ec != null) {
+                    doc = ec.getDocument();
+                    if (doc == null) {
+                        try {
+                            doc = ec.openDocument();
+                        } catch (java.io.IOException ioex) {}
+                    }
                 }
             } catch (DataObjectNotFoundException ex) {
             }
