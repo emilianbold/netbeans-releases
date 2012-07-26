@@ -50,7 +50,7 @@ import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudUrl;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.openide.util.NbBundle;
 import static org.openide.util.NbBundle.getMessage;
 
@@ -460,7 +460,8 @@ public class GlassFishCloudWizardCpasComponent
                     GlassFishServerEntity localServer;
                     try {
                         localServer = new GlassFishServerEntity(
-                                getLocalServer(), GlassFishCloudUrl.url(
+                                getDisplayName(), getLocalServer(),
+                                GlassFishUrl.url(
                                 GlassFishCloudInstance.URL_PREFIX,
                                 getDisplayName()));
                     } catch (DataException de) {

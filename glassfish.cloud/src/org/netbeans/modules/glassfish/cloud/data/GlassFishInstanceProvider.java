@@ -41,91 +41,85 @@
  */
 package org.netbeans.modules.glassfish.cloud.data;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.spi.server.ServerInstanceProvider;
+import org.openide.util.ChangeSupport;
 
 /**
- *
- * @author kratz
+ * GlassFish Abstract Instances Provider.
+ * <p/>
+ * common code to handle all registered GlassFish cloud or server instances.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudUrl {
+public abstract class GlassFishInstanceProvider
+        implements ServerInstanceProvider {
     
     ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
+    // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
-    /** URL components separator. */
-    public static final char URL_SEPARATOR = ':';
+    /** Stored NEtBeans server instances. */
+    List<ServerInstance> serverInstances;
 
-    /** URL escape character. */
-    public static final char URL_ESCAPE='\\';
+    /** Change listeners. */
+    ChangeSupport changeListeners;
 
-    /** Set of characters to escape. */
-    private static final Set<Character> escape = new HashSet<Character>(4);
-    static {
-        escape.add(URL_SEPARATOR);
-        escape.add(URL_ESCAPE);
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    GlassFishInstanceProvider() {
+        changeListeners = new ChangeSupport(this);
+        serverInstances = new LinkedList<ServerInstance>();
     }
-
     ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
+    // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Count length of escaped <code>String</code>.
+     * Returns list of known cloud instances.
      * <p/>
-     * @param str Not yet escaped <code>String</code> used to count length.
-     * @return Length of the <code>String</code> when escaped.
-     */
-    private static int escapedLength(String str) {
-        int escapedLength = 0;
-        if (str != null) {
-            int strLen = str.length();
-            for (int i = 0; i < strLen; i++) {
-                escapedLength += escape.contains(str.charAt(i)) ? 2 : 1;
-            }
-        }
-        return escapedLength;
-    }
-
-    /**
-     * Add escaped <code>String</code> into given <code>StringBuffer</code>.
+     * Will return copy of internal <code>ServerInstance<code>
+     * <code>List</code>. Any changes made to returned <code>List</code>
+     * will not affect content of this provider.
      * <p/>
-     * @param sb  Target <code>StringBuffer</code> where to add escaped
-     *            <code>String</code>.
-     * @param str <code>String</code> to be escaped and added into
-     *            <code>StringBuffer</code>.
+     * @return <code>List</code> of known cloud instances.
      */
-    private static void addEscaped(StringBuilder sb, String str) {
-        if (sb != null && str != null) {
-            int strLen = str.length();
-            for (int i = 0; i < strLen; i++) {
-                if (escape.contains(str.charAt(i))) {
-                    sb.append(URL_ESCAPE);
-                }
-                sb.append(str.charAt(i));
-            }
-        }
+    @Override
+    public synchronized List<ServerInstance> getInstances() {
+        return new ArrayList<ServerInstance>(serverInstances);
     }
 
     /**
-     * Build URL string.
-     * <p>
-     * URL is matching following grammar:<>
-     * <ul>
-     * <li>URL :: &lt;identifier&gt; &lt;separator&gt; &lt;name&gt;</li>
-     * <li>&lt;identifier&gt; :: {@see GlassFishCloudInstance.URL_PREFIX}
-     * | {@see GlassFishAccountInstance.URL_PREFIX}</li>
-     * 
-     * </ul></p>
+     * Adds a change listener to this provider.
+     * <p/>
+     * The listener must be notified any time instance is added or removed.
+     * <p/>
+     * @param listener Change listener to add, <code>null</code> is allowed 
+     *                 (but it si no op then).
      */
-    public static String url(String prefix, String name) {        
-        StringBuilder sb = new StringBuilder(escapedLength(prefix)
-                + 1 + escapedLength(name));
-        addEscaped(sb, prefix);
-        sb.append(URL_SEPARATOR);
-        addEscaped(sb, name);
-        return sb.toString();
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        changeListeners.addChangeListener(listener);
     }
-    
+
+    /**
+     * Removes the previously added listener.
+     * <p/>
+     * No more events will be fired on the removed listener.
+     * <p/>
+     * @param listener Listener to remove, <code>null</code> is allowed
+     *                 (but it si no op then).
+     */
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        changeListeners.removeChangeListener(listener);
+    }
+
 }

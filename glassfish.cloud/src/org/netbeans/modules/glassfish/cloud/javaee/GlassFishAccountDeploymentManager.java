@@ -57,8 +57,8 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
 /**
- * Deployment manager for GlassFish local glassFish server registered
- * with cloud.
+ * Deployment manager for GlassFish remote or local GlassFish server with
+ * user account on cloud.
  * <p/>
  * Provides the core set of functions a Java EE platform must provide for
  * Java EE application deployment. It provides server related information,
@@ -69,7 +69,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudDeploymentManager
+public class GlassFishAccountDeploymentManager
         extends GlassFishDeploymentManager {
 
     /**

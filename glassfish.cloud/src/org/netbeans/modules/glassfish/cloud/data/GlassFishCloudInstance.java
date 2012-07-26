@@ -88,7 +88,7 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     public static final String PROPERTY_LOCAL_SERVER = "localServer";
 
     /** GlassFish cloud instance local URL_PREFIXserver URL prefix. */
-    public static final String URL_PREFIX = "gfcl";
+    public static final String URL_PREFIX = GlassFishUrl.Id.LOCAL.toString();
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -274,8 +274,8 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
                     new Object[]{name, host, port});
             GlassFishServerEntity localServer;
             try {
-                localServer = new GlassFishServerEntity(localServerHome,
-                        GlassFishCloudUrl.url(GlassFishCloudInstance.URL_PREFIX,
+                localServer = new GlassFishServerEntity(name, localServerHome,
+                        GlassFishUrl.url(GlassFishCloudInstance.URL_PREFIX,
                         name));
             } catch (DataException de) {
                 localServer = null;

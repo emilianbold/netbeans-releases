@@ -91,7 +91,7 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     public static final String PROPERTY_CLOUD_NAME="cloudName";
 
     /** GlassFish cloud user account URL prefix. */
-    public static final String URL_PREFIX = "gfcr";
+    public static final String URL_PREFIX = GlassFishUrl.Id.CLOUD.toString();
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -142,7 +142,9 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     @SuppressWarnings("LeakingThisInConstructor")
     public GlassFishAccountInstance(String name, String account, String userName,
             String userPassword, GlassFishCloud cloudEntity) {
-        super(name, account, userName, userPassword, cloudEntity);
+        super(name, GlassFishUrl.url(
+                GlassFishAccountInstance.URL_PREFIX, name),
+                account, userName, userPassword, cloudEntity);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);
