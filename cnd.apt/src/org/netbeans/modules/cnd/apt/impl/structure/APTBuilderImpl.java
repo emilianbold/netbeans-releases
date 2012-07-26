@@ -161,15 +161,17 @@ public final class APTBuilderImpl {
         Pair root = new Pair(aptFile);
         APTToken nextToken = (APTToken) stream.nextToken();
         while (!APTUtils.isEOF(nextToken)) {
-            APTBaseNode activeNode = createNode(nextToken);
-            if (activeNode.getType() == APT.Type.ENDIF) {
+            if (nextToken.getType() == APTTokenTypes.ENDIF) {
                 // check top level #endif as end of guard section
                 if (nodeStack.size() == 1) {
                     assert nodeStack.getLast().active == aptFile:  " " + aptFile;
-                    guardDetector.onTopLevelEndif(activeNode);
+                    guardDetector.onTopLevelEndif(nextToken.getType());
                 }
             }
-            nextToken = initNode(aptFile, activeNode, (APTToken) stream.nextToken(), stream);
+            APTNodeBuilder builder = createNodeBuilder(nextToken);
+            nextToken = initNode(aptFile, builder, (APTToken) stream.nextToken(), stream);
+            APTBaseNode activeNode = builder.getNode();
+            
             if (APTUtils.isEndConditionNode(activeNode.getType())) {
                 if (!nodeStack.isEmpty()) {
                     root = nodeStack.removeLast();
@@ -203,8 +205,8 @@ public final class APTBuilderImpl {
         return nextToken;
     }
     
-    private APTToken initNode(APTFileNode aptFile, APT node, APTToken nextToken, TokenStream stream) throws TokenStreamException {
-        while (!APTUtils.isEOF(nextToken) && node.accept(aptFile, nextToken)) {
+    private APTToken initNode(APTFileNode aptFile, APTNodeBuilder builder, APTToken nextToken, TokenStream stream) throws TokenStreamException {
+        while (!APTUtils.isEOF(nextToken) && builder.accept(aptFile, nextToken)) {
             nextToken = (APTToken) stream.nextToken();
         }   
         if (APTUtils.isEndDirectiveToken(nextToken.getType())) {
@@ -214,58 +216,42 @@ public final class APTBuilderImpl {
         return nextToken;
     }
     
-    private APTBaseNode createNode(APTToken token) {
+    private APTNodeBuilder createNodeBuilder(APTToken token) {
         assert (!APTUtils.isEOF(token));
         int ttype = token.getType();
-        APTBaseNode newNode;
         switch (ttype) {
             case APTTokenTypes.IF:
-                newNode = new APTIfNode(token);
-                break;
+                return new APTIfNode(token);
             case APTTokenTypes.IFDEF:
-                newNode = new APTIfdefNode(token);
-                break;
+                return new APTIfdefNode(token);
             case APTTokenTypes.IFNDEF:
-                newNode = new APTIfndefNode(token);
-                break;
+                return new APTIfndefNode(token);
             case APTTokenTypes.INCLUDE:
-                newNode = new APTIncludeNode(token);
-                break;
+                return new APTIncludeNode(token);
             case APTTokenTypes.INCLUDE_NEXT:
-                newNode = new APTIncludeNextNode(token);
-                break;                
+                return new APTIncludeNextNode(token);
             case APTTokenTypes.ELIF:
-                newNode = new APTElifNode(token);
-                break;
+                return new APTElifNode(token);
             case APTTokenTypes.ELSE:
-                newNode = new APTElseNode(token);
-                break;
+                return new APTElseNode(token);
             case APTTokenTypes.ENDIF:
-                newNode = new APTEndifNode(token);
-                break;
+                return new APTEndifNode(token);
             case APTTokenTypes.DEFINE:
-                newNode = new APTDefineNode(token);
-                break;
+                return new APTDefineNode.Builder(token);
             case APTTokenTypes.UNDEF:
-                newNode = new APTUndefineNode(token);
-                break;
+                return new APTUndefineNode(token);
             case APTTokenTypes.ERROR:
-		newNode = new APTErrorNode(token);
-		break;
+		return new APTErrorNode(token);
             case APTTokenTypes.PRAGMA:
-                newNode = new APTPragmaNode(token);
-                break;
+                return new APTPragmaNode(token);
             case APTTokenTypes.LINE:
             case APTTokenTypes.PREPROC_DIRECTIVE:                
-                newNode = new APTUnknownNode(token);
-                break;
+                return new APTUnknownNode(token);
             default:
                 assert (!APTUtils.isPreprocessorToken(ttype)) : 
                     "all preprocessor tokens should be handled above"; // NOI18N
-                newNode = new APTStreamNode(token);            
+                return new APTStreamNode(token);            
         }        
-        assert (newNode != null);
-        return newNode;
     }    
 
     public static APT createLightCopy(APT apt) {
@@ -440,7 +426,7 @@ public final class APTBuilderImpl {
             }
         }
 
-        public void onTopLevelEndif(APT apt) {
+        void onTopLevelEndif(int type) {
             assert !attached || state == State.IFNDEF_GUARD_DETECTED: "can not be attached in state " + state + " " + aptFile;
             switch (state) {
                 case INVALID:
@@ -452,7 +438,7 @@ public final class APTBuilderImpl {
                 case IFNDEF_GUARD_DETECTED:
                 {
                     // we expect closing top level #endif
-                    assert apt.getType() == APT.Type.ENDIF : " " + aptFile;
+                    assert type == APTTokenTypes.ENDIF : " " + aptFile;
                     state = State.IN_GUARD_ENDIF;
                     // attach back to lexer
                     attachLexerCallback();

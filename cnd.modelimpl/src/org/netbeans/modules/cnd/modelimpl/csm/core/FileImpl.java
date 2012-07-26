@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.CXXParserEmptyActionImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
@@ -101,6 +102,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
+import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -154,6 +156,8 @@ public final class FileImpl implements CsmFile,
     public static final int HEADER_FILE = 4;
     private static volatile AtomicLong parseCount = new AtomicLong(1);
 
+    private Collection<ParserError> parsingErrors;
+    
     public static void incParseCount() {
         parseCount.incrementAndGet();
     }
@@ -234,6 +238,8 @@ public final class FileImpl implements CsmFile,
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
 
+    private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
+
     private long lastParsed = Long.MIN_VALUE;
     /** Cache the hash code */
     private int hash = 0; // Default to 0
@@ -250,6 +256,7 @@ public final class FileImpl implements CsmFile,
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
         this.projectUID = UIDCsmConverter.projectToUID(project);
+        assert (projectUID instanceof KeyBasedUID); // this fact is used in write() and getInitId()
         this.fileBuffer = fileBuffer;
         
         hasBrokenIncludes = new AtomicBoolean(false);
@@ -903,6 +910,7 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public void dispose() {
+        disposed = true;
         onDispose();
         Notificator.instance().registerRemovedFile(this);
         disposeAll(true);
@@ -1295,10 +1303,10 @@ public final class FileImpl implements CsmFile,
             
             if (tokenStream != null) {
                 if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
-                    CsmParser parser = CsmParserProvider.createParser(this);
-                    parser.init(null, tokenStream, null);
-                    parser.setErrorDelegate(delegate);
-                    parser.parse(CsmParser.ConstructionKind.TRANSLATION_UNIT);
+                    CsmProject project = getProject();
+                    if(parsingErrors != null) {
+                        result.addAll(parsingErrors);
+                    }
                     return new ParserBasedTokenBuffer(null);
                 } else {
                     CPPParserEx parser = CPPParserEx.getInstance(this, tokenStream, flags);
@@ -1376,6 +1384,20 @@ public final class FileImpl implements CsmFile,
             assert parser != null : "no parser for " + this;
 
             parser.init(this, filteredTokenStream, parseParams.callback);
+            if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
+                if(parsingErrors == null) {
+                    parsingErrors = new ArrayList<ParserError>();
+                }
+                parsingErrors.clear();
+                CsmParserProvider.ParserErrorDelegate delegate = new CsmParserProvider.ParserErrorDelegate() {
+                    @Override
+                    public void onError(ParserError e) {
+                        parsingErrors.add(e);
+                    }
+                };
+                parser.setErrorDelegate(delegate);
+            }
+            
             parseResult = parser.parse(parseParams.lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
@@ -1648,6 +1670,9 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public boolean isValid() {
+        if (disposed) {
+            return false;
+        }
         CsmProject project = _getProject(false);
         return project != null && project.isValid();
     }
@@ -1867,6 +1892,10 @@ public final class FileImpl implements CsmFile,
     }
     private CsmUID<CsmFile> uid = null;
 
+    private int getUnitId() {
+        return ((KeyBasedUID)projectUID).getKey().getUnitId();
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent
     @Override
@@ -1877,8 +1906,7 @@ public final class FileImpl implements CsmFile,
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(this) + " of prjUID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
-        PersistentUtils.writeBuffer(this.fileBuffer, output);
-
+        PersistentUtils.writeBuffer(this.fileBuffer, output, getUnitId());
         output.writeBoolean(hasBrokenIncludes.get());
         currentFileContent.write(output);
 
@@ -1910,7 +1938,7 @@ public final class FileImpl implements CsmFile,
         assert this.projectUID != null;
         this.projectRef = null;
 
-        this.fileBuffer = PersistentUtils.readBuffer(input);
+        this.fileBuffer = PersistentUtils.readBuffer(input, getUnitId());
 
         hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
         currentFileContent = new FileContent(this, this._getProject(false), input);

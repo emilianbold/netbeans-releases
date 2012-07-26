@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
@@ -55,6 +56,32 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     public static int DECL_SPECIFIER__LITERAL_FRIEND = 2;
     public static int DECL_SPECIFIER__LITERAL_TYPEDEF = 3;
     public static int DECL_SPECIFIER__TYPE_SPECIFIER = 4;
+    public static int DECL_SPECIFIER__LITERAL_CONSTEXPR = 5;
+
+    public static int SIMPLE_TEMPLATE_ID__TEMPLATE_ARGUMENT_LIST = 0;
+    public static int SIMPLE_TEMPLATE_ID__END_TEMPLATE_ARGUMENT_LIST = 1;
+    
+    public static int SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST = 0;
+    public static int SIMPLE_TEMPLATE_ID_OR_IDENT__END_TEMPLATE_ARGUMENT_LIST = 1;
+
+    public static int SIMPLE_TEMPLATE_ID_NOCHECK__TEMPLATE_ARGUMENT_LIST = 0;
+    public static int SIMPLE_TEMPLATE_ID_NOCHECK__END_TEMPLATE_ARGUMENT_LIST = 1;
+    
+    public static int TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST = 0;
+    public static int TEMPLATE_DECLARATION__END_TEMPLATE_ARGUMENT_LIST = 1;
+    
+    public static int TYPE_PARAMETER__CLASS = 0;
+    public static int TYPE_PARAMETER__CLASS_ASSIGNEQUAL = 1;
+    public static int TYPE_PARAMETER__TYPENAME = 2;
+    public static int TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL = 3;
+    
+    
+    
+    boolean type_specifier_already_present(TokenStream input);
+    
+    boolean identifier_is(int kind, Token token);
+    
+    boolean top_level_of_template_arguments();
     
     void enum_declaration(Token token);
     void enum_strongly_typed(Token token);
@@ -87,12 +114,35 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     
     void simple_type_specifier(Token token);
     void nested_name_specifier(Token token);
-    void simple_template_id_nocheck(Token token);
-    void simple_template_id(Token token);
     
     void id(Token token);
     
     void simple_type_id(Token token);
     
     boolean isType(String name);
+    
+
+    void simple_template_id(Token token);
+    void simple_template_id(int kind, Token token);
+    
+    void simple_template_id_or_ident(Token token);
+    void simple_template_id_or_ident(int kind, Token token);
+
+    void simple_template_id_nocheck(Token token);
+    void simple_template_id_nocheck(int kind, Token token);
+    
+    void template_declaration(int kind, Token token);
+    
+    void type_parameter(int kind, Token token, Token token2, Token token3);
+    
+    void elaborated_type_specifier(Token token);
+    
+    void using_declaration(Token token);
+    
+    void parameter_declaration_list();
+    void end_parameter_declaration_list();
+    
+    void decl_specifiers();
+    void end_decl_specifiers();
+    
 }

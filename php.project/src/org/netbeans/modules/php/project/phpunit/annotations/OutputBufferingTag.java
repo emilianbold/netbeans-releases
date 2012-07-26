@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.project.phpunit.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class OutputBufferingTag extends PhpAnnotationTag {
+public class OutputBufferingTag extends AnnotationCompletionTag {
 
     public OutputBufferingTag() {
         super("outputBuffering", // NOI18N

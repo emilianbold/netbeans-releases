@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public abstract class APTStreamBaseNode extends APTTokenBasedNode
-                                        implements Serializable {
+                                        implements APTNodeBuilder, Serializable {
     private static final long serialVersionUID = -1498074871896804293L;
     private List<APTToken> tokens;
     
@@ -129,6 +129,11 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
             assert(false);
         }
         return retValue.append('}').toString(); // NOI18N
+    }
+    
+    @Override
+    public APTBaseNode getNode() {
+        return this;
     }
     
     ////////////////////////////////////////////////////////////////////////////

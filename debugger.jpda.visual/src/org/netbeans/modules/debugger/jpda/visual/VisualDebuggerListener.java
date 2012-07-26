@@ -130,7 +130,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
     private static final String PROPERTIES_TCC = "TrackComponentChanges";  // NOI18N
     private static final String PROPERTIES_UPLOAD_AGENT = "UploadAgent";  // NOI18N
     
-    private Collection<Breakpoint> trackComponentBreakpoints = new ArrayList<Breakpoint>();
+    private Collection<Breakpoint> helperComponentBreakpoints = new ArrayList<Breakpoint>();
     private final Properties properties;
     private volatile Boolean isTrackComponentChanges = null;
     
@@ -206,6 +206,8 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             });
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[0]);
             DebuggerManager.getDebuggerManager().addBreakpoint(mb[1]);
+            helperComponentBreakpoints.add(mb[0]);
+            helperComponentBreakpoints.add(mb[1]);
         }
         if (debugger != null) {
             boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
@@ -222,7 +224,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                         }
                     });
                     DebuggerManager.getDebuggerManager().addBreakpoint(cmb);
-                    trackComponentBreakpoints.add(cmb);
+                    helperComponentBreakpoints.add(cmb);
                 }
                 
                 MethodBreakpoint mb = MethodBreakpoint.create("javafx.scene.Node", "setParent");
@@ -235,7 +237,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                     }
                 });
                 DebuggerManager.getDebuggerManager().addBreakpoint(mb);
-                trackComponentBreakpoints.add(mb);
+                helperComponentBreakpoints.add(mb);
             }
             
         }
@@ -334,8 +336,8 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
         if (debugger != null) {
             stopDebuggerRemoteService(debugger);
         }
-        if (!trackComponentBreakpoints.isEmpty()) {
-            Iterator<Breakpoint> it = trackComponentBreakpoints.iterator();
+        if (!helperComponentBreakpoints.isEmpty()) {
+            Iterator<Breakpoint> it = helperComponentBreakpoints.iterator();
             while (it.hasNext()) {
                 DebuggerManager.getDebuggerManager().removeBreakpoint(it.next());
                 it.remove();

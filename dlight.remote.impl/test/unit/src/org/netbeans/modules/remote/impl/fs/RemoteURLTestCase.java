@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import junit.framework.Test;
@@ -194,6 +195,43 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
         }
     }
 
+    @ForAllEnvironments
+    public void testUrlForPathWithASharp() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        String remoteBaseDir = null;
+        try {
+            remoteBaseDir = mkTempAndRefreshParent(true);
+            FileObject remoteBaseDirFO = getFileObject(remoteBaseDir);
+            FileObject fo = remoteBaseDirFO.createData("path#with#a#sharp");
+            assertNotNull(fo);
+            URL url = fo.toURL();
+            URI uri = fo.toURI();
+            FileObject fo2 = URLMapper.findFileObject(url);
+            assertEquals("File objects should be equal", fo, fo2);
+            //assertTrue("File objects should be the same instance: " + fo + " and " + fo2, fo == fo2);
+        } finally {
+            removeRemoteDirIfNotNull(remoteBaseDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testUrlForPathWithASpace() throws Exception {
+        ExecutionEnvironment env = getTestExecutionEnvironment();
+        String remoteBaseDir = null;
+        try {
+            remoteBaseDir = mkTempAndRefreshParent(true);
+            FileObject remoteBaseDirFO = getFileObject(remoteBaseDir);
+            FileObject fo = remoteBaseDirFO.createData("path with a space");
+            assertNotNull(fo);
+            URL url = fo.toURL();
+            URI uri = fo.toURI();
+            FileObject fo2 = URLMapper.findFileObject(url);
+            assertEquals("File objects should be equal", fo, fo2);
+            //assertTrue("File objects should be the same instance: " + fo + " and " + fo2, fo == fo2);
+        } finally {
+            removeRemoteDirIfNotNull(remoteBaseDir);
+        }
+    }
 
 //    @ForAllEnvironments
 //    public void testNewFile() throws Exception {

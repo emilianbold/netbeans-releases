@@ -555,7 +555,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             EditorCookie.Observable observableEditorCookie = null;
             File baseFile = setups[currentModelIndex].getBaseFile();
             if (baseFile != null) {
-                fileObj = FileUtil.toFileObject(baseFile);
+                fileObj = FileUtil.toFileObject(FileUtil.normalizeFile(baseFile));
             }
             TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
             if (tc != null) {

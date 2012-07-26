@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,6 +88,16 @@ import org.openide.util.Utilities;
 public class DiscoveryProjectGeneratorImpl {
     private static boolean DEBUG = Boolean.getBoolean("cnd.discovery.trace.project_update"); // NOI18N
     private static boolean TRUNCATE_BEGINNING_PATH = true;
+    
+    /**
+     * Old IDE behavior is random user include paths after consolidation.
+     * Since 7.3 consolidation preserve paths order.
+     * It can enlarge project's metadata. To forbid preserving use flag:
+     * <pre>
+     * -J-Dcnd.discovery.can_violate_paths_order=true
+     * </pre>
+     */
+    private static boolean VIOLATE_PATHS_ORDER = Boolean.getBoolean("cnd.discovery.can_violate_paths_order"); // NOI18N
     private ProjectBridge projectBridge;
     private DiscoveryDescriptor wizard;
     private String baseFolder;
@@ -446,7 +457,7 @@ public class DiscoveryProjectGeneratorImpl {
     }
 
     private boolean upConfiguration(Folder folder, ItemProperties.LanguageKind lang) {
-        Set<String> commonFoldersIncludes = new HashSet<String>();
+        Set<String> commonFoldersIncludes = new LinkedHashSet<String>();
         MacroMap commonFolderMacroMap = new MacroMap();
         Set<String> commonFoldersUndefs = new HashSet<String>();
         boolean haveSubFolders = false;
@@ -466,7 +477,29 @@ public class DiscoveryProjectGeneratorImpl {
                 if (commonFoldersIncludes.size() > 0) {
                     CCCCompilerConfiguration cccc = projectBridge.getFolderConfiguration(lang, subFolder);
                     if (cccc != null) {
-                        commonFoldersIncludes.retainAll(cccc.getIncludeDirectories().getValue());
+                        if (VIOLATE_PATHS_ORDER) {
+                            commonFoldersIncludes.retainAll(cccc.getIncludeDirectories().getValue());
+                        } else {
+                            List<String> itemPaths = cccc.getIncludeDirectories().getValue();
+                            int min = Math.min(commonFoldersIncludes.size(), itemPaths.size());
+                            Iterator<String> it1 = commonFoldersIncludes.iterator();
+                            Iterator<String> it2 = itemPaths.iterator();
+                            int last = min;
+                            for(int i = 0; i < min; i++) {
+                                String next1 = it1.next();
+                                String next2 = it2.next();
+                                if (!next1.equals(next2)) {
+                                    last = i;
+                                    break;
+                                }
+                            }
+                            commonFoldersIncludes = new LinkedHashSet<String>();
+                            if (last > 0) {
+                                for(int i = 0; i < last; i++) {
+                                    commonFoldersIncludes.add(itemPaths.get(i));
+                                }
+                            }
+                        }
                     }
                 }
                 if (commonFolderMacroMap.size() > 0) {
@@ -483,12 +516,12 @@ public class DiscoveryProjectGeneratorImpl {
                 }
             }
         }
-        Set<String> commonFilesIncludes = new HashSet<String>();
+        Set<String> commonFilesIncludes = new LinkedHashSet<String>();
         MacroMap commonFilesMacroMap  = new MacroMap();
         Set<String> commonFilesUndefs = new HashSet<String>();
         boolean first = true;
         if (haveSubFolders) {
-            commonFilesIncludes = new HashSet<String>(commonFoldersIncludes);
+            commonFilesIncludes = new LinkedHashSet<String>(commonFoldersIncludes);
             commonFilesMacroMap = new MacroMap(commonFolderMacroMap);
             commonFilesUndefs = new HashSet<String>(commonFoldersUndefs);
             first = false;
@@ -516,7 +549,29 @@ public class DiscoveryProjectGeneratorImpl {
                 first = false;
             } else {
                 if (commonFilesIncludes.size() > 0) {
-                    commonFilesIncludes.retainAll(cccc.getIncludeDirectories().getValue());
+                    if (VIOLATE_PATHS_ORDER) {
+                        commonFilesIncludes.retainAll(cccc.getIncludeDirectories().getValue());
+                    } else {
+                        List<String> itemPaths = cccc.getIncludeDirectories().getValue();
+                        int min = Math.min(commonFilesIncludes.size(), itemPaths.size());
+                        Iterator<String> it1 = commonFilesIncludes.iterator();
+                        Iterator<String> it2 = itemPaths.iterator();
+                        int last = min;
+                        for(int i = 0; i < min; i++) {
+                            String next1 = it1.next();
+                            String next2 = it2.next();
+                            if (!next1.equals(next2)) {
+                                last = i;
+                                break;
+                            }
+                        }
+                        commonFilesIncludes = new LinkedHashSet<String>();
+                        if (last > 0) {
+                            for(int i = 0; i < last; i++) {
+                                commonFilesIncludes.add(itemPaths.get(i));
+                            }
+                        }
+                    }
                 }
                 if (commonFilesMacroMap.size() > 0) {
                     commonFilesMacroMap.retainAll(cccc.getPreprocessorConfiguration().getValue());
@@ -822,7 +877,7 @@ public class DiscoveryProjectGeneratorImpl {
     private void setupFile(FileConfiguration config, Item item, ItemProperties.LanguageKind lang) {
         ProjectBridge.setSourceTool(item,lang, config.getLanguageStandard(), wizard.isIncrementalMode());
         if (ConsolidationStrategy.FILE_LEVEL.equals(level)){ // NOI18N
-            Set<String> set = new HashSet<String>();
+            LinkedHashSet<String> set = new LinkedHashSet<String>();
             Map<String,String> macros = new HashMap<String,String>();
             reConsolidatePaths(set, config);
             macros.putAll(config.getUserMacros());
@@ -839,20 +894,6 @@ public class DiscoveryProjectGeneratorImpl {
 
     private void reConsolidatePaths(Set<String> set, FileConfiguration file){
         projectBridge.convertIncludePaths(set, file.getUserInludePaths(), file.getCompilePath(), file.getFilePath());
-    }
-
-    private boolean isDifferentCompilePath(String name, String path){
-        if (Utilities.isWindows()) {
-            name = name.replace('\\', '/'); // NOI18N
-        }
-        int i = name.lastIndexOf('/'); // NOI18N
-        if (i > 0) {
-            name = name.substring(0,i);
-            if (!name.equals(path)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void createFolderStructure(List<ProjectConfiguration> projectConfigurations, Folder sourceRoot ){

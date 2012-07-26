@@ -78,7 +78,7 @@ public class ApiGenOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 458797646546L;
 
-    private static final String APIGEN_LAST_FOLDER_SUFFIX = ".ppw";
+    private static final String APIGEN_LAST_FOLDER_SUFFIX = ".apigen";
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 

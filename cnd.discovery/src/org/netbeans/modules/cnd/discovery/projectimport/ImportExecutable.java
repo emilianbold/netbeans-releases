@@ -66,12 +66,14 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
@@ -99,6 +101,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -297,6 +300,9 @@ public class ImportExecutable implements PropertyChangeListener {
                                     extension.apply(map, lastSelectedProject);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
                                     DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
+                                    if (createProjectMode) {
+                                        DiscoveryManagerImpl.writeDefaultVersionedConfigurations(lastSelectedProject);
+                                    }
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                         cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
                                                 DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
@@ -312,7 +318,37 @@ public class ImportExecutable implements PropertyChangeListener {
                     Position mainFunction = applicable.getMainFunction();
                     boolean open = true;
                     if (mainFunction != null) {
-                        FileObject toFileObject = CndFileUtils.toFileObject(mainFunction.getFilePath()); // should it be normalized?
+                        String mainFilePath = mainFunction.getFilePath();
+                        if (sourcesPath != null) {
+                            if (!mainFilePath.startsWith(sourcesPath)) {
+                                String mainFileName = CndPathUtilitities.getBaseName(mainFilePath);
+                                NativeProject np = lastSelectedProject.getLookup().lookup(NativeProject.class);
+                                List<NativeFileItem> items = new ArrayList<NativeFileItem>();
+                                if (np != null) {
+                                    for(NativeFileItem item : np.getAllFiles()) {
+                                        String itemPath = item.getAbsolutePath();
+                                        String name = CndPathUtilitities.getBaseName(itemPath);
+                                        if (name.equals(mainFileName)) {
+                                            items.add(item);
+                                        }
+                                    }
+                                }
+                                if (items.size() > 0) {
+                                    String bestCandidate = null;
+                                    int min = Integer.MAX_VALUE;
+                                    for(NativeFileItem item : items) {
+                                        String candidate = item.getAbsolutePath();
+                                        int end = commonEnd(mainFilePath, candidate);
+                                        if (end < min) {
+                                            bestCandidate = candidate;
+                                            min = end;
+                                        }
+                                    }
+                                    mainFilePath = bestCandidate;
+                                }
+                            }
+                        }
+                        FileObject toFileObject = CndFileUtils.toFileObject(mainFilePath); // should it be normalized?
                         if (toFileObject != null && toFileObject.isValid()) {
                             if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
                                 open = false;
@@ -329,6 +365,26 @@ public class ImportExecutable implements PropertyChangeListener {
             }
         };
         RP.post(run);
+    }
+    
+    private int commonEnd(String mainFilePath, String candidate) {
+        int len = mainFilePath.length() - 1;
+        for(int i = candidate.length()-1; i >= 0; i--) {
+            char c1 = candidate.charAt(i);
+            char c2 = mainFilePath.charAt(len);
+            if (c1 != c2) {
+                if ((c1 == '\\' || c1 == '/') && (c2 == '\\' || c2 == '/')) {
+                    // skip
+                } else {
+                    break;
+                }
+            }
+            len--;
+            if (len < 0) {
+                break;
+            }
+        }
+        return len;
     }
 
     private static void discoverScripts(Project project, String binary) {
@@ -561,6 +617,9 @@ public class ImportExecutable implements PropertyChangeListener {
                             }
                         }
                         DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
+                        if (createProjectMode) {
+                            DiscoveryManagerImpl.writeDefaultVersionedConfigurations(lastSelectedProject);
+                        }
                         if (cd != null) {
                             cd.create();
                         }

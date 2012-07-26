@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import org.antlr.runtime.TokenStream;
 import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 
@@ -57,6 +58,11 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
         files.push(file);
     }
 
+    @Override
+    public boolean type_specifier_already_present(TokenStream input) {        
+        return true;
+    }
+    
     @Override
     public void enum_declaration(Token token) {
     }
@@ -175,9 +181,17 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     }
 
     @Override
+    public void simple_template_id_nocheck(int kind, Token token) {
+    }
+    
+    @Override
     public void simple_template_id(Token token) {
     }
 
+    @Override
+    public void simple_template_id(int kind, Token token) {
+    }
+    
     @Override
     public void simple_declaration(Token token) {
     }
@@ -188,6 +202,56 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
 
     @Override
     public void decl_specifier(int kind, Token token) {
+    }
+
+    @Override
+    public void simple_template_id_or_ident(Token token) {
+    }
+
+    @Override
+    public void simple_template_id_or_ident(int kind, Token token) {
+    }
+
+    @Override
+    public void type_parameter(int kind, Token token, Token token2, Token token3) {
+    }
+    
+    @Override
+    public void elaborated_type_specifier(Token token) {
+    }    
+    
+    @Override
+    public void using_declaration(Token token) {
+    }
+    
+    @Override
+    public void parameter_declaration_list() {
+    }
+
+    @Override
+    public void end_parameter_declaration_list() {
+    }
+
+    @Override
+    public void decl_specifiers() {
+    }
+
+    @Override
+    public void end_decl_specifiers() {
+    }
+
+    @Override
+    public boolean identifier_is(int kind, Token token) {
+        return true;
+    }
+
+    @Override
+    public boolean top_level_of_template_arguments() {
+        return true;
+    }
+
+    @Override
+    public void template_declaration(int kind, Token token) {
     }
     
 }

@@ -269,8 +269,8 @@ public class SrcNode extends FilterNode {
         @Override
         public Image getIcon(int type) {
             FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
-            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(folder)
-                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(folder)) {
+            if (folder.equals(ProjectPropertiesSupport.getWebRootDirectory(project))
+                    && !folder.equals(ProjectPropertiesSupport.getSourcesDirectory(project))) {
                 return ImageUtilities.mergeImages(super.getIcon(type), WEB_ROOT_BADGE, 7, 7);
             }
             return super.getIcon(type);
@@ -279,8 +279,8 @@ public class SrcNode extends FilterNode {
         @Override
         public Image getOpenedIcon(int type) {
             FileObject folder = getOriginal().getLookup().lookup(FileObject.class);
-            if (ProjectPropertiesSupport.getWebRootDirectory(project).equals(folder)
-                    && !ProjectPropertiesSupport.getSourcesDirectory(project).equals(folder)) {
+            if (folder.equals(ProjectPropertiesSupport.getWebRootDirectory(project))
+                    && !folder.equals(ProjectPropertiesSupport.getSourcesDirectory(project))) {
                 return ImageUtilities.mergeImages(super.getOpenedIcon(type), WEB_ROOT_BADGE, 7, 7);
             }
             return super.getOpenedIcon(type);

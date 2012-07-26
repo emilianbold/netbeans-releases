@@ -44,7 +44,7 @@ package org.netbeans.modules.php.zend.ui.actions;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
-import org.netbeans.modules.php.spi.actions.GoToActionAction;
+import org.netbeans.modules.php.spi.framework.actions.GoToActionAction;
 import org.netbeans.modules.php.zend.util.ZendUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;

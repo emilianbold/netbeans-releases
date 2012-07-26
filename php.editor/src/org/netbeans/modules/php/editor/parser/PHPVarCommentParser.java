@@ -43,13 +43,7 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocStaticAccessType;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 
 /**
  *

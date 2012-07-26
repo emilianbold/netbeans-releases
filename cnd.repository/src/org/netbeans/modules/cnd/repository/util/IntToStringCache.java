@@ -48,6 +48,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 public final class IntToStringCache {
 
     private final List<CharSequence> cache;
+    private final StackTraceElement[] creationStack;
     private final int version;
     private final long timestamp;
 
@@ -66,12 +68,14 @@ public final class IntToStringCache {
     }
 
     public IntToStringCache(long timestamp) {
+        creationStack = Stats.TRACE_IZ_215449 ? Thread.currentThread().getStackTrace() : null;
         this.cache = new ArrayList<CharSequence>();
         this.version = RepositoryTranslatorImpl.getVersion();
         this.timestamp = timestamp;
     }
 
     public IntToStringCache(DataInput stream) throws IOException {
+        creationStack = Stats.TRACE_IZ_215449 ? Thread.currentThread().getStackTrace() : null;
         assert stream != null;
 
         cache = new ArrayList<CharSequence>();
@@ -180,5 +184,9 @@ public final class IntToStringCache {
 
     public long getTimestamp() {
         return timestamp;
+    }
+
+    public StackTraceElement[] getCreationStack() {
+        return creationStack;
     }
 }

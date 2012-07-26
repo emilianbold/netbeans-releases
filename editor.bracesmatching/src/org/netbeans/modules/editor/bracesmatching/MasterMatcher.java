@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -85,6 +86,20 @@ public final class MasterMatcher {
     private static final AttributeSet CARET_BIAS_HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Underline, Color.BLACK);
     private static final AttributeSet MAX_LOOKAHEAD_HIGHLIGHT = AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, Color.BLUE);
     
+    private List<MatchListener> matchListeners = new LinkedList<MatchListener>();
+    
+    public void addMatchListener(MatchListener l) {
+        synchronized (LOCK) {
+            matchListeners.add(l);
+        }
+    }
+    
+    public void removeMatchListener(MatchListener l) {
+        synchronized (LOCK) {
+            matchListeners.remove(l);
+        }
+    }
+    
     public static synchronized MasterMatcher get(JTextComponent component) {
         MasterMatcher mm = (MasterMatcher) component.getClientProperty(MasterMatcher.class);
         if (mm == null) {
@@ -117,6 +132,7 @@ public final class MasterMatcher {
         assert mismatchedMulticharColoring != null : "The mismatchedMulticharColoring parameter must not be null"; //NOI18N
         assert caretOffset >= 0 : "The caretOffset parameter must be >= 0"; //NOI18N
         
+        fireMatchCleared();
         synchronized (LOCK) {
             Object allowedSearchDirection = getAllowedDirection();
             Object caretBias = getCaretBias();
@@ -284,7 +300,38 @@ public final class MasterMatcher {
             placeHighlights(origin, true, highlights, mismatchedColoring);
         }
     }
-
+    
+    private void fireMatchesHighlighted(int[] origin, int[] matches) {
+        MatchListener[] ll;
+        synchronized (LOCK) {
+            if (matchListeners.isEmpty()) {
+                return;
+            }
+            ll = (MatchListener[]) matchListeners.toArray(new MatchListener[matchListeners.size()]);
+        }
+        MatchEvent evt = new MatchEvent(component, this);
+        evt.setHighlights(origin, matches);
+        for (int i = 0; i < ll.length; i++) {
+            MatchListener matchListener = ll[i];
+            matchListener.matchHighlighted(evt);
+        }
+    }
+    
+    private void fireMatchCleared() {
+        MatchListener[] ll;
+        synchronized (LOCK) {
+            if (matchListeners.isEmpty()) {
+                return;
+            }
+            ll = (MatchListener[]) matchListeners.toArray(new MatchListener[matchListeners.size()]);
+        }
+        MatchEvent evt = new MatchEvent(component, this);
+        for (int i = 0; i < ll.length; i++) {
+            MatchListener matchListener = ll[i];
+            matchListener.matchCleared(evt);
+        }
+    }
+    
     private static void placeHighlights(
         int [] offsets, 
         boolean skipFirst,
@@ -441,7 +488,33 @@ public final class MasterMatcher {
         
         return factories;
     }
+    
+    private void scheduleMatchHighlighted(Result r, int[] origin, int[] matches) {
+        PR.post(new Firer(r, origin, matches), 200);
+    }
+    
+    private final class Firer implements Runnable {
+        private Result myResult;
+        private int[] origin;
+        private int[] matches;
+
+        public Firer(Result myResult, int[] origin, int[] matches) {
+            this.myResult = myResult;
+            this.origin = origin;
+            this.matches = matches;
+        }
         
+        
+        
+        public void run() {
+            if (lastResult != myResult) {
+                return;
+            }
+            
+            fireMatchesHighlighted(origin, matches);
+        }
+    }
+    
     private final class Result implements Runnable {
 
         private final Document document;
@@ -641,6 +714,7 @@ public final class MasterMatcher {
                                 showSearchParameters((OffsetsBag) job[0]);
                             }
                         }
+                        scheduleMatchHighlighted(Result.this, _origin, _matches);
 
                         for(Object [] job : navigationJobs) {
                             navigateAreas(_origin, _matches, caretOffset, caretBias, (Caret) job[0], (Boolean) job[1]);

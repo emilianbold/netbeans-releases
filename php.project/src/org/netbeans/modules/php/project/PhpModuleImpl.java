@@ -94,6 +94,11 @@ public class PhpModuleImpl extends PhpModule {
     }
 
     @Override
+    public boolean isBroken() {
+        return PhpProjectValidator.isFatallyBroken(phpProject);
+    }
+
+    @Override
     public PhpModuleProperties getProperties() {
         PhpModuleProperties properties = new PhpModuleProperties();
         properties = setEncoding(properties);

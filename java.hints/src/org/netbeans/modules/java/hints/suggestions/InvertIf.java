@@ -50,7 +50,7 @@ import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle.Messages;
 
-@Hint(displayName = "#DN_InvertIf", description = "#DESC_InvertIf", category = "general", hintKind= Hint.Kind.ACTION)
+@Hint(displayName = "#DN_InvertIf", description = "#DESC_InvertIf", category = "suggestions", hintKind= Hint.Kind.ACTION)
 @Messages({
     "DN_InvertIf=Invert If",
     "DESC_InvertIf=Will invert an if statement; negate the condition and switch the statements from the then and else sections."

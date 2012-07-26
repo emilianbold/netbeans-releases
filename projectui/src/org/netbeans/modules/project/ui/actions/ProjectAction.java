@@ -211,17 +211,17 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
                                 ProjectConfiguration actualConfig = actualProvider.getActiveConfiguration(); // XXX PM.mutex?
                                 ProjectConfiguration mainConfig = mainProvider.getActiveConfiguration(); // ditto
                                 if (actualConfig != null && mainConfig != null) {
-                                String labelActual = actualConfig.getDisplayName();
-                                if (!labelActual.equals(mainConfig.getDisplayName())) {
-                                    try {
-                                        if (!n.startsWith("<html>")) {
-                                            n = "<html>" + XMLUtil.toElementContent(n);
+                                    String labelActual = actualConfig.getDisplayName();
+                                    if (!labelActual.equals(mainConfig.getDisplayName())) {
+                                        try {
+                                            if (!n.startsWith("<html>")) {
+                                                n = "<html>" + XMLUtil.toElementContent(n);
+                                            }
+                                            n += " <i><font color='!controlShadow'>@" + XMLUtil.toElementContent(labelActual);
+                                        } catch (CharConversionException x) {
+                                            // ignore
                                         }
-                                        n += " <i><font color='!controlShadow'>@" + XMLUtil.toElementContent(labelActual);
-                                    } catch (CharConversionException x) {
-                                        // ignore
                                     }
-                                }
                                 }
                             }
                         }

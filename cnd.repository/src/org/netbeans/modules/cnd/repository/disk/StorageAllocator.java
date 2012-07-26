@@ -49,8 +49,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.repository.spi.RepositoryCacheDirectoryProvider;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.modules.Places;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -96,7 +98,7 @@ public class StorageAllocator {
             
             prefix = reduceString(prefix);
             
-            File pathFile = new File(diskRepository, prefix);
+            File pathFile = new File(getUnitCacheBaseDirectory(unit), prefix);
 
             path = pathFile + File.separator;
             
@@ -160,6 +162,17 @@ public class StorageAllocator {
                 }
             }
         }
+    }
+
+    private File getUnitCacheBaseDirectory(CharSequence unit) {
+        RepositoryCacheDirectoryProvider provider = Lookup.getDefault().lookup(RepositoryCacheDirectoryProvider.class);
+        if (provider != null) {
+            File dir = provider.getUnitCacheBaseDirectory(unit);
+            if (dir != null) {
+                return dir;
+            }
+        }
+        return diskRepository;
     }
 
     private static final long PURGE_TIMEOUT = 14 * 24 * 3600 * 1000l; // 14 days

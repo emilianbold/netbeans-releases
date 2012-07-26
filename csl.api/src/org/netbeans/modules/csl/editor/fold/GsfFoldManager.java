@@ -562,6 +562,18 @@ public class GsfFoldManager implements FoldManager {
                     }
                 }
             }
+            
+            ranges = folds.get("othercodeblocks"); //NOI18N
+            if (ranges != null) {
+                for (OffsetRange range : ranges) {
+                    try {
+                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_TAGS);
+                        addFold(range, result, doc, collapseByDefault, CODE_BLOCK_FOLD_TEMPLATE);
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, "StructureScanner " + scanner + " supplied invalid fold " + range, ble); //NOI18N
+                    }
+                }
+            }
         }
         
         private void addFold(OffsetRange range, TreeSet<FoldInfo> folds, Document doc, boolean collapseByDefault, FoldTemplate template) throws BadLocationException {

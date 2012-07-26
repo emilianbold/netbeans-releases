@@ -1,0 +1,18 @@
+Code completion result for source line:
+jQuery('#f-emblem').addClass('.has-menu').a|dd(':checked');
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     add(jQuery object): jQuery      [PUBLIC]   jquery-api.xml
+METHOD     addClass(className): jQuery     [PUBLIC]   jquery-api.xml
+METHOD     after(content): jQuery          [PUBLIC]   jquery-api.xml
+METHOD     ajaxComplete(handler(event, XM  [PUBLIC]   jquery-api.xml
+METHOD     ajaxError(handler(event, jqXHR  [PUBLIC]   jquery-api.xml
+METHOD     ajaxSend(handler(event, jqXHR,  [PUBLIC]   jquery-api.xml
+METHOD     ajaxStart(handler()): jQuery    [PUBLIC]   jquery-api.xml
+METHOD     ajaxStop(handler()): jQuery     [PUBLIC]   jquery-api.xml
+METHOD     ajaxSuccess(handler(event, XML  [PUBLIC]   jquery-api.xml
+METHOD     andSelf(): jQuery               [PUBLIC]   jquery-api.xml
+METHOD     animate(properties, options):   [PUBLIC]   jquery-api.xml
+METHOD     append(function(index, html)):  [PUBLIC]   jquery-api.xml
+METHOD     appendTo(target): jQuery        [PUBLIC]   jquery-api.xml
+METHOD     attr(map): jQuery               [PUBLIC]   jquery-api.xml

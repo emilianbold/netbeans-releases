@@ -79,7 +79,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -93,6 +92,8 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.ParagraphViewDescriptor;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
@@ -792,9 +793,9 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) return;
         
-        int yOffset = textUI.getPosFromY(mouseY);
         bdoc.readLock();
         try {
+            int yOffset = textUI.getPosFromY(mouseY);
             FoldHierarchy hierarchy = FoldHierarchy.get(component);
             hierarchy.lock();
             try {
@@ -849,41 +850,40 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         }        
     }
     
-    private void performAction(Mark mark, boolean shiftFold) {
-        BaseTextUI textUI = (BaseTextUI)component.getUI();
-
-        View rootView = Utilities.getDocumentView(component);
-        if (rootView == null) return;
-        try{
-            int startViewIndex = rootView.getViewIndex(textUI.getPosFromY(mark.y+mark.size/2),
-                Position.Bias.Forward);            
-            View view = rootView.getView(startViewIndex);
-            
-            // Find corresponding fold
-            FoldHierarchy foldHierarchy = FoldHierarchy.get(component);
-            AbstractDocument adoc = (AbstractDocument)foldHierarchy.getComponent().getDocument();
-            adoc.readLock();
-            try {
-                foldHierarchy.lock();
+    private void performAction(final Mark mark, final boolean shiftFold) {
+        Document doc = component.getDocument();
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                ViewHierarchy vh = ViewHierarchy.get(component);
+                LockedViewHierarchy lockedVH = vh.lock();
                 try {
-                    
-                    int viewStartOffset = view.getStartOffset();
-                    int rowStart = javax.swing.text.Utilities.getRowStart(component, viewStartOffset);
-                    int rowEnd = javax.swing.text.Utilities.getRowEnd(component, viewStartOffset);
-                    Fold clickedFold = getLastLineFold(foldHierarchy, rowStart, rowEnd, shiftFold);//FoldUtilities.findNearestFold(foldHierarchy, viewStartOffset);
-                    if (clickedFold != null && clickedFold.getStartOffset() < view.getEndOffset()) {
-                        foldHierarchy.toggle(clickedFold); 
+                    int pViewIndex = lockedVH.yToParagraphViewIndex(mark.y + mark.size / 2);
+                    if (pViewIndex >= 0) {
+                        ParagraphViewDescriptor pViewDesc = lockedVH.getParagraphViewDescriptor(pViewIndex);
+                        int pViewStartOffset = pViewDesc.getStartOffset();
+                        int pViewEndOffset = pViewStartOffset + pViewDesc.getLength();
+                        // Find corresponding fold
+                        FoldHierarchy foldHierarchy = FoldHierarchy.get(component);
+                        foldHierarchy.lock();
+                        try {
+                            int rowStart = javax.swing.text.Utilities.getRowStart(component, pViewStartOffset);
+                            int rowEnd = javax.swing.text.Utilities.getRowEnd(component, pViewStartOffset);
+                            Fold clickedFold = getLastLineFold(foldHierarchy, rowStart, rowEnd, shiftFold);//FoldUtilities.findNearestFold(foldHierarchy, viewStartOffset);
+                            if (clickedFold != null && clickedFold.getStartOffset() < pViewEndOffset) {
+                                foldHierarchy.toggle(clickedFold);
+                            }
+                        } catch (BadLocationException ble) {
+                            LOG.log(Level.WARNING, null, ble);
+                        } finally {
+                            foldHierarchy.unlock();
+                        }
                     }
                 } finally {
-                    foldHierarchy.unlock();
+                    lockedVH.unlock();
                 }
-            } finally {
-                adoc.readUnlock();
             }
-            //System.out.println((mark.isFolded ? "Unfold" : "Fold") + " action performed on:"+view); //[TEMP]
-        } catch (BadLocationException ble) {
-            LOG.log(Level.WARNING, null, ble);
-        }
+        });
     }
     
     protected int getMarkSize(Graphics g){

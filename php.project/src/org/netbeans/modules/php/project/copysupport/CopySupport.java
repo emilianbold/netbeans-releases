@@ -58,6 +58,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
@@ -408,7 +409,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                 }
             }
             // need to get file object once more since the current one is invalid
-            project.resetSourcesDirectory();
+            project.getSourceRoots().fireChange();
             if (ignoreEvent) {
                 LOGGER.log(Level.INFO, "Previously invalid source root restored for project {0} -> to avoid copying all files to the server ignoring FS event {1}",
                         new Object[] {project.getName(), fileEvent});
@@ -476,6 +477,10 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
         @Override
         protected boolean isEnabled() {
+            if (PhpProjectValidator.isFatallyBroken(project)) {
+                LOGGER.log(Level.INFO, "Copy support disabled for project without sources ({0})", project.getName());
+                return false;
+            }
             return localFactory.isEnabled()
                     || remoteFactory.isEnabled();
         }

@@ -68,9 +68,10 @@ import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiNotification.Modification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
+import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -144,7 +145,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
 
     @Override
     public KenaiUser forName(String user) {
-        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(user));
+        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.api.KenaiUserUI(user));
     }
 
     @Override
@@ -161,7 +162,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
         } else {
             fqUserName = user;
         }
-        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.spi.KenaiUserUI(fqUserName));
+        return new KenaiUserImpl(new org.netbeans.modules.kenai.ui.api.KenaiUserUI(fqUserName));
     }
 
     @Override
@@ -194,8 +195,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Dashboard.PROP_OPENED_PROJECTS)) {
-            registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        if(evt.getPropertyName().equals(DefaultDashboard.PROP_OPENED_PROJECTS)) {
+            registerVCSNotificationListener(UIUtils.getDashboardProjects());
         } else if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
             Kenai kenai = (Kenai) evt.getSource();
             if (isLoggedIn(kenai)) {
@@ -266,7 +267,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
      */
     private void attachToDashboard () {
         Dashboard.getDefault().addPropertyChangeListener(this);
-        registerVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        registerVCSNotificationListener(UIUtils.getDashboardProjects());
     }
 
     /**
@@ -275,20 +276,20 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
      */
     private void detachFromDashboard () {
         Dashboard.getDefault().removePropertyChangeListener(this);
-        unregisterVCSNotificationListener(Dashboard.getDefault().getOpenProjects());
+        unregisterVCSNotificationListener(UIUtils.getDashboardProjects());
     }
 
     private static boolean isLoggedIn(Kenai kenai) {
         return kenai.getPasswordAuthentication() != null;
     }
     
-    private void registerVCSNotificationListener(ProjectHandle[] phs) {
+    private void registerVCSNotificationListener(ProjectHandle<KenaiProject>[] phs) {
         synchronized(registeredKenaiListenres) {
             // unregister registered
             unregisterVCSNotificationListener(phs);
             // register on all handlers
-            for (ProjectHandle projectHandle : phs) {
-                KenaiProject kp = projectHandle.getKenaiProject();
+            for (ProjectHandle<KenaiProject> projectHandle : phs) {
+                KenaiProject kp = projectHandle.getTeamProject();
                 KenaiProjectListener l = new KenaiProjectListener(kp);
                 registeredKenaiListenres.add(l);
                 kp.addPropertyChangeListener(l);
@@ -348,9 +349,9 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
     }
 
     private static class KenaiUserImpl extends KenaiUser {
-        org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate;
+        org.netbeans.modules.kenai.ui.api.KenaiUserUI delegate;
 
-        public KenaiUserImpl(org.netbeans.modules.kenai.ui.spi.KenaiUserUI delegate) {
+        public KenaiUserImpl(org.netbeans.modules.kenai.ui.api.KenaiUserUI delegate) {
             this.delegate = delegate;
         }
 

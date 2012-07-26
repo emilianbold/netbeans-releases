@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>beans-binding</name>
     <type>j2se</type>
     <localizing-bundle>org.netbeans.modules.form.binding.resources.Bundle</localizing-bundle>
@@ -58,13 +58,11 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst://org.jdesktop.beansbinding/docs/beansbinding-1.2.1-doc.zip!/</resource>
     </volume>
-    <volume>
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/jdesktop/beansbinding/1.2.1/beansbinding-1.2.1.pom</resource>
-        <!--
-        The following reference is broken. The corresponding JAR doesn't contain
-        META-INF/services directory. Hence, the special binding properties
-        don't work with that JAR.
-        <resource>http://repo2.maven.org/maven2/net/java/dev/beansbinding/beansbinding/1.2.1/beansbinding-1.2.1.pom</resource>-->
-    </volume>
+    <properties>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <property>
+            <name>maven-dependencies</name>
+            <value>org.jdesktop:beansbinding:1.2.1:jar</value>
+        </property>
+    </properties>
 </library>

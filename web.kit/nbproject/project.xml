@@ -13,13 +13,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.cloud.oracle</code-name-base>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.glassfish.javaee</code-name-base>
                     <run-dependency>
                         <release-version>0-1</release-version>

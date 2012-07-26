@@ -441,7 +441,13 @@ public final class OperationContainerImpl<Support> {
                 moduleInfos.addAll (infos);
             }
             brokenDeps = new HashSet<String> ();
-            return OperationValidator.getRequiredElements (type, getUpdateElement (), moduleInfos, brokenDeps);
+            Set<UpdateElement> recommeded = new HashSet<UpdateElement>();
+            List<UpdateElement> requiredElements = OperationValidator.getRequiredElements (type, getUpdateElement (), moduleInfos, brokenDeps, recommeded);
+            if (! brokenDeps.isEmpty() && ! recommeded.isEmpty()) {
+                brokenDeps = new HashSet<String> ();
+                requiredElements = OperationValidator.getRequiredElements (type, getUpdateElement (), moduleInfos, brokenDeps, recommeded);
+            }
+            return requiredElements;
         }
 
         public Set<String> getBrokenDependencies () {
