@@ -63,18 +63,6 @@ import org.openide.util.NbPreferences;
  */
 public class Utilities {
 
-    public static File getDefaultRepoFolder() {
-        File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
-        if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
-            String nbPrjDirName = NbBundle.getMessage(SourceAndIssuesWizardPanelGUI.class, "DIR_NetBeansProjects");
-            File nbPrjDir = new File(defaultDir, nbPrjDirName);
-            if (nbPrjDir.exists() && nbPrjDir.canWrite()) {
-                return nbPrjDir;
-            }
-        }
-        return FileUtil.normalizeFile(new File(System.getProperty("user.home")));
-    }
-
     private static HashMap<String, Boolean> chatSupported = new HashMap();
 
     public static boolean isChatSupported(Kenai kenai, boolean forceCheck) {

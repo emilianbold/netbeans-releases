@@ -12,39 +12,7 @@
                     <run-dependency>
                         <specification-version>3.1.0</specification-version>
                     </run-dependency>
-                </dependency>                
-                <dependency>
-                    <code-name-base>org.eclipse.core.runtime</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>3.6.0</specification-version>
-                    </run-dependency>
-                </dependency>                
-                <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>3.6.0</specification-version>
-                    </run-dependency>
-                </dependency>                
-                <dependency>
-                    <code-name-base>org.eclipse.equinox.common</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>3.6.0</specification-version>
-                    </run-dependency>
-                </dependency>                
-                <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.core</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>3.6.0</specification-version>
-                    </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.apache.xmlrpc</code-name-base>
                     <build-prerequisite/>
@@ -52,12 +20,52 @@
                     <run-dependency>
                         <specification-version>3.0.0</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.core.runtime</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>3.6.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.equinox.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>3.6.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.mylyn.commons.core</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>3.6.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>3.6.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.netbinox</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.26</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-eclipse-mylyn-commons-xmlrpc.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.commons.xmlrpc-3.6.0.jar</binary-origin>
+                <binary-origin>external/org.eclipse.mylyn.commons.xmlrpc-3.8.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

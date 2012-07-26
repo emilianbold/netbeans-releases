@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import java.net.PasswordAuthentication;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -132,12 +133,17 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private final RemoteRepositoryPanel panel;
     
     public RemoteRepository(String forPath) {
-        this(forPath, false);
+        this(null, forPath);
+    }
+
+    public RemoteRepository(PasswordAuthentication pa, String forPath) {
+        this(pa, forPath, false);
     }
     
-    private RemoteRepository(String forPath, boolean fixedUrl) {
+    private RemoteRepository(PasswordAuthentication pa, String forPath, boolean fixedUrl) {
         assert !fixedUrl || forPath != null && !forPath.trim().isEmpty();
         this.panel = new RemoteRepositoryPanel();
+        
         this.urlFixed = fixedUrl;
         settingTypes = new ConnectionSettingsType[] {
             new GitConnectionSettingsType(),
@@ -148,7 +154,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         this.activeSettingsType = settingTypes[0];
         initHeight();
         attachListeners();
-        initUrlComboValues(forPath);
+        initUrlComboValues(forPath, pa);
         updateCurrentSettingsType();
         validateFields();
     }
@@ -257,7 +263,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
 
     public static boolean updateFor (String url) {
         boolean retval = false;
-        final RemoteRepository repository = new RemoteRepository(url, true);
+        final RemoteRepository repository = new RemoteRepository(null, url, true);
         JPanel panel = repository.getPanel();
         panel.setBorder(new EmptyBorder(10, 10, 10, 10));
         final DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(RemoteRepositoryPanel.class, "ACSD_RepositoryPanel_Title"), //NOI18N
@@ -378,12 +384,25 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         txt.moveCaretPosition(start);
     }
     
+    private boolean initialized;
+    public void waitPopulated() {
+        synchronized (this) {
+            while (!initialized) {
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    
+                }
+            }
+        }
+    }
+    
     private Map<String, ConnectionSettings> recentConnectionSettings = new HashMap<String, ConnectionSettings>();
-    private void initUrlComboValues(final String forPath) {
+    private void initUrlComboValues(final String forPath, final PasswordAuthentication pa) {
+        panel.urlComboBox.setEnabled(false);
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                panel.urlComboBox.setEnabled(false);
                 try {
                     final DefaultComboBoxModel model = new DefaultComboBoxModel();
                     
@@ -420,8 +439,13 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                                 setComboText(forPath, 0, forPath.length());
                             }
                             ignoreComboEvents = false;
-                            findComboItem(true, true);
-                            updateCurrentSettingsType();
+                            if(pa == null) {
+                                findComboItem(true, true);
+                                updateCurrentSettingsType();
+                            } else {
+                                updateCurrentSettingsType();
+                                activeSettingsType.populateCredentials(pa);
+                            }
                             validateFields();
                         }
                     });
@@ -431,6 +455,10 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                             @Override
                             public void run () {
                                 panel.urlComboBox.setEnabled(enabled);
+                                synchronized (RemoteRepository.this) {
+                                    initialized = true;
+                                    RemoteRepository.this.notifyAll();
+                                }
                             }
                         });
                     }
@@ -499,14 +527,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     
     private abstract class ConnectionSettingsType {
         protected abstract void setEnabled (boolean enabled);
-        protected void populateFields (ConnectionSettings connSettings) {
-            
-        }
         protected abstract void store ();
         protected abstract boolean acceptUri (GitURI uri);
-        protected int getPreferedPanelHeight () {
-            return 0;
-        }
+        protected int getPreferedPanelHeight () { return 0; }
+        protected void populateFields (ConnectionSettings connSettings) { }
+        protected void populateCredentials(PasswordAuthentication pa) { }
     }
     
     //<editor-fold defaultstate="collapsed" desc="Connection Setting Types">
@@ -557,6 +582,13 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 settingsPanel.userPasswordField.setText(""); //NOI18N
             }
             settingsPanel.savePasswordCheckBox.setSelected(settings.isSaveCredentials());
+        }
+
+        @Override
+        protected void populateCredentials(PasswordAuthentication pa) {
+            settingsPanel.userTextField.setText(pa.getUserName());
+            settingsPanel.userPasswordField.setText(new String(pa.getPassword()));
+            settingsPanel.savePasswordCheckBox.setEnabled(false);
         }
         
         @Override

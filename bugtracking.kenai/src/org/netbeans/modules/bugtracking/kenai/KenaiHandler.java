@@ -58,19 +58,20 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.spi.Dashboard;
-import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryHandle;
-import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
+import org.netbeans.modules.kenai.ui.api.KenaiServer;
+import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.spi.DashboardProvider;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,7 +96,7 @@ class KenaiHandler {
         this.kenai.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
+                if(evt.getPropertyName().equals(TeamServer.PROP_LOGIN)) {
                     if(evt.getNewValue() == null) { // means logged out
                         ProjectListener[] pls;
                         synchronized(projectListeners) {
@@ -122,11 +123,11 @@ class KenaiHandler {
                 }
             }
         });
-        Dashboard.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+        UIUtils.addDashboardListener(kenai, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if(evt.getPropertyName().equals(Dashboard.PROP_REFRESH_REQUEST) && evt.getSource() instanceof Dashboard) {
-                    if(KenaiHandler.this.kenai.equals(((Dashboard)evt.getSource()).getKenai())) {
+                if(evt.getPropertyName().equals(DefaultDashboard.PROP_REFRESH_REQUEST) && evt.getSource() instanceof DashboardProvider) {
+                    if(KenaiHandler.this.kenai.getUrl().equals(((DefaultDashboard)evt.getSource()).getServer().getUrl())) {
                         clear();
                     }
                 }
@@ -135,8 +136,8 @@ class KenaiHandler {
         lastLoggedUser = getKenaiUser();
     }
 
-    List<QueryHandle> getQueryHandles(ProjectHandle project, Query... queries) {
-        return getQueryHandles(project.getKenaiProject().getName(), queries);
+    List<QueryHandle> getQueryHandles(ProjectHandle<KenaiProject> project, Query... queries) {
+        return getQueryHandles(project.getTeamProject().getName(), queries);
     }
 
     List<QueryHandle> getQueryHandles(String projectId, Query... queries) {
@@ -228,27 +229,27 @@ class KenaiHandler {
         });
     }
 
-    void registerProject(ProjectHandle project, List<QueryHandle> queries) {
+    void registerProject(ProjectHandle<KenaiProject> project, List<QueryHandle> queries) {
         ProjectListener pl;
         synchronized (projectListeners) {
             pl = projectListeners.get(project.getId());
         }
         if (pl != null) {
             project.removePropertyChangeListener(pl);
-            project.getKenaiProject().removePropertyChangeListener(pl);
+            project.getTeamProject().removePropertyChangeListener(pl);
         }
         pl = new ProjectListener(project, queries);
         project.addPropertyChangeListener(pl);
-        project.getKenaiProject().addPropertyChangeListener(pl);
+        project.getTeamProject().addPropertyChangeListener(pl);
         synchronized (projectListeners) {
             projectListeners.put(project.getId(), pl);
         }
     }
 
-    void registerRepository(Repository repo, ProjectHandle project) {
+    void registerRepository(Repository repo, ProjectHandle<KenaiProject> project) {
         KenaiRepositoryListener krl = null;
         synchronized (kenaiRepoListeners) {
-            String url = project.getKenaiProject().getKenai().getUrl().toString();
+            String url = project.getTeamProject().getKenai().getUrl().toString();
             krl = kenaiRepoListeners.get(repo.getId());
             if (krl == null) {
                 krl = new KenaiRepositoryListener(repo, project);
@@ -325,7 +326,7 @@ class KenaiHandler {
 
     private class ProjectListener implements PropertyChangeListener {
         private List<QueryHandle> queries;
-        private ProjectHandle ph;
+        private ProjectHandle<KenaiProject> ph;
         public ProjectListener(ProjectHandle ph, List<QueryHandle> queries) {
             this.queries = queries;
             this.ph = ph;
@@ -363,7 +364,7 @@ class KenaiHandler {
             }
             synchronized (projectListeners) {
                 ph.removePropertyChangeListener(this);
-                ph.getKenaiProject().removePropertyChangeListener(this);
+                ph.getTeamProject().removePropertyChangeListener(this);
                 projectListeners.remove(ph.getId());
             }
         }
