@@ -84,9 +84,9 @@ class RouterGenerator {
         else {
             myRouters.append("'':'details'");                             // NOI18N
         }
-        // #new route if there is a POST request in the REST
-        if ( httpPaths.containsKey( HttpRequests.POST)){
-            myRouters.append(",\n'new':'create'");                        // NOI18N
+        // #new route if there is a corresponding POST request in the REST
+        if ( httpPaths.get( HttpRequests.POST) != null ){
+            myRouters.append(",\n'new':'create'\n");                      // NOI18N
         }
         // #id route if REST has a method for collection
         if ( hasCollection ){
@@ -173,10 +173,30 @@ class RouterGenerator {
             myRouters.append("this.list();\n}\n},\n");                    // NOI18N
         }
         else {
-            // TODO : handle no-collection case
+            myRouters.append("if (this.view) {\n");                       // NOI18N
+            myRouters.append("this.view.close();\n}\n");                  // NOI18N
+            myRouters.append("var self = this;\n");                       // NOI18N  
+            myRouters.append("this.");                                    // NOI18N 
+            myRouters.append(modelVar);
+            myRouters.append(" = models.");                               // NOI18N 
+            myRouters.append(modelGenerator.getModelName());
+            myRouters.append("();\nthis.");                               // NOI18N
+            myRouters.append(modelVar);
+            myRouters.append(".fetch({\n");                               // NOI18N
+            myRouters.append("success:function(){\n");                    // NOI18N
+            myRouters.append("self.view = new views.ModelView({\n");      // NOI18N
+            myRouters.append("model: self.newclass,\n// ");               // NOI18N
+            myRouters.append(myDetailsTemplateName);
+            myRouters.append(" is template identifier for chosen model element\n");// NOI18N
+            myRouters.append("templateName : '#");                        // NOI18N
+            myRouters.append(myDetailsTemplateName);
+            myRouters.append("'\n});\n");                                 // NOI18N
+            myRouters.append("$('#");                                     // NOI18N
+            myRouters.append(getContentId());
+            myRouters.append("').html(self.view.render().el);}\n});\n},\n");// NOI18N
         }
         
-        if ( httpPaths.containsKey( HttpRequests.POST)){
+        if ( httpPaths.get( HttpRequests.POST) != null){
             myRouters.append("create:function () {\n");                   // NOI18N
             myRouters.append("if (this.view) {\n");                       // NOI18N
             myRouters.append("this.view.close();\n}\n");                  // NOI18N
