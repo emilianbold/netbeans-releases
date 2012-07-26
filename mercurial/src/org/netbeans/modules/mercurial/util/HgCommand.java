@@ -306,6 +306,7 @@ public class HgCommand {
     private static final String HG_REPOSITORY = "repository"; // NOI18N
     private static final String HG_NOT_FOUND_ERR = "not found!"; // NOI18N
     private static final String HG_UPDATE_SPAN_BRANCHES_ERR = "abort: update spans branches"; // NOI18N
+    private static final String HG_UPDATE_CROSS_BRANCHES_ERR = "abort: crosses branches"; // NOI18N
     private static final String HG_ALREADY_TRACKED_ERR = " already tracked!"; // NOI18N
     private static final String HG_NOT_TRACKED_ERR = " no tracked!"; // NOI18N
     private static final String HG_CANNOT_READ_COMMIT_MESSAGE_ERR = "abort: can't read commit message"; // NOI18N
@@ -4075,7 +4076,8 @@ public class HgCommand {
     }
 
     private static boolean isErrorUpdateSpansBranches(String msg) {
-        return msg.indexOf(HG_UPDATE_SPAN_BRANCHES_ERR) > -1; // NOI18N
+        return msg.indexOf(HG_UPDATE_SPAN_BRANCHES_ERR) > -1
+                || msg.contains(HG_UPDATE_CROSS_BRANCHES_ERR);
     }
 
     private static boolean isErrorAlreadyTracked(String msg) {
