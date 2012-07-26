@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.team.ods.api.CloudServer;
@@ -63,6 +65,7 @@ import org.openide.util.NbBundle.Messages;
  */
 public class Utilities {
     
+    public final static String LOGIN_STATUS_PREF = ".login"; //NOI18N
     final static String CLOUD_USERNAME_PREF = ".username"; //NOI18N
     private final static String CLOUD_PASSWORD_PREF = ".password"; //NOI18N
     
@@ -121,6 +124,30 @@ public class Utilities {
             }
             return password;
         }
+    }
+
+    static boolean login (CloudServer server) {
+        if (!server.isLoggedIn()) {
+            final Preferences preferences = NbPreferences.forModule(Utilities.class);
+            if (!preferences.getBoolean(getPrefName(server, LOGIN_STATUS_PREF), false)) {
+                return false;
+            }
+            String uname = preferences.get(Utilities.getPrefName(server, CLOUD_USERNAME_PREF), ""); //NOI18N
+            if (uname.isEmpty()) {
+                return false;
+            }
+            char[] pwd = loadPassword(server, preferences);
+            if (pwd == null || pwd.length == 0) {
+                return false;
+            }
+            try {
+                server.login(uname, pwd);
+                return true;
+            } catch (ODSException ex) {
+                Logger.getLogger(Utilities.class.getName()).log(Level.FINE, null, ex);
+            }
+        }
+        return false;
     }
     
     public static List<ProjectHandle<ODSProject>> getMyProjects(CloudUiServer uiServer, boolean force) throws ODSException {

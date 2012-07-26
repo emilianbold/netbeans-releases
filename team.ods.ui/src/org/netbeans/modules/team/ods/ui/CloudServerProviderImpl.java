@@ -49,6 +49,8 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.team.ods.api.CloudServer;
 import org.netbeans.modules.team.ods.api.CloudServerManager;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -58,6 +60,8 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import static org.netbeans.modules.team.ods.ui.Bundle.*;
+import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -71,6 +75,7 @@ public class CloudServerProviderImpl implements TeamServerProvider {
 
     private static CloudServerProviderImpl instance;
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+    private boolean initialized;
 
     public CloudServerProviderImpl () {
         CloudServerManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
@@ -140,6 +145,20 @@ public class CloudServerProviderImpl implements TeamServerProvider {
 
     @Override
     public void initialize () {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
+        Preferences prefs = NbPreferences.forModule(CloudServerProviderImpl.class);
+        try {
+            if (prefs.keys().length > 0) {
+                for (CloudServer k : CloudServerManager.getDefault().getServers()) {
+                    Utilities.login(k);
+                }
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override

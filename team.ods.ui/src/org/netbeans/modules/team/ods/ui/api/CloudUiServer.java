@@ -46,28 +46,23 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.util.Collection;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.ods.api.CloudServer;
-import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ods.ui.dashboard.DashboardProviderImpl;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.util.WeakListeners;
-import java.util.ArrayList;
-import java.util.Collections;
-import javax.swing.JComboBox;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.ui.CloudServerProviderImpl;
 import org.netbeans.modules.team.ods.ui.LoginPanelSupportImpl;
-import org.netbeans.modules.team.ods.ui.dashboard.ProjectHandleImpl;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ods.ui.Utilities;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -89,6 +84,10 @@ public class CloudUiServer implements TeamServer {
             public void propertyChange(PropertyChangeEvent pce) {
                 String propName = pce.getPropertyName();
                 if (propName.equals(CloudServer.PROP_LOGIN)) {
+                    if (CloudServer.PROP_LOGIN.equals(pce.getPropertyName())) {
+                        final Preferences preferences = NbPreferences.forModule(CloudServerProviderImpl.class);
+                        preferences.put(Utilities.getPrefName((CloudServer) pce.getSource(), Utilities.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                    }
                     propertyChangeSupport.firePropertyChange(TeamServer.PROP_LOGIN, pce.getOldValue(), pce.getNewValue());
                 } else if (propName.equals(CloudServer.PROP_LOGIN_STARTED)) {
                     propertyChangeSupport.firePropertyChange(TeamServer.PROP_LOGIN_STARTED, pce.getOldValue(), pce.getNewValue());
