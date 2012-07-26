@@ -48,5 +48,6 @@ package org.netbeans.modules.web.livehtml;
 public interface AnalysisModelListener {
     
     void analysisAdded(Analysis analysis);
+    void analysisRemoved(Analysis analysis);
     
 }

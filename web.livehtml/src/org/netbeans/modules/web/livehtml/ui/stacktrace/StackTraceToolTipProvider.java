@@ -39,49 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.filter;
+package org.netbeans.modules.web.livehtml.ui.stacktrace;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author petr-podzimek
  */
-public class OrRevisionFilter implements RevisionFilter {
+@ServiceProvider(service=RevisionToolTipService.class)
+public class StackTraceToolTipProvider extends RevisionToolTipService<StackTraceToolTipPanel> {
     
-    private List<RevisionFilter> revisionFilters = new CopyOnWriteArrayList<RevisionFilter>();
+    private static final String NAME = "Stack Trace";
 
-    public OrRevisionFilter(List<RevisionFilter> revisionFilters) {
-        if (revisionFilters != null) {
-            for (RevisionFilter revisionFilter : revisionFilters) {
-                this.revisionFilters.add(revisionFilter);
-            }
-        }
-    }
-
-    public List<RevisionFilter> getRevisionFilters() {
-        return revisionFilters;
+    @Override
+    protected StackTraceToolTipPanel createComponent(Revision revision) {
+        return new StackTraceToolTipPanel();
     }
 
     @Override
-    public boolean match(Revision revision) {
-        if (revisionFilters.isEmpty()) {
-            return true;
-        }
-        for (RevisionFilter revisionFilter : revisionFilters) {
-            if (revisionFilter.match(revision)) {
-                return true;
-            }
-        }
-        return false;
+    protected void updateComponent(StackTraceToolTipPanel component, Revision revision, boolean reformatContent) {
+        component.setStackTrace(revision.getStacktrace());
     }
 
-    public void addRevisionFilter(RevisionFilter revisionFilter) {
-        if (revisionFilter != null) {
-            revisionFilters.add(revisionFilter);
-        }
+    @Override
+    protected boolean canProcess(Revision revision) {
+        return revision.getStacktrace() != null;
+    }
+
+    @Override
+    protected String getDisplayName() {
+        return NAME;
+    }
+
+    @Override
+    protected int getOrder() {
+        return 1;
     }
     
 }

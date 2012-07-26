@@ -39,40 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.ui.callstack;
+package org.netbeans.modules.web.livehtml.filter;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.json.simple.JSONArray;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceFilter;
 
 /**
  *
  * @author petr-podzimek
  */
-public class CallStackToolTipNodeContainer extends Children.Keys<JSONArray> {
+public class NotStackTraceFilter implements StackTraceFilter {
     
-    private final JSONArray callStack;
+    private final StackTraceFilter stackTraceFilter;
 
-    public CallStackToolTipNodeContainer(JSONArray callStack) {
-        this.callStack = callStack;
+    public NotStackTraceFilter(StackTraceFilter stackTraceFilter) {
+        this.stackTraceFilter = stackTraceFilter;
     }
 
     @Override
-    protected void addNotify() {
-        setKeys(new JSONArray[] {callStack});
+    public boolean match(Object object) {
+        return !stackTraceFilter.match(object);
     }
 
-    @Override
-    protected Node[] createNodes(JSONArray key) {
-        List<Node> nodes = new ArrayList<Node>();
-        
-        for (Object object : key) {
-            nodes.add(new CallStackToolTipLeafNode(object));
-        }
-        
-        return nodes.toArray(new Node[nodes.size()]);
+    public StackTraceFilter getStackTraceFilter() {
+        return stackTraceFilter;
     }
-
+    
 }

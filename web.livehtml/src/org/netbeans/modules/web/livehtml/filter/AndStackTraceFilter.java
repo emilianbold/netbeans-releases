@@ -39,39 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.ui.callstack;
+package org.netbeans.modules.web.livehtml.filter;
 
-import org.netbeans.modules.web.livehtml.Revision;
-import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceFilter;
 
 /**
  *
  * @author petr-podzimek
  */
-@ServiceProvider(service=RevisionToolTipService.class)
-public class CallStackToolTipProvider extends RevisionToolTipService<CallStackToolTipPanel> {
+public class AndStackTraceFilter implements StackTraceFilter {
     
-    private static final String NAME = "Call Stack";
+    private List<StackTraceFilter> stackTraceFilters = new ArrayList<StackTraceFilter>();
 
-    @Override
-    protected CallStackToolTipPanel getComponent(Revision revision) {
-        return new CallStackToolTipPanel();
+    public AndStackTraceFilter(List<StackTraceFilter> stackTraceFilters) {
+        if (stackTraceFilters != null) {
+            for (StackTraceFilter stackTraceFilter : stackTraceFilters) {
+                this.stackTraceFilters.add(stackTraceFilter);
+            }
+        }
     }
 
     @Override
-    protected void update(CallStackToolTipPanel component, Revision revision) {
-        component.setCallStack(revision.getStacktrace());
+    public boolean match(Object object) {
+        if (stackTraceFilters.isEmpty()) {
+            return true;
+        }
+        for (StackTraceFilter stackTraceFilter : stackTraceFilters) {
+            if (!stackTraceFilter.match(object)) {
+                return false;
+            }
+        }
+        return true;
     }
-
-    @Override
-    protected boolean canProcess(Revision revision) {
-        return revision.getStacktrace() != null;
-    }
-
-    @Override
-    protected String getName() {
-        return NAME;
+    
+    public void addStackTraceFilter(StackTraceFilter stackTraceFilter) {
+        if (stackTraceFilter != null) {
+            stackTraceFilters.add(stackTraceFilter);
+        }
     }
     
 }

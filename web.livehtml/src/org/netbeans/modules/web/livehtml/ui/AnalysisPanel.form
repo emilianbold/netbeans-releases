@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <NonVisualComponents>
-    <Component class="javax.swing.JButton" name="filterButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/livehtml/ui/Bundle.properties" key="AnalysisPanel.filterButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filterButtonActionPerformed"/>
-      </Events>
-    </Component>
-  </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -54,14 +42,22 @@
                   <Component id="startAnalysisButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="reformatRevisionButton" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="filterButton" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="startAnalysisButton" alignment="0" pref="0" max="32767" attributes="0"/>
-              <Component id="analysisComboBox" alignment="0" pref="22" max="32767" attributes="0"/>
-              <Component id="reformatRevisionButton" alignment="0" pref="0" max="32767" attributes="0"/>
+              <Group type="102" attributes="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="analysisComboBox" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="startAnalysisButton" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="reformatRevisionButton" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
+                      <Component id="filterButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+              </Group>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -84,6 +80,7 @@
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="Bundle.CTL_ReformatRevisionsButton_ToolTip()" type="code"/>
             </Property>
+            <Property name="borderPainted" type="boolean" value="false"/>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>
@@ -98,11 +95,27 @@
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="Bundle.CTL_StartAnalysisButton_ToolTip()" type="code"/>
             </Property>
+            <Property name="borderPainted" type="boolean" value="false"/>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAnalysisButtonActionPerformed"/>
           </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="filterButton">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/org/netbeans/modules/web/livehtml/resources/filter.png"/>
+            </Property>
+            <Property name="borderPainted" type="boolean" value="false"/>
+            <Property name="focusable" type="boolean" value="false"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filterButtonActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="filterButton.setVisible(SHOW_FILTER_BUTTON);"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>
@@ -113,9 +126,8 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Component id="revisionSlider" max="32767" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
-                  <Component id="revisionLabel" min="-2" pref="78" max="-2" attributes="0"/>
-                  <EmptySpace min="-2" pref="32" max="-2" attributes="0"/>
+                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                  <Component id="revisionLabel" min="-2" pref="97" max="-2" attributes="0"/>
               </Group>
               <Component id="revisionScrollPane" pref="0" max="32767" attributes="0"/>
           </Group>
@@ -128,7 +140,7 @@
                       <Component id="revisionLabel" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                  <Component id="revisionScrollPane" pref="305" max="32767" attributes="0"/>
+                  <Component id="revisionScrollPane" pref="267" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -152,7 +164,6 @@
                 </Property>
               </Properties>
               <Events>
-                <EventHandler event="mouseExited" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="revisionEditorPaneMouseExited"/>
                 <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="revisionEditorPaneMouseMoved"/>
               </Events>
             </Component>
@@ -161,8 +172,8 @@
         <Component class="javax.swing.JLabel" name="revisionLabel">
           <Properties>
             <Property name="horizontalAlignment" type="int" value="0"/>
-            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="Bundle.CTL_RevisionLabel_ToolTip()" type="code"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/web/livehtml/ui/Bundle.properties" key="CTL_Revision_index_Label" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>

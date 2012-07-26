@@ -39,16 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.filter;
+package org.netbeans.modules.web.livehtml.filter.groupscripts;
 
-import org.netbeans.modules.web.livehtml.Revision;
+import org.json.simple.JSONObject;
+import org.netbeans.modules.web.livehtml.StackTrace;
 
 /**
  *
  * @author petr-podzimek
  */
-public interface RevisionFilter {
+class ScriptStackTraceFilter implements StackTraceFilter {
     
-    boolean match(Revision revision);
+    private final String scriptUrl;
+
+    public ScriptStackTraceFilter(String scriptUrl) {
+        this.scriptUrl = scriptUrl;
+    }
+
+    @Override
+    public boolean match(Object object) {
+        if (object instanceof JSONObject) {
+            JSONObject jSONObject = (JSONObject) object;
+            final Object script = jSONObject.get(StackTrace.SCRIPT);
+            return script != null && script.equals(scriptUrl);
+        }
+        return false;
+    }
+
+    public String getScriptUrl() {
+        return scriptUrl;
+    }
     
 }

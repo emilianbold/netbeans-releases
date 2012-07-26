@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.web.livehtml.ui.changes;
 
-import javax.swing.JComponent;
-import javax.swing.JTextArea;
-import javax.swing.JTextPane;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
 import org.openide.util.lookup.ServiceProvider;
@@ -58,13 +55,13 @@ public class ChangesToolTipProvider extends RevisionToolTipService<ChangesToolTi
     private static final String NAME = "Changes";
 
     @Override
-    public ChangesToolTipPanel getComponent(Revision revision) {
+    public ChangesToolTipPanel createComponent(Revision revision) {
         return new ChangesToolTipPanel();
     }
 
     @Override
-    public void update(ChangesToolTipPanel changesToolTipPanel, Revision revision) {
-        changesToolTipPanel.setChanges(revision.getChanges());
+    public void updateComponent(ChangesToolTipPanel changesToolTipPanel, Revision revision, boolean reformatContent) {
+        changesToolTipPanel.setChanges(reformatContent ? revision.getReformattedChanges() : revision.getChanges());
     }
 
     @Override
@@ -73,8 +70,13 @@ public class ChangesToolTipProvider extends RevisionToolTipService<ChangesToolTi
     }
 
     @Override
-    public String getName() {
+    public String getDisplayName() {
         return NAME;
+    }
+
+    @Override
+    protected int getOrder() {
+        return 100;
     }
     
 }

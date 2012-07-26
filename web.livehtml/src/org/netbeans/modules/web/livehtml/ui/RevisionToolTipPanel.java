@@ -42,8 +42,11 @@
 package org.netbeans.modules.web.livehtml.ui;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.openide.util.Lookup;
 
@@ -62,40 +65,38 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
         initComponents();
     }
 
-    public void setRevision(Revision revision) {
+    public void setRevision(Revision revision, String toolTipTitle, boolean reformatContent) {
         this.revision = revision;
         
-        titleLabel.setText("Change of revision " + revision.getIndex());
+        titleLabel.setText(toolTipTitle);
+        final int tabCount = toolTipTabbedPane.getTabCount();
         
-        final Component[] components = toolTipTabbedPane.getComponents();
-        if (components == null || components.length == 0) {
+        final List<? extends RevisionToolTipService> revisionToolTipServices = 
+                new ArrayList<RevisionToolTipService>(Lookup.getDefault().lookupAll(RevisionToolTipService.class));
+        Collections.sort(revisionToolTipServices);
+        
+        if (tabCount == 0) {
             int i = 0;
-            for (RevisionToolTipService revisionToolTipService : Lookup.getDefault().lookupAll(RevisionToolTipService.class)) {
-                Component component = revisionToolTipService.createToolTip(revision);
+            for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
+                Component component = revisionToolTipService.createToolTip(revision, reformatContent);
                 if (component == null) {
                     component = new JLabel();
                     component.setEnabled(revisionToolTipService.canProcess(revision));
                 }
                 
-//                JScrollPane scrollPane = new JScrollPane(component);
-                
-                toolTipTabbedPane.addTab(revisionToolTipService.getName(), component);
+                toolTipTabbedPane.addTab(revisionToolTipService.getDisplayName(), component);
                 toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
                 
                 i += 1;
             }
         } else {
-            for (RevisionToolTipService revisionToolTipService : Lookup.getDefault().lookupAll(RevisionToolTipService.class)) {
-                for (int i = 0; i < components.length; i++) {
-                    Component component = components[i];
-//                    if (component instanceof JScrollPane) {
-//                        JScrollPane scrollPane = (JScrollPane) component;
-//                        final Component view = scrollPane.getViewport().getView();
-                        if (revisionToolTipService.getName().equals(toolTipTabbedPane.getTitleAt(i))) {
-                            revisionToolTipService.update(component, revision);
-                            toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
-                        }
-//                    }
+            for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
+                for (int i = 0; i < tabCount; i++) {
+                    Component component = toolTipTabbedPane.getComponentAt(i);
+                    if (revisionToolTipService.getDisplayName().equals(toolTipTabbedPane.getTitleAt(i))) {
+                        revisionToolTipService.updateComponent(component, revision, reformatContent);
+                        toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
+                    }
                 }
             }
         }
@@ -120,7 +121,7 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
         titleLabel = new javax.swing.JLabel();
 
         setMinimumSize(new java.awt.Dimension(200, 200));
-        setPreferredSize(new java.awt.Dimension(300, 200));
+        setPreferredSize(new java.awt.Dimension(350, 250));
 
         org.openide.awt.Mnemonics.setLocalizedText(titleLabel, org.openide.util.NbBundle.getMessage(RevisionToolTipPanel.class, "RevisionToolTipPanel.titleLabel.text")); // NOI18N
 
@@ -130,16 +131,16 @@ public class RevisionToolTipPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE)
+                .addComponent(titleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE)
                 .addContainerGap())
-            .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE))
+                .addComponent(toolTipTabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

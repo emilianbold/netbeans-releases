@@ -101,20 +101,20 @@ public class Utilities {
 //        return analysis.getTimeStamps().indexOf(sourceRevision.getTimeStamp());
 //    }
 
-    public static StringBuilder convertCallStack(JSONArray arr) {
+    public static StringBuilder convertStackTrace(JSONArray arr) {
         StringBuilder sb = new StringBuilder();
         if (arr == null) {
             return sb;
         }
         for (Object o : arr) {
             JSONObject js = (JSONObject)o;
-            sb.append(js.get("function"));
+            sb.append(js.get(StackTrace.FUNCTION));
             sb.append(" ");
-            sb.append(js.get("lineNumber"));
+            sb.append(js.get(StackTrace.LINE_NUMBER));
             sb.append(":");
-            sb.append(js.get("columnNumber"));
+            sb.append(js.get(StackTrace.COLUMN_NUMBER));
             sb.append(" at ");
-            sb.append(js.get("script"));
+            sb.append(js.get(StackTrace.SCRIPT));
             sb.append("\n");
         }
         return sb;

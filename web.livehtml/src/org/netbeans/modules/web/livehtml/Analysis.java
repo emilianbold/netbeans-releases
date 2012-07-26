@@ -55,8 +55,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlParser;
 import org.netbeans.modules.html.editor.lib.api.HtmlParserFactory;
@@ -65,7 +63,6 @@ import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ParseException;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.web.livehtml.diff.Diff;
-import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -74,6 +71,9 @@ import org.openide.util.RequestProcessor;
  * @author petr-podzimek
  */
 public class Analysis implements Comparable<Analysis> {
+    
+    private static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("Live HTML - analysis", 1);
+    
     public static final String CONTENT = "content";
     public static final String DIFF = "diff";
     public static final String BDIFF = "bdiff";
@@ -85,30 +85,27 @@ public class Analysis implements Comparable<Analysis> {
     private Date created = new Date();
     private Date finished = null;
 
-    private File root = AnalysisStorage.getInstance().getChangesStorageRoot(AnalysisStorage.getInstance().getStorageRoot());
+    private File root;
     private List<String> timeStamps = new ArrayList<String>();
     private String dataToStore = null;
     private Diff lastDiff;
     private boolean lastChangeWasNotReal = false;
     
     private List<AnalysisListener> analysisListeners = new CopyOnWriteArrayList<AnalysisListener>();
-    private static RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("Live HTML Model", 1);
     
-    public Analysis(File root, String initialContent) {
+    public Analysis() {
+        this(AnalysisStorage.getInstance().getChangesStorageRoot(AnalysisStorage.getInstance().getStorageRoot()));
+    }
+
+    protected Analysis(File root) {
         this.root = root;
-        if (initialContent != null) {
-            long currentTime = System.currentTimeMillis();
-            final String timeStampStr = String.valueOf(currentTime);
-            store(CONTENT, timeStampStr, initialContent);
-            addTimeStamp(timeStampStr);
-        }
     }
 
     protected void store(String type, String timestamp, String content) {
         File storeFile = new File(getRoot(), timestamp + "." + type);
         storeFile.deleteOnExit();
         try {
-            assert !storeFile.exists() : "should not exist yet! "+storeFile;
+            assert !storeFile.exists() : "File should not exist yet! storeFile=" + storeFile;
             ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
             ZipEntry entry = new ZipEntry(type);
             zos.putNextEntry(entry);
@@ -121,7 +118,7 @@ public class Analysis implements Comparable<Analysis> {
         }
     }
     
-    public Revision getRevision(int changeIndex, boolean reformatRevision) {
+    public Revision getRevision(int changeIndex) {
         if (changeIndex >= getTimeStampsCount()) {
             return null;
         }
@@ -139,21 +136,20 @@ public class Analysis implements Comparable<Analysis> {
             data = read(DATA, getTimeStamps().get(changeIndex - 1));
         }
         
-        StringBuilder editorContent;
-        List<Change> changes;
-        if (reformatRevision) {
-            editorContent = beautifiedContent;
-            changes = Change.decodeFromJSON(beautifiedDiff == null ? null : beautifiedDiff.toString());
-        } else {
-            editorContent = content;
-            changes = Change.decodeFromJSON(diff == null ? null : diff.toString());
-        }
-        Revision rev = new Revision(editorContent, stacktrace, changes, data, timeStamp, changeIndex);
+        Revision revision = new Revision(
+                changeIndex,
+                timeStamp,
+                content,
+                beautifiedContent,
+                Change.decodeFromJSON(diff == null ? null : diff.toString()), 
+                Change.decodeFromJSON(beautifiedDiff == null ? null : beautifiedDiff.toString()), 
+                stacktrace,
+                data);
         
-        return rev;
+        return revision;
     }
     
-    public StringBuilder read(String type, String timestamp) {
+    protected StringBuilder read(String type, String timestamp) {
         File storeFile = new File(getRoot(), timestamp + "." + type);
         if (!storeFile.exists()) {
             return null;
@@ -177,7 +173,7 @@ public class Analysis implements Comparable<Analysis> {
         return sourceUrl;
     }
 
-    public void setSourceUrl(URL sourceUrl) {
+    protected void setSourceUrl(URL sourceUrl) {
         this.sourceUrl = sourceUrl;
     }
 
@@ -189,7 +185,7 @@ public class Analysis implements Comparable<Analysis> {
         return finished;
     }
 
-    public void makeFinished() {
+    protected void makeFinished() {
         this.finished = new Date();
     }
 
@@ -240,18 +236,19 @@ public class Analysis implements Comparable<Analysis> {
         fireRevisionAdded(timestamp);
     }
     
-    public void deleteFiles() {
-        for (File f : root.listFiles()) {
-            f.delete();
-        }
-        root.delete();
-    }
+//TODO: remove comment when this method is needed.
+//    public void deleteFiles() {
+//        for (File f : root.listFiles()) {
+//            f.delete();
+//        }
+//        root.delete();
+//    }
     
     public List<String> getTimeStamps() {
         return timeStamps;
     }
 
-    public String getDataToStore() {
+    private String getDataToStore() {
         return dataToStore;
     }
 
@@ -267,19 +264,15 @@ public class Analysis implements Comparable<Analysis> {
         this.lastChangeWasNotReal = lastChangeWasNotReal;
     }
 
-    public File getRoot() {
+    protected File getRoot() {
         return root;
     }
 
-    public void setRoot(File root) {
-        this.root = root;
-    }
-
-    public Diff getLastDiff() {
+    private Diff getLastDiff() {
         return lastDiff;
     }
 
-    public void setLastDiff(Diff lastDiff) {
+    private void setLastDiff(Diff lastDiff) {
         this.lastDiff = lastDiff;
     }
 
@@ -301,7 +294,7 @@ public class Analysis implements Comparable<Analysis> {
         }
     }
 
-    public void storeDocumentVersion(final String timestamp, final String content, final String stackTrace, final boolean realChange) {
+    protected void storeDocumentVersion(final String timestamp, final String content, final String stackTrace, final boolean realChange) {
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -371,7 +364,7 @@ public class Analysis implements Comparable<Analysis> {
             throw new RuntimeException("Cannot parse " + getRoot().getAbsolutePath() + " [" + timestamp + "," + previousTimestamp + "]", t);
         }
     }
-
+    
     @Override
     public int hashCode() {
         int hash = 7;
@@ -396,6 +389,26 @@ public class Analysis implements Comparable<Analysis> {
             return false;
         }
         return true;
+    }
+    
+    protected void clearTimeStamps() {
+        timeStamps.clear();
+    }
+    
+    protected void cleatDataToStore() {
+        dataToStore = null;
+    }
+    
+    protected void clearLastDiff() {
+        lastDiff = null;
+    }
+    
+    protected void clearLastChangeWasNotReal() {
+        lastChangeWasNotReal = false;
+    }
+
+    protected static RequestProcessor getRequestProcessor() {
+        return REQUEST_PROCESSOR;
     }
     
     @Override
