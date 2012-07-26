@@ -46,6 +46,7 @@ import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
@@ -1446,6 +1447,7 @@ public class VariousUtils {
                     retval += typeName + typeSeparator;
                 }
             }
+            assert retval.length() - typeSeparator.length() >= 0 : "retval:" + retval + "# typeNames:"+typeNames; //NOI18N
             retval = retval.substring(0, retval.length() - typeSeparator.length());
         } else {
             retval = typeNames;
