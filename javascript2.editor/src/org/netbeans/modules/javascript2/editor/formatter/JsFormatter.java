@@ -387,6 +387,11 @@ public class JsFormatter implements Formatter {
                             if (tokenAfterEol != null
                                     && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
 
+                                if (!shouldPlaceLineBreak(doc, token, formatContext,
+                                        CodeStyle.get(doc).getRightMargin())) {
+                                    break;
+                                }
+
                                 // proceed the skipped tokens moving the main loop
                                 for (FormatToken current = token; current != tokenAfterEol; current = current.next()) {
                                     indentationLevel = updateIndentationLevel(current, indentationLevel);
@@ -602,6 +607,51 @@ public class JsFormatter implements Formatter {
         return offsetDiff;
     }
 
+    private boolean shouldPlaceLineBreak(BaseDocument doc, FormatToken token,
+            FormatContext context, int margin) {
+
+        CodeStyle.WrapStyle style = getLineWrap(token, context);
+
+        if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+            return false;
+        }
+        if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
+            return true;
+        }
+
+        FormatToken previousDelimiter = getPreviousNonVirtual(token);
+        assert previousDelimiter != null;
+
+        int offset = previousDelimiter.getOffset();
+        try {
+            // TODO current line offset might be biased with offsetDiff
+            int lineStartOffset = IndentUtils.lineStartOffset(doc, offset);
+            if (offset - lineStartOffset >= margin) {
+                return true;
+            }
+
+            FormatToken next = token.next();
+            while (next != null && next.getKind() != FormatToken.Kind.EOL) {
+                CodeStyle.WrapStyle nextStyle = getLineWrap(next, context);
+                if (nextStyle != CodeStyle.WrapStyle.WRAP_NEVER) {
+                    break;
+                }
+            }
+
+            if (next != null) {
+                previousDelimiter = next.getKind() != FormatToken.Kind.EOL
+                        ? getPreviousNonVirtual(next) : next;
+                if (previousDelimiter != null
+                        && previousDelimiter.getOffset() - lineStartOffset > margin) {
+                    return true;
+                }
+            }
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return false;
+    }
+
     private boolean isContinuation(List<FormatToken> tokens, int index) {
         FormatToken token = tokens.get(index);
 
@@ -733,10 +783,41 @@ public class JsFormatter implements Formatter {
         return indentationLevel;
     }
 
+    private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
+        if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+            // XXX option
+            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
+            // XXX option
+            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        if (token.getKind() == FormatToken.Kind.AFTER_CASE) {
+            // XXX option
+            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        if (token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START) {
+            if (ELSE_IF_SINGLE_LINE) {
+                return CodeStyle.WrapStyle.WRAP_NEVER;
+            }
+            // XXX option
+            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        return CodeStyle.WrapStyle.WRAP_NEVER;
+    }
+
     private static FormatToken getNextNonVirtual(FormatToken token) {
         FormatToken current = token.next();
         while (current != null && current.isVirtual()) {
             current = current.next();
+        }
+        return current;
+    }
+
+    private static FormatToken getPreviousNonVirtual(FormatToken token) {
+        FormatToken current = token.previous();
+        while (current != null && current.isVirtual()) {
+            current = current.previous();
         }
         return current;
     }
