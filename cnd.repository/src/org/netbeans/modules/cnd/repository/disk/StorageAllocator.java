@@ -115,6 +115,13 @@ public class StorageAllocator {
         unit2path.remove(unitName);
     }
     
+    public boolean renameUnitDirectory (CharSequence oldUnitName, CharSequence newUnitName) {
+        deleteUnitFiles(newUnitName, true);
+        File newUnitStorage = new File(getUnitStorageName(newUnitName));
+        File oldUnitStorage = new File(getUnitStorageName(oldUnitName));
+        return oldUnitStorage.renameTo(newUnitStorage);
+    }
+
     public void deleteUnitFiles (CharSequence unitName, boolean removeUnitFolder) {
 	if( Stats.TRACE_UNIT_DELETION ) System.err.printf("Deleting unit files for %s\n", unitName);
         String path = getUnitStorageName(unitName);

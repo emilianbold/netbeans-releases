@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.translator.IndexConverter;
 import org.netbeans.modules.cnd.repository.translator.RepositoryTranslatorImpl;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
@@ -94,6 +95,14 @@ public final class IntToStringCache {
                 v = FilePathCache.getManager().getString(value);
             }
             cache.add(v);
+        }
+    }
+
+    public void convert(IndexConverter converter) {
+        for (int i = 0; i < cache.size(); i++) {
+            CharSequence v = cache.get(i);
+            v = converter.convert(v);
+            cache.set(i, v);
         }
     }
 

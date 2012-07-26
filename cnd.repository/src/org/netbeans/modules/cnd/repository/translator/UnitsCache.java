@@ -55,15 +55,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.JButton;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
@@ -163,6 +158,7 @@ final class UnitsCache {
                 }
             }
             loadMasterIndex(randomAccessFile);
+            convertIfNeed();
             inited = true;
         } catch (FileNotFoundException e) {
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -214,10 +210,74 @@ final class UnitsCache {
             // (with timestamps from master index)
             unit2requnint.put(value, readRequiredUnits(stream));
             // new dummy int/string cache (with the current (???!) timestamp
-            fileNamesCaches.add(new IntToStringCache(ts));
+            fileNamesCaches.add(new IntToStringCache(ts));            
         }
     }
-    
+
+    private void convertIfNeed() {
+        // called from ctor => no sync needed
+        IndexConverter converter = new IndexConverter();
+        if (!converter.needsConversion()) {
+            return;
+        }
+        boolean changed = false;
+        for (int i = 0; i < cache.size(); i++) {
+            CharSequence value = cache.get(i);
+            CharSequence newValue = converter.convert(value);
+            if (newValue != value) {
+                changed = true;
+                cache.set(i, newValue);
+                Collection<RequiredUnit> reqUnits = unit2requnint.remove(value);
+                unit2requnint.put(newValue, reqUnits);
+                if (!StorageAllocator.getInstance().renameUnitDirectory(value, newValue)) {
+                    StorageAllocator.getInstance().deleteUnitFiles(newValue, true);
+                    StorageAllocator.getInstance().deleteUnitFiles(value, true);
+                }
+            }
+        }
+        if (changed) {
+            for (CharSequence unitName : cache) {
+                String unitIndexFileName = getUnitIndexName(unitName);
+                if (new File(unitIndexFileName).exists()) {
+                    DataInputStream is = null;
+                    DataOutputStream os = null;
+                    boolean success = false;
+                    try {
+                        is = new DataInputStream(new BufferedInputStream(new FileInputStream(unitIndexFileName)));
+                        IntToStringCache filesCache = new IntToStringCache(is);
+                        filesCache.convert(converter);
+                        os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(unitIndexFileName, false)));
+                        filesCache.write(os);
+                        success = true;
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace(System.err);
+                    } catch (IOException e) {
+                        e.printStackTrace(System.err);
+                    } finally {
+                        if (is != null) {
+                            try {
+                                is.close();
+                            } catch (IOException ex) {
+                                ex.printStackTrace(System.err);
+                            }
+                        }
+                        if (os != null) {
+                            try {
+                                os.close();
+                            } catch (IOException ex) {
+                                ex.printStackTrace(System.err);
+                            }
+                        }
+                        if (!success) {
+                            StorageAllocator.getInstance().deleteUnitFiles(unitName, true);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
     void storeMasterIndex() {
         try {
             if (randomAccessFile == null) {
@@ -476,7 +536,7 @@ final class UnitsCache {
             RequiredUnit unit = new RequiredUnit(stream);
             units.add(unit);
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-                trace("\t\tRead req. unit %s ts=%d\n", unit.getName(), unit.getTimestamp()); // NOI18N
+                trace("\t\tRead req. unit %s ts=%d\n", unit.getUnitId(), unit.getTimestamp()); // NOI18N
             }
         }
         return units;
@@ -653,6 +713,10 @@ final class UnitsCache {
 
         public CharSequence getName() {
             return getValueById(unitId);
+        }
+
+        public int getUnitId() {
+            return unitId;
         }
 
         public long getTimestamp() {
