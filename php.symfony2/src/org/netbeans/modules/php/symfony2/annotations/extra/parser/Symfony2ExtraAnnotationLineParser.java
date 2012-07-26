@@ -58,6 +58,7 @@ public class Symfony2ExtraAnnotationLineParser implements AnnotationLineParser {
     static {
         PARSERS.add(new MethodLineParser());
         PARSERS.add(new RouteLineParser());
+        PARSERS.add(new ParamConverterLineParser());
     }
 
     private Symfony2ExtraAnnotationLineParser() {
