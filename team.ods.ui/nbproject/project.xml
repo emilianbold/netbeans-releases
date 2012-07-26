@@ -41,6 +41,11 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.codehaus.jackson.mapper</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.progress</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
