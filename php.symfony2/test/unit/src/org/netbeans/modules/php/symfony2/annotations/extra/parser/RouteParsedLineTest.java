@@ -41,32 +41,38 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
+import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2ExtraAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class RouteParsedLineTest extends NbTestCase {
 
-    public Symfony2ExtraAnnotationLineParserTest(String name) {
+    public RouteParsedLineTest(String name) {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2ExtraAnnotationLineParser.getDefault();
+    public void testHasCorrectName() throws Exception {
+        RouteParsedLine routeParsedLine = new RouteParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(RouteLineParser.ANNOTATION_NAME, routeParsedLine.getName());
     }
 
-    public void testMethodParser() {
-        assertNotNull(parser.parse("Method"));
+    public void testNonNullDescription() throws Exception {
+        try {
+            new RouteParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
-    public void testRouteParser() {
-        assertNotNull(parser.parse("Route"));
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new RouteParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
 }

@@ -57,6 +57,7 @@ public class Symfony2ExtraAnnotationLineParser implements AnnotationLineParser {
     private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
     static {
         PARSERS.add(new MethodLineParser());
+        PARSERS.add(new RouteLineParser());
     }
 
     private Symfony2ExtraAnnotationLineParser() {

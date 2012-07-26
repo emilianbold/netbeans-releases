@@ -41,32 +41,40 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2ExtraAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class RouteParsedLine implements AnnotationParsedLine {
+    private final String description;
+    private final Map<OffsetRange, String> types;
 
-    public Symfony2ExtraAnnotationLineParserTest(String name) {
-        super(name);
+    public RouteParsedLine(final String description, final Map<OffsetRange, String> types) {
+        Parameters.notNull("description", description);
+        Parameters.notNull("types", types);
+        this.description = description;
+        this.types = types;
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2ExtraAnnotationLineParser.getDefault();
+    public String getName() {
+        return RouteLineParser.ANNOTATION_NAME;
     }
 
-    public void testMethodParser() {
-        assertNotNull(parser.parse("Method"));
+    @Override
+    public String getDescription() {
+        return description;
     }
 
-    public void testRouteParser() {
-        assertNotNull(parser.parse("Route"));
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return new HashMap<OffsetRange, String>(types);
     }
 
 }

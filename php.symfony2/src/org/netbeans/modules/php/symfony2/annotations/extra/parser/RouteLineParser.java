@@ -41,32 +41,33 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.symfony2.annotations.AnnotationUtils;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2ExtraAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+class RouteLineParser implements AnnotationLineParser {
 
-    public Symfony2ExtraAnnotationLineParserTest(String name) {
-        super(name);
-    }
+    static final String ANNOTATION_NAME = "Route"; //NOI18N
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2ExtraAnnotationLineParser.getDefault();
-    }
-
-    public void testMethodParser() {
-        assertNotNull(parser.parse("Method"));
-    }
-
-    public void testRouteParser() {
-        assertNotNull(parser.parse("Route"));
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            result = new RouteParsedLine(description, types);
+        }
+        return result;
     }
 
 }
