@@ -210,6 +210,18 @@ public final class ODSProject {
         return null;
     }
     
+    public synchronized String getScmUrl() {
+        List<ProjectService> s = project.getProjectServicesOfType(ServiceType.SCM);
+        if (s != null) {
+            for (ProjectService ps : s) {
+                if (ps.isAvailable()) {
+                    return ps.getUrl();
+                }
+            }
+        }
+        return null;
+    }
+
     private synchronized boolean hasService(ServiceType type) {
         List<ProjectService> s = project.getProjectServicesOfType(type);
         if(s != null) {
