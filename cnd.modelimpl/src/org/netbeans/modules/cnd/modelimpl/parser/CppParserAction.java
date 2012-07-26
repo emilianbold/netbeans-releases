@@ -75,6 +75,8 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     public static int TYPE_PARAMETER__TYPENAME = 2;
     public static int TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL = 3;
     
+    public static int USING_DIRECTIVE__SCOPE = 0;
+    public static int USING_DIRECTIVE__IDENT = 1;
     
     
     boolean type_specifier_already_present(TokenStream input);
@@ -145,4 +147,8 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void decl_specifiers();
     void end_decl_specifiers();
     
+    
+    void using_directive(Token usingToken, Token namespaceToken);
+    void using_directive(int kind, Token token);
+    void end_using_directive(Token semicolonToken);
 }
