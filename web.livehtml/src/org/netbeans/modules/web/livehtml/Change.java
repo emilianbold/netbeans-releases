@@ -107,6 +107,12 @@ public class Change {
     public boolean isOrigin() {
         return revisionIndex != -1;
     }
+    
+    public boolean isEmpty() {
+        String trimmedAddedText = addedText == null ? "" : addedText.trim();
+        String trimmedRemovedText = removedText == null ? "" : removedText.trim();
+        return !added && trimmedAddedText.isEmpty() && trimmedRemovedText.isEmpty() && originalOffset == -1;
+    }
 
     public int getRevisionIndex() {
         return revisionIndex;
@@ -201,21 +207,20 @@ public class Change {
         return res;
     }
 
-    public static void dump(List<Change> changes) {
-        for (Change c : changes) {
-            System.out.println(c.toString());
-        }
-    }
-    
+//    @Override
+//    public String toString() {
+//        if (added) {
+//            return "ChangeADD{offset=" + offset + ", len=" + length + ", '" + addedText + "'}";
+//        } else if (revisionIndex != -1) {
+//            return "ChangeORG{offset=" + offset + ", len=" + length + "}";
+//        } else {
+//            return "ChangeRMV{offset=" + offset + ", originalOffset="+originalOffset +", len=" + removedText.length() + ", '" + removedText + "'}";
+//        }
+//    }
+
     @Override
     public String toString() {
-        if (added) {
-            return "ChangeADD{offset=" + offset + ", len=" + length + ", '" + addedText + "'}";
-        } else if (revisionIndex != -1) {
-            return "ChangeORG{offset=" + offset + ", len=" + length + "}";
-        } else {
-            return "ChangeRMV{offset=" + offset + ", originalOffset="+originalOffset +", len=" + removedText.length() + ", '" + removedText + "'}";
-        }
+        return "Change{" + "added=" + added + ", offset=" + offset + ", originalOffset=" + originalOffset + ", length=" + length + ", removedText=" + removedText + ", addedText=" + addedText + ", revisionIndex=" + revisionIndex + '}';
     }
     
 }

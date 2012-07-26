@@ -39,42 +39,52 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.filter;
+package org.netbeans.modules.web.livehtml.ui.stacktrace;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import org.netbeans.modules.web.livehtml.Revision;
+import org.json.simple.JSONObject;
+import org.netbeans.modules.web.livehtml.StackTrace;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
  *
  * @author petr-podzimek
  */
-public class AndRevisionFilter implements RevisionFilter {
+public class StackTraceToolTipLeafNode extends AbstractNode {
     
-    private List<RevisionFilter> revisionFilters = new CopyOnWriteArrayList<RevisionFilter>();
-
-    public AndRevisionFilter(List<RevisionFilter> revisionFilters) {
-        if (revisionFilters != null) {
-            for (RevisionFilter revisionFilter : revisionFilters) {
-                this.revisionFilters.add(revisionFilter);
+    public StackTraceToolTipLeafNode(Object object) {
+        super(Children.LEAF);
+        
+        if (object instanceof JSONObject) {
+            JSONObject jSONObject = (JSONObject) object;
+            final Object function = jSONObject.get(StackTrace.FUNCTION);
+            final Object lineNumber = jSONObject.get(StackTrace.LINE_NUMBER);
+            final Object columnNumber = jSONObject.get(StackTrace.COLUMN_NUMBER);
+            final Object script = jSONObject.get(StackTrace.SCRIPT);
+            
+            StringBuilder sb = new StringBuilder();
+            
+            if (function != null) {
+                sb.append(function);
+            }
+            
+            if (lineNumber != null) {
+                sb.append(" ");
+                sb.append(lineNumber);
+            }
+            
+            if (columnNumber != null) {
+                sb.append(":");
+                sb.append(columnNumber);
+            }
+            
+            setDisplayName(sb.toString());
+            
+            if (script != null) {
+                setShortDescription("Script: " + script.toString());
             }
         }
-    }
-
-    @Override
-    public boolean match(Revision revision) {
-        for (RevisionFilter revisionFilter : revisionFilters) {
-            if (!revisionFilter.match(revision)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public void addRevisionFilter(RevisionFilter revisionFilter) {
-        if (revisionFilter != null) {
-            revisionFilters.add(revisionFilter);
-        }
+        
     }
     
 }

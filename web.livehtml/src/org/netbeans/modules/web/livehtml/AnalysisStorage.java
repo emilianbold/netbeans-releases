@@ -41,14 +41,13 @@
  */
 package org.netbeans.modules.web.livehtml;
 
-import org.netbeans.modules.web.livehtml.filter.RevisionFilter;
-import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -60,7 +59,10 @@ public class AnalysisStorage {
     
     private static AnalysisStorage instance;
     
-    static boolean isUnitTesting = false;
+    /**
+     * NOTE: Current code works only when true.
+     */
+    public static boolean isUnitTesting = true;
     
     private List<Analysis> storedAnalyses = new CopyOnWriteArrayList<Analysis>();
     private File storageRoot;
@@ -91,13 +93,19 @@ public class AnalysisStorage {
         }
     }
     
+    private void fireAnalysisRemoved(Analysis analysis) {
+        for (AnalysisStorageListener analysisStorageListener : analysisStorageListeners) {
+            analysisStorageListener.analysisRemoved(analysis);
+        }
+    }
+    
     public static Lookup getParserLookup() {
         Properties p = new Properties();
         p.setProperty("add_text_nodes", "true");
         return Lookups.fixed(p);
     }
     
-    protected File getChangesStorageRoot(File liveHTMLRoot) {
+    public File getChangesStorageRoot(File liveHTMLRoot) {
         long fileHash = System.currentTimeMillis();
         File f = new File(liveHTMLRoot, Long.toString(fileHash % 173 + 172));   // NOI18N
         if (!f.exists()) {
@@ -127,7 +135,7 @@ public class AnalysisStorage {
         return file;
     }
 
-    protected synchronized File getStorageRoot() {
+    public synchronized File getStorageRoot() {
         if (storageRoot == null) {
             storageRoot = getTempDirectory();
         }
@@ -137,9 +145,15 @@ public class AnalysisStorage {
     private void addAnalysis(Analysis analysis) {
         if (analysis != null) {
             getStoredAnalyses().add(analysis);
+            fireAnalysisAdded(analysis);
         }
-        
-        fireAnalysisAdded(analysis);
+    }
+    
+    private void removeAnalysis(Analysis analysis) {
+        if (analysis != null) {
+            getStoredAnalyses().remove(analysis);
+            fireAnalysisRemoved(analysis);
+        }
     }
     
     public synchronized Analysis resolveAnalysis(URL url) {
@@ -152,9 +166,7 @@ public class AnalysisStorage {
             
             makeAllAsFinished();
             
-            File file = getChangesStorageRoot(getStorageRoot());
-
-            analysis = new Analysis(file, null);
+            analysis = new Analysis(null);
             analysis.setSourceUrl(url);
 
             addAnalysis(analysis);
@@ -162,12 +174,8 @@ public class AnalysisStorage {
         return analysis;
     }
     
-    public synchronized Analysis addFiltered(Analysis parentAnalysis, RevisionFilter revisionFilter, boolean reformatRevision) {
-        File analysisRoot = getChangesStorageRoot(getStorageRoot());
-        final Revision firstRevision = parentAnalysis.getRevision(0, reformatRevision);
-        FilteredAnalysis filteredAnalysis = new FilteredAnalysis(parentAnalysis, analysisRoot, firstRevision.getContent());
-        filteredAnalysis.setSourceUrl(parentAnalysis.getSourceUrl());
-        filteredAnalysis.setRevisionFilter(revisionFilter, reformatRevision);
+    public synchronized Analysis addFilteredAnalysis(FilteredAnalysis filteredAnalysis) {
+        removeAnalysis(getFilteredAnalysis(filteredAnalysis.getParentAnalysis()));
         
         addAnalysis(filteredAnalysis);
         
@@ -185,7 +193,8 @@ public class AnalysisStorage {
         
         Analysis selectedAnalysis = null;
         for (Analysis analysis : getStoredAnalyses()) {
-            if (url.equals(analysis.getSourceUrl())) {
+            if (analysis.getClass() == Analysis.class && 
+                    url.equals(analysis.getSourceUrl())) {
                 selectedAnalysis = analysis;
             }
         }
@@ -201,4 +210,19 @@ public class AnalysisStorage {
         }
     }
     
+    public FilteredAnalysis getFilteredAnalysis(Analysis parentAnalysis) {
+        if (parentAnalysis == null) {
+            return null;
+        }
+        for (Analysis analysis : getStoredAnalyses()) {
+            if (analysis instanceof FilteredAnalysis) {
+                FilteredAnalysis filteredAnalysis = (FilteredAnalysis) analysis;
+                if (parentAnalysis == filteredAnalysis.getParentAnalysis()) {
+                    return filteredAnalysis;
+                }
+            }
+        }
+        return null;
+    }
+
 }

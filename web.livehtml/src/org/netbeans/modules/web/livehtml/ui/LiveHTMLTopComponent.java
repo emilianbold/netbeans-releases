@@ -41,18 +41,15 @@
  */
 package org.netbeans.modules.web.livehtml.ui;
 
-import org.netbeans.api.settings.ConvertAsProperties;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
 
 /**
  * Top component which displays something.
  */
-@ConvertAsProperties(
-    dtd = "-//org.netbeans.modules.web.livehtml.ui//LiveHTML//EN",
-autostore = false)
+//@ConvertAsProperties(
+//    dtd = "-//org.netbeans.modules.web.livehtml.ui//LiveHTML//EN",
+//autostore = false)
 @TopComponent.Description(
     preferredID = LiveHTMLTopComponent.PREFERRED_ID,
 //iconBase="SET/PATH/TO/ICON/HERE", 
@@ -113,26 +110,16 @@ public final class LiveHTMLTopComponent extends TopComponent {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.web.livehtml.ui.AnalysisPanel analysisPanel1;
     // End of variables declaration//GEN-END:variables
-    @Override
-    public void componentOpened() {
-        // TODO add custom code on component opening
-    }
 
-    @Override
-    public void componentClosed() {
-        // TODO add custom code on component closing
-        analysisPanel1 = null;
-    }
+//    void writeProperties(java.util.Properties p) {
+//        // better to version settings since initial version as advocated at
+//        // http://wiki.apidesign.org/wiki/PropertyFiles
+//        p.setProperty("version", "1.0");
+//        // TODO store your settings
+//    }
 
-    void writeProperties(java.util.Properties p) {
-        // better to version settings since initial version as advocated at
-        // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
-        // TODO store your settings
-    }
-
-    void readProperties(java.util.Properties p) {
-        String version = p.getProperty("version");
-        // TODO read your settings according to their version
-    }
+//    void readProperties(java.util.Properties p) {
+//        String version = p.getProperty("version");
+//        // TODO read your settings according to their version
+//    }
 }

@@ -62,7 +62,7 @@ public class LiveHTMLMultiViewElement extends AnalysisPanel implements MultiView
     public LiveHTMLMultiViewElement(Lookup lookup) {
         final FileObject fileObject = lookup.lookup(FileObject.class);
         if (fileObject != null) {
-            updateSourceUrl(fileObject.toURL());
+            setSourceUrl(fileObject.toURL());
         }
     }
 

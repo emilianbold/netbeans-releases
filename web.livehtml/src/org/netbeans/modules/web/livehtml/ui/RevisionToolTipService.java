@@ -48,17 +48,26 @@ import org.netbeans.modules.web.livehtml.Revision;
  *
  * @author petr-podzimek
  */
-public abstract class RevisionToolTipService<C extends Component> {
+public abstract class RevisionToolTipService<C extends Component> implements Comparable<RevisionToolTipService> {
     
-    protected abstract C getComponent(Revision revision);
-    protected abstract void update(C component, Revision revision);
+    protected abstract C createComponent(Revision revision);
+    protected abstract void updateComponent(C component, Revision revision, boolean reformatContent);
     protected abstract boolean canProcess(Revision revision);
-    protected abstract String getName();
+    protected abstract String getDisplayName();
+    protected abstract int getOrder();
     
-    public final C createToolTip(Revision revision) {
-        C c = getComponent(revision);
-        update(c, revision);
+    public final C createToolTip(Revision revision, boolean reformatContent) {
+        C c = createComponent(revision);
+        updateComponent(c, revision, reformatContent);
         return c;
+    }
+
+    @Override
+    public int compareTo(RevisionToolTipService o) {
+        if (o == null) {
+            return 1;
+        }
+        return Integer.valueOf(getOrder()).compareTo(Integer.valueOf(o.getOrder()));
     }
     
 }

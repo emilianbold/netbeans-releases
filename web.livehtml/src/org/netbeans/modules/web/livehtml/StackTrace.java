@@ -39,28 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.filter;
-
-import java.util.List;
-import org.netbeans.modules.web.livehtml.Revision;
+package org.netbeans.modules.web.livehtml;
 
 /**
  *
  * @author petr-podzimek
  */
-public class FunctionRevisionFilter implements RevisionFilter {
+public class StackTrace {
     
-    private final String functionName;
+    public static final String FUNCTION = "function";
+    public static final String LINE_NUMBER = "lineNumber";
+    public static final String COLUMN_NUMBER = "columnNumber";
+    public static final String SCRIPT = "script";
 
-    public FunctionRevisionFilter(String functionName) {
-        this.functionName = functionName;
-    }
-
-    @Override
-    public boolean match(Revision revision) {
-        final List<Object> callStackValues = revision.getCallStackValues("function");
-//        fore
-        return true;
-    }
-    
 }

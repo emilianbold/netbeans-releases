@@ -39,21 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.ui.callstack;
+package org.netbeans.modules.web.livehtml.ui.stacktrace;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.json.simple.JSONArray;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author petr-podzimek
  */
-public class CallStackToolTipRootNode extends AbstractNode {
-
-    public CallStackToolTipRootNode(JSONArray callStack) {
-        super(new CallStackToolTipNodeContainer(callStack));
-        setDisplayName("Root");
-    }
+public class StackTraceToolTipNodeContainer extends Children.Keys<JSONArray> {
     
+    private final JSONArray stackTrace;
+
+    public StackTraceToolTipNodeContainer(JSONArray stackTrace) {
+        this.stackTrace = stackTrace;
+    }
+
+    @Override
+    protected void addNotify() {
+        setKeys(new JSONArray[] {stackTrace});
+    }
+
+    @Override
+    protected Node[] createNodes(JSONArray key) {
+        List<Node> nodes = new ArrayList<Node>();
+        
+        for (Object object : key) {
+            nodes.add(new StackTraceToolTipLeafNode(object));
+        }
+        
+        return nodes.toArray(new Node[nodes.size()]);
+    }
+
 }

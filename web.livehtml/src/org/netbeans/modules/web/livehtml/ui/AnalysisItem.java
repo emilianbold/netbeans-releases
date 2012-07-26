@@ -80,16 +80,50 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
         this.filteredAnalysis = filteredAnalysis;
     }
     
-    public boolean canBeAnalyzed() {
-        return resolveAnalysis() != null && resolveAnalysis() instanceof Analysis;
+    public String getRevisionLabel(int selectedRevisionIndex) {
+        StringBuilder revisionsLabel = new StringBuilder(String.valueOf(selectedRevisionIndex));
+        revisionsLabel.append(" / ");
+        revisionsLabel.append(resolveAnalysis().getRevisionsCount());
+        
+        if (isFilteredItem()) {
+            revisionsLabel.append(" (");
+            revisionsLabel.append(toParentAnalysisRevisionIndex(selectedRevisionIndex));
+            revisionsLabel.append("/");
+            revisionsLabel.append(analysis.getRevisionsCount());
+            revisionsLabel.append(")");
+        }
+        
+        return revisionsLabel.toString();
+    }
+
+    private int toParentAnalysisRevisionIndex(int revisionIndex) {
+        if (revisionIndex < 0 || getFilteredAnalysis().getTimeStampsCount() <= revisionIndex) {
+            return -1;
+        }
+        final String timeStamp = getFilteredAnalysis().getTimeStamps().get(revisionIndex);
+        
+        if (timeStamp == null) {
+            return -1;
+        }
+        
+        for (int i = 0; i < getAnalysis().getTimeStamps().size(); i++) {
+            final String parentTimeStamp = getAnalysis().getTimeStamps().get(i);
+            if (timeStamp.equals(parentTimeStamp)) {
+                return i;
+            }
+        }
+        
+        return -1;
     }
     
-    public String getRevisionsLabel(int selectedRevisionIndex) {
-        String revisionsLabel = selectedRevisionIndex + " / " + resolveAnalysis().getRevisionsCount();
-        if (isFilteredItem()) {
-            revisionsLabel = revisionsLabel + " (" + analysis.getRevisionsCount() + ")";
+    public String getRevisionDetailLabel(int selectedRevisionIndex) {
+        StringBuilder revisionsLabel = new StringBuilder();
+        
+        if (filteredAnalysis != null) {
+            revisionsLabel.append(filteredAnalysis.getFilteredRevisionLabel(selectedRevisionIndex));
         }
-        return revisionsLabel;
+        
+        return revisionsLabel.toString();
     }
 
     @Override
@@ -100,9 +134,9 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
             sb.append(" * ");
         }
         
-        if (filteredAnalysis != null) {
-            sb.append(" F ");
-        }
+//        if (filteredAnalysis != null) {
+//            sb.append(" F ");
+//        }
         
         if (analysis.getSourceUrl() != null) {
             String sourceUrl = analysis.getSourceUrl().toExternalForm();

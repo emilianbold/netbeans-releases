@@ -39,40 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.ui.callstack;
+package org.netbeans.modules.web.livehtml.filter.groupscripts;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.json.simple.JSONArray;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.json.simple.JSONObject;
+import org.netbeans.modules.web.livehtml.StackTrace;
 
 /**
  *
  * @author petr-podzimek
  */
-public class CallStackToolTipNodeContainer extends Children.Keys<JSONArray> {
+class ScriptStackTraceFilter implements StackTraceFilter {
     
-    private final JSONArray callStack;
+    private final String scriptUrl;
 
-    public CallStackToolTipNodeContainer(JSONArray callStack) {
-        this.callStack = callStack;
+    public ScriptStackTraceFilter(String scriptUrl) {
+        this.scriptUrl = scriptUrl;
     }
 
     @Override
-    protected void addNotify() {
-        setKeys(new JSONArray[] {callStack});
-    }
-
-    @Override
-    protected Node[] createNodes(JSONArray key) {
-        List<Node> nodes = new ArrayList<Node>();
-        
-        for (Object object : key) {
-            nodes.add(new CallStackToolTipLeafNode(object));
+    public boolean match(Object object) {
+        if (object instanceof JSONObject) {
+            JSONObject jSONObject = (JSONObject) object;
+            final Object script = jSONObject.get(StackTrace.SCRIPT);
+            return script != null && script.equals(scriptUrl);
         }
-        
-        return nodes.toArray(new Node[nodes.size()]);
+        return false;
     }
 
+    public String getScriptUrl() {
+        return scriptUrl;
+    }
+    
 }

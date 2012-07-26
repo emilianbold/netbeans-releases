@@ -41,27 +41,27 @@
  */
 package org.netbeans.modules.web.livehtml.filter;
 
-import org.netbeans.modules.web.livehtml.Revision;
+import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceFilter;
 
 /**
  *
  * @author petr-podzimek
  */
-public class NotRevisionFilter implements RevisionFilter {
+public class NotStackTraceFilter implements StackTraceFilter {
     
-    private final RevisionFilter revisionFilter;
+    private final StackTraceFilter stackTraceFilter;
 
-    public NotRevisionFilter(RevisionFilter revisionFilter) {
-        this.revisionFilter = revisionFilter;
-    }
-
-    public RevisionFilter getRevisionFilter() {
-        return revisionFilter;
+    public NotStackTraceFilter(StackTraceFilter stackTraceFilter) {
+        this.stackTraceFilter = stackTraceFilter;
     }
 
     @Override
-    public boolean match(Revision revision) {
-        return !revisionFilter.match(revision);
+    public boolean match(Object object) {
+        return !stackTraceFilter.match(object);
+    }
+
+    public StackTraceFilter getStackTraceFilter() {
+        return stackTraceFilter;
     }
     
 }

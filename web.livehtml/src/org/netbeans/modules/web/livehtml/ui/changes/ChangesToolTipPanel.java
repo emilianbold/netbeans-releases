@@ -43,9 +43,7 @@ package org.netbeans.modules.web.livehtml.ui.changes;
 
 import java.util.List;
 import org.netbeans.modules.web.livehtml.Change;
-import org.netbeans.modules.web.livehtml.ui.callstack.CallStackToolTipRootNode;
 import org.openide.explorer.ExplorerManager;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
