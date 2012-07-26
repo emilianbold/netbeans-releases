@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.db.dataview.table;
 
+import javax.swing.RowFilter;
+import javax.swing.table.TableModel;
+
 /**
  *
  * @author ahimanikya
@@ -57,23 +60,13 @@ public class MultiColPatternFilter extends SuperPatternFilter {
     }
 
     @Override
-    public boolean test(final int row) {
+    public boolean include(RowFilter.Entry<? extends TableModel,? extends Integer> entry)  {
         for (int colIdx : cols) {
-            if (adapter.isTestable(colIdx)) {
-                Object val = getInputValue(row, colIdx);
-                if(val == null) {
-                    return false;
-                }
-                final String valueStr = val.toString().trim();
-                final boolean ret = testValue(valueStr);
-                if (ret) {
+            Object val = entry.getValue(colIdx);
+            if (testValue(val)) {
                     return true;
                 }
-            } else {
-
-                return false;
             }
-        }
         return false;
     }
 }
