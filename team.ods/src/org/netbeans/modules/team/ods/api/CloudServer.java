@@ -45,7 +45,6 @@ import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
@@ -55,6 +54,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import javax.swing.Icon;
 import org.netbeans.modules.team.ods.client.api.ODSFactory;
 import org.netbeans.modules.team.ods.client.api.ODSClient;
@@ -91,7 +92,8 @@ public final class CloudServer {
     private Icon icon;
     private PasswordAuthentication auth;
     private Profile currentProfile;
-    final HashMap<String, ODSProject> projectsCache = new HashMap<String, ODSProject>();
+    private final Map<String, ODSProject> projectsCache = new HashMap<String, ODSProject>();
+    private final Map<String, List<ODSProject>> myProjectCache = new WeakHashMap<String, List<ODSProject>>();
 
     private CloudServer (String displayName, String url) throws MalformedURLException {
         while (url.endsWith("/")) { //NOI18N
@@ -193,6 +195,23 @@ public final class CloudServer {
         }    
     }
 
+    public ODSProject getProject (String projectId, boolean refresh) throws ODSException {
+        if(!isLoggedIn()) {
+            return null;
+        }
+        ODSProject odsProj;
+        synchronized(projectsCache) {
+            odsProj = projectsCache.get(projectId);
+        }
+        if (refresh || odsProj == null) {
+            Project proj = getProject(projectId);
+            if (proj != null) {
+                odsProj = setOdsProjectData(projectId, proj);
+            }
+        }
+        return odsProj;
+    }
+
     private void firePropertyChange (PropertyChangeEvent event) {
         propertyChangeSupport.firePropertyChange(event);
         CloudServerManager.getDefault().propertyChangeSupport.firePropertyChange(event);
@@ -202,8 +221,7 @@ public final class CloudServer {
         if(!isLoggedIn()) {
             return;
         }
-        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
-        Project p = client.getProjectById(odsProject.getId());
+        Project p = getProject(odsProject.getId());
         odsProject.setProject(p);
     }
     
@@ -211,37 +229,62 @@ public final class CloudServer {
         if(!isLoggedIn()) {
             return Collections.EMPTY_LIST;
         }
-        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
-        synchronized(projectsCache) {
-            if(force || projectsCache.isEmpty()) { 
-                List<Project> ps = client.getMyProjects();
-                if(ps == null) {
-                    return Collections.EMPTY_LIST;
-                }
-                Collection<ODSProject> ret = new ArrayList<ODSProject>(ps.size());
-                for (Project project : ps) {
-                    ODSProject p = new ODSProject(project, this);
-                    ret.add(p);
-                    projectsCache.put(project.getIdentifier(), p);
-                }
-                return ret;
-            } else {
-                return Collections.unmodifiableCollection(projectsCache.values());
+        String username = auth.getUserName();
+        synchronized(myProjectCache) {
+            List<ODSProject> myProjs = myProjectCache.get(username);
+            if (myProjs != null && !force) {
+                return new ArrayList<ODSProject>(myProjs);
             }
-        }   
+        }
+        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        List<Project> ps = client.getMyProjects();
+        if (ps == null) {
+            synchronized (myProjectCache) {
+                myProjectCache.put(username, Collections.<ODSProject>emptyList());
+                return Collections.<ODSProject>emptyList();
+            }
+        }
+        Collection<ODSProject> ret = new ArrayList<ODSProject>(ps.size());
+        for (Project project : ps) {
+            ODSProject p = setOdsProjectData(project.getIdentifier(), project);
+            ret.add(p);
+        }
+        synchronized (myProjectCache) {
+            myProjectCache.put(username, new ArrayList<ODSProject>(ret));
+        }
+        return ret;
     }
 
     public Collection<ODSProject> getMyProjects() throws ODSException {
         if(!isLoggedIn()) {
             return Collections.EMPTY_LIST;
         }
-        synchronized(projectsCache) {
-            if(projectsCache.isEmpty()) {
-                return getMyProjects(true);
-            } else {
-                return Collections.unmodifiableCollection(projectsCache.values());
+        synchronized(myProjectCache) {
+            List<ODSProject> myProjs = myProjectCache.get(auth.getUserName());
+            if (myProjs != null) {
+                return new ArrayList<ODSProject>(myProjs);
             }
         }
+        return getMyProjects(true);
+    }
+
+    private Project getProject (String projectId) throws ODSException {
+        ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+        Project p = client.getProjectById(projectId);
+        return p;
+    }
+
+    private ODSProject setOdsProjectData (String projectId, Project proj) {
+        ODSProject odsProj;
+        synchronized (projectsCache) {
+            odsProj = projectsCache.get(projectId);
+            if (odsProj == null) {
+                projectsCache.put(projectId, odsProj = new ODSProject(proj, this));
+            } else {
+                odsProj.setProject(proj);
+            }
+        }
+        return odsProj;
     }
     
 }

@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.team.ods.api.CloudServer;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ods.ui.Utilities;
@@ -84,6 +85,19 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
 
     @Override
     public ProjectHandleImpl getNonMemberProject(CloudUiServer server, String projectId, boolean force) {
+        try {
+            CloudServer odsServer = server.getServer();
+            if (odsServer != null) {
+                ODSProject proj = odsServer.getProject(projectId, false);
+                if (proj != null) {
+                    return new ProjectHandleImpl(server, proj);
+                }
+            }
+        } catch (ODSException ex) {
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getting a project {0} from {1}", //NOI18N
+                    new Object[] { projectId, uiServer.getUrl().toString() } );
+        }
         return null;
     }
 
