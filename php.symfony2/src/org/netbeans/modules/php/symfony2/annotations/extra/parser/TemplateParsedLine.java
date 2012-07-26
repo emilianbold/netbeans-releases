@@ -41,45 +41,40 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2ExtraAnnotationLineParser implements AnnotationLineParser {
+public class TemplateParsedLine implements AnnotationParsedLine {
+    private final String description;
+    private final Map<OffsetRange, String> types;
 
-    private static final AnnotationLineParser INSTANCE = new Symfony2ExtraAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new MethodLineParser());
-        PARSERS.add(new RouteLineParser());
-        PARSERS.add(new ParamConverterLineParser());
-        PARSERS.add(new TemplateLineParser());
-    }
-
-    private Symfony2ExtraAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=200)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+    public TemplateParsedLine(final String description, final Map<OffsetRange, String> types) {
+        Parameters.notNull("description", description); //NOI18N
+        Parameters.notNull("types", types); //NOI18N
+        this.description = description;
+        this.types = types;
     }
 
     @Override
-    public AnnotationParsedLine parse(final String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    public String getName() {
+        return TemplateLineParser.ANNOTATION_NAME;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return new HashMap<OffsetRange, String>(types);
     }
 
 }

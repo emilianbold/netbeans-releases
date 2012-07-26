@@ -41,43 +41,31 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.symfony2.annotations.AnnotationUtils;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2ExtraAnnotationLineParser implements AnnotationLineParser {
+class TemplateLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new Symfony2ExtraAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new MethodLineParser());
-        PARSERS.add(new RouteLineParser());
-        PARSERS.add(new ParamConverterLineParser());
-        PARSERS.add(new TemplateLineParser());
-    }
-
-    private Symfony2ExtraAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=200)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
-    }
+    static final String ANNOTATION_NAME = "Template"; //NOI18N
 
     @Override
-    public AnnotationParsedLine parse(final String line) {
+    public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            result = new TemplateParsedLine(description, types);
         }
         return result;
     }

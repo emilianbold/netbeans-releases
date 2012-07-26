@@ -41,45 +41,38 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2ExtraAnnotationLineParser implements AnnotationLineParser {
+public class TemplateParsedLineTest extends NbTestCase {
 
-    private static final AnnotationLineParser INSTANCE = new Symfony2ExtraAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new MethodLineParser());
-        PARSERS.add(new RouteLineParser());
-        PARSERS.add(new ParamConverterLineParser());
-        PARSERS.add(new TemplateLineParser());
+    public TemplateParsedLineTest(String name) {
+        super(name);
     }
 
-    private Symfony2ExtraAnnotationLineParser() {
+    public void testHasCorrectName() throws Exception {
+        TemplateParsedLine templateParsedLine = new TemplateParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(TemplateLineParser.ANNOTATION_NAME, templateParsedLine.getName());
     }
 
-    @AnnotationLineParser.Registration(position=200)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
-    }
-
-    @Override
-    public AnnotationParsedLine parse(final String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
+    public void testNonNullDescription() throws Exception {
+        try {
+            new TemplateParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
         }
-        return result;
+    }
+
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new TemplateParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
 }
