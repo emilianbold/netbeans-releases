@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.WeakHashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -99,24 +98,32 @@ public class JsfSupportImpl implements JsfSupport {
         WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         if(webModule != null) {
             //web project
+            ClassPath sourceCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.SOURCE);
             ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
             ClassPath executeCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE);
+            ClassPath bootCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.BOOT);
             
-            return new JsfSupportImpl(project, webModule, compileCP, executeCP);
+            return new JsfSupportImpl(project, webModule, sourceCP, compileCP, executeCP, bootCP);
         } else {
             //non-web project
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] sourceGroups = sources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
             if(sourceGroups.length > 0) {
+                Collection<ClassPath> sourceCps = new HashSet<ClassPath>();
                 Collection<ClassPath> compileCps = new HashSet<ClassPath>();
                 Collection<ClassPath> executeCps = new HashSet<ClassPath>();
+                Collection<ClassPath> bootCps = new HashSet<ClassPath>();
                 for(SourceGroup sg : sourceGroups) {
+                    sourceCps.add(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.SOURCE));
                     compileCps.add(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.COMPILE));
                     executeCps.add(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.EXECUTE));
+                    bootCps.add(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.BOOT));
                 }
                 return new JsfSupportImpl(project, null, 
+                        ClassPathSupport.createProxyClassPath(sourceCps.toArray(new ClassPath[]{})),
                         ClassPathSupport.createProxyClassPath(compileCps.toArray(new ClassPath[]{})),
-                        ClassPathSupport.createProxyClassPath(executeCps.toArray(new ClassPath[]{})));
+                        ClassPathSupport.createProxyClassPath(executeCps.toArray(new ClassPath[]{})),
+                        ClassPathSupport.createProxyClassPath(bootCps.toArray(new ClassPath[]{})));
             }
             
         }
@@ -129,21 +136,23 @@ public class JsfSupportImpl implements JsfSupport {
     private FaceletsLibrarySupport faceletsLibrarySupport;
     private Project project;
     private WebModule wm;
-    private ClassPath classpath, executeClassPath;
+    private ClassPath sourceClassPath, compileClasspath, executeClassPath, bootClassPath;
     private JsfIndex index;
     private MetadataModel<WebBeansModel> webBeansModel;
     private Lookup lookup;
 
-    private JsfSupportImpl(Project project, WebModule wm, ClassPath classPath, ClassPath executeClassPath) {
+    private JsfSupportImpl(Project project, WebModule wm, ClassPath sourceClassPath, ClassPath compileClassPath, ClassPath executeClassPath, ClassPath bootClassPath) {
         this.project = project;
         this.wm = wm;
-        this.classpath = classPath;
+        this.sourceClassPath = sourceClassPath;
+        this.compileClasspath = compileClassPath;
         this.executeClassPath = executeClassPath;
+        this.bootClassPath = bootClassPath;
         this.faceletsLibrarySupport = new FaceletsLibrarySupport(this);
 
         //adds a classpath listener which invalidates the index instance after classpath change
         //and also invalidates the facelets library descriptors and tld caches
-        this.classpath.addPropertyChangeListener(new PropertyChangeListener() {
+        this.compileClasspath.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 synchronized (JsfSupportImpl.this) {
@@ -172,7 +181,7 @@ public class JsfSupportImpl implements JsfSupport {
 
     @Override
     public ClassPath getClassPath() {
-        return classpath;
+        return compileClasspath;
     }
 
     /**
@@ -205,7 +214,7 @@ public class JsfSupportImpl implements JsfSupport {
     //garbage methods below, needs cleanup!
     public synchronized JsfIndex getIndex() {
         if(index == null) {
-	    this.index = JsfIndex.create(getBaseFile(), classpath, executeClassPath);
+	    this.index = JsfIndex.create(sourceClassPath, compileClasspath, executeClassPath, bootClassPath);
         }
         return this.index;
     }
