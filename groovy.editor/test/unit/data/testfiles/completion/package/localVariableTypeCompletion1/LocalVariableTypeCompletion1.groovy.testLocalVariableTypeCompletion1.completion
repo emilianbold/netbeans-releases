@@ -26,6 +26,7 @@ CLASS      InterruptedIOException                     null
 CLASS      InvalidClassException                      null
 CLASS      InvalidObjectException                     null
 CLASS      InvalidPropertiesFormatExcepti             null
+METHOD     inject(Closure)                            Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
 METHOD     invokeMethod(String, Object)               Object
