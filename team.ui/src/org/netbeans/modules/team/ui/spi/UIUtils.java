@@ -80,10 +80,6 @@ public final class UIUtils {
      * less than 20 possible combinations at max. */
     private static Set<String> loggedParams = Collections.synchronizedSet(new HashSet<String>());
 
-    public static String getPrefName(TeamServer server, String name)  {
-        return server.getUrl().getHost() + name;
-    }
-
     public static void waitStartupFinished() {
         LoginTask.waitStartupFinished();
     }
