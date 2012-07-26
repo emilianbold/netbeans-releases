@@ -56,8 +56,8 @@ public class RouteParsedLine implements AnnotationParsedLine {
     private final Map<OffsetRange, String> types;
 
     public RouteParsedLine(final String description, final Map<OffsetRange, String> types) {
-        Parameters.notNull("description", description);
-        Parameters.notNull("types", types);
+        Parameters.notNull("description", description); //NOI18N
+        Parameters.notNull("types", types); //NOI18N
         this.description = description;
         this.types = types;
     }
