@@ -41,19 +41,25 @@
  */
 package org.netbeans.modules.team.ods.ui.project;
 
+import com.tasktop.c2c.server.profile.domain.activity.BuildActivity;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
+import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
+import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
+import com.tasktop.c2c.server.profile.domain.activity.WikiActivity;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ods.client.api.ODSClient;
 import org.netbeans.modules.team.ods.client.api.ODSException;
+import org.netbeans.modules.team.ods.ui.utils.Utils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -65,6 +71,12 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     private static final RequestProcessor RP = new RequestProcessor(RecentActivitiesPanel.class);
     private final String projectId;
     private final ODSClient client;
+    private JCheckBox chbTask;
+    private JCheckBox chbWiki;
+    private JCheckBox chbBuild;
+    private JCheckBox chbScm;
+    private List<ProjectActivity> recentActivities = Collections.emptyList();
+    private int maxWidth = -1;
 
     /**
      * Creates new form RecentActivitiesPanel
@@ -186,15 +198,17 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
                         @Override
                         public void run() {
                             if (recentActivities != null && !recentActivities.isEmpty()) {
-                                showRecentActivities(recentActivities);
+                                RecentActivitiesPanel.this.recentActivities = recentActivities;
+                                createShowButtons();
+                                showRecentActivities();
                             } else {
+                                RecentActivitiesPanel.this.recentActivities = Collections.emptyList();
                                 showEmptyContent();
                             }
                         }
-
                     });
                 } catch (ODSException ex) {
-                    getLogger().log(Level.SEVERE, ex.getMessage());
+                    Utils.getLogger().log(Level.SEVERE, ex.getMessage());
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -206,20 +220,70 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         });
     }
 
-    private void showRecentActivities(List<ProjectActivity> recentActivities) {
+    private void createShowButtons() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.gridheight = GridBagConstraints.REMAINDER;
+
+        chbTask = new JCheckBox("Tasks", Utils.Settings.isShowTasks());
+        chbTask.setOpaque(false);
+        chbTask.addActionListener(new ShowActionListener());
+        pnlShow.add(chbTask, gbc);
+
+        chbWiki = new JCheckBox("Wiki", Utils.Settings.isShowWiki());
+        chbWiki.setOpaque(false);
+        chbWiki.addActionListener(new ShowActionListener());
+        pnlShow.add(chbWiki, gbc);
+
+        chbScm = new JCheckBox("Commits", Utils.Settings.isShowScm());
+        chbScm.setOpaque(false);
+        chbScm.addActionListener(new ShowActionListener());
+        pnlShow.add(chbScm, gbc);
+
+        chbBuild = new JCheckBox("Builds", Utils.Settings.isShowBuilds());
+        chbBuild.setOpaque(false);
+        chbBuild.addActionListener(new ShowActionListener());
+        pnlShow.add(chbBuild, gbc);
+
+        pnlShow.revalidate();
+    }
+
+    private void showRecentActivities() {
+        Date lastDate = null;
+        DateSeparatorPanel currentDatePanel = null;
         pnlContent.removeAll();
-        createShowButtons(recentActivities);
-        for (int i = 0; i < 4; i++) {
+        updateShowButtons();
+        for (ProjectActivity activity : recentActivities) {
+            if (!isActivityAllowed(activity)) {
+                continue;
+            }
             GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(0, 3, 0, 3);
+            gbc.insets = new Insets(0, 3, 0, 0);
             gbc.anchor = GridBagConstraints.NORTHWEST;
             gbc.fill = GridBagConstraints.HORIZONTAL;
             gbc.weightx = 1.0;
             gbc.gridwidth = GridBagConstraints.REMAINDER;
+            Date currentDate = activity.getActivityDate();
+            // group activities by days
+            if (isAnotherDay(lastDate, currentDate)) {
+                GridBagConstraints gbc1 = new GridBagConstraints();
+                gbc1.insets = new Insets(3, 3, 0, 3);
+                gbc1.anchor = GridBagConstraints.NORTHWEST;
+                gbc1.fill = GridBagConstraints.HORIZONTAL;
+                gbc1.weightx = 1.0;
+                gbc1.gridwidth = GridBagConstraints.REMAINDER;
+                currentDatePanel = new DateSeparatorPanel(currentDate);
+                currentDatePanel.addMouseListener(new ExpandableMouseListener(currentDatePanel, this));
+                pnlContent.add(currentDatePanel, gbc1);
+            }
+            if (maxWidth == -1) {
+                maxWidth = this.getVisibleRect().width - 150;
+            }
 
-            final ActivityPanel activityPanel = new ActivityPanel();
-            activityPanel.addMouseListener(new ActivityMouseListener(activityPanel));
-            pnlContent.add(activityPanel, gbc);
+            final ActivityPanel activityPanel = new ActivityPanel(activity, maxWidth);
+            activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
+            currentDatePanel.addActivityPanel(activityPanel, gbc);
+            lastDate = currentDate;
         }
 
         GridBagConstraints gbc1 = new GridBagConstraints();
@@ -230,22 +294,65 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         this.repaint();
     }
 
-    private void createShowButtons(List<ProjectActivity> recentActivities) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 0);
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
+    private boolean isActivityAllowed(ProjectActivity activity) {
+        return activity instanceof TaskActivity && chbTask.isSelected()
+                || activity instanceof ScmActivity && chbScm.isSelected()
+                || activity instanceof WikiActivity && chbWiki.isSelected()
+                || activity instanceof BuildActivity && chbBuild.isSelected();
+    }
 
-        JCheckBox chb = new JCheckBox("Tasks", true);
-        chb.setOpaque(false);
-        pnlShow.add(chb, gbc);
-        JCheckBox chb1 = new JCheckBox("Wiki", true);
-        chb1.setOpaque(false);
-        pnlShow.add(chb1, gbc);
-        JCheckBox chb2 = new JCheckBox("Commits", true);
-        chb2.setOpaque(false);
-        pnlShow.add(chb2, gbc);
-        pnlShow.revalidate();
+    private void updateShowButtons() {
+        boolean taskEnable = isTaskEnable(recentActivities);
+        chbTask.setSelected(Utils.Settings.isShowTasks() && taskEnable);
+        chbTask.setVisible(taskEnable);
+
+        boolean wikiEnable = isWikiEnable(recentActivities);
+        chbWiki.setSelected(Utils.Settings.isShowWiki() && wikiEnable);
+        chbWiki.setVisible(wikiEnable);
+
+        boolean scmEnable = isScmEnable(recentActivities);
+        chbScm.setSelected(Utils.Settings.isShowScm() && scmEnable);
+        chbScm.setVisible(scmEnable);
+        
+        boolean buildEnable = isBuildEnable(recentActivities);
+        chbBuild.setSelected(Utils.Settings.isShowBuilds() && buildEnable);
+        chbBuild.setVisible(buildEnable);
+    }
+
+    private boolean isTaskEnable(List<ProjectActivity> recentActivities) {
+        for (ProjectActivity activity : recentActivities) {
+            if (activity instanceof TaskActivity) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isScmEnable(List<ProjectActivity> recentActivities) {
+        for (ProjectActivity activity : recentActivities) {
+            if (activity instanceof ScmActivity) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isWikiEnable(List<ProjectActivity> recentActivities) {
+        for (ProjectActivity activity : recentActivities) {
+            if (activity instanceof WikiActivity) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isBuildEnable(List<ProjectActivity> recentActivities) {
+        for (ProjectActivity activity : recentActivities) {
+            if (activity instanceof BuildActivity) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void showEmptyContent() {
@@ -260,41 +367,26 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         this.repaint();
     }
 
-    private Logger getLogger() {
-        return ProjectDetailsTopComponent.LOG;
+    private boolean isAnotherDay(Date lastDate, Date newDate) {
+        if (lastDate == null) {
+            return true;
+        }
+        return lastDate.getYear() != newDate.getYear() || lastDate.getMonth() != newDate.getMonth() || lastDate.getDay() != newDate.getDay();
     }
 
-    private class ActivityMouseListener implements MouseListener {
+    private void persistShowSettings() {
+        Utils.Settings.setShowBuilds(chbBuild.isSelected());
+        Utils.Settings.setShowScm(chbScm.isSelected());
+        Utils.Settings.setShowTasks(chbTask.isSelected());
+        Utils.Settings.setShowWiki(chbWiki.isSelected());
+    }
 
-        private ActivityPanel activityPanel;
-
-        public ActivityMouseListener(ActivityPanel activityPanel) {
-            this.activityPanel = activityPanel;
-        }
-
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            activityPanel.toggleDetails();
-            pnlContent.revalidate();
-            RecentActivitiesPanel.this.repaint();
-        }
+    private class ShowActionListener implements ActionListener {
 
         @Override
-        public void mousePressed(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            activityPanel.mouseEntered();
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            activityPanel.mouseExited();
+        public void actionPerformed(ActionEvent e) {
+            persistShowSettings();
+            showRecentActivities();
         }
     }
 }

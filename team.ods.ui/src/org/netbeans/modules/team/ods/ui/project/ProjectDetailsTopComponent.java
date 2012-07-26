@@ -52,13 +52,13 @@
  */
 package org.netbeans.modules.team.ods.ui.project;
 
+import org.netbeans.modules.team.ods.ui.utils.Utils;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -97,14 +97,11 @@ preferredID = "ProjectDetailsTopComponent")
     "CTL_ProjectDetailsTopComponent=ProjectDetails Window",
     "HINT_ProjectDetailsTopComponent=This is a ProjectDetails window"
 })
-public final class ProjectDetailsTopComponent extends TopComponent {
+public final class ProjectDetailsTopComponent extends TopComponent implements Expandable{
 
     private static Map<String, ProjectDetailsTopComponent> projectToTC = new HashMap<String, ProjectDetailsTopComponent>();
-    static final Logger LOG = Logger.getLogger(ProjectDetailsTopComponent.class.toString()); // NOI18N
     private boolean detailsExpanded;
-    private ExpandMouseListener expandMouseListener;
-    private ImageIcon expandIcon;
-    private ImageIcon collapseIcon;
+    private ExpandableMouseListener expandMouseListener;
     private final Color borderColor = new java.awt.Color(150, 150, 150);
     private ODSProject project = null;
     private ODSClient client = null;
@@ -116,6 +113,14 @@ public final class ProjectDetailsTopComponent extends TopComponent {
         final ProjectDetailsTopComponent newInstance = new ProjectDetailsTopComponent(project);
         projectToTC.put(project.getId(), newInstance);
         return newInstance;
+    }
+
+    static ProjectDetailsTopComponent findInstance(String projectId) {
+        if (projectToTC.containsKey(projectId)) {
+            return projectToTC.get(projectId);
+        } else {
+            return null;
+        }
     }
 
     public ProjectDetailsTopComponent() {
@@ -131,14 +136,10 @@ public final class ProjectDetailsTopComponent extends TopComponent {
         if (project != null) {
             setName(project.getName());
             initComponents();
-            expandIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/arrow-down.png", true);
-            collapseIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/arrow-up.png", true);
             detailsExpanded = false;
             pnlDetails.setVisible(false);
-            lblExpandIcon.setVisible(false);
-            lblExpandIcon.setIcon(expandIcon);
-            expandMouseListener = new ExpandMouseListener();
-            lblProjectName.addMouseListener(expandMouseListener);
+            expandMouseListener = new ExpandableMouseListener(this, this);
+            pnlProjectName.addMouseListener(expandMouseListener);
             client = ODSFactory.getInstance().createClient(project.getServer().getUrl().toString(), project.getServer().getPasswordAuthentication());
             loadBuildStatus();
             loadRecentActivities();
@@ -192,6 +193,7 @@ public final class ProjectDetailsTopComponent extends TopComponent {
             }
         };
         jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
         pnlMainContent = new javax.swing.JPanel();
 
         setBackground(java.awt.Color.white);
@@ -207,6 +209,7 @@ public final class ProjectDetailsTopComponent extends TopComponent {
 
         lblExpandIcon.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblExpandIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/arrow-down.png"))); // NOI18N
+        lblExpandIcon.setEnabled(false);
 
         javax.swing.GroupLayout pnlProjectNameLayout = new javax.swing.GroupLayout(pnlProjectName);
         pnlProjectName.setLayout(pnlProjectNameLayout);
@@ -215,9 +218,9 @@ public final class ProjectDetailsTopComponent extends TopComponent {
             .addGroup(pnlProjectNameLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(lblProjectName)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblExpandIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(765, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 781, Short.MAX_VALUE)
+                .addComponent(lblExpandIcon)
+                .addContainerGap())
         );
         pnlProjectNameLayout.setVerticalGroup(
             pnlProjectNameLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -318,19 +321,21 @@ public final class ProjectDetailsTopComponent extends TopComponent {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         pnlContent.add(pnlDetails, gridBagConstraints);
 
-        pnlMainContent.setOpaque(false);
+        jScrollPane1.setBorder(null);
+        jScrollPane1.setOpaque(false);
+
+        pnlMainContent.setBackground(new java.awt.Color(255, 255, 255));
         pnlMainContent.setLayout(new java.awt.GridBagLayout());
+        jScrollPane1.setViewportView(pnlMainContent);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.ipadx = 728;
-        gridBagConstraints.ipady = 557;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        pnlContent.add(pnlMainContent, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        pnlContent.add(jScrollPane1, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -353,6 +358,7 @@ public final class ProjectDetailsTopComponent extends TopComponent {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblExpandIcon;
     private javax.swing.JLabel lblProjectName;
     private javax.swing.JPanel pnlContent;
@@ -368,7 +374,9 @@ public final class ProjectDetailsTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
-        projectToTC.remove(project.getId());
+        if (project != null) {
+            projectToTC.remove(project.getId());
+        }
     }
 
     void writeProperties(java.util.Properties p) {
@@ -414,42 +422,34 @@ public final class ProjectDetailsTopComponent extends TopComponent {
         pnlMainContent.add(activityPanel, gbc);
     }
 
-    private void toggleDetails() {
-        pnlDetails.setVisible(!detailsExpanded);
-        detailsExpanded = !detailsExpanded;
-        lblExpandIcon.setIcon(detailsExpanded ? collapseIcon : expandIcon);
-        pnlProjectName.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, detailsExpanded ? 0 : 1, 1, borderColor));
-        pnlContent.revalidate();
-        this.repaint();
+    public ODSProject getProject() {
+        return project;
     }
 
-    private class ExpandMouseListener implements MouseListener {
+    @Override
+    public void toggleExpandablePanel() {
+        pnlDetails.setVisible(!detailsExpanded);
+        detailsExpanded = !detailsExpanded;
+        lblExpandIcon.setIcon(detailsExpanded ? Utils.COLLAPSE_ICON : Utils.EXPAND_ICON);
+        pnlProjectName.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, detailsExpanded ? 0 : 1, 1, borderColor));
+    }
 
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            toggleDetails();
-        }
+    @Override
+    public void mouseEnteredExpandable() {
+        ProjectDetailsTopComponent.this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        lblProjectName.setForeground(Color.BLUE);
+        lblExpandIcon.setEnabled(true);
+    }
 
-        @Override
-        public void mousePressed(MouseEvent e) {
-        }
+    @Override
+    public void mouseExitedExpandable() {
+        ProjectDetailsTopComponent.this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        lblProjectName.setForeground(Color.BLACK);
+        lblExpandIcon.setEnabled(false);
+    }
 
-        @Override
-        public void mouseReleased(MouseEvent e) {
-        }
-
-        @Override
-        public void mouseEntered(MouseEvent e) {
-            ProjectDetailsTopComponent.this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            lblProjectName.setForeground(Color.BLUE);
-            lblExpandIcon.setVisible(true);
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            ProjectDetailsTopComponent.this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            lblProjectName.setForeground(Color.BLACK);
-            lblExpandIcon.setVisible(false);
-        }
+    @Override
+    public void revalidateExpandable() {
+        pnlContent.revalidate();
     }
 }

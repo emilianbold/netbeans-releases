@@ -49,7 +49,6 @@ import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -57,6 +56,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ods.client.api.ODSClient;
 import org.netbeans.modules.team.ods.client.api.ODSException;
+import org.netbeans.modules.team.ods.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
@@ -175,7 +175,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
                         }
                     });
                 } catch (ODSException ex) {
-                    getLogger().log(Level.SEVERE, ex.getMessage());
+                    Utils.getLogger().log(Level.SEVERE, ex.getMessage());
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -208,7 +208,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         this.repaint();
     }
 
-    private JPanel createPanel(JobSummary jobSummary) {
+    private JPanel createPanel(final JobSummary jobSummary) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         panel.setOpaque(false);
@@ -216,6 +216,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         LinkLabel lblName = new LinkLabel(jobSummary.getName()) {
             @Override
             public void mouseClicked(MouseEvent e) {
+                Utils.openBrowser(jobSummary.getUrl());
             }
         };
         lblName.setIcon(getJobIcon(jobSummary.getColor()));
@@ -226,9 +227,9 @@ public class BuildStatusPanel extends javax.swing.JPanel {
     }
 
     private Icon getJobIcon(String colorString) {
-        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/" + colorString + ".png", true);
+        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/" + colorString + ".png", true); //NOI18N
         if (icon == null) {
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/gray.png", true);
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/grey.png", true); //NOI18N
         }
         return icon;
     }
@@ -243,9 +244,5 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         pnlStatuses.removeAll();
         pnlStatuses.add(lblError, new GridBagConstraints());
         this.repaint();
-    }
-
-    private Logger getLogger() {
-        return ProjectDetailsTopComponent.LOG;
     }
 }
