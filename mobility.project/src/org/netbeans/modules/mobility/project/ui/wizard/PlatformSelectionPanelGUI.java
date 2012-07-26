@@ -50,12 +50,16 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Profile;
@@ -63,11 +67,12 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.TemplateWizard;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
  *
- * @author  phrebejk, Adam Sotona
+ * @author  phrebejk, Adam Sotona, Petr Somol
  */
 public class PlatformSelectionPanelGUI extends JPanel implements ActionListener {
     
@@ -75,9 +80,43 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
     
     private final DefaultComboBoxModel deviceModel;
     private final HashMap<String,J2MEPlatform.J2MEProfile> name2profile;
+    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
     private String reqCfg, reqProf;
     private TemplateWizard wiz;
     private int firstConfigWidth = -1;
+    private boolean finishable = true;
+    
+    public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+
+    protected final void fireChangeEvent() {
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
+    }
+    
+    public void setFinishable(boolean finishable) {
+        this.finishable = finishable;
+        fireChangeEvent();
+    }
+    
+    public boolean getFinishable() {
+        return finishable;
+    }
     
     /** Creates new form CustomizerCompile */
     public PlatformSelectionPanelGUI() {
@@ -226,9 +265,70 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         if ((m == null || !m.isEnabled()) && defB != null) grp.setSelected(defB.getModel(), true);
     }
     
+    private String extractProfileName(String profile) {
+        assert profile != null;
+        int pos = profile.lastIndexOf("-"); // NOI18N
+        if(pos >=0) {
+            try {
+                if(profile.substring(pos + 1).equals("NG")) { // NOI18N
+                    return profile.substring(0,pos + 3);
+                }
+                return profile.substring(0,pos);
+            } catch(StringIndexOutOfBoundsException se) {
+                return ""; // NOI18N
+            }
+        }
+        return profile;
+    }
+    
+    private SpecificationVersion extractProfileVersion(String profile) {
+        assert profile != null;
+        int pos = profile.lastIndexOf("-"); // NOI18N
+        if(pos >=0) {
+            try {
+                SpecificationVersion sv = new SpecificationVersion(profile.substring(pos + 1));
+                if(sv != null) {
+                    return sv;
+                }
+            } catch(NumberFormatException nfe) {
+                // fallback to 1.0
+            }
+        }
+        return new SpecificationVersion("1.0"); // NOI18N
+    }
+
+    private boolean isProfileCompatible(String required, String current) {
+        assert required != null;
+        assert current != null;
+        if(required.equals(current)) {
+            return true;
+        }
+        String reqName = extractProfileName(required);
+        String curName = extractProfileName(current);
+        SpecificationVersion reqVer = extractProfileVersion(required);
+        SpecificationVersion curVer = extractProfileVersion(current);
+        if(!reqName.isEmpty() && (
+                (reqName.equals(curName) && curVer.compareTo(reqVer) >= 0) ||
+                (reqName.equals("IMP") && (curName.equals("IMP-NG") || (curName.equals("MIDP")))) || // NOI18N
+                (reqName.equals("IMP-NG") && reqVer.equals(new SpecificationVersion("1.0")) && curName.equals("MIDP") && curVer.compareTo(new SpecificationVersion("2.0")) >= 0) // NOI18N
+                )) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isSupportedProfile(String required) {
+        for(String p : name2profile.keySet()) {
+            if(isProfileCompatible(required, p)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public void updateErrorMessage() {
-        final boolean cfgError = reqCfg != null  &&  !name2profile.containsKey(reqCfg);
-        final boolean profError = reqProf != null  &&  !name2profile.containsKey(reqProf);
+        final boolean cfgError = reqCfg != null  &&  !isSupportedProfile(reqCfg);
+        final boolean profError = reqProf != null  &&  !isSupportedProfile(reqProf);
         if (wiz != null) {
             String message = null;
             if (cfgError && profError) {
@@ -239,6 +339,7 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
                 message = NbBundle.getMessage(PlatformSelectionPanelGUI.class, "ERR_PlatformSelection_Platform_does_not_support_1", reqProf); //NOI18N
             }
             wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); //NOI18N
+            setFinishable(!cfgError && !profError);
         }
     }
     

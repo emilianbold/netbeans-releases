@@ -53,6 +53,9 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -66,9 +69,9 @@ import org.openide.util.HelpCtx;
 
 /**
  *
- * @author  Adam Sotona
+ * @author  Adam Sotona, Petr Somol
  */
-public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel {
+public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
     
     public static final String REQUIRED_CONFIGURATION = "RequiredConfiguration"; // NOI18N
     public static final String REQUIRED_PROFILE ="RequiredProfile"; // NOI18N
@@ -77,6 +80,9 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel 
     public static final String IMPNG_PROFILE_VERSION = "1.0"; // NOI18N
 
     public static final String PLATFORM_DESCRIPTION = "PlatformDescription"; //NOI18N
+
+    private Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    private boolean isValid;
     
     public static class PlatformDescription {
         public J2MEPlatform platform;
@@ -89,33 +95,77 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel 
     private String reqCfg, reqProf;
     private boolean first = true;
         
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
     
-    public void addChangeListener(@SuppressWarnings("unused")
-	final ChangeListener l) {
+    @Override
+    public final void addChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.add(l);
+        }
+    }
+
+    @Override
+    public final void removeChangeListener(ChangeListener l) {
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
+    }
+
+    protected final void fireChangeEvent() {
+        Iterator<ChangeListener> it;
+        synchronized (listeners) {
+            it = new HashSet<ChangeListener>(listeners).iterator();
+        }
+        ChangeEvent ev = new ChangeEvent(this);
+        while (it.hasNext()) {
+            it.next().stateChanged(ev);
+        }
     }
     
-    public void removeChangeListener(@SuppressWarnings("unused")
-	final ChangeListener l) {
-    }
-    
+    @Override
     public synchronized Component getComponent() {
         if (gui == null) {
             gui = new PlatformSelectionPanelGUI();
+            gui.addChangeListener(this);
         }
         return gui;
     }
     
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(PlatformSelectionPanel.class);
+        return new HelpCtx(PlatformSelectionPanel.class.getName());
     }
     
+    @Override
     public boolean isValid() {
-        return true;
+        return isValid;
     }
     
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        change();
+    }
+    
+    private void change() {
+        boolean isSelected = gui.getFinishable();
+        if (isSelected) {
+            setValid(true);
+        } else {
+            setValid(false);
+        }
+    }
+
+    private void setValid(boolean val) {
+        if (isValid != val) {
+            isValid = val;
+            fireChangeEvent();  // must do this to enable next/finish button
+        }
+    }
+
+    @Override
     public void readSettings(final Object settings) {
         if (first) {
             first = false;
@@ -198,6 +248,7 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel 
         return null;
     }
     
+    @Override
     public void storeSettings(final Object settings) {
         final PlatformDescription desc = new PlatformDescription();
         getComponent();
