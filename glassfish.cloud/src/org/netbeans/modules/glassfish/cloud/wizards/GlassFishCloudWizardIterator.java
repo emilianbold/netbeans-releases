@@ -114,7 +114,7 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
         GlassFishServerEntity localServer;
         try {
             localServer = new GlassFishServerEntity(name, localServerHome,
-                    GlassFishUrl.url(GlassFishCloudInstance.URL_PREFIX,
+                    GlassFishUrl.url(GlassFishUrl.Id.LOCAL,
                     name));
         } catch (DataException de) {
             localServer = null;

@@ -461,8 +461,7 @@ public class GlassFishCloudWizardCpasComponent
                     try {
                         localServer = new GlassFishServerEntity(
                                 getDisplayName(), getLocalServer(),
-                                GlassFishUrl.url(
-                                GlassFishCloudInstance.URL_PREFIX,
+                                GlassFishUrl.url(GlassFishUrl.Id.LOCAL,
                                 getDisplayName()));
                     } catch (DataException de) {
                         localServer = null;

@@ -45,9 +45,6 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import org.glassfish.tools.ide.utils.StringPrefixTree;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import static org.openide.util.NbBundle.getMessage;
 
@@ -70,22 +67,6 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
     /** Logger. */
     private static final Logger LOG = Logger.getLogger(
             GlassFishCloudDeploymentFactory.class.getSimpleName());
-
-    /** Code marking local GlassFish registered with cloud (CPAS). */
-    private static final int URL_LOCAL = 1;
-
-    /** Code marking remote cloud registered as user account. */
-    private static final int URL_CLOUD = 2;
-
-    /** Matcher used to find registered URL prefixes. */
-    private static final StringPrefixTree<Integer> uriMap
-        = new StringPrefixTree<Integer>(false);
-    static {
-        uriMap.add(GlassFishCloudInstance.URL_PREFIX
-                + GlassFishUrl.URL_SEPARATOR, URL_LOCAL);
-        uriMap.add(GlassFishAccountInstance.URL_PREFIX
-                + GlassFishUrl.URL_SEPARATOR, URL_CLOUD);
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -112,7 +93,7 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
      */
     @Override
     public boolean handlesURI(String uri) {
-        return uriMap.prefixMatch(uri) != null;
+        return GlassFishUrl.urlPrefix(uri) != null;
     }
 
     /**

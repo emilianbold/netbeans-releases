@@ -68,12 +68,21 @@ public class GlassFishUrl {
 
     /**
      * Server type ID.
+     * <p/>
+     * <code>String</code> representation of ID values should be compliant with
+     * url patterns in
+     * <code>J2EE::DeploymentPlugins::GlassFish Cloud::Factory.instance</code>
+     * and
+     * <code>J2EE::DeploymentPlugins::GlassFish Local Server::Factory.instance
+     * </code> regular expression in <code>layer.xml</code> file.
+     * Actually <code>^gfc[r|l]:.*$</code> describes all strings used for local
+     * GlassFish server {@see LOCAL_STR} and GlassFish cloud {@see CLOUD_STR}.
      */
     public static enum Id {
         ////////////////////////////////////////////////////////////////////////
         // Enum values                                                        //
         ////////////////////////////////////////////////////////////////////////
-
+        
         /** Cloud user account on GlassFish server. */
         CLOUD,
 
@@ -86,11 +95,11 @@ public class GlassFishUrl {
 
         /** A <code>String</code> representation of CLOUD value.
          *  Defines string used in URL prefix. */
-        static final String CLOUD_STR = "gfsc";
+        static final String CLOUD_STR = "gfcr";
 
         /** A <code>String</code> representation of LOCAL value.
          *  Defines string used in URL prefix. */
-        static final String LOCAL_STR = "gfsl";
+        static final String LOCAL_STR = "gfcl";
         
         /** Stored <code>String</code> values for backward <code>String</code>
          *  conversion. */
@@ -160,11 +169,20 @@ public class GlassFishUrl {
         escape.add(URL_ESCAPE);
     }
 
+    /** URL ID <cpde>String</code>s with components separator appended to
+     *  test if URL belongs to this module. */
+    private static final StringPrefixTree<Id> urlPrefixes
+            = new StringPrefixTree<Id>(false);
+    static {
+        for (Id id : Id.values()) {
+            urlPrefixes.add(id.toString() + URL_SEPARATOR, id);
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
+    // static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
 
-    
     /**
      * Count length of escaped <code>String</code>.
      * <p/>
@@ -214,12 +232,12 @@ public class GlassFishUrl {
         List<int[]> indexList = new LinkedList<int[]>();
         int strLen = url.length();
         int beg = 0;
-        int end = 0;
-        while (end < strLen) {
+        int end;
+        while (beg < strLen) {
             int sep = url.indexOf(URL_SEPARATOR, beg);
             end = sep > -1 ? sep - 1 : strLen -1;
             indexList.add(new int[] {beg, end > beg ? end : beg});
-            beg = sep + 1;
+            beg = sep > -1 ? sep + 1 : strLen;
         }
         return indexList;
     }
@@ -231,15 +249,27 @@ public class GlassFishUrl {
      * @param name   Server name (key attribute).
      * @return URL string.
      */
-    public static String url(String prefix, String name) {        
-        StringBuilder sb = new StringBuilder(escapedLength(prefix)
+    public static String url(Id type, String name) {
+        String typeName = type.toString();
+        StringBuilder sb = new StringBuilder(escapedLength(typeName)
                 + 1 + escapedLength(name));
-        addEscaped(sb, prefix);
+        addEscaped(sb, typeName);
         sb.append(URL_SEPARATOR);
         addEscaped(sb, name);
         return sb.toString();
     }
-    
+
+    /**
+     * Get server type ID from given URL.
+     * <p/>
+     * @param url URL to check for server type ID string in 1st component.
+     * @return Server type ID in 1st component or <code>null</code> when
+     *         1st component does not contain known server type ID.
+     */
+    public static Id urlPrefix(String url) {
+        return urlPrefixes.prefixMatch(url);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -279,13 +309,14 @@ public class GlassFishUrl {
             switch(index) {
                 // 1st component is server type ID
                 case 0:
-                    serverType = url.substring(indexes[0], indexes[1] - 1);
+                    serverType = url.substring(indexes[0], indexes[1] + 1);
                     break;
                 // 2nd component is server name key attribute
                 case 1:
-                    serverName = url.substring(indexes[0], indexes[1] - 1);
+                    serverName = url.substring(indexes[0], indexes[1] + 1);
                     break;
             }
+            index++;
         }
         type = Id.toValue(serverType);
         if (type == null) {

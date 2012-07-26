@@ -275,8 +275,7 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
             GlassFishServerEntity localServer;
             try {
                 localServer = new GlassFishServerEntity(name, localServerHome,
-                        GlassFishUrl.url(GlassFishCloudInstance.URL_PREFIX,
-                        name));
+                        GlassFishUrl.url(GlassFishUrl.Id.LOCAL, name));
             } catch (DataException de) {
                 localServer = null;
             }

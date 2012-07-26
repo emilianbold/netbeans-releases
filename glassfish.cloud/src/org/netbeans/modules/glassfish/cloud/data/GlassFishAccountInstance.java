@@ -143,7 +143,7 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
     public GlassFishAccountInstance(String name, String account, String userName,
             String userPassword, GlassFishCloud cloudEntity) {
         super(name, GlassFishUrl.url(
-                GlassFishAccountInstance.URL_PREFIX, name),
+                GlassFishUrl.Id.CLOUD, name),
                 account, userName, userPassword, cloudEntity);
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
