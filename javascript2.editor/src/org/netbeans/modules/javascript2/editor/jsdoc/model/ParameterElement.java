@@ -53,8 +53,7 @@ public abstract class ParameterElement extends JsDocElementImpl {
     private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
     private final String paramDescription;
 
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes,
-            String paramDescription) {
+    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
         super(type);
         this.paramTypes = paramTypes;
         this.paramDescription = paramDescription;
@@ -69,8 +68,8 @@ public abstract class ParameterElement extends JsDocElementImpl {
     }
 
     /**
-     * Gets the parameter type.
-     * @return parameter type
+     * Gets the parameter types.
+     * @return parameter types
      */
     public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
         return paramTypes;
