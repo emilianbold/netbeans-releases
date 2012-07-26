@@ -41,32 +41,84 @@
  */
 package org.netbeans.modules.team.ods.ui.project;
 
+import org.netbeans.modules.team.ods.ui.utils.Utils;
+import com.tasktop.c2c.server.profile.domain.activity.*;
 import java.awt.Cursor;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.text.SimpleDateFormat;
 import javax.swing.BorderFactory;
-import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.border.Border;
-import org.openide.util.ImageUtilities;
+import org.netbeans.modules.team.ods.ui.project.activity.ActivityDisplayer;
+import org.netbeans.modules.team.ods.ui.project.activity.BuildActivityDisplayer;
+import org.netbeans.modules.team.ods.ui.project.activity.ScmActivityDisplayer;
+import org.netbeans.modules.team.ods.ui.project.activity.TaskActivityDisplayer;
+import org.netbeans.modules.team.ods.ui.project.activity.WikiActivityDisplayer;
 
 /**
  *
  * @author jpeska
  */
-public class ActivityPanel extends javax.swing.JPanel {
+public class ActivityPanel extends javax.swing.JPanel implements Expandable{
 
-    private static final Icon EXPAND_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/arrow-down.png", true);
-    private static final Icon COLLAPSE_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/arrow-up.png", true);
     private static final Border NORMAL_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(153, 153, 153));
     private static final Border EXPAND_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 255));
     private boolean detailsExpanded;
+    private ActivityDisplayer activityAccessor;
 
     /**
      * Creates new form ActivityPanel
      */
-    public ActivityPanel() {
+    public ActivityPanel(ProjectActivity activity, int maxWidth) {
+        if (activity instanceof TaskActivity) {
+            activityAccessor = new TaskActivityDisplayer((TaskActivity) activity, maxWidth);
+        } else if (activity instanceof BuildActivity) {
+            activityAccessor = new BuildActivityDisplayer((BuildActivity) activity, maxWidth);
+        } else if (activity instanceof ScmActivity) {
+            ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.findInstance(activity.getProjectIdentifier());
+            activityAccessor = new ScmActivityDisplayer((ScmActivity) activity, tc.getProject().getScmUrl(), maxWidth);
+        } else if (activity instanceof WikiActivity) {
+            activityAccessor = new WikiActivityDisplayer((WikiActivity) activity, maxWidth);
+        }
         initComponents();
+        lblIcon.setIcon(activityAccessor.getActivityIcon());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm a");
+        lblTime.setText(dateFormat.format(activityAccessor.getActivityDate()));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 5, 0, 3);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridheight = GridBagConstraints.REMAINDER;
+        final JComponent titleComponent = activityAccessor.getTitleComponent();
+        titleComponent.setOpaque(false);
+        pnlTitle.add(titleComponent, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridheight = GridBagConstraints.REMAINDER;
+        pnlTitle.add(new JLabel(), gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridheight = GridBagConstraints.REMAINDER;
+        final JComponent shortDescriptionComponent = activityAccessor.getShortDescriptionComponent();
+        shortDescriptionComponent.setOpaque(false);
+        pnlShortDesc.add(shortDescriptionComponent, gbc);
+
+        gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridheight = GridBagConstraints.REMAINDER;
+        pnlShortDesc.add(new JLabel(), gbc);
+
+
         detailsExpanded = false;
         pnlDetails.setVisible(false);
-        lblExpand.setVisible(false);
     }
 
     /**
@@ -77,14 +129,15 @@ public class ActivityPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         pnlDetails = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         lblIcon = new javax.swing.JLabel();
+        pnlTitle = new javax.swing.JPanel();
         lblTime = new javax.swing.JLabel();
-        lblUser = new javax.swing.JLabel();
-        lblDescription = new javax.swing.JLabel();
+        pnlShortDesc = new javax.swing.JPanel();
         lblExpand = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(153, 153, 153)));
@@ -100,7 +153,7 @@ public class ActivityPanel extends javax.swing.JPanel {
             pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlDetailsLayout.createSequentialGroup()
                 .addComponent(jLabel1)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 366, Short.MAX_VALUE))
         );
         pnlDetailsLayout.setVerticalGroup(
             pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -112,17 +165,20 @@ public class ActivityPanel extends javax.swing.JPanel {
 
         jPanel1.setOpaque(false);
 
-        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/task_lg_qualifier.png"))); // NOI18N
+        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/unknown.png"))); // NOI18N
 
-        lblTime.setForeground(new java.awt.Color(102, 102, 102));
-        org.openide.awt.Mnemonics.setLocalizedText(lblTime, org.openide.util.NbBundle.getMessage(ActivityPanel.class, "ActivityPanel.lblTime.text")); // NOI18N
+        pnlTitle.setOpaque(false);
+        pnlTitle.setLayout(new java.awt.GridBagLayout());
 
-        lblUser.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/user_lg_qualifier.png"))); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(lblUser, org.openide.util.NbBundle.getMessage(ActivityPanel.class, "ActivityPanel.lblUser.text")); // NOI18N
+        lblTime.setForeground(new java.awt.Color(153, 153, 153));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        pnlTitle.add(lblTime, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblDescription, org.openide.util.NbBundle.getMessage(ActivityPanel.class, "ActivityPanel.lblDescription.text")); // NOI18N
-
-        lblExpand.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/arrow-down.png"))); // NOI18N
+        pnlShortDesc.setOpaque(false);
+        pnlShortDesc.setLayout(new java.awt.GridBagLayout());
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -130,35 +186,28 @@ public class ActivityPanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(lblIcon)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(lblTime)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(lblUser))
-                    .addComponent(lblDescription))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 78, Short.MAX_VALUE)
-                .addComponent(lblExpand)
+                    .addComponent(pnlTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(pnlShortDesc, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(6, 6, 6)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblIcon)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblTime)
-                            .addComponent(lblUser))
+                        .addComponent(pnlTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblDescription))
-                    .addComponent(lblIcon))
-                .addGap(5, 5, 5))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(lblExpand)
+                        .addComponent(pnlShortDesc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(5, 5, 5))
         );
+
+        lblExpand.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/arrow-down.png"))); // NOI18N
+        lblExpand.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        lblExpand.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -169,44 +218,58 @@ public class ActivityPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(pnlDetails, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblExpand)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(pnlDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(pnlDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblExpand, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel lblDescription;
     private javax.swing.JLabel lblExpand;
     private javax.swing.JLabel lblIcon;
     private javax.swing.JLabel lblTime;
-    private javax.swing.JLabel lblUser;
     private javax.swing.JPanel pnlDetails;
+    private javax.swing.JPanel pnlShortDesc;
+    private javax.swing.JPanel pnlTitle;
     // End of variables declaration//GEN-END:variables
 
-    void toggleDetails() {
+    @Override
+    public void toggleExpandablePanel() {
         pnlDetails.setVisible(!detailsExpanded);
         detailsExpanded = !detailsExpanded;
-        lblExpand.setIcon(detailsExpanded ? COLLAPSE_ICON : EXPAND_ICON);
-        this.revalidate();
+        lblExpand.setIcon(detailsExpanded ? Utils.COLLAPSE_ICON : Utils.EXPAND_ICON);
     }
 
-    void mouseEntered() {
+    @Override
+    public void mouseEnteredExpandable() {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         this.setBorder(EXPAND_BORDER);
-        lblExpand.setVisible(true);
+        lblExpand.setEnabled(true);
     }
 
-    void mouseExited() {
+    @Override
+    public void mouseExitedExpandable() {
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         this.setBorder(NORMAL_BORDER);
-        lblExpand.setVisible(false);
+        lblExpand.setEnabled(false);
+    }
+
+    @Override
+    public void revalidateExpandable() {
+        this.revalidate();
     }
 }
