@@ -39,40 +39,76 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
+package org.netbeans.modules.javascript2.editor.sdoc;
 
+import java.util.EnumMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 
 /**
- * Represents base parameter element class with optional parameter type and description.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class ParameterElement extends JsDocElementImpl {
+public class SDocComment extends JsComment {
 
-    private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
-    private final String paramDescription;
+    private final Map<SDocElement.Type, List<SDocElement>> tags = new EnumMap<SDocElement.Type, List<SDocElement>>(SDocElement.Type.class);
 
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
-        super(type);
-        this.paramTypes = paramTypes;
-        this.paramDescription = paramDescription;
+    public SDocComment(OffsetRange offsetRange, List<SDocElement> elements) {
+        super(offsetRange);
+        initComment(elements);
     }
 
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description
-     */
-    public String getParamDescription() {
-        return paramDescription;
+    @Override
+    public List<String> getSummary() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * Gets the parameter types.
-     * @return parameter types
-     */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
-        return paramTypes;
+    @Override
+    public List<String> getSyntax() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public DocParameter getReturnType() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public List<DocParameter> getParameters() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getDocumentation() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Set<JsModifier> getModifiers() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private void initComment(List<SDocElement> elements) {
+        for (SDocElement element : elements) {
+            List<SDocElement> list = tags.get(element.getType());
+            if (list == null) {
+                list = new LinkedList<SDocElement>();
+                tags.put(element.getType(), list);
+            }
+            tags.get(element.getType()).add(element);
+        }
     }
 
 }
