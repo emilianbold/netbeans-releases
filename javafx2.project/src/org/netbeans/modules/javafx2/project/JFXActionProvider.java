@@ -87,9 +87,6 @@ public class JFXActionProvider implements ActionProvider {
             put(COMMAND_RUN,"run"); //NOI18N
             put(COMMAND_DEBUG,"debug"); //NOI18N
             put(COMMAND_PROFILE,"profile"); //NOI18N
-            put(COMMAND_RUN_SINGLE,"run-single"); //NOI18N
-            put(COMMAND_DEBUG_SINGLE,"debug-single"); //NOI18N
-            put(COMMAND_PROFILE_SINGLE,"profile-single"); //NOI18N
         }
     };
 
@@ -106,33 +103,13 @@ public class JFXActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
-        String c = command;
-        if (c != null) {
+        if (command != null) {
             if(JFXProjectUtils.isFXPreloaderProject(prj)) {
                 NotifyDescriptor d =
                     new NotifyDescriptor.Message(NbBundle.getMessage(JFXActionProvider.class,"WARN_PreloaderExecutionUnsupported", // NOI18N
                         ProjectUtils.getInformation(prj).getDisplayName()), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return;
-            }
-            if (c.equals(COMMAND_RUN_SINGLE) || c.equals(COMMAND_DEBUG_SINGLE) || c.equals(COMMAND_PROFILE_SINGLE)) {
-                NotifyDescriptor d =
-                    new NotifyDescriptor(NbBundle.getMessage(JFXActionProvider.class,"WARN_SingleFileExecutionUnsupported", // NOI18N
-                        ProjectUtils.getInformation(prj).getDisplayName()), 
-                        NbBundle.getMessage(JFXActionProvider.class,"WARN_SingleFileExecutionUnsupportedDialogTitle"), // NOI18N
-                        NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
-                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
-                    return;
-                }
-                if(c.equals(COMMAND_RUN_SINGLE)) {
-                    c = COMMAND_RUN;
-                } else {
-                    if(c.equals(COMMAND_DEBUG_SINGLE)) {
-                        c = COMMAND_DEBUG;
-                    } else {
-                        c = COMMAND_PROFILE;
-                    }
-                }
             }
             FileObject buildFo = findBuildXml();
             assert buildFo != null && buildFo.isValid();
@@ -144,17 +121,17 @@ public class JFXActionProvider implements ActionProvider {
             try {
                 String target;
                 if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.STANDALONE.getString())) {
-                    target = "jfxsa-".concat(c); //NOI18N
+                    target = "jfxsa-".concat(command); //NOI18N
                 } else {
                     if(runAs.equalsIgnoreCase(JFXProjectProperties.RunAsType.ASWEBSTART.getString())) {
-                        target = "jfxws-".concat(c); //NOI18N
+                        target = "jfxws-".concat(command); //NOI18N
                     } else { //JFXProjectProperties.RunAsType.INBROWSER
-                        target = "jfxbe-".concat(c); //NOI18N
+                        target = "jfxbe-".concat(command); //NOI18N
                     }
                 }
                 
                 Properties props = new Properties();
-                collectStartupExtenderArgs(props, c, context);
+                collectStartupExtenderArgs(props, command, context);
                 
                 ActionUtils.runTarget(buildFo, new String[] {target}, props).addTaskListener(new TaskListener() {
                     @Override public void taskFinished(Task task) {
@@ -166,7 +143,7 @@ public class JFXActionProvider implements ActionProvider {
                 listener.finished(false);
             }
         } else {
-            throw new IllegalArgumentException(c);
+            throw new IllegalArgumentException(command);
         }
     }
 
