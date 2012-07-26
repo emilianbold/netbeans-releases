@@ -117,4 +117,9 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
+    
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+       panel.setCurrentSubcategory(subpath);
+    }
 }

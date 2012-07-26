@@ -230,7 +230,6 @@ public class SymfonyScript {
         Future<Integer> result = createPhpExecutable(phpModule)
                 .displayName(getDisplayName(phpModule, allParams.get(0)))
                 .additionalParameters(getAllParams(allParams))
-                .pureOutputOnly(true)
                 .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
             if (result != null) {
@@ -314,8 +313,7 @@ public class SymfonyScript {
             return null;
         }
         Future<Integer> result = createPhpExecutable(phpModule)
-                .fileOutput(tmpFile)
-                .pureOutputOnly(true)
+                .fileOutput(tmpFile, true)
                 .warnUser(false)
                 .additionalParameters(LIST_XML_COMMAND)
                 .run(getSilentDescriptor());
@@ -360,7 +358,6 @@ public class SymfonyScript {
         Future<Integer> task = createPhpExecutable(phpModule)
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
                 .additionalParameters(Collections.singletonList(LIST_COMMAND))
-                .pureOutputOnly(true)
                 .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
             if (task != null && task.get().intValue() == 0) {

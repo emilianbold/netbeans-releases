@@ -58,14 +58,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,6 +75,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -88,7 +86,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -139,7 +136,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -151,9 +147,9 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD_STYLESHEET;
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
+import org.openide.xml.XMLUtil;
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
@@ -189,7 +185,6 @@ public final class J2SEProject implements Project {
     };
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(J2SEProject.class.getName(), 1);
 
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -362,7 +357,8 @@ public final class J2SEProject implements Project {
     }
 
     private Lookup createLookup(final AuxiliaryConfiguration aux) {
-        FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
+        final FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
+        final J2SELogicalViewProvider lvp = new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             QuerySupport.createProjectInformation(updateHelper, this, J2SE_PROJECT_ICON),
@@ -370,7 +366,7 @@ public final class J2SEProject implements Project {
             helper.createCacheDirectoryProvider(),
             helper.createAuxiliaryProperties(),
             refHelper.createSubprojectProvider(),
-            new J2SELogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
+            lvp,
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -404,7 +400,10 @@ public final class J2SEProject implements Project {
             QuerySupport.createBinaryForSourceQueryImplementation(this.sourceRoots, this.testRoots, this.helper, this.evaluator()), //Does not use APH to get/put properties/cfgdata
             QuerySupport.createAnnotationProcessingQuery(this.helper, this.evaluator(), ProjectProperties.ANNOTATION_PROCESSING_ENABLED, ProjectProperties.ANNOTATION_PROCESSING_ENABLED_IN_EDITOR, ProjectProperties.ANNOTATION_PROCESSING_RUN_ALL_PROCESSORS, ProjectProperties.ANNOTATION_PROCESSING_PROCESSORS_LIST, ProjectProperties.ANNOTATION_PROCESSING_SOURCE_OUTPUT, ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS),
             LookupProviderSupport.createActionProviderMerger(),
-            WhiteListQueryMergerSupport.createWhiteListQueryMerger()
+            WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
+            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
+            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, new PlatformChangedHook(), JavaPlatform.getDefault().getSpecification().getName(), J2SEProjectProperties.JAVA_PLATFORM, J2SEProjectProperties.JAVAC_SOURCE, J2SEProjectProperties.JAVAC_TARGET),
+            UILookupMergerSupport.createProjectProblemsProviderMerger()
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
@@ -676,29 +675,6 @@ public final class J2SEProject implements Project {
                     LOG.log(Level.WARNING, "Unsupported charset: {0} in project: {1}", new Object[]{prop, FileUtil.getFileDisplayName(getProjectDirectory())}); //NOI18N
                 }
             }
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    final Future<Project[]> projects = OpenProjects.getDefault().openProjects();
-                    try {
-                        projects.get();
-                    } catch (ExecutionException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (InterruptedException ie) {
-                        Exceptions.printStackTrace(ie);
-                    }
-                    J2SELogicalViewProvider physicalViewProvider = getLookup().lookup(J2SELogicalViewProvider.class);
-                    if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {
-                        BrokenReferencesSupport.showAlert(
-                                helper,
-                                refHelper,
-                                eval,
-                                physicalViewProvider.getBreakableProperties(),
-                                physicalViewProvider.getPlatformProperties());
-                    }
-                }
-            });
-
             //Update per project CopyLibs if needed
             new UpdateCopyLibs(J2SEProject.this).run();
             
@@ -1055,6 +1031,50 @@ public final class J2SEProject implements Project {
         private static FileObject toFile(@NonNull final URL url) {
             final URL file = FileUtil.getArchiveFile(url);
             return URLMapper.findFileObject(file != null ? file : url);
+        }
+
+    }
+
+    private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
+
+        @Override
+        public void platformPropertyUpdated(@NonNull final JavaPlatform platform) {
+            final boolean remove = platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform());
+            final Element root = helper.getPrimaryConfigurationData(true);
+            boolean changed = false;
+            if (remove) {
+                final Element platformElement = XMLUtil.findElement(
+                    root,
+                    "explicit-platform",    //NOI18N
+                    PROJECT_CONFIGURATION_NAMESPACE);
+                if (platformElement != null) {
+                    root.removeChild(platformElement);
+                    changed = true;
+                }
+            } else {
+                Element insertBefore = null;
+                for (Element e : XMLUtil.findSubElements(root)) {
+                    final String name = e.getNodeName();
+                    if (! "name".equals(name) &&                  //NOI18N
+                        ! "minimum-ant-version".equals(name)) {   //NOI18N
+                        insertBefore = e;
+                        break;
+                    }
+                }
+                final Element platformNode = insertBefore.getOwnerDocument().createElementNS(
+                        PROJECT_CONFIGURATION_NAMESPACE,
+                        "explicit-platform"); //NOI18N
+                platformNode.setAttribute(
+                        "explicit-source-supported",                                                             //NOI18N
+                        platform.getSpecification().getVersion().compareTo(new SpecificationVersion("1.3"))>0?   //NOI18N
+                            "true":                                                                              //NOI18N
+                            "false");                                                                            //NOI18N
+                root.insertBefore(platformNode, insertBefore);
+                changed = true;
+            }
+            if (changed) {
+                helper.putPrimaryConfigurationData(root, true);
+            }
         }
 
     }

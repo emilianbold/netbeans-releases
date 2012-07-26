@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.JButton;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.IntToStringCache;
@@ -378,7 +379,7 @@ final class UnitsCache {
         if (reqUnits != null) {
             for (CharSequence rUnitName : reqUnits) {
                 long ts = unit2timestamp.get(rUnitName).longValue();
-                RequiredUnit rU = new RequiredUnit(rUnitName, ts);
+                RequiredUnit rU = new RequiredUnit(getId(rUnitName), ts);
                 unitReqUnits.add(rU);
             }
         }
@@ -402,6 +403,9 @@ final class UnitsCache {
         antiLoop.add(unitName);
         boolean result = true;
         Collection<RequiredUnit> reqUnits = unit2requnint.get(unitName);
+        if (reqUnits == null) {
+            return false;
+        }
         for (RequiredUnit rU : reqUnits) {
             if (!isUnitIndexLoaded(rU.getName())) {
                 loadUnitIndex(rU.getName(), antiLoop);
@@ -627,28 +631,28 @@ final class UnitsCache {
      * Just a structure that holds name and timestamps
      * for required unit
      */
-    private static final class RequiredUnit {
+    private final class RequiredUnit {
 
-        private CharSequence unitName;
+        private int unitId;
         private long timestamp;
 
-        public RequiredUnit(CharSequence name, long time) {
-            unitName = name;
-            timestamp = time;
+        public RequiredUnit(int unitId, long time) {
+            this.unitId = unitId;
+            this.timestamp = time;
         }
 
         public RequiredUnit(DataInput stream) throws IOException {
-            unitName = CharSequences.create(stream.readUTF());
+            unitId = stream.readInt();
             timestamp = stream.readLong();
         }
 
         public void write(DataOutput stream) throws IOException {
-            stream.writeUTF(unitName.toString());
+            stream.writeInt(unitId);
             stream.writeLong(timestamp);
         }
 
         public CharSequence getName() {
-            return unitName;
+            return getValueById(unitId);
         }
 
         public long getTimestamp() {

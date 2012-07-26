@@ -87,10 +87,7 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
 
     @Override
     public void removePlugin(Plugin plugin) {
-        ModelList<Plugin> childs = getChild(PluginImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(plugin);
-        }
+        remove(plugin, getModel().getPOMQNames().PLUGINS.getName(), PluginImpl.List.class);
     }
 
     @Override

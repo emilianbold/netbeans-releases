@@ -61,7 +61,7 @@ public final class PhpInterpreter {
     private final PhpExecutable executable;
 
 
-    private PhpInterpreter(String command) {
+    PhpInterpreter(String command) {
         this.executable = new PhpExecutable(command);
     }
 
