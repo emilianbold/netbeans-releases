@@ -41,40 +41,22 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class RouteParsedLine implements AnnotationParsedLine {
-    private final String description;
-    private final Map<OffsetRange, String> types;
+public class RouteParsedLine extends BaseParsedLine {
 
     public RouteParsedLine(final String description, final Map<OffsetRange, String> types) {
-        Parameters.notNull("description", description); //NOI18N
-        Parameters.notNull("types", types); //NOI18N
-        this.description = description;
-        this.types = types;
+        super(description, types);
     }
 
     @Override
     public String getName() {
         return RouteLineParser.ANNOTATION_NAME;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return new HashMap<OffsetRange, String>(types);
     }
 
 }
