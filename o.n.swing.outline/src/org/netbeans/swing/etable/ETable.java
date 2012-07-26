@@ -2791,7 +2791,9 @@ public class ETable extends JTable {
                             con.getFocusTraversalPolicy().getFirstComponent(con) : 
                             con.getFocusTraversalPolicy().getLastComponent(con);
                     }
-                    to.requestFocus();
+                    if (to != null) {
+                        to.requestFocus();
+                    }
                 }
             } finally {
                 setFocusCycleRoot(true);
