@@ -59,11 +59,13 @@ import java.util.logging.Logger;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
@@ -105,6 +107,13 @@ final class DataViewTableUI extends ResultSetJXTable {
         createPopupMenu(handler, dataView);
     }
 
+    @Override
+    public void setModel(TableModel dataModel) {
+        RowFilter oldFilter = getRowFilter();
+        super.setModel(dataModel);
+        setRowFilter(oldFilter);
+    }
+    
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
         if (dView.getUpdatedRowContext().hasUpdates(
