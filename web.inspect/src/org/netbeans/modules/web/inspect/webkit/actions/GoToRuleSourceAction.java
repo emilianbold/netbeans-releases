@@ -39,10 +39,9 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect.actions;
+package org.netbeans.modules.web.inspect.webkit.actions;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,7 +49,6 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractAction;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
@@ -63,45 +61,74 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.CSSUtils;
-import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  * Go to rule action.
  *
  * @author Jan Stola
  */
-public class GoToRuleAction extends AbstractAction {
-    /** Rule to jump to. */
-    private PageModel.RuleInfo rule;
-
-    /**
-     * Creates a new {@code GoToRuleAction}.
-     * 
-     * @param rule rule to jump to.
-     */
-    public GoToRuleAction(PageModel.RuleInfo rule) {
-        this.rule = rule;
-        String url = rule.getSourceURL();
-        setEnabled(url != null && url.startsWith("file://")); // NOI18N
-    }
+public class GoToRuleSourceAction extends NodeAction {
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        String urlTxt = rule.getSourceURL();
+    protected void performAction(Node[] activatedNodes) {
+        Lookup lookup = activatedNodes[0].getLookup();
+        org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
+                lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
+        Resource resource = lookup.lookup(Resource.class);
+        String resourceName = resource.getName();
         try {
-            URI uri = new URI(urlTxt);
+            URI uri = new URI(resourceName);
+            if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
+                uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
+            }
             File file = new File(uri);
             file = FileUtil.normalizeFile(file);
             FileObject fob = FileUtil.toFileObject(file);
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToRuleTask(rule, fob));
         } catch (URISyntaxException ex) {
-            Logger.getLogger(GoToRuleAction.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
         } catch (ParseException ex) {
-            Logger.getLogger(GoToRuleAction.class.getName()).log(Level.INFO, null, ex);
+            Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
         }
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes.length == 1) {
+            Lookup lookup = activatedNodes[0].getLookup();
+            Resource resource = lookup.lookup(Resource.class);
+            if (resource == null) {
+                return false;
+            }
+            String resourceName = resource.getName();
+            if (resourceName == null || !resourceName.startsWith("file://")) { // NOI18N
+                return false;
+            }
+            org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
+                    lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
+            return (rule != null);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(GoToRuleSourceAction.class, "GoToRuleAction.displayName"); // NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
     /**
@@ -110,7 +137,7 @@ public class GoToRuleAction extends AbstractAction {
      */
     static class GoToRuleTask extends UserTask {
         /** Rule to jump to. */
-        private PageModel.RuleInfo rule;
+        private org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
         /** File to jump into. */
         private FileObject fob;
 
@@ -120,14 +147,14 @@ public class GoToRuleAction extends AbstractAction {
          * @param rule rule to jump to.
          * @param fob file to jump into.
          */
-        GoToRuleTask(PageModel.RuleInfo rule, FileObject fob) {
+        GoToRuleTask(org.netbeans.modules.web.webkit.debugging.api.css.Rule rule, FileObject fob) {
             this.rule = rule;
             this.fob = fob;
         }
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            final String selector = normalizeSelector(rule.getSelector());
+            final String selector = CSSUtils.normalizeSelector(rule.getSelector());
             CssCslParserResult result = (CssCslParserResult)resultIterator.getParserResult();
             final Model sourceModel = result.getModel();
             final AtomicBoolean visitorCancelled = new AtomicBoolean();
@@ -139,12 +166,12 @@ public class GoToRuleAction extends AbstractAction {
 
                         @Override
                         public void visitRule(Rule rule) {
-                            if(visitorCancelled.get()) {
-                                return ;
+                            if (visitorCancelled.get()) {
+                                return;
                             }
                             SelectorsGroup selectorGroup = rule.getSelectorsGroup();
                             CharSequence image = sourceModel.getElementSource(selectorGroup);
-                            String selectorInFile = normalizeSelector(image.toString());
+                            String selectorInFile = CSSUtils.normalizeSelector(image.toString());
                             if (selector.equals(selectorInFile)) {
                                 //found 
                                 visitorCancelled.set(true);
@@ -163,51 +190,6 @@ public class GoToRuleAction extends AbstractAction {
                 
             }); //model task
             
-        }
-
-        /**
-         * Returns an unspecified "normalized" version of the selector suitable
-         * for {@code String} comparison with other normalized selectors.
-         * 
-         * @param selector selector to normalize.
-         * @return "normalized" version of the selector.
-         */
-        private String normalizeSelector(String selector) {
-            // Hack that simplifies the following cycle: adding a dummy
-            // character that ensures that the last group is ended.
-            // This character is removed at the end of this method.
-            selector += 'A';
-            String whitespaceChars = " \t\n\r\f"; // NOI18N
-            String specialChars = ".>+~#:*()[]|,"; // NOI18N
-            StringBuilder main = new StringBuilder();
-            StringBuilder group = null;
-            for (int i=0; i<selector.length(); i++) {
-                char c = selector.charAt(i);
-                boolean whitespace = (whitespaceChars.indexOf(c) != -1);
-                boolean special = (specialChars.indexOf(c) != -1);
-                if (whitespace || special) {
-                    if (group == null) {
-                        group = new StringBuilder();
-                    }
-                    if (special) {
-                        group.append(c);
-                    }
-                } else {
-                    if (group != null) {
-                        if (group.length() == 0) {
-                            // whitespace only group => insert single space instead
-                            main.append(' ');
-                        } else {
-                            // group with special chars
-                            main.append(group);
-                        }
-                        group = null;
-                    }
-                    main.append(c);
-                }
-            }
-            // Removing the dummy character added at the beginning of the method
-            return main.substring(0, main.length()-1).trim();
         }
         
     }

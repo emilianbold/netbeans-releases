@@ -132,7 +132,7 @@ public class GoToNodeSourceAction extends NodeAction  {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(GoToNodeSourceAction.class, "GoToNodeSourceAction.name"); // NOI18N
+        return NbBundle.getMessage(GoToNodeSourceAction.class, "GoToNodeSourceAction.displayName"); // NOI18N
     }
 
     @Override

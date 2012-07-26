@@ -41,17 +41,9 @@ Contributor(s):
 Portions Copyrighted 2012 Sun Microsystems, Inc.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
-<filesystem>
-    <folder name="Windows2">
-        <folder name="Groups">
-            <file name="webinspect.wsgrp" url="resources/webinspect.wsgrp"/>
-            <folder name="webinspect">
-                <file name="DomTC.wstcgrp" url="resources/DomTC.xml"/>
-                <file name="properties.wstcgrp" url="resources/properties.xml"/>
-                <file name="MatchedRulesTC.wstcgrp" url="resources/MatchedRulesTC.xml"/>
-                <file name="RuleEditorTC.wstcgrp" url="resources/RuleEditorTC.xml"/>
-            </folder>
-        </folder>
-    </folder>
-</filesystem>
+<!DOCTYPE tc-group PUBLIC "-//NetBeans//DTD Top Component in Group
+        Properties 2.0//EN" "http://www.netbeans.org/dtds/tc-group2_0.dtd">
+<tc-group version="2.0">
+    <tc-id id="RuleEditorTC" />
+    <open-close-behavior open="true" close="true" />
+</tc-group>

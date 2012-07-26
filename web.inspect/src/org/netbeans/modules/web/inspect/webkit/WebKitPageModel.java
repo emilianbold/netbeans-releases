@@ -69,7 +69,7 @@ import org.openide.util.RequestProcessor;
 public class WebKitPageModel extends PageModel {
     /** Request processor used by this class. */
     private RequestProcessor RP = new RequestProcessor(WebKitPageModel.class);
-    /** Entry point to WebKit debuggin API. */
+    /** Entry point to WebKit debugging API. */
     WebKitDebugging webKit;
     /** Document node. */
     private DOMNode documentNode;
@@ -129,6 +129,15 @@ public class WebKitPageModel extends PageModel {
                 webKit.getRuntime().evaluate(initScript);
             }
         }
+    }
+
+    /**
+     * Returns the underlaying {@code WebKitDebugging} object.
+     *
+     * @return the underlaying {@code WebKitDebugging} object.
+     */
+    public WebKitDebugging getWebKit() {
+        return webKit;
     }
 
     @Override
