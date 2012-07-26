@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
-//import org.hibernate.Query;
-//import org.hibernate.Session;
-//import org.hibernate.SessionFactory;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
@@ -55,16 +52,10 @@ import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
  * Executes JPQL query.
  */
 public class JPQLExecutor {
-
-    public JPQLExecutor(){
-        System.out.println("1###"+getClass().getClassLoader());
-        System.out.println("2###"+Thread.currentThread().getContextClassLoader());
-    }
     
     /**
      * Executes given JPQL query and returns the result.
      * @param jpql the query
-     * @param configFileObject hibernate configuration object.
      * @return JPQLResult containing the execution result (including any errors).
      */
     public JPQLResult execute(String jpql, 
@@ -101,4 +92,5 @@ public class JPQLExecutor {
         }
         return result;
     }
+
 }

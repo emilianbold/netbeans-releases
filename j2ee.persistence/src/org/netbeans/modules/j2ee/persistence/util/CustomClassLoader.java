@@ -93,7 +93,6 @@ public class CustomClassLoader extends URLClassLoader {
 
     @Override
     protected Class loadClass(String name, boolean b) throws ClassNotFoundException {
-       // logger.info("Load class request : " + name);
         if(name == null) {
             throw new IllegalArgumentException("class name cannot be null");
         } else if(name.indexOf("NestedExc")>-1){
@@ -120,8 +119,7 @@ public class CustomClassLoader extends URLClassLoader {
                 packageName.startsWith("org.apache.commons.collections") ||
                 packageName.startsWith("net.sf.ehcache") ||
                 packageName.startsWith("org.netbeans"))) {
-        //    logger.info("loading " + name + " from super class loader " + Thread.currentThread().getContextClassLoader().getParent().getClass().getName());
-            clazz = super.loadClass(name, b);
+                clazz = super.loadClass(name, b);
         }
         if (clazz != null) {
             return clazz;
@@ -253,18 +251,7 @@ public class CustomClassLoader extends URLClassLoader {
 
     @Override
     public InputStream getResourceAsStream(String name) {
-     //   logger.info("Resource request : " + name);
-        if (name != null && name.equals("hibernate.properties")) {
-            return getHibernateProperties();
-        }
         InputStream is = getLocalResourceAsStream(null, name);
         return is != null ? is : super.getResourceAsStream(name);
-    }
-
-    // Construct our own hibernate.properties and register ConnectionProvider.
-    // Ofcourse this will override the user's version of the properties file.
-    private InputStream getHibernateProperties() {
-        ByteArrayInputStream bIn = new ByteArrayInputStream("hibernate.connection.provider_class=org.netbeans.modules.hibernate.util.CustomJDBCConnectionProvider".getBytes());
-        return bIn;
     }
 }

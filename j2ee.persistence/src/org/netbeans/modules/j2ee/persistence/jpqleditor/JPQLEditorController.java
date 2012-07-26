@@ -45,15 +45,23 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 //import org.netbeans.modules.hibernate.catalog.HibernateCatalog;
 import org.netbeans.modules.j2ee.persistence.jpqleditor.ui.JPQLEditorTopComponent;
+import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
+import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
+import org.openide.ErrorManager;
 //import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
 //import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.openide.nodes.Node;
@@ -80,9 +88,14 @@ public class JPQLEditorController {
             final int maxRowCount,
             final ProgressHandle ph) {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
-//                        EntityManagerFactory emf = javax.persistence.Persistence.createEntityManagerFactory(pu.getName());
-//                        EntityManager em = emf.createEntityManager();
 
+        //connection open
+        DatabaseConnection dbconn = findDatabaseConnection(pu, pe.getProject());
+        if(dbconn != null) {
+            dbconn.getJDBCConnection().;
+        }
+        //
+        
         final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ph.progress(10);
@@ -92,10 +105,6 @@ public class JPQLEditorController {
             localResourcesURLList.add(pe.getLocation().getParent().toURL());
             localResourcesURLList.add(pe.getLocation().toURL());
             localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
-
-//            for(URL url:localResourcesURLList){
-//                addURL(url);
-//            }
             
             ClassLoader customClassLoader = pe.getProjectClassLoader(
                     localResourcesURLList.toArray(new URL[]{}));
@@ -143,16 +152,6 @@ public class JPQLEditorController {
             Thread.currentThread().setContextClassLoader(defClassLoader);
         }
     }
-    public void addURL(URL url) throws Exception {
-      URLClassLoader classLoader
-             = (URLClassLoader) ClassLoader.getSystemClassLoader();
-      Class clazz= URLClassLoader.class;
-
-      // Use reflection
-      Method method= clazz.getDeclaredMethod("addURL", new Class[] { URL.class });
-      method.setAccessible(true);
-      method.invoke(classLoader, new Object[] { url });
-    }
 
     public void init(Node[] activatedNodes) {
         editorTopComponent = new JPQLEditorTopComponent(this);
@@ -162,6 +161,68 @@ public class JPQLEditorController {
 
         editorTopComponent.fillPersistenceConfigurations(activatedNodes);
     }
+        
+    private DatabaseConnection findDatabaseConnection(PersistenceUnit pu, Project project) {
+        
+        // try to find a connection specified using the PU properties
+        DatabaseConnection dbcon = ProviderUtil.getConnection(pu);
+        if (dbcon != null) {
+            return dbcon;
+        }
+        
+        // try to find a datasource-based connection, but only for a FileObject-based context,
+        // otherwise we don't have a J2eeModuleProvider to retrieve the DS's from
+        String datasourceName = ProviderUtil.getDatasourceName(pu);
+        if (datasourceName == null) {
+            return null;
+        }
+  
+        if (project == null) {
+            return null;
+        }
+        JPADataSource datasource = null;
+        JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
+        if (dsProvider == null){
+            return null;
+        }
+        for (JPADataSource each : dsProvider.getDataSources()){
+            if (datasourceName.equals(each.getJndiName())){
+                datasource = each;
+            }
+        }
+        if (datasource == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The " + datasourceName + " was not found."); // NOI18N
+            return null;
+        }
+        List<DatabaseConnection> dbconns = findDatabaseConnections(datasource);
+        if (dbconns.size() > 0) {
+            return dbconns.get(0);
+        }
+        return null;
+    }
+    private static List<DatabaseConnection> findDatabaseConnections(JPADataSource datasource) {
+        // copied from j2ee.common.DatasourceHelper (can't depend on that)
+        if (datasource == null) {
+            throw new NullPointerException("The datasource parameter cannot be null."); // NOI18N
+        }
+        String databaseUrl = datasource.getUrl();
+        String user = datasource.getUsername();
+        if (databaseUrl == null || user == null) {
+            return Collections.emptyList();
+        }
+        List<DatabaseConnection> result = new ArrayList<DatabaseConnection>();
+        for (DatabaseConnection dbconn : ConnectionManager.getDefault().getConnections()) {
+            if (databaseUrl.equals(dbconn.getDatabaseURL()) && user.equals(dbconn.getUser())) {
+                result.add(dbconn);
+            }
+        }
+        if (result.size() > 0) {
+            return Collections.unmodifiableList(result);
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
 
 //    public SessionFactory getHibernateSessionFactoryForThisContext(FileObject configFileObject,
 //            Set<FileObject> mappingFOList,
