@@ -94,6 +94,7 @@ import java.beans.PropertyVetoException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.util.NbBundle;
@@ -124,9 +125,10 @@ public class J2MEProjectGenerator {
         "MicroEdition-Configuration", "MicroEdition-Profile", //NOI18N
     }));
     private static final String PRIVATE_PREFIX = "private."; //NOI18N
-    private static final String SRC = "src";
-    private static final String NAME = "name";
-    private static final String MIDLET = "MIDlet-";
+    private static final String SRC = "src"; // NOI18N
+    private static final String NAME = "name"; // NOI18N
+    private static final String MIDLET = "MIDlet-"; // NOI18N
+    private static final String IMLET_PROFILE_PREFIX = "IMP"; // NOI18N
     
     private J2MEProjectGenerator() {
         //Just to avoid accessor class creation
@@ -280,7 +282,7 @@ public class J2MEProjectGenerator {
     }
       
     public static AntProjectHelper createNewProject(final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform, final Collection<DataObject> createHelloMIDlet, final Set<ConfigurationTemplateDescriptor> cfgTemplates, final boolean library) throws IOException {
-        return createProject(projectLocation, name, platform, new NewProjectGeneratorCallback(createHelloMIDlet, cfgTemplates, library));
+        return createProject(projectLocation, name, platform, new NewProjectGeneratorCallback(platform, createHelloMIDlet, cfgTemplates, library));
     }
     
     public static AntProjectHelper createProjectFromTemplate(final FileObject template, final File projectLocation, final String name, final PlatformSelectionPanel.PlatformDescription platform) throws IOException {
@@ -1122,6 +1124,7 @@ public class J2MEProjectGenerator {
 
     private static class NewProjectGeneratorCallback implements ProjectGeneratorCallback, Runnable {
 
+        private final PlatformSelectionPanel.PlatformDescription platform;
         private final Collection<DataObject> createHelloMIDlet;
         private final Set<ConfigurationTemplateDescriptor> cfgTemplates;
         private ArrayList<String> configurations;
@@ -1131,7 +1134,8 @@ public class J2MEProjectGenerator {
         private Project project;
         private boolean library;
 
-        public NewProjectGeneratorCallback(Collection<DataObject> createHelloMIDlet, Set<ConfigurationTemplateDescriptor> cfgTemplates, boolean library) {
+        public NewProjectGeneratorCallback(final PlatformSelectionPanel.PlatformDescription platform, Collection<DataObject> createHelloMIDlet, Set<ConfigurationTemplateDescriptor> cfgTemplates, boolean library) {
+            this.platform = platform;
             this.createHelloMIDlet = createHelloMIDlet;
             this.cfgTemplates = cfgTemplates;
             this.library = library;
@@ -1154,7 +1158,8 @@ public class J2MEProjectGenerator {
             try {
                 final FileObject src = projectLocation.createFolder(SRC); // NOI18N
                 if (createHelloMIDlet != null) {
-                    FileObject hello = src.createFolder("hello"); // NOI18N
+                    String defaultPackage = ProjectUtils.getInformation(project).getName().toLowerCase();
+                    FileObject hello = src.createFolder(defaultPackage); // NOI18N
                     if (hello == null) {
                         hello = src;
                     }
@@ -1171,7 +1176,10 @@ public class J2MEProjectGenerator {
                             if (name.endsWith(".java")) {
                                 name = name.substring(0, name.length() - 5);
                             }
-                            DataObject fromTemplate = template.createFromTemplate(helloFolder);
+                            if(platform.profile.startsWith(IMLET_PROFILE_PREFIX)) {
+                                name = "IMlet"; // NOI18N
+                            }
+                            DataObject fromTemplate = template.createFromTemplate(helloFolder, name);
                             try {
                                 fromTemplate.setValid(false);
                             } catch (PropertyVetoException e) {
@@ -1179,7 +1187,7 @@ public class J2MEProjectGenerator {
                             }
                             fromTemplate = DataObject.find(fromTemplate.getPrimaryFile());
                             createHelloMIDlet.add(fromTemplate);
-                            addMIDletProperty(project, helper, name, hello != src ? "hello." + name : name, ""); // NOI18N
+                            addMIDletProperty(project, helper, name, hello != src ? defaultPackage + "." + name : name, ""); // NOI18N
                             OpenCookie open = fromTemplate.getLookup().lookup (OpenCookie.class);
                             if (open != null) {
                                 open.open();
