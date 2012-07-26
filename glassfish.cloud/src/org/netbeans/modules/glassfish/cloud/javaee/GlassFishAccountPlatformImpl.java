@@ -51,7 +51,7 @@ import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudPlatformImpl extends GlassFishPlatformImpl {
+public class GlassFishAccountPlatformImpl extends GlassFishPlatformImpl {
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -66,7 +66,7 @@ public class GlassFishCloudPlatformImpl extends GlassFishPlatformImpl {
      * <p/>
      * @param url GlassFish cloud URL.
      */
-    GlassFishCloudPlatformImpl(GlassFishUrl url) {
+    GlassFishAccountPlatformImpl(GlassFishUrl url) {
         super(url);
     }
 
@@ -139,6 +139,5 @@ public class GlassFishCloudPlatformImpl extends GlassFishPlatformImpl {
     public boolean isToolSupported(String toolName) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
     
 }

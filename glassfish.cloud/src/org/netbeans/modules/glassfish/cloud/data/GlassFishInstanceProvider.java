@@ -39,106 +39,87 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.glassfish.cloud.javaee;
+package org.netbeans.modules.glassfish.cloud.data;
 
-import java.awt.Image;
-import java.io.File;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.spi.server.ServerInstanceProvider;
+import org.openide.util.ChangeSupport;
 
 /**
- * Java EE platform SPI interface implementation for Java EE platform registered
- * with GlassFish cloud.
+ * GlassFish Abstract Instances Provider.
+ * <p/>
+ * common code to handle all registered GlassFish cloud or server instances.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudPlatformImpl extends GlassFishPlatformImpl {
-
+public abstract class GlassFishInstanceProvider
+        implements ServerInstanceProvider {
+    
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** Stored NEtBeans server instances. */
+    List<ServerInstance> serverInstances;
+
+    /** Change listeners. */
+    ChangeSupport changeListeners;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Creates an instance of Java EE platform registered with GlassFish cloud.
-     * <p/>
-     * @param url GlassFish cloud URL.
-     */
-    GlassFishCloudPlatformImpl(GlassFishUrl url) {
-        super(url);
+    GlassFishInstanceProvider() {
+        changeListeners = new ChangeSupport(this);
+        serverInstances = new LinkedList<ServerInstance>();
     }
-
     ////////////////////////////////////////////////////////////////////////////
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Returns list of known cloud instances.
+     * <p/>
+     * Will return copy of internal <code>ServerInstance<code>
+     * <code>List</code>. Any changes made to returned <code>List</code>
+     * will not affect content of this provider.
+     * <p/>
+     * @return <code>List</code> of known cloud instances.
+     */
     @Override
-    public File getServerHome() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public File getDomainHome() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public File getMiddlewareHome() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public org.netbeans.spi.project.libraries.LibraryImplementation[] getLibraries() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Image getIcon() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public File[] getPlatformRoots() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public synchronized List<ServerInstance> getInstances() {
+        return new ArrayList<ServerInstance>(serverInstances);
     }
 
     /**
-     * Return class path for the specified tool.
+     * Adds a change listener to this provider.
      * <p/>
-     * Use the tool constants declared  in the
-     * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform}.
-     * </p>
-     * @param  toolName Tool name, for example
-     *         {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
-     * @return Class path for the specified tool.
+     * The listener must be notified any time instance is added or removed.
+     * <p/>
+     * @param listener Change listener to add, <code>null</code> is allowed 
+     *                 (but it si no op then).
      */
     @Override
-    public File[] getToolClasspathEntries(String toolName) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void addChangeListener(ChangeListener listener) {
+        changeListeners.addChangeListener(listener);
     }
-
 
     /**
-     * Specifies whether a tool of the given name is supported by GlassFish
-     * cloud.
+     * Removes the previously added listener.
      * <p/>
-     * @param toolName Tool name, for example
-     *        {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
-     * @return Always returns <code>false</code>. This method is not supported.
-     * @deprecated
+     * No more events will be fired on the removed listener.
+     * <p/>
+     * @param listener Listener to remove, <code>null</code> is allowed
+     *                 (but it si no op then).
      */
-    @Deprecated
-    @Override    
-    public boolean isToolSupported(String toolName) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        changeListeners.removeChangeListener(listener);
     }
 
-    
 }

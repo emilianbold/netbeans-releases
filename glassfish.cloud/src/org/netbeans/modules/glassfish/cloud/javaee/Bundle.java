@@ -41,48 +41,31 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
-
 /**
- * Factory class producing SPI interface for Java EE platform registered with
- * GlassFish cloud.
+ * GlassFish Cloud Bundle Keys.
+ * <p>
+ * Constants to access bundle values.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudPlatformFactory extends J2eePlatformFactory {
+public class Bundle {
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish cloud deployment factory display name. */
+    static final String GLASSFISH_CLOUD_DEPL_FACTORY_DISPLAY_NAME
+            = "GlassFishCloudDeploymentFactory.name";
+
+    /** GlassFish cloud deployment factory product version. */
+    static final String GLASSFISH_CLOUD_DEPL_FACTORY_VERSION
+            = "GlassFishCloudDeploymentFactory.version";
 
     /**
-     * Return Java EE platform SPI interface implementation for Java EE platform
-     * registered with GlassFish cloud.
-     * <p/>
-     * @param dm GlassFish cloud deployment manager.
-     * @return Java EE platform registered with GlassFish cloud.
+     * Disable instantiating of this class.
      */
-    @Override
-    public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        if (dm instanceof GlassFishDeploymentManager) {
-            GlassFishDeploymentManager deploymentManager
-                    = (GlassFishDeploymentManager) dm;
-            GlassFishUrl url = deploymentManager.url;
-            switch (url.getType()) {
-                case CLOUD:
-                    return new GlassFishCloudPlatformImpl(url);
-                case LOCAL:
-                    return new GlassFishAccountPlatformImpl(url);
-                // This is unrecheable. Being here means this class does not handle
-                // all possible values correctly.
-                default:
-                    throw new IllegalArgumentException(
-                            "URL constructor set unknown URL type");
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "Not a deployment manager for GlassFish cloud.");
-        }
+    private Bundle() {
     }
-    
+
 }

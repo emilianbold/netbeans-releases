@@ -39,93 +39,87 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.glassfish.cloud.data;
+package org.netbeans.modules.glassfish.cloud.javaee;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 
 /**
- *
- * @author kratz
+ * Common Java EE platform SPI interface implementation for Java EE platform
+ * registered with GlassFish cloud.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudUrl {
-    
+public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
+
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
-    /** URL components separator. */
-    public static final char URL_SEPARATOR = ':';
-
-    /** URL escape character. */
-    public static final char URL_ESCAPE='\\';
-
-    /** Set of characters to escape. */
-    private static final Set<Character> escape = new HashSet<Character>(4);
+    // Now there is only GlassFish 4 so we have single option to return.
+    /** Set of Java platforms supported by GlassFish cloud. */
+    static final Set<String> JAVA_PLATFORMS = new HashSet<String>();
     static {
-        escape.add(URL_SEPARATOR);
-        escape.add(URL_ESCAPE);
+        JAVA_PLATFORMS.add("1.6");
+        JAVA_PLATFORMS.add("1.7");
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish cloud URL. */
+    final GlassFishUrl url;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Count length of escaped <code>String</code>.
+     * Creates an instance of common Java EE platform registered with GlassFish
+     * cloud.
      * <p/>
-     * @param str Not yet escaped <code>String</code> used to count length.
-     * @return Length of the <code>String</code> when escaped.
+     * Initializes common Java EE platform attributes.
+     * <p/>
+     * @param url GlassFish cloud URL.
      */
-    private static int escapedLength(String str) {
-        int escapedLength = 0;
-        if (str != null) {
-            int strLen = str.length();
-            for (int i = 0; i < strLen; i++) {
-                escapedLength += escape.contains(str.charAt(i)) ? 2 : 1;
-            }
-        }
-        return escapedLength;
+    GlassFishPlatformImpl(GlassFishUrl url) {
+        this.url = url;
     }
 
-    /**
-     * Add escaped <code>String</code> into given <code>StringBuffer</code>.
-     * <p/>
-     * @param sb  Target <code>StringBuffer</code> where to add escaped
-     *            <code>String</code>.
-     * @param str <code>String</code> to be escaped and added into
-     *            <code>StringBuffer</code>.
-     */
-    private static void addEscaped(StringBuilder sb, String str) {
-        if (sb != null && str != null) {
-            int strLen = str.length();
-            for (int i = 0; i < strLen; i++) {
-                if (escape.contains(str.charAt(i))) {
-                    sb.append(URL_ESCAPE);
-                }
-                sb.append(str.charAt(i));
-            }
-        }
-    }
-
-    /**
-     * Build URL string.
-     * <p>
-     * URL is matching following grammar:<>
-     * <ul>
-     * <li>URL :: &lt;identifier&gt; &lt;separator&gt; &lt;name&gt;</li>
-     * <li>&lt;identifier&gt; :: {@see GlassFishCloudInstance.URL_PREFIX}
-     * | {@see GlassFishAccountInstance.URL_PREFIX}</li>
-     * 
-     * </ul></p>
-     */
-    public static String url(String prefix, String name) {        
-        StringBuilder sb = new StringBuilder(escapedLength(prefix)
-                + 1 + escapedLength(name));
-        addEscaped(sb, prefix);
-        sb.append(URL_SEPARATOR);
-        addEscaped(sb, name);
-        return sb.toString();
-    }
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented Interface Methods                                          //
+    ////////////////////////////////////////////////////////////////////////////
     
+    /**
+     * Return a set of J2SE platform versions GlassFish cloud can run with.
+     * <p/>
+     * This method should be updated once there will be more options to return.
+     * <p/>
+     * @return Set of J2SE platform versions GlassFish cloud can run with.
+     */
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Set getSupportedJavaPlatformVersions() {
+        // Now there is only GlassFish 4 so we have single option to return.
+        return JAVA_PLATFORMS;
+    }
+
+    /**
+     * Return GlassFish cloud J2SE platform.
+     * <p/>
+     * Now this method returns default J2SE platform set in NEtBeans. In the
+     * future it may return <code>AS_JAVA</code> value set in
+     * <code>asenv.conf</code> or <code>asenv.bat</code> files.
+     * <p/>
+     * @return Default J2SE platform set in NetBeans.
+     */
+    @Override
+    public org.netbeans.api.java.platform.JavaPlatform getJavaPlatform() {
+        return JavaPlatformManager.getDefault().getDefaultPlatform();
+    }
+
 }

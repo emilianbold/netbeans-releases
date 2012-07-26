@@ -41,48 +41,65 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 
 /**
- * Factory class producing SPI interface for Java EE platform registered with
- * GlassFish cloud.
+ * Abstract deployment manager for GlassFish cloud.
+ * <p/>
+ * contains common functionality for both local server and remote cloud server.
+ * <p/>
+ * Provides the core set of functions a Java EE platform must provide for
+ * Java EE application deployment. It provides server related information,
+ * such as list of deployment targets and GlassFish cloud unique runtime
+ * configuration information.
+ * <p/>
+ * Based on API that will be made optional in JavaEE 7 platform.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudPlatformFactory extends J2eePlatformFactory {
+public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** GlassFish cloud URL. */
+    final GlassFishUrl url;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Return Java EE platform SPI interface implementation for Java EE platform
-     * registered with GlassFish cloud.
+     * Creates an instance of abstract deployment manager for GlassFish cloud.
      * <p/>
-     * @param dm GlassFish cloud deployment manager.
-     * @return Java EE platform registered with GlassFish cloud.
+     * This is non public constructor called only in child classes to initialize
+     * common deployment manager attributes.
+     * <p/>
+     * @param url GlassFish cloud URL.
+     */
+    GlassFishDeploymentManager(GlassFishUrl url) {
+        this.url = url;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented Interface Methods                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Retrieve the list of deployment targets supported by this
+     * DeploymentManager.
+     * <p/>
+     * @return List of deployment Target designators the user may select for
+     *         application deployment or <code>null</code> if there are none. 
+     * @throws IllegalStateException Is thrown when the method is called when
+     *         running in disconnected mode.
      */
     @Override
-    public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        if (dm instanceof GlassFishDeploymentManager) {
-            GlassFishDeploymentManager deploymentManager
-                    = (GlassFishDeploymentManager) dm;
-            GlassFishUrl url = deploymentManager.url;
-            switch (url.getType()) {
-                case CLOUD:
-                    return new GlassFishCloudPlatformImpl(url);
-                case LOCAL:
-                    return new GlassFishAccountPlatformImpl(url);
-                // This is unrecheable. Being here means this class does not handle
-                // all possible values correctly.
-                default:
-                    throw new IllegalArgumentException(
-                            "URL constructor set unknown URL type");
-            }
-        } else {
-            throw new IllegalArgumentException(
-                    "Not a deployment manager for GlassFish cloud.");
-        }
+    public Target[] getTargets() throws IllegalStateException {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
 }
