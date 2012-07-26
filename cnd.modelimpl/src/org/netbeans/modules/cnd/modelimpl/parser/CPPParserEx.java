@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.openide.util.CharSequences;
 
 /**
  * Extends CPPParser to implement logic, ported from Support.cpp.
@@ -201,13 +202,13 @@ public class CPPParserEx extends CPPParser {
     }
 
     @Override
-    public Token LT(int i) {
+    public APTToken LT(int i) {
         if (APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM) {
-            Token LT = super.LT(skipIncludeTokensIfNeeded(i));
+            APTToken LT = (APTToken)super.LT(skipIncludeTokensIfNeeded(i));
             assert !isIncludeToken(LT.getType()) : LT + " not expected ";
             return LT;
         } else {
-            return super.LT(i);
+            return (APTToken)super.LT(i);
         }
     }
     
@@ -260,8 +261,8 @@ public class CPPParserEx extends CPPParser {
         return LA == APTTokenTypes.INCLUDE || LA == APTTokenTypes.INCLUDE_NEXT;
     }
     
-    private static int strcmp(String s1, String s2) {
-        return (s1 == null) ? (s2 == null ? 0 : -1) : s1.compareTo(s2);
+    private static int strcmp(CharSequence s1, CharSequence s2) {
+        return CharSequences.comparator().compare(s1, s2);
     }
 
     // Shorthand for a string of (qualifiedItemIs()==xxx||...)
@@ -346,10 +347,10 @@ public class CPPParserEx extends CPPParser {
         //	"isClassName: %d, guessing %d\n", LT(tmp_k).getLine(),
         //	tmp_k,LT(tmp_k).getType(),isTypeName((LT(tmp_k).getText()).data()),
         //	isClassName((LT(tmp_k).getText()).data()),inputState.guessing);
-        while (LT(tmp_k).getType() == IDENT && isTypeName((LT(tmp_k).getText()))) {
+        while (LT(tmp_k).getType() == IDENT && isTypeName((LT(tmp_k).getTextID()))) {
             // If this type is the same as the last type, then ctor
-            if (final_type_idx != 0 && strcmp((LT(final_type_idx).getText()),
-                    (LT(tmp_k).getText())) == 0) {// Like T::T
+            if (final_type_idx != 0 && strcmp(LT(final_type_idx).getTextID(),
+                    LT(tmp_k).getTextID()) == 0) {// Like T::T
                 // As an extra check, do not allow T::T::
                 if (LT(tmp_k + 1).getType() == SCOPE) {
                     //printf("support.cpp qualifiedItemIs qiInvalid returned\n");
@@ -395,7 +396,7 @@ public class CPPParserEx extends CPPParser {
                     }
                 }
 
-                if (strcmp(tmp_str, (LT(final_type_idx).getText())) == 0) {
+                if (strcmp(tmp_str, LT(final_type_idx).getTextID()) == 0) {
                     return ctorCheck(tmp_k);
                 } else {
                     //printf("support.cpp qualifiedItemIs qiType returned\n");
@@ -415,7 +416,7 @@ public class CPPParserEx extends CPPParser {
                     //printf("support.cpp qualifiedItemIs qiInvalid(3) returned\n");
                     return qiInvalid;
                 }
-                if (strcmp(enclosingClass, (LT(tmp_k).getText())) == 0) {
+                if (strcmp(enclosingClass, LT(tmp_k).getTextID()) == 0) {
                     // Like class T  T()
                     //printf("support.cpp qualifiedItemIs qiCtor(3) returned\n");
                     return qiCtor;
@@ -433,7 +434,7 @@ public class CPPParserEx extends CPPParser {
             case TILDE:
                 // check for dtor
                 if (LT(tmp_k + 1).getType() == IDENT &&
-                        isTypeName((LT(tmp_k + 1).getText())) &&
+                        isTypeName((LT(tmp_k + 1).getTextID())) &&
                         LT(tmp_k + 2).getType() != SCOPE) {
                     // Like ~B or A::B::~B
                     // Also (incorrectly?) matches ::~A.
@@ -589,7 +590,7 @@ public class CPPParserEx extends CPPParser {
     // or else we would get confused by "i<3"
     private boolean finalQualifier(int tmp_k) throws TokenStreamException {
         if (LT(tmp_k).getType() == IDENT) {
-            if (isTypeName((LT(tmp_k).getText())) &&
+            if (isTypeName((LT(tmp_k).getTextID())) &&
                     LT(tmp_k + 1).getType() == LESSTHAN) {
                 // Starts with "T<".  Skip <...>
                 tmp_k++;
@@ -612,7 +613,7 @@ public class CPPParserEx extends CPPParser {
     }
 
     @Override
-    protected final boolean isTypeName(String s) {
+    protected final boolean isTypeName(CharSequence s) {
         return isValidIdentifier(s);
     /* TODO: revive the original code:
     CPPSymbol *cs = (CPPSymbol *) symbols->lookup(s);
@@ -631,7 +632,7 @@ public class CPPParserEx extends CPPParser {
      */
     }
 
-    private boolean isValidIdentifier(String id) {
+    private boolean isValidIdentifier(CharSequence id) {
         if (id != null && id.length() > 0) {
             if (Character.isJavaIdentifierStart(id.charAt(0))) {
                 for (int i = 1; i < id.length(); i++) {

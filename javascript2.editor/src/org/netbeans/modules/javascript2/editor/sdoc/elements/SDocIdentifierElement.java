@@ -39,40 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
-
-import java.util.List;
+package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 /**
- * Represents base parameter element class with optional parameter type and description.
+ * Represents sDoc elements with any identifier (like namespace, type etc.).
+ * <p>
+ * <i>Examples:</i> @alias foofighter, @namespace empty.space, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class ParameterElement extends JsDocElementImpl {
+public class SDocIdentifierElement extends SDocBaseElement {
 
-    private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
-    private final String paramDescription;
+    private final String identifier;
 
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+    private SDocIdentifierElement(Type type, String identifier) {
         super(type);
-        this.paramTypes = paramTypes;
-        this.paramDescription = paramDescription;
+        this.identifier = identifier;
     }
 
     /**
-     * Gets the description of the parameter.
-     * @return parameter description
+     * Creates new {@code SDocDescriptionElement}.
+     *
+     * @param type element type (tag), never null
+     * @param description identifier of the element, never null
      */
-    public String getParamDescription() {
-        return paramDescription;
+    public static SDocIdentifierElement create(Type type, String identifier) {
+        return new SDocIdentifierElement(type, identifier);
     }
 
     /**
-     * Gets the parameter types.
-     * @return parameter types
+     * Gets identifier of the element.
+     * @return identifier
      */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
-        return paramTypes;
+    public String getIdentifier() {
+        return identifier;
     }
 
 }

@@ -56,7 +56,8 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Parses jsDoc comment blocks and returns list of these blocks and contained {@code JsDocElement}s.
+ * Parses jsDoc comment blocks.
+ * It can return map of these blocks, their end offset in the snapshot.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -65,9 +66,9 @@ public class JsDocParser {
     private static final Logger LOGGER = Logger.getLogger(JsDocParser.class.getName());
 
     /**
-     * Parses given snapshot and returns list of all jsDoc blocks.
-     * @param scriptText text to parse
-     * @return list of blocks
+     * Parses given snapshot and returns map of all jsDoc blocks.
+     * @param snapshot snapshot to parse
+     * @return map of blocks, key is end offset of each block
      */
     public static Map<Integer, JsDocComment> parse(Snapshot snapshot) {
         Map<Integer, JsDocComment> blocks = new HashMap<Integer, JsDocComment>();

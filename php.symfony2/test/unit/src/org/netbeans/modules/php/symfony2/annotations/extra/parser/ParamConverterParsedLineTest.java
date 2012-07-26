@@ -39,40 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
+package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import java.util.List;
+import java.util.Collections;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * Represents base parameter element class with optional parameter type and description.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class ParameterElement extends JsDocElementImpl {
+public class ParamConverterParsedLineTest extends NbTestCase {
 
-    private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
-    private final String paramDescription;
-
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
-        super(type);
-        this.paramTypes = paramTypes;
-        this.paramDescription = paramDescription;
+    public ParamConverterParsedLineTest(String name) {
+        super(name);
     }
 
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description
-     */
-    public String getParamDescription() {
-        return paramDescription;
+    public void testHasCorrectName() throws Exception {
+        ParamConverterParsedLine paramConverterParsedLine = new ParamConverterParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(ParamConverterLineParser.ANNOTATION_NAME, paramConverterParsedLine.getName());
     }
 
-    /**
-     * Gets the parameter types.
-     * @return parameter types
-     */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
-        return paramTypes;
+    public void testNonNullDescription() throws Exception {
+        try {
+            new ParamConverterParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new ParamConverterParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
+    }
 }

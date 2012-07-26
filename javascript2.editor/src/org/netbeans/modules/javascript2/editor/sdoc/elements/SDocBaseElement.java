@@ -39,40 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
-
-import java.util.List;
+package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 /**
- * Represents base parameter element class with optional parameter type and description.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class ParameterElement extends JsDocElementImpl {
+public class SDocBaseElement implements SDocElement {
 
-    private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
-    private final String paramDescription;
+    private final Type type;
 
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
-        super(type);
-        this.paramTypes = paramTypes;
-        this.paramDescription = paramDescription;
+    /**
+     * Creates new element.
+     * @param type type of the element to create
+     */
+    public SDocBaseElement(Type type) {
+        this.type = type;
     }
 
     /**
-     * Gets the description of the parameter.
-     * @return parameter description
+     * Gets element type.
+     * @return element type
      */
-    public String getParamDescription() {
-        return paramDescription;
-    }
-
-    /**
-     * Gets the parameter types.
-     * @return parameter types
-     */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
-        return paramTypes;
+    @Override
+    public Type getType() {
+        return type;
     }
 
 }

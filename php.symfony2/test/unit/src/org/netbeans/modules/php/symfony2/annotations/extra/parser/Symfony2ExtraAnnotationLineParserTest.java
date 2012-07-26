@@ -69,4 +69,16 @@ public class Symfony2ExtraAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("Route"));
     }
 
+    public void testParamConverterParser() {
+        assertNotNull(parser.parse("ParamConverter"));
+    }
+
+    public void testTemplateParser() {
+        assertNotNull(parser.parse("Template"));
+    }
+
+    public void testCacheParser() {
+        assertNotNull(parser.parse("Cache"));
+    }
+
 }
