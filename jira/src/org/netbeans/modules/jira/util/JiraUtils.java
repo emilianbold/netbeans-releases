@@ -64,10 +64,10 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
-import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.mylyn.BugtrackingCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -125,7 +125,7 @@ public class JiraUtils {
      */
     public static TaskData getTaskDataByKey(final JiraRepository repository, final String key, boolean handleExceptions) {
         final TaskData[] taskData = new TaskData[1];
-        JiraCommand cmd = new JiraCommand() {
+        BugtrackingCommand cmd = new BugtrackingCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
                 taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskData(repository.getTaskRepository(), key, new NullProgressMonitor());
@@ -151,7 +151,7 @@ public class JiraUtils {
 
     public static TaskData getTaskDataById(final JiraRepository repository, final String id, boolean handleExceptions) {
         final TaskData[] taskData = new TaskData[1];
-        JiraCommand cmd = new JiraCommand() {
+        BugtrackingCommand cmd = new BugtrackingCommand() {
             @Override
             public void execute() throws CoreException, IOException, MalformedURLException {
                 taskData[0] = Jira.getInstance().getRepositoryConnector().getTaskDataHandler().getTaskData(repository.getTaskRepository(), id, new NullProgressMonitor());
