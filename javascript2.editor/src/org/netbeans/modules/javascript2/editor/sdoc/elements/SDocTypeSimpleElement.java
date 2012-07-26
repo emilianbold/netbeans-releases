@@ -39,40 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
+package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
 
 /**
- * Represents base parameter element class with optional parameter type and description.
+ * Represents sDoc elements with type declaration purpose.
+ * <p>
+ * <i>Examples:</i> @property {String}, @type {Number}, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class ParameterElement extends JsDocElementImpl {
+public class SDocTypeSimpleElement extends SDocBaseElement {
 
-    private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
-    private final String paramDescription;
+    protected final List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes;
 
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+    protected SDocTypeSimpleElement(SDocElement.Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes) {
         super(type);
-        this.paramTypes = paramTypes;
-        this.paramDescription = paramDescription;
+        this.declaredTypes = declaredTypes;
     }
 
     /**
-     * Gets the description of the parameter.
-     * @return parameter description
+     * Creates new {@code SDocTypeSimpleElement}.
      */
-    public String getParamDescription() {
-        return paramDescription;
+    public static SDocTypeSimpleElement create(SDocElement.Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes) {
+        return new SDocTypeSimpleElement(type, declaredTypes);
     }
 
     /**
-     * Gets the parameter types.
-     * @return parameter types
+     * Gets the type declared by this element.
+     * @return declared type
      */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
-        return paramTypes;
+    public List<org.netbeans.modules.javascript2.editor.model.Type> getDeclaredTypes() {
+        return declaredTypes;
     }
 
 }

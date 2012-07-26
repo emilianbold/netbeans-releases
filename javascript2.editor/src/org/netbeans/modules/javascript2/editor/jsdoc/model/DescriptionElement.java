@@ -62,7 +62,7 @@ public class DescriptionElement extends JsDocElementImpl {
     /**
      * Creates new {@code DescriptionElement}.
      *
-     * @param type {@code DescriptionElement} type, never null
+     * @param type element type (tag), never null
      * @param description description of the element, never null
      */
     public static DescriptionElement create(Type type, String description) {

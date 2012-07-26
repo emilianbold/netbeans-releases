@@ -39,24 +39,33 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
+package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
 
 /**
- * Represents base parameter element class with optional parameter type and description.
+ * Represents parameter element which does not need any parameter name.
+ * <p>
+ * <i>Examples:</i> @return {String} whole string, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class ParameterElement extends JsDocElementImpl {
+public class SDocTypeDescribedElement extends SDocTypeSimpleElement {
 
-    private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
-    private final String paramDescription;
+    protected final String paramDescription;
 
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
-        super(type);
-        this.paramTypes = paramTypes;
-        this.paramDescription = paramDescription;
+    protected SDocTypeDescribedElement(SDocElement.Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description) {
+        super(type, declaredTypes);
+        this.paramDescription = description;
+    }
+
+    /** Creates type described element.
+     * @param type type of the element
+     * @param paramTypes type of the parameter
+     * @param description description of the parameter
+     */
+    public static SDocTypeDescribedElement create(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description) {
+        return new SDocTypeDescribedElement(type, declaredTypes, description);
     }
 
     /**
@@ -65,14 +74,6 @@ public abstract class ParameterElement extends JsDocElementImpl {
      */
     public String getParamDescription() {
         return paramDescription;
-    }
-
-    /**
-     * Gets the parameter types.
-     * @return parameter types
-     */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
-        return paramTypes;
     }
 
 }
