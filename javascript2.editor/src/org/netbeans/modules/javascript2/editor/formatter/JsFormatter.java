@@ -387,6 +387,11 @@ public class JsFormatter implements Formatter {
                             if (tokenAfterEol != null
                                     && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
 
+                                if (!shouldPlaceLineBreak(doc, token,
+                                        token.getKind(), CodeStyle.WrapStyle.WRAP_ALWAYS, CodeStyle.get(doc).getRightMargin())) {
+                                    break;
+                                }
+
                                 // proceed the skipped tokens moving the main loop
                                 for (FormatToken current = token; current != tokenAfterEol; current = current.next()) {
                                     indentationLevel = updateIndentationLevel(current, indentationLevel);
@@ -602,6 +607,49 @@ public class JsFormatter implements Formatter {
         return offsetDiff;
     }
 
+    private boolean shouldPlaceLineBreak(BaseDocument doc, FormatToken token,
+            FormatToken.Kind delimiter, CodeStyle.WrapStyle style, int margin) {
+
+        if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+            return false;
+        }
+        if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
+            return true;
+        }
+
+        FormatToken previousDelimiter = getPreviousNonVirtual(token);
+        assert previousDelimiter != null;
+
+        int offset = previousDelimiter.getOffset();
+        try {
+            // TODO current line offset might be biased with offsetDiff
+            int lineStartOffset = IndentUtils.lineStartOffset(doc, offset);
+            // should not happen
+            if (offset - lineStartOffset > margin) {
+                return true;
+            }
+
+            FormatToken next = token;
+            do {
+                next = next.next();
+            // TODO the delimeter logic has to be extended to any wrapping delimiter
+            // combination - possibly with recursion ?
+            } while (next != null && next.getKind() != FormatToken.Kind.EOL
+                    && next.getKind() != delimiter);
+
+            if (next != null) {
+                previousDelimiter = getPreviousNonVirtual(next);
+                if (previousDelimiter != null
+                        && previousDelimiter.getOffset() - lineStartOffset > margin) {
+                    return true;
+                }
+            }
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return false;
+    }
+
     private boolean isContinuation(List<FormatToken> tokens, int index) {
         FormatToken token = tokens.get(index);
 
@@ -737,6 +785,14 @@ public class JsFormatter implements Formatter {
         FormatToken current = token.next();
         while (current != null && current.isVirtual()) {
             current = current.next();
+        }
+        return current;
+    }
+
+    private static FormatToken getPreviousNonVirtual(FormatToken token) {
+        FormatToken current = token.previous();
+        while (current != null && current.isVirtual()) {
+            current = current.previous();
         }
         return current;
     }
