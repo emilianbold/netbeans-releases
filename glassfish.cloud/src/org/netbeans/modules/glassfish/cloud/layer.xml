@@ -27,4 +27,37 @@
         </file>
     </folder>
 
+    <folder name="J2EE">
+        <folder name="DeploymentPlugins">            
+            <folder name="GlassFish Local Server">
+                 <file name="Descriptor" url="nblocaldep.xml"/>
+                 <file name="Factory.instance">
+                    <attr name="urlPattern" stringvalue="^gfcl:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishCloudDeploymentFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishCloudPlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>
+            </folder>
+            <folder name="Glassfish Cloud">
+                 <file name="Descriptor" url="nbclouddep.xml"/>
+                 <file name="Factory.instance">
+                    <attr name="urlPattern" stringvalue="^gfcr:.*$"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory.create"/>
+                    <attr name="delegate" newvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishCloudDeploymentFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.support.ProxyDeploymentFactory"/>
+                    <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
+                </file>
+                <file name="J2eePlatformFactory.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishCloudPlatformFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

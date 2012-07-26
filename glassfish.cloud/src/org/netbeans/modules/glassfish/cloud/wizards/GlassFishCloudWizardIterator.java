@@ -49,7 +49,7 @@ import org.glassfish.tools.ide.data.GlassFishServerEntity;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudUrl;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -113,8 +113,8 @@ public class GlassFishCloudWizardIterator extends GlassFishWizardIterator {
         }
         GlassFishServerEntity localServer;
         try {
-            localServer = new GlassFishServerEntity(localServerHome,
-                    GlassFishCloudUrl.url(GlassFishCloudInstance.URL_PREFIX,
+            localServer = new GlassFishServerEntity(name, localServerHome,
+                    GlassFishUrl.url(GlassFishUrl.Id.LOCAL,
                     name));
         } catch (DataException de) {
             localServer = null;

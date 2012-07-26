@@ -42,17 +42,13 @@
 package org.netbeans.modules.glassfish.cloud.data;
 
 import java.util.*;
-import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
-import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.api.server.properties.InstancePropertiesManager;
-import org.netbeans.spi.server.ServerInstanceProvider;
-import org.openide.util.ChangeSupport;
 
 /**
  * GlassFish User Account Instances Provider.
- * <p>
+ * <p/>
  * Handles all registered glassFish user acocunt instances. Implemented
  * as singleton because NetBeans GUI components require singleton implementing
  * <code>ServerInstanceProvider</code> interface.
@@ -64,7 +60,7 @@ import org.openide.util.ChangeSupport;
  * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountInstanceProvider
-    implements ServerInstanceProvider {
+    extends GlassFishInstanceProvider {
     
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -173,71 +169,19 @@ public class GlassFishAccountInstanceProvider
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
-
-    /** Stored NEtBeans server instances. */
-    private List<ServerInstance> serverInstances;
-
     /** Stored GlassFish user account instances. */
     private Map<String, GlassFishAccountInstance> accountInstances;
-
-    /** Change listeners. */
-    private ChangeSupport changeListeners;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     private GlassFishAccountInstanceProvider() {
-        changeListeners = new ChangeSupport(this);
-        serverInstances = new LinkedList<ServerInstance>();
+        super();
         accountInstances = new HashMap<String, GlassFishAccountInstance>();
         load();
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Implemented Interface Methods                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Returns list of known user account instances.
-     * <p/>
-     * Will return copy of internal <code>ServerInstance<code>
-     * <code>List</code>. Any changes made to returned <code>List</code>
-     * will not affect content of this provider.
-     * <p/>
-     * @return <code>List</code> of known user account instances.
-     */
-    @Override
-    public synchronized List<ServerInstance> getInstances() {
-        return new ArrayList<ServerInstance>(serverInstances);
-    }
-
-    /**
-     * Adds a change listener to this provider.
-     * <p/>
-     * The listener must be notified any time instance is added or removed.
-     * <p/>
-     * @param listener Change listener to add, <code>null</code> is allowed 
-     *                 (but it si no op then).
-     */
-    @Override
-    public void addChangeListener(ChangeListener listener) {
-        changeListeners.addChangeListener(listener);
-    }
-
-    /**
-     * Removes the previously added listener.
-     * <p/>
-     * No more events will be fired on the removed listener.
-     * <p/>
-     * @param listener Listener to remove, <code>null</code> is allowed
-     *                 (but it si no op then).
-     */
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-        changeListeners.removeChangeListener(listener);
-    }
-   
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////

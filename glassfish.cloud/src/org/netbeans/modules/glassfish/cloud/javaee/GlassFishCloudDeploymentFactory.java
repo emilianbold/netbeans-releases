@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
+import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
+import static org.openide.util.NbBundle.getMessage;
 
 /**
  * Deployment driver for GlassFish cloud.
@@ -57,6 +60,29 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
  */
 public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Logger. */
+    private static final Logger LOG = Logger.getLogger(
+            GlassFishCloudDeploymentFactory.class.getSimpleName());
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates an instance of deployment driver for GlassFish cloud.
+     */
+    public GlassFishCloudDeploymentFactory() {
+        // Nothing at this moment    
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented Interface Methods                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
     /**
      * Tests whether this factory can create a DeploymentManager object based
      * on the specified URI.
@@ -67,7 +93,7 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
      */
     @Override
     public boolean handlesURI(String uri) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return GlassFishUrl.urlPrefix(uri) != null;
     }
 
     /**
@@ -75,9 +101,11 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
      * <p/>
      * @param uri The URI that specifies the connection parameters.
      * @param userName User name required to connect to registered GlassFish
-     *                 cloud.
+     *                 cloud. This attribute is ignored for GlassFish because
+     *                 it's stored in GlassFish entity object.
      * @param password User password required to connect to registered GlassFish
-     *                 cloud.
+     *                 cloud. This attribute is ignored for GlassFish because
+     *                 it's stored in GlassFish entity object.
      * @return Connected and ready <code>DeploymentManager</code> instance.
      * @throws DeploymentManagerCreationException Occurs when
      *         <code>DeploymentManager</code> could not be returned (server
@@ -86,7 +114,20 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDeploymentManager(String uri, String userName,
             String password) throws DeploymentManagerCreationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        GlassFishUrl url;
+        try {
+            url = new GlassFishUrl(uri);
+        } catch (IllegalArgumentException iae) {
+            throw new DeploymentManagerCreationException(iae.getMessage());
+        }
+        switch(url.getType()) {
+            case CLOUD: return new GlassFishCloudDeploymentManager(url);
+            case LOCAL: return new GlassFishAccountDeploymentManager(url);
+            // This is unrecheable. Being here means this class does not handle
+            // all possible values correctly.
+            default: throw new DeploymentManagerCreationException(
+                    "URL constructor set unknown URL type");
+        }
     }
 
     /**
@@ -100,7 +141,8 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri)
             throws DeploymentManagerCreationException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        // User and password arguments are ignored anyway.
+        return getDeploymentManager(uri, null, null);
     }
 
     /**
@@ -110,7 +152,8 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
      */
     @Override
     public String getDisplayName() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getMessage(GlassFishCloudDeploymentFactory.class,
+                Bundle.GLASSFISH_CLOUD_DEPL_FACTORY_DISPLAY_NAME);
     }
 
     /**
@@ -120,7 +163,8 @@ public class GlassFishCloudDeploymentFactory implements DeploymentFactory {
      */
     @Override
     public String getProductVersion() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getMessage(GlassFishCloudDeploymentFactory.class,
+                Bundle.GLASSFISH_CLOUD_DEPL_FACTORY_VERSION);
     }
     
 }
