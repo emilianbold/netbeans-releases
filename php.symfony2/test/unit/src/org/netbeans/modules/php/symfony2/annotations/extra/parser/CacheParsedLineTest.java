@@ -41,44 +41,38 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
+import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2ExtraAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class CacheParsedLineTest extends NbTestCase {
 
-    public Symfony2ExtraAnnotationLineParserTest(String name) {
+    public CacheParsedLineTest(String name) {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2ExtraAnnotationLineParser.getDefault();
+    public void testNonNullDescription() throws Exception {
+        try {
+            new CacheParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
-    public void testMethodParser() {
-        assertNotNull(parser.parse("Method"));
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new CacheParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
-    public void testRouteParser() {
-        assertNotNull(parser.parse("Route"));
-    }
-
-    public void testParamConverterParser() {
-        assertNotNull(parser.parse("ParamConverter"));
-    }
-
-    public void testTemplateParser() {
-        assertNotNull(parser.parse("Template"));
-    }
-
-    public void testCacheParser() {
-        assertNotNull(parser.parse("Cache"));
+    public void testCorrectName() throws Exception {
+        CacheParsedLine cache = new CacheParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(CacheLineParser.ANNOTATION_NAME, cache.getName());
     }
 
 }
