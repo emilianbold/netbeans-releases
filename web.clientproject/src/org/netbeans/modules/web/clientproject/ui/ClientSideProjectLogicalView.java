@@ -52,12 +52,15 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
 import org.netbeans.modules.web.clientproject.remote.RemoteFS;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -68,6 +71,8 @@ import org.openide.nodes.Node;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -104,10 +109,94 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     @Override
     public Node findPath(Node root, Object target) {
+        Project prj = root.getLookup().lookup(Project.class);
+        if (prj == null) {
+            return null;
+        }
+
+        FileObject fo;
+        if (target instanceof FileObject) {
+            fo = (FileObject) target;
+        } else if (target instanceof DataObject) {
+            fo = ((DataObject) target).getPrimaryFile();
+        } else {
+            // unsupported object
+            return null;
+        }
+        // first check project
+        Project owner = FileOwnerQuery.getOwner(fo);
+        if (!prj.equals(owner)) {
+            // another project
+            return null;
+        }
+
+        // XXX later, use source roots here
+        for (Node node : root.getChildren().getNodes(true)) {
+            FileObject kid = node.getLookup().lookup(FileObject.class);
+            if (kid == null) {
+                continue;
+            }
+            if (kid == fo) {
+                return node;
+            } else if (FileUtil.isParentOf(kid, fo)) {
+                Node found = findNode(node, kid, fo);
+                if (found != null && hasObject(found, target)) {
+                    return found;
+                }
+            }
+        }
         return null;
     }
-    
-    
+
+    private static Node findNode(Node node, FileObject root, FileObject fo) {
+        String relPath = FileUtil.getRelativePath(root, fo);
+
+        // first, try to find the file without extension (more common case)
+        String[] path = relPath.split("/"); // NOI18N
+        path[path.length - 1] = fo.getName();
+        Node found = findNode(node, path);
+        if (found != null) {
+            return found;
+        }
+        // file not found, try to search for the name with the extension
+        path[path.length - 1] = fo.getNameExt();
+        return findNode(node, path);
+    }
+
+    private static Node findNode(Node start, String[] path) {
+        Node found = null;
+        try {
+            found = NodeOp.findPath(start, path);
+        } catch (NodeNotFoundException ex) {
+            // ignored
+        }
+        return found;
+    }
+
+    private boolean hasObject(Node node, Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        FileObject fileObject = node.getLookup().lookup(FileObject.class);
+        if (fileObject == null) {
+            return false;
+        }
+        if (obj instanceof DataObject) {
+            DataObject dataObject = node.getLookup().lookup(DataObject.class);
+            if (dataObject == null) {
+                return false;
+            }
+            if (dataObject.equals(obj)) {
+                return true;
+            }
+            return hasObject(node, ((DataObject) obj).getPrimaryFile());
+        } else if (obj instanceof FileObject) {
+            return obj.equals(fileObject);
+        }
+        return false;
+    }
+
+
 /** This is the node you actually see in the project tab for the project */
     private static final class ClientSideProjectNode extends FilterNode {
 
@@ -131,7 +220,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/projecticon.png");
+            return ImageUtilities.loadImage(ClientSideProject.PROJECT_ICON);
         }
 
         @Override
@@ -144,12 +233,12 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return project.getProjectDirectory().getName();
         }
 
-    }    
-    
+    }
+
     private static class ClientSideProjectChildren extends Children.Keys {
 
         private static String REMOTE_FILES = "remote.files";
-        
+
         private ClientSideProject project;
         private Node folderNode;
 
@@ -211,7 +300,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             super.addNotify();
             updateKeys();
         }
-        
+
         private void updateKeys() {
             ArrayList keys = new ArrayList();
             if (!project.getRemoteFiles().getRemoteFiles().isEmpty()) {
@@ -220,9 +309,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             keys.addAll(Arrays.asList(folderNode.getChildren().getNodes(false)));
             setKeys(keys);
         }
-        
+
     }
-    
+
     @NbBundle.Messages("LBL_RemoteFiles=Remote Files")
     private static final class RemoteFilesNode extends AbstractNode {
 
@@ -248,8 +337,8 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return Bundle.LBL_RemoteFiles();
         }
 
-    }    
-    
+    }
+
     private static class RemoteFilesChildren extends Children.Keys<URL> implements ChangeListener {
 
         final ClientSideProject project;
@@ -257,7 +346,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public RemoteFilesChildren(ClientSideProject project) {
             this.project = project;
         }
-        
+
         @Override
         protected Node[] createNodes(URL key) {
             FileObject fo = RemoteFS.getDefault().getFileForURL(key);
@@ -287,7 +376,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         public void stateChanged(ChangeEvent e) {
             updateKeys();
         }
-        
+
         private void updateKeys() {
             List<URL> remoteFiles = project.getRemoteFiles().getRemoteFiles();
             if (remoteFiles.size() > 1) {
@@ -313,5 +402,5 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         }
 
     }
-    
+
 }

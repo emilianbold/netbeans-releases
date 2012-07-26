@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -81,11 +82,14 @@ import org.openide.util.lookup.ServiceProvider;
 
 @AntBasedProjectRegistration(
     type=ClientSideProjectType.TYPE,
-    iconResource="org/netbeans/modules/web/clientproject/ui/resources/projecticon.png",
+    iconResource=ClientSideProject.PROJECT_ICON,
     sharedNamespace=ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=ClientSideProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )
 public class ClientSideProject implements Project {
+
+    @StaticResource
+    public static final String PROJECT_ICON = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"; // NOI18N
 
     final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
