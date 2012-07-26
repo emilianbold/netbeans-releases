@@ -63,28 +63,24 @@ import org.openide.util.Exceptions;
  */
 public class JsfIndex {
 
-    public static JsfIndex create(FileObject baseFile) {
-        return new JsfIndex(baseFile);
+    public static JsfIndex create(FileObject baseFile, ClassPath compileCp, ClassPath executeCp) {
+        return new JsfIndex(baseFile, compileCp, executeCp);
     }
     private final FileObject[] sourceRoots;
     private final FileObject[] binaryRoots;
     private final FileObject[] customRoots;
     private final FileObject base;
 
-    /** Creates a new instance of JsfIndex */
-    private JsfIndex(FileObject baseFile) {
+    /**
+     * Creates a new instance of JsfIndex
+     */
+    private JsfIndex(FileObject baseFile, ClassPath compileCp, ClassPath executeCp) {
         this.base = baseFile;
-        
+
         //#179930 - merge compile and execute classpath, remove once #180183 resolved
         Collection<FileObject> roots = new HashSet<FileObject>();
-        ClassPath compileCp = ClassPath.getClassPath(base, ClassPath.COMPILE);
-        if(compileCp != null) {
-            roots.addAll(Arrays.asList(compileCp.getRoots()));
-        }
-        ClassPath executeCp = ClassPath.getClassPath(base, ClassPath.EXECUTE);
-        if(executeCp != null) {
-            roots.addAll(Arrays.asList(executeCp.getRoots()));
-        }
+        roots.addAll(Arrays.asList(compileCp.getRoots()));
+        roots.addAll(Arrays.asList(executeCp.getRoots()));
         binaryRoots = roots.toArray(new FileObject[]{});
 
         Collection<FileObject> croots = QuerySupport.findRoots(base, null, null, null);

@@ -184,7 +184,7 @@ CLOSE_TAG="</"{IDENTIFIER}">"
 
 TAG_PARAM=[^"\r""\n""\r\n""\t"" ""<"">"]*
 
-DIRECTIVE_PARAM=[^"\r""\n""\r\n""\t"" "]*
+DIRECTIVE_PARAM_TOKEN=[^"\r""\n""\r\n""\t"" "]
 
 %state ST_HIGHLIGHTING_ERROR
 %state ST_IN_OPEN_TAG
@@ -240,8 +240,8 @@ DIRECTIVE_PARAM=[^"\r""\n""\r\n""\t"" "]*
     {STRING} {
         return ApacheConfTokenId.AC_STRING;
     }
-    {DIRECTIVE_PARAM} {
-        return ApacheConfTokenId.AC_DIRECTIVE_PARAM;
+    {DIRECTIVE_PARAM_TOKEN} {
+        return ApacheConfTokenId.AC_DIRECTIVE_PARAM_TOKEN;
     }
     {NEWLINE} {
         popState();

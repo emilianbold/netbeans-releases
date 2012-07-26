@@ -1,0 +1,6 @@
+Usages of <b>SubtypeC</b> [3 occurrences]
+    RefactoringTest
+        SubtypeC.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;8:&nbsp;&nbsp;</font><font color=#3c3c3c>*</font>&nbsp;<b>SubtypeC</b>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;16:&nbsp;&nbsp;</font><font color=#3c3c3c>*</font>&nbsp;<font color=#3c3c3c>field</font>&nbsp;<font color=#3c3c3c>in</font>&nbsp;<font color=#0000e6>class</font>&nbsp;<b>SubtypeC</b>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;20:&nbsp;&nbsp;</font><font color=#969696>// inline comment with class </font><b>SubtypeC</b>

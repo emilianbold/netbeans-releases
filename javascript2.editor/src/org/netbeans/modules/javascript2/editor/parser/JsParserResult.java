@@ -97,10 +97,7 @@ public class JsParserResult extends ParserResult {
     public JsDocumentationHolder getDocumentationHolder() {
         synchronized(this) {
             if (docHolder == null) {
-                System.err.println("===== CACHING: " + getSnapshot().getSource().getFileObject().getName());
                 docHolder = JsDocumentationSupport.getDocumentationHolder(this);
-            } else {
-                System.err.println("===== EXISTS: " + getSnapshot().getSource().getFileObject().getName());
             }
         }
         return docHolder;
