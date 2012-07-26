@@ -387,8 +387,8 @@ public class JsFormatter implements Formatter {
                             if (tokenAfterEol != null
                                     && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
 
-                                if (!shouldPlaceLineBreak(doc, token,
-                                        token.getKind(), CodeStyle.WrapStyle.WRAP_ALWAYS, CodeStyle.get(doc).getRightMargin())) {
+                                if (!shouldPlaceLineBreak(doc, token, formatContext,
+                                        CodeStyle.get(doc).getRightMargin())) {
                                     break;
                                 }
 
@@ -608,7 +608,9 @@ public class JsFormatter implements Formatter {
     }
 
     private boolean shouldPlaceLineBreak(BaseDocument doc, FormatToken token,
-            FormatToken.Kind delimiter, CodeStyle.WrapStyle style, int margin) {
+            FormatContext context, int margin) {
+
+        CodeStyle.WrapStyle style = getLineWrap(token, context);
 
         if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
             return false;
@@ -624,21 +626,21 @@ public class JsFormatter implements Formatter {
         try {
             // TODO current line offset might be biased with offsetDiff
             int lineStartOffset = IndentUtils.lineStartOffset(doc, offset);
-            // should not happen
-            if (offset - lineStartOffset > margin) {
+            if (offset - lineStartOffset >= margin) {
                 return true;
             }
 
-            FormatToken next = token;
-            do {
-                next = next.next();
-            // TODO the delimeter logic has to be extended to any wrapping delimiter
-            // combination - possibly with recursion ?
-            } while (next != null && next.getKind() != FormatToken.Kind.EOL
-                    && next.getKind() != delimiter);
+            FormatToken next = token.next();
+            while (next != null && next.getKind() != FormatToken.Kind.EOL) {
+                CodeStyle.WrapStyle nextStyle = getLineWrap(next, context);
+                if (nextStyle != CodeStyle.WrapStyle.WRAP_NEVER) {
+                    break;
+                }
+            }
 
             if (next != null) {
-                previousDelimiter = getPreviousNonVirtual(next);
+                previousDelimiter = next.getKind() != FormatToken.Kind.EOL
+                        ? getPreviousNonVirtual(next) : next;
                 if (previousDelimiter != null
                         && previousDelimiter.getOffset() - lineStartOffset > margin) {
                     return true;
@@ -779,6 +781,29 @@ public class JsFormatter implements Formatter {
                 return indentationLevel - 1;
         }
         return indentationLevel;
+    }
+
+    private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
+        if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
+            // XXX option
+            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
+            // XXX option
+            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        if (token.getKind() == FormatToken.Kind.AFTER_CASE) {
+            // XXX option
+            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        if (token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START) {
+            if (ELSE_IF_SINGLE_LINE) {
+                return CodeStyle.WrapStyle.WRAP_NEVER;
+            }
+            // XXX option
+            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        return CodeStyle.WrapStyle.WRAP_NEVER;
     }
 
     private static FormatToken getNextNonVirtual(FormatToken token) {
