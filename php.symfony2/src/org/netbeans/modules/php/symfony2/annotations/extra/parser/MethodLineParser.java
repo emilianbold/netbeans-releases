@@ -52,7 +52,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 class MethodLineParser implements AnnotationLineParser {
-    static String ANNOTATION_NAME = "Method"; //NOI18N
+    static final String ANNOTATION_NAME = "Method"; //NOI18N
 
     @Override
     public AnnotationParsedLine parse(final String line) {
