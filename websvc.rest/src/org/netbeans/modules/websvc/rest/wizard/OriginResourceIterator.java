@@ -237,7 +237,7 @@ public class OriginResourceIterator implements
                 fqn[0] = JavaSourceHelper.getTopLevelClassElement(copy).
                         getQualifiedName().toString();
                 TreeMaker maker = copy.getTreeMaker();
-                ClassTree newTree = maker.setExtends(classTree, 
+                ClassTree newTree = maker.addClassImplementsClause(classTree, 
                         maker.QualIdent("com.sun.jersey.spi.container.ContainerResponseFilter"));// NOI18N
                 
                 
@@ -296,8 +296,8 @@ public class OriginResourceIterator implements
         
         builder.append("response.getHttpHeaders().putSingle(\"ccess-Control-Allow-Headers\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.HEADERS));
-        builder.append("\");");                                                                                                                     //NOI18N
-        builder.append('}');
+        builder.append("\");");                                                     //NOI18N                                                              //NOI18N
+        builder.append("return response;}");                                        //NOI18N
         return builder.toString();
     }
     
