@@ -1664,8 +1664,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 synchronized (entry.getLock()) {
                     PreprocessorStatePair newStatePair = new PreprocessorStatePair(newState, pcState);
-                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
-                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
+//                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
+//                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
                     // register included file and it's states in start project under current included file lock
                     startProjectUpdateResult = startProject.updateFileEntryForIncludedFile(entry, this, file, csmFile, newStatePair);
                     

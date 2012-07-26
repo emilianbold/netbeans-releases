@@ -78,7 +78,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 134 + (TraceFlags.CACHE_IN_PROJECT ? 1000 : 0);
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 135 + (TraceFlags.CACHE_IN_PROJECT ? 1000 : 0);
 
 //    /** temporary flag, to be removed as soon as relocatable repository is achieved */
 //    public static final boolean RELOCATABLE = true;

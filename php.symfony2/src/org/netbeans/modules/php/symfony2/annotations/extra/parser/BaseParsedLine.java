@@ -39,40 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc.model;
+package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.openide.util.Parameters;
 
 /**
- * Represents base parameter element class with optional parameter type and description.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class ParameterElement extends JsDocElementImpl {
+public abstract class BaseParsedLine implements AnnotationParsedLine {
 
-    private final List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes;
-    private final String paramDescription;
+    private final String description;
+    private final Map<OffsetRange, String> types;
 
-    public ParameterElement(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
-        super(type);
-        this.paramTypes = paramTypes;
-        this.paramDescription = paramDescription;
+    public BaseParsedLine(final String description, final Map<OffsetRange, String> types) {
+        Parameters.notNull("description", description); //NOI18N
+        Parameters.notNull("types", types); //NOI18N
+        this.description = description;
+        this.types = types;
     }
 
-    /**
-     * Gets the description of the parameter.
-     * @return parameter description
-     */
-    public String getParamDescription() {
-        return paramDescription;
+    @Override
+    public String getDescription() {
+        return description;
     }
 
-    /**
-     * Gets the parameter types.
-     * @return parameter types
-     */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getParamTypes() {
-        return paramTypes;
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return new HashMap<OffsetRange, String>(types);
     }
 
 }

@@ -53,7 +53,6 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -74,6 +73,9 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel 
     public static final String REQUIRED_CONFIGURATION = "RequiredConfiguration"; // NOI18N
     public static final String REQUIRED_PROFILE ="RequiredProfile"; // NOI18N
     
+    public static final String IMPNG_PROFILE_NAME = "IMP-NG"; // NOI18N
+    public static final String IMPNG_PROFILE_VERSION = "1.0"; // NOI18N
+
     public static final String PLATFORM_DESCRIPTION = "PlatformDescription"; //NOI18N
     
     public static class PlatformDescription {
@@ -136,7 +138,10 @@ public class PlatformSelectionPanel implements WizardDescriptor.FinishablePanel 
     
     private static Profile parseProfile(final String profile) {
         if (profile != null) try {
-            final int j = profile.lastIndexOf('-');
+            if(IMPNG_PROFILE_NAME.equals(profile)) {
+                return new Profile(IMPNG_PROFILE_NAME, new SpecificationVersion(IMPNG_PROFILE_VERSION));
+            }
+            final int j = profile.lastIndexOf('-'); //NOI18N
             return j > 0 ? new Profile(profile.substring(0, j).trim(), new SpecificationVersion(profile.substring(j+1).trim())) : new Profile(profile.trim(), null);
         } catch (NumberFormatException nfe) {
             //HO HO HO ERROR IN PARSING !
