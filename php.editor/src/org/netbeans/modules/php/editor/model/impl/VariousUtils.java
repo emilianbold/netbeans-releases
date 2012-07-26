@@ -46,7 +46,6 @@ import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
@@ -56,9 +55,9 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -266,7 +265,9 @@ public class VariousUtils {
         String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
-            if (frag.trim().length() == 0) continue;
+            if (frag.trim().length() == 0) {
+                continue;
+            }
             if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
                 if (i+1 < fragments.length) {
                     String varName = fragments[++i];
@@ -290,7 +291,6 @@ public class VariousUtils {
                 retval.append(PRE_OPERATION_TYPE_DELIMITER);
                 retval.append(frag);
                 retval.append(POST_OPERATION_TYPE_DELIMITER);
-                isPrefix = true;
             } else {
                 retval.append(frag);
             }
@@ -302,7 +302,9 @@ public class VariousUtils {
         String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
-            if (frag.trim().length() == 0) continue;
+            if (frag.trim().length() == 0) {
+                continue;
+            }
             if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
                 if (i+1 < fragments.length) {
                     String varName = fragments[++i];
@@ -322,7 +324,7 @@ public class VariousUtils {
     //TODO: needs to be improved to properly return more types
     public static Collection<? extends TypeScope> getType(final VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
         Collection<? extends TypeScope> recentTypes = Collections.emptyList();
-        Collection<? extends TypeScope> oldRecentTypes = Collections.emptyList();
+        Collection<? extends TypeScope> oldRecentTypes;
         Stack<VariableName> fldVarStack = new Stack<VariableName>();
 
         if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
@@ -538,7 +540,7 @@ public class VariousUtils {
     }
 
     private static QualifiedName createQuery(String semiTypeName, final Scope scope) {
-        QualifiedName result = null;
+        QualifiedName result;
         final QualifiedName query = QualifiedName.create(semiTypeName);
         final String translatedName = translateSpecialClassName(scope, query.getName());
         if (translatedName != null && translatedName.startsWith("\\")) { //NOI18N
@@ -554,7 +556,7 @@ public class VariousUtils {
         Stack<ModelElement> retval = new Stack<ModelElement>();
         Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();
 
-        TypeScope type = null;
+        TypeScope type;
         if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
             String operation = null;
             String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
@@ -958,7 +960,6 @@ public class VariousUtils {
                         }
                         break;
                     case VARBASE:
-                        state = State.INVALID;
                         if (isStaticReference(token)) {
                             state = State.STATIC_REFERENCE;
                             break;
@@ -1305,7 +1306,7 @@ public class VariousUtils {
                 for(UseScope useDeclaration : contextNamespace.getDeclaredUses()) {
                     if (useDeclaration.getOffset() < nameOffset) {
                         String firstNameSegment = name.getSegments().getFirst();
-                        QualifiedName returnName = null;
+                        QualifiedName returnName;
                         if ((useDeclaration.getAliasedName() != null
                                     && firstNameSegment.equals(useDeclaration.getAliasedName().getAliasName()))) {
                             returnName = useDeclaration.getAliasedName().getRealName();
@@ -1440,7 +1441,6 @@ public class VariousUtils {
             for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
                 if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !VariousUtils.isPrimitiveType(typeName)) {
                     QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), offset, inScope);
-                    fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR);
                     retval += fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) ? "" : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR; //NOI18N
                     retval += fullyQualifiedName.toString() + typeSeparator;
                 } else {
