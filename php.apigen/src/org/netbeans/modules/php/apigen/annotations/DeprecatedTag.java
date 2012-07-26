@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class DeprecatedTag extends PhpAnnotationTag {
+public class DeprecatedTag extends AnnotationCompletionTag {
 
     public DeprecatedTag() {
         super("deprecated", "@deprecated since version ${number}", //NOI18N

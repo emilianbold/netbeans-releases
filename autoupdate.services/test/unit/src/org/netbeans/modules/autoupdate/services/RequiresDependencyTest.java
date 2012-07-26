@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,6 +46,7 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -203,4 +204,57 @@ public class RequiresDependencyTest extends NbmAdvancedTestCase {
                     ", but broken deps are " + wantsInfo.getBrokenDependencies (), wantsInfo.getBrokenDependencies ().isEmpty ());
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    public void testInstallModuleWhichRecommendsBrokenModule() throws IOException {
+        String providerModule = "org.yourorghere.provider.testtoken";
+        String wantsModule = "org.yourorghere.recommends.testtoken";
+        String catalog = generateCatalog(
+                generateModuleElementWithProviders(providerModule, "1.0", TOKEN, "org.yourorghere.nothere"),
+                generateModuleElement(wantsModule, "1.0", "OpenIDE-Module-Recommends", TOKEN, false, false));
+
+        AutoupdateCatalogProvider p = createUpdateProvider(catalog);
+        p.refresh(true);
+        Map<String, UpdateItem> updates = p.getUpdateItems();
+
+        // initial check of updates being and its states
+        ModuleItem providerModuleItem = (ModuleItem) Trampoline.SPI.impl(updates.get(providerModule + "_1.0"));
+        assertNotNull(providerModule + " found in UpdateItems.", providerModuleItem);
+
+        ModuleItem wantsModuleItem = (ModuleItem) Trampoline.SPI.impl(updates.get(wantsModule + "_1.0"));
+        assertNotNull(wantsModule + " found in UpdateItems.", wantsModuleItem);
+        assertFalse(wantsModuleItem.getModuleInfo().getDependencies() + " are not empty.",
+                wantsModuleItem.getModuleInfo().getDependencies().isEmpty());
+
+        // acquire UpdateUnits for test modules
+        UpdateUnitProviderFactory.getDefault().create("test-update-provider", "test-update-provider", generateFile(catalog));
+        UpdateUnitProviderFactory.getDefault().refreshProviders(null, true);
+        UpdateUnit providerUU = UpdateManagerImpl.getInstance().getUpdateUnit(providerModule);
+        UpdateUnit wantsUU = UpdateManagerImpl.getInstance().getUpdateUnit(wantsModule);
+        assertNotNull("Unit " + providerModule + " found.", providerUU);
+        assertNotNull("Unit " + wantsModule + " found.", wantsUU);
+
+        // check states installed units, none of wants and provides are installed
+        assertNull(wantsModule + " is not installed.", wantsUU.getInstalled());
+        assertNull(providerModule + " is not installed.", providerUU.getInstalled());
+
+        // check content of container
+        OperationContainer ic = OperationContainer.createForInstall();
+        assertNotNull(wantsUU.getAvailableUpdates().get(0));
+        
+        OperationInfo wantsInfo = ic.add(wantsUU.getAvailableUpdates().get(0));
+        assertNotNull(wantsInfo);
+        assertEquals(wantsUU, wantsInfo.getUpdateUnit());
+        
+        Set<String> brokenDeps = wantsInfo.getBrokenDependencies();
+        assertTrue("No broken dependencies if install " + wantsUU + ", but " + brokenDeps, brokenDeps.isEmpty());
+
+        // install wants module
+        installUpdateUnit(wantsUU);
+
+        // check states of installed units, module wants is installed, but the broken provider not
+        assertNotNull(wantsModule + " is installed.", wantsUU.getInstalled());
+        assertNull(providerModule + " is not installed.", providerUU.getInstalled());
+    }
+    
 }

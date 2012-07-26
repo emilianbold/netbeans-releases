@@ -62,18 +62,19 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageActionFactory;
-import org.netbeans.modules.php.api.doc.PhpDocs;
-import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
+import org.netbeans.modules.php.api.documentation.PhpDocumentations;
+import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.doc.PhpDocProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -489,17 +490,18 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             if (projects.size() != 1) {
                 return this;
             }
-            PhpModule phpModule = projects.iterator().next().getLookup().lookup(PhpModule.class);
-            if (phpModule == null) {
+            PhpProject phpProject = projects.iterator().next().getLookup().lookup(PhpProject.class);
+            if (phpProject == null) {
                 return this;
             }
-            List<PhpDocProvider> docProviders = PhpDocs.getDocumentations();
+            List<PhpDocumentationProvider> docProviders = PhpDocumentations.getDocumentations();
             if (docProviders.isEmpty()) {
                 return this;
             }
 
-            List<PhpDocProvider> projectDocProviders = new ArrayList<PhpDocProvider>(docProviders.size());
-            for (PhpDocProvider docProvider : docProviders) {
+            PhpModule phpModule = phpProject.getPhpModule();
+            List<PhpDocumentationProvider> projectDocProviders = new ArrayList<PhpDocumentationProvider>(docProviders.size());
+            for (PhpDocumentationProvider docProvider : docProviders) {
                 if (docProvider.isInPhpModule(phpModule)) {
                     projectDocProviders.add(docProvider);
                 }
@@ -508,9 +510,9 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                 return this;
             }
             if (projectDocProviders.size() == 1) {
-                return new PhpDocAction(phpModule, projectDocProviders.get(0));
+                return new PhpDocAction(phpProject, projectDocProviders.get(0));
             }
-            return new DocumentationMenu(phpModule, projectDocProviders);
+            return new DocumentationMenu(phpProject, projectDocProviders);
         }
 
     }
@@ -519,16 +521,16 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         private static final long serialVersionUID = 1587896543546879L;
 
-        private final PhpModule phpModule;
-        private final List<PhpDocProvider> docProviders;
+        private final PhpProject phpProject;
+        private final List<PhpDocumentationProvider> docProviders;
 
-        public DocumentationMenu(PhpModule phpModule, List<PhpDocProvider> docProviders) {
+        public DocumentationMenu(PhpProject phpProject, List<PhpDocumentationProvider> docProviders) {
             super(NbBundle.getMessage(DocumentationMenu.class, "PhpDoc.action.generate.label"), null);
-            assert phpModule != null;
+            assert phpProject != null;
             assert docProviders != null;
 
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DocumentationMenu.class, "PhpDoc.action.generate.label"));
-            this.phpModule = phpModule;
+            this.phpProject = phpProject;
             this.docProviders = docProviders;
         }
 
@@ -540,8 +542,8 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         @Override
         public JMenuItem getPopupPresenter() {
             List<PhpDocAction> docActions = new ArrayList<PhpDocAction>(docProviders.size());
-            for (PhpDocProvider docProvider : docProviders) {
-                docActions.add(new PhpDocAction(docProvider.getDisplayName(), phpModule, docProvider));
+            for (PhpDocumentationProvider docProvider : docProviders) {
+                docActions.add(new PhpDocAction(docProvider.getDisplayName(), phpProject, docProvider));
             }
             return new DocumentationSubMenu(docActions);
         }
@@ -568,16 +570,16 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         private static final RequestProcessor RP = new RequestProcessor("Generating php documentation", 2); // NOI18N
 
-        private final PhpModule phpModule;
-        private final PhpDocProvider docProvider;
+        private final PhpProject phpProject;
+        private final PhpDocumentationProvider docProvider;
 
 
-        public PhpDocAction(PhpModule phpModule, PhpDocProvider docProvider) {
-            this(NbBundle.getMessage(PhpDocAction.class, "PhpDoc.action.generate.label"), phpModule, docProvider);
+        public PhpDocAction(PhpProject phpProject, PhpDocumentationProvider docProvider) {
+            this(NbBundle.getMessage(PhpDocAction.class, "PhpDoc.action.generate.label"), phpProject, docProvider);
         }
 
-        public PhpDocAction(String name, PhpModule phpModule, PhpDocProvider docProvider) {
-            this.phpModule = phpModule;
+        public PhpDocAction(String name, PhpProject phpProject, PhpDocumentationProvider docProvider) {
+            this.phpProject = phpProject;
             this.docProvider = docProvider;
 
             putValue(NAME, name);
@@ -586,11 +588,16 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (PhpProjectValidator.isFatallyBroken(phpProject)) {
+                // broken project
+                Utils.warnInvalidSourcesDirectory(phpProject);
+                return;
+            }
             RP.post(new Runnable() {
                 @Override
                 public void run() {
                     LifecycleManager.getDefault().saveAll();
-                    docProvider.generateDocumentation(phpModule);
+                    docProvider.generateDocumentation(phpProject.getPhpModule());
                 }
             });
         }

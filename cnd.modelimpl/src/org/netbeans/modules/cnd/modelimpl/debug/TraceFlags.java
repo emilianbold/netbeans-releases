@@ -171,6 +171,8 @@ public class TraceFlags {
     public static final boolean CPP_PARSER_ACTION = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.action", false); // NOI18N
     public static final boolean CPP_PARSER_NEW_GRAMMAR = DebugUtils.getBoolean("cnd.modelimpl.cpp.parser.new.grammar", false); // NOI18N
     public static final boolean PARSE_HEADERS_WITH_SOURCES = DebugUtils.getBoolean("cnd.modelimpl.parse.headers.with.sources", false); // NOI18N
+
+    public static final boolean CACHE_IN_PROJECT = DebugUtils.getBoolean("cnd.cacne.in.project", false); // NOI18N
     
     public static final List<String> logMacros;
     static {

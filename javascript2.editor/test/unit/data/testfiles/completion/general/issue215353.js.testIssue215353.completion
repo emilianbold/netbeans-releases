@@ -1,0 +1,31 @@
+Code completion result for source line:
+f.|call({msg:"Ahoj"});
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      prototype                       [PUBLIC]   stub_CORE_Function.js
+METHOD     apply(): Array                  [PUBLIC]   stub_CORE_Function.js
+METHOD     bind(): String                  [PUBLIC]   stub_CORE_Function.js
+METHOD     call(): String                  [PUBLIC]   stub_CORE_Function.js
+METHOD     create(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperties(): undefined   [PUBLIC,   stub_CORE_Object.js
+METHOD     defineProperty(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     freeze(): Object                [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyDescriptor(): Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(): Array    [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(): Object        [PUBLIC,   stub_CORE_Object.js
+METHOD     isExtensible(): Boolean         [PUBLIC,   stub_CORE_Object.js
+METHOD     isFrozen(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     isGenerator(): Boolean          [PUBLIC]   stub_CORE_Function.js
+METHOD     isSealed(): Boolean             [PUBLIC,   stub_CORE_Object.js
+METHOD     keys(): Array                   [PUBLIC,   stub_CORE_Object.js
+METHOD     preventExtensions(): Object     [PUBLIC,   stub_CORE_Object.js
+METHOD     seal(): Object                  [PUBLIC,   stub_CORE_Object.js
+METHOD     toSource(): String              [PUBLIC]   stub_CORE_Function.js
+METHOD     toString(): String              [PUBLIC]   stub_CORE_Function.js
+FIELD      arguments                       [PUBLIC]   stub_CORE_Function.js
+FIELD      arity                           [PUBLIC]   stub_CORE_Function.js
+FIELD      caller                          [PUBLIC]   stub_CORE_Function.js
+FIELD      constructor                     [PUBLIC]   stub_CORE_Function.js
+FIELD      length                          [PUBLIC]   stub_CORE_Function.js
+FIELD      msg                             [PUBLIC]   issue215353.js
+FIELD      name                            [PUBLIC]   stub_CORE_Function.js

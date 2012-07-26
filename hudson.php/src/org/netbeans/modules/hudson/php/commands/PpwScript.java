@@ -41,16 +41,22 @@
  */
 package org.netbeans.modules.hudson.php.commands;
 
+import java.awt.EventQueue;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.hudson.php.options.HudsonOptions;
 import org.netbeans.modules.hudson.php.ui.options.HudsonOptionsPanelController;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -59,7 +65,9 @@ import org.openide.util.NbBundle;
 /**
  * Represents <a href="https://github.com/sebastianbergmann/php-project-wizard">ppw</a> command line tool.
  */
-public class PpwScript extends PhpProgram {
+public final class PpwScript {
+
+    private static final Logger LOGGER = Logger.getLogger(PpwScript.class.getName());
 
     public static final String SCRIPT_NAME = "ppw"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
@@ -71,32 +79,29 @@ public class PpwScript extends PhpProgram {
     public static final List<String> PHPCS_RULESET_OPTIONS = Arrays.asList("PEAR", "Zend", "PHPCS", "Squiz", "MySource"); // NOI18N
 
 
-    private PpwScript(String command) {
-        super(command);
+    private final String ppwPath;
+
+    private PpwScript(String ppwPath) {
+        this.ppwPath = ppwPath;
     }
 
     /**
      * Get the default, <b>valid only</b> PPW script.
      * @return the default, <b>valid only</b> PPW script.
-     * @throws InvalidPhpProgramException if PPW script is not valid.
+     * @throws InvalidPhpExecutableException if PPW script is not valid.
      */
-    public static PpwScript getDefault() throws InvalidPhpProgramException {
+    public static PpwScript getDefault() throws InvalidPhpExecutableException {
         String ppw = HudsonOptions.getInstance().getPpw();
         String error = validate(ppw);
         if (error != null) {
-            throw new InvalidPhpProgramException(error);
+            throw new InvalidPhpExecutableException(error);
         }
         return new PpwScript(ppw);
     }
 
-    public static String validate(String command) {
-        return new PpwScript(command).validate();
-    }
-
     @NbBundle.Messages("PpwScript.script.label=PPW script")
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(Bundle.PpwScript_script_label(), getProgram(), false);
+    public static String validate(String command) {
+        return PhpExecutableValidator.validateCommand(command, Bundle.PpwScript_script_label());
     }
 
     @NbBundle.Messages({
@@ -106,6 +111,8 @@ public class PpwScript extends PhpProgram {
         "PpwScript.create.progress=Creating Hudson job files for project {0}..."
     })
     public boolean createProjectFiles(PhpModule phpModule, Map<String, String> optionalParams) {
+        assert !EventQueue.isDispatchThread();
+
         String name = phpModule.getDisplayName();
         FileObject projectDirectory = phpModule.getProjectDirectory();
         Map<String, String> params = new LinkedHashMap<String, String>();
@@ -115,21 +122,32 @@ public class PpwScript extends PhpProgram {
         params.put("--name", name); // NOI18N
         params.put("--source", relativizePath(projectDirectory, phpModule.getSourceDirectory())); // NOI18N
         params.put("--tests", relativizePath(projectDirectory, phpModule.getTestDirectory())); // NOI18N
-        ExternalProcessBuilder processBuilder = getProcessBuilder();
+
+        List<String> allParams = new ArrayList<String>();
         for (Map.Entry<String, String> entry : params.entrySet()) {
-            processBuilder = processBuilder
-                    .addArgument(entry.getKey())
-                    .addArgument(entry.getValue());
+            allParams.add(entry.getKey());
+            allParams.add(entry.getValue());
         }
-        processBuilder = processBuilder
-                .addArgument(FileUtil.toFile(projectDirectory).getAbsolutePath());
+        allParams.add(FileUtil.toFile(projectDirectory).getAbsolutePath());
+
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .optionsPath(HudsonOptionsPanelController.getOptionsPath());
-        Integer status = execute(processBuilder, executionDescriptor,
-                Bundle.PpwScript_create_title(name), Bundle.PpwScript_create_progress(name));
-        // refresh fs
-        projectDirectory.refresh();
-        return status != null && status == 0;
+
+        try {
+            Integer status = new PhpExecutable(ppwPath)
+                    .additionalParameters(allParams)
+                    .run(executionDescriptor)
+                    .get();
+
+            // refresh fs
+            projectDirectory.refresh();
+            return status != null && status == 0;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return false;
     }
 
     private String relativizePath(FileObject parent, FileObject child) {

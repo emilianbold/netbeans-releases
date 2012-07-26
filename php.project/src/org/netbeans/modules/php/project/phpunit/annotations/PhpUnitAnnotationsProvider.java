@@ -44,11 +44,11 @@ package org.netbeans.modules.php.project.phpunit.annotations;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
-public class PhpUnitAnnotationsProvider extends PhpAnnotationsProvider {
+public class PhpUnitAnnotationsProvider extends AnnotationCompletionTagProvider {
 
     private static final PhpUnitAnnotationsProvider INSTANCE = new PhpUnitAnnotationsProvider();
 
@@ -60,14 +60,14 @@ public class PhpUnitAnnotationsProvider extends PhpAnnotationsProvider {
                 null);
     }
 
-    @PhpAnnotationsProvider.Registration(position=200)
+    @AnnotationCompletionTagProvider.Registration(position=200)
     public static PhpUnitAnnotationsProvider getInstance() {
         return INSTANCE;
     }
 
     @Override
-    public List<PhpAnnotationTag> getFunctionAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getFunctionAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new AssertTag(),
                 new BackupGlobalsTag(),
                 new BackupStaticAttributesTag(),
@@ -77,8 +77,8 @@ public class PhpUnitAnnotationsProvider extends PhpAnnotationsProvider {
     }
 
     @Override
-    public List<PhpAnnotationTag> getTypeAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getTypeAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new BackupGlobalsTag(),
                 new BackupStaticAttributesTag(),
                 new CodeCoverageIgnoreTag(),
@@ -89,13 +89,13 @@ public class PhpUnitAnnotationsProvider extends PhpAnnotationsProvider {
     }
 
     @Override
-    public List<PhpAnnotationTag> getFieldAnnotations() {
+    public List<AnnotationCompletionTag> getFieldAnnotations() {
         return Collections.emptyList();
     }
 
     @Override
-    public List<PhpAnnotationTag> getMethodAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getMethodAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new AssertTag(),
                 new BackupGlobalsTag(),
                 new BackupStaticAttributesTag(),

@@ -206,4 +206,23 @@ public class JoinCatchesTest extends NbTestCase {
                               "    }\n" +
                               "}\n");
     }
+    
+    public void test215637() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.concurrent.*;\n" +
+                       "public class Test {\n" +
+                       "    public void taragui() {\n" +
+                       "        try {\n" +
+                       "            throw new NullPointerException();\n" +
+                       "        } catch(Error | NullPointerException  e) {\n" +
+                       "        } catch(Exception e) {\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n", false)
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .assertWarnings();
+    }
 }

@@ -45,6 +45,8 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -264,14 +266,18 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         OptionToString visitor = new OptionToString(cs, getUserIncludeFlag(cs));
         StringBuilder options = new StringBuilder(getIncludeDirectories().toString(visitor));
         options.append(' '); // NOI18N
+        List<CCCCompilerConfiguration> list = new ArrayList<CCCCompilerConfiguration>();
         while (master != null && getInheritIncludes().getValue()) {
-            options.append(master.getIncludeDirectories().toString(visitor));
-            options.append(' '); // NOI18N
+            list.add(master);
             if (master.getInheritIncludes().getValue()) {
                 master = (CCCompilerConfiguration) master.getMaster();
             } else {
                 master = null;
             }
+        }
+        for(int i = list.size() - 1; i >= 0; i--) {
+            options.append(list.get(i).getIncludeDirectories().toString(visitor));
+            options.append(' '); // NOI18N
         }
         return options.toString();
     } 

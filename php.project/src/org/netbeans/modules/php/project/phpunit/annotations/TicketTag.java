@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.project.phpunit.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 
-public class TicketTag extends PhpAnnotationTag {
+public class TicketTag extends AnnotationCompletionTag {
 
     public TicketTag() {
         super("ticket", // NOI18N

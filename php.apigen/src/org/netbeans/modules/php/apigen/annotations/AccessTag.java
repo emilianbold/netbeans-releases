@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AccessTag extends PhpAnnotationTag {
+public class AccessTag extends AnnotationCompletionTag {
 
     public AccessTag() {
         super("access", "@access ${public}", //NOI18N

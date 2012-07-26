@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.doctrine2.annotations.orm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class OneToOneTag extends PhpAnnotationTag {
+public class OneToOneTag extends AnnotationCompletionTag {
 
     public OneToOneTag() {
         super("OneToOne", // NOI18N

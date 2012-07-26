@@ -121,7 +121,7 @@ public class FixUsesPerformer {
         for (int i = 0; i < selections.length; i++) {
             String use = selections[i];
             if (canBeUsed(use)) {
-                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), i, selections, useParts, options);
+                SanitizedUse sanitizedUse = new SanitizedUse(modifyUseName(use), useParts, createAliasStrategy(i, useParts, selections));
                 if (sanitizedUse.shouldBeUsed()) {
                     useParts.add(sanitizedUse.getSanitizedUsePart());
                 }
@@ -132,6 +132,16 @@ public class FixUsesPerformer {
             }
         }
         editList.replace(startOffset, 0, createInsertString(useParts), false, 0);
+    }
+
+    private AliasStrategy createAliasStrategy(final int selectionIndex, final List<String> existingUseParts, final String[] selections) {
+        AliasStrategy createAliasStrategy;
+        if (options.aliasesCapitalsOfNamespaces()) {
+            createAliasStrategy = new CapitalsStrategy(selectionIndex, existingUseParts, selections);
+        } else {
+            createAliasStrategy = new UnqualifiedNameStrategy(selectionIndex, existingUseParts, selections);
+        }
+        return createAliasStrategy;
     }
 
     private void processUseElement(final UseScope useElement, final List<String> useParts) {
@@ -239,32 +249,38 @@ public class FixUsesPerformer {
         return use != null && !use.contains(SPACE);
     }
 
-    private class SanitizedUse {
+    private interface AliasStrategy {
+        public String createAlias(final QualifiedName qualifiedName);
+    }
 
-        private final String use;
-        private String alias;
+    private static abstract class AliasStrategyImpl implements AliasStrategy {
+
+        private final int selectionIndex;
         private final List<String> existingUseParts;
-        private final Options options;
-        private final boolean shouldBeUsed;
+        private final String[] selections;
 
-        public SanitizedUse(final String use, final int selectionIndex, final String selections[], final List<String> existingUseParts, final Options options) {
-            this.use = use;
+        public AliasStrategyImpl(final int selectionIndex, final List<String> existingUseParts, final String[] selections) {
+            this.selectionIndex = selectionIndex;
             this.existingUseParts = existingUseParts;
-            this.options = options;
-            QualifiedName qualifiedName = QualifiedName.create(use);
-            String name = qualifiedName.getName();
-            String aliasedName = name;
-            if (!existingUseParts.contains(use)) {
-                int i = 1;
-                while (existSelectionWith(aliasedName, selectionIndex) || existUseWith(aliasedName)) {
-                    i++;
-                    aliasedName = createAlias(name, i);
-                    alias = aliasedName;
-                }
-                shouldBeUsed = true;
-            } else {
-                shouldBeUsed = false;
+            this.selections = selections;
+        }
+
+        @Override
+        public String createAlias(final QualifiedName qualifiedName) {
+            String result = "";
+            final String possibleAliasedName = getPossibleAliasName(qualifiedName);
+            String newAliasedName = possibleAliasedName;
+            int i = 1;
+            while (existSelectionWith(newAliasedName, selectionIndex) || existUseWith(newAliasedName)) {
+                i++;
+                result = newAliasedName = possibleAliasedName + i;
             }
+            return result.isEmpty() && mustHaveAlias(qualifiedName) ? possibleAliasedName : result;
+        }
+
+        private boolean mustHaveAlias(final QualifiedName qualifiedName) {
+            final String unqualifiedName = qualifiedName.getName();
+            return existSelectionWith(unqualifiedName, selectionIndex) || existUseWith(unqualifiedName);
         }
 
         private boolean existSelectionWith(final String name, final int selectionIndex) {
@@ -291,8 +307,55 @@ public class FixUsesPerformer {
             return usePart.endsWith(ImportDataCreator.NS_SEPARATOR + name);
         }
 
-        private String createAlias(final String name, final int index) {
-            return name + index;
+        protected abstract String getPossibleAliasName(final QualifiedName qualifiedName);
+
+    }
+
+    private static class CapitalsStrategy extends AliasStrategyImpl {
+
+        public CapitalsStrategy(int selectionIndex, List<String> existingUseParts, String[] selections) {
+            super(selectionIndex, existingUseParts, selections);
+        }
+
+        @Override
+        protected String getPossibleAliasName(final QualifiedName qualifiedName) {
+            final StringBuilder sb = new StringBuilder();
+            for (String segment : qualifiedName.getSegments()) {
+                sb.append(Character.toUpperCase(segment.charAt(0)));
+            }
+            return sb.toString();
+        }
+
+    }
+
+    private static class UnqualifiedNameStrategy extends AliasStrategyImpl {
+
+        public UnqualifiedNameStrategy(int selectionIndex, List<String> existingUseParts, String[] selections) {
+            super(selectionIndex, existingUseParts, selections);
+        }
+
+        @Override
+        protected String getPossibleAliasName(QualifiedName qualifiedName) {
+            return qualifiedName.getName();
+        }
+
+    }
+
+    private static class SanitizedUse {
+
+        private final String use;
+        private String alias;
+        private final boolean shouldBeUsed;
+
+        public SanitizedUse(final String use, final List<String> existingUseParts, final AliasStrategy createAliasStrategy) {
+            this.use = use;
+            QualifiedName qualifiedName = QualifiedName.create(use);
+            if (!existingUseParts.contains(use)) {
+                alias = createAliasStrategy.createAlias(qualifiedName);
+                shouldBeUsed = true;
+            } else {
+                shouldBeUsed = false;
+            }
         }
 
         public String getSanitizedUsePart() {

@@ -601,12 +601,11 @@ import org.openide.util.lookup.ProxyLookup;
         Object icon = a.getValue(Action.SMALL_ICON);
         if (icon == null) {
             String resourceId = (String)a.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
-            if (resourceId == null) { // use default icon
-                resourceId = "org/netbeans/modules/editor/resources/default.gif"; // NOI18N
-            }
-            Image img = ImageUtilities.loadImage(resourceId);
-            if (img != null) {
-                a.putValue(Action.SMALL_ICON, new ImageIcon(img));
+            if (resourceId != null) {
+                Image img = ImageUtilities.loadImage(resourceId);
+                if (img != null) {
+                    a.putValue(Action.SMALL_ICON, new ImageIcon(img));
+                }
             }
         }
     }

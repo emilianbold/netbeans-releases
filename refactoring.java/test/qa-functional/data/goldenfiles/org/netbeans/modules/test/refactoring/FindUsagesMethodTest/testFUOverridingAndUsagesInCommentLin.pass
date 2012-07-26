@@ -1,0 +1,14 @@
+Usages and Overriding Methods of <b>Iface.method</b> [8 occurrences]
+    RefactoringTest
+        SubClass.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font>&nbsp;<font color=#3c3c3c>{</font>
+        SuperClass.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font>&nbsp;<font color=#3c3c3c>{</font>
+        Test.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font>&nbsp;<font color=#3c3c3c>{</font>
+        User.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6:&nbsp;&nbsp;</font><font color=#3c3c3c>*</font>&nbsp;<font color=#3c3c3c>user</font>&nbsp;<font color=#3c3c3c>of</font>&nbsp;<b>method</b>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;11:&nbsp;&nbsp;</font><font color=#3c3c3c>t</font><font color=#3c3c3c>.</font><b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font><font color=#3c3c3c>;</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;12:&nbsp;&nbsp;</font><font color=#0000e6>new</font>&nbsp;<font color=#3c3c3c>Test</font><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font><font color=#3c3c3c>.</font><b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font><font color=#3c3c3c>;</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;13:&nbsp;&nbsp;</font><font color=#3c3c3c>(</font><font color=#3c3c3c>(</font><font color=#3c3c3c>Test</font><font color=#3c3c3c>)</font><font color=#0000e6>new</font>&nbsp;<font color=#3c3c3c>Object</font><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font><font color=#3c3c3c>)</font><font color=#3c3c3c>.</font><b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font><font color=#3c3c3c>;</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;15:&nbsp;&nbsp;</font><font color=#3c3c3c>i</font><font color=#3c3c3c>.</font><b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font><font color=#3c3c3c>;</font>

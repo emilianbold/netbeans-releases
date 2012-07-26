@@ -69,6 +69,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
@@ -159,7 +160,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(PHPDocMethodTag node) {
-        PHPDocTag.Type kind = node.getKind();
+        AnnotationParsedLine kind = node.getKind();
         Scope currentScope = modelBuilder.getCurrentScope();
         boolean scopeHasBeenModified = false;
         // Someone uses @method tag in method scope :/ So we have to simulate that it's defined in class scope...
@@ -1159,27 +1160,25 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @CheckForNull
     private ASTNode findConditionalStatement(List<ASTNode> path) {
-        synchronized (path) {
-            for (ASTNode aSTNode : path) {
-                if (aSTNode instanceof IfStatement) {
-                    return aSTNode;
-                } else if (aSTNode instanceof WhileStatement) {
-                    return aSTNode;
-                } else if (aSTNode instanceof DoStatement) {
-                    return aSTNode;
-                } else if (aSTNode instanceof ForEachStatement) {
-                    return aSTNode;
-                } else if (aSTNode instanceof ForStatement) {
-                    return aSTNode;
-                } else if (aSTNode instanceof CatchClause) {
-                    return aSTNode;
-                } else if (aSTNode instanceof SwitchStatement) {
-                    return aSTNode;
-                } else if (aSTNode instanceof TryStatement) {
-                    return aSTNode;
-                } else if (aSTNode instanceof InstanceOfExpression) {
-                    return aSTNode;
-                }
+        for (ASTNode aSTNode : path) {
+            if (aSTNode instanceof IfStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof WhileStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof DoStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof ForEachStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof ForStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof CatchClause) {
+                return aSTNode;
+            } else if (aSTNode instanceof SwitchStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof TryStatement) {
+                return aSTNode;
+            } else if (aSTNode instanceof InstanceOfExpression) {
+                return aSTNode;
             }
         }
         return null;

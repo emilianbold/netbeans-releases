@@ -108,8 +108,9 @@ final class ResultDisplayHandler {
         return outputComponent;
     }
 
-    void createIO(IOContainer ioContainer) {
+    InputOutput createIO(IOContainer ioContainer) {
         inOut = IOProvider.getDefault().getIO("test-results", null, ioContainer); //NOI18N
+        return inOut;
     }
 
 

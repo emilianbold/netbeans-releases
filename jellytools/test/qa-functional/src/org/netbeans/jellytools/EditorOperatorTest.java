@@ -219,7 +219,6 @@ public class EditorOperatorTest extends JellyTestCase {
         eo.select(expected);
         selected = eo.txtEditorPane().getSelectedText();
         assertEquals("Wrong selection.", expected, selected);
-        expected = "public static void main";
         eo.select("public", 2);
         assertEquals("Second occurence of word \"public\" on line " + line
                 + " should be selected.", line, eo.getLineNumber());
@@ -300,6 +299,10 @@ public class EditorOperatorTest extends JellyTestCase {
         position = eo.txtEditorPane().getCaretPosition();
         text = eo.txtEditorPane().getText(position - "public".length(), expected.length());
         assertEquals("Wrong caret position after text.", expected, text);
+        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
+        position = eo.txtEditorPane().getCaretPosition();
+        text = eo.txtEditorPane().getText(position - 1, 1);
+        assertEquals("Caret not at the end of line.", "{", text);
     }
 
     /** Test of getToolbarButton method. Uses "Toggle bookmark button". */

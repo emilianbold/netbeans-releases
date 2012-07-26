@@ -59,14 +59,19 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.support.spi.GroovyFeature;
+import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.modules.groovy.support.spi.GroovyExtender;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -79,6 +84,41 @@ import org.openide.util.Exceptions;
  * @author Martin Adamek
  */
 public class GroovyProjectUtil {
+
+    public static boolean isFromEditor(EditorCookie ec) {
+        if (ec != null && ec.getOpenedPanes() != null) {
+            // This doesn't seem to work well - a lot of the time, I'm right clicking
+            // on the editor and it still has another activated view (this is on the mac)
+            // and as a result does file-oriented refactoring rather than the specific
+            // editor node...
+            //            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            //            if (activetc instanceof CloneableEditorSupport.Pane) {
+            //
+            return true;
+            //            }
+        }
+
+        return false;
+    }
+
+
+    public static boolean isOnSourceClasspath(FileObject fo) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return false;
+        }
+        if (OpenProjects.getDefault().isProjectOpen(project)) {
+            for (SourceGroup group : GroovySources.getGroovySourceGroups(ProjectUtils.getSources(project))) {
+                if (group.getRootFolder().equals(fo)) {
+                    return true;
+                }
+                if (FileUtil.isParentOf(group.getRootFolder(), fo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
         assert files.length >0;
@@ -141,9 +181,9 @@ public class GroovyProjectUtil {
     public static boolean isInGroovyProject(FileObject f) {
         Project project = FileOwnerQuery.getOwner(f);
         if (project != null) {
-            GroovyFeature groovyFeature = project.getLookup().lookup(GroovyFeature.class);
-            if (groovyFeature != null) {
-                return groovyFeature.isGroovyEnabled();
+            GroovyExtender groovyExtender = project.getLookup().lookup(GroovyExtender.class);
+            if (groovyExtender != null) {
+                return groovyExtender.isActive();
             }
         }
         return false;
@@ -153,21 +193,12 @@ public class GroovyProjectUtil {
         return GroovyTokenId.GROOVY_MIME_TYPE.equals(f.getMIMEType());
     }
 
-    public static boolean isGspFile(FileObject f) {
-        // TODO check GSP file
-        return false;
-    }
-
-    public static boolean isGroovyOrGspFile(FileObject f) {
-        return isGroovyFile(f) || isGspFile(f);
-    }
-
     private static LineCookie getLineCookie(final FileObject fo) {
         LineCookie result = null;
         try {
             DataObject dataObject = DataObject.find(fo);
             if (dataObject != null) {
-                result = dataObject.getCookie(LineCookie.class);
+                result = dataObject.getLookup().lookup(LineCookie.class);
             }
         } catch (DataObjectNotFoundException e) {
         }
@@ -196,11 +227,11 @@ public class GroovyProjectUtil {
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
-        Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        Object obj = dob.getLookup().lookup(OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport)obj;
         }
-        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        obj = dob.getLookup().lookup(EditorCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport)obj;
         }
@@ -218,8 +249,8 @@ public class GroovyProjectUtil {
 
             if (doc == null) {
                 // Gotta open it first
-                DataObject od = DataObject.find(fo);
-                EditorCookie ec = od.getCookie(EditorCookie.class);
+                DataObject dataObject = DataObject.find(fo);
+                EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
 
                 if (ec != null) {
                     doc = (BaseDocument)ec.openDocument();
@@ -229,5 +260,34 @@ public class GroovyProjectUtil {
             Exceptions.printStackTrace(ex);
         }
         return doc;
+    }
+
+    /**
+     * Sets the given <code>toAdd</code> as the following problem for
+     * the given <code>existing</code> problem.
+     *
+     * @param toAdd the problem to add, may be null.
+     * @param existing the problem whose following problem should be set, may be null.
+     *
+     * @return the existing problem with its following problem
+     * set to the given problem or null if both of the params
+     * were null.
+     *
+     */
+    public static Problem addToEnd(Problem toAdd, Problem existing){
+        if (existing == null){
+            return toAdd;
+        }
+        if (toAdd == null){
+            return existing;
+        }
+
+        Problem tail = existing;
+        while(tail.getNext() != null){
+            tail = tail.getNext();
+        }
+        tail.setNext(toAdd);
+
+        return tail;
     }
 }

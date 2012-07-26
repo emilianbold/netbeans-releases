@@ -152,10 +152,10 @@ public class AstPath implements Iterable<ASTNode> {
     @SuppressWarnings("unchecked")
     private ASTNode findPathTo(ASTNode node, int line, int column) {
         
-        assert line >=0 : "line number was negative: " + line;
-        assert column >=0 : "column number was negative: " + column;
         assert node != null : "ASTNode should not be null";
         assert node instanceof ModuleNode : "ASTNode must be a ModuleNode";
+        assert line >=0 : "line number was negative: " + line + " on the ModuleNode node with main class name: " + ((ModuleNode)node).getMainClassName();
+        assert column >=0 : "column number was negative: " + column;
         
         path.addAll(find(node, line, column));
 
@@ -217,12 +217,12 @@ public class AstPath implements Iterable<ASTNode> {
         ModuleNode moduleNode = (ModuleNode) node;
         PathFinderVisitor pathFinder = new PathFinderVisitor(moduleNode.getContext(), line, column);
 
-        for (Object object : moduleNode.getClasses()) {
-            pathFinder.visitClass((ClassNode)object);
+        for (ClassNode classNode : moduleNode.getClasses()) {
+            pathFinder.visitClass(classNode);
         }
 
-        for (Object object : moduleNode.getMethods()) {
-            pathFinder.visitMethod((MethodNode)object);
+        for (MethodNode methodNode : moduleNode.getMethods()) {
+            pathFinder.visitMethod(methodNode);
         }
 
         return pathFinder.getPath();
@@ -272,7 +272,7 @@ public class AstPath implements Iterable<ASTNode> {
     }
 
     public ASTNode leaf() {
-        if (path.size() == 0) {
+        if (path.isEmpty()) {
             return null;
         } else {
             return path.get(path.size() - 1);
@@ -296,7 +296,7 @@ public class AstPath implements Iterable<ASTNode> {
     }
 
     public ASTNode root() {
-        if (path.size() == 0) {
+        if (path.isEmpty()) {
             return null;
         } else {
             return path.get(0);
@@ -304,6 +304,7 @@ public class AstPath implements Iterable<ASTNode> {
     }
 
     /** Return an iterator that returns the elements from the leaf back up to the root */
+    @Override
     public Iterator<ASTNode> iterator() {
         return new LeafToRootIterator(path);
     }
@@ -325,38 +326,47 @@ public class AstPath implements Iterable<ASTNode> {
             it = path.listIterator(path.size());
         }
 
+        @Override
         public boolean hasNext() {
             return it.hasPrevious();
         }
 
+        @Override
         public ASTNode next() {
             return it.previous();
         }
 
+        @Override
         public boolean hasPrevious() {
             return it.hasNext();
         }
 
+        @Override
         public ASTNode previous() {
             return it.next();
         }
 
+        @Override
         public int nextIndex() {
             return it.previousIndex();
         }
 
+        @Override
         public int previousIndex() {
             return it.nextIndex();
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void set(ASTNode arg0) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
         public void add(ASTNode arg0) {
             throw new UnsupportedOperationException("Not supported yet.");
         }

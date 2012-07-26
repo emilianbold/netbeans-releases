@@ -48,7 +48,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,11 +64,11 @@ import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Profile;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
-import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
-import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
+import org.netbeans.spi.mobility.project.ui.customizer.CustomizerPanel;
 import org.netbeans.spi.mobility.project.ui.customizer.VisualPropertyGroup;
+import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.util.NbBundle;
 
 /** Customizer for general project attributes.
@@ -102,6 +101,8 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
     private HashMap<String,J2MEPlatform> name2platform;
     private HashMap<String,J2MEPlatform.Device> name2device;
     private HashMap<String,J2MEPlatform.J2MEProfile> name2profile;
+    private Set<String> optionDefaults;
+    private HashMap<String,J2MEPlatform.J2MEProfile> name2profileAll;
     private ArrayList<JCheckBox> optional;
     private boolean useDefault;
     private final transient Object lock = new Object();
@@ -134,6 +135,8 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             name2platform = new HashMap<String,J2MEPlatform>();
             name2device = new HashMap<String,J2MEPlatform.Device>();
             name2profile = new HashMap<String,J2MEPlatform.J2MEProfile>();
+            optionDefaults = new HashSet<String>();
+            name2profileAll = new HashMap<String,J2MEPlatform.J2MEProfile>();
 
             // Read defined platforms and all configurations, profiles and optional packages
             final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(null, new Specification(J2MEPlatform.SPECIFICATION_NAME, null));
@@ -158,6 +161,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
                                 } else if (J2MEPlatform.J2MEProfile.TYPE_OPTIONAL.equals(p.getType())) {
                                     p = takeBetter(p, opt.remove(p));
                                     opt.put(p, p);
+                                    name2profileAll.put(p.toString(), p);
                                 }
                             }
                         }
@@ -271,7 +275,11 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             initAllProfiles((String)jComboDevice.getSelectedItem(), true);
         } else if (e.getSource() instanceof JCheckBox) {
             final JCheckBox cb = (JCheckBox) e.getSource();
-            if (cb.isSelected()) detectCollisions(cb.getActionCommand());
+            if (cb.isSelected()) {
+                detectCollisions(cb.getActionCommand(),optionDefaults);
+            } else {
+                optionDefaults.remove(cb.getActionCommand());
+            }
             saveOptionalAPIs();
             saveClassPath();
         } else if (e.getSource() instanceof JRadioButton) {
@@ -368,15 +376,20 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
                 selectDefault(jPanelProfile, defaultProf, DefaultPropertiesDescriptor.PLATFORM_PROFILE);
             }
             //enable/disable optional package check boxes
-            final Set<String> optValues = getOptionalValues();
+            optionDefaults = getOptionalValues(true);
+            final Set<String> optValues = getOptionalValues(false);
             jPanelOptional.setVisible(false);
             jPanelOptional.removeAll();
             for (final JCheckBox cb : removeDuplicateOptProfiles(optProfiles) ) {
                 final String APIname = cb.getActionCommand();
+                final boolean defaultSelected = optionDefaults.contains(APIname);
                 final boolean selected = (reset ? defaultOpts : optValues).contains(APIname);
+                if(selected && !defaultSelected) {
+                    optionDefaults.add(APIname);
+                }
                 jPanelOptional.add(cb, new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
                 cb.setEnabled(!useDefault);
-                cb.setSelected(selected);
+                cb.setSelected(selected || defaultSelected);
             }
             jPanelOptional.add(new JPanel(), new GridBagConstraints(0, GridBagConstraints.RELATIVE, GridBagConstraints.REMAINDER, GridBagConstraints.REMAINDER, 1.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0));
             jPanelOptional.setVisible(true);
@@ -462,10 +475,10 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         return res;
     }
         
-    private Set<String> getOptionalValues() {
-        final String s = (String)props.get(VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_APIS, useDefault));
-        if (s == null) return Collections.EMPTY_SET;
+    private Set<String> getOptionalValues(boolean shared) {
+        final String s = (String)props.get(VisualPropertySupport.translatePropertyName(configuration, shared ? DefaultPropertiesDescriptor.PLATFORM_APIS_DEFAULTS : DefaultPropertiesDescriptor.PLATFORM_APIS, useDefault));
         final HashSet<String> vals = new HashSet<String>();
+        if (s == null) return vals;
         final StringTokenizer stk = new StringTokenizer(s, ","); //NOI18N
         while (stk.hasMoreTokens()) {
             vals.add(stk.nextToken());
@@ -486,7 +499,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         }
     }
     
-    private void detectCollisions(final String apiName) {
+    private void detectCollisions(final String apiName, final Set<String> options) {
         final J2MEPlatform.J2MEProfile newProfile = name2profile.get(apiName);
         if (newProfile == null) return;
         final Component c[] = jPanelOptional.getComponents();
@@ -499,8 +512,17 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
                 }
             }
         }
+        final Set<String> toRemove = new HashSet<String>();
+        for (String s : options) {
+            final J2MEPlatform.J2MEProfile profile = name2profileAll.get(s);
+            if (profile != null && !profile.equals(newProfile) && profile.getName().equals(newProfile.getName())) {
+                toRemove.add(s);
+            }
+        }
+        options.removeAll(toRemove);
+        options.add(apiName);
     }
-    
+
     private void saveOptionalAPIs() {
         synchronized (lock) {
             final StringBuffer sb = new StringBuffer();
@@ -508,12 +530,20 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
             for (int i = 0 ; i < c.length - 1 ; i++) {
                 final JCheckBox cb = (JCheckBox)c[i];
                 if (cb.isSelected()) {
-                    if (sb.length() > 0) sb.append(',');
+                    if (sb.length() > 0) sb.append(','); //NOI18N
                     sb.append(cb.getActionCommand());
                 }
             }
             final String propName = VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_APIS, useDefault);
             props.put(propName, sb.toString());
+            
+            final StringBuffer sb2 = new StringBuffer();
+            for(String s : optionDefaults) {
+                if (sb2.length() > 0) sb2.append(','); //NOI18N
+                sb2.append(s);
+            }
+            final String propName2 = VisualPropertySupport.translatePropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_APIS_DEFAULTS, useDefault);
+            props.put(propName2, sb2.toString());
         }
     }
     
@@ -687,6 +717,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
 
         jLabelOptional.setLabelFor(jPanelOptional);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelOptional, NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Optional")); // NOI18N
+        jLabelOptional.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerMIDP.class, "WARN_Optional_Packages")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -696,6 +727,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jLabelOptional, gridBagConstraints);
 
+        jPanelOptional.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerMIDP.class, "WARN_Optional_Packages")); // NOI18N
         jPanelOptional.setLayout(new java.awt.GridBagLayout());
         jScrollPane1.setViewportView(jPanelOptional);
 

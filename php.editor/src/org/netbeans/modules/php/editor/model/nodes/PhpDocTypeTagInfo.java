@@ -46,8 +46,8 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
@@ -105,7 +105,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     }
 
     public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag, Scope scope) {
-        Kind kind = Kind.CLASS;
+        Kind kind;
         if (scope instanceof ClassScope) {
             kind = Kind.FIELD;
         } else {

@@ -1,6 +1,6 @@
 <PHPDocBlock start='3' end='39'>
     <Tags>
-        <PHPDocVarTypeTag start='23' end='41' kind='PARAM'>
+        <PHPDocVarTypeTag start='23' end='41' kind='param'>
             <Variable>
                 <PHPDocNode start='36' end='41' value='$test'/>
             </Variable>

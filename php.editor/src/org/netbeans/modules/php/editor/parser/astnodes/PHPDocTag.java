@@ -41,41 +41,60 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+
 /**
  * Represent a PHPDoc tag in the php documentation
  * @author Petr Pisl
  */
 public class PHPDocTag extends ASTNode {
 
-    public enum Type {
-        ABSTRACT, ACCESS, AUTHOR,
-        CATEGORY, COPYRIGHT,
-        DEPRECATED, DESC,
-        EXAMPLE, EXCEPTION,
-        FILESOURCE, FINAL,
-        GLOBAL,
-        IGNORE, INTERNAL,
-        LICENSE, LINK,
-        MAGIC, METHOD,
-        NAME,
-        PROPERTY, PROPERTY_READ, PROPERTY_WRITE, PARAM, PACKAGE,
-        RETURN,
-        SEE, SINCE, STATIC, STATICVAR, SUBPACKAGE,
-        THROWS, TODO, TUTORIAL,
-        USES,
-        VAR, VERSION
+    public enum Type implements AnnotationParsedLine {
+        GLOBAL("global"), //NOI18N
+        METHOD("method"), //NOI18N
+        PROPERTY("property"), PROPERTY_READ("property-read"), PROPERTY_WRITE("property-write"), //NOI18N
+        PARAM("param"), //NOI18N
+        RETURN("return"), //NOI18N
+        VAR("var"); //NOI18N
+
+        private final String name;
+
+        private Type(final String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getDescription() {
+            //description of these annotations is parsed by an editor parser itself
+            return "";
+        }
+
+        @Override
+        public Map<OffsetRange, String> getTypes() {
+            //types of these annotations are parsed by an editor parser itself
+            return Collections.EMPTY_MAP;
+        }
+
     }
 
-    final private Type type;
+    final private AnnotationParsedLine type;
     final private String value;
 
-    public PHPDocTag(int start, int end, PHPDocTag.Type kind, String value) {
+    public PHPDocTag(int start, int end, AnnotationParsedLine kind, String value) {
         super(start, end);
         this.type = kind;
         this.value = value;
     }
 
-    public PHPDocTag.Type getKind() {
+    public AnnotationParsedLine getKind() {
         return this.type;
     }
 

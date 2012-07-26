@@ -1,0 +1,3 @@
+Code completion result for source line:
+MyObj.create().getInfo().b|ig();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)

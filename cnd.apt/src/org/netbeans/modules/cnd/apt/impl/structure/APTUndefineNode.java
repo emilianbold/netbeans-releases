@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public final class APTUndefineNode extends APTMacroBaseNode 
-                                    implements APTUndefine, Serializable {
+                                    implements APTNodeBuilder, APTUndefine, Serializable {
     private static final long serialVersionUID = 3929923839413486096L;
     
     /** Copy constructor */
@@ -83,5 +83,10 @@ public final class APTUndefineNode extends APTMacroBaseNode
     @Override
     public final int getType() {
         return APT.Type.UNDEF;
-    }    
+    }
+    
+    @Override
+    public APTBaseNode getNode() {
+        return this;
+    }
 }

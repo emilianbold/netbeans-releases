@@ -125,6 +125,28 @@ public class Model {
     void setCamelCaseNavigation(boolean value) {
         NbPreferences.root ().putBoolean("useCamelCaseStyleNavigation", value); // NOI18N
     }
+    
+    // braces outline settings
+    Boolean isBraceOutline() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        return prefs.getBoolean(SimpleValueNames.BRACE_SHOW_OUTLINE, true);
+    }
+    
+    Boolean isBraceTooltip() {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        return prefs.getBoolean(SimpleValueNames.BRACE_FIRST_TOOLTIP, true);
+    }
+    
+    void setBraceOutline(Boolean show) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.putBoolean(SimpleValueNames.BRACE_SHOW_OUTLINE, show);
+    }
+    
+    void setBraceTooltip(Boolean show) {
+        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        prefs.putBoolean(SimpleValueNames.BRACE_FIRST_TOOLTIP, show);
+    }
+    
 
     String getRemoveTrailingWhitespace() {
         Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);

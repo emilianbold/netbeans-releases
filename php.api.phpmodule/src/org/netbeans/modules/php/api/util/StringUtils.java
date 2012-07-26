@@ -76,7 +76,6 @@ public final class StringUtils {
      * @return <code>true</code> if the String is <code>null</code>
      *         or has no characters
      * @see  #hasText(String)
-     * @since 1.57
      */
     public static boolean isEmpty(String input) {
         return input == null || input.isEmpty();
@@ -134,7 +133,6 @@ public final class StringUtils {
      * @param text the text to get {@link Pattern pattern} for
      * @return the case-insensitive {@link Pattern pattern} or <code>null</code>
      *         if the <tt>text</tt> does not contain any "?" or "*" characters
-     * @since 1.6
      * @see #getExactPattern(String)
      */
     public static Pattern getPattern(String text) {
@@ -152,7 +150,6 @@ public final class StringUtils {
      * @param text the text to get {@link Pattern pattern} for
      * @return the case-insensitive {@link Pattern pattern} or <code>null</code>
      *         if the <tt>text</tt> does not contain any "?" or "*" characters
-     * @since 1.6
      * @see #getPattern(String)
      */
     public static Pattern getExactPattern(String text) {
