@@ -39,34 +39,19 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
-
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.netbeans.modules.php.symfony2.annotations.AnnotationUtils;
+package org.netbeans.modules.php.symfony2.annotations;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class MethodLineParser implements AnnotationLineParser {
-    static final String ANNOTATION_NAME = "Method"; //NOI18N
+public class AnnotationUtils {
 
-    @Override
-    public AnnotationParsedLine parse(final String line) {
-        AnnotationParsedLine result = null;
-        String[] tokens = line.split("\\("); //NOI18N
-        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
-            String annotation = tokens[0].trim();
-            String description = line.substring(annotation.length()).trim();
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-            types.put(new OffsetRange(0, annotation.length()), annotation);
-            result = new MethodParsedLine(description, types);
-        }
-        return result;
+    private AnnotationUtils() {
+    }
+
+    public static boolean isTypeAnnotation(final String lineToCheck, final String annotationName) {
+        return lineToCheck.matches("\\\\?(\\w+\\\\)*" + annotationName + "\\s*"); //NOI18N
     }
 
 }
