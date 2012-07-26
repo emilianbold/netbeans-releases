@@ -41,26 +41,32 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
-import javax.enterprise.deploy.spi.Target;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 
 /**
- * Abstract deployment manager for GlassFish cloud.
- * <p/>
- * contains common functionality for both local server and remote cloud server.
- * <p/>
- * Provides the core set of functions a Java EE platform must provide for
- * Java EE application deployment. It provides server related information,
- * such as list of deployment targets and GlassFish cloud unique runtime
- * configuration information.
- * <p/>
- * Based on API that will be made optional in JavaEE 7 platform.
+ * Common Java EE platform SPI interface implementation for Java EE platform
+ * registered with GlassFish cloud.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
-    
+public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Now there is only GlassFish 4 so we have single option to return.
+    /** Set of Java platforms supported by GlassFish cloud. */
+    static final Set<String> JAVA_PLATFORMS = new HashSet<String>();
+    static {
+        JAVA_PLATFORMS.add("1.6");
+        JAVA_PLATFORMS.add("1.7");
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -73,33 +79,47 @@ public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates an instance of abstract deployment manager for GlassFish cloud.
+     * Creates an instance of common Java EE platform registered with GlassFish
+     * cloud.
      * <p/>
-     * This is non public constructor called only in child classes to initialize
-     * common deployment manager attributes.
+     * Initializes common Java EE platform attributes.
      * <p/>
      * @param url GlassFish cloud URL.
      */
-    GlassFishDeploymentManager(GlassFishUrl url) {
+    GlassFishPlatformImpl(GlassFishUrl url) {
         this.url = url;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Return a set of J2SE platform versions GlassFish cloud can run with.
+     * <p/>
+     * This method should be updated once there will be more options to return.
+     * <p/>
+     * @return Set of J2SE platform versions GlassFish cloud can run with.
+     */
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Set getSupportedJavaPlatformVersions() {
+        // Now there is only GlassFish 4 so we have single option to return.
+        return JAVA_PLATFORMS;
+    }
 
     /**
-     * Retrieve the list of deployment targets supported by this
-     * DeploymentManager.
+     * Return GlassFish cloud J2SE platform.
      * <p/>
-     * @return List of deployment Target designators the user may select for
-     *         application deployment or <code>null</code> if there are none. 
-     * @throws IllegalStateException Is thrown when the method is called when
-     *         running in disconnected mode.
+     * Now this method returns default J2SE platform set in NEtBeans. In the
+     * future it may return <code>AS_JAVA</code> value set in
+     * <code>asenv.conf</code> or <code>asenv.bat</code> files.
+     * <p/>
+     * @return Default J2SE platform set in NetBeans.
      */
     @Override
-    public Target[] getTargets() throws IllegalStateException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public org.netbeans.api.java.platform.JavaPlatform getJavaPlatform() {
+        return JavaPlatformManager.getDefault().getDefaultPlatform();
     }
 
 }

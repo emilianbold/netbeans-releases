@@ -41,65 +41,103 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
-import javax.enterprise.deploy.spi.Target;
+import java.awt.Image;
+import java.io.File;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 
 /**
- * Abstract deployment manager for GlassFish cloud.
- * <p/>
- * contains common functionality for both local server and remote cloud server.
- * <p/>
- * Provides the core set of functions a Java EE platform must provide for
- * Java EE application deployment. It provides server related information,
- * such as list of deployment targets and GlassFish cloud unique runtime
- * configuration information.
- * <p/>
- * Based on API that will be made optional in JavaEE 7 platform.
+ * Java EE platform SPI interface implementation for Java EE platform registered
+ * with GlassFish cloud.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public abstract class GlassFishDeploymentManager implements DeploymentManager2 {
-    
+public class GlassFishAccountPlatformImpl extends GlassFishPlatformImpl {
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
-
-    /** GlassFish cloud URL. */
-    final GlassFishUrl url;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates an instance of abstract deployment manager for GlassFish cloud.
-     * <p/>
-     * This is non public constructor called only in child classes to initialize
-     * common deployment manager attributes.
+     * Creates an instance of Java EE platform registered with GlassFish cloud.
      * <p/>
      * @param url GlassFish cloud URL.
      */
-    GlassFishDeploymentManager(GlassFishUrl url) {
-        this.url = url;
+    GlassFishAccountPlatformImpl(GlassFishUrl url) {
+        super(url);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * Retrieve the list of deployment targets supported by this
-     * DeploymentManager.
-     * <p/>
-     * @return List of deployment Target designators the user may select for
-     *         application deployment or <code>null</code> if there are none. 
-     * @throws IllegalStateException Is thrown when the method is called when
-     *         running in disconnected mode.
-     */
     @Override
-    public Target[] getTargets() throws IllegalStateException {
+    public File getServerHome() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    @Override
+    public File getDomainHome() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public File getMiddlewareHome() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public org.netbeans.spi.project.libraries.LibraryImplementation[] getLibraries() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getDisplayName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Image getIcon() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public File[] getPlatformRoots() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Return class path for the specified tool.
+     * <p/>
+     * Use the tool constants declared  in the
+     * {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform}.
+     * </p>
+     * @param  toolName Tool name, for example
+     *         {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
+     * @return Class path for the specified tool.
+     */
+    @Override
+    public File[] getToolClasspathEntries(String toolName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
+    /**
+     * Specifies whether a tool of the given name is supported by GlassFish
+     * cloud.
+     * <p/>
+     * @param toolName Tool name, for example
+     *        {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
+     * @return Always returns <code>false</code>. This method is not supported.
+     * @deprecated
+     */
+    @Deprecated
+    @Override    
+    public boolean isToolSupported(String toolName) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
 }

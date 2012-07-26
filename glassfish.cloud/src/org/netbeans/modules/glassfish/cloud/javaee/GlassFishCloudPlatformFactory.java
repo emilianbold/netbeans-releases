@@ -42,6 +42,8 @@
 package org.netbeans.modules.glassfish.cloud.javaee;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
+import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 
@@ -62,7 +64,25 @@ public class GlassFishCloudPlatformFactory extends J2eePlatformFactory {
      */
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (dm instanceof GlassFishDeploymentManager) {
+            GlassFishDeploymentManager deploymentManager
+                    = (GlassFishDeploymentManager) dm;
+            GlassFishUrl url = deploymentManager.url;
+            switch (url.getType()) {
+                case CLOUD:
+                    return new GlassFishCloudPlatformImpl(url);
+                case LOCAL:
+                    return new GlassFishAccountPlatformImpl(url);
+                // This is unrecheable. Being here means this class does not handle
+                // all possible values correctly.
+                default:
+                    throw new IllegalArgumentException(
+                            "URL constructor set unknown URL type");
+            }
+        } else {
+            throw new IllegalArgumentException(
+                    "Not a deployment manager for GlassFish cloud.");
+        }
     }
     
 }

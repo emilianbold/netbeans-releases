@@ -54,6 +54,7 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 
 /**
@@ -71,6 +72,27 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
  */
 public class GlassFishAccountDeploymentManager
         extends GlassFishDeploymentManager {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates an instance of user account deployment manager for GlassFish
+     * cloud.
+     * <p/>
+     * This is non public constructor called only in deployment manager factory
+     * methods.
+     * <p/>
+     * @param url GlassFish cloud URL.
+     */
+    GlassFishAccountDeploymentManager(GlassFishUrl url) {
+        super(url);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented Interface Methods                                          //
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
      * The redeploy method provides a means for updating currently deployed
