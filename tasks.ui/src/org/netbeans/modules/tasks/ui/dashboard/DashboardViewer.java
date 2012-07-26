@@ -1076,6 +1076,9 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void removeNodesSelection(List<TreeListNode> nodes) {
+        if (nodes.isEmpty()) {
+            return;
+        }
         final List<TreeListNode> allNodes = model.getAllNodes();
         int firstIndex = allNodes.indexOf(nodes.get(0));
         int lastIndex = allNodes.indexOf(nodes.get(nodes.size() - 1));
