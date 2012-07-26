@@ -82,15 +82,11 @@ header {
 
 package org.netbeans.modules.cnd.modelimpl.parser.generated;
 
-import java.io.*;
-import java.util.*;
-
 import org.netbeans.modules.cnd.antlr.*;
-import org.netbeans.modules.cnd.antlr.collections.*;
-import org.netbeans.modules.cnd.antlr.debug.misc.*;
 import org.netbeans.modules.cnd.modelimpl.parser.*;
 import org.netbeans.modules.cnd.modelimpl.parser.Enum;
 import org.netbeans.modules.cnd.modelimpl.debug.*;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 
 }
 
@@ -606,7 +602,7 @@ tokens {
 	//protected int finalQualifier() { return finalQualifier(1); }
 	//protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected boolean isTypeName(String s) { /*TODO: implement*/ throw new NotImplementedException(); }
+	protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	// isClassName is used in CPPParserEx only
 	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected void end_of_stmt() {}
@@ -2110,7 +2106,7 @@ qualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
-		{qitem.append(id.getText());}
+		{qitem.append(((APTToken)id).getTextID());}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
@@ -2187,7 +2183,7 @@ class_qualified_id returns [String q = ""]
 ;
 
 typeID
-	:	{isTypeName((LT(1).getText()))}?
+	:	{isTypeName(((APTToken)LT(1)).getTextID())}?
 		IDENT
 	;
 
