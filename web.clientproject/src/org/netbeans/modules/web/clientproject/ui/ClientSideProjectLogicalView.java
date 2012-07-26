@@ -131,7 +131,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/projecticon.png");
+            return ImageUtilities.loadImage(ClientSideProject.PROJECT_ICON);
         }
 
         @Override

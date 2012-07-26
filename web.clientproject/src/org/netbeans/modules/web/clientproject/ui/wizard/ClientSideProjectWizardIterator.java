@@ -52,6 +52,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -62,7 +63,7 @@ import org.openide.util.NbBundle.Messages;
 
 @TemplateRegistration(folder = "Project/ClientSide", displayName = "#ClientSideProject_displayName", 
         description = "ClientSideProjectDescription.html", 
-        iconBase = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png" )
+        iconBase = ClientSideProject.PROJECT_ICON )
 @Messages({"ClientSideProject_displayName=Client Side JavaScript Application",
             "MSG_Progress1=Creating project"})
 public class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
