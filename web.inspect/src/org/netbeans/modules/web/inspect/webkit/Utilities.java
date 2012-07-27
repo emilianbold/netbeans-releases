@@ -48,6 +48,8 @@ import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
+import org.netbeans.modules.web.webkit.debugging.api.css.SourceRange;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 
 /**
  * WebKit-related utility methods that don't fit well anywhere else.
@@ -66,7 +68,43 @@ public class Utilities {
      */
     public static org.netbeans.modules.css.model.api.Rule findRuleInStyleSheet(
             final Model sourceModel, StyleSheet styleSheet, Rule rule) {
-        final String selector = CSSUtils.normalizeSelector(rule.getSelector());
+        String selector = CSSUtils.normalizeSelector(rule.getSelector());
+        org.netbeans.modules.css.model.api.Rule result = findRuleInStyleSheet0(sourceModel, styleSheet, selector);
+        if (result == null) {
+            // rule.getSelector() sometimes returns value that differs slightly
+            // from the selector in the source file. Besides whitespace changes
+            // (that we attempt to handle using CSSUtils.normalizeSelector())
+            // there are changes like replacement of a colon in pseudo-elements
+            // by a double color (i.e. :after becomes ::after) etc. That's why
+            // the rule may not be found despite being in the source file.
+            // We attempt to run the search again with the real selector
+            // from the source file in this case. Unfortunately, getSelectorRange()
+            // method sometimes returns incorrect values. That's why we use
+            // it as a fallback only.
+            StyleSheetBody parentStyleSheet = rule.getParentStyleSheet();
+            SourceRange range = rule.getSelectorRange();
+            if (parentStyleSheet != null && range != null) {
+                String styleSheetText = parentStyleSheet.getText();
+                if (styleSheetText != null) {
+                    selector = styleSheetText.substring(range.getStart(), range.getEnd());
+                    selector = CSSUtils.normalizeSelector(selector);
+                    result = findRuleInStyleSheet0(sourceModel, styleSheet, selector);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Finds a rule with the specified selector in the source file.
+     *
+     * @param sourceModel source model where the rule should be found.
+     * @param styleSheet style sheet where the rule should be found.
+     * @param selector selector of the rule to find.
+     * @return source model representation of a rule with the specified selector.
+     */
+    private static org.netbeans.modules.css.model.api.Rule findRuleInStyleSheet0(
+            final Model sourceModel, StyleSheet styleSheet, final String selector) {
         final AtomicBoolean visitorCancelled = new AtomicBoolean();
         final org.netbeans.modules.css.model.api.Rule[] result =
                 new org.netbeans.modules.css.model.api.Rule[1];
