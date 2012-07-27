@@ -86,7 +86,6 @@ import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.modelimpl.parser.*;
 import org.netbeans.modules.cnd.modelimpl.parser.Enum;
 import org.netbeans.modules.cnd.modelimpl.debug.*;
-import org.netbeans.modules.cnd.apt.support.APTToken;
 
 }
 
@@ -603,6 +602,7 @@ tokens {
 	//protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
+        protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
 	// isClassName is used in CPPParserEx only
 	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected void end_of_stmt() {}
@@ -2106,7 +2106,7 @@ qualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
-		{qitem.append(((APTToken)id).getTextID());}
+		{qitem.append(getTokenText(id));}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
@@ -2183,7 +2183,7 @@ class_qualified_id returns [String q = ""]
 ;
 
 typeID
-	:	{isTypeName(((APTToken)LT(1)).getTextID())}?
+	:	{isTypeName(getTokenText(LT(1)))}?
 		IDENT
 	;
 
