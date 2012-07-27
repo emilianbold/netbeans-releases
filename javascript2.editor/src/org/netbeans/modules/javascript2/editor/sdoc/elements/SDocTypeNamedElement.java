@@ -67,6 +67,19 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
     /**
      * Creates named parameter element.
      * <p>
+     * This creates mandatory parameter with no default value.
+     * @param type type of the element
+     * @param paramTypes type of the parameter
+     * @param paramDescription description of the parameter
+     * @param paramName name of the parameter
+     */
+    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier paramName) {
+        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, false);
+    }
+
+    /**
+     * Creates named parameter element.
+     * <p>
      * This creates optional parameter with no default value.
      * @param type type of the element
      * @param paramTypes type of the parameter
@@ -76,19 +89,6 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      */
     public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier paramName, boolean optional) {
         return new SDocTypeNamedElement(type, declaredTypes, description, paramName, optional);
-    }
-
-    /**
-     * Creates named parameter element.
-     * <p>
-     * This creates mandatory parameter with no default value.
-     * @param type type of the element
-     * @param paramTypes type of the parameter
-     * @param paramDescription description of the parameter
-     * @param paramName name of the parameter
-     */
-    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier paramName) {
-        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, false);
     }
 
 }
