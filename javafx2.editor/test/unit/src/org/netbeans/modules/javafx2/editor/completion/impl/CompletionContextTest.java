@@ -45,9 +45,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.CharBuffer;
+import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import junit.framework.TestSuite;
@@ -55,7 +58,15 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.junit.Manager;
 import org.netbeans.modules.javafx2.editor.FXMLCompletionTestBase;
+import org.netbeans.modules.javafx2.editor.completion.impl.CompletionContext;
+import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.spi.editor.completion.CompletionProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -125,28 +136,51 @@ public class CompletionContextTest extends FXMLCompletionTestBase {
         }
         throw new IllegalArgumentException("Token " + tokenName + " not found in the template");
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        clearWorkDir();
+        super.setUp();
+    }
+    
+    private FileObject sourceFO;
+    
+    private void writeSourceFile() throws Exception {
+        File f = new File(getWorkDir(), "source.fxml");
+        FileObject dirFo = FileUtil.toFileObject(getWorkDir());
+        OutputStream ostm = dirFo.createAndOpen("source.fxml");
+        OutputStreamWriter wr = new OutputStreamWriter(ostm);
+        wr.write(text);
+        wr.flush();
+        wr.close();
+        
+        sourceFO = dirFo.getFileObject("source.fxml");
+    }
     
     private void runNamedTest(String name) throws Exception {
         prepareData(name);
-        Language l = Language.find("text/fxml+xml");
-        TokenHierarchy th = TokenHierarchy.create(text, l);
-        CompletionContext ctx = new CompletionContext(th, offset, CompletionProvider.COMPLETION_QUERY_TYPE);
-        
-        CompletionContext.Type type = CompletionContext.Type.valueOf(state);
-        
-        assertEquals(type, ctx.getType());
-    }
+        writeSourceFile();
+        Source s = Source.create(sourceFO);
+        ParserManager.parse(Collections.singleton(s), new UserTask() {
 
-    protected void xrunTest() throws Throwable {
-        Language l = Language.find("text/fxml+xml");
-        TokenHierarchy th = TokenHierarchy.create(text, l);
-        CompletionContext ctx = new CompletionContext(th, offset, CompletionProvider.COMPLETION_QUERY_TYPE);
-        
-        CompletionContext.Type type = CompletionContext.Type.valueOf(state);
-        
-        assertEquals(type, ctx.getType());
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                FxmlParserResult res = (FxmlParserResult)resultIterator.getParserResult();
+                CompletionContext ctx = new CompletionContext(res, offset, CompletionProvider.COMPLETION_QUERY_TYPE);
+                CompletionContext.Type type = CompletionContext.Type.valueOf(state);
+                assertEquals(type, ctx.getType());
+            }
+            
+        });
     }
     
+//    public static TestSuite suite() {
+//        TestSuite ts = new TestSuite();
+//        ts.addTest(new CompletionContextTest("testPropertyValueEquals"));
+//        //testWhitespaceAfterAttribute"
+//        return ts;
+//    }
+
     // processing instructions
     public void testStartOfInstruction() throws Exception {
         runNamedTest("startOfInstruction");

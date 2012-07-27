@@ -41,20 +41,35 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.beans;
 
+import org.netbeans.api.annotations.common.NonNull;
+
 /**
+ * Abstract ancestor for all the info subclasses. 
  *
  * @author sdedic
  */
 public abstract class FxDefinition {
     private String name;
-
-    public FxDefinition(String name) {
-        this.name = name;
-    }
     
+    /**
+     * Name of the described feature. Classname for beans, property or
+     * event name for properties or events.
+     * 
+     * @return feature name
+     */
+    @NonNull
     public String getName() {
         return name;
     }
     
+    /**
+     * Determines kind of the feature
+     * @return kind of feature
+     */
+    @NonNull
     public abstract FxDefinitionKind getKind();
+
+    FxDefinition(String name) {
+        this.name = name;
+    }
 }

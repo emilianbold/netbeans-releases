@@ -62,11 +62,12 @@ import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
-import org.netbeans.modules.javafx2.editor.completion.model.processors.ImportProcessor;
+import org.netbeans.modules.javafx2.editor.parser.processors.ImportProcessor;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
@@ -116,9 +117,9 @@ public final class CompletionContext {
     
     private String tagName;
     
-    private int tagStartOffset;
+    private int tagStartOffset = -1;
     
-    private int rootTagStartOffset;
+    private int rootTagStartOffset = -1;
     
     private Type type;
     
@@ -186,6 +187,11 @@ public final class CompletionContext {
         PROPERTY_VALUE,
         
         /**
+         * Property value content; without ""
+         */
+        PROPERTY_VALUE_CONTENT,
+        
+        /**
          * Variable completion inside property elements or attributes
          */
         VARIABLE,
@@ -210,6 +216,8 @@ public final class CompletionContext {
     
     private FxmlParserResult    fxmlParserResult;
     
+    private TokenHierarchy<XMLTokenId> hierarchy;
+    
     private List<? extends FxNode>  parents;
     
     private FxNode  elementParent;
@@ -220,10 +228,12 @@ public final class CompletionContext {
         this.completionType = completionType;
     }
     
-    CompletionContext(TokenHierarchy<XMLTokenId> h, int offset, int completionType) {
+    /* For testing only */ CompletionContext(FxmlParserResult result, int offset, int completionType) {
+        this.fxmlParserResult = result;
+        this.hierarchy = result.getTokenHierarchy();
         this.caretOffset = offset;
         this.completionType = completionType;
-        processTokens(h);
+        processTokens(hierarchy);
     }
 
     public int getCompletionType() {
@@ -231,6 +241,7 @@ public final class CompletionContext {
     }
     
     public void init(TokenHierarchy<XMLTokenId> h, CompilationInfo info, FxmlParserResult fxmlResult) {
+        this.hierarchy = h;
         this.compilationInfo = info;
         this.cpInfo = info.getClasspathInfo();
         this.fxmlParserResult = fxmlResult;
@@ -243,11 +254,14 @@ public final class CompletionContext {
     }
     
     public FxBean   getBeanInfo(String className) {
-        return BeanModelBuilder.getBeanInfo(compilationInfo, className);
+        if (className == null) {
+            return null;
+        }
+        return FxBean.getBeanProvider(compilationInfo).getBeanInfo(className);
     }
     
     public FxBean   getBeanInfo(FxInstance inst) {
-        return BeanModelBuilder.getBeanInfo(compilationInfo, inst.getResolvedName());
+        return getBeanInfo(inst.getResolvedName());
     }
     
     private ImportProcessor importProcessor;
@@ -264,9 +278,10 @@ public final class CompletionContext {
     
     public String resolveClassName(String name) {
         if (importProcessor == null) {
-            importProcessor = new ImportProcessor(compilationInfo, 
-                    (TokenHierarchy<XMLTokenId>)fxmlParserResult.getSnapshot().getTokenHierarchy(), 
-                    null, fxmlParserResult.getNodes());
+            importProcessor = new ImportProcessor(
+                    compilationInfo, 
+                    hierarchy, 
+                    null, fxmlParserResult.getTreeUtilities());
             getModel().accept(importProcessor);
         }
         Collection<String> names = importProcessor.resolveName(name);
@@ -326,6 +341,19 @@ public final class CompletionContext {
      */
     public FxNode getElementParent() {
         return elementParent;
+    }
+    
+    public FxProperty getEnclosingProperty() {
+        FxNode parent = parents.get(0);
+        if (parent.getKind() == FxNode.Kind.Property) {
+            return ((PropertySetter)parent).getPropertyInfo();
+        } else if (parent.getKind() == FxNode.Kind.Instance) {
+            FxInstance inst = (FxInstance)parent;
+            FxBean bean = inst.getDefinition();
+            return bean == null ? null : bean.getDefaultProperty();
+        } else {
+            return null;
+        }
     }
     
     private void processPath() {
@@ -627,6 +655,7 @@ public final class CompletionContext {
         rootTagStartOffset = tagStartOffset;
         rootAttributes = attributes;
         
+        tagStartOffset = -1;
         attributes = Collections.emptyMap();
         tagClosed = false;
         selfClosed = false;
@@ -925,6 +954,18 @@ public final class CompletionContext {
         this.tokenTail = end - caretOffset;
     }
     
+    private String propertyName;
+    
+    public String getPropertyName() {
+        if (type == Type.PROPERTY_VALUE) {
+            return propertyName;
+        } else if (type == Type.PROPERTY) {
+            return tagName;
+        } else {
+            return null;
+        }
+    }
+    
     private void processType(TokenSequence<XMLTokenId> ts) {
         int diff = ts.move(caretOffset);
         boolean hasToken;
@@ -939,6 +980,7 @@ public final class CompletionContext {
 
         boolean wsFound = false;
         Token<XMLTokenId> t = null;
+        boolean dontAdvance = false;
 
         while (type == null && hasToken) {
             t = ts.token();
@@ -964,6 +1006,7 @@ public final class CompletionContext {
 
                 case PI_START:
                     type = Type.INSTRUCTION_TARGET;
+                    dontAdvance = true;
                     break;
                     
                 case VALUE:
@@ -974,6 +1017,7 @@ public final class CompletionContext {
                     type = Type.PROPERTY_VALUE;
                     startOffset = caretOffset;
                     prefix = ""; // NOI18N
+                    dontAdvance = true;
                     break;
 
                 case CHARACTER:
@@ -994,7 +1038,8 @@ public final class CompletionContext {
                                 tokenTail = nonWh.length() - (caretOffset - startOffset);
                                 type = Type.CHILD_ELEMENT;
                             }
-                            tagName = t.text().subSequence(nonWhPos, t.length()).toString();
+                            tagName = t.text().subSequence(nonWhPos + 1, nonWh.length()).toString();
+                            tagStartOffset = ts.offset();
                             break;
                         }
                         // some content; assume it is a property value
@@ -1047,10 +1092,13 @@ public final class CompletionContext {
                         l--;
                     }
                     tagName = s.subSequence(0, l).toString();
+                    tagStartOffset = ts.offset();
+                    dontAdvance = caretOffset == tagStartOffset + t.length();
                     break;
 
                 case ARGUMENT:
                     type = Type.PROPERTY;
+                    dontAdvance = caretOffset == ts.offset() + t.length();
             }
             if (type == null) {
                 hasToken = ts.movePrevious();
@@ -1070,7 +1118,7 @@ public final class CompletionContext {
         if (startOffset == -1) {
             startOffset = ts.offset();
         }
-        if (wsFound || !middle) {
+        if (!dontAdvance && (wsFound || !middle)) {
             // in between tokens, so shift the type
             Type oldType = this.type;
             switch (type) {
@@ -1089,7 +1137,7 @@ public final class CompletionContext {
         }
         
         // traverse back to reach the opening tag or processing instruction:
-        boolean cont = true;
+        boolean cont = tagStartOffset == -1;
         while (ts.movePrevious() && cont) {
             t = ts.token();
             XMLTokenId id = t.id();
@@ -1129,12 +1177,16 @@ public final class CompletionContext {
                 case TEXT:
                 case BLOCK_COMMENT:
                     break;
-                    
+
+                case ARGUMENT:
+                    if (type == Type.PROPERTY_VALUE && propertyName == null) {
+                        this.propertyName = t.text().toString();
+                    }
+                    break;
                 case PI_TARGET:
                     piTarget = t.text().toString();
                     // fall through
                 case PI_CONTENT:
-                case ARGUMENT:
                 case OPERATOR:
                 case VALUE:
                 case WS:
@@ -1144,7 +1196,8 @@ public final class CompletionContext {
         
         // CHILD_ELEMENT in a clearly non-instance content means that instance should be present,
         // if anything.
-        if (type == Type.CHILD_ELEMENT && tagName != null && !isClassTagName(tagName)) {
+        if (type == Type.CHILD_ELEMENT && 
+            tagName != null && !tagName.equals("") && !isClassTagName(tagName)) {
             // assume bean
             type = Type.BEAN;
         }

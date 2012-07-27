@@ -56,11 +56,11 @@ public class CompletionUtils {
     private static String cachedPrefix = null;
     private static Pattern cachedPattern = null;
     
-    public static boolean startsWith(String theString, String prefix) {
+    public static boolean startsWith(CharSequence theString, String prefix) {
         if (isCamelCasePrefix(prefix)) {
             return startsWithCamelCase(theString, prefix);
         } else {
-            return theString.toLowerCase().startsWith(prefix.toLowerCase());
+            return theString.toString().toLowerCase().startsWith(prefix.toLowerCase());
         }
     }
     
@@ -74,7 +74,7 @@ public class CompletionUtils {
         return false;
     }
 
-    public static boolean startsWithCamelCase(String theString, String prefix) {
+    public static boolean startsWithCamelCase(CharSequence theString, String prefix) {
         if (theString == null || theString.length() == 0 || prefix == null || prefix.length() == 0)
             return false;
         if (!prefix.equals(cachedPrefix) || cachedPattern == null) {

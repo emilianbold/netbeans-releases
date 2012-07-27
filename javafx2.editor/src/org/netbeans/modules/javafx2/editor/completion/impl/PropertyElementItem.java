@@ -73,10 +73,15 @@ final class PropertyElementItem extends AbstractCompletionItem {
     
     private boolean system;
     
+    private boolean map;
+    
     private static final String ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/property.png"; // NOI18N
+    private static final String MAP_ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/map-property.png"; // NOI18N
     private static final String SYSTEM_ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/system-property.png"; // NOI18N
     
-    private ImageIcon ICON;
+    private static ImageIcon ICON;
+    private static ImageIcon MAP_ICON;
+    private static ImageIcon SYSTEM_ICON;
 
     private Callable<String> namespaceCreator;
     
@@ -97,6 +102,10 @@ final class PropertyElementItem extends AbstractCompletionItem {
         this.system = system;
     }
 
+    public void setMap(boolean map) {
+        this.map = map;
+    }
+    
     public void setNamespaceCreator(Callable<String> namespaceCreator) {
         this.namespaceCreator = namespaceCreator;
     }
@@ -137,6 +146,8 @@ final class PropertyElementItem extends AbstractCompletionItem {
     protected String getSubstituteText() {
         if (attribute) {
             return super.getSubstituteText() + "=\"\" ";
+        } else if (map) {
+            return "<" + super.getSubstituteText() + " />";
         } else {
             return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
         }
@@ -144,12 +155,8 @@ final class PropertyElementItem extends AbstractCompletionItem {
     
     @Override
     protected int getCaretShift() {
-        // incidentally:
-        if (attribute) {
-            return 2 + super.getSubstituteText().length();
-        } else {
-            return 2 + super.getSubstituteText().length();
-        }
+        // incidentally, for all 3 cases:
+        return 2 + super.getSubstituteText().length();
     }
 
     @Override
@@ -161,8 +168,6 @@ final class PropertyElementItem extends AbstractCompletionItem {
                 primitive ? "FMT_PrimitiveType" : "FMT_DeclaredType", propertyType);
     }
     
-    private static ImageIcon SYSTEM_ICON;
-
     @Override
     protected ImageIcon getIcon() {
         if (system) {
@@ -170,6 +175,11 @@ final class PropertyElementItem extends AbstractCompletionItem {
                 SYSTEM_ICON = ImageUtilities.loadImageIcon(SYSTEM_ICON_RESOURCE, false);
             }
             return SYSTEM_ICON;
+        } else if (map) {
+            if (MAP_ICON == null) {
+                MAP_ICON = ImageUtilities.loadImageIcon(MAP_ICON_RESOURCE, false);
+            }
+            return MAP_ICON;
         } else {
             if (ICON == null) {
                 ICON = ImageUtilities.loadImageIcon(ICON_RESOURCE, false);

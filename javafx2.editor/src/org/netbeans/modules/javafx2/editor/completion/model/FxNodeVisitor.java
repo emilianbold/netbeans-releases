@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
-import org.netbeans.modules.javafx2.editor.completion.model.impl.NodeInfo;
+import org.netbeans.modules.javafx2.editor.parser.NodeInfo;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -101,6 +101,10 @@ public abstract class FxNodeVisitor {
     
     public void visitEvent(EventHandler eh) {
         visitNode(eh);
+    }
+    
+    public void visitElement(XmlNode n) {
+        visitNode(n);
     }
     
     public static class ModelTreeTraversal extends FxNodeVisitor {

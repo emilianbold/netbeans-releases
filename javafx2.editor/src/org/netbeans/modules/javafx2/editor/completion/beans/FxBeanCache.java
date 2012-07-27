@@ -70,7 +70,18 @@ import org.openide.util.WeakListeners;
 /**
  * This cache collects {@link FxBean}s for individual classes
  * encountered and introspected by Fx support.
- * The cache is invalidated when the {@link ClasspathInfo} changes.
+ * The cache is invalidated when the {@link ClasspathInfo} changes. When
+ * a class changes, the cache removes data for the class and recursively 
+ * for dependencies of that class, so features are analyzed again on
+ * the next query.
+ * <p/>
+ * The cache maintains an instance of {@link ClasspathCache} for each instance
+ * of {@link ClasspathInfo}. Within the ClasspathCache, dependencies
+ * and class FxBean instances are collected. Each ClasspathCache listens on
+ * its underlying ClasspathInfo's ClassIndex for class structural changes.
+ * The whole cache listens on individual ClasspathInfos using weak listeners,
+ * and when classpath changes, it removes the whole ClasspathCache object.
+ * <p/>
  * 
  * @author sdedic
  */

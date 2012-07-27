@@ -43,6 +43,8 @@ package org.netbeans.modules.javafx2.editor.completion.beans;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypeMirrorHandle;
@@ -74,38 +76,34 @@ public final class FxProperty extends FxDefinition {
      */
     private ElementHandle<ExecutableElement> accessor;
     
+    /**
+     * Kind of definition (property, attached, list, map)
+     */
     private FxDefinitionKind kind;
-
-    FxProperty(String name, FxDefinitionKind kind) {
-        super(name);
-    }
 
     /**
      * Type of the data accepted by the property. For attache properties, this is the
      * type of the attached value.
+     * <p/>
+     * May return {@code null}, if the type could not be resolved.
      * 
      * @return value type
      */
+    @NonNull
     public TypeMirrorHandle getType() {
         return type;
     }
 
-    void setType(TypeMirrorHandle type) {
-        this.type = type;
-    }
-
     /**
      * For attached properties, the type of object the value should be attached to.
-     * {@code null} for normal properties
+     * {@code null} for normal properties. May return {@code null}, if the object
+     * type cannot be resolved
      * 
      * @return 
      */
+    @CheckForNull
     public ElementHandle<TypeElement> getObjectType() {
         return objectType;
-    }
-
-    void setObjectType(ElementHandle<TypeElement> objectType) {
-        this.objectType = objectType;
     }
 
     /**
@@ -113,24 +111,53 @@ public final class FxProperty extends FxDefinition {
      * readonly {@link Kind#MAP} or {@link Kind#LIST} and attach set method
      * for {@link Kind#ATTACHED}.
      * 
-     * @return 
+     * @return accessor handle
      */
+    @NonNull
     public ElementHandle<ExecutableElement> getAccessor() {
         return accessor;
+    }
+
+    /**
+     * Returns kind of the property. The property may be {@link FxDefinitionKind#ATTACHED}
+     * for static or attached properties, {@link FxDefinitionKind#SETTER} for normal
+     * r/w properties, {@link FxDefinitionKind#LIST} for read-only lists and finally
+     * {@link FxDefinitionKind#MAP} for read-only maps.
+     * 
+     * @return kind of property
+     */
+    public FxDefinitionKind getKind() {
+        return kind;
+    }
+    
+    void setObjectType(ElementHandle<TypeElement> objectType) {
+        this.objectType = objectType;
     }
 
     void setAccessor(ElementHandle<ExecutableElement> accessor) {
         this.accessor = accessor;
     }
 
-    public FxDefinitionKind getKind() {
-        return kind;
-    }
-    
     void setSimple(boolean simple) {
         this.simple = simple;
     }
     
+    void setType(TypeMirrorHandle type) {
+        this.type = type;
+    }
+
+    FxProperty(String name, FxDefinitionKind kind) {
+        super(name);
+        this.kind = kind;
+    }
+
+    /**
+     * Determines whether the property is 'simple'. Simple properties can be
+     * written as FXML attributes, there's String > property type conversion
+     * available.
+     * 
+     * @return true, if the property is simple
+     */
     public boolean isSimple() {
         return simple;
     }

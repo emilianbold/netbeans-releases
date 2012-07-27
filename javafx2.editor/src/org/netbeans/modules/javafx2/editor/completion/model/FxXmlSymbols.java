@@ -65,7 +65,7 @@ public final class FxXmlSymbols {
     public static final String FX_INCLUDE = "include";
     
     
-    public static final String FX_DEFINITIONS = "definitions";
+    public static final String FX_DEFINITIONS = "define";
     
     public static final String FX_COPY = "copy";
     

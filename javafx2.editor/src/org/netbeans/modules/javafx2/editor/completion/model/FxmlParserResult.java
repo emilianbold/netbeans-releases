@@ -41,45 +41,50 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
-import org.netbeans.modules.javafx2.editor.completion.model.impl.FxTreeUtilities;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.javafx2.editor.completion.impl.ErrorMark;
-import org.netbeans.modules.javafx2.editor.completion.model.impl.FxNodes;
+import org.netbeans.modules.javafx2.editor.ErrorMark;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
- *
+ * Result of parsing the .fxml file. The result contains the model of the FXML
+ * source, and a log of errors encountered during parsing and attributing the file.
+ * <p/>
+ * A client may need to access {@link FxTreeUtilities} instances
+ * to work with positions and navigate through xml structure.
+ * 
+ * 
  * @author sdedic
  */
 public abstract class FxmlParserResult extends Parser.Result {
     /**
      * The source model
      */
-    private FxModel     sourceModel;
+    private final FxModel     sourceModel;
     
     /**
      * Problems found during parsing
      */
-    private Collection<ErrorMark>   problems = Collections.emptyList();
+    private final Collection<ErrorMark>   problems;
     
     private FxTreeUtilities treeUtils;
     
-    private TokenHierarchy tokenHierarchy;
+    private final TokenHierarchy tokenHierarchy;
 
     protected FxmlParserResult(Snapshot _snapshot, FxModel sourceModel, Collection<ErrorMark> problems, 
             TokenHierarchy h) {
         super(_snapshot);
         this.sourceModel = sourceModel;
-        this.problems = problems;
+        this.problems = Collections.unmodifiableCollection(problems);
         this.tokenHierarchy = h;
     }
     
+    protected abstract FxTreeUtilities createTreeUtilities();
+    
     @Override
     protected void invalidate() {
-        System.out.println("Invalid!");
     }
     
     public FxModel  getSourceModel() {
@@ -92,7 +97,7 @@ public abstract class FxmlParserResult extends Parser.Result {
     
     public FxTreeUtilities getTreeUtilities() {
         if (treeUtils == null) {
-            treeUtils = new FxTreeUtilities(sourceModel);
+            treeUtils = createTreeUtilities();
         }
         return treeUtils;
     }
@@ -100,6 +105,4 @@ public abstract class FxmlParserResult extends Parser.Result {
     public TokenHierarchy getTokenHierarchy() {
         return tokenHierarchy;
     }
-    
-    public abstract FxNodes getNodes();
 }

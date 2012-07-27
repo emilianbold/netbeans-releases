@@ -95,7 +95,7 @@ public abstract class InstanceCompleter implements Completer, Completer.Factory 
     
     protected FxBean getBeanInfo() {
         if (beanInfo == null) {
-            beanInfo = BeanModelBuilder.getBeanInfo(ctx.getCompilationInfo(), instance.getResolvedName());
+            beanInfo = ctx.getBeanInfo(instance);
         }
         return beanInfo;
     }
@@ -136,10 +136,15 @@ public abstract class InstanceCompleter implements Completer, Completer.Factory 
             pref = pref.substring(1);
         }
         if (!pref.isEmpty()) {
+            boolean camel = CompletionUtils.isCamelCasePrefix(pref);
             String lowPref = pref.toLowerCase();
             for (Iterator<String> it = names.iterator(); it.hasNext(); ) {
                 String n = it.next();
-                if (!n.toLowerCase().startsWith(lowPref)) {
+                if (camel) {
+                    if (!CompletionUtils.startsWithCamelCase(n, pref)) {
+                        it.remove();
+                    }
+                } else if (!n.toLowerCase().startsWith(lowPref)) {
                     it.remove();
                 }
             }

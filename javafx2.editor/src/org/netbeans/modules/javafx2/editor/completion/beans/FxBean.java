@@ -49,10 +49,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 
 /**
- *
+ * Provides a definition of a JavaFX bean. JavaFX bean features are used in
+ * scene builder and FXML editor. Features are:
+ * <ul>
+ * <li>properties
+ * <li>custom events
+ * <li>attached properties
+ * </ul>
+ * The bean info does not enumerate <i>property change events</i> as by definition
+ * there's an event for each defined property.
+ * <p/>
+ * Use {@link FxBeanProvider} to obtain instances of FxBean. The default Provider
+ * implementation can be obtained by {@link #getBeanProvider}.
+ * 
  * @author sdedic
  */
 public final class FxBean extends FxDefinition {
@@ -88,7 +103,10 @@ public final class FxBean extends FxDefinition {
      */
     private Set<String> factoryNames = Collections.emptySet();
 
-    private FxBean parentInfo;
+    /**
+     * Definition of the superclass' bean
+     */
+    private FxBean superclassInfo;
 
     /**
      * BeanInfo, which only contains declarations present on the class itself,
@@ -100,6 +118,186 @@ public final class FxBean extends FxDefinition {
     
     private boolean fxInstance;
     
+    /**
+     * Provides the default {@link FxBeanProvider} instance for the given {@link CompilationInfo}.
+     * The provider utilizes a cache for FxBeans, so repeated queries will not analyse a Type again,
+     * but rather serve the information form the cache.
+     * <p/>
+     * Use as follows:
+     * <code><pre>
+     * ParserManager.parse("text/x-java", new UserTask() { public void run(ResultIterator iter) {
+     *  CompilationInfo info = CompilationInfo.get(iter.getParserResult());
+     *  
+     *  FxBeanProvider fxProvider = FxBean.getBeanProvider(info);
+     * 
+     *  // now we can get FX bean information.
+     * });
+     * </pre></code>
+     * @param info Java Parser compilation info
+     * @return default Bean Provider implementation.
+     */
+    public static FxBeanProvider  getBeanProvider(final CompilationInfo info) {
+        return new FxBeanProvider() {
+            public FxBean getBeanInfo(String fqn) {
+                if (fqn == null) {
+                    return null;
+                }
+                return new BeanModelBuilder(this, info, fqn).getBeanInfo();
+            }
+
+            @Override
+            public CompilationInfo getCompilationInfo() {
+                return info;
+            }
+        };
+    }
+
+    /**
+     * Provides default property definition. Returns {@code null}, if the 
+     * class does not have a default property.
+     * 
+     * @return default property definition, or {@code null}
+     */
+    @CheckForNull
+    public FxProperty getDefaultProperty() {
+        return defaultPropertyName == null ? null : properties.get(defaultPropertyName);
+    }
+    
+    /**
+     * Provides names of all factory methods. Factory method is, per JavaFX guide,
+     * a static public method on the class, which returns the class itself.
+     * 
+     * @return all factory methods
+     */
+    @NonNull
+    public Set<String> getFactoryNames() {
+        return Collections.unmodifiableSet(factoryNames);
+    }
+
+    void setFactoryNames(Set<String> factoryNames) {
+        this.factoryNames = factoryNames;
+    }
+    
+    /**
+     * Provides name of the inspected class
+     * @return class name
+     */
+    @NonNull
+    public String getClassName() {
+        return getName();
+    }
+
+    /**
+     * Java type for the FxBean. You must use {@link CompilationInfo} to resolve
+     * the info to something usable.
+     * @return handle to TypeElement that correspond to the class' type
+     */
+    @NonNull
+    public ElementHandle<TypeElement> getJavaType() {
+        return javaType;
+    }
+
+    /**
+     * Provides dictionary of all properties.
+     * Map is keyed by property name, values are property definitions.
+     * 
+     * @return dictionary of properties.
+     */
+    @NonNull
+    public Map<String, FxProperty> getProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+    
+    /**
+     * Enumerates all property names. Returns both simple and 'non-simple' properties
+     * 
+     * @return property names
+     */
+    @NonNull
+    public Collection<String> getPropertyNames() {
+        return Collections.unmodifiableSet(properties.keySet());
+    }
+
+    /**
+     * Provides map of all simple properties. The map is keyed by property name,
+     * values are property definitions.
+     * 
+     * @return dictionary of simple properties
+     */
+    @NonNull
+    public Map<String, FxProperty> getSimpleProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+
+    /**
+     * Enumerates all simple property names.
+     * 
+     * @return names of all simple properties
+     */
+    @NonNull
+    public Collection<String> getSimplePropertyNames() {
+        return Collections.unmodifiableSet(simpleProperties.keySet());
+    }
+    
+    /**
+     * Enumerates names of all attached properties defined by the class     * 
+     * @return 
+     */
+    @NonNull
+    public Collection<String> getAttachedPropertyNames() {
+        return Collections.unmodifiableSet(attachedProperties.keySet());
+    }
+    
+    /**
+     * Provides property definition for instance property named 'n'. Returns {@code null},
+     * if the class does not define such property. For attached properties,
+     * use {@link #getAttachedProperty}.
+     * 
+     * @param n property name
+     * @return property definition
+     */
+    @CheckForNull
+    public FxProperty getProperty(String n) {
+        return properties.get(n);
+    }
+    
+    /**
+     * Returns definition for simple property named 'n'.
+     * Simple properties are properties, whose type can be converted from String.
+     * Either properties with String or primitive type, or type's class must have
+     * the {@code valueOf} method.
+     * 
+     * @return property definition, or {@code null}, if name does not correspond
+     * to any simple property
+     */
+    public FxProperty getSimpleProperty(String n) {
+        return simpleProperties.get(n);
+    }
+    
+    /**
+     * Returns definition for attached property named 'n'.
+     * @return property definition, or {@code null}, if name does not correspond
+     * to class' attached property.
+     */
+    @CheckForNull
+    public FxProperty getAttachedProperty(String n) {
+        return attachedProperties.get(n);
+    }
+
+    /**
+     * Returns attached properties supported by this class.
+     * 
+     * @return attached properties
+     */
+    @NonNull
+    public Map<String, FxProperty> getAttachedProperties() {
+        return Collections.unmodifiableMap(attachedProperties);
+    }
+
+    public Map<String, FxEvent> getEvents() {
+        return events;
+    }
+
     FxBean(String className) {
         super(className);
     }
@@ -124,66 +322,6 @@ public final class FxBean extends FxDefinition {
         this.defaultPropertyName = propName;
     }
 
-    public FxProperty getDefaultProperty() {
-        return defaultPropertyName == null ? null : properties.get(defaultPropertyName);
-    }
-    
-    public Set<String> getFactoryNames() {
-        return Collections.unmodifiableSet(factoryNames);
-    }
-
-    void setFactoryNames(Set<String> factoryNames) {
-        this.factoryNames = factoryNames;
-    }
-    
-    public String getClassName() {
-        return getName();
-    }
-
-    public ElementHandle<TypeElement> getJavaType() {
-        return javaType;
-    }
-
-    public Map<String, FxProperty> getProperties() {
-        return properties;
-    }
-    
-    public Set<String> getPropertyNames() {
-        return Collections.unmodifiableSet(properties.keySet());
-    }
-
-    public Map<String, FxProperty> getSimpleProperties() {
-        return properties;
-    }
-
-    public Collection<String> getSimplePropertyNames() {
-        return Collections.unmodifiableSet(simpleProperties.keySet());
-    }
-    
-    public Collection<String> getAttachedPropertyNames() {
-        return Collections.unmodifiableSet(attachedProperties.keySet());
-    }
-    
-    public FxProperty getProperty(String n) {
-        return properties.get(n);
-    }
-    
-    public FxProperty getSimpleProperty(String n) {
-        return simpleProperties.get(n);
-    }
-    
-    public FxProperty getAttachedProperty(String n) {
-        return attachedProperties.get(n);
-    }
-
-    public Map<String, FxProperty> getAttachedProperties() {
-        return attachedProperties;
-    }
-
-    public Map<String, FxEvent> getEvents() {
-        return events;
-    }
-
     void setJavaType(ElementHandle<TypeElement> javaType) {
         this.javaType = javaType;
     }
@@ -205,11 +343,19 @@ public final class FxBean extends FxDefinition {
     }
     
     void setParentBeanInfo(FxBean parent) {
-        this.parentInfo = parent;
+        this.superclassInfo = parent;
     }
     
-    public FxBean getParentBeanInfo() {
-        return parentInfo;
+    /**
+     * Provides FxBean instance for the superclass.
+     * Returns {@code null} for no superclass or j.l.Object, which does
+     * not have any interesting features anyway.
+     * 
+     * @return 
+     */
+    @CheckForNull
+    public FxBean getSuperclassInfo() {
+        return superclassInfo;
     }
     
     public String toString() {
@@ -238,12 +384,15 @@ public final class FxBean extends FxDefinition {
     }
     
     /**
-     * Service, which provides FxBean for the given FQN.
+     * Provides a definition for this class only, excluding
+     * all inherited items. The returned FxBean only enumerates
+     * features available directly on the inspected class. This is
+     * useful to determine whether a feature was inherited, or defined
+     * anew.
+     * 
+     * @return FxBean instance, which does not collect inherited features
      */
-    public interface Provider {
-        public FxBean getBeanInfo(String fqn);
-    }
-    
+    @NonNull
     public FxBean getDeclareadInfo() {
         return declaredInfo;
     }
@@ -252,6 +401,10 @@ public final class FxBean extends FxDefinition {
         this.declaredInfo = declaredInfo;
     }
     
+    /**
+     * Merges superclass' beaninfo into this instance.
+     * @param superBi 
+     */
     void merge(FxBean superBi) {
         if (superBi == null) {
             return;
@@ -281,7 +434,13 @@ public final class FxBean extends FxDefinition {
         defaultPropertyName = superBi.getDefaultProperty() == null ? null : superBi.getDefaultProperty().getName();
     }
     
+    /**
+     * Reports BEAN as the FxDefinition kind.
+     * 
+     * @return BEAN
+     */
     public FxDefinitionKind getKind() {
-        return FxDefinitionKind.EVENT;
+        return FxDefinitionKind.BEAN;
     }
+    
 }

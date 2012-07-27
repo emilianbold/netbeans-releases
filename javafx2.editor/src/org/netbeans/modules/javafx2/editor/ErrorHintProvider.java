@@ -49,7 +49,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.javafx2.editor.completion.impl.ErrorMark;
 import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserResultTask;

@@ -93,6 +93,10 @@ public final class FxClassUtils {
         return null;
     }
     
+    public static boolean isFxmlAccessible(Element el) {
+        return el.getModifiers().contains(Modifier.PUBLIC) || isFxmlAnnotated(el);
+    }
+    
     public static boolean isFxmlAnnotated(Element el) {
         for (AnnotationMirror an : el.getAnnotationMirrors()) {
             if (((TypeElement)an.getAnnotationType().asElement()).getQualifiedName().contentEquals(FXML_ANNOTATION_TYPE)) {

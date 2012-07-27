@@ -113,15 +113,14 @@ public class PropertyCompleter extends InstanceCompleter {
         }
         Collection<String> propNames = filterNames(new ArrayList<String>(attribute ? 
                 beanInfo.getSimplePropertyNames() : beanInfo.getPropertyNames()));
-        FxBean parentInfo = beanInfo.getParentBeanInfo();
+        FxBean parentInfo = beanInfo.getSuperclassInfo();
 
         for (String s : propNames) {
             FxProperty pi = beanInfo.getProperty(s);
 
             boolean propInherited = parentInfo != null && parentInfo.getProperty(s) != null;
 
-            if (pi.getKind() != FxDefinitionKind.LIST &&
-                existingPropNames.contains(s)) {
+            if (existingPropNames.contains(s)) {
                 continue;
             }
 
@@ -145,6 +144,7 @@ public class PropertyCompleter extends InstanceCompleter {
                     alreadyAdded.add(s);
                 }
             }
+            item.setMap(pi.getKind() == FxDefinitionKind.MAP);
 
             resultItems.add(item);
         }
@@ -165,7 +165,7 @@ public class PropertyCompleter extends InstanceCompleter {
         boolean next = false;
         do {
             addPropertiesFrom(beanInfo.getDeclareadInfo(), names, next);
-            beanInfo = beanInfo.getParentBeanInfo();
+            beanInfo = beanInfo.getSuperclassInfo();
             next = true;
         } while (beanInfo != null && resultItems.size() < IMPORTANT_PROPERTIES_TRESHOLD);
     }
@@ -188,27 +188,29 @@ public class PropertyCompleter extends InstanceCompleter {
         } else if (ctx.getCompletionType() == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
             addPropertiesFrom(getBeanInfo(), new HashSet<String>(), false);
         }
-        if (instance.getId() == null) {
-            // suggest also fx:id
-            PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id",
-                    true);
-            pi.setPrimitive(true);
-            pi.setInherited(false);
-            pi.setSystem(true);
-            pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
-            pi.setPropertyType("String"); // NOI18N
-            resultItems.add(pi);
-        }
-        if (ctx.isRootElement() && ctx.getModel().getController() == null) {
-            // suggest also fx:id
-            PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller",
-                    true);
-            pi.setPrimitive(true);
-            pi.setInherited(false);
-            pi.setSystem(true);
-            pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
-            pi.setPropertyType("Class"); // NOI18N
-            resultItems.add(pi);
+        if (ctx.getType() == CompletionContext.Type.PROPERTY) {
+            if (instance.getId() == null) {
+                // suggest also fx:id
+                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:id",
+                        true);
+                pi.setPrimitive(true);
+                pi.setInherited(false);
+                pi.setSystem(true);
+                pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+                pi.setPropertyType("String"); // NOI18N
+                resultItems.add(pi);
+            }
+            if (ctx.isRootElement() && ctx.getModel().getController() == null) {
+                // suggest also fx:id
+                PropertyElementItem pi = new PropertyElementItem(ctx, "fx:controller",
+                        true);
+                pi.setPrimitive(true);
+                pi.setInherited(false);
+                pi.setSystem(true);
+                pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+                pi.setPropertyType("Class"); // NOI18N
+                resultItems.add(pi);
+            }
         }
         return resultItems;
     }

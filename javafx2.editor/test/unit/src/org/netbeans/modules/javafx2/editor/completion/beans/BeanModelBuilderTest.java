@@ -61,7 +61,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.JavacParserResult;
 import org.netbeans.modules.javafx2.editor.FXMLCompletionTestBase;
-import org.netbeans.modules.javafx2.editor.completion.impl.XMLLexerParserTest;
+import org.netbeans.modules.javafx2.editor.sax.XMLLexerParserTest;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -120,7 +120,7 @@ public class BeanModelBuilderTest extends FXMLCompletionTestBase {
             JavacParserResult res = (JavacParserResult)resultIterator.getParserResult();
             CompilationInfo ci = res.get(CompilationInfo.class);
 
-            FxBean bi = BeanModelBuilder.getBeanInfo(ci, "javafx.scene.layout.AnchorPane");
+            FxBean bi = FxBean.getBeanProvider(ci).getBeanInfo("javafx.scene.layout.AnchorPane");
             StringBuilder sb = new StringBuilder();
             printBeanInfo(sb, bi, ci);
             content = sb;

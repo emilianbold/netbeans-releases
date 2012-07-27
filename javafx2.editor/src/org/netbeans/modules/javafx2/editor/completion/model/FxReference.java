@@ -58,6 +58,9 @@ public final class FxReference extends FxObjectBase {
 
     void resolveTarget(FxNewInstance inst) {
         this.target = inst;
+        if (inst != null) {
+            setJavaType(target.getJavaType());
+        }
     }
 
     public String getTargetName() {

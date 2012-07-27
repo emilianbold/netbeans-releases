@@ -45,7 +45,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
-import org.netbeans.modules.javafx2.editor.completion.model.impl.NodeInfo;
+import org.netbeans.modules.javafx2.editor.parser.NodeInfo;
 
 /**
  * Basic FXML node
@@ -104,9 +104,14 @@ public abstract class FxNode {
         Namespace,
         
         /**
-         * Definitions pseudo-node
+         * Element pseudo-node
          */
-        Definitions,
+        Element,
+        
+        /**
+         * Attribute pseudo-node
+         */
+        Attribute,
         
         /**
          * Erroneous Node

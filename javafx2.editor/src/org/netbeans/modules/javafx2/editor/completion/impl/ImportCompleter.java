@@ -133,7 +133,12 @@ public class ImportCompleter implements Completer, Completer.Factory {
 
     @Override
     public Completer createCompleter(CompletionContext ctx) {
-        return new ImportCompleter(ctx);
+        if (ctx.getType() == CompletionContext.Type.INSTRUCTION_TARGET ||
+            (ctx.getType() == CompletionContext.Type.INSTRUCTION_DATA && 
+                PI_IMPORT.equals(ctx.getPiTarget()))) {
+            return new ImportCompleter(ctx);
+        }
+        return null;
     }
     
     private static final String IMG_INSTRUCTION = "org/netbeans/modules/javafx2/editor/resources/instruction.png"; //NOI18N

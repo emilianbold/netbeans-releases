@@ -75,6 +75,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.text.NbDocument;
@@ -89,10 +90,12 @@ import org.openide.text.NbDocument;
 public class ValueClassItem extends SimpleClassItem {
     private static final Logger LOG = Logger.getLogger(ValueClassItem.class.getName());
 
+    private boolean shouldClose;
 
     public ValueClassItem(CompletionContext ctx, 
-                            String text) {
+                            String text, boolean close) {
         super(ctx, text);
+        this.shouldClose = close;
     }
     
     protected boolean isValueAttributePresent() {
@@ -109,7 +112,7 @@ public class ValueClassItem extends SimpleClassItem {
 
     protected String getSubstituteText() {
         // the opening < is a part of the replacement area
-        return "<" + getFullClassName(); // NOI18N
+        return super.getSubstituteText();
     }
     
     @Override
@@ -147,12 +150,16 @@ public class ValueClassItem extends SimpleClassItem {
             sb.append(createNsDecl(nsPrefix));
         }
 
-        sb.append(ctx.createNSName(nsPrefix, getAttributeName())).append("='");
+        sb.append(ctx.createNSName(nsPrefix, getAttributeName())).append("=\"");
 
         int l = sb.length();
-        sb.append("'");
+        sb.append("\"");
         if (!ctx.isTagClosed()) {
-            sb.append(">");
+            if (shouldClose) {
+                sb.append("/>");
+            } else {
+                sb.append(">");
+            }
         }
         d.insertString(start, sb.toString(), null);
         
@@ -191,8 +198,18 @@ public class ValueClassItem extends SimpleClassItem {
             if (!acceptsType(elem, ci)) {
                 return null;
             } else {
-                return SimpleClassItem.setup(new ValueClassItem(ctx, 
-                    elem.getQualifiedName().toString()), elem, ctx, priorityHint);
+                String fqn = elem.getQualifiedName().toString();
+                FxBean bean = ctx.getBeanInfo(fqn);
+                String n = ctx.getSimpleClassName(fqn);
+                if (n == null) {
+                    n = fqn;
+                }
+                return SimpleClassItem.setup(
+                        new ValueClassItem(
+                            ctx, 
+                            n,
+                            bean != null && bean.getPropertyNames().isEmpty()
+                        ), elem, ctx, priorityHint);
             }
         }
     }

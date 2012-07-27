@@ -77,6 +77,9 @@ public final class FxInstanceCopy extends FxInstance {
     
     void resolveBlueprint(FxInstance target) {
         this.blueprint = target;
+        if (blueprint != null) {
+            setJavaType(target.getJavaType());
+        }
     }
 
     public String getSourceName() {

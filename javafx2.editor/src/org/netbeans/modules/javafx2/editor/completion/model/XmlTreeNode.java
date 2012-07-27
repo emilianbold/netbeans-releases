@@ -50,6 +50,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
  *
  * @author sdedic
  */
+@Deprecated
 public interface XmlTreeNode {
     /**
      * @return True, if the node is an attribute.

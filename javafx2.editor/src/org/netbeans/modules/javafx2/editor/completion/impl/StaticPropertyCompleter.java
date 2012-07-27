@@ -233,6 +233,9 @@ public class StaticPropertyCompleter extends InstanceCompleter {
 
     @Override
     protected InstanceCompleter createCompleter(FxInstance instance, boolean attribute, CompletionContext ctx) {
+        if (instance.getJavaType() == null) {
+            return null;
+        }
         return new StaticPropertyCompleter(instance, attribute, ctx);
     }
 

@@ -60,7 +60,7 @@ import org.openide.util.Exceptions;
  *
  * @author sdedic
  */
-public abstract class AbstractCompletionItem implements CompletionItem {
+abstract class AbstractCompletionItem implements CompletionItem {
     private final int substOffset;
     private final int length;
     private final String text;

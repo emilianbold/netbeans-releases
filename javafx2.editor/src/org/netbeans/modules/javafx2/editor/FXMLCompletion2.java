@@ -170,7 +170,6 @@ public class FXMLCompletion2 implements CompletionProvider {
                     }
                 }
             }
-            
             resultSet.addAllItems(items);
         }
 

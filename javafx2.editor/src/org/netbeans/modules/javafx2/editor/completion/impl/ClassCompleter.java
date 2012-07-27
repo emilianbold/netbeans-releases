@@ -48,23 +48,35 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
+import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
+import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
+import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
  * Completer for class names. Activates at places, where a class name may be inserted:
@@ -89,9 +101,15 @@ public class ClassCompleter implements Completer, Completer.Factory {
      */
     private static final int PREFIX_TRESHOLD = 3;
    
+    private boolean moreItems;
+
+    private String packagePrefix;
+    
+    private String namePrefix;
+    
     
     private final CompletionContext ctx;
-
+    
     public ClassCompleter() {
         this.ctx = null;
     }
@@ -99,9 +117,9 @@ public class ClassCompleter implements Completer, Completer.Factory {
     private ClassCompleter(CompletionContext ctx) {
         this.ctx = ctx;
     }
-
+    
     public boolean hasMoreItems() {
-        return false;
+        return moreItems;
     }
     
     @Override
@@ -109,17 +127,137 @@ public class ClassCompleter implements Completer, Completer.Factory {
         if (ctx.getType() == CompletionContext.Type.BEAN ||
             ctx.getType() == CompletionContext.Type.ROOT ||
             ctx.getType() == CompletionContext.Type.CHILD_ELEMENT) {
-            return new ClassCompleter(ctx);
+            FxProperty pi = ctx.getEnclosingProperty();
+            if (pi == null || pi.getKind() == FxDefinitionKind.LIST) {
+                return new ClassCompleter(ctx);
+            } 
+            if (ctx.getPrefix().startsWith("<") ||
+                ctx.getCompletionType() == CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
+                return new ClassCompleter(ctx);
+            }
         }
-        
         return null;
     }
     
     private Set<ElementHandle<TypeElement>> namedTypes;
     
+    private boolean acceptsQName(CharSequence fullName, CharSequence name) {
+        if (packagePrefix != null && fullName.length() > name.length()) {
+            if (CompletionUtils.startsWith(fullName.subSequence(0, fullName.length() - name.length() - 1), packagePrefix)) {
+                return false;
+            }
+        }
+        return acceptsName(name);
+    }   
+    
+    private boolean acceptsName(CharSequence name) {
+        return namePrefix.isEmpty() ||
+            CompletionUtils.startsWith(name, namePrefix);
+    }
+    
+    private TypeMirror  propertyType;
+    private boolean propertyTypeResolved;
+    
+    private TypeMirror getPropertyType() {
+        if (propertyTypeResolved) {
+            return propertyType;
+        }
+        FxProperty prop = ctx.getEnclosingProperty();
+        if (prop != null) {
+            TypeMirrorHandle propTypeH = prop.getType();
+            if (propTypeH != null) {
+                propertyType = propTypeH.resolve(ctx.getCompilationInfo());
+            }
+        }
+        propertyTypeResolved = true;
+        return propertyType;
+    }
+    
+    private boolean acceptsType(TypeElement t) {
+        if (t.getModifiers().contains(Modifier.ABSTRACT) ||
+            !FxClassUtils.isFxmlAccessible(t)) {
+            return false;
+        }
+        TypeMirror pt = getPropertyType();
+        if (pt == null) {
+            return true;
+        }
+        return ctx.getCompilationInfo().getTypes().isAssignable(t.asType(), 
+                pt);
+    }
+    
+    /**
+     * Loads classes imported by explicit or star import.
+     */
+    private Set<ElementHandle<TypeElement>> loadImportedClasses() {
+        Set<ElementHandle<TypeElement>> handles = new HashSet<ElementHandle<TypeElement>>();
+        Collection<ImportDecl> imports = ctx.getModel().getImports();
+        for (ImportDecl decl : imports) {
+            if (decl.isWildcard()) {
+                if (packagePrefix != null && 
+                    !CompletionUtils.startsWith(decl.getImportedName(), namePrefix)) {
+                    continue;
+                }
+                // import all relevant classes from the package
+                PackageElement pel = ctx.getCompilationInfo().getElements().getPackageElement(decl.getImportedName());
+                for (Element e : pel.getEnclosedElements()) {
+                    TypeElement tel = (TypeElement)e;
+                    if (acceptsName(tel.getSimpleName()) && acceptsType(tel)) {
+                        handles.add(ElementHandle.create((TypeElement)e));
+                    }
+                }
+            } else if (CompletionUtils.startsWithCamelCase(decl.getImportedName(), namePrefix)) {
+                TypeElement el = ctx.getCompilationInfo().getElements().getTypeElement(decl.getImportedName());
+                if (el != null && acceptsType(el)) {
+                    handles.add(ElementHandle.create(el));
+                }
+            }
+        }
+        return handles;
+    }
+    
+    private TypeElement getBaseClass() {
+        TypeElement baseClass = null;
+        if (getPropertyType() != null) {
+            baseClass = (TypeElement)ctx.getCompilationInfo().getTypes().asElement(getPropertyType());
+        }
+        if (baseClass == null) {
+            baseClass = ctx.getCompilationInfo().getElements().getTypeElement(JavaFXEditorUtils.FXML_NODE_CLASS);
+        }
+        return baseClass;
+    }
+    
     Set<ElementHandle<TypeElement>> loadDescenantsOfNode() {
+        if (namePrefix.length() < PREFIX_TRESHOLD) {
+            return loadDescenantsOfNode2();
+        }
+        TypeElement baseClass = getBaseClass();
+        if (baseClass == null) {
+            return Collections.emptySet();
+        }
+        Set<ElementHandle<TypeElement>> handles = new HashSet<ElementHandle<TypeElement>>();
+
+        Set<ElementHandle<TypeElement>> els = ctx.getClasspathInfo().getClassIndex().
+                getDeclaredTypes(namePrefix, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, 
+                EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES, ClassIndex.SearchScope.SOURCE));
+        TypeMirror nodeType = baseClass.asType();
+        for (Iterator<ElementHandle<TypeElement>> it = els.iterator(); it.hasNext(); ) {
+            ElementHandle<TypeElement> h = it.next();
+            TypeElement e = h.resolve(ctx.getCompilationInfo());
+            if (e == null ||
+                !acceptsQName(e.getQualifiedName(), e.getSimpleName()) ||
+                e.getModifiers().contains(Modifier.ABSTRACT) ||
+                !FxClassUtils.isFxmlAccessible(e) ||
+                !ctx.getCompilationInfo().getTypes().isAssignable(e.asType(), nodeType)) {
+                    it.remove();
+            }
+        }
+        return handles;
+    }
+    
+    Set<ElementHandle<TypeElement>> loadDescenantsOfNode2() {
         // get javafx.scene.Node descendants
-        TypeElement baseClass = ctx.getCompilationInfo().getElements().getTypeElement(JavaFXEditorUtils.FXML_NODE_CLASS);
+        TypeElement baseClass = getBaseClass();
         if (baseClass == null) {
             // something wrong, fxml rt class does not exist
             LOG.warning("javafx.scene.Node class not fond");
@@ -127,21 +265,16 @@ public class ClassCompleter implements Completer, Completer.Factory {
         }
         
         ClasspathInfo info = ctx.getClasspathInfo();
-        String namePrefix = ctx.getPrefix();
-        
-        if (namePrefix.startsWith("<")) {
-            namePrefix = namePrefix.substring(1);
-        }
         
         ElementHandle<TypeElement> nodeHandle = ElementHandle.create (baseClass);
         
         Set<ElementHandle<TypeElement>> allTypesSeen = new HashSet<ElementHandle<TypeElement>>();
-        Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
         Deque<ElementHandle<TypeElement>> handles = new LinkedList<ElementHandle<TypeElement>>();
         handles.add(nodeHandle);
         
         long time = System.currentTimeMillis();
-        
+
+        allTypesSeen.add(nodeHandle);
         while (!handles.isEmpty()) {
             ElementHandle<TypeElement> baseHandle = handles.poll();
             LOG.log(Level.FINE, "Loading descendants of {0}", baseHandle);
@@ -155,48 +288,55 @@ public class ClassCompleter implements Completer, Completer.Factory {
             descendants.removeAll(allTypesSeen);
             allTypesSeen.addAll(descendants);
             handles.addAll(descendants);
-
             LOG.log(Level.FINE, "Unique descendants: {0}", descendants);
-
-            if (namePrefix != null) {
-                // add descendants not yet seen to the next processing round
-                for (ElementHandle<TypeElement> htype : descendants) {
-                    if (!(
-                        htype.getKind() == ElementKind.CLASS || htype.getKind() == ElementKind.INTERFACE)) {
-                        continue;
-                    }
-                    String n = htype.getQualifiedName();
-                    if (n.length() < namePrefix.length()) {
-                        // shorter name, does not match prefix
-                        continue;
-                    }
-                    int lastDot = n.lastIndexOf('.');
-                    if (n.subSequence(0, namePrefix.length()).toString().compareToIgnoreCase(namePrefix) == 0 ||
-                        (lastDot > 0 && (n.length() - lastDot - 1) >= namePrefix.length() &&
-                            n.subSequence(lastDot + 1, lastDot + 1 + namePrefix.length()).toString().compareToIgnoreCase(namePrefix) == 0)) {
-                        result.add(htype);
-                    }
-                }
-            } else {
-                result.addAll(descendants);
-            }            
         }
-        
         long diff = System.currentTimeMillis();
         LOG.log(Level.FINE, "Loading Node descendants took: {0}ms", diff);
+
+        Set<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
+        // add descendants not yet seen to the next processing round
+        for (ElementHandle<TypeElement> htype : allTypesSeen) {
+            if (!(
+                htype.getKind() == ElementKind.CLASS || htype.getKind() == ElementKind.INTERFACE)) {
+                continue;
+            }
+            String n = htype.getQualifiedName();
+            if (n.length() < namePrefix.length()) {
+                // shorter name, does not match prefix
+                continue;
+            }
+            
+            int lastDot = n.lastIndexOf('.');
+            if (lastDot != -1 && packagePrefix != null && (
+                lastDot < packagePrefix.length() || !n.startsWith(packagePrefix))) {
+                    continue;
+            }
+            
+            if (CompletionUtils.startsWith(n.substring(lastDot + 1), namePrefix)) {
+                result.add(htype);
+            }
+        }
+        
         return result;
     }
     
     private Set<ElementHandle<TypeElement>> loadFromAllTypes() {
         ClasspathInfo info = ctx.getClasspathInfo();
-        String namePrefix = ctx.getPrefix();
-        
-        if (namePrefix.startsWith("<")) {
-            namePrefix = namePrefix.substring(1);
-        }
-
         Set<ElementHandle<TypeElement>> els = info.getClassIndex().getDeclaredTypes(namePrefix, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, 
                 EnumSet.of(ClassIndex.SearchScope.DEPENDENCIES, ClassIndex.SearchScope.SOURCE));
+
+        TypeMirror pt = getPropertyType();
+        if (pt == null) {
+            return els;
+        }
+        for (Iterator<ElementHandle<TypeElement>> it = els.iterator(); it.hasNext(); ) {
+            ElementHandle<TypeElement> teh = it.next();
+            TypeElement t = teh.resolve(ctx.getCompilationInfo());
+            if (t == null || 
+                !acceptsType(t)) {
+                it.remove();
+            }
+        }
         return els;
     }
     
@@ -206,7 +346,7 @@ public class ClassCompleter implements Completer, Completer.Factory {
             // element does not exist etc
             return null;
         }
-        if (el.getKind() != ElementKind.CLASS) {
+        if (el.getKind() != ElementKind.CLASS && el.getKind() != ElementKind.ENUM) {
             // do not honour interfaces
             return null;
         }
@@ -238,15 +378,46 @@ public class ClassCompleter implements Completer, Completer.Factory {
         return items;
     }
     
+    private boolean isPrefixEmpty() {
+        return namePrefix.isEmpty() && packagePrefix == null;
+    }
+    
     @Override
     public List<CompletionItem> complete() {
-        Set<ElementHandle<TypeElement>> nodeCandidates = loadDescenantsOfNode();
-        Set<ElementHandle<TypeElement>> allCandidates = new HashSet<ElementHandle<TypeElement>>(loadFromAllTypes());
+        namePrefix = ctx.getPrefix();
+        if (namePrefix.startsWith("<")) {
+            namePrefix = namePrefix.substring(1);
+        }
         
-        allCandidates.removeAll(nodeCandidates);
+        int dot = namePrefix.indexOf('.');
+        if (dot != -1) {
+            packagePrefix = namePrefix.substring(0, dot);
+            namePrefix = namePrefix.substring(dot + 1);
+        }
+        
+        Set<ElementHandle<TypeElement>> handles;
+        
+        if (ctx.getCompletionType() == CompletionProvider.COMPLETION_QUERY_TYPE) {
+            handles = loadImportedClasses();
+            
+            List<CompletionItem> items = createItems(handles, IMPORTED_PRIORITY);
+            if (!items.isEmpty()) {
+                moreItems = true;
+                return items;
+            }
+        } else if (ctx.getCompletionType() != CompletionProvider.COMPLETION_ALL_QUERY_TYPE) {
+            return null;
+        }
+        
+        Set<ElementHandle<TypeElement>> nodeCandidates = loadDescenantsOfNode();
+        
         List<CompletionItem> items = new ArrayList<CompletionItem>();
         items.addAll(createItems(nodeCandidates, NODE_PRIORITY));
-        if (!ctx.getPrefix().equals("<")) {
+
+        // offer all classes for some prefixes
+        if (!isPrefixEmpty()) {
+            Set<ElementHandle<TypeElement>> allCandidates = new HashSet<ElementHandle<TypeElement>>(loadFromAllTypes());
+            allCandidates.removeAll(nodeCandidates);
             items.addAll(createItems(allCandidates, OTHER_PRIORITY));
         }
         

@@ -52,11 +52,10 @@ import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
  *
  * @author sdedic
  */
-public final class Dummy extends FxNode  {
-    private String tagName;
+final class Dummy extends XmlNode  {
 
     public Dummy(String tagName) {
-        this.tagName = tagName;
+        super(tagName);
     }
     
     @Override
@@ -67,10 +66,6 @@ public final class Dummy extends FxNode  {
     @Override
     public void accept(FxNodeVisitor v) {
         v.visitNode(this);
-    }
-
-    public String getSourceName() {
-        return tagName;
     }
 
     @Override

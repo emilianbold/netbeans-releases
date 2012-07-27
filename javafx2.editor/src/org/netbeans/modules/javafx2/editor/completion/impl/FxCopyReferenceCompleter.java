@@ -51,6 +51,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
@@ -58,6 +59,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
+import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.openide.nodes.Node;
 
@@ -117,6 +119,24 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
                 return null;
         }
         
+        String tn = ctx.getTagName();
+        if (tn != null && !"".equals(tn)) {
+            tn = tn.toLowerCase();
+            if (!(FxXmlSymbols.FX_REFERENCE.startsWith(tn) ||
+                FxXmlSymbols.FX_COPY.startsWith(tn))) {
+
+                String prefix = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
+                if (prefix == null) {
+                    prefix = JavaFXEditorUtils.FXML_FX_PREFIX;
+                }
+                tn = prefix + ":" + tn; // NOI18N
+                if (!(FxXmlSymbols.FX_REFERENCE.startsWith(tn) ||
+                    FxXmlSymbols.FX_COPY.startsWith(tn))) {
+                    return null;
+                }
+            }
+        }
+        
         // try to find at least 1 item that matches the contents:
         if (!matchingInstanceExists(ctx)) {
             return null;
@@ -131,42 +151,35 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
             return false;
         }
         FxNode parentNode = ctx.getElementParent();
+        
+        TypeMirror t;
+        
         if (parentNode.getKind() == FxNode.Kind.Instance) {
-            /*
-            boolean def = false;
-            
-            FxInstance i = (FxInstance)parentNode;
-            for (PropertyValue pv : (Collection<PropertyValue>)i.getProperties()) {
-                if (pv instanceof PropertySetter) {
-                    PropertySetter setter = (PropertySetter)pv;
-                    if (def = setter.isImplicit()) {
-                        break;
-                    }
-                }
-            }
-            if (!def) {
-                // may need to introduce such a property:
-                return false;
-            }
-            */
             FxBean bi = ctx.getBeanInfo((FxInstance)parentNode);
             if (bi == null) {
                 return true;
             }
-            return bi.getDefaultProperty() != null;
+            FxProperty def = bi.getDefaultProperty();
+            if (def == null || def.getType() == null) {
+                return false;
+            }
+            t = def.getType().resolve(ctx.getCompilationInfo());
         } else if (parentNode.getKind() != FxNode.Kind.Property) {
             // !! the Node may have a default property !
-            return false;
-        }
-        PropertyValue v = (PropertyValue)parentNode;
-        TypeMirror t;
-        
-        if (v.getTypeHandle() == null) {
-            // can offer any type
-            t = null;
+            return false; 
         } else {
-            t = v.getTypeHandle().resolve(ctx.getCompilationInfo());
+            PropertyValue v = (PropertyValue)parentNode;
+            if (v.getTypeHandle() == null) {
+                // can offer any type
+                t = null;
+            } else {
+                t = v.getTypeHandle().resolve(ctx.getCompilationInfo());
+            }
         }
+        if (t == null) {
+            return true;
+        }
+        
         for (String n : instanceNames) {
             FxInstance inst = ctx.getModel().getInstance(n);
             ElementHandle<TypeElement> tHandle = inst.getJavaType();
@@ -181,8 +194,8 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
                 continue;
             }
             if (ctx.getCompilationInfo().getTypes().isAssignable(
-                    t,
-                    instType.asType())) {
+                    instType.asType(),
+                    t)) {
                 return true;
             }
         }

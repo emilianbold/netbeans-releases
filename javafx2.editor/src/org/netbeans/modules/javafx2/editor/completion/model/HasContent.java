@@ -42,7 +42,9 @@
 package org.netbeans.modules.javafx2.editor.completion.model;
 
 /**
- *
+ * Common interface that indicates that the model element has text content.
+ * The content itself may be stored either in an attribute, or element content.
+ * 
  * @author sdedic
  */
 public interface HasContent {

@@ -57,8 +57,8 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
-import org.netbeans.modules.javafx2.editor.completion.model.impl.ModelAccessor;
-import org.netbeans.modules.javafx2.editor.completion.model.impl.NodeInfo;
+import org.netbeans.modules.javafx2.editor.parser.ModelAccessor;
+import org.netbeans.modules.javafx2.editor.parser.NodeInfo;
 
 /**
  * Represents a single FXML source file.
@@ -278,6 +278,13 @@ public final class FxModel extends FxNode {
         }
 
         @Override
+        public FxNode createErrorElement(String localName) {
+            return new Dummy(localName);
+        }
+        
+        
+
+        @Override
         public EventHandler asMethodRef(EventHandler h) {
             return h.asMethodRef();
         }
@@ -330,6 +337,22 @@ public final class FxModel extends FxNode {
         @Override
         public void setNamedInstances(FxModel model, Map<String, FxInstance> instances) {
             model.setNamedInstances(instances);
+        }
+
+        @Override
+        public void resolveReference(FxObjectBase copyOrReference, FxInstance original) {
+            if (copyOrReference instanceof FxInstanceCopy) {
+                ((FxInstanceCopy)copyOrReference).resolveBlueprint(original);
+            } else if (copyOrReference instanceof FxReference) {
+                ((FxReference)copyOrReference).resolveTarget((FxNewInstance)original);
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        @Override
+        public FxNode createElement(String localName) {
+            return new XmlNode(localName);
         }
         
     }

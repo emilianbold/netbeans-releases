@@ -42,10 +42,11 @@
 package org.netbeans.modules.javafx2.editor.completion.beans;
 
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.ElementHandle;
 
 /**
- * Describes event source on an FX object
+ * Describes event source on an FX object. 
  *
  * @author sdedic
  */
@@ -60,20 +61,32 @@ public final class FxEvent extends FxDefinition {
      */
     private ElementHandle<TypeElement>  eventType;
 
-    public FxEvent(String name) {
-        super(name);
-    }
-
+    /**
+     * Name of the event object class
+     * 
+     * @return event object class name
+     */
     public String getEventClassName() {
         return eventClassName;
     }
 
-    void setEventClassName(String eventClassName) {
-        this.eventClassName = eventClassName;
-    }
-
+    /**
+     * Type of the event object. May return {@code null},
+     * if the event type wasn't resolved (class was missing}
+     * 
+     * @return handle to the event type
+     */
+    @CheckForNull
     public ElementHandle<TypeElement> getEventType() {
         return eventType;
+    }
+
+    FxEvent(String name) {
+        super(name);
+    }
+
+    void setEventClassName(String eventClassName) {
+        this.eventClassName = eventClassName;
     }
 
     void setEventType(ElementHandle<TypeElement> eventType) {
@@ -90,6 +103,10 @@ public final class FxEvent extends FxDefinition {
         return sb.toString();
     }
     
+    /**
+     * Returns EVENT type
+     * @return EVENT
+     */
     public FxDefinitionKind getKind() {
         return FxDefinitionKind.EVENT;
     }

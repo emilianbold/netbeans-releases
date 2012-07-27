@@ -70,6 +70,8 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 
 /**
+ * Builds a model for a single class. Needs a {@link FxBeanProvider}, so that
+ * a BeanInfo for the superclass can be obtained.
  *
  * @author sdedic
  */
@@ -83,8 +85,6 @@ public final class BeanModelBuilder {
      * Fully qualified class name
      */
     private final String  className;
-    
-    private String defaultProperty;
     
     private Set<String> dependencies = Collections.emptySet();
     
@@ -112,10 +112,13 @@ public final class BeanModelBuilder {
      */
     @NullAllowed
     private TypeElement classElement;
+    
+    private FxBeanProvider  provider;
 
-    BeanModelBuilder(CompilationInfo compilationInfo, String className) {
+    public BeanModelBuilder(FxBeanProvider provider, CompilationInfo compilationInfo, String className) {
         this.compilationInfo = compilationInfo;
         this.className = className;
+        this.provider = provider;
     }
     
     private void addDependency(TypeMirror tm) {
@@ -142,7 +145,7 @@ public final class BeanModelBuilder {
         dependencies.add(name);
     }
     
-    public FxBean process() {
+    FxBean process() {
         classElement = compilationInfo.getElements().getTypeElement(className);
         if (classElement == null) {
             return resultInfo = null;
@@ -203,6 +206,9 @@ public final class BeanModelBuilder {
     }
     
     public FxBean getBeanInfo() {
+        if (resultInfo == null) {
+            process();
+        }
         return resultInfo;
     }
     
@@ -596,23 +602,8 @@ public final class BeanModelBuilder {
             superBi = beanCache.getBeanInfo(compilationInfo.getClasspathInfo(), fqn);
         }
         if (superBi == null) {
-            BeanModelBuilder builder = new BeanModelBuilder(compilationInfo, fqn);
-            builder.setBeanCache(beanCache);
-            superBi = builder.process();
+            superBi = provider.getBeanInfo(fqn);
         }
         resultInfo.merge(superBi);
-    }
-    
-    public static FxBean getBeanInfo(CompilationInfo ci, String className) {
-        if (className == null) {
-            return null;
-        }
-        FxBean bi = FxBeanCache.instance().getBeanInfo(ci.getClasspathInfo(), className);
-        if (bi != null) {
-            return bi;
-        }
-        BeanModelBuilder bld = new BeanModelBuilder(ci, className);
-        bld.setBeanCache(FxBeanCache.instance());
-        return bld.process();
     }
 }

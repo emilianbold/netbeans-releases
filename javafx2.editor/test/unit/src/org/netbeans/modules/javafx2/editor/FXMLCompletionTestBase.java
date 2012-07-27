@@ -74,7 +74,7 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
-import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserFactory;
+import org.netbeans.modules.javafx2.editor.parser.FxmlParserFactory;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
