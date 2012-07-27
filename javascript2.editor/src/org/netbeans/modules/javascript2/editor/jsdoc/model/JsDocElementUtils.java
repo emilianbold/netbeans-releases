@@ -89,15 +89,15 @@ public class JsDocElementUtils {
 
     /**
      * Gets list of {@link Type}s parsed from given string.
-     * @param typesString string to be parsed for types
-     * @param offset offset of the typesString in the file
-     * @return list of {@code type}s
+     * @param textToParse string to be parsed for types
+     * @param offset offset of the textToParse in the file
+     * @return list of {@code Type}s
      */
-    public static List<Type> parseTypes(String typesString, int offset) {
+    public static List<Type> parseTypes(String textToParse, int offset) {
         List<Type> types = new LinkedList<Type>();
-        String[] typesArray = typesString.split("[|]"); //NOI18N
+        String[] typesArray = textToParse.split("[|]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeImpl(string, offset + typesString.indexOf(string)));
+            types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
         }
         return types;
     }
