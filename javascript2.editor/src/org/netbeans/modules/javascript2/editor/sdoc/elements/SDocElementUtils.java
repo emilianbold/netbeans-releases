@@ -41,22 +41,17 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.AssignElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.LinkElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.NamePath;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.ParameterElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.SimpleElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 
 /**
+ * Parses Type names, types and their offsets for given strings and
+ * creates from them {@code SDocElement}s.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -69,112 +64,131 @@ public class SDocElementUtils {
      * @param elementTextStartOffset type description text start offset
      * @return created {@code SDocElement)
      */
-    public static SDocElement createElementForType(SDocElement.Type elementType, String elementText, int elementTextStartOffset) {
-//        switch (elementType.getCategory()) {
-//            case ASSIGN:
-//                String[] values = elementText.split("(\\s)*as(\\s)*"); //NOI18N
-//                return AssignElement.create(
-//                        elementType,
-//                        (values.length > 0) ? new NamePath(values[0].trim()) : null,
-//                        (values.length > 1) ? new NamePath(values[1].trim()) : null);
-//            case DECLARATION:
-//                return DeclarationElement.create(elementType, new TypeImpl(elementText, elementTextStartOffset));
-//            case DESCRIPTION:
-//                return DescriptionElement.create(elementType, elementText);
-//            case LINK:
-//                return LinkElement.create(elementType, new NamePath(elementText));
-//            case NAMED_PARAMETER:
-//                return createParameterElement(elementType, elementText, true, elementTextStartOffset);
-//            case SIMPLE:
-//                return SimpleElement.create(elementType);
-//            case UNNAMED_PARAMETER:
-//                return createParameterElement(elementType, elementText, false, elementTextStartOffset);
-//            default:
-//                // unknown jsDoc element type
-//                return DescriptionElement.create(elementType, elementText);
-//        }
-        return null;
+    public static SDocElement createElementForType(SDocElementType elementType, String elementText, int elementTextStartOffset) {
+        switch (elementType.getCategory()) {
+            case DESCRIPTION:
+                return SDocDescriptionElement.create(elementType, elementText);
+            case IDENT:
+                return SDocIdentifierElement.create(elementType, elementText);
+            case SIMPLE:
+                return SDocSimpleElement.create(elementType);
+            case TYPE_SIMPLE:
+                TypeInformation simpleInfo = parseTypeInformation(elementType, elementText, elementTextStartOffset);
+                return SDocTypeSimpleElement.create(elementType, simpleInfo.getType());
+            case TYPE_DESCRIBED:
+                TypeInformation descInfo = parseTypeInformation(elementType, elementText, elementTextStartOffset);
+                return SDocTypeDescribedElement.create(elementType, descInfo.getType(), descInfo.getDescription());
+            case TYPE_NAMED:
+                TypeInformation namedInfo = parseTypeInformation(elementType, elementText, elementTextStartOffset);
+                return SDocTypeNamedElement.create(elementType, namedInfo.getType(), namedInfo.getDescription(), namedInfo.getName(), namedInfo.isOptional());
+            default:
+                // unknown sDoc element type
+                return SDocDescriptionElement.create(elementType, elementText);
+        }
     }
 
-//    /**
-//     * Gets list of {@link Type}s parsed from given string.
-//     * @param typesString string to be parsed for types
-//     * @param offset offset of the typesString in the file
-//     * @return list of {@code type}s
-//     */
-//    public static List<Type> parseTypes(String typesString, int offset) {
-//        List<Type> types = new LinkedList<Type>();
-//        String[] typesArray = typesString.split("[|]"); //NOI18N
-//        for (String string : typesArray) {
-//            types.add(new TypeImpl(string, offset + typesString.indexOf(string)));
-//        }
-//        return types;
-//    }
-//
-//    private static ParameterElement createParameterElement(SDocElement.Type elementType,
-//            String elementText, boolean named, int descStartOffset) {
-//        int typeOffset = -1, nameOffset = -1;
-//        String types = "", desc = ""; //NOI18N
-//        StringBuilder name = new StringBuilder();
-//        int process = 0;
-//        String[] parts = elementText.split("[\\s]+"); //NOI18N
-//
-//        if (parts.length > process) {
-//            // get type value if any
-//            if (parts[0].startsWith("{")) { //NOI18N
-//                typeOffset = descStartOffset + 1;
-//                int rparIndex = parts[0].indexOf("}"); //NOI18N
-//                if (rparIndex == -1) {
-//                    types = parts[0].trim();
-//                } else {
-//                    types = parts[0].substring(1, rparIndex);
-//                }
-//                process++;
-//            }
-//
-//            // get name value (mandatory part)
-//            if (parts.length > process && named) {
-//                nameOffset = descStartOffset + elementText.indexOf(parts[process]);
-//                name.append(parts[process].trim());
-//                process++;
-//                if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N
-//                    process = buildNameForString(name, process, parts);
-//                }
-//            }
-//
-//            // get description
-//            StringBuilder sb = new StringBuilder();
-//            while (process < parts.length) {
-//                sb.append(parts[process]).append(" "); //NOI18N
-//                process++;
-//            }
-//            desc = sb.toString().trim();
-//        }
-//
-//        if (named) {
-//            return NamedParameterElement.createWithNameDiagnostics(elementType,
-//                    new DocIdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
-//        } else {
-//            return UnnamedParameterElement.create(elementType, parseTypes(types, typeOffset), desc);
-//        }
-//    }
-//
-//    private static int buildNameForString(StringBuilder name, int currentOffset, String[] parts) {
-//        // TODO - better would be to solve that using lexer
-//        String nameString = name.toString();
-//        if ((nameString.indexOf("\"") != -1 && (nameString.indexOf("\"") == nameString.lastIndexOf("\""))) //NOI18N
-//                || (nameString.indexOf("'") != -1 && nameString.indexOf("'") == nameString.lastIndexOf("'"))) { //NOI18N
-//            // string with spaces
-//            boolean endOfString = false;
-//            while (currentOffset < parts.length && !endOfString) {
-//                name.append(" ").append(parts[currentOffset]); //NOI18N
-//                if (parts[currentOffset].contains("\"") || parts[currentOffset].contains("'")) { //NOI18H
-//                    endOfString = true;
-//                }
-//                currentOffset++;
-//            }
-//        }
-//        return currentOffset;
-//    }
+    /**
+     * Gets list of {@link Type}s parsed from given string.
+     * @param textToParse string to be parsed for types
+     * @param offset offset of the textToParse in the file
+     * @return list of {@code Type}s
+     */
+    public static List<Type> parseTypes(String textToParse, int offset) {
+        List<Type> types = new LinkedList<Type>();
+        String[] typesArray = textToParse.split("[,]"); //NOI18N
+        for (String string : typesArray) {
+            types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
+        }
+        return types;
+    }
+
+    private static TypeInformation parseTypeInformation(SDocElementType elementType, String elementText, int descStartOffset) {
+        TypeInformation typeInformation = new TypeInformation();
+        int nameOffset = -1;
+        int process = 0;
+        
+        String[] parts = elementText.split("[\\s]+"); //NOI18N
+        if (parts.length > process) {
+            // get type value if any
+            if (parts[0].startsWith("{")) { //NOI18N
+                int typeOffset = descStartOffset + 1;
+                int rparIndex = parts[0].indexOf("}"); //NOI18N
+                if (rparIndex == -1) {
+                    typeInformation.setType(parseTypes(parts[0].trim(), typeOffset));
+                } else {
+                    typeInformation.setType(parseTypes(parts[0].substring(1, rparIndex), typeOffset));
+                }
+                process++;
+            }
+
+            // get name value (at named types)
+            if (parts.length > process && elementType.getCategory() == SDocElementType.Category.TYPE_NAMED) {
+                nameOffset = descStartOffset + elementText.indexOf(parts[process]);
+                parseAndStoreTypeDetails(typeInformation, nameOffset, parts[process].trim());
+                process++;
+            }
+
+            // get description
+            StringBuilder sb = new StringBuilder();
+            while (process < parts.length) {
+                sb.append(parts[process]).append(" "); //NOI18N
+                process++;
+            }
+            typeInformation.setDescription(sb.toString().trim());
+        }
+
+        return typeInformation;
+    }
+
+    private static void parseAndStoreTypeDetails(TypeInformation typeInfo, int nameOffset, String nameText) {
+        boolean optional = nameText.matches("\\[.*\\]"); //NOI18N
+        if (optional) {
+            nameOffset++;
+            nameText = nameText.substring(1, nameText.length() - 1);
+        }
+        typeInfo.setOptional(optional);
+        typeInfo.setName(new DocIdentifierImpl(nameText, nameOffset));
+    }
+
+    private static class TypeInformation {
+
+        private List<Type> type = Collections.<Type>emptyList();
+        private String description = "";
+        private DocIdentifier name = null;
+        private boolean optional = false;
+
+        public void setName(DocIdentifier name) {
+            this.name = name;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public void setType(List<Type> type) {
+            this.type = type;
+        }
+
+        public void setOptional(boolean optional) {
+            this.optional = optional;
+        }
+
+        public DocIdentifier getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public List<Type> getType() {
+            return type;
+        }
+
+        public boolean isOptional() {
+            return optional;
+        }
+
+    }
 
 }
