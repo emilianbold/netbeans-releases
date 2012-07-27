@@ -158,13 +158,15 @@ public class GoToRuleSourceAction extends NodeAction {
                 @Override
                 public void run(StyleSheet styleSheet) {
                     Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
-                    final int offset = modelRule.getStartOffset();
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            CSSUtils.open(fob, offset);
-                        }
-                    });
+                    if (modelRule != null) {
+                        final int offset = modelRule.getStartOffset();
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                CSSUtils.open(fob, offset);
+                            }
+                        });
+                    }
                 }
             });
         }
