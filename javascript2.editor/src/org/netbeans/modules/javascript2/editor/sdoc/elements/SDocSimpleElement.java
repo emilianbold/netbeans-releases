@@ -50,7 +50,7 @@ package org.netbeans.modules.javascript2.editor.sdoc.elements;
  */
 public class SDocSimpleElement extends SDocBaseElement {
 
-    private SDocSimpleElement(Type type) {
+    private SDocSimpleElement(SDocElementType type) {
         super(type);
     }
 
@@ -58,7 +58,7 @@ public class SDocSimpleElement extends SDocBaseElement {
      * Creates new {@code SDocSimpleElement}.
      * @param type simple type (tag), never null
      */
-    public static SDocSimpleElement create(Type type) {
+    public static SDocSimpleElement create(SDocElementType type) {
         return new SDocSimpleElement(type);
     }
 
