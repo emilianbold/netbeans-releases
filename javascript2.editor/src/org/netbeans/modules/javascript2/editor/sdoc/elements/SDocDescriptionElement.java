@@ -52,7 +52,7 @@ public class SDocDescriptionElement extends SDocBaseElement {
 
     private final String description;
 
-    private SDocDescriptionElement(Type type, String description) {
+    private SDocDescriptionElement(SDocElementType type, String description) {
         super(type);
         this.description = description;
     }
@@ -63,7 +63,7 @@ public class SDocDescriptionElement extends SDocBaseElement {
      * @param type element type (tag), never null
      * @param description description of the element, never null
      */
-    public static SDocDescriptionElement create(Type type, String description) {
+    public static SDocDescriptionElement create(SDocElementType type, String description) {
         return new SDocDescriptionElement(type, description);
     }
 

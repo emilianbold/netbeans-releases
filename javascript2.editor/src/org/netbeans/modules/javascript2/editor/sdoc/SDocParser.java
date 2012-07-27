@@ -51,10 +51,10 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -110,7 +110,7 @@ public class SDocParser {
         Token<? extends SDocTokenId> currentToken;
         boolean afterDescriptionEntry = false;
         
-        SDocElement.Type lastType = null;
+        SDocElementType lastType = null;
         int lastOffset = ts.offset();
 
         while (ets.moveNext()) {
@@ -128,7 +128,7 @@ public class SDocParser {
                 } else {
                     // store first description in the comment if any
                     if (!afterDescriptionEntry) {
-                        sDocElements.add(SDocDescriptionElement.create(SDocElement.Type.DESCRIPTION, sb.toString().trim()));
+                        sDocElements.add(SDocDescriptionElement.create(SDocElementType.DESCRIPTION, sb.toString().trim()));
                     } else {
                         sDocElements.add(SDocElementUtils.createElementForType(lastType, sb.toString().trim(), lastOffset));
                     }
@@ -144,7 +144,7 @@ public class SDocParser {
                     ets.movePrevious();
                 }
                 afterDescriptionEntry = true;
-                lastType = SDocElement.Type.fromString(CharSequenceUtilities.toString(currentToken.text()));
+                lastType = SDocElementType.fromString(CharSequenceUtilities.toString(currentToken.text()));
             } else {
                 // store all text which appears before next keyword or comment end
                 sb.append(currentToken.text());

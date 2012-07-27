@@ -387,11 +387,6 @@ public class JsFormatter implements Formatter {
                             if (tokenAfterEol != null
                                     && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
 
-                                if (!shouldPlaceLineBreak(doc, token, formatContext,
-                                        CodeStyle.get(doc).getRightMargin())) {
-                                    break;
-                                }
-
                                 // proceed the skipped tokens moving the main loop
                                 for (FormatToken current = token; current != tokenAfterEol; current = current.next()) {
                                     indentationLevel = updateIndentationLevel(current, indentationLevel);
@@ -509,69 +504,80 @@ public class JsFormatter implements Formatter {
     private int handleSpaceAfter(List<FormatToken> tokens, int index,
             FormatContext formatContext, int offsetDiff, boolean remove) {
 
-        if (NEW_LINE_BREAKS && isAfterStatement(tokens, index)) {
+        FormatToken token = tokens.get(index);
+        assert token.isVirtual();
+
+        CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext);
+        if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
             return offsetDiff;
         }
 
-        FormatToken token = tokens.get(index);
-        FormatToken next = getNextNonVirtual(token);
-        FormatToken marker = next;
-        if (next != null && next.getKind() == FormatToken.Kind.WHITESPACE) {
-            marker = getNextNonVirtual(next);
+        // now we have some AFTER token, find next non white token
+        FormatToken end = null;
+        boolean containsEol = false;
+
+        for (FormatToken current = token.next(); current != null;
+                current = current.next()) {
+
+            if (!current.isVirtual()) {
+                if (current.getKind() != FormatToken.Kind.WHITESPACE
+                        && current.getKind() != FormatToken.Kind.EOL) {
+                    end = current;
+                    break;
+                } else if (current.getKind() == FormatToken.Kind.EOL) {
+                    containsEol = true;
+                }
+            }
         }
 
         // this avoids collision of after and before rules on same whitespace
-        for (FormatToken virtual = marker; virtual != null && virtual != token;
+        for (FormatToken virtual = end; virtual != null && virtual != token;
                 virtual = virtual.previous()) {
             // the before marker should win anyway
             if (virtual.isBeforeMarker()) {
                 return offsetDiff;
             }
         }
+        //XXX
+        FormatToken start = getNextNonVirtual(token);
 
-        // has next and it is not an eol
-        if (next != null
-                && next.getKind() != FormatToken.Kind.EOL) {
-
-            FormatToken theToken = tokens.get(index - 1);
-            // next is a meaningful non white token
-            if (next.getKind() != FormatToken.Kind.WHITESPACE) {
+        if (start != null && end != null) {
+            if (start.getKind() != FormatToken.Kind.WHITESPACE
+                    && start.getKind() != FormatToken.Kind.EOL) {
                 if (!remove) {
-                    return formatContext.insert(theToken.getOffset() + theToken.getText().length(),
-                            " ", offsetDiff); // NOI18N
+                    return formatContext.insert(start.getOffset(), " ", offsetDiff); // NOI18N
                 }
-
-            // next is whitespace not followed by EOL
-            // (this would be removed by trailing space logic)
-            } else {
-                FormatToken afterNext = getNextNonVirtual(next);
-                if (afterNext != null
-                        && afterNext.getKind() != FormatToken.Kind.EOL) {
-                    if (remove) {
-                        return formatContext.remove(theToken.getOffset() + theToken.getText().length(),
-                                next.getText().length(), offsetDiff);
-                    } else if (next.getText().length() != 1) {
-                        return formatContext.replace(theToken.getOffset() + theToken.getText().length(),
-                                next.getText().toString(), " ", offsetDiff); // NOI18N
-                    }
+            // TODO is this right ? not consistent with java and php
+            } else if (!containsEol || style == CodeStyle.WrapStyle.WRAP_NEVER) {
+                if (remove) {
+                    return formatContext.remove(start.getOffset(),
+                            end.getOffset() - start.getOffset(), offsetDiff);
+                } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
+                    return formatContext.replace(start.getOffset(),
+                            end.getOffset() - start.getOffset(), " ", offsetDiff); // NOI18N
                 }
             }
         }
+
         return offsetDiff;
     }
 
     private int handleSpaceBefore(List<FormatToken> tokens, int index,
             FormatContext formatContext, int offsetDiff, boolean remove) {
 
-        if (NEW_LINE_BREAKS && isAfterStatement(tokens, index)) {
+        FormatToken token = tokens.get(index);
+        assert token.isVirtual();
+
+        CodeStyle.WrapStyle style = getLineWrap(tokens, index, formatContext);
+        if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
             return offsetDiff;
         }
 
-        // find previous non white token
+        // now we have some BEFORE token, find previous non white token
         FormatToken start = null;
         boolean containsEol = false;
 
-        for (FormatToken current = tokens.get(index).previous(); current != null;
+        for (FormatToken current = token.previous(); current != null;
                 current = current.previous()) {
 
             if (!current.isVirtual()) {
@@ -586,70 +592,27 @@ public class JsFormatter implements Formatter {
         }
 
         if (start != null) {
+            // we fetch the space to start
             start = getNextNonVirtual(start);
-            FormatToken theToken = getNextNonVirtual(tokens.get(index));
+            // and the token we are before
+            FormatToken theToken = getNextNonVirtual(token);
             if (start.getKind() != FormatToken.Kind.WHITESPACE
                     && start.getKind() != FormatToken.Kind.EOL) {
                 if (!remove) {
                     return formatContext.insert(start.getOffset(), " ", offsetDiff); // NOI18N
                 }
             // TODO is this right ? not consistent with java and php
-            } else if (!containsEol) {
+            } else if (!containsEol || style == CodeStyle.WrapStyle.WRAP_NEVER) {
                 if (remove) {
                     return formatContext.remove(start.getOffset(),
                             theToken.getOffset() - start.getOffset(), offsetDiff);
-                } else if (start.getText().length() != 1) {
+                } else if (start.getText().length() != 1 || start.getKind() == FormatToken.Kind.EOL) {
                     return formatContext.replace(start.getOffset(),
                             start.getText().toString(), " ", offsetDiff); // NOI18N
                 }
             }
         }
         return offsetDiff;
-    }
-
-    private boolean shouldPlaceLineBreak(BaseDocument doc, FormatToken token,
-            FormatContext context, int margin) {
-
-        CodeStyle.WrapStyle style = getLineWrap(token, context);
-
-        if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-            return false;
-        }
-        if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
-            return true;
-        }
-
-        FormatToken previousDelimiter = getPreviousNonVirtual(token);
-        assert previousDelimiter != null;
-
-        int offset = previousDelimiter.getOffset();
-        try {
-            // TODO current line offset might be biased with offsetDiff
-            int lineStartOffset = IndentUtils.lineStartOffset(doc, offset);
-            if (offset - lineStartOffset >= margin) {
-                return true;
-            }
-
-            FormatToken next = token.next();
-            while (next != null && next.getKind() != FormatToken.Kind.EOL) {
-                CodeStyle.WrapStyle nextStyle = getLineWrap(next, context);
-                if (nextStyle != CodeStyle.WrapStyle.WRAP_NEVER) {
-                    break;
-                }
-            }
-
-            if (next != null) {
-                previousDelimiter = next.getKind() != FormatToken.Kind.EOL
-                        ? getPreviousNonVirtual(next) : next;
-                if (previousDelimiter != null
-                        && previousDelimiter.getOffset() - lineStartOffset > margin) {
-                    return true;
-                }
-            }
-        } catch (BadLocationException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-        }
-        return false;
     }
 
     private boolean isContinuation(List<FormatToken> tokens, int index) {
@@ -720,18 +683,6 @@ public class JsFormatter implements Formatter {
 
     }
 
-    private boolean isAfterStatement(List<FormatToken> tokens, int index) {
-        FormatToken token = tokens.get(index).next();
-        while (token != null && token.isVirtual()) {
-            if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
-                return true;
-            }
-            token = token.next();
-        }
-
-        return false;
-    }
-
     private Indentation checkIndentation(BaseDocument doc, FormatToken token,
             FormatContext formatContext, Context context, int indentationSize) {
 
@@ -783,6 +734,22 @@ public class JsFormatter implements Formatter {
         return indentationLevel;
     }
 
+    private static CodeStyle.WrapStyle getLineWrap(List<FormatToken> tokens, int index, FormatContext context) {
+        FormatToken token = tokens.get(index);
+        
+        assert token.isVirtual();
+
+        FormatToken next = token;
+        while (next != null && next.isVirtual()) {
+            CodeStyle.WrapStyle style = getLineWrap(next, context);
+            if (style != null) {
+                return style;
+            }
+            next = next.next();
+        }
+        return null;
+    }
+
     private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
         if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
             // XXX option
@@ -803,7 +770,7 @@ public class JsFormatter implements Formatter {
             // XXX option
             return CodeStyle.WrapStyle.WRAP_ALWAYS;
         }
-        return CodeStyle.WrapStyle.WRAP_NEVER;
+        return null;
     }
 
     private static FormatToken getNextNonVirtual(FormatToken token) {

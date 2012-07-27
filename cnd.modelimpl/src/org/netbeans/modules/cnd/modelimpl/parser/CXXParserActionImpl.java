@@ -301,5 +301,20 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     public void template_declaration(int kind, Token token) {
         orig.template_declaration(kind, convertToken(token));
     }
+ 
+    @Override
+    public void using_directive(Token usingToken, Token namespaceToken) {
+        orig.using_directive(convertToken(usingToken), convertToken(namespaceToken));
+    }
+
+    @Override
+    public void using_directive(int kind, Token token) {
+        orig.using_directive(kind, convertToken(token));
+    }
+
+    @Override
+    public void end_using_directive(Token semicolonToken) {
+        orig.end_using_directive(convertToken(semicolonToken));
+    }
     
 }

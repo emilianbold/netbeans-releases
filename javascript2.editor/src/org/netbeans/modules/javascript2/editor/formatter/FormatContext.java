@@ -280,6 +280,10 @@ public final class FormatContext {
             return offsetDiff;
         }
 
+        return replace(voffset, oldString.length(), newString, offsetDiff);
+    }
+
+    public int replace(int voffset, int length, String newString, int offsetDiff) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
             return offsetDiff;
@@ -287,13 +291,13 @@ public final class FormatContext {
 
         BaseDocument doc = getDocument();
         try {
-            if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, oldString.length())).matches()) {
-                doc.remove(offset + offsetDiff, oldString.length());
+            if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
+                doc.remove(offset + offsetDiff, length);
                 doc.insertString(offset + offsetDiff, newString, null);
-                return offsetDiff + (newString.length() - oldString.length());
+                return offsetDiff + (newString.length() - length);
             } else {
                 LOGGER.log(Level.WARNING, "Tried to remove non empty text: {0}",
-                        doc.getText(offset + offsetDiff, oldString.length()));
+                        doc.getText(offset + offsetDiff, length));
                 return offsetDiff;
             }
         } catch (BadLocationException ex) {

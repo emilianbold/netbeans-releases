@@ -82,11 +82,15 @@ header {
 
 package org.netbeans.modules.cnd.modelimpl.parser.generated;
 
+import java.io.*;
+import java.util.*;
+
 import org.netbeans.modules.cnd.antlr.*;
+import org.netbeans.modules.cnd.antlr.collections.*;
+import org.netbeans.modules.cnd.antlr.debug.misc.*;
 import org.netbeans.modules.cnd.modelimpl.parser.*;
 import org.netbeans.modules.cnd.modelimpl.parser.Enum;
 import org.netbeans.modules.cnd.modelimpl.debug.*;
-import org.netbeans.modules.cnd.apt.support.APTToken;
 
 }
 
@@ -603,6 +607,7 @@ tokens {
 	//protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
+        protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
 	// isClassName is used in CPPParserEx only
 	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected void end_of_stmt() {}
@@ -833,6 +838,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 				printf("external_declaration_template_1b[%d]: Class template definition\n",
 					LT(1).getLine());
 			}
+                        {action.simple_declaration(LT(1));}
                         {action.class_declaration(LT(1));}                           
 			declaration[declOther]
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
@@ -1023,7 +1029,6 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
-                {action.class_declaration(LT(1));}
 		(LITERAL___extension__!)? declaration[declOther]
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
 
@@ -1421,6 +1426,7 @@ member_declaration
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
+                {action.simple_declaration(LT(1));}
                 {action.class_declaration(LT(1));}
 		{if (statementTrace>=1) 
 			printf("member_declaration_1[%d]: Class definition\n",
@@ -1771,9 +1777,14 @@ declaration[int kind]
         {endDeclaration();}
     |
         {beginDeclaration();}
+        
         // LL 31/1/97: added (COMMA) ? below. This allows variables to
         // typedef'ed more than once. DW 18/08/03 ?
-        declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])?
+        {action.decl_specifiers();}
+        declaration_specifiers[true, false] 
+        {action.end_decl_specifiers();}
+
+        ((COMMA!)? init_declarator_list[kind])?
         (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
@@ -1991,6 +2002,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                 {enclosingClass = saveClass;}
                 {action.end_class_body(LT(1));}
                 {action.end_class_declaration(LT(1));}
+                {action.end_simple_declaration(LT(1));}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
                 | RCURLY )
             |
@@ -2005,6 +2017,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
             {endClassDefinition();}
             {action.end_class_body(LT(1));}
             {action.end_class_declaration(LT(1));}
+            {action.end_simple_declaration(LT(1));}
             ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
             | RCURLY )
             {enclosingClass = saveClass;}
@@ -2106,7 +2119,8 @@ qualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
-		{qitem.append(((APTToken)id).getTextID());}
+                {action.using_directive(action.USING_DIRECTIVE__IDENT, id);}
+		{qitem.append(id.getText());}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
@@ -2183,7 +2197,7 @@ class_qualified_id returns [String q = ""]
 ;
 
 typeID
-	:	{isTypeName(((APTToken)LT(1)).getTextID())}?
+	:	{isTypeName((LT(1).getText()))}?
 		IDENT
 	;
 
@@ -3581,12 +3595,17 @@ throw_statement
 using_declaration
 	{String qid="";}
 	:	u:LITERAL_using
-		(LITERAL_namespace qid = qualified_id	// Using-directive
+		(ns:LITERAL_namespace 
+                    {action.using_directive(u, ns);}
+                    {if(LA(1) == SCOPE) {action.using_directive(action.USING_DIRECTIVE__SCOPE, LT(1));}} 
+                    qid = qualified_id	// Using-directive
+
 		    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
 		|
                     qid = unqualified_id				// Using-declaration
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
+                {action.end_using_directive(LT(0));}
 		SEMICOLON! //{end_of_stmt();}
 	;
 
@@ -4140,6 +4159,7 @@ scope_override_part[int level] returns [String s = ""]
     }
     :
         id:IDENT (LESSTHAN template_argument_list GREATERTHAN)? SCOPE
+        {action.simple_template_id_or_ident(id);}
         {if(level == 0) {action.id(id);} }
         (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         {
