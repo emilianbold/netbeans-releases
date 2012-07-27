@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -342,9 +343,11 @@ public class AstRenderer {
                     currentNamespace.addDeclaration(alias);
                     break;
                 case CPPTokenTypes.CSM_USING_DIRECTIVE: {
-                    UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
-                    container.addDeclaration(using);
-                    currentNamespace.addDeclaration(using);
+                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                        UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
+                        container.addDeclaration(using);
+                        currentNamespace.addDeclaration(using);
+                    }
                     break;
                 }
                 case CPPTokenTypes.CSM_USING_DECLARATION: {
@@ -1929,9 +1932,11 @@ public class AstRenderer {
                 currentNamespace.addDeclaration(alias);
                 return true;
             case CPPTokenTypes.CSM_USING_DIRECTIVE: {
-                UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
-                container.addDeclaration(using);
-                currentNamespace.addDeclaration(using);
+                if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                    UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
+                }
                 return true;
             }
             case CPPTokenTypes.CSM_USING_DECLARATION: {

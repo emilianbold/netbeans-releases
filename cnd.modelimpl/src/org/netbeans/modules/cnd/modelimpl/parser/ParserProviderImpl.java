@@ -128,7 +128,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             parserContainer = object;
             CppParserActionEx cppCallback = (CppParserActionEx)callback;
             if (cppCallback == null) {
-                if(TraceFlags.CPP_PARSER_ACTION) {
+                if(TraceFlags.CPP_PARSER_ACTION && ((FileImpl)params.getMainFile()).getParsingFileContent() != null) {
                     cppCallback = new CppParserActionImpl(params);
                 } else {
                     cppCallback = new CppParserEmptyActionImpl(file);
