@@ -265,4 +265,9 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     public void setInfoNode(Node infoNode) {
         this.infoNode = infoNode;
     }
+
+    @Override
+    public void closed() {
+        resultPanel.closed();
+    }
 }
