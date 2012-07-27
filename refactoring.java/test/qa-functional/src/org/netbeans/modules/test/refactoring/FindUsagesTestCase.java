@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.test.refactoring;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -173,5 +174,14 @@ public class FindUsagesTestCase extends RefactoringTestCase {
      */
     public static void setBrowseChild(boolean browseChild) {
         FindUsagesTestCase.browseChild = browseChild;
+    }
+
+@Override
+    public File getGoldenFile() {
+        if (System.getProperty("os.name").contains("Linux")) {
+            return getGoldenFile(this.getName() + "Lin.pass");
+        } else {
+            return getGoldenFile(this.getName() + ".pass");
+        }
     }
 }

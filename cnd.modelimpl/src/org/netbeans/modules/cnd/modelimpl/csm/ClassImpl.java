@@ -430,8 +430,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private CsmFile file;
         private final FileContent fileContent;
-        private int startOffset;
-        private int endOffset;
+        private int startOffset = 0;
+        private int endOffset = 0;
         private CsmObjectBuilder parent;
 
         private NamespaceImpl namespace;
@@ -517,7 +517,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         
         public ClassImpl create() {
             ClassImpl cls = getClassDefinitionInstance();
-            if (cls == null && name != null && getScope() != null) {
+            if (cls == null && name != null && getScope() != null && endOffset != 0) {
                 NameHolder nameHolder = NameHolder.createName(name, nameStartOffset, nameEndOffset);
                 cls = new ClassImpl(nameHolder, kind, file, startOffset, endOffset);
                 cls.init3(getScope(), true);

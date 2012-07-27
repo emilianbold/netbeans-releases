@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.versioning.history;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -302,13 +303,13 @@ class SummaryCellRenderer implements ListCellRenderer {
             if (c != null) StyleConstants.setForeground(hiliteStyle, c);
 
             textPane.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
-            setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
+            setLayout(new BorderLayout(0, 0));
             setBorder(BorderFactory.createMatteBorder(3, 0, 0, 0, UIManager.getColor("List.background"))); //NOI18N
             
-            add(expandButton);
+            add(expandButton, BorderLayout.WEST);
             expandButton.setMaximumSize(expandButton.getPreferredSize());
             expandButton.setMinimumSize(expandButton.getPreferredSize());
-            add(textPane);
+            add(textPane, BorderLayout.CENTER);
         }
 
         @Override
