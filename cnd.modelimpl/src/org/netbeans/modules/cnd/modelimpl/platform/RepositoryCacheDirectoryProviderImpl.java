@@ -42,8 +42,12 @@
 package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.io.File;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryCacheDirectoryProvider;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -54,18 +58,41 @@ import org.openide.util.lookup.ServiceProvider;
 public class RepositoryCacheDirectoryProviderImpl implements RepositoryCacheDirectoryProvider  {
 
     @Override
-    public File getUnitCacheBaseDirectory(CharSequence unitName) {
-        CharSequence projectName = ProjectBase.getProjectName(unitName);
-        if (projectName != null) {
-            File projectDir = new File(projectName + "/nbproject"); //NOI18N
-            if (projectDir.exists()) {
-                File cache = new File(projectDir + "/private/cache"); //NOI18N
-                cache.mkdirs();
-                if (cache.exists()) {
-                    return cache;
+    public File getCacheBaseDirectory() {
+        if (TraceFlags.CACHE_IN_PROJECT) {
+            // That's a temporary solution we need to prove the concept
+            // Sure it isn't appropriate to get first NativeProject
+            Collection<NativeProject> projects = NativeProjectRegistry.getDefault().getOpenProjects();
+            if (projects != null && !projects.isEmpty()) {
+                NativeProject np = projects.iterator().next();
+                if (CndFileUtils.isLocalFileSystem(np.getFileSystem())) {
+                    File nbproject = new File(np.getProjectRoot() + "/nbproject/"); //NOI18N
+                    if (nbproject.exists()) {
+                        File cache = new File(nbproject, "private/cache"); //NOI18N
+                        cache.mkdirs();
+                        if (cache.exists()) {
+                            return cache;
+                        }
+                    }
                 }
             }
         }
         return null;
     }
+
+//    @Override
+//    public File getUnitCacheBaseDirectory(CharSequence unitName) {
+//        CharSequence projectName = ProjectBase.getProjectName(unitName);
+//        if (projectName != null) {
+//            File projectDir = new File(projectName + "/nbproject"); //NOI18N
+//            if (projectDir.exists()) {
+//                File cache = new File(projectDir + "/private/cache"); //NOI18N
+//                cache.mkdirs();
+//                if (cache.exists()) {
+//                    return cache;
+//                }
+//            }
+//        }
+//        return null;
+//    }
 }
