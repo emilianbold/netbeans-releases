@@ -491,7 +491,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         protected void println(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
             OutWriter out = out();
             if (out != null) {
-                out.print(text, listener, important, color, false, true);
+                out.print(text, listener, important, color, null, false, true);
             }
         }
     }
@@ -502,7 +502,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         protected void print(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
             OutWriter out = out();
             if (out != null) {
-                out.print(text, listener, important, color, false, false);
+                out.print(text, listener, important, color, null, false, false);
             }
         }
     }
