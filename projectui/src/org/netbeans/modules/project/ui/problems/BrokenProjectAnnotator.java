@@ -273,7 +273,16 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
             curId = eventId;
         }
         if (ol == null) {
-            final OpenProjects opl = OpenProjects.getDefault();
+            final OpenProjects opl;
+            try {
+                opl = OpenProjects.getDefault();
+            } catch (LinkageError le) {
+                //The org.openide.windows.WindowManager.invokeWhenUIReady
+                //causes ExceptionInInitializerError in some unit tests.
+                //Safe to ignore
+                LOG.warning("No OpenProjects instance found."); //NOI18N
+                return false;
+            }
             if (listensOnOpenProjects.compareAndSet(false, true)) {
                 opl.addPropertyChangeListener(WeakListeners.propertyChange(this, opl));
             }
