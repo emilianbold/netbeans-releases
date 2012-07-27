@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
 
 /**
@@ -58,9 +59,8 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
     private final boolean optional;
     private final String defaultValue;
 
-    private SDocTypeNamedElement(SDocElementType type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description,
-            boolean optional, String defaultValue) {
+    private SDocTypeNamedElement(SDocElementType type, List<Type> declaredTypes, String description,
+            DocIdentifier paramName, boolean optional, String defaultValue) {
         super(type, declaredTypes, description);
         this.paramName = paramName;
         this.optional = optional;
@@ -76,9 +76,9 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param optional flag if the parameter is optional
      * @param defaultValue default value of the parameter
      */
-    public static SDocTypeNamedElement create(SDocElementType type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes,
-            String description,  DocIdentifier paramName, boolean optional, String defaultValue) {
-        return new SDocTypeNamedElement(type, paramName, declaredTypes, description, optional, defaultValue);
+    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description,
+            DocIdentifier paramName, boolean optional, String defaultValue) {
+        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, optional, defaultValue);
     }
 
     /**
@@ -92,9 +92,9 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param optional flag if the parameter is optional
      */
     public static SDocTypeNamedElement create(SDocElementType type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description,
+            List<Type> declaredTypes, String description,
             boolean optional) {
-        return new SDocTypeNamedElement(type, paramName, declaredTypes, description, optional, null);
+        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, optional, null);
     }
 
     /**
@@ -107,8 +107,8 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramDescription description of the parameter
      */
     public static SDocTypeNamedElement create(SDocElementType type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description) {
-        return new SDocTypeNamedElement(type, paramName, declaredTypes, description, false, null);
+            List<Type> declaredTypes, String description) {
+        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, false, null);
     }
 
     /**
@@ -121,7 +121,7 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramDescription description of the parameter
      */
     public static SDocTypeNamedElement createWithNameDiagnostics(SDocElementType type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description) {
+            List<Type> declaredTypes, String description) {
         int nameOffset = paramName.getOffset();
         String name = paramName.getName();
         boolean optional = name.matches("\\[.*\\]"); //NOI18N
@@ -135,7 +135,7 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
                 name = name.substring(0, indexOfEqual);
             }
         }
-        return new SDocTypeNamedElement(type, new DocIdentifierImpl(name, nameOffset), declaredTypes, description, optional, defaultValue);
+        return new SDocTypeNamedElement(type, declaredTypes, description, new DocIdentifierImpl(name, nameOffset), optional, defaultValue);
     }
 
 }
