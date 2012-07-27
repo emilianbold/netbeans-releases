@@ -120,6 +120,11 @@ public class GoToRuleSourceAction extends NodeAction {
     }
 
     @Override
+    protected boolean asynchronous() {
+        return true;
+    }
+
+    @Override
     public String getName() {
         return NbBundle.getMessage(GoToRuleSourceAction.class, "GoToRuleAction.displayName"); // NOI18N
     }

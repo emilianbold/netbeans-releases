@@ -111,6 +111,11 @@ public class OpenResourceAction extends NodeAction {
     }
 
     @Override
+    protected boolean asynchronous() {
+        return true;
+    }
+
+    @Override
     public String getName() {
         return NbBundle.getMessage(OpenResourceAction.class, "OpenResourceAction.displayName"); // NOI18N
     }
