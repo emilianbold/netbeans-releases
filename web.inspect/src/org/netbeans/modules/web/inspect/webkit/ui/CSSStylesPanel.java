@@ -52,7 +52,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -62,8 +61,6 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.ModelVisitor;
-import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.RuleEditorTC;
@@ -72,10 +69,10 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
@@ -356,39 +353,19 @@ public class CSSStylesPanel extends JPanel {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            final String selector = CSSUtils.normalizeSelector(rule.getSelector());
             CssCslParserResult result = (CssCslParserResult)resultIterator.getParserResult();
             final Model sourceModel = result.getModel();
-            final AtomicBoolean visitorCancelled = new AtomicBoolean();
             sourceModel.runReadTask(new Model.ModelTask() {
-
                 @Override
                 public void run(StyleSheet styleSheet) {
-                    styleSheet.accept(new ModelVisitor.Adapter() {
-
-                        @Override
-                        public void visitRule(org.netbeans.modules.css.model.api.Rule modelRule) {
-                            if (visitorCancelled.get()) {
-                                return;
-                            }
-                            SelectorsGroup selectorGroup = modelRule.getSelectorsGroup();
-                            CharSequence image = sourceModel.getElementSource(selectorGroup);
-                            String selectorInFile = CSSUtils.normalizeSelector(image.toString());
-                            if (selector.equals(selectorInFile)) {
-                                //found
-                                visitorCancelled.set(true);
-                                controller.setModel(sourceModel);
-                                controller.setRule(modelRule);
-                            }
-                        }
-
-                    });
-                    if (!visitorCancelled.get()) {
-                        // Rule not found
+                    org.netbeans.modules.css.model.api.Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
+                    if (modelRule == null) {
                         controller.setNoRuleState();
+                    } else {
+                        controller.setModel(sourceModel);
+                        controller.setRule(modelRule);
                     }
                 }
-
             });
         }
 

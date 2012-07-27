@@ -46,14 +46,11 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.Rule;
-import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -62,6 +59,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -154,44 +152,25 @@ public class GoToRuleSourceAction extends NodeAction {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            final String selector = CSSUtils.normalizeSelector(rule.getSelector());
             CssCslParserResult result = (CssCslParserResult)resultIterator.getParserResult();
             final Model sourceModel = result.getModel();
-            final AtomicBoolean visitorCancelled = new AtomicBoolean();
             sourceModel.runReadTask(new Model.ModelTask() {
-                
                 @Override
                 public void run(StyleSheet styleSheet) {
-                    styleSheet.accept(new ModelVisitor.Adapter() {
-
-                        @Override
-                        public void visitRule(Rule rule) {
-                            if (visitorCancelled.get()) {
-                                return;
+                    Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
+                    if (modelRule != null) {
+                        final int offset = modelRule.getStartOffset();
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                CSSUtils.open(fob, offset);
                             }
-                            SelectorsGroup selectorGroup = rule.getSelectorsGroup();
-                            CharSequence image = sourceModel.getElementSource(selectorGroup);
-                            String selectorInFile = CSSUtils.normalizeSelector(image.toString());
-                            if (selector.equals(selectorInFile)) {
-                                //found 
-                                visitorCancelled.set(true);
-                                final int offset = rule.getStartOffset();
-                                EventQueue.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        CSSUtils.open(fob, offset);
-                                    }
-                                });
-                            }
-                        }
-                        
-                    }); //model visitor
+                        });
+                    }
                 }
-                
-            }); //model task
-            
+            });
         }
-        
+
     }
 
 }

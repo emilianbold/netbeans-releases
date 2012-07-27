@@ -72,6 +72,8 @@ public class Rule {
      * queries starting with the innermost one, going outwards.
      */
     private List<Media> media;
+    /** Parent stylesheet of the rule. */
+    private StyleSheetBody parentStyleSheet;
 
     /**
      * Creates a new {@code Rule} that corresponds to the given JSONObject.
@@ -179,6 +181,27 @@ public class Rule {
      */
     public List<Media> getMedia() {
         return Collections.unmodifiableList(media);
+    }
+
+    /**
+     * Returns the parent style sheet of the rule. Note that this method
+     * is supported on instances obtained from {@code StyleSheetBody} only.
+     * It returns {@code null} if the {@code Rule} object is obtain by any
+     * other mean.
+     *
+     * @return parent style sheet of the rule or {@code null}.
+     */
+    public StyleSheetBody getParentStyleSheet() {
+        return parentStyleSheet;
+    }
+
+    /**
+     * Sets the parent style sheet of this rule.
+     *
+     * @param parentStyleSheet parent style sheet of this rule.
+     */
+    void setParentStyleSheet(StyleSheetBody parentStyleSheet) {
+        this.parentStyleSheet = parentStyleSheet;
     }
 
 }
