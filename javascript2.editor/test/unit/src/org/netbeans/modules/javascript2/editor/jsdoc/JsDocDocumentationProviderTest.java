@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,7 +53,7 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
+import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -65,20 +66,20 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocDocumentationProviderTest extends JsDocTestBase {
+public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     public JsDocDocumentationProviderTest(String testName) {
         super(testName);
     }
 
-    private static void checkReturnType(Source source, final int offset, final List<? extends Type> expected) throws Exception {
+    private void checkReturnType(Source source, final int offset, final List<? extends Type> expected) throws Exception {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result result = resultIterator.getParserResult();
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
                 if (expected == null) {
                     assertNull(documentationHolder.getReturnType(getNodeForOffset(parserResult, offset)));
                 } else {
@@ -97,7 +98,7 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
                 if (expectedParam == null) {
                     assertNull(documentationHolder.getParameters(getNodeForOffset(parserResult, offset)));
                 } else {
@@ -122,7 +123,7 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
                 assertEquals(expected, documentationHolder.getDocumentation(getNodeForOffset(parserResult, offset)));
             }
         });
@@ -136,7 +137,7 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
                 assertEquals(expected, documentationHolder.isDeprecated(getNodeForOffset(parserResult, offset)));
             }
         });
@@ -150,7 +151,7 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
                 assertTrue(result instanceof JsParserResult);
                 JsParserResult parserResult = (JsParserResult) result;
 
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult);
+                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
                 Set<JsModifier> realModifiers = documentationHolder.getModifiers(getNodeForOffset(parserResult, offset));
                 if (expectedModifiers == null) {
                     assertEquals(0, realModifiers.size());

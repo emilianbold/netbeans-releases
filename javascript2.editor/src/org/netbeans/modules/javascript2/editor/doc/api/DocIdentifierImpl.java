@@ -39,66 +39,63 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc;
+package org.netbeans.modules.javascript2.editor.doc.api;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.Node;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 
 /**
- * Base of class for JsDoc unit tests.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public abstract class JsDocTestBase extends JsTestBase {
+public class DocIdentifierImpl implements DocIdentifier {
 
-    public JsDocTestBase(String testName) {
-        super(testName);
+    private final String name;
+    private final int offset;
+
+    public DocIdentifierImpl(String name, int offset) {
+        this.name = name;
+        this.offset = offset;
+    }
+    
+    @Override
+    public String getName() {
+        return name;
     }
 
-    /**
-     * Gets {@code DocumentationProvider} for given parse result.
-     * @param parserResult parser result of the JS file
-     * @return {@code JsDocDocumentationProvider}
-     */
-    public static JsDocumentationHolder getDocumentationHolder(JsParserResult parserResult) {
-        return new JsDocDocumentationProvider().createDocumentationHolder(parserResult.getSnapshot());
+    @Override
+    public int getOffset() {
+        return offset;
     }
 
-    /**
-     * Gets node for given offset.
-     * @param parserResult parser result of the JS file
-     * @param offset offset of examined node
-     * @return {@code Node} which correspond to given offset
-     */
-    public static Node getNodeForOffset(JsParserResult parserResult, int offset) {
-        Node nearestNode = null;
-        int nearestNodeDistance = Integer.MAX_VALUE;
-        FunctionNode root = parserResult.getRoot();
-        OffsetVisitor offsetVisitor = new OffsetVisitor(offset);
-        root.accept(offsetVisitor);
-        for (Node node : offsetVisitor.getNodes()) {
-            if (offset - node.getStart()  < nearestNodeDistance) {
-                nearestNodeDistance = offset - node.getStart();
-                nearestNode = node;
-            }
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        return nearestNode;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final DocIdentifierImpl other = (DocIdentifierImpl) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.offset != other.offset) {
+            return false;
+        }
+        return true;
     }
 
-
-    /**
-     * Return the offset of the given position, indicated by ^ in the line fragment
-     * from the text got from given Source.
-     * @param source source for counting the offset
-     * @param caretLine line
-     * @return offset of ^ in the given source
-     */
-    public static int getCaretOffset(Source source, String caretLine) {
-        return getCaretOffset(source.createSnapshot().getText().toString(), caretLine);
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 97 * hash + this.offset;
+        return hash;
     }
 
+    @Override
+    public String toString() {
+        return "DocIdentifierImpl[name=" + name + ",offset=" + offset + "]";
+    }
 }
+

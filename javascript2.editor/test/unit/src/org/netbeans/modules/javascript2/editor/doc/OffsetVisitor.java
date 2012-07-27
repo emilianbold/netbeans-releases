@@ -39,63 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.editor.doc;
 
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import com.oracle.nashorn.ir.*;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class DocIdentifierImpl implements DocIdentifier {
-
-    private final String name;
-    private final int offset;
-
-    public DocIdentifierImpl(String name, int offset) {
-        this.name = name;
-        this.offset = offset;
-    }
-    
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public int getOffset() {
-        return offset;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DocIdentifierImpl other = (DocIdentifierImpl) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        if (this.offset != other.offset) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 97 * hash + this.offset;
-        return hash;
-    }
-
-    @Override
-    public String toString() {
-        return "DocIdentifierImpl[name=" + name + ",offset=" + offset + "]";
-    }
-}
-
