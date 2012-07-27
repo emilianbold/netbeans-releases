@@ -69,6 +69,7 @@ import org.openide.util.lookup.ProxyLookup;
         iconBase = MatchedRulesTC.ICON_BASE)
 @TopComponent.Registration(
         mode = "commonpalette", // NOI18N
+        position = 200,
         openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
