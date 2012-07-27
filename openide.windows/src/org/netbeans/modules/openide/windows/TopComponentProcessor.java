@@ -92,25 +92,22 @@ public final class TopComponentProcessor extends LayerGeneratingProcessor {
             }
             String id = info.preferredID().replace('.', '-');
 
-            //#211331 - do not geenerate .settings file if the TC isn't persistent
-            if( info.persistenceType() != TopComponent.PERSISTENCE_NEVER ) {
-                String rootFolder;
-                String[] roles = reg.roles();
-                if (roles.length == 0) {
-                    rootFolder = "Windows2";
-                    generateSettingsAndWstcref(e, rootFolder, id, reg, info);
-                } else {
-                    Set<String> uniqueRoles = new HashSet<String>();
-                    for (String role : roles) {
-                        if (!uniqueRoles.add(role)) {
-                            throw new LayerGenerationException("Duplicate role name found", e, processingEnv, reg);
-                        }
-                        if (role.isEmpty()) {
-                            throw new LayerGenerationException("Unnamed role found", e, processingEnv, reg);
-                        }
-                        rootFolder = "Windows2/Roles/" + role;
-                        generateSettingsAndWstcref(e, rootFolder, id, reg, info);
+            String rootFolder;
+            String[] roles = reg.roles();
+            if (roles.length == 0) {
+                rootFolder = "Windows2";
+                generateSettingsAndWstcref(e, rootFolder, id, reg, info);
+            } else {
+                Set<String> uniqueRoles = new HashSet<String>();
+                for (String role : roles) {
+                    if (!uniqueRoles.add(role)) {
+                        throw new LayerGenerationException("Duplicate role name found", e, processingEnv, reg);
                     }
+                    if (role.isEmpty()) {
+                        throw new LayerGenerationException("Unnamed role found", e, processingEnv, reg);
+                    }
+                    rootFolder = "Windows2/Roles/" + role;
+                    generateSettingsAndWstcref(e, rootFolder, id, reg, info);
                 }
             }
         }
