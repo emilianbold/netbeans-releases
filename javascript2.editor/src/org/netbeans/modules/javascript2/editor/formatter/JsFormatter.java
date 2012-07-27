@@ -551,10 +551,10 @@ public class JsFormatter implements Formatter {
             } else if (!containsEol || style == CodeStyle.WrapStyle.WRAP_NEVER) {
                 if (remove) {
                     return formatContext.remove(start.getOffset(),
-                            end.getOffset()- start.getOffset(), offsetDiff);
-                } else if (start.getText().length() != 1 || start.getKind() == FormatToken.Kind.EOL) {
+                            end.getOffset() - start.getOffset(), offsetDiff);
+                } else if ((end.getOffset() - start.getOffset()) != 1 || start.getKind() == FormatToken.Kind.EOL) {
                     return formatContext.replace(start.getOffset(),
-                            start.getText().toString(), " ", offsetDiff); // NOI18N
+                            end.getOffset() - start.getOffset(), " ", offsetDiff); // NOI18N
                 }
             }
         }
