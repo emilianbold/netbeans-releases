@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.editor.sdoc.elements;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
 
 /**
  * Represents named parameter element.
@@ -57,28 +56,12 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
 
     private final DocIdentifier paramName;
     private final boolean optional;
-    private final String defaultValue;
 
     private SDocTypeNamedElement(SDocElementType type, List<Type> declaredTypes, String description,
-            DocIdentifier paramName, boolean optional, String defaultValue) {
+            DocIdentifier paramName, boolean optional) {
         super(type, declaredTypes, description);
         this.paramName = paramName;
         this.optional = optional;
-        this.defaultValue = defaultValue;
-    }
-
-    /**
-     * Creates named parameter element.
-     * @param type type of the element
-     * @param declaredTypes type of the parameter
-     * @param description description of the parameter
-     * @param paramName name of the parameter
-     * @param optional flag if the parameter is optional
-     * @param defaultValue default value of the parameter
-     */
-    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description,
-            DocIdentifier paramName, boolean optional, String defaultValue) {
-        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, optional, defaultValue);
     }
 
     /**
@@ -86,15 +69,13 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * <p>
      * This creates optional parameter with no default value.
      * @param type type of the element
-     * @param paramName name of the parameter
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
+     * @param paramName name of the parameter
      * @param optional flag if the parameter is optional
      */
-    public static SDocTypeNamedElement create(SDocElementType type, DocIdentifier paramName,
-            List<Type> declaredTypes, String description,
-            boolean optional) {
-        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, optional, null);
+    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier paramName, boolean optional) {
+        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, optional);
     }
 
     /**
@@ -102,40 +83,12 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * <p>
      * This creates mandatory parameter with no default value.
      * @param type type of the element
-     * @param paramName name of the parameter
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
-     */
-    public static SDocTypeNamedElement create(SDocElementType type, DocIdentifier paramName,
-            List<Type> declaredTypes, String description) {
-        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, false, null);
-    }
-
-    /**
-     * Creates named parameter element.
-     * <p>
-     * Also do diagnostics on paramName if the parameter isn't optional and with default value.
-     * @param type type of the element
      * @param paramName name of the parameter
-     * @param paramTypes type of the parameter
-     * @param paramDescription description of the parameter
      */
-    public static SDocTypeNamedElement createWithNameDiagnostics(SDocElementType type, DocIdentifier paramName,
-            List<Type> declaredTypes, String description) {
-        int nameOffset = paramName.getOffset();
-        String name = paramName.getName();
-        boolean optional = name.matches("\\[.*\\]"); //NOI18N
-        String defaultValue = null;
-        if (optional) {
-            nameOffset++;
-            name = name.substring(1, name.length() - 1);
-            int indexOfEqual = name.indexOf("=");
-            if (indexOfEqual != -1) {
-                defaultValue = name.substring(indexOfEqual + 1);
-                name = name.substring(0, indexOfEqual);
-            }
-        }
-        return new SDocTypeNamedElement(type, declaredTypes, description, new DocIdentifierImpl(name, nameOffset), optional, defaultValue);
+    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier paramName) {
+        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, false);
     }
 
 }
