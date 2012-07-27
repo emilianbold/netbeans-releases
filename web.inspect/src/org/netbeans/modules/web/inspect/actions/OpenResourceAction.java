@@ -41,14 +41,10 @@
  */
 package org.netbeans.modules.web.inspect.actions;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.actions.Openable;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
@@ -67,28 +63,17 @@ public class OpenResourceAction extends NodeAction {
     protected void performAction(Node[] activatedNodes) {
         for (int i=0; i<activatedNodes.length; i++) {
             Resource resource = activatedNodes[i].getLookup().lookup(Resource.class);
-            String name = resource.getName();
-            try {
-                URI uri = new URI(name);
-                if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
-                    uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
-                }
-                File file = new File(uri);
-                file = FileUtil.normalizeFile(file);
-                FileObject fob = FileUtil.toFileObject(file);
-                if (fob != null) {
+            FileObject fob = resource.toFileObject();
+            if (fob != null) {
+                try {
                     DataObject dob = DataObject.find(fob);
                     Openable openable = dob.getLookup().lookup(Openable.class);
                     if (openable != null) {
                         openable.open();
                     }
+                } catch (DataObjectNotFoundException ex) {
+                    Logger.getLogger(OpenResourceAction.class.getName()).log(Level.INFO, null, ex);
                 }
-            } catch (URISyntaxException ex) {
-                Logger.getLogger(OpenResourceAction.class.getName()).log(Level.INFO, null, ex);
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(OpenResourceAction.class.getName()).log(Level.INFO, null, ex);
-            } catch (DataObjectNotFoundException ex) {
-                Logger.getLogger(OpenResourceAction.class.getName()).log(Level.INFO, null, ex);
             }
         }
     }
@@ -100,10 +85,7 @@ public class OpenResourceAction extends NodeAction {
         }
         for (int i=0; i<activatedNodes.length; i++) {
             Resource resource = activatedNodes[i].getLookup().lookup(Resource.class);
-            if (resource == null || resource.getName() == null) {
-                return false;
-            }
-            if (!resource.getName().startsWith("file://")) { // NOI18N
+            if (resource.toFileObject() == null) {
                 return false;
             }
         }

@@ -47,9 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -77,7 +74,6 @@ import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -257,21 +253,12 @@ public class CSSStylesPanel extends JPanel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        boolean fileResource = (resourceName == null) ? false : resourceName.startsWith("file://"); // NOI18N
-                        if (fileResource && rules.size() == 1) {
+                        FileObject fob = new Resource(resourceName).toFileObject();
+                        if ((fob != null) && (rules.size() == 1)) {
                             Rule rule = rules.iterator().next();
                             try {
-                                URI uri = new URI(resourceName);
-                                if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
-                                    uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
-                                }
-                                File file = new File(uri);
-                                file = FileUtil.normalizeFile(file);
-                                FileObject fob = FileUtil.toFileObject(file);
                                 Source source = Source.create(fob);
                                 ParserManager.parse(Collections.singleton(source), new RuleEditorTask(rule, controller));
-                            } catch (URISyntaxException ex) {
-                                Logger.getLogger(CSSStylesPanel.class.getName()).log(Level.INFO, null, ex);
                             } catch (ParseException ex) {
                                 Logger.getLogger(CSSStylesPanel.class.getName()).log(Level.INFO, null, ex);
                             }

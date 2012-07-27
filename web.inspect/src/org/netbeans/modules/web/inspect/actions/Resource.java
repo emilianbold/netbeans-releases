@@ -41,6 +41,14 @@
  */
 package org.netbeans.modules.web.inspect.actions;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 /**
  * Descriptor of a resource (basically a typed wrapper of a {@code String}
  * suitable for inclusion in a lookup).
@@ -67,6 +75,31 @@ public final class Resource {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns a {@code FileObject} that corresponds to this resource.
+     *
+     * @return {@code FileObject} that corresponds to this resource
+     * or {@code null} if the resource doesn't correspond to a file
+     * or if the corresponding {@code FileObject} cannot be found.
+     */
+    public FileObject toFileObject() {
+        if (name == null || !name.startsWith("file://")) {
+            return null;
+        }
+        try {
+            URI uri = new URI(name);
+            if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
+                uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
+            }
+            File file = new File(uri);
+            file = FileUtil.normalizeFile(file);
+            return FileUtil.toFileObject(file);
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(Resource.class.getName()).log(Level.INFO, null, ex);
+        }
+        return null;
     }
 
 }

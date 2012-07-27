@@ -42,9 +42,6 @@
 package org.netbeans.modules.web.inspect.webkit.actions;
 
 import java.awt.EventQueue;
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,8 +53,8 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.CSSUtils;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -74,19 +71,10 @@ public class GoToNodeSourceAction extends NodeAction  {
         org.netbeans.modules.web.webkit.debugging.api.dom.Node node = activatedNodes[0]
                 .getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
         String documentURL = getDocumentURL(node);
+        FileObject fob = new Resource(documentURL).toFileObject();
         try {
-            URI uri = new URI(documentURL);
-            // 208252: Workaround for file://localhost/<path> URIs that appear on Mac
-            if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
-                uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
-            }
-            File file = new File(uri);
-            file = FileUtil.normalizeFile(file);
-            FileObject fob = FileUtil.toFileObject(file);
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToNodeTask(node, fob));
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(GoToNodeSourceAction.class.getName()).log(Level.INFO, null, ex);
         } catch (ParseException ex) {
             Logger.getLogger(GoToNodeSourceAction.class.getName()).log(Level.INFO, null, ex);
         }
@@ -101,7 +89,7 @@ public class GoToNodeSourceAction extends NodeAction  {
                 return false;
             }
             String documentURL = getDocumentURL(node);
-            if (documentURL == null || !documentURL.startsWith("file://")) { // NOI18N
+            if (new Resource(documentURL).toFileObject() == null) {
                 return false;
             }
         }

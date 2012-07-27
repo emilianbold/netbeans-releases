@@ -42,9 +42,6 @@
 package org.netbeans.modules.web.inspect.webkit.actions;
 
 import java.awt.EventQueue;
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,7 +58,6 @@ import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -81,19 +77,10 @@ public class GoToRuleSourceAction extends NodeAction {
         org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                 lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
         Resource resource = lookup.lookup(Resource.class);
-        String resourceName = resource.getName();
+        FileObject fob = resource.toFileObject();
         try {
-            URI uri = new URI(resourceName);
-            if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
-                uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
-            }
-            File file = new File(uri);
-            file = FileUtil.normalizeFile(file);
-            FileObject fob = FileUtil.toFileObject(file);
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToRuleTask(rule, fob));
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
         } catch (ParseException ex) {
             Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
         }
@@ -104,11 +91,7 @@ public class GoToRuleSourceAction extends NodeAction {
         if (activatedNodes.length == 1) {
             Lookup lookup = activatedNodes[0].getLookup();
             Resource resource = lookup.lookup(Resource.class);
-            if (resource == null) {
-                return false;
-            }
-            String resourceName = resource.getName();
-            if (resourceName == null || !resourceName.startsWith("file://")) { // NOI18N
+            if (resource.toFileObject() == null) {
                 return false;
             }
             org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =

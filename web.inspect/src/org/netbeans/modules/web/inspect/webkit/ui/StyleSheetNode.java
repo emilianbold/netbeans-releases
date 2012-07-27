@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.web.inspect.webkit.ui;
 
-import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -94,22 +91,14 @@ public class StyleSheetNode extends AbstractNode {
     private void updateDisplayName() {
         String sourceURL = header.getSourceURL();
         String displayName = sourceURL;
-        if (sourceURL != null && sourceURL.startsWith("file://")) { // NOI18N
-            try {
-                URI uri = new URI(sourceURL);
-                if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
-                    uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
-                }
-                Project project = FileOwnerQuery.getOwner(uri);
-                if (project != null) {
-                    FileObject projectDir = project.getProjectDirectory();
-                    File file = new File(uri);
-                    file = FileUtil.normalizeFile(file);
-                    FileObject fob = FileUtil.toFileObject(file);
-                    String relativePath = FileUtil.getRelativePath(projectDir, fob);
-                    displayName = relativePath;
-                }
-            } catch (URISyntaxException usex) {}
+        FileObject fob = new Resource(sourceURL).toFileObject();
+        if (fob != null) {
+            Project project = FileOwnerQuery.getOwner(fob);
+            if (project != null) {
+                FileObject projectDir = project.getProjectDirectory();
+                String relativePath = FileUtil.getRelativePath(projectDir, fob);
+                displayName = relativePath;
+            }
         }
         String title = header.getTitle();
         if (title != null && !title.trim().isEmpty()) {
