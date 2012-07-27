@@ -76,11 +76,11 @@ public class JsDocElementUtils {
             case LINK:
                 return LinkElement.create(type, new NamePath(tagDescription));
             case NAMED_PARAMETER:
-                return createParameterElement(type, tagDescription, true, descStartOffset);
+                return createParameterElement(type, tagDescription, descStartOffset);
             case SIMPLE:
                 return SimpleElement.create(type);
             case UNNAMED_PARAMETER:
-                return createParameterElement(type, tagDescription, false, descStartOffset);
+                return createParameterElement(type, tagDescription, descStartOffset);
             default:
                 // unknown jsDoc element type
                 return DescriptionElement.create(type, tagDescription);
@@ -103,7 +103,7 @@ public class JsDocElementUtils {
     }
 
     private static ParameterElement createParameterElement(JsDocElement.Type elementType,
-            String elementText, boolean named, int descStartOffset) {
+            String elementText, int descStartOffset) {
         int typeOffset = -1, nameOffset = -1;
         String types = "", desc = ""; //NOI18N
         StringBuilder name = new StringBuilder();
@@ -124,7 +124,7 @@ public class JsDocElementUtils {
             }
 
             // get name value (mandatory part)
-            if (parts.length > process && named) {
+            if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
                 nameOffset = descStartOffset + elementText.indexOf(parts[process]);
                 name.append(parts[process].trim());
                 process++;
@@ -142,7 +142,7 @@ public class JsDocElementUtils {
             desc = sb.toString().trim();
         }
 
-        if (named) {
+        if (elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
             return NamedParameterElement.createWithNameDiagnostics(elementType,
                     new DocIdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
         } else {
