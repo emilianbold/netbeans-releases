@@ -408,4 +408,8 @@ public abstract class BasicAbstractResultsPanel
             textDetail.showDetail(TextDetail.DH_GOTO);
         }
     }
+
+    public void closed() {
+        resultsOutlineSupport.closed();
+    }
 }
