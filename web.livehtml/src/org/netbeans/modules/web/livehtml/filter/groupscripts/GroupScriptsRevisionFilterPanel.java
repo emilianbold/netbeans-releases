@@ -121,11 +121,6 @@ public class GroupScriptsRevisionFilterPanel extends RevisionFilterPanel<GroupSc
     }
 
     @Override
-    public boolean canProcess(FilteredAnalysis filteredAnalysis) {
-        return filteredAnalysis == null || filteredAnalysis instanceof GroupScriptsFilteredAnalysis;
-    }
-
-    @Override
     public void setFilteredAnalysis(GroupScriptsFilteredAnalysis filteredAnalysis) {
         if (filteredAnalysis == null || filteredAnalysis.getRevisionFilter() == null) {
             clear();

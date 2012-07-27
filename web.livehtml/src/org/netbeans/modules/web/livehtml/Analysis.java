@@ -85,8 +85,9 @@ public class Analysis implements Comparable<Analysis> {
     private Date created = new Date();
     private Date finished = null;
 
-    private File root;
+    private File rootDirectory;
     private List<String> timeStamps = new ArrayList<String>();
+    
     private String dataToStore = null;
     private Diff lastDiff;
     private boolean lastChangeWasNotReal = false;
@@ -97,12 +98,12 @@ public class Analysis implements Comparable<Analysis> {
         this(AnalysisStorage.getInstance().getChangesStorageRoot(AnalysisStorage.getInstance().getStorageRoot()));
     }
 
-    protected Analysis(File root) {
-        this.root = root;
+    protected Analysis(File rootDirectory) {
+        this.rootDirectory = rootDirectory;
     }
 
     protected void store(String type, String timestamp, String content) {
-        File storeFile = new File(getRoot(), timestamp + "." + type);
+        File storeFile = new File(getRootDirectory(), timestamp + "." + type);
         storeFile.deleteOnExit();
         try {
             assert !storeFile.exists() : "File should not exist yet! storeFile=" + storeFile;
@@ -150,7 +151,7 @@ public class Analysis implements Comparable<Analysis> {
     }
     
     protected StringBuilder read(String type, String timestamp) {
-        File storeFile = new File(getRoot(), timestamp + "." + type);
+        File storeFile = new File(getRootDirectory(), timestamp + "." + type);
         if (!storeFile.exists()) {
             return null;
         }
@@ -264,8 +265,8 @@ public class Analysis implements Comparable<Analysis> {
         this.lastChangeWasNotReal = lastChangeWasNotReal;
     }
 
-    protected File getRoot() {
-        return root;
+    protected File getRootDirectory() {
+        return rootDirectory;
     }
 
     private Diff getLastDiff() {
@@ -361,7 +362,7 @@ public class Analysis implements Comparable<Analysis> {
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         } catch (Throwable t) {
-            throw new RuntimeException("Cannot parse " + getRoot().getAbsolutePath() + " [" + timestamp + "," + previousTimestamp + "]", t);
+            throw new RuntimeException("Cannot parse " + getRootDirectory().getAbsolutePath() + " [" + timestamp + "," + previousTimestamp + "]", t);
         }
     }
     

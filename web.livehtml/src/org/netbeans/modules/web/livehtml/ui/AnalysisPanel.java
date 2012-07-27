@@ -643,10 +643,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
         
         RevisionFilterPanel revisionFilterPanel = new GroupScriptsRevisionFilterPanel();
         revisionFilterPanel.setAnalysis(selectedAnalysis);
-        
-        if (revisionFilterPanel.canProcess(filteredAnalysis)) {
-            revisionFilterPanel.setFilteredAnalysis(filteredAnalysis);
-        }
+        revisionFilterPanel.setFilteredAnalysis(filteredAnalysis);
         
         DialogDescriptor dialogDescriptor = new DialogDescriptor(revisionFilterPanel, "Revision filter");
         
