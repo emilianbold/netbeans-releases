@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.editor.doc.api;
 
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 
