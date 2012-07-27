@@ -51,6 +51,7 @@ import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
 
 /**
  *
@@ -58,7 +59,7 @@ import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
  */
 public class SDocComment extends JsComment {
 
-    private final Map<SDocElement.Type, List<SDocElement>> tags = new EnumMap<SDocElement.Type, List<SDocElement>>(SDocElement.Type.class);
+    private final Map<SDocElementType, List<SDocElement>> tags = new EnumMap<SDocElementType, List<SDocElement>>(SDocElementType.class);
 
     public SDocComment(OffsetRange offsetRange, List<SDocElement> elements) {
         super(offsetRange);

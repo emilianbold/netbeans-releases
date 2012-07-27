@@ -76,11 +76,11 @@ public class JsDocElementUtils {
             case LINK:
                 return LinkElement.create(type, new NamePath(tagDescription));
             case NAMED_PARAMETER:
-                return createParameterElement(type, tagDescription, true, descStartOffset);
+                return createParameterElement(type, tagDescription, descStartOffset);
             case SIMPLE:
                 return SimpleElement.create(type);
             case UNNAMED_PARAMETER:
-                return createParameterElement(type, tagDescription, false, descStartOffset);
+                return createParameterElement(type, tagDescription, descStartOffset);
             default:
                 // unknown jsDoc element type
                 return DescriptionElement.create(type, tagDescription);
@@ -89,21 +89,21 @@ public class JsDocElementUtils {
 
     /**
      * Gets list of {@link Type}s parsed from given string.
-     * @param typesString string to be parsed for types
-     * @param offset offset of the typesString in the file
-     * @return list of {@code type}s
+     * @param textToParse string to be parsed for types
+     * @param offset offset of the textToParse in the file
+     * @return list of {@code Type}s
      */
-    public static List<Type> parseTypes(String typesString, int offset) {
+    public static List<Type> parseTypes(String textToParse, int offset) {
         List<Type> types = new LinkedList<Type>();
-        String[] typesArray = typesString.split("[|]"); //NOI18N
+        String[] typesArray = textToParse.split("[|]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeImpl(string, offset + typesString.indexOf(string)));
+            types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
         }
         return types;
     }
 
     private static ParameterElement createParameterElement(JsDocElement.Type elementType,
-            String elementText, boolean named, int descStartOffset) {
+            String elementText, int descStartOffset) {
         int typeOffset = -1, nameOffset = -1;
         String types = "", desc = ""; //NOI18N
         StringBuilder name = new StringBuilder();
@@ -124,7 +124,7 @@ public class JsDocElementUtils {
             }
 
             // get name value (mandatory part)
-            if (parts.length > process && named) {
+            if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
                 nameOffset = descStartOffset + elementText.indexOf(parts[process]);
                 name.append(parts[process].trim());
                 process++;
@@ -142,7 +142,7 @@ public class JsDocElementUtils {
             desc = sb.toString().trim();
         }
 
-        if (named) {
+        if (elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
             return NamedParameterElement.createWithNameDiagnostics(elementType,
                     new DocIdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
         } else {

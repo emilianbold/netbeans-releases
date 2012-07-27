@@ -52,7 +52,7 @@ public class SDocIdentifierElement extends SDocBaseElement {
 
     private final String identifier;
 
-    private SDocIdentifierElement(Type type, String identifier) {
+    private SDocIdentifierElement(SDocElementType type, String identifier) {
         super(type);
         this.identifier = identifier;
     }
@@ -63,7 +63,7 @@ public class SDocIdentifierElement extends SDocBaseElement {
      * @param type element type (tag), never null
      * @param description identifier of the element, never null
      */
-    public static SDocIdentifierElement create(Type type, String identifier) {
+    public static SDocIdentifierElement create(SDocElementType type, String identifier) {
         return new SDocIdentifierElement(type, identifier);
     }
 
