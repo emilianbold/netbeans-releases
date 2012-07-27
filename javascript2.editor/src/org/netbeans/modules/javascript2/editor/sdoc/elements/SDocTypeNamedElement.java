@@ -70,15 +70,14 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
     /**
      * Creates named parameter element.
      * @param type type of the element
-     * @param paramName name of the parameter
      * @param declaredTypes type of the parameter
      * @param description description of the parameter
+     * @param paramName name of the parameter
      * @param optional flag if the parameter is optional
      * @param defaultValue default value of the parameter
      */
-    public static SDocTypeNamedElement create(SDocElement.Type type, DocIdentifier paramName,
-            List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description,
-            boolean optional, String defaultValue) {
+    public static SDocTypeNamedElement create(SDocElement.Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes,
+            String description,  DocIdentifier paramName, boolean optional, String defaultValue) {
         return new SDocTypeNamedElement(type, paramName, declaredTypes, description, optional, defaultValue);
     }
 
