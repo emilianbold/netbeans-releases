@@ -41,19 +41,21 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
+import org.netbeans.modules.javascript2.editor.model.Type;
+
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class SDocBaseElement implements SDocElement {
 
-    private final Type type;
+    private final SDocElementType type;
 
     /**
      * Creates new element.
      * @param type type of the element to create
      */
-    public SDocBaseElement(Type type) {
+    public SDocBaseElement(SDocElementType type) {
         this.type = type;
     }
 
@@ -62,7 +64,7 @@ public class SDocBaseElement implements SDocElement {
      * @return element type
      */
     @Override
-    public Type getType() {
+    public SDocElementType getType() {
         return type;
     }
 

@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
  * Represents parameter element which does not need any parameter name.
@@ -52,11 +53,11 @@ import java.util.List;
  */
 public class SDocTypeDescribedElement extends SDocTypeSimpleElement {
 
-    protected final String paramDescription;
+    protected final String typeDescription;
 
-    protected SDocTypeDescribedElement(SDocElement.Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description) {
+    protected SDocTypeDescribedElement(SDocElementType type, List<Type>declaredTypes, String description) {
         super(type, declaredTypes);
-        this.paramDescription = description;
+        this.typeDescription = description;
     }
 
     /** Creates type described element.
@@ -64,7 +65,7 @@ public class SDocTypeDescribedElement extends SDocTypeSimpleElement {
      * @param paramTypes type of the parameter
      * @param description description of the parameter
      */
-    public static SDocTypeDescribedElement create(Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description) {
+    public static SDocTypeDescribedElement create(SDocElementType type, List<Type> declaredTypes, String description) {
         return new SDocTypeDescribedElement(type, declaredTypes, description);
     }
 
@@ -72,8 +73,8 @@ public class SDocTypeDescribedElement extends SDocTypeSimpleElement {
      * Gets the description of the parameter.
      * @return parameter description
      */
-    public String getParamDescription() {
-        return paramDescription;
+    public String getTypeDescription() {
+        return typeDescription;
     }
 
 }

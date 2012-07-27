@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
  * Represents sDoc elements with type declaration purpose.
@@ -52,9 +53,9 @@ import java.util.List;
  */
 public class SDocTypeSimpleElement extends SDocBaseElement {
 
-    protected final List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes;
+    protected final List<Type> declaredTypes;
 
-    protected SDocTypeSimpleElement(SDocElement.Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes) {
+    protected SDocTypeSimpleElement(SDocElementType type, List<Type> declaredTypes) {
         super(type);
         this.declaredTypes = declaredTypes;
     }
@@ -62,7 +63,7 @@ public class SDocTypeSimpleElement extends SDocBaseElement {
     /**
      * Creates new {@code SDocTypeSimpleElement}.
      */
-    public static SDocTypeSimpleElement create(SDocElement.Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes) {
+    public static SDocTypeSimpleElement create(SDocElementType type, List<Type> declaredTypes) {
         return new SDocTypeSimpleElement(type, declaredTypes);
     }
 
@@ -70,7 +71,7 @@ public class SDocTypeSimpleElement extends SDocBaseElement {
      * Gets the type declared by this element.
      * @return declared type
      */
-    public List<org.netbeans.modules.javascript2.editor.model.Type> getDeclaredTypes() {
+    public List<Type> getDeclaredTypes() {
         return declaredTypes;
     }
 

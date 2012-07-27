@@ -58,7 +58,7 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
     private final boolean optional;
     private final String defaultValue;
 
-    private SDocTypeNamedElement(SDocElement.Type type, DocIdentifier paramName,
+    private SDocTypeNamedElement(SDocElementType type, DocIdentifier paramName,
             List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description,
             boolean optional, String defaultValue) {
         super(type, declaredTypes, description);
@@ -76,7 +76,7 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param optional flag if the parameter is optional
      * @param defaultValue default value of the parameter
      */
-    public static SDocTypeNamedElement create(SDocElement.Type type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes,
+    public static SDocTypeNamedElement create(SDocElementType type, List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes,
             String description,  DocIdentifier paramName, boolean optional, String defaultValue) {
         return new SDocTypeNamedElement(type, paramName, declaredTypes, description, optional, defaultValue);
     }
@@ -91,7 +91,7 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramDescription description of the parameter
      * @param optional flag if the parameter is optional
      */
-    public static SDocTypeNamedElement create(SDocElement.Type type, DocIdentifier paramName,
+    public static SDocTypeNamedElement create(SDocElementType type, DocIdentifier paramName,
             List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description,
             boolean optional) {
         return new SDocTypeNamedElement(type, paramName, declaredTypes, description, optional, null);
@@ -106,7 +106,7 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static SDocTypeNamedElement create(SDocElement.Type type, DocIdentifier paramName,
+    public static SDocTypeNamedElement create(SDocElementType type, DocIdentifier paramName,
             List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description) {
         return new SDocTypeNamedElement(type, paramName, declaredTypes, description, false, null);
     }
@@ -120,7 +120,7 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static SDocTypeNamedElement createWithNameDiagnostics(SDocElement.Type type, DocIdentifier paramName,
+    public static SDocTypeNamedElement createWithNameDiagnostics(SDocElementType type, DocIdentifier paramName,
             List<org.netbeans.modules.javascript2.editor.model.Type> declaredTypes, String description) {
         int nameOffset = paramName.getOffset();
         String name = paramName.getName();
