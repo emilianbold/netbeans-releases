@@ -56,7 +56,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import org.jdesktop.swingx.painter.BusyPainter;
-import org.jdesktop.swingx.painter.PainterIcon;
+import org.jdesktop.swingx.icon.PainterIcon;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;

@@ -1437,7 +1437,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     @Override
                     public void actionPerformed (ActionEvent e) {
                         FetchAction action = SystemAction.get(FetchAction.class);
-                        action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs());
+                        action.fetch(currRepository, uri.uri, remote.getFetchRefSpecs(), null);
                     }
                 });
             }

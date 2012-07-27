@@ -44,8 +44,11 @@
 package org.netbeans.modules.mercurial.ui.branch;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import java.util.MissingResourceException;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
@@ -57,13 +60,16 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.RequestProcessor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+import org.openide.util.actions.SystemAction;
+import static org.netbeans.modules.mercurial.ui.branch.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * 
@@ -71,6 +77,7 @@ import org.openide.util.NbBundle;
 @ActionID(id = "org.netbeans.modules.mercurial.ui.branch.SwitchToBranchAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_MenuItem_SwitchBranch")
 public class SwitchToBranchAction extends ContextAction {
+    public static final String PREF_KEY_RECENT_BRANCHES = "recentlySwitchedBranches"; //NOI18N
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -112,7 +119,10 @@ public class SwitchToBranchAction extends ContextAction {
             return;
         }
         final boolean doForcedUpdate = forcedUpdateChxBox.isSelected();
-        
+        doSwitch(root, revStr, doForcedUpdate, ctx); //NOI18N
+    }
+
+    public void doSwitch (final File root, final String revStr, final boolean doForcedUpdate, final VCSContext ctx) throws MissingResourceException {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root);
         HgProgressSupport support = new HgProgressSupport() {
             @Override
@@ -124,6 +134,7 @@ public class SwitchToBranchAction extends ContextAction {
                     logger.outputInRed(NbBundle.getMessage(SwitchToBranchAction.class, "MSG_SWITCH_TITLE_SEP")); //NOI18N
                     logger.output(NbBundle.getMessage(SwitchToBranchAction.class, "MSG_SWITCH_INFO_SEP", revStr, root.getAbsolutePath())); //NOI18N
                     List<String> list = HgCommand.doUpdateAll(root, doForcedUpdate, revStr);
+                    Utils.insert(NbPreferences.forModule(SwitchToBranchAction.class), PREF_KEY_RECENT_BRANCHES, revStr, 5);
                     
                     if (list != null && !list.isEmpty()){
                         bNoUpdates = HgCommand.isNoUpdates(list.get(0));
@@ -148,5 +159,26 @@ public class SwitchToBranchAction extends ContextAction {
             }
         };
         support.start(rp, root, org.openide.util.NbBundle.getMessage(SwitchToBranchAction.class, "MSG_SwitchBranch_Progress", revStr)); //NOI18N
+    }
+
+    public static class KnownBranchAction extends AbstractAction {
+        private final VCSContext ctx;
+        private final String branchName;
+
+        @Messages({"# {0} - branch name", "SwitchToBranchAction.KnownBranchAction.name=Switch to {0}"})
+        public KnownBranchAction (String recentBranch, VCSContext ctx) {
+            super(SwitchToBranchAction_KnownBranchAction_name(recentBranch));
+            this.branchName = recentBranch;
+            this.ctx = ctx;
+        }
+
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            final File roots[] = HgUtils.getActionRoots(ctx);
+            if (roots != null && roots.length > 0) {
+                final File root = Mercurial.getInstance().getRepositoryRoot(roots[0]);
+                SystemAction.get(SwitchToBranchAction.class).doSwitch(root, branchName, false, ctx);
+            }
+        }
     }
 }

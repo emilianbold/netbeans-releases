@@ -324,15 +324,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
 
     }
 
-    @Override
-    public File getGoldenFile() {
-        if (System.getProperty("os.name").contains("Linux")) {
-            return getGoldenFile(this.getName() + "Lin.pass");
-        } else {
-            return getGoldenFile(this.getName() + ".pass");
-        }
-    }
-
+   
     @Override
     protected void tearDown() throws Exception {
         getRef().close();
