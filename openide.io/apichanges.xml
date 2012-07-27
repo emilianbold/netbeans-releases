@@ -107,6 +107,30 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="getIO-4-params">
+      <api name="io"/>
+      <summary>Added IOProvider.getIO variant that takes all 4 possible parameters.</summary>
+      <version major="1" minor="33"/>
+      <date day="22" month="6" year="2012"/>
+      <author login="jhavlin"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+          <p>
+              Added method <code>IOProvider.getIO</code> that takes all
+              4 supported parameters and that complements other
+              <code>getIO</code> methods. See
+              <code><a href="@TOP@/org/openide/windows/IOProvider.html">
+              IOProvider</a></code>
+          </p>
+          <p>
+              The original mapping from IO name to IO object has been replaced
+              with mapping from pair [IO container, IO name] to IO object.
+              This mapping is used for reusing of IO objects.
+          </p>
+      </description>
+      <class package="org.openide.windows" name="IOProvider"/>
+      <issue number="182538" />
+    </change>
     <change id="Fine-grain-select">
       <api name="io"/>
       <summary>Added API for fine grain control over IO select operation</summary>
