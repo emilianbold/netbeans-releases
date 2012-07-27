@@ -68,6 +68,14 @@ public class JXTableDecorator extends JXTable {
         super(model, columnModel, selectionModel);
     }
 
+    public JXTableDecorator(TableModel dm, TableColumnModel cm) {
+        super(dm, cm);
+    }
+
+    public JXTableDecorator(TableModel dm) {
+        super(dm);
+    }
+
     /**
      * Paints empty rows too
      */

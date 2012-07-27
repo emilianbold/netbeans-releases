@@ -44,19 +44,23 @@
 
 package org.netbeans.modules.mercurial.ui.menu;
 
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
 import org.netbeans.modules.mercurial.MercurialAnnotator;
 import org.netbeans.modules.mercurial.ui.branch.CloseBranchAction;
 import org.netbeans.modules.mercurial.ui.branch.CreateBranchAction;
 import org.netbeans.modules.mercurial.ui.branch.SwitchToBranchAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Actions;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -66,10 +70,16 @@ import org.openide.util.actions.Presenter;
  */
 public class BranchMenu extends DynamicMenu implements Presenter.Menu {
     private final Lookup lkp;
+    private final VCSContext ctx;
 
     public BranchMenu (Lookup lkp) {
+        this(lkp, null);
+    }
+
+    public BranchMenu (Lookup lkp, VCSContext ctx) {
         super(NbBundle.getMessage(BranchMenu.class, "CTL_MenuItem_BranchMenu"));
         this.lkp = lkp;
+        this.ctx = ctx;
     }
 
     @Override
@@ -98,6 +108,19 @@ public class BranchMenu extends DynamicMenu implements Presenter.Menu {
         } else {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(SwitchToBranchAction.class), NbBundle.getMessage(SwitchToBranchAction.class, "CTL_PopupMenuItem_SwitchToBranch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+            if (ctx != null) {
+                List<String> recentlySwitched = Utils.getStringList(NbPreferences.forModule(BranchMenu.class), SwitchToBranchAction.PREF_KEY_RECENT_BRANCHES);
+                if (!recentlySwitched.isEmpty()) {
+                    int index = 0;
+                    for (String recentBranch : recentlySwitched) {
+                        menu.add(new SwitchToBranchAction.KnownBranchAction(recentBranch, ctx));
+                        if (++index > 2) {
+                            break;
+                        }
+                    }
+                    menu.add(new JSeparator());
+                }
+            }
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CreateBranchAction.class), NbBundle.getMessage(CreateBranchAction.class, "CTL_PopupMenuItem_CreateBranch"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(CloseBranchAction.class), NbBundle.getMessage(CloseBranchAction.class, "CTL_PopupMenuItem_CloseBranch"), lkp)); //NOI18N
