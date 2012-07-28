@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.security;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class SatisfiesParentSecurityPolicyTag extends PhpAnnotationTag {
+public class SatisfiesParentSecurityPolicyTag extends AnnotationCompletionTag {
 
     public SatisfiesParentSecurityPolicyTag() {
         super("SatisfiesParentSecurityPolicy", // NOI18N

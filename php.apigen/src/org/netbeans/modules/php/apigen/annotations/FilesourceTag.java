@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class FilesourceTag extends PhpAnnotationTag {
+public class FilesourceTag extends AnnotationCompletionTag {
 
     public FilesourceTag() {
         super("filesource", "@filesource", //NOI18N

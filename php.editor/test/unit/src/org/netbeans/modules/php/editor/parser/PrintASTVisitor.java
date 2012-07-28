@@ -781,14 +781,14 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(PHPDocTag phpDocTag) {
         XMLPrintNode printNode = new XMLPrintNode(phpDocTag, "PHPDocTag",
-                new String[] {"kind", phpDocTag.getKind().name()});
+                new String[] {"kind", phpDocTag.getKind().getName()});
         printNode.print(this);
     }
 
     @Override
     public void visit(PHPDocTypeTag node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "PHPDocTypeTag",
-                new String[] {"kind", node.getKind().name()});
+                new String[] {"kind", node.getKind().getName()});
         printNode.addChildrenGroup("Types", node.getTypes());
         printNode.print(this);
     }
@@ -796,7 +796,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(PHPDocVarTypeTag node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "PHPDocVarTypeTag",
-                new String[] {"kind", node.getKind().name()});
+                new String[] {"kind", node.getKind().getName()});
         printNode.addChild("Variable", node.getVariable());
         printNode.addChildrenGroup("Types", node.getTypes());
         printNode.print(this);
@@ -806,7 +806,7 @@ public class PrintASTVisitor implements Visitor {
     @Override
     public void visit(PHPDocMethodTag node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "PHPDocMethodTag",
-                new String[] {"kind", node.getKind().name()});
+                new String[] {"kind", node.getKind().getName()});
         printNode.addChild("Name", node.getMethodName());
         printNode.addChildrenGroup("Return Types", node.getTypes());
         printNode.addChildrenGroup("Parameters", node.getParameters());

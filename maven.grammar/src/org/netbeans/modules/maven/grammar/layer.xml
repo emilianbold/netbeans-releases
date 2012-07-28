@@ -157,11 +157,18 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    
     <folder name="Editors">
+                <folder name="SideBar">
+                    <file name="org-netbeans-modules-maven-grammar-effpom-AnnotationBarManager.instance">
+                        <attr name="position" intvalue="2001"/>
+                    </file>
+                </folder>
+        
         <folder name="text">
+           
             <folder name="x-maven-pom+xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.grammar.Bundle"/>
+                
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-netbeans-modules-maven-grammar-CodeTemplates.xml" url="POM-abbreviations.xml"/>
@@ -172,6 +179,21 @@ made subject to such option by the copyright holder.
                         <attr name="position" intvalue="13"/>
                     </file>
                 </folder>
+                <!-- just an attempt to make some keybindings work in the context of the pom editor
+                 folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-netbeans-modules-maven-grammar-keybindings.xml" url="DefaultKeyBindings.xml"/> 
+                        </folder>
+                    </folder>
+                </folder-->                
+    
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-maven-hyperlinks-GoToImplementation.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                </folder>
+
             </folder>
             <folder name="x-maven-settings+xml">
                 <folder name="Popup">

@@ -11,16 +11,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.25</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.csl.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>2.24</specification-version>
+                        <specification-version>1.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -29,7 +20,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.15</specification-version>
+                        <specification-version>1.32</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -38,7 +29,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.13</specification-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -47,7 +38,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.25</specification-version>
+                        <specification-version>1.47</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -56,7 +47,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.36</specification-version>
+                        <specification-version>1.59</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -64,7 +55,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.9</specification-version>
+                        <specification-version>7.47</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -72,7 +63,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.11</specification-version>
+                        <specification-version>7.26</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -80,15 +71,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.22</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.io</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.17</specification-version>
+                        <specification-version>7.63</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -96,7 +79,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.6</specification-version>
+                        <specification-version>7.38</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -104,7 +87,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.10</specification-version>
+                        <specification-version>7.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -112,7 +95,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.22</specification-version>
+                        <specification-version>8.26</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -120,7 +103,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>8.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -128,7 +111,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.27</specification-version>
+                        <specification-version>6.57</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -147,23 +130,20 @@
                         <code-name-base>org.netbeans.modules.nbjunit</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.util.lookup</code-name-base>
-                        <compile-dependency/>
-                        <test/>
-                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.ext4yii.editor</friend>
-                <friend>cz.swiz.netbeans</friend>
-                <friend>org.cakephp.netbeans</friend>
                 <friend>org.netbeans.modules.hudson.php</friend>
+                <friend>org.netbeans.modules.php.api.annotation</friend>
+                <friend>org.netbeans.modules.php.api.documentation</friend>
+                <friend>org.netbeans.modules.php.api.editor</friend>
+                <friend>org.netbeans.modules.php.api.executable</friend>
+                <friend>org.netbeans.modules.php.api.framework</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
+                <friend>org.netbeans.modules.php.composer</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.doctrine2</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
-                <friend>org.netbeans.modules.php.fuse</friend>
                 <friend>org.netbeans.modules.php.nette</friend>
                 <friend>org.netbeans.modules.php.phpdoc</friend>
                 <friend>org.netbeans.modules.php.project</friend>
@@ -171,19 +151,9 @@
                 <friend>org.netbeans.modules.php.smarty</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <friend>org.netbeans.modules.php.symfony2</friend>
-                <friend>org.netbeans.modules.php.yii</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
-                <package>org.netbeans.modules.php.api.annotations</package>
-                <package>org.netbeans.modules.php.api.doc</package>
-                <package>org.netbeans.modules.php.api.editor</package>
                 <package>org.netbeans.modules.php.api.phpmodule</package>
                 <package>org.netbeans.modules.php.api.util</package>
-                <package>org.netbeans.modules.php.spi.actions</package>
-                <package>org.netbeans.modules.php.spi.annotations</package>
-                <package>org.netbeans.modules.php.spi.commands</package>
-                <package>org.netbeans.modules.php.spi.doc</package>
-                <package>org.netbeans.modules.php.spi.editor</package>
-                <package>org.netbeans.modules.php.spi.phpmodule</package>
             </friend-packages>
         </data>
     </configuration>

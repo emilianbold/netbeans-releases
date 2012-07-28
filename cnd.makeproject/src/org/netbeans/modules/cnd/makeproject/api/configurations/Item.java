@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -610,16 +611,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
-            List<String> vec2 = new ArrayList<String>();
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
             CCCCompilerConfiguration master = (CCCCompilerConfiguration) cccCompilerConfiguration.getMaster();
+            List<List<String>> list = new ArrayList<List<String>>();
             while (master != null && cccCompilerConfiguration.getInheritIncludes().getValue()) {
-                vec2.addAll(master.getIncludeDirectories().getValue());
+                list.add(master.getIncludeDirectories().getValue());
                 if (master.getInheritIncludes().getValue()) {
                     master = (CCCCompilerConfiguration) master.getMaster();
                 } else {
                     master = null;
                 }
+            }
+            List<String> vec2 = new ArrayList<String>();
+            for(int i = list.size() - 1; i >= 0; i--) {
+                vec2.addAll(list.get(i));
             }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths

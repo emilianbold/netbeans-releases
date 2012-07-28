@@ -82,14 +82,15 @@ public class CGSGenerator implements CodeGenerator {
     private static final String NEW_LINE = System.getProperty("line.separator");    //NOI18N
     private static final String PROPERTY = "${PROPERTY}";                           //NOI18N
     private static final String CURSOR = "${cursor}";                           //NOI18N
-    private static final String PARAM_NAME = "${PARAM_NAME}";
+    private static final String PARAM_NAME = "${PARAM_NAME}"; //NOI18N
+    private static final String PARAM_TYPE = "${PARAM_TYPE}"; //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}";  //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE = "${UpFirstLetterPropertyWithoutUnderscore}";  //NOI18N
     private static final String PROPERTY_WITHOUT_UNDERSCORE = "${PropertyWithoutUnderscore}";  //NOI18N
     private static final String FLUENT_SETTER = "${FluentSetter}"; //NOI18N
 
     public enum GenType {
-        CONSTRUCTOR {
+        CONSTRUCTOR(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.INVISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -137,7 +138,7 @@ public class CGSGenerator implements CodeGenerator {
             }
 
         },
-        GETTER {
+        GETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.INVISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -180,7 +181,7 @@ public class CGSGenerator implements CodeGenerator {
             }
 
         },
-        SETTER {
+        SETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.VISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -214,23 +215,22 @@ public class CGSGenerator implements CodeGenerator {
                         final String name = property.getName();
                         final String paramName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
                                 ? withoutUnderscore(name) : name;
+                        final String type = property.getType();
                         String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
                                 ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
                         final String methodName = getUnusedMethodName(new ArrayList<String>(), changedName);
-                        setters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, methodName).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        setters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName)
+                                .replace(UP_FIRST_LETTER_PROPERTY, methodName)
+                                .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
+                                .replace(PARAM_TYPE, type.isEmpty() ? type : property.getTypeForTemplate()));
                         setters.append(NEW_LINE);
                     }
                 }
                 return setters.toString();
             }
 
-            @Override
-            public boolean isFluentSetterComboVisible() {
-                return true;
-            }
-
         },
-        GETTER_AND_SETTER {
+        GETTER_AND_SETTER(PanelStrategy.CONSTRUCTOR, FluentSetterStrategy.VISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -269,20 +269,19 @@ public class CGSGenerator implements CodeGenerator {
                                 ? withoutUnderscore(name) : name;
                         gettersAndSetters.append(getGetterTemplate(cgsInfo).replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         gettersAndSetters.append(NEW_LINE);
-                        gettersAndSetters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
+                        final String type = property.getType();
+                        gettersAndSetters.append(getSetterTemplate(cgsInfo).replace(PROPERTY, name).replace(PARAM_NAME, paramName)
+                                .replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName))
+                                .replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName)
+                                .replace(PARAM_TYPE, type.isEmpty() ? type : property.getTypeForTemplate()));
                         gettersAndSetters.append(NEW_LINE);
                     }
                 }
                 return gettersAndSetters.toString();
             }
 
-            @Override
-            public boolean isFluentSetterComboVisible() {
-                return true;
-            }
-
         },
-        METHODS {
+        METHODS(PanelStrategy.METHOD, FluentSetterStrategy.INVISIBLE) {
 
             @Override
             public String getPanelTitle() {
@@ -302,11 +301,6 @@ public class CGSGenerator implements CodeGenerator {
             @Override
             public String getDialogTitle() {
                 return NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_METHODS"); //NOI18N
-            }
-
-            @Override
-            public JPanel createPanel(final CGSInfo cgsInfo) {
-                return new MethodPanel(cgsInfo);
             }
 
             @Override
@@ -330,18 +324,26 @@ public class CGSGenerator implements CodeGenerator {
 
         };
 
+        private final PanelStrategy panelStrategy;
+        private final FluentSetterStrategy fluentSetterStrategy;
+
         public abstract String getPanelTitle();
         public abstract ComboBoxModel getModel(final String propertyName);
         public abstract String getDisplayName();
         public abstract String getDialogTitle();
         public abstract String getTemplateText(final CGSInfo cgsInfo, final JTextComponent textComponent);
 
-        public JPanel createPanel(final CGSInfo cgsInfo) {
-            return new ConstructorPanel(this, cgsInfo);
+        private GenType(final PanelStrategy panelStrategy, final FluentSetterStrategy fluentSetterStrategy) {
+            this.panelStrategy = panelStrategy;
+            this.fluentSetterStrategy = fluentSetterStrategy;
         }
 
-        public boolean isFluentSetterComboVisible() {
-            return false;
+        public JPanel createPanel(final CGSInfo cgsInfo) {
+            return panelStrategy.createPanel(this, cgsInfo);
+        }
+
+        public boolean isFluentSetterVisible() {
+            return fluentSetterStrategy.isFluentSetterVisible();
         }
 
         String getGetterTemplate(final CGSInfo cgsInfo) {
@@ -351,6 +353,40 @@ public class CGSGenerator implements CodeGenerator {
         String getSetterTemplate(final CGSInfo cgsInfo) {
             final String preparedSetterTemplate = SETTER_TEMPLATE.replace(TEMPLATE_NAME, cgsInfo.getHowToGenerate().getSetterTemplate());
             return cgsInfo.isFluentSetter() ? preparedSetterTemplate.replace(FLUENT_SETTER, "return $this;" + NEW_LINE) : preparedSetterTemplate.replace(FLUENT_SETTER, ""); //NOI18N
+        }
+
+        private enum PanelStrategy {
+            CONSTRUCTOR {
+                @Override
+                JPanel createPanel(final GenType genType, final CGSInfo cgsInfo) {
+                    return new ConstructorPanel(genType, cgsInfo);
+                }
+            },
+            METHOD {
+                @Override
+                JPanel createPanel(final GenType genType, final CGSInfo cgsInfo) {
+                    return new MethodPanel(cgsInfo);
+                }
+            };
+
+            abstract JPanel createPanel(final GenType genType, final CGSInfo cgsInfo);
+        }
+
+        private enum FluentSetterStrategy {
+            VISIBLE {
+                @Override
+                boolean isFluentSetterVisible() {
+                    return true;
+                }
+            },
+            INVISIBLE {
+                @Override
+                boolean isFluentSetterVisible() {
+                    return false;
+                }
+            };
+
+            abstract boolean isFluentSetterVisible();
         }
 
     }
@@ -428,7 +464,7 @@ public class CGSGenerator implements CodeGenerator {
     private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
     private static final String ASSIGNMENT_TEMPLATE = NEW_LINE + "$this->" + PROPERTY + " = $" + PARAM_NAME + ";";          //NOI18N
     private static final String GETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "() {" + NEW_LINE + "return $$this->" + PROPERTY + ";" + NEW_LINE + "}" + NEW_LINE;    //NOI18N
-    private static final String SETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "($$" + PARAM_NAME + ") {" + ASSIGNMENT_TEMPLATE + NEW_LINE + FLUENT_SETTER + "}" + NEW_LINE; //NOI18N
+    private static final String SETTER_TEMPLATE = "public function " + TEMPLATE_NAME + "(" + PARAM_TYPE + "$$" + PARAM_NAME + ") {" + ASSIGNMENT_TEMPLATE + NEW_LINE + FLUENT_SETTER + "}" + NEW_LINE; //NOI18N
     private final GenType type;
     private final CGSInfo cgsInfo;
     private final JTextComponent component;

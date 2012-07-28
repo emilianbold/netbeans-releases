@@ -87,6 +87,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.actions.Bundle.*;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.openide.util.Utilities;
 
 /**
@@ -161,6 +162,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             List<URI> classpathVolume = new ArrayList<URI>();
             List<URI> javadocVolume = new ArrayList<URI>();
             List<URI> sourceVolume = new ArrayList<URI>();
+            Map<String, String> properties = new HashMap<String, String>();
             Map<String, List<URI>> volumes = new HashMap<String, List<URI>>();
             File baseFolder = null;
             File nonDefaultLibBase = null;
@@ -190,7 +192,17 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                 volumes.put("javadoc", javadocVolume); //NOI18N
                 volumes.put("src", sourceVolume); //NOI18N
             }
+            StringBuilder mavendeps = new StringBuilder();
             for (Artifact a : includeArtifacts) {
+                if (mavendeps.length() > 0) {
+                    mavendeps.append(" ");
+                }
+                mavendeps.append(a.getGroupId()).append(":").append(a.getArtifactId()).append(":").append(a.getVersion()).append(":");
+                if (a.hasClassifier()) {
+                    mavendeps.append(a.getClassifier()).append(":");
+                }
+                mavendeps.append(a.getType());
+                
                 handle.progress(MSG_Downloading(a.getId()), index);
                 
                 //XXX --------
@@ -249,7 +261,8 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             }
             try {
                 handle.progress("Adding library",  index + 4);
-                return  libraryManager.createURILibrary("j2se", libraryName, volumes); //NOI18N
+                properties.put(ModelUtils.LIBRARY_PROP_DEPENDENCIES, mavendeps.toString());
+                return libraryManager.createURILibrary("j2se", libraryName, libraryName, "Library created from Maven artifacts", volumes, properties); //NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

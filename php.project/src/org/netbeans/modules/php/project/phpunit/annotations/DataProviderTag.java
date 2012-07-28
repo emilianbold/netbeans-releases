@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.project.phpunit.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class DataProviderTag extends PhpAnnotationTag {
+public class DataProviderTag extends AnnotationCompletionTag {
 
     public DataProviderTag() {
         super("dataProvider", // NOI18N

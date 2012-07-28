@@ -360,7 +360,7 @@ public class TaskCache {
             return !getErrors(file, ERR_EXT).isEmpty();
         } else {
             try {
-                ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
+                ClassPath cp = Utilities.getSourceClassPathFor (file);
                 
                 if (cp == null) {
                     return false;

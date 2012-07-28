@@ -41,19 +41,11 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -68,29 +60,13 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.api.elements.ConstantElement;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
+import org.netbeans.modules.php.editor.parser.annotation.LinkParsedLine;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -104,7 +80,7 @@ class DocRenderer {
 
     private static final String TD_STYLE = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;\" ";  //NOI18N
     private static final String TD_STYLE_MAX_WIDTH = "style=\"text-aling:left; border-width: 0px;padding: 1px;padding:3px;width:80%;\" ";  //NOI18N
-    private static final String TABLE_STYLE= "style=\"border: 0px; width: 100%;\""; //NOI18N
+    private static final String TABLE_STYLE = "style=\"border: 0px; width: 100%;\""; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
 
     static String document(ParserResult info, ElementHandle element) {
@@ -119,7 +95,7 @@ class DocRenderer {
         }
 
         if (element instanceof PhpElement) {
-            return documentIndexedElement( (PhpElement) element);
+            return documentIndexedElement((PhpElement) element);
         }
 
         if (element instanceof TypeMemberElement) {
@@ -216,11 +192,11 @@ class DocRenderer {
     static final class PHPDocExtractor extends UserTask {
         // http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.desc
         // + table (table, tr, th, td)
+
         private static final Pattern KEEP_TAGS_PATTERN = Pattern.compile("<(?!(/|b|code|br|i|kbd|li|ol|p|pre|samp|ul|var|table|tr|th|td)(\\b|\\s))", Pattern.CASE_INSENSITIVE); // NOI18N
         private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
         // #183594
         private static final Pattern LIST_PATTERN = Pattern.compile("(\r?\n)(?=([-+#o]\\s|\\d\\.?\\s))"); // NOI18N
-
         private static final ArrayList<String> LINK_TAGS = new ArrayList<String>();
 
         static {
@@ -296,7 +272,7 @@ class DocRenderer {
                 description = processPhpDoc(description);
             }
 
-            if (methodTag.getParameters() != null && methodTag.getParameters().size() > 0 ) {
+            if (methodTag.getParameters() != null && methodTag.getParameters().size() > 0) {
                 for (PHPDocVarTypeTag tag : methodTag.getParameters()) {
                     params.append(composeParameterLine(tag));
                 }
@@ -314,32 +290,23 @@ class DocRenderer {
             StringBuilder others = new StringBuilder();
 
             for (PHPDocTag tag : pHPDocBlock.getTags()) {
-
-                switch (tag.getKind()) {
-                    case PARAM:
-                        params.append(composeParameterLine((PHPDocVarTypeTag)tag));
-                        break;
-                    case LINK:
-                        String lline = String.format("<a href=\"%s\">%s</a><br>\n", //NOI18N
-                                tag.getValue().trim(), tag.getValue().trim());
-
-                        links.append(lline);
-                        break;
-                    case RETURN:
-                        PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
-                        returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
-                        break;
-                    case VAR:
-                        PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
-                        String type = composeType(typeTag.getTypes());
-                        others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
-                        break;
-                    default:
-                        String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
-                                processPhpDoc(tag.getKind().toString()), processPhpDoc(tag.getValue().trim()));
-
-                        others.append(oline);
-                        break;
+                AnnotationParsedLine kind = tag.getKind();
+                if (kind.equals(PHPDocTag.Type.PARAM)) {
+                    params.append(composeParameterLine((PHPDocVarTypeTag) tag));
+                } else if (kind.equals(PHPDocTag.Type.RETURN)) {
+                    PHPDocTypeTag returnTag = (PHPDocTypeTag) tag;
+                    returnValue.append(composeReturnValue(returnTag.getTypes(), returnTag.getDocumentation()));
+                } else if (kind.equals(PHPDocTag.Type.VAR)) {
+                    PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
+                    String type = composeType(typeTag.getTypes());
+                    others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
+                } else if (kind instanceof LinkParsedLine) {
+                    String line = String.format("<a href=\"%s\">%s</a><br>\n", kind.getDescription(), kind.getDescription()); //NOI18N
+                    links.append(line);
+                } else {
+                    String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>\n", //NOI18N
+                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getKind().getDescription()));
+                    others.append(oline);
                 }
             }
 
@@ -347,11 +314,10 @@ class DocRenderer {
 
         }
 
-        protected String processDescription(String text){
+        protected String processDescription(String text) {
             StringBuilder result = new StringBuilder();
-            int index = 0;
             int lastIndex = 0;
-            index = text.indexOf('{', 0);
+            int index = text.indexOf('{', 0);
             while (index > -1 && text.length() > (index + 1)) {
                 result.append(text.substring(lastIndex, index));
                 lastIndex = index;
@@ -367,14 +333,14 @@ class DocRenderer {
                                 endIndex = text.indexOf('}', index);
                                 if (endIndex > -1) {
                                     String link = text.substring(index, endIndex).trim();
-                                    result.append(String.format("<a href=\"%s\">%s</a>",link, link));
+                                    result.append(String.format("<a href=\"%s\">%s</a>", link, link));
                                     lastIndex = endIndex + 1;
                                 }
                             }
                         }
                 }
 
-                index = text.indexOf('{' , index + 1);
+                index = text.indexOf('{', index + 1);
             }
             if (lastIndex > -1) {
                 result.append(text.substring(lastIndex));
@@ -391,7 +357,7 @@ class DocRenderer {
             if (parameters.length() > 0) {
                 value.append("<h3>"); //NOI18N
                 value.append(NbBundle.getMessage(DocRenderer.class, "Parameters"));
-                value.append("</h3>\n<table cellspacing=0 " + TABLE_STYLE + ">\n" + parameters + "</table>\n"); //NOI18N
+                value.append("</h3>\n<table cellspacing=0 " + TABLE_STYLE + ">\n").append(parameters).append("</table>\n"); //NOI18N
             }
 
             if (returnValue.length() > 0) {
@@ -405,20 +371,20 @@ class DocRenderer {
             if (links != null && links.length() > 0) {
                 value.append("<h3>"); //NOI18N
                 value.append(NbBundle.getMessage(DocRenderer.class, "OnlineDocs"));
-                value.append("</h3>\n" + links); //NOI18N
+                value.append("</h3>\n").append(links); //NOI18N
             }
 
             if (others != null && others.length() > 0) {
-                value.append("<table>\n" + others + "</table>\n"); //NOI18N
+                value.append("<table>\n").append(others).append("</table>\n"); //NOI18N
             }
             return value.toString();
         }
 
         private String composeParameterLine(PHPDocVarTypeTag param) {
-             String type = composeType(param.getTypes());
-             String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
+            String type = composeType(param.getTypes());
+            String pline = String.format("<tr><td>&nbsp;</td><td valign=\"top\" %s><nobr>%s</nobr></td><td valign=\"top\" %s><nobr><b>%s</b></nobr></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
                     TD_STYLE, type, TD_STYLE, param.getVariable().getValue(), TD_STYLE_MAX_WIDTH, param.getDocumentation() == null ? "&nbsp" : processPhpDoc(param.getDocumentation()));
-             return pline;
+            return pline;
         }
 
         private String composeReturnValue(List<PHPDocTypeNode> types, String documentation) {
@@ -437,22 +403,23 @@ class DocRenderer {
 
         /**
          * Create a string from the list of types;
+         *
          * @param tag
          * @return
          */
         private String composeType(List<PHPDocTypeNode> types) {
             StringBuilder type = new StringBuilder();
             if (types != null) {
-                    for(PHPDocTypeNode typeNode : types) {
-                        if (type.length() > 0) {
-                            type.append(" | "); //NOI18N
-                        }
-                        type.append(typeNode.getValue());
-                        if (typeNode.isArray()) {
-                            type.append("[]"); //NOI18N
-                        }
+                for (PHPDocTypeNode typeNode : types) {
+                    if (type.length() > 0) {
+                        type.append(" | "); //NOI18N
+                    }
+                    type.append(typeNode.getValue());
+                    if (typeNode.isArray()) {
+                        type.append("[]"); //NOI18N
                     }
                 }
+            }
             return type.toString();
         }
 
@@ -467,18 +434,17 @@ class DocRenderer {
             return result;
         }
 
-         @Override
+        @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            ParserResult presult = (ParserResult)resultIterator.getParserResult();
+            ParserResult presult = (ParserResult) resultIterator.getParserResult();
             if (presult != null) {
                 Program program = Utils.getRoot(presult);
 
                 if (program != null) {
                     ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
 
-                    if (node == null){ // issue #118222
-                        LOGGER.warning("Could not find AST node for element "
-                                + indexedElement.getName() + " defined in " + indexedElement.getFilenameUrl());
+                    if (node == null) { // issue #118222
+                        LOGGER.log(Level.WARNING, "Could not find AST node for element {0} defined in {1}", new Object[]{indexedElement.getName(), indexedElement.getFilenameUrl()});
                         return;
                     }
                     //header.appendHtml("<br/>"); //NOI18N
@@ -506,14 +472,14 @@ class DocRenderer {
                     header.appendHtml("<br/><br/>"); //NOI18N
                     if (node instanceof PHPDocTag) {
                         if (node instanceof PHPDocMethodTag) {
-                            extractPHPDoc((PHPDocMethodTag)node);
+                            extractPHPDoc((PHPDocMethodTag) node);
                         } else {
                             if (node instanceof PHPDocVarTypeTag) {
                                 PHPDocVarTypeTag varTypeTag = (PHPDocVarTypeTag) node;
                                 String type = composeType(varTypeTag.getTypes());
                                 phpDoc.append(processPhpDoc(String.format("%s<br /><table><tr><th align=\"left\">Type:</th><td>%s</td></tr></table>", varTypeTag.getDocumentation(), type))); //NOI18N
                             } else {
-                                phpDoc.append(processPhpDoc(((PHPDocTag)node).getDocumentation()));
+                                phpDoc.append(processPhpDoc(((PHPDocTag) node).getDocumentation()));
                             }
                         }
                     } else {
@@ -528,5 +494,3 @@ class DocRenderer {
         }
     }
 }
-
-

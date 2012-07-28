@@ -133,11 +133,11 @@ public class DataEditorSupportEncodingTest  extends NbTestCase {
                 
                 int questionMarkPos = line.indexOf('?'); // NOI18N
                 
-                assertEquals("No question marks allowed", -1, questionMarkPos); // NOI18N
+                assertTrue("Should save question marks", questionMarkPos != -1); // NOI18N
             } finally {
                 istm.close();
             }
-            fail("Exception expected");
+            //fail("Exception expected");
         } catch (UnmappableCharacterException ex) {
             // expected exceptiom
         }

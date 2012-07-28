@@ -68,7 +68,7 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
+import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.SaveCookie;

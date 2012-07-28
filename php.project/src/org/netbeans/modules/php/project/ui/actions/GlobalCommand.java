@@ -55,12 +55,12 @@ public abstract class GlobalCommand extends Command {
     }
 
     @Override
-    public final void invokeAction(Lookup context) {
+    public final void invokeActionInternal(Lookup context) {
         invokeAction();
     }
 
     @Override
-    public final boolean isActionEnabled(Lookup context) {
+    public final boolean isActionEnabledInternal(Lookup context) {
         return true;
     }
 

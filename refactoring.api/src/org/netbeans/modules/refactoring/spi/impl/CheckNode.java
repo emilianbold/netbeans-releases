@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Pavel Flaska
  */
-public class CheckNode extends DefaultMutableTreeNode {
+public final class CheckNode extends DefaultMutableTreeNode {
 
     public final static int SINGLE_SELECTION = 0;
     public final static int DIG_IN_SELECTION = 4;

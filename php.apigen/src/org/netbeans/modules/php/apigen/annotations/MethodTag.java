@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodTag extends PhpAnnotationTag {
+public class MethodTag extends AnnotationCompletionTag {
 
     public MethodTag() {
         super("method", "@method ${tp default=\"type\"} ${m default=\"methodName\"}(${param default=\"type\"} $$${paramName}) ${Description}", //NOI18N

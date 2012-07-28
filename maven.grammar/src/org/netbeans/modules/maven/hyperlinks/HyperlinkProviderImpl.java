@@ -76,6 +76,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
+import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.hyperlinks.Bundle.*;
 
 /**
  * adds hyperlinking support to pom.xml files..
@@ -271,6 +273,11 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
 
 
     @Override
+    @Messages({
+        "# {0} - property name",
+        "# {1} - resolved value", 
+        "Hint_prop_resolution={0} resolves to ''{1}''\nNavigate to definition.", 
+        "Hint_prop_cannot=Cannot resolve expression\nNavigates to definition."})
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
 
         TokenHierarchy th = TokenHierarchy.get(doc);
@@ -296,21 +303,21 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                     if (nbprj != null) {
                         Object exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(tup.value);
                         if (exRes != null) {
-                            return prop + " resolves to '" + exRes + "'\nNavigate to definition.";
+                            return Hint_prop_resolution(prop, exRes);
                         } else {
                         }
                     } else {
                         //pom file in repository or settings file.
                     }
                 } catch (ExpressionEvaluationException ex) {
-                    return "Cannot resolve expression\nNavigates to definition.";
+                    return Hint_prop_cannot();
                 }
             }  
         }
         return null;
     }
     
-    private void openAtSource(InputLocation location) {
+    public static void openAtSource(InputLocation location) {
         InputSource source = location.getSource();
         if (source != null && source.getLocation() != null) {
             FileObject fobj = FileUtil.toFileObject(FileUtil.normalizeFile(new File(source.getLocation())));

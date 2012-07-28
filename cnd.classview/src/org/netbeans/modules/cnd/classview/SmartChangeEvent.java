@@ -67,7 +67,7 @@ public class SmartChangeEvent {
     }
     
     public boolean addChangeEvent(CsmChangeEvent e){
-        if (e.getRemovedDeclarations().size() == 0){
+        if (e.getRemovedDeclarations().isEmpty()){
             doAdd(e);
             count++;
             return true;
@@ -169,10 +169,10 @@ public class SmartChangeEvent {
     private static CsmProject findProject(CsmOffsetableDeclaration decl){
         CsmFile file = decl.getContainingFile();
         if (file != null){
-            if (file.isValid()) {
+            //if (file.isValid()) {
                 return file.getProject();
-            }
-            return null;
+            //}
+            //return null;
         }
         System.err.println("Cannot fing project for declaration "+decl.getUniqueName());
         return null;

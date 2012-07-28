@@ -1103,7 +1103,7 @@ public class NbModuleSuite {
             StringBuilder classPathHeader = new StringBuilder();
             for (String artifact : mavenCP) {
                 String[] grpArtVers = artifact.split(":");
-                String suffix = File.separatorChar + grpArtVers[0].replace('.', File.separatorChar) + File.separatorChar + grpArtVers[1] + File.separatorChar + grpArtVers[2] + File.separatorChar + grpArtVers[1] + '-' + grpArtVers[2] + ".jar";
+                String suffix = File.separatorChar + grpArtVers[0].replace('.', File.separatorChar) + File.separatorChar + grpArtVers[1] + File.separatorChar + grpArtVers[2] + File.separatorChar + grpArtVers[1] + '-' + grpArtVers[2] + ( /** classifier */grpArtVers.length == 4 ? "-" + grpArtVers[3] : "") + ".jar";
                 File dep = null;
                 for (String classpathEntry : classpathEntries) {
                     if (classpathEntry.endsWith(suffix)) {

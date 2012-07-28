@@ -97,7 +97,7 @@ public class TaskTest extends NbTestCase {
     public void testWaitWithTimeOutReturnsAfterTimeOutWhenTheTaskIsNotComputedAtAll () throws Exception {
         long time = -1;
         
-        CharSequence log = Log.enable("org.openide.util.Task", Level.FINE);
+        CharSequence log = Log.enable("org.openide.util.Task", Level.FINER);
         for (int i = 1; i < 10; i++) {
             Task t = new Task (new R ());
             time = System.currentTimeMillis ();

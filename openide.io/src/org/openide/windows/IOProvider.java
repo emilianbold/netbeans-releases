@@ -52,6 +52,8 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Collection;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Lookup;
 
 /** A factory for IO tabs shown in the output window.  To create a new tab to
@@ -141,6 +143,10 @@ public abstract class IOProvider {
      *   The number of actions should not exceed 5 and each should have the <code>Action.SMALL_ICON</code> property defined.
      * @param ioContainer parent container accessor
      * @return an <code>InputOutput</code> instance for accessing the new tab
+     * <br>Note: Please remember that {@link InputOutput} objects need to be
+     * properly closed. Ensure that {@link InputOutput#closeInputOutput()} is
+     * called when returned object is no longer needed, otherwise allocated
+     * memory and other resources will not be freed.
      * @see InputOutput
      * @since 1.15
      * <br>Note: The method is non-abstract for backward compatibility reasons only. If you are
@@ -148,6 +154,30 @@ public abstract class IOProvider {
      * this method as well. The default implementation falls back to the <code>getIO(name, actions)</code> method, ignoring the ioContainer passed.
      */
     public InputOutput getIO(String name, Action[] actions, IOContainer ioContainer) {
+        return getIO(name, actions);
+    }
+
+    /**
+     * Gets a named instance of {@link InputOutput}. Corresponding IO tab will be placed
+     * in parent container corresponding to provided {@link IOContainer}.
+     * @param name A localized display name for the tab
+     * @param newIO if <tt>true</tt>, a new <code>InputOutput</code> is returned, else an existing <code>InputOutput</code> of the same name may be returned
+     * @param actions array of actions that are added to the toolbar, Can be empty array, but not null.
+     *   The number of actions should not exceed 5 and each should have the <code>Action.SMALL_ICON</code> property defined.
+     * @param ioContainer parent container accessor
+     * @return an <code>InputOutput</code> instance for accessing the new tab
+     * <br>Note: Please remember that {@link InputOutput} objects need to be
+     * properly closed. Ensure that {@link InputOutput#closeInputOutput()} is
+     * called when returned object is no longer needed, otherwise allocated
+     * memory and other resources will not be freed.
+     * @see InputOutput
+     * @since 1.33
+     * <br>Note: The method is non-abstract for backward compatibility reasons only. If you are
+     * extending <code>IOProvider</code> and implementing its abstract classes, you are encouraged to override
+     * this method as well. The default implementation falls back to the <code>getIO(name, actions)</code> method, ignoring the ioContainer and newIO passed.
+     */
+    public @NonNull InputOutput getIO(@NonNull String name, boolean newIO,
+            @NonNull Action[] actions, @NullAllowed IOContainer ioContainer) {
         return getIO(name, actions);
     }
 

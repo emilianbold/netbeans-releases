@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,7 +39,9 @@
 
 package org.netbeans.installer.utils.system.resolver;
 
+import java.io.File;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
@@ -54,13 +56,52 @@ public class NameResolver implements StringResolver{
     public String resolve(String string, ClassLoader cl) {
         // N for Name
         String parsed = string;
+        LogManager.log("NameResolver - to parse " + parsed);
         if (parsed.contains("$N{install}")) {
             try {
                 parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", 
                         StringUtils.escapeRegExp(SystemUtils.getDefaultApplicationsLocation().getAbsolutePath()));
+                LogManager.log("      --- parsed to " + parsed);
             } catch (NativeException e) {                
                 ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
                         ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+            }
+        }   
+        if(SystemUtils.isWindows()) {
+            File defaultApplicationsLocation = null;
+            if (parsed.contains("$N{install_x86}")) {
+                try {
+                    String path = SystemUtils.getEnvironmentVariable("ProgramFiles(x86)");
+                    LogManager.log("      --- Path " + path);
+                    if (path != null) {
+                        defaultApplicationsLocation = new File(path).getAbsoluteFile();
+                    } else {
+                        defaultApplicationsLocation = SystemUtils.getDefaultApplicationsLocation();
+                    }
+                    parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install_x86\\}",
+                            StringUtils.escapeRegExp(defaultApplicationsLocation.getAbsolutePath()));
+                    LogManager.log("      --- parsed to " + parsed);
+                } catch (NativeException e) {
+                    ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
+                            ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+                }
+            }
+            if (parsed.contains("$N{install_x64}")) {
+                try {
+                    String path = SystemUtils.getEnvironmentVariable("ProgramW6432");
+                    LogManager.log("      --- Path " + path);
+                    if (path != null) {
+                        defaultApplicationsLocation = new File(path).getAbsoluteFile();
+                    } else {
+                        defaultApplicationsLocation = SystemUtils.getDefaultApplicationsLocation();
+                    }
+                    parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install_x64\\}",
+                            StringUtils.escapeRegExp(defaultApplicationsLocation.getAbsolutePath()));
+                    LogManager.log("      --- parsed to " + parsed);
+                } catch (NativeException e) {
+                    ErrorManager.notifyError(ResourceUtils.getString(SystemUtils.class,
+                            ERROR_CANNOT_GET_DEFAULT_APPS_LOCATION_KEY), e);
+                }
             }
         }
         if (parsed.contains("$N{home}")) {

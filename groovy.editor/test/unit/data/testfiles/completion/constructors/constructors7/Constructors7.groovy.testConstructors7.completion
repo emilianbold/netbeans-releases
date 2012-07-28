@@ -23,6 +23,7 @@ CLASS      StringBufferInputStream                    null
 CLASS      StringBuilder                              null
 CLASS      StringIndexOutOfBoundsExceptio             null
 CLASS      StringReader                               null
+CLASS      StringTestUtil                             null
 CLASS      StringTokenizer                            null
 CLASS      StringWriter                               null
 CLASS      StringWriterIOException                    null

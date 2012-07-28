@@ -92,8 +92,8 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
         String binaryRootS = binaryRoot.toExternalForm();
         URL[] urls = null;
         if (binaryRootS.startsWith("jar:file:")) { // NOI18N
-            if ((urls = checkForBinaryRoot(binaryRootS, "/libs.javacapi/external/javac-api")) == null) { // NOI18N
-                urls = checkForBinaryRoot(binaryRootS, "/libs.javacimpl/external/javac-impl"); // NOI18N
+            if ((urls = checkForBinaryRoot(binaryRootS, "/libs.javacapi/external/nb-javac-api")) == null) { // NOI18N
+                urls = checkForBinaryRoot(binaryRootS, "/libs.javacimpl/external/nb-javac-impl"); // NOI18N
             }
             final FileObject resultFO = urls != null ? URLMapper.findFileObject(urls[0]) : null;
             if (resultFO != null) {
@@ -130,9 +130,9 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
     }
 
     private URL[] checkForBinaryRoot(String ext, String prefix) {
-        if (ext.endsWith(prefix + "-nb-7.0-b07.jar!/")) { // NOI18N
+        if (ext.endsWith(prefix + ".jar!/")) { // NOI18N
             try {
-                String part = ext.substring("jar:".length(), ext.length() - prefix.length() - "-nb-7.0-b07.jar!/".length()); // NOI18N
+                String part = ext.substring("jar:".length(), ext.length() - prefix.length() - ".jar!/".length()); // NOI18N
                 
                 return new URL[] {
                     new URL(part + "/nb-javac/src/share/classes"), // NOI18N

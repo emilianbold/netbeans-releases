@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.maven.indexer.api;
 
+import org.apache.maven.settings.Mirror;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 
 public class RepositoryPreferencesTest extends NbTestCase {
 
@@ -69,5 +71,85 @@ public class RepositoryPreferencesTest extends NbTestCase {
         rp.removeTransientRepositories(3);
         assertEquals("[local, central]", rp.getRepositoryInfos().toString());
     }
+    
+    /** created in attempt of reproducing issue http://netbeans.org/bugzilla/show_bug.cgi?id=214980
+     */
+    public void testGetMirrorRepositoryInfos() throws Exception {
+        Mirror mirror = new Mirror();
+        mirror.setId("mirror");
+        mirror.setMirrorOf("*");
+        mirror.setUrl("http://localhost");
+        mirror.setName("mirror repository");
+        try {
+            EmbedderFactory.getOnlineEmbedder().getSettings().addMirror(mirror);
+
+            RepositoryPreferences rp = RepositoryPreferences.getInstance();
+
+            assertEquals("[local, mirror]", rp.getRepositoryInfos().toString());
+            RepositoryInfo m = rp.getRepositoryInfoById("mirror");
+            assertTrue(m.isMirror());
+            assertEquals("[central]", m.getMirroredRepositories().toString());
+
+            //add a repository
+            rp.addTransientRepository(1, "eclipselink", "Repository for library Library[eclipselink]", "http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", RepositoryInfo.MirrorStrategy.ALL);
+
+            assertEquals("[local, mirror]", rp.getRepositoryInfos().toString());
+            m = rp.getRepositoryInfoById("mirror");
+            assertTrue(m.isMirror());
+            assertEquals("[eclipselink]", m.getMirroredRepositories().toString());
+
+            //add the same repository again..
+            rp.addTransientRepository(1, "eclipselink", "Repository for library Library[eclipselink]", "http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", RepositoryInfo.MirrorStrategy.ALL);
+
+            assertEquals("[local, mirror]", rp.getRepositoryInfos().toString());
+            m = rp.getRepositoryInfoById("mirror");
+            assertTrue(m.isMirror());
+            assertEquals("[eclipselink]", m.getMirroredRepositories().toString());
+
+            //add as non-transient repository now..
+            RepositoryInfo ii = new RepositoryInfo("eclipselink", "Repository for library Library[eclipselink]", null, "http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo");
+            rp.addOrModifyRepositoryInfo(ii);
+            //in this case mirror is not used and direct reference is used..
+            assertEquals("[local, eclipselink]", rp.getRepositoryInfos().toString());
+
+            //remove and mirror should show up again..
+            rp.removeRepositoryInfo(ii);
+
+            assertEquals("[local, mirror]", rp.getRepositoryInfos().toString());
+            m = rp.getRepositoryInfoById("mirror");
+            assertTrue(m.isMirror());
+            assertEquals("[eclipselink]", m.getMirroredRepositories().toString());
+
+            //add central now.. should have 2 mirrored repositories..
+            rp.addTransientRepository(1, "central", "central", "http://repo1.maven.org/maven2", RepositoryInfo.MirrorStrategy.ALL);
+            assertEquals("[local, mirror]", rp.getRepositoryInfos().toString());
+            m = rp.getRepositoryInfoById("mirror");
+            assertTrue(m.isMirror());
+            assertEquals("[eclipselink, central]", m.getMirroredRepositories().toString());
+
+            //add central AGAIN and AGAIN.. should have still just 2 mirrored repositories..
+            rp.addTransientRepository(2, "central", "central", "http://repo1.maven.org/maven2", RepositoryInfo.MirrorStrategy.ALL);
+            rp.addTransientRepository(3, "central", "central", "http://repo1.maven.org/maven2", RepositoryInfo.MirrorStrategy.ALL);
+            rp.addTransientRepository(4, "central", "central", "http://repo1.maven.org/maven2", RepositoryInfo.MirrorStrategy.ALL);
+
+            assertEquals("[local, mirror]", rp.getRepositoryInfos().toString());
+            m = rp.getRepositoryInfoById("mirror");
+            assertTrue(m.isMirror());
+            assertEquals("[eclipselink, central]", m.getMirroredRepositories().toString());
+
+            //try adding slightly modified transient repositories..
+            rp.addTransientRepository(3, "central", "central", "http://repo1.maven.org/maven2/", RepositoryInfo.MirrorStrategy.ALL);
+            rp.addTransientRepository(2, "central", "central rep", "http://repo1.maven.org/maven2", RepositoryInfo.MirrorStrategy.ALL);
+            rp.addTransientRepository(2, "eclipselink", "Repository for library Library", "http://ftp.ing.umu.se/mirror/eclipse/rt/eclipselink/maven.repo", RepositoryInfo.MirrorStrategy.ALL);
+
+            assertEquals("[local, mirror]", rp.getRepositoryInfos().toString());
+            m = rp.getRepositoryInfoById("mirror");
+            assertTrue(m.isMirror());
+            assertEquals("[eclipselink, central]", m.getMirroredRepositories().toString());
+        } finally {
+           EmbedderFactory.getOnlineEmbedder().getSettings().removeMirror(mirror); 
+        }
+    }
+    
 
 }

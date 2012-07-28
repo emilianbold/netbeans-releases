@@ -54,8 +54,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.*;
-import org.netbeans.modules.groovy.support.GroovyProjectExtender;
 import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.modules.groovy.support.spi.GroovyExtender;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -80,8 +80,6 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
     private transient WizardDescriptor.Panel[] panels;
 
     private transient WizardDescriptor wiz;
-    
-    private transient GroovyProjectExtender extender;
     
     public static GroovyFileWizardIterator create() {
         return new GroovyFileWizardIterator();
@@ -156,9 +154,9 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
 
         FileObject createdFile = dobj.getPrimaryFile();
 
-        initExtender();
-        if (extender != null && !extender.isGroovyEnabled()) {
-            extender.enableGroovy();
+        GroovyExtender extender = Templates.getProject(wiz).getLookup().lookup(GroovyExtender.class);
+        if (extender != null && !extender.isActive()) {
+            extender.activate();
         }
 
         handle.finish();
@@ -243,16 +241,6 @@ public class GroovyFileWizardIterator implements WizardDescriptor.ProgressInstan
         changeSupport.fireChange();
     }
     
-    private GroovyProjectExtender initExtender() {
-        if (extender == null && wiz != null) {
-            Project project = Templates.getProject(wiz);
-            if (project != null) {
-                this.extender = project.getLookup().lookup(GroovyProjectExtender.class);
-            }
-        }
-        return extender;
-    }
-     
     private static String getPackageName(FileObject targetFolder) {
         Project project = FileOwnerQuery.getOwner(targetFolder);
         Sources sources = ProjectUtils.getSources(project);

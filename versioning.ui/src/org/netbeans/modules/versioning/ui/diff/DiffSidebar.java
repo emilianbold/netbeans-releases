@@ -101,7 +101,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import javax.swing.plaf.TextUI;
-import javax.swing.plaf.basic.BasicEditorPaneUI;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Mutex;
@@ -350,6 +349,10 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     }
 
     boolean canRollback(Difference diff) {
+        if (!fileObject.canWrite()) {
+            LOG.log(Level.FINE, "File {0} is not writable", fileObject.getPath()); //NOI18N
+            return false;
+        }
         if (!(document instanceof GuardedDocument)) {
             return true;
         }

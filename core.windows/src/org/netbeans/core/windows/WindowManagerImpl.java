@@ -1057,7 +1057,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @param minimized 
      * @since 2.32
      */
+    @Override
     public void setTopComponentMinimized( TopComponent tc, boolean minimized ) {
+        assertEventDispatchThread();
         central.setTopComponentMinimized( tc, minimized );
     }
     
@@ -1067,7 +1069,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return 
      * @since 2.32
      */
+    @Override
     public boolean isTopComponentMinimized( TopComponent tc ) {
+        assertEventDispatchThread();
         return central.isTopComponentMinimized( tc );
     }
 
@@ -2017,7 +2021,41 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         return false;
     }
-    
+
+    /**
+     * Checks the floating status of given TopComponent.
+     * @return True if the given TopComponent is separated from the main window.
+     * @since 2.51
+     */
+    @Override
+    public boolean isTopComponentFloating( TopComponent tc ) {
+        assertEventDispatchThread();
+        return !isDocked( tc );
+    }
+
+    /**
+     * Floats the given TopComponent or docks it back to the main window.
+     * @param tc
+     * @param floating True to separate the given TopComponent from the main window,
+     * false to dock it back to the main window.
+     * @since 2.51
+     */
+    @Override
+    public void setTopComponentFloating(  TopComponent tc, boolean floating ) {
+        assertEventDispatchThread();
+        boolean isFloating = !isDocked( tc );
+        if( isFloating == floating )
+            return;
+        ModeImpl mode = (ModeImpl)findMode( tc );
+        if( null == mode )
+            throw new IllegalStateException( "Cannot find Mode for TopComponent: " + tc );
+        if( floating ) {
+            userUndockedTopComponent( tc, mode );
+        } else {
+            userDockedTopComponent( tc, mode );
+        }
+    }
+
     /**
      * An empty TopComponent needed for deselectEditorTopComponents()
      */

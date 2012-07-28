@@ -258,6 +258,7 @@ public class IdentifierSignature {
     public static IdentifierSignature create(PHPDocTypeNode node) {
         String type = node.getValue();
         String[] typeParts = type.split("\\\\"); //NOI18N
+        assert typeParts.length >= 1 : "TYPE:" + type; //NOI18N
         return new IdentifierSignature(typeParts[typeParts.length - 1]);
     }
 

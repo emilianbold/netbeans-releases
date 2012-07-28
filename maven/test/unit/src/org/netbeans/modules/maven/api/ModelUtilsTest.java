@@ -44,10 +44,17 @@ package org.netbeans.modules.maven.api;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.api.ModelUtils.Descriptor;
+import org.netbeans.modules.maven.api.ModelUtils.LibraryDescriptor;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -202,4 +209,19 @@ public class ModelUtilsTest extends NbTestCase {
                 pom.asText().replace("\r\n", "\n"));
     }
     
+    
+    public void testCheckLibraries() throws Exception {
+        Map<String, String> props = new HashMap<String, String>();
+        props.put(ModelUtils.LIBRARY_PROP_DEPENDENCIES, "a:b:1:jar b:a:2:jar\n  c:d:3:jar\t\t\td:f:4:jar");
+        Descriptor res = ModelUtils.checkLibraries(props, new ArrayList<URL>());
+        assertNotNull(res);
+        List<LibraryDescriptor> deps = res.getDependencies();
+        assertEquals(Arrays.toString(deps.toArray()), 4, deps.size());
+        for (ModelUtils.LibraryDescriptor d : deps) {
+            assertEquals("jar", d.getType());
+            assertTrue("abcd".contains(d.getGroupId()));
+            assertTrue("abdf".contains(d.getArtifactId()));
+            assertTrue("1234".contains(d.getVersion()));
+        }
+    }
 }

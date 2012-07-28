@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -62,7 +61,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.modules.java.source.util.Iterators;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -111,7 +109,7 @@ public class OutputFileManager extends CachingFileManager {
     @Override
     public Iterable<JavaFileObject> list(Location l, String packageName, Set<Kind> kinds, boolean recursive) {
         final Iterable<JavaFileObject> sr =  super.list(l, packageName, kinds, recursive);
-        return tx.filter(packageName, sr);
+        return tx.filter(l, packageName, sr);
     }
 
     public @Override JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 
@@ -143,7 +141,7 @@ public class OutputFileManager extends CachingFileManager {
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;            
             final File f = new File (activeRoot, nameStr);
-            return tx.createFileObject(f, activeRoot, null, null);
+            return tx.createFileObject(l, f, activeRoot, null, null);
         }
     }
 
@@ -173,13 +171,13 @@ public class OutputFileManager extends CachingFileManager {
         }
         path.append(relativeName);
         final File file = FileUtil.normalizeFile(new File (activeRoot,path.toString()));
-        return tx.createFileObject(file, activeRoot,null,null);
+        return tx.createFileObject(l, file, activeRoot,null,null);
     }
 
     
     @Override
     public javax.tools.FileObject getFileForInput(Location l, String pkgName, String relativeName) {
-        javax.tools.FileObject fo = tx.readFileObject(pkgName, relativeName);
+        javax.tools.FileObject fo = tx.readFileObject(l, pkgName, relativeName);
         if (fo != null) {
             return fo;
         }
@@ -191,7 +189,7 @@ public class OutputFileManager extends CachingFileManager {
         if (kind == JavaFileObject.Kind.CLASS) {
             int dot = className.lastIndexOf('.');
             String dir = dot == -1 ? "" : FileObjects.convertPackage2Folder(className.substring(0, dot));
-            javax.tools.FileObject fo = tx.readFileObject(dir, className.substring(dot + 1));
+            javax.tools.FileObject fo = tx.readFileObject(l, dir, className.substring(dot + 1));
             if (fo != null) {
                 return (JavaFileObject)fo;
             }

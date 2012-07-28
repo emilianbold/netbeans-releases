@@ -189,7 +189,7 @@ public class DBReadWriteHelper {
             }
             case Types.BIT: {
                 byte[] bdata = rs.getBytes(index);
-                if (rs.wasNull()) {
+                if (rs.wasNull() || bdata == null) {
                     return null;
                 } else {
                     Byte[] internal = new Byte[bdata.length];

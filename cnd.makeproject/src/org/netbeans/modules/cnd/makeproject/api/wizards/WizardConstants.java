@@ -89,6 +89,7 @@ public class WizardConstants {
     public static final String PROPERTY_CONSOLIDATION_LEVEL = "consolidationLevel"; // String // NOI18N
     public static final String PROPERTY_TEST_FOLDERS = "testFolders"; // String // NOI18N
     public static final String PROPERTY_RUN_REBUILD = "makeProject"; // String // NOI18N
+    public static final String PROPERTY_BUILD_LOG = "buildLog"; // String // NOI18N
     public static final String PROPERTY_MANUAL_CODE_ASSISTANCE = "manualCA"; // String // NOI18N
     public static final String PROPERTY_WORKING_DIR = "buildCommandWorkingDirTextField"; // String // NOI18N
     public static final String PROPERTY_SOURCE_FOLDER_PATH = "sourceFolderPath"; // String // NOI18N

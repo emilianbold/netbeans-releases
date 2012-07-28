@@ -84,7 +84,7 @@ public class StableSuite {
                 //.addTest(KeyMapTest.class, "testProfileRestore")//fails due to issue 151254
                 .addTest(KeyMapTest.class, "testProfileDuplicte")
                 .addTest(KeyMapTest.class, "testHelp")                  
-                //.addTest(AbbreviationsAddRemovePerformer.class) // unstable
+                .addTest(AbbreviationsAddRemovePerformer.class) 
                 .clusters(".*").enableModules(".*")
                 );
     }

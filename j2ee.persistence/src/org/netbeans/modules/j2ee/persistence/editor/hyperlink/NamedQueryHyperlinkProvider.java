@@ -252,7 +252,7 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
     
     private static final Set<JavaTokenId> USABLE_TOKEN_IDS = EnumSet.of(JavaTokenId.STRING_LITERAL);
     
-    public static int[] getIdentifierSpan(Document doc, int offset, Token<JavaTokenId>[] token) {
+    public static int[] getIdentifierSpan(final Document doc, final int offset, Token<JavaTokenId>[] token) {
         FileObject fo = getFileObject(doc);
         if (fo == null) {
             //do nothing if FO is not attached to the document - the goto would not work anyway:
@@ -267,36 +267,46 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         if(eCS == null){
             return null;//no jpa support
         }
-        
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
-        
-        if (ts == null)
-            return null;
-        
-        ts.move(offset);
-        if (!ts.moveNext())
-            return null;
-        
-        Token<JavaTokenId> t = ts.token();
-        boolean hasMessage = false;
-        if (USABLE_TOKEN_IDS.contains(t.id())) {
-            for (int i = 0; i < 5; i++) {
-                if (!ts.movePrevious()) {
-                    break;
+
+        final int[] ret = new int[] { -1, -1 };
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                TokenHierarchy th = TokenHierarchy.get(doc);
+                TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(th, offset);
+
+                if (ts == null) {
+                    return;
                 }
-                Token<JavaTokenId> tk = ts.token();
-                if (TokenUtilities.equals(CCParser.CREATE_NAMEDQUERY, tk.text())) {//NOI18N
-                    hasMessage = true;
-                }
-            }
-            if (hasMessage) {
+
                 ts.move(offset);
-                ts.moveNext();
-                return new int [] {ts.offset(), ts.offset() + t.length()};
+                if (!ts.moveNext()) {
+                    return;
+                }
+
+                Token<JavaTokenId> t = ts.token();
+                boolean hasMessage = false;
+                if (USABLE_TOKEN_IDS.contains(t.id())) {
+                    for (int i = 0; i < 5; i++) {
+                        if (!ts.movePrevious()) {
+                            break;
+                        }
+                        Token<JavaTokenId> tk = ts.token();
+                        if (TokenUtilities.equals(CCParser.CREATE_NAMEDQUERY, tk.text())) {//NOI18N
+                            hasMessage = true;
+                        }
+                    }
+                    if (hasMessage) {
+                        ts.move(offset);
+                        ts.moveNext();
+                        ret[0] = ts.offset();
+                        ret[1] = ts.offset() + t.length();
+                        return;
+                    }
+                }
             }
-        }
-        return null;
+        });
+        return (ret[0] == -1) ? null : ret;
         
     }
     

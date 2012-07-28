@@ -44,6 +44,7 @@ package org.netbeans.modules.project.indexingbridge;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -56,6 +57,20 @@ import org.openide.util.Lookup;
  */
 public abstract class IndexingBridge {
 
+
+    /**
+     * IndexingBridge which allows a caller {@link IndexingBridge#protectedMode(boolean)}
+     * to wait for not yet processed indexing tasks.
+     * @since 1.5
+     */
+    public static abstract class Ordering extends IndexingBridge {
+        /**
+         * Waits until the non processes indexing tasks are done.
+         * @throws InterruptedException when the waiting thread is interrupted.
+         */
+        protected abstract void await() throws InterruptedException;
+    }
+
     private static final Logger LOG = Logger.getLogger(IndexingBridge.class.getName());
 
     protected IndexingBridge() {}
@@ -65,8 +80,27 @@ public abstract class IndexingBridge {
      * @return a lock indicating when to resume indexing
      */
     public final Lock protectedMode() {
+        return protectedMode(false);
+    }
+
+    /**
+     * Begin suppression of indexing.
+     * @return a lock indicating when to resume indexing
+     * @param waitForScan if ture and if the implementation of {@link IndexingBridge}
+     * supports waits for not yet processed indexing tasks before entering to protected mode.
+     * @return a lock indicating when to resume indexing
+     * @since 1.5
+     */
+    public final Lock protectedMode(final boolean waitForScan) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, null, new Throwable("IndexingBridge.protectedMode"));
+        }
+        if (waitForScan && (this instanceof Ordering)) {
+            try {
+                ((Ordering)this).await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         enterProtectedMode();
         return new Lock();

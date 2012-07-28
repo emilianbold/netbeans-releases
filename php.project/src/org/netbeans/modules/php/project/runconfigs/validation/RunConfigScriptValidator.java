@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.php.project.runconfigs.validation;
 
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
@@ -110,7 +110,7 @@ public final class RunConfigScriptValidator {
         }
         try {
             PhpInterpreter.getCustom(interpreter);
-        } catch (PhpProgram.InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             return ex.getLocalizedMessage();
         }
         return null;

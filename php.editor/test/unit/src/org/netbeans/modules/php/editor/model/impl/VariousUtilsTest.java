@@ -42,25 +42,16 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
-import static org.junit.Assert.*;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
 
 /**

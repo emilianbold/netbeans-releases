@@ -44,6 +44,7 @@ METHOD     count(Object)                              Number
 METHOD     countBy(Closure)                           Map
 METHOD     disjoint(Collection)                       boolean
 METHOD     drop(int)                                  List
+METHOD     dropWhile(Closure)                         List
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
 METHOD     eachPermutation(Closure)                   Iterator
@@ -94,6 +95,7 @@ METHOD     hashCode()                      [PUBLIC]   int
 METHOD     head()                                     Object
 METHOD     identity(Closure)                          Object
 METHOD     indexOf(Object)                 [PUBLIC]   int
+METHOD     inject(Closure)                            Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                       [PUBLIC]   String
 METHOD     intersect(Collection)                      Collection
@@ -117,13 +119,16 @@ METHOD     min()                                      Object
 METHOD     min(Closure)                               Object
 METHOD     min(Comparator)                            Object
 METHOD     minus(Collection)                          List
+METHOD     minus(Iterable)                            List
 METHOD     minus(Object)                              List
 METHOD     multiply(Number)                           List
 METHOD     notify()                        [PUBLIC]   void
 METHOD     notifyAll()                     [PUBLIC]   void
 METHOD     permutations()                             Set
 METHOD     plus(Collection)                           Collection
+METHOD     plus(Iterable)                             Collection
 METHOD     plus(Object)                               Collection
+METHOD     plus(int, Iterable)                        List
 METHOD     plus(int, List)                            List
 METHOD     plus(int, Object)                          List
 METHOD     pop()                                      Object
@@ -180,6 +185,7 @@ METHOD     sum(Object)                                Object
 METHOD     sum(Object, Closure)                       Object
 METHOD     tail()                                     List
 METHOD     take(int)                                  List
+METHOD     takeWhile(Closure)                         List
 METHOD     toArray()                       [PUBLIC]   Object[]
 METHOD     toArray(T[])                    [PUBLIC]   T[]
 METHOD     toList()                                   List
@@ -202,6 +208,9 @@ METHOD     wait()                          [PUBLIC]   void
 METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
+METHOD     withDefault(Closure)                       List
+METHOD     withEagerDefault(Closure)                  List
+METHOD     withLazyDefault(Closure)                   List
 FIELD      empty                                      boolean
 FIELD      from                                       Comparable
 FIELD      reverse                                    boolean

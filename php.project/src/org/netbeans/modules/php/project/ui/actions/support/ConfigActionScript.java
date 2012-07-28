@@ -43,16 +43,7 @@
 package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.List;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.runconfigs.RunConfigScript;
@@ -60,7 +51,6 @@ import org.netbeans.modules.php.project.runconfigs.validation.RunConfigScriptVal
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 /**
  * Action implementation for SCRIPT configuration.
@@ -109,22 +99,22 @@ class ConfigActionScript extends ConfigAction {
 
     @Override
     public void runProject() {
-        new RunScript(new ScriptProvider(getStartFile(null))).run();
+        createFileRunner(null).run();
     }
 
     @Override
     public void debugProject() {
-        new DebugScript(new ScriptProvider(getStartFile(null))).run();
+        createFileRunner(null).debug();
     }
 
     @Override
     public void runFile(Lookup context) {
-        new RunScript(new ScriptProvider(getStartFile(context))).run();
+        createFileRunner(context).run();
     }
 
     @Override
     public void debugFile(Lookup context) {
-        new DebugScript(new ScriptProvider(getStartFile(context))).run();
+        createFileRunner(context).debug();
     }
 
     private File getStartFile(Lookup context) {
@@ -138,78 +128,14 @@ class ConfigActionScript extends ConfigAction {
         return FileUtil.toFile(file);
     }
 
-    private final class ScriptProvider extends DefaultScriptProvider implements DebugScript.Provider {
-
-        public ScriptProvider(File file) {
-            super(file);
-        }
-
-        @Override
-        public PhpProject getProject() {
-            return project;
-        }
-
-        @Override
-        public FileObject getStartFile() {
-            assert file != null;
-            return FileUtil.toFileObject(file);
-        }
-
-        @Override
-        public ExecutionDescriptor getDescriptor() throws IOException {
-            assert file != null;
-            return super.getDescriptor()
-                    .charset(Charset.forName(ProjectPropertiesSupport.getEncoding(project)));
-        }
-
-        @Override
-        public ExternalProcessBuilder getProcessBuilder() {
-            assert file != null;
-            RunConfigScript runConfig = RunConfigScript.forProject(project);
-            ExternalProcessBuilder builder = program.getProcessBuilder();
-            String phpArgs = runConfig.getOptions();
-            if (StringUtils.hasText(phpArgs)) {
-                for (String phpArg : Utilities.parseParameters(phpArgs)) {
-                    builder = builder.addArgument(phpArg);
-                }
-            }
-            builder = builder.addArgument(file.getAbsolutePath());
-            String args = runConfig.getArguments();
-            if (StringUtils.hasText(args)) {
-                for (String arg : Utilities.parseParameters(args)) {
-                    builder = builder.addArgument(arg);
-                }
-            }
-
-            String workDir = runConfig.getWorkDir();
-            if (StringUtils.hasText(workDir)) {
-                builder = builder.workingDirectory(new File(workDir));
-            } else {
-                builder = builder.workingDirectory(file.getParentFile());
-            }
-            return builder;
-        }
-
-        @Override
-        public boolean isValid() {
-            return super.isValid() && file != null;
-        }
-
-        @Override
-        protected PhpProgram getPhpProgram() throws InvalidPhpProgramException {
-            return ProjectPropertiesSupport.getValidPhpInterpreter(project);
-        }
-
-        @Override
-        public List<Pair<String, String>> getDebugPathMapping() {
-            // XXX run config
-            return ProjectPropertiesSupport.getDebugPathMapping(project);
-        }
-
-        @Override
-        public Pair<String, Integer> getDebugProxy() {
-            // XXX run config
-            return ProjectPropertiesSupport.getDebugProxy(project);
-        }
+    private FileRunner createFileRunner(Lookup context) {
+        RunConfigScript configScript = RunConfigScript.forProject(project);
+        return new FileRunner(getStartFile(context))
+                .project(project)
+                .command(configScript.getInterpreter())
+                .workDir(configScript.getWorkDir())
+                .phpArgs(configScript.getOptions())
+                .fileArgs(configScript.getArguments());
     }
+
 }

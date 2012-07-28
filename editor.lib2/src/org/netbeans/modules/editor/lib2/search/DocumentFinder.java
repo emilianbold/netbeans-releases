@@ -658,8 +658,8 @@ public class DocumentFinder
                         stringInd++;
                         if (stringInd == chars.length) { // found whole string
                             if (offset == limitOffset) {
-                                int blkEnd = initOffset + 1;
-                                addBlock(blkEnd - stringInd, blkEnd);
+                                int blkEnd = initOffset + offset + 1;
+                                addBlock(blkEnd - chars.length, blkEnd);
                             } else {
                                 wordFound = true;
                             }

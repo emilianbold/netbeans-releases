@@ -284,12 +284,53 @@ public class ToolTipSupport {
     }
 
     /**
+     * Sets the tooltip. The tooltip will be positioned at the given coordinates relative to either the scroller 
+     * (with {@link PopupManager#ScrollBarBounds} or the viewport {@link PopupManager#ViewPortBounds}. Position
+     * of caret in the editor is completely ignored.
+     * 
+     * @param toolTip the tooltip component
+     * @param horizontalBounds positioning relative to the viewport or scrollbar (scroller)
+     * @param placeAt x,y coordinates to place the tooltip
+     * @param horizontalAdjustment horizontal inset between tooltip component and the tooltip floater
+     * @param verticalAdjustment vertical inset between tooltip component and the tooltip floater
+     * @param flags various flags, see FLAG_* constants in this class.
+     * 
+     * @since 3.26
+     */
+    public void setToolTip(
+        JComponent toolTip,
+        PopupManager.HorizontalBounds horizontalBounds,
+        Point placeAt,
+        int horizontalAdjustment,
+        int verticalAdjustment,
+        int flags
+    ) {
+        setToolTip(toolTip, horizontalBounds, PopupManager.FixedPoint, 
+                placeAt, horizontalAdjustment, verticalAdjustment,
+                flags);
+    }
+    
+    /**
      * @Since 2.10
      */
     public void setToolTip(
         JComponent toolTip,
         PopupManager.HorizontalBounds horizontalBounds,
         PopupManager.Placement placement,
+        int horizontalAdjustment,
+        int verticalAdjustment,
+        int flags
+    ) {
+        setToolTip(toolTip, horizontalBounds, placement, 
+                null, horizontalAdjustment, verticalAdjustment,
+                flags);
+    }
+    
+    private void setToolTip(
+        JComponent toolTip,
+        PopupManager.HorizontalBounds horizontalBounds,
+        PopupManager.Placement placement,
+        Point placeAt,
         int horizontalAdjustment,
         int verticalAdjustment,
         int flags
@@ -315,11 +356,16 @@ public class ToolTipSupport {
         }
 
         if (status >= STATUS_VISIBILITY_ENABLED) {
-            if (oldToolTip == this.toolTip && this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION) != null) {
-                ensureVisibility((Point) this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION));
+            Point pt;
+            
+            if (placeAt != null) {
+                pt = placeAt;
+            } else if (oldToolTip == this.toolTip && this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION) != null) {
+                pt = (Point)this.toolTip.getClientProperty(LAST_TOOLTIP_POSITION);
             } else {
-                ensureVisibility(getLastMouseEventPoint());
+                pt = getLastMouseEventPoint();
             }
+            ensureVisibility(pt);
         }
 
         firePropertyChange(PROP_TOOL_TIP, oldToolTip, this.toolTip);
@@ -691,7 +737,7 @@ public class ToolTipSupport {
             int pos = component.viewToModel(toolTipPosition);
             Rectangle cursorBounds = null;
             
-            if (pos >= 0) {
+            if (placement != PopupManager.FixedPoint && pos >= 0) {
                 try {
                     cursorBounds = component.modelToView(pos);
                     extendBounds(cursorBounds);

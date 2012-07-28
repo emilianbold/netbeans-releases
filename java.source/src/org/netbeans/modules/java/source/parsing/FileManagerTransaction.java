@@ -45,7 +45,9 @@ import java.io.*;
 import java.net.URL;
 import java.nio.charset.Charset;
 import javax.tools.JavaFileManager;
+import javax.tools.JavaFileManager.Location;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
@@ -83,12 +85,14 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
      * Filters the result of underlaying {@link JavaFileManager#list} operation.
      * The method removes all files which were notified as deleted in given package
      * and adds all files created in given package.
+     * @param location location to filter
      * @param packageName the package which was listed.
      * @param files the {@link JavaFileObject}s from underlaying {@link JavaFileManager#list} operation.
      * @return the filtered files.
      */
     @NonNull
     abstract Iterable<JavaFileObject> filter (
+        @NonNull Location location,
         @NonNull String packageName,
         @NonNull Iterable<JavaFileObject> files);
 
@@ -100,8 +104,13 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
      * @param encoding desired file encoding
      * @return 
      */
-    abstract JavaFileObject  createFileObject(final @NonNull File file, final @NonNull File root,
-        final @NullAllowed JavaFileFilterImplementation filter, final @NullAllowed Charset encoding);
+    @NonNull
+    abstract JavaFileObject  createFileObject(
+            @NonNull Location location,
+            @NonNull File file,
+            @NonNull File root,
+            @NullAllowed JavaFileFilterImplementation filter,
+            @NullAllowed Charset encoding);
 
     /**
      * Looks up a FileObject suitable for reading. The method MAY return {@code null}, if the FileObject
@@ -111,7 +120,11 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
      * @param relativeName
      * @return 
      */
-    JavaFileObject  readFileObject(String dirName, String relativeName) {
+    @CheckForNull
+    JavaFileObject  readFileObject(
+            @NonNull Location location,
+            @NonNull String dirName,
+            @NonNull String relativeName) {
         return null;
     }
     
@@ -167,7 +180,10 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
 
         @Override
         @NonNull
-        Iterable<JavaFileObject> filter(String packageName, @NonNull final Iterable<JavaFileObject> files) {
+        Iterable<JavaFileObject> filter(
+                @NonNull final Location location,
+                @NonNull final String packageName,
+                @NonNull final Iterable<JavaFileObject> files) {
             return files;
         }
 
@@ -181,7 +197,13 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         }
 
         @Override
-        JavaFileObject createFileObject(File file, File root, JavaFileFilterImplementation filter, Charset encoding) {
+        @NonNull
+        JavaFileObject createFileObject(
+                @NonNull final Location location,
+                @NonNull final File file,
+                @NonNull final File root,
+                @NullAllowed final JavaFileFilterImplementation filter,
+                @NullAllowed final Charset encoding) {
             return FileObjects.fileFileObject(file, root, filter, encoding);
         }
     }
@@ -198,14 +220,23 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         }
 
         @Override
-        JavaFileObject createFileObject(File file, File root, JavaFileFilterImplementation filter, Charset encoding) {
+        @NonNull
+        JavaFileObject createFileObject(
+                @NonNull final Location location,
+                @NonNull final File file,
+                @NonNull final File root,
+                @NullAllowed final JavaFileFilterImplementation filter,
+                @NullAllowed final Charset encoding) {
             InferableJavaFileObject ifo = FileObjects.fileFileObject(file, root, filter, encoding);
             return new NullFileObject(ifo);
         }
 
         @Override
         @NonNull
-        Iterable<JavaFileObject> filter(String packageName, @NonNull final Iterable<JavaFileObject> files) {
+        Iterable<JavaFileObject> filter(
+                @NonNull final Location location,
+                @NonNull final String packageName,
+                @NonNull final Iterable<JavaFileObject> files) {
             return files;
         }
 
@@ -267,13 +298,22 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
         }
 
         @Override
-        JavaFileObject createFileObject(File file, File root, JavaFileFilterImplementation filter, Charset encoding) {
+        @NonNull
+        JavaFileObject createFileObject(
+                @NonNull final Location location,
+                @NonNull final File file,
+                @NonNull final File root,
+                @NullAllowed final JavaFileFilterImplementation filter,
+                @NullAllowed final Charset encoding) {
             throw new UnsupportedOperationException ("Create File not supported, read-only.");   //NOI18N
         }
 
         @Override
         @NonNull
-        Iterable<JavaFileObject> filter(String packageName, @NonNull final Iterable<JavaFileObject> files) {
+        Iterable<JavaFileObject> filter(
+                @NonNull final Location location,
+                @NonNull String packageName,
+                @NonNull final Iterable<JavaFileObject> files) {
             return files;
         }
 

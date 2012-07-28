@@ -16,6 +16,7 @@ import org.netbeans.modules.java.hints.test.api.HintTest;
    -- for Maven-based modules, use dependency:copy in validate phase to create
       target/endorsed/org-netbeans-libs-javacapi-*.jar and add to endorseddirs
       in maven-compiler-plugin and maven-surefire-plugin configuration
+      See: http://wiki.netbeans.org/JavaHintsTestMaven
  */
 public class ${CLASS_NAME}Test {
 

@@ -134,4 +134,11 @@ public abstract class SearchResultsDisplayer<T> {
      */
     public void setInfoNode(Node infoNode) {
     }
+
+    /**
+     * Called right after the displayer is closed. It should be overriden to
+     * release all held resources. The default implementation does nothing.
+     */
+    public void closed() {
+    }
 }

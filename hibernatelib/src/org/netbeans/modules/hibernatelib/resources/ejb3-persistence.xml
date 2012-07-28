@@ -44,8 +44,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
-<library version="1.0">
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>ejb3-persistence</name>
     <type>j2se</type>
     <localizing-bundle>org/netbeans/modules/hibernatelib/resources/Bundle</localizing-bundle>
@@ -53,11 +52,11 @@ made subject to such option by the copyright holder.
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/ejb3-persistence.jar!/</resource>
     </volume>
-
-    <volume>
+    <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
-        <type>maven-pom</type>
-        <resource>http://repo1.maven.org/maven2/org/hibernate/ejb3-persistence/1.0.1.GA/ejb3-persistence-1.0.1.GA.pom</resource>
-    </volume>
-
+        <property>
+            <name>maven-dependencies</name>
+            <value>org.hibernate:ejb3-persistence:1.0.1.GA:jar</value>
+        </property>
+    </properties>
 </library>

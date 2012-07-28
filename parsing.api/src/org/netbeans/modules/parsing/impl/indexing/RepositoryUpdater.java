@@ -3276,14 +3276,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
         
         private boolean shouldRefresh() {
-            if (this.files.size() != 1) {
-                return true;
-            }
-            final Source source = getActiveSource();
-            if (source == null) {
-                return true;
-            }
-            return !files.iterator().next().equals(source.getFileObject());            
+            return !TransientUpdateSupport.isTransientUpdate();
         }
         
     } // End of FileListWork class
@@ -3302,7 +3295,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         protected @Override boolean getDone() {
-            return scanBinary(root, BinaryIndexers.load(), null);
+            boolean result = scanBinary(root, BinaryIndexers.load(), null);
+            refreshActiveDocument();
+            return result;
         }
 
         @Override
@@ -5277,13 +5272,21 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        @ServiceProvider(service=IndexingBridge.class)
-        public static class IndexingBridgeImpl extends IndexingBridge {
-            @Override protected void enterProtectedMode() {
+        @ServiceProvider(service=IndexingBridge.Ordering.class)
+        public static final class IndexingBridgeImpl extends IndexingBridge.Ordering {
+            @Override
+            protected void enterProtectedMode() {
                 RepositoryUpdater.getDefault().getWorker().enterProtectedMode(null);
             }
-            @Override protected void exitProtectedMode() {
+
+            @Override
+            protected void exitProtectedMode() {
                 RepositoryUpdater.getDefault().getWorker().exitProtectedMode(null, null);
+            }
+
+            @Override
+            protected void await() throws InterruptedException {
+                RepositoryUpdater.getDefault().waitUntilFinished(-1);
             }
         }
 

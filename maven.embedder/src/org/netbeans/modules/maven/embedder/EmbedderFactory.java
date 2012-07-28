@@ -368,53 +368,6 @@ public final class EmbedderFactory {
         return embedder.createModelLineage(pom);
     }
 
-
-//    /**
-//     * creates model lineage for the given pom file.
-//     * Useful to be able to locate where certain elements are defined.
-//     *
-//     * @param pom
-//     * @param embedder
-//     * @param allowStubs
-//     * @return
-//     */
-//    public static ModelLineage createModelLineage(File pom, MavenEmbedder embedder, boolean allowStubs) throws ProjectBuildingException {
-//        try {
-//            ModelLineageBuilder bldr = (ModelLineageBuilder) embedder.getPlexusContainer().lookup(ModelLineageBuilder.class);
-//            ProfileActivationContext context = new DefaultProfileActivationContext(new Properties(), true); //TODO shall we pass some execution props in here?
-//            ProfileManager manager = new DefaultProfileManager(embedder.getPlexusContainer(), context);
-//            DefaultProjectBuilderConfiguration conf = new DefaultProjectBuilderConfiguration();
-//            conf.setGlobalProfileManager(manager);
-//            conf.setExecutionProperties(new Properties());
-//            conf.setLocalRepository(embedder.getLocalRepository());
-//            conf.setUserProperties(new Properties());
-//            return bldr.buildModelLineage(pom, conf, new ArrayList(), allowStubs, true);
-//        } catch (ComponentLookupException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//        return new DefaultModelLineage();
-//    }
-
-//    private static void copyConfig(PlexusConfiguration old, XmlPlexusConfiguration conf) throws PlexusConfigurationException {
-//        conf.setValue(old.getValue());
-//        String[] attrNames = old.getAttributeNames();
-//        if (attrNames != null && attrNames.length > 0) {
-//            for (int i = 0; i < attrNames.length; i++) {
-//                conf.setAttribute(attrNames[i], old.getAttribute(attrNames[i]));
-//            }
-//        }
-//        if ("lifecycle".equals(conf.getName())) { //NOI18N
-//            conf.setAttribute("implementation", "org.apache.maven.lifecycle.Lifecycle"); //NOI18N
-//        }
-//        for (int i = 0; i < old.getChildCount(); i++) {
-//            PlexusConfiguration oldChild = old.getChild(i);
-//            XmlPlexusConfiguration newChild = new XmlPlexusConfiguration(oldChild.getName());
-//            conf.addChild(newChild);
-//            copyConfig(oldChild, newChild);
-//        }
-//    }
-
-
     /**
      * Maven assumes the env vars are included in execution properties with the "env." prefix.
      * @see EnvironmentUtils#addEnvVars

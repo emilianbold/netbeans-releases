@@ -67,6 +67,8 @@ import org.openide.util.WeakListeners;
  */
 public class SourcePath implements ClassPathImplementation, PropertyChangeListener {
 
+    private static final boolean NO_SOURCE_FILTER = Boolean.getBoolean("SourcePath.no.source.filter");  //NOI18N
+
     private final PropertyChangeSupport listeners = new PropertyChangeSupport(this);
     private final ClassPathImplementation delegate;
     private final boolean forcePreferSources;
@@ -139,7 +141,10 @@ public class SourcePath implements ClassPathImplementation, PropertyChangeListen
             @NonNull final ClassPathImplementation cpImpl,
             final boolean bkgComp) {
         assert cpImpl != null;
-        return new SourcePath(cpImpl, bkgComp, new FilterNonOpened());
+        return new SourcePath(
+                cpImpl,
+                bkgComp,
+                NO_SOURCE_FILTER ? new AllRoots() : new FilterNonOpened());
     }
 
 
@@ -156,6 +161,21 @@ public class SourcePath implements ClassPathImplementation, PropertyChangeListen
             }
             return res;
         }
+    }
+
+    private static class AllRoots implements Function<
+            Pair<Boolean,List<? extends PathResourceImplementation>>,
+            List<PathResourceImplementation>> {
+
+        @Override
+        public List<PathResourceImplementation> apply(Pair<Boolean, List<? extends PathResourceImplementation>> resources) {
+            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>(resources.second.size());
+            for (PathResourceImplementation pr : resources.second) {
+                res.add(new FR(pr,true));
+            }
+            return res;
+        }
+
     }
 
     private static class FR implements FilteringPathResourceImplementation, PropertyChangeListener, ClassIndexManagerListener {

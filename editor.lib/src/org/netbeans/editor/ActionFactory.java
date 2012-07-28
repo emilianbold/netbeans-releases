@@ -1155,8 +1155,13 @@ public class ActionFactory {
             super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
+                    EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
+                }
                 EditorFindSupport.getInstance().find(null, false);
             }
         }
@@ -1172,8 +1177,13 @@ public class ActionFactory {
             super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET | WORD_MATCH_RESET);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                if (eui.getComponent().getClientProperty("AsTextField") == null)  { //NOI18N
+                    EditorFindSupport.getInstance().setFocusedTextComponent(eui.getComponent());
+                }
                 EditorFindSupport.getInstance().find(null, true);
             }
         }
@@ -1192,12 +1202,13 @@ public class ActionFactory {
             super();
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 EditorFindSupport findSupport = EditorFindSupport.getInstance();
                 Caret caret = target.getCaret();
                 int dotPos = caret.getDot();
-                HashMap props = new HashMap(findSupport.getFindProperties());
+                HashMap props = new HashMap(findSupport.createDefaultFindProperties());
                 String searchWord = null;
                 boolean revert = false;
                 Boolean originalValue = null;
@@ -1239,9 +1250,15 @@ public class ActionFactory {
                         revertMap.put(EditorFindSupport.FIND_WHOLE_WORDS, originalValue != null ? originalValue : Boolean.FALSE);
                         props.put(EditorFindSupport.REVERT_MAP, revertMap);
                     }
+                    
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH, Boolean.FALSE);
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
+                    props.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
 
                     EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
-                    findSupport.setFocusedTextComponent(eui.getComponent());
+                    if (eui.getComponent().getClientProperty("AsTextField") == null) { //NOI18N
+                        findSupport.setFocusedTextComponent(eui.getComponent());
+                    }
                     findSupport.putFindProperties(props);
                     findSupport.find(null, false);
                 }

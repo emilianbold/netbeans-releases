@@ -94,6 +94,10 @@ class NbModuleProviderImpl implements NbModuleProvider {
     @Override public String getSourceDirectoryPath() {
         return prj.getSourceDirectoryPath();
     }
+    
+    @Override public String getTestSourceDirectoryPath() {
+        return getResourceDirectoryPath(true);
+    }
 
     @Override public FileObject getSourceDirectory() {
         return prj.getSourceDirectory();
@@ -107,8 +111,10 @@ class NbModuleProviderImpl implements NbModuleProvider {
         return prj.evaluator().getProperty(inTests ? "test.unit.src.dir" : "src.dir");
     }
 
-    @Override public boolean addDependency(String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler) throws IOException {
-        return ApisupportAntUtils.addDependency(prj, codeNameBase, releaseVersion, version, useInCompiler);
+    @Override public void addDependencies(NbModuleProvider.ModuleDependency[] dependencies) throws IOException {
+        for (NbModuleProvider.ModuleDependency dep : dependencies) {
+            ApisupportAntUtils.addDependency(prj, dep.getCodeNameBase(), dep.getReleaseVersion(), dep.getVersion(), dep.isUseInCompiler());
+        }
     }
 
     @Override public SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
@@ -126,7 +132,7 @@ class NbModuleProviderImpl implements NbModuleProvider {
 
     @Override public boolean hasDependency(String codeNameBase) throws IOException {
         ProjectXMLManager pxm = new ProjectXMLManager(prj);
-        for (ModuleDependency d : pxm.getDirectDependencies()) {
+        for (org.netbeans.modules.apisupport.project.ModuleDependency d : pxm.getDirectDependencies()) {
             if (d.getModuleEntry().getCodeNameBase().equals(codeNameBase)) {
                 return true;
             }

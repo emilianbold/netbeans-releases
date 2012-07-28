@@ -257,6 +257,7 @@ made subject to such option by the copyright holder.
                 <package>org.sonatype.aether.version</package>
                 <package>org.sonatype.plexus.components.cipher</package>
                 <package>org.sonatype.plexus.components.sec.dispatcher</package>
+                <package>org.apache.maven.wagon.shared.http4</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/maven-dependency-tree-1.2.jar</runtime-relative-path>

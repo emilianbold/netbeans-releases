@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.search.ui;
 
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Image;
@@ -146,9 +145,7 @@ public class ResultsOutlineSupport {
                 if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED)
                         != 0) {
                     if (outlineView.isDisplayable()) {
-                        onAttach();
-                    } else {
-                        checkDetached(this);
+                        outlineView.expandNode(resultsNode);
                     }
                 }
             }
@@ -164,31 +161,7 @@ public class ResultsOutlineSupport {
                 Math.max(16, fm.getHeight()) + VERTICAL_ROW_SPACE);
     }
 
-    private void onAttach() {
-        outlineView.expandNode(resultsNode);
-    }
-
-    /**
-     * Check whether the search results panel has been removed and, if so,
-     * remove hierarchy listener and call {@link #onDetach} method.
-     *
-     * Method {@link #onDetach()} is not called directly because results panel
-     * can be detached a attached to another parent container when result tabs
-     * are created and closed. (TODO: Add panelClosed API method to displayer.)
-     */
-    private void checkDetached(final HierarchyListener listenerToRemove) {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                if (!outlineView.isDisplayable()) {
-                    outlineView.removeHierarchyListener(listenerToRemove);
-                    onDetach();
-                }
-            }
-        });
-    }
-
-    private synchronized void onDetach() {
+    public synchronized void closed() {
         clean();
         saveColumnState();
     }
@@ -372,7 +345,9 @@ public class ResultsOutlineSupport {
         }
 
         public void setHtmlAndRawDisplayName(String htmlName) {
-            htmlDisplayName = htmlName;
+            htmlDisplayName = htmlName == null
+                    ? null
+                    : "<html>" + htmlName + "</html>";       // #214330 //NOI18N
             String stripped = (htmlName == null)
                     ? null
                     : htmlName.replaceAll("<b>", "").replaceAll( //NOI18N

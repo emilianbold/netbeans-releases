@@ -819,8 +819,7 @@ public final class GeneratorUtilities {
      *         them will be added during task commit.
      */
     public <T extends Tree> T importFQNs(T original) {
-        TranslateIdentifier translator = new TranslateIdentifier(copy);
-        return (T) translator.translate(original);
+        return TranslateIdentifier.importFQNs(copy, original);
     }
 
     public <T extends Tree> T importComments(T original, CompilationUnitTree cut) {

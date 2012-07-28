@@ -57,13 +57,12 @@ import org.openide.filesystems.FileUtil;
 
 public class ConfigurationXMLWriter extends XMLDocWriter {
 
-    private FileObject projectDirectory;
-    private MakeConfigurationDescriptor projectDescriptor;
+    private final FileObject projectDirectory;
+    private final MakeConfigurationDescriptor projectDescriptor;
 
     private CommonConfigurationXMLCodec encoder;
 
-    public ConfigurationXMLWriter(FileObject projectDirectory,
-				  MakeConfigurationDescriptor projectDescriptor) {
+    public ConfigurationXMLWriter(FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor) {
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
     }
@@ -75,12 +74,21 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
 
         String tag = CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT;
 
-        encoder = new ConfigurationXMLCodec(tag, null, projectDescriptor, null);
+        encoder = new ConfigurationXMLCodec(tag, true, null, projectDescriptor, null);
         assert projectDescriptor.getState() != State.READING;
         write("nbproject/configurations.xml"); // NOI18N
 
-        encoder = new AuxConfigurationXMLCodec(tag, projectDescriptor);
+        encoder = new AuxConfigurationXMLCodec(tag, projectDescriptor, false);
         write("nbproject/private/configurations.xml"); // NOI18N
+    }
+
+    public void writeDefaultCondigurations() throws IOException {
+        if (projectDescriptor == null) {
+            return;
+        }
+        String tag = CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT;
+        encoder = new AuxConfigurationXMLCodec(tag, projectDescriptor, true);
+        write("nbproject/default_configurations.xml"); // NOI18N
     }
 
     /*

@@ -42,17 +42,16 @@
 package org.netbeans.modules.php.apigen.annotations;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ApiGenAnnotationsProvider extends PhpAnnotationsProvider {
+public class ApiGenAnnotationsProvider extends AnnotationCompletionTagProvider {
 
     private static final ApiGenAnnotationsProvider INSTANCE = new ApiGenAnnotationsProvider();
 
@@ -63,14 +62,14 @@ public class ApiGenAnnotationsProvider extends PhpAnnotationsProvider {
                 null);
     }
 
-    @PhpAnnotationsProvider.Registration(position=100)
+    @AnnotationCompletionTagProvider.Registration(position=100)
     public static ApiGenAnnotationsProvider getInstance() {
         return INSTANCE;
     }
 
     @Override
-    public List<PhpAnnotationTag> getFunctionAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getFunctionAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new AccessTag(),
                 new AuthorTag(),
                 new CategoryTag(),
@@ -90,6 +89,7 @@ public class ApiGenAnnotationsProvider extends PhpAnnotationsProvider {
                 new SinceTag(),
                 new StaticvarTag(),
                 new SubpackageTag(),
+                new ThrowsTag(),
                 new TodoTag(),
                 new TutorialTag(),
                 new UsesTag(),
@@ -97,8 +97,8 @@ public class ApiGenAnnotationsProvider extends PhpAnnotationsProvider {
     }
 
     @Override
-    public List<PhpAnnotationTag> getTypeAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getTypeAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new AbstractTag(),
                 new AccessTag(),
                 new AuthorTag(),
@@ -128,8 +128,8 @@ public class ApiGenAnnotationsProvider extends PhpAnnotationsProvider {
     }
 
     @Override
-    public List<PhpAnnotationTag> getFieldAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getFieldAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new AbstractTag(),
                 new AccessTag(),
                 new AuthorTag(),
@@ -154,8 +154,8 @@ public class ApiGenAnnotationsProvider extends PhpAnnotationsProvider {
     }
 
     @Override
-    public List<PhpAnnotationTag> getMethodAnnotations() {
-        return Arrays.<PhpAnnotationTag>asList(
+    public List<AnnotationCompletionTag> getMethodAnnotations() {
+        return Arrays.<AnnotationCompletionTag>asList(
                 new AbstractTag(),
                 new AccessTag(),
                 new AuthorTag(),
@@ -176,6 +176,7 @@ public class ApiGenAnnotationsProvider extends PhpAnnotationsProvider {
                 new SinceTag(),
                 new StaticTag(),
                 new StaticvarTag(),
+                new ThrowsTag(),
                 new TodoTag(),
                 new TutorialTag(),
                 new UsesTag(),

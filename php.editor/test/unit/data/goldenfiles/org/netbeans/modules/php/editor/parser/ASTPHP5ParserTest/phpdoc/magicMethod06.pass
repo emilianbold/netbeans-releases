@@ -23,7 +23,7 @@
         <Comments>
             <PHPDocBlock start='10' end='66'>
                 <Tags>
-                    <PHPDocMethodTag start='14' end='62' kind='METHOD'>
+                    <PHPDocMethodTag start='14' end='62' kind='method'>
                         <Name>
                             <PHPDocNode start='24' end='26' value='m1'/>
                         </Name>
@@ -31,7 +31,7 @@
                             <PHPDocTypeNode start='22' end='23' value='A' isArray='false'/>
                         </Return Types>
                         <Parameters>
-                            <PHPDocVarTypeTag start='27' end='43' kind='PARAM'>
+                            <PHPDocVarTypeTag start='27' end='43' kind='param'>
                                 <Variable>
                                     <PHPDocNode start='36' end='43' value='$param1'/>
                                 </Variable>
@@ -46,7 +46,7 @@
             </PHPDocBlock>
             <PHPDocBlock start='10' end='66'>
                 <Tags>
-                    <PHPDocMethodTag start='14' end='62' kind='METHOD'>
+                    <PHPDocMethodTag start='14' end='62' kind='method'>
                         <Name>
                             <PHPDocNode start='24' end='26' value='m1'/>
                         </Name>
@@ -54,7 +54,7 @@
                             <PHPDocTypeNode start='22' end='23' value='A' isArray='false'/>
                         </Return Types>
                         <Parameters>
-                            <PHPDocVarTypeTag start='27' end='43' kind='PARAM'>
+                            <PHPDocVarTypeTag start='27' end='43' kind='param'>
                                 <Variable>
                                     <PHPDocNode start='36' end='43' value='$param1'/>
                                 </Variable>

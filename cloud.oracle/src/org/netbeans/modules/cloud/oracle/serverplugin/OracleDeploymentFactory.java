@@ -50,6 +50,7 @@ import org.netbeans.libs.oracle.cloud.api.CloudSDKHelper;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.SDKException;
 import org.netbeans.modules.cloud.oracle.OracleInstance;
+import org.netbeans.modules.cloud.oracle.OracleInstanceManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.util.NbBundle;
 
@@ -76,17 +77,19 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDeploymentManager(String uri, String username,
             String password) throws DeploymentManagerCreationException {
+        OracleInstance instance = findInstance(uri);
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
-        ApplicationManager am;
-        try {
-            am = OracleInstance.createApplicationManager(
-                    props.getProperty(IP_ADMIN_URL), 
-                    username,
-                    password,
-                    CloudSDKHelper.getSDKFolder());
-        } catch (SDKException e) {
-            LOG.log(Level.FINE, "cannot access SDK", e);
-            am = null;
+        ApplicationManager am = null;
+        if (instance != null) {
+            try {
+                am = OracleInstance.createApplicationManager(
+                        props.getProperty(IP_ADMIN_URL), 
+                        instance.getUser(),
+                        instance.getPassword(),
+                        CloudSDKHelper.getSDKFolder());
+            } catch (SDKException e) {
+                LOG.log(Level.FINE, "cannot access SDK", e);
+            }
         }
 
         return new OracleDeploymentManager(
@@ -116,6 +119,15 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     @Override
     public String getProductVersion() {
         return "1.0"; // NOI18N
+    }
+    
+    private OracleInstance findInstance(String id) {
+        for (OracleInstance ai : OracleInstanceManager.getDefault().getInstances()) {
+            if (id.equals(OracleJ2EEInstance.createURL(ai.getName(), ai.getIdentityDomain(), ai.getJavaServiceName()))) {
+                return ai;
+            }
+        }
+        return null;
     }
     
 }

@@ -40,7 +40,6 @@
 package org.netbeans.modules.php.smarty;
 
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.smarty.ui.options.SmartyOptions;
 import org.openide.filesystems.FileObject;
@@ -49,7 +48,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Martin Fousek
  */
-public class SmartyFramework extends PhpProgram {
+public class SmartyFramework {
 
     public static final String OPTIONS_SUB_PATH = "Smarty"; // NOI18N
     public static final String BASE_CLASS_NAME = "Smarty"; // NOI18N
@@ -78,15 +77,6 @@ public class SmartyFramework extends PhpProgram {
      * Version of SMARTY templates.
      */
     private static Version smartyVersion = Version.SMARTY3;
-
-    public SmartyFramework() {
-        super(null);
-    }
-
-    @Override
-    public String validate() {
-        return null;
-    }
 
     /**
      * @return full IDE options Smarty path

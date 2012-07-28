@@ -46,13 +46,13 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.xml.VersionException;
+import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
-import org.netbeans.modules.cnd.api.xml.VersionException;
-import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -66,9 +66,8 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
     private int descriptorVersion = -1;
 
-    public AuxConfigurationXMLCodec(String tag,
-            ConfigurationDescriptor configurationDescriptor) {
-        super(configurationDescriptor, false);
+    public AuxConfigurationXMLCodec(String tag, ConfigurationDescriptor configurationDescriptor, boolean versionedLocation) {
+        super(configurationDescriptor, false, versionedLocation);
         this.tag = tag;
         this.configurationDescriptor = configurationDescriptor;
     }

@@ -115,7 +115,7 @@ public final class NimbusEditorTabDisplayerUI extends BasicScrollingTabDisplayer
         Graphics2D g2d = (Graphics2D) g;
         int w = displayer.getWidth();
         int h = displayer.getHeight();
-        if( NimbusEditorTabCellRenderer.IS_JDK_17 ) {
+        if( NimbusEditorTabCellRenderer.IS_JDK_17_OR_18 ) {
             javax.swing.Painter painter = null;
             if (displayer.isActive()) {
                 painter = (javax.swing.Painter) UIManager.get("TabbedPane:TabbedPaneTabArea[Enabled+MouseOver].backgroundPainter");
