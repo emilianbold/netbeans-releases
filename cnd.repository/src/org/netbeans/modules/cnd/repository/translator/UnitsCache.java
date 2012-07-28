@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.repository.util.IntToStringCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.modules.Places;
 import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 
@@ -78,9 +77,10 @@ import org.openide.util.NbBundle;
  */
 final class UnitsCache {
     private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
-    private final static File MASTER_INDEX_FILE = Places.getCacheSubfile("cnd/model/index"); // NOI18N
+    private final static File MASTER_INDEX_FILE = new File(StorageAllocator.getInstance().getCacheBaseDirectory(), "index"); // NOI18N
     private final List<CharSequence> cache = new ArrayList<CharSequence>();
     private final long timestamp;
+
     /**
      * A list of int/string tables for units a table per unit.
      * It is "parallel" to the super.cache array.
@@ -157,8 +157,10 @@ final class UnitsCache {
                     throw exception;
                 }
             }
-            loadMasterIndex(randomAccessFile);
-            convertIfNeed();
+            IndexConverter converter = loadMasterIndex(randomAccessFile);
+            if (converter != null) {
+                convertIfNeed(converter);
+            }
             inited = true;
         } catch (FileNotFoundException e) {
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -187,11 +189,16 @@ final class UnitsCache {
      * Reads master index.
      * Fills fileNamesCaches with an empty int/string tables.
      */
-    private void loadMasterIndex(DataInput stream) throws IOException {
+    private IndexConverter loadMasterIndex(DataInput stream) throws IOException {
+        IndexConverter converter = null;
         cache.clear();
         fileNamesCaches.clear();
         stream.readInt();
         stream.readLong();
+        String oldIndexCanonicalPath = stream.readUTF();
+        if( ! oldIndexCanonicalPath.equals(MASTER_INDEX_FILE.getCanonicalPath())) {
+            converter = new IndexConverter(oldIndexCanonicalPath, MASTER_INDEX_FILE.getCanonicalPath());
+        }
         int size = stream.readInt();
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
             trace("Reading master index (%d) elements\n", size); // NOI18N
@@ -212,11 +219,11 @@ final class UnitsCache {
             // new dummy int/string cache (with the current (???!) timestamp
             fileNamesCaches.add(new IntToStringCache(ts));            
         }
+        return converter;
     }
 
-    private void convertIfNeed() {
+    private void convertIfNeed(IndexConverter converter) {
         // called from ctor => no sync needed
-        IndexConverter converter = new IndexConverter();
         if (!converter.needsConversion()) {
             return;
         }
@@ -547,6 +554,7 @@ final class UnitsCache {
         assert stream != null;
         stream.writeInt(RepositoryTranslatorImpl.getVersion());
         stream.writeLong(timestamp);
+        stream.writeUTF(MASTER_INDEX_FILE.getCanonicalPath());
         int size = cache.size();
         stream.writeInt(size);
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -686,7 +694,7 @@ final class UnitsCache {
         System.arraycopy(args, 0, newArgs, 1, args.length);
         System.err.printf("RepositoryTranslator [%d] " + format, newArgs);
     }
-    
+
     /**
      * Just a structure that holds name and timestamps
      * for required unit

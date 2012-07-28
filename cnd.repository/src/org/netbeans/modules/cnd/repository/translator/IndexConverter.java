@@ -43,10 +43,8 @@ package org.netbeans.modules.cnd.repository.translator;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.repository.util.Pair;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
-import org.openide.util.CharSequences;
 
 /**
  *
@@ -54,9 +52,59 @@ import org.openide.util.CharSequences;
  */
 public class IndexConverter {
 
-    private List<Pair<String, String>> rules = new ArrayList<Pair<String, String>>();
+    private static class Rule {
 
-    public IndexConverter() {
+        public final String from;
+        public final String to;
+
+        public Rule(String first, String second) {
+            this.from = first.endsWith("/") ? first : first + "/";
+            this.to = second.endsWith("/") ? second : second + "/";
+        }
+    }
+
+    private List<Rule> rules = new ArrayList<Rule>();
+
+    IndexConverter(String oldCanonicalPath, String newCanonicalPath) {
+        if (!oldCanonicalPath.endsWith(newCanonicalPath)) {
+            oldCanonicalPath.replace('\\', '/');
+            newCanonicalPath.replace('\\', '/');
+            String[] oldParts = oldCanonicalPath.split("/");
+            String[] newParts = newCanonicalPath.split("/");
+            int oldIdx = oldParts.length - 1;
+            int newIdx = newParts.length - 1;
+            while (newIdx > 0 && oldIdx > 0) {
+                if (!oldParts[oldIdx].equals(newParts[newIdx])) {
+                    break;
+                }
+                oldIdx--;
+                newIdx--;
+            }
+            String from;
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i <= oldIdx; i++) {
+                    if (!endsWith(sb, '/')) {
+                        sb.append('/');
+                    }
+                    sb.append(oldParts[i]);
+                }
+                from = sb.toString();
+            }
+            String to;
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i <= newIdx; i++) {
+                    if (!endsWith(sb, '/')) {
+                        sb.append('/');
+                    }
+                    sb.append(newParts[i]);
+                }
+                to = sb.toString();
+            }
+            rules.add(new Rule(from, to));
+        }
+
         String option = System.getProperty("cnd.repository.translation");
         if (option != null) {
             String[] parts = option.split(":");
@@ -67,14 +115,19 @@ public class IndexConverter {
                         System.err.printf("Incorrect option: %s\n", option); //NOI18N
                         return;
                     }
-                    rules.add(new Pair<String, String>(
-                            t[0].endsWith("/") ? t[0] : t[0] + "/",
-                            t[1].endsWith("/") ? t[1] : t[1] + "/"));
+                    rules.add(new Rule(t[0], t[1]));
                 }
             } else {
                 System.err.printf("Incorrect option: %s\n", option); //NOI18N
             }
         }
+    }
+
+    private boolean endsWith(StringBuilder sb, char c) {
+        if (sb != null && sb.length() > 0 ) {
+            return sb.charAt(sb.length() - 1) == c;
+        }
+        return false;
     }
 
     public boolean needsConversion() {
@@ -83,10 +136,10 @@ public class IndexConverter {
 
     public CharSequence convert(CharSequence path) {
         if (path != null) {
-            for (Pair<String, String> pair : rules) {
-                String toFind = pair.first;
+            for (Rule pair : rules) {
+                String toFind = pair.from;
                 if (CharSequenceUtils.startsWith(path, toFind)) {
-                    String toReplace = pair.second;
+                    String toReplace = pair.to;
                     String subst = toReplace + path.subSequence(toFind.length(), path.length());
                     //return CharSequences.create(subst);
                     return FilePathCache.getManager().getString(subst);

@@ -49,14 +49,17 @@ import java.io.File;
  * @author Vladimir Kvashin
  */
 public interface RepositoryCacheDirectoryProvider {
-    /**
-     * Gets base directory for unit cache.
-     *
-     * It does not contain directory of the unit itself -
-     * it's repository responsibility to create a  subdirectory with appropriate name.
-     *
-     * @param unitName unit name
-     * @return base directory; it can be null, in which case it will be ignored
-     */
-    File getUnitCacheBaseDirectory(CharSequence unitName);
+
+    File getCacheBaseDirectory();
+
+//    /**
+//     * Gets base directory for unit cache.
+//     *
+//     * It does not contain directory of the unit itself -
+//     * it's repository responsibility to create a  subdirectory with appropriate name.
+//     *
+//     * @param unitName unit name
+//     * @return base directory; it can be null, in which case it will be ignored
+//     */
+//    File getUnitCacheBaseDirectory(CharSequence unitName);
 }
