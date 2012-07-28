@@ -58,8 +58,8 @@ public class IndexConverter {
         public final String to;
 
         public Rule(String first, String second) {
-            this.from = first.endsWith("/") ? first : first + "/";
-            this.to = second.endsWith("/") ? second : second + "/";
+            this.from = first.endsWith("/") ? first : first + "/"; // NOI18N
+            this.to = second.endsWith("/") ? second : second + "/"; // NOI18N
         }
     }
 
@@ -69,8 +69,8 @@ public class IndexConverter {
         if (!oldCanonicalPath.endsWith(newCanonicalPath)) {
             oldCanonicalPath.replace('\\', '/');
             newCanonicalPath.replace('\\', '/');
-            String[] oldParts = oldCanonicalPath.split("/");
-            String[] newParts = newCanonicalPath.split("/");
+            String[] oldParts = oldCanonicalPath.split("/"); // NOI18N
+            String[] newParts = newCanonicalPath.split("/"); // NOI18N
             int oldIdx = oldParts.length - 1;
             int newIdx = newParts.length - 1;
             while (newIdx > 0 && oldIdx > 0) {
@@ -107,10 +107,10 @@ public class IndexConverter {
 
         String option = System.getProperty("cnd.repository.translation");
         if (option != null) {
-            String[] parts = option.split(":");
+            String[] parts = option.split(":"); // NOI18N
             if (parts.length > 0) {
                 for (String pair : parts) {
-                    String[] t = pair.split("=");
+                    String[] t = pair.split("="); // NOI18N
                     if (t.length != 2) {
                         System.err.printf("Incorrect option: %s\n", option); //NOI18N
                         return;
