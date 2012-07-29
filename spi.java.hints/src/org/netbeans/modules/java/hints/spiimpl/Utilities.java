@@ -98,6 +98,8 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Filter;
+import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
@@ -552,9 +554,9 @@ public class Utilities {
         DiagnosticListener<? super JavaFileObject> oldDiag = compiler.log.getDiagnosticListener();
         int origNErrors = compiler.log.nerrors;
         int origNWarnings = compiler.log.nwarnings;
-        boolean origDeferDiagnostic = compiler.log.deferDiagnostics;
+        Filter<JCDiagnostic> origDeferDiagnostic = compiler.log.deferredDiagFilter;
 
-        compiler.log.deferDiagnostics = false;
+        compiler.log.deferAll();
         compiler.log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
         try {
             CharBuffer buf = CharBuffer.wrap((stmt+"\u0000").toCharArray(), 0, stmt.length());
@@ -573,7 +575,7 @@ public class Utilities {
             compiler.log.setDiagnosticListener(oldDiag);
             compiler.log.nerrors = origNErrors;
             compiler.log.nwarnings = origNWarnings;
-            compiler.log.deferDiagnostics = origDeferDiagnostic;
+            compiler.log.deferredDiagFilter = origDeferDiagnostic;
         }
     }
 
@@ -585,9 +587,9 @@ public class Utilities {
         DiagnosticListener<? super JavaFileObject> oldDiag = compiler.log.getDiagnosticListener();
         int origNErrors = compiler.log.nerrors;
         int origNWarnings = compiler.log.nwarnings;
-        boolean origDeferDiagnostic = compiler.log.deferDiagnostics;
+        Filter<JCDiagnostic> origDeferDiagnostic = compiler.log.deferredDiagFilter;
 
-        compiler.log.deferDiagnostics = false;
+        compiler.log.deferAll();
         compiler.log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
         try {
             CharBuffer buf = CharBuffer.wrap((expr+"\u0000").toCharArray(), 0, expr.length());
@@ -611,7 +613,7 @@ public class Utilities {
             compiler.log.setDiagnosticListener(oldDiag);
             compiler.log.nerrors = origNErrors;
             compiler.log.nwarnings = origNWarnings;
-            compiler.log.deferDiagnostics = origDeferDiagnostic;
+            compiler.log.deferredDiagFilter = origDeferDiagnostic;
         }
     }
 
@@ -621,9 +623,9 @@ public class Utilities {
         DiagnosticListener<? super JavaFileObject> oldDiag = log.getDiagnosticListener();
         int origNErrors = log.nerrors;
         int origNWarnings = log.nwarnings;
-        boolean origDeferDiagnostic = log.deferDiagnostics;
+        Filter<JCDiagnostic> origDeferDiagnostic = log.deferredDiagFilter;
 
-        log.deferDiagnostics = false;
+        log.deferAll();
         log.setDiagnosticListener(new DiagnosticListenerImpl(errors));
         try {
             Attr attr = Attr.instance(jti.getContext());
@@ -636,7 +638,7 @@ public class Utilities {
             log.setDiagnosticListener(oldDiag);
             log.nerrors = origNErrors;
             log.nwarnings = origNWarnings;
-            log.deferDiagnostics = origDeferDiagnostic;
+            log.deferredDiagFilter = origDeferDiagnostic;
         }
     }
 
@@ -721,9 +723,9 @@ public class Utilities {
         Log log = Log.instance(context);
         int origNErrors = log.nerrors;
         int origNWarnings = log.nwarnings;
-        boolean origDeferDiagnostic = compiler.log.deferDiagnostics;
+        Filter<JCDiagnostic> origDeferDiagnostic = compiler.log.deferredDiagFilter;
 
-        compiler.log.deferDiagnostics = false;
+        compiler.log.deferAll();
         log.nerrors = 0;
 
         JavaFileObject jfo = FileObjects.memoryFileObject("$", "$", new File("/tmp/$" + count + ".java").toURI(), System.currentTimeMillis(), clazz.toString());
@@ -763,7 +765,7 @@ public class Utilities {
             log.setDiagnosticListener(old);
             log.nerrors = origNErrors;
             log.nwarnings = origNWarnings;
-            log.deferDiagnostics = origDeferDiagnostic;
+            log.deferredDiagFilter = origDeferDiagnostic;
             compiler.skipAnnotationProcessing = oldSkipAPs;
         }
     }
