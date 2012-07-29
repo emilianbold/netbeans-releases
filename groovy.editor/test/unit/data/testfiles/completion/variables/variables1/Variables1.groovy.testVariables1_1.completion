@@ -20,7 +20,6 @@ CLASS      IllegalMonitorStateException               null
 CLASS      IllegalPropertyAccessException             null
 CLASS      IllegalStateException                      null
 CLASS      IllegalThreadStateException                null
-CLASS      Immutable                                  null
 CLASS      IncompatibleClassChangeError               null
 CLASS      IncorrectClosureArgumentsExcep             null
 CLASS      IndentPrinter                              null
@@ -48,6 +47,7 @@ CLASS      InvalidPropertiesFormatExcepti             null
 CLASS      Iterable                                   null
 CLASS      Iterator                                   null
 METHOD     identity(Closure)                          Object
+METHOD     inject(Closure)                            Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
 METHOD     invokeMethod(String, Object)               Object

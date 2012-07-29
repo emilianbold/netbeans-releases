@@ -47,14 +47,12 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.TreeSelectionModel;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -78,14 +76,17 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
     private BeanTreeView treeView;
     private transient ExplorerManager explorerManager = new ExplorerManager();
     private File current;
+    private final Project currentProject;
 
     /** Creates new form MoveToDependencyManagementPanel */
-    public MoveToDependencyManagementPanel(File file) {
+    @SuppressWarnings("LeakingThisInConstructor")
+    public MoveToDependencyManagementPanel(File file, Project prj) {
         assert file != null;
         initComponents();
         treeView = (BeanTreeView)jScrollPane1;
         treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         current = file;
+        currentProject = prj;
         showWaitNode();
         RequestProcessor.getDefault().post(this);
     }
@@ -117,8 +118,12 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
 
     @Override
     public void run() {
-                try {
-                    List<Model> lin = EmbedderFactory.getOnlineEmbedder().createModelLineage(current);
+                NbMavenProject nbprj = currentProject.getLookup().lookup(NbMavenProject.class);
+        List<MavenEmbedder.ModelDescription> lin = null;
+        if (nbprj != null) {
+            lin = MavenEmbedder.getModelDescriptors(nbprj.getMavenProject());
+        }
+        if (lin != null) {
                     final Children ch = new PomChildren(lin);
                     SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -134,16 +139,7 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
                             }
                         }
                     });
-                } catch (ModelBuildingException ex) {
-                    Logger.getLogger(getClass().getName()).log(Level.FINE, "Error reading model lineage", ex);
-                    SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                        public void run() {
-                           treeView.setRootVisible(true);
-                           explorerManager.setRootContext(createErrorNode());
-                        }
-                    });
-                }
+        }
     }
 
     private static Node createEmptyNode() {
@@ -157,18 +153,18 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
         return an;
     }
 
-    private static class PomChildren extends Children.Keys<List<Model>> {
+    private static class PomChildren extends Children.Keys<List<MavenEmbedder.ModelDescription>> {
 
-        public PomChildren(List<Model> lineage) {
+        public PomChildren(List<MavenEmbedder.ModelDescription> lineage) {
             setKeys(new List[] {lineage});
         }
 
         @Override
-        protected Node[] createNodes(List<Model> key) {
+        protected Node[] createNodes(List<MavenEmbedder.ModelDescription> key) {
             List<POMNode> nds = new ArrayList<POMNode>();
-            for (Model mdl : key) {
-                if(mdl.getPomFile() != null ) {
-                    File fl = FileUtil.normalizeFile(mdl.getPomFile());
+            for (MavenEmbedder.ModelDescription mdl : key) {
+                if(mdl.getLocation() != null ) {
+                    File fl = mdl.getLocation();
                     FileObject fo = FileUtil.toFileObject(fl);
                     Lookup lookup;
                     if (fo != null && !"pom".equals(fo.getExt())) { //NOI18N
@@ -189,9 +185,12 @@ public final class MoveToDependencyManagementPanel extends javax.swing.JPanel im
 
         private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private boolean readonly = false;
-        private POMNode(File key, Model mdl, Lookup lkp) {
+        private POMNode(File key, MavenEmbedder.ModelDescription mdl, Lookup lkp) {
             super( Children.LEAF, lkp);
-            setDisplayName(NbBundle.getMessage(MoveToDependencyManagementPanel.class, "TITLE_PomNode", mdl.getArtifactId(), mdl.getVersion()));
+            String artifact = mdl.getArtifactId();
+            String version = mdl.getVersion();
+            setDisplayName(NbBundle.getMessage(MoveToDependencyManagementPanel.class, "TITLE_PomNode", artifact, version));
+
             if (key.getName().endsWith("pom")) { //NOI18N
                 //coming from repository
                 readonly = true;

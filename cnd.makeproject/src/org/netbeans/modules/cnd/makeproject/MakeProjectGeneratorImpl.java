@@ -313,8 +313,13 @@ public class MakeProjectGeneratorImpl {
 
     private static FileObject createProjectDir(ProjectParameters prjParams) throws IOException {
         String projectFolderPath = prjParams.getProjectFolderPath();
-        MakeSampleProjectGenerator.workAroundBug203507(projectFolderPath);
-        FileObject dirFO = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
+        MakeSampleProjectGenerator.FOPath fopath = new MakeSampleProjectGenerator.FOPath(projectFolderPath);
+        FileObject dirFO;
+        if (fopath.root !=  null) {
+            dirFO = FileUtil.createFolder(fopath.root, fopath.relPath);
+        } else {
+            dirFO = FileUtil.createFolder(prjParams.getSourceFileSystem().getRoot(), projectFolderPath);
+        }
         //File dir = prjParams.getProjectFolder();
         //if (!dir.exists()) {
         //    //Refresh before mkdir not to depend on window focus

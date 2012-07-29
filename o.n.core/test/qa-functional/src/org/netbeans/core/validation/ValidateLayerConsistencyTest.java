@@ -84,6 +84,7 @@ import org.netbeans.core.startup.layers.LayerCacheManager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -963,6 +964,7 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         assertNoErrors("Some shortcuts were overridden by keymaps", warnings);
     }
     
+    @RandomlyFails // http://netbeans.org/bugzilla/show_bug.cgi?id=215948
     public void testNbinstHost() throws Exception {
         TestHandler handler = new TestHandler();
         Logger.getLogger("org.netbeans.core.startup.InstalledFileLocatorImpl").addHandler(handler);

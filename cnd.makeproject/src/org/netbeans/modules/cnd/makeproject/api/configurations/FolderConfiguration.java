@@ -121,7 +121,11 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     // interface ConfigurationAuxObject
     @Override
     public boolean shared() {
-        return true;
+        if (((MakeConfiguration) configuration).isMakefileConfiguration()) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     // interface ConfigurationAuxObject

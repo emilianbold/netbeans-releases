@@ -64,6 +64,11 @@ public final class SymTabStack {
         stack.add(symTab);
         return symTab;
     }
+
+    public SymTab push(SymTab symTab) {        
+        stack.add(symTab);
+        return symTab;
+    }
     
     public SymTab pop() {
         assert stack.size() > 1;

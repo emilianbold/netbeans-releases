@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.project.phpunit.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class GroupTag extends PhpAnnotationTag {
+public class GroupTag extends AnnotationCompletionTag {
 
     public GroupTag() {
         super("group", // NOI18N

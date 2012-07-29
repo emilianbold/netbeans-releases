@@ -312,7 +312,7 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     }
     
     private void checkExpansionKeystroke(KeyEvent evt) {
-        if (abbrevEndPosition != null && component != null
+        if (abbrevEndPosition != null && component != null && doc != null
             && component.getCaretPosition() == abbrevEndPosition.getOffset()
             && !isAbbrevDisabled()
             && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))

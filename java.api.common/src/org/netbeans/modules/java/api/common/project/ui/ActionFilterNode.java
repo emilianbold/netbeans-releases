@@ -45,14 +45,19 @@ package org.netbeans.modules.java.api.common.project.ui;
 
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import javax.swing.Action;
+import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.libraries.Library;
@@ -70,6 +75,7 @@ import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -85,6 +91,8 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.OpenAction;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -250,9 +258,13 @@ final class ActionFilterNode extends FilterNode {
     }
 
     private static Lookup createLookup(final Node original, Object... toAdd) {
+        final Lookup lookup = original.getLookup();
+        final org.netbeans.spi.project.ui.PathFinder pathFinder =
+                lookup.lookup(org.netbeans.spi.project.ui.PathFinder.class);
         final Lookup lkp = new ProxyLookup(
-                original.getLookup(),
-                Lookups.fixed (toAdd));
+                Lookups.exclude(lookup, org.netbeans.spi.project.ui.PathFinder.class),
+                Lookups.fixed (toAdd),
+                Lookups.singleton(new PathFinder(pathFinder)));
         return lkp;
     }
 
@@ -632,5 +644,96 @@ final class ActionFilterNode extends FilterNode {
                 }
             }
         }
+    }
+
+    private static final class PathFinder implements org.netbeans.spi.project.ui.PathFinder {
+
+        private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
+        private static final String SUBST = ".class"; // NOI18N
+
+        //@GuardBy("PathFinder.class")
+        private static URI currentKey;
+        //@GuardBy("PathFinder.class")
+        private static Set<URI> currentValues;
+        
+        private final org.netbeans.spi.project.ui.PathFinder delegate;
+
+        public PathFinder(@NullAllowed final org.netbeans.spi.project.ui.PathFinder delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Node findPath(Node root, Object target) {
+            Node result = null;
+            if (delegate != null && target instanceof FileObject) {
+                FileObject binRoot = root.getLookup().lookup(FileObject.class);
+                if (binRoot == null) {
+                    final DataFolder dobj = root.getLookup().lookup(DataFolder.class);
+                    binRoot = dobj == null ? null : dobj.getPrimaryFile();
+                }
+                if (binRoot != null) {
+                    FileObject newTarget = rebase(binRoot, (FileObject) target);
+                    if (newTarget != null) {
+                        result = delegate.findPath(root, newTarget);
+                    }
+                }
+            }
+            return result;
+        }
+
+        @CheckForNull
+        static FileObject rebase(
+                @NonNull final FileObject binRoot,
+                @NonNull final FileObject sourceTarget) {
+
+            if (shouldIgnore(sourceTarget.toURI(), binRoot.toURI())) {
+                return null;
+            }
+            final URL providedBinRootURL = (URL) sourceTarget.getAttribute("classfile-root");    //NOI18N
+            final String providedBinaryName = (String) sourceTarget.getAttribute("classfile-binaryName");   //NOI18N
+            if (providedBinRootURL != null && providedBinaryName != null) {
+                final FileObject providedBinRoot = URLMapper.findFileObject(providedBinRootURL);
+                if (binRoot.equals(providedBinRoot)) {
+                    return binRoot.getFileObject(providedBinaryName + SUBST);
+                }
+            } else {
+                for (FileObject srcRoot : SourceForBinaryQuery.findSourceRoots(binRoot.toURL()).getRoots()) {
+                    if (FileUtil.isParentOf(srcRoot, sourceTarget)) {
+                        final FileObject[] newTarget = ActionUtils.regexpMapFiles(
+                            new FileObject[]{sourceTarget},
+                            srcRoot,
+                            SRCDIRJAVA,
+                            binRoot,
+                            SUBST,
+                            true);
+                        if (newTarget != null) {
+                            return newTarget[0];
+                        }
+                    }
+                }
+            }
+            ignore(sourceTarget.toURI(), binRoot.toURI());
+            return null;
+        }
+
+        private static synchronized boolean shouldIgnore (
+                @NonNull final URI key,
+                @NonNull final URI value) {
+            if (!key.equals(currentKey)) {
+                return false;
+            }
+            return currentValues.contains(value);
+        }
+
+        private static synchronized void ignore(
+                @NonNull final URI key,
+                @NonNull final URI value) {
+            if (!key.equals(currentKey)) {
+                currentKey = key;
+                currentValues = new HashSet<URI>();
+            }
+            currentValues.add(value);
+        }
+        
     }
 }

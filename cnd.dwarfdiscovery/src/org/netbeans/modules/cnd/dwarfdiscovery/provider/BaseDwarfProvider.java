@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.FS;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -78,6 +79,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader.SharedLibraries;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
@@ -143,7 +145,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
 
-    private FileSystem getFileSystem(ProjectProxy project) {
+    protected FileSystem getFileSystem(ProjectProxy project) {
         if (project != null) {
             Project p = project.getProject();
             if (p != null) {                
@@ -151,6 +153,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         }
         return CndFileUtils.getLocalFileSystem();
+    }
+    
+    protected RelocatablePathMapper getRelocatablePathMapper() {
+        return mapper;
     }
 
     protected FileObject resolvePath(ProjectProxy project, String buildArtifact, final FileSystem fileSystem, SourceFileProperties f, String name) {
@@ -185,7 +191,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             ResolvedPath resolvedPath = mapper.getPath(name);
             if (resolvedPath == null) {
                 if (sourceRoot != null) {
-                    if (mapper.init(fs, sourceRoot, name)) {
+                    if (mapper.discover(fs, sourceRoot, name)) {
                         resolvedPath = mapper.getPath(name);
                         fo = fileSystem.findResource(resolvedPath.getPath());
                         if (fo != null && fo.isValid() && fo.isData()) {
@@ -208,7 +214,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             if (resolvedPath == null) {
                 if (sourceRoot != null) {
                     if (!name.startsWith(sourceRoot)) {
-                        if (mapper.init(fs, sourceRoot, name)) {
+                        if (mapper.discover(fs, sourceRoot, name)) {
                             resolvedPath = mapper.getPath(name);
                             FileObject resolved = fileSystem.findResource(resolvedPath.getPath());
                             if (resolved != null && resolved.isValid() && resolved.isData()) {
@@ -250,6 +256,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         if (isStoped.get()) {
             return true;
         }
+        ProjectBridge bridge = null;
+        if (project.getProject() != null) {
+            bridge = new ProjectBridge(project.getProject());
+        }
         String restrictSourceRoot = null;
         ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
         if (p != null) {
@@ -280,27 +290,41 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     continue;
                 }
             }
-            if (restrictCompileRoot != null) {
-                if (f.getCompilePath() != null && !f.getCompilePath().startsWith(restrictCompileRoot)) {
-                    continue;
-                }
-            }
             FileObject fo = resolvePath(project, file, fileSystem, f, name);
-
-            if (fo != null) {
-                name = fo.getPath();
-                SourceFileProperties existed = map.get(name);
-                if (existed == null) {
-                    map.put(name, f);
-                } else {
-                    // Duplicated
-                    if (existed.getUserInludePaths().size() < f.getUserInludePaths().size()) {
-                        map.put(name, f);
-                    }
-                }
-            } else {
+            if (fo == null) {
                 if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                     DwarfSource.LOG.log(Level.FINE, "Not Exist {0}", name); // NOI18N
+                }
+                continue;
+            }
+            boolean skip = false;
+            if (restrictCompileRoot != null) {
+                if (f.getCompilePath() != null && !f.getCompilePath().startsWith(restrictCompileRoot)) {
+                    skip = true;
+                    if (bridge != null) {
+                        String relPath = bridge.getRelativepath(fo.getPath());
+                        Item item = bridge.getProjectItem(relPath);
+                        if (item != null) {
+                            skip = false;
+                        }
+                    }
+                }
+            }
+            if (skip) {
+                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                    DwarfSource.LOG.log(Level.FINE, "Skiped {0}", name); // NOI18N
+                }
+                continue;
+            }
+
+            name = fo.getPath();
+            SourceFileProperties existed = map.get(name);
+            if (existed == null) {
+                map.put(name, f);
+            } else {
+                // Duplicated
+                if (existed.getUserInludePaths().size() < f.getUserInludePaths().size()) {
+                    map.put(name, f);
                 }
             }
         }

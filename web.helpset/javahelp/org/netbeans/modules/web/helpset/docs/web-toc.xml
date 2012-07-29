@@ -104,7 +104,7 @@
             <tocitem text="Registering a Cloud Account in NetBeans IDE" target="register-cloud"/>
             <tocitem text="Developing Cloud Applications Locally" target="develop-locally"/>
             <tocitem text="Deploying Web Applications to the Cloud" target="deploy-cloud"/>
-            <tocitem text="Whitelisting in Oracle Cloud" target="oracle-cloud-whitelisting"/>
+            <!--<tocitem text="Whitelisting in Oracle Cloud" target="oracle-cloud-whitelisting"/>-->
         </tocitem>
         <tocitem text="Debugging and Testing Web Applications">
             <tocitem text="About Debugging and Testing Web Applications" target="about_debug" />

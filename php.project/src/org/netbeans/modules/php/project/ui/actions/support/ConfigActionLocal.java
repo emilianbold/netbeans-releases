@@ -72,7 +72,6 @@ class ConfigActionLocal extends ConfigAction {
     protected ConfigActionLocal(PhpProject project) {
         super(project);
         webRoot = ProjectPropertiesSupport.getWebRootDirectory(project);
-        assert webRoot != null;
     }
 
     @Override

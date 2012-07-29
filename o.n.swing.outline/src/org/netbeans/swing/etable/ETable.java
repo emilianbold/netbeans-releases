@@ -2791,7 +2791,9 @@ public class ETable extends JTable {
                             con.getFocusTraversalPolicy().getFirstComponent(con) : 
                             con.getFocusTraversalPolicy().getLastComponent(con);
                     }
-                    to.requestFocus();
+                    if (to != null) {
+                        to.requestFocus();
+                    }
                 }
             } finally {
                 setFocusCycleRoot(true);
@@ -2976,7 +2978,7 @@ public class ETable extends JTable {
         if (getColumnModel() instanceof ETableColumnModel) {
             return null;
         } else {
-            return getRowSorter();
+            return super.getRowSorter();
         }
     }
     

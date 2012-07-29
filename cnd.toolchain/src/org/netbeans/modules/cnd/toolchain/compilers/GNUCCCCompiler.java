@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.toolchain.compilers;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
@@ -162,18 +164,22 @@ import org.openide.util.NbBundle;
                    }
                    continue;
                }
-               parseUserMacros(line, pair.systemPreprocessorSymbolsList);
                if (line.startsWith("#define ")) { // NOI18N
                    int i = line.indexOf(' ', 8);
                    if (i > 0) {
                        String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
                        addUnique(pair.systemPreprocessorSymbolsList, token);
+                   } else {
+                       String token = line.substring(8) + "="; // NOI18N
+                       addUnique(pair.systemPreprocessorSymbolsList, token);
                    }
+               } else {
+                   parseUserMacros(line, pair.systemPreprocessorSymbolsList);
                }
            }
            reader.close();
        } catch (IOException ioe) {
            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
        }
-   }
+   }   
 }

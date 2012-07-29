@@ -118,7 +118,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (CsmKindUtilities.isNamespaceDefinition(candidate)) {
             return (NamespaceDefinitionImpl) candidate;
         } else {
-            assert !TraceFlags.CPP_PARSER_ACTION : candidate + " " + name + " " + AstUtil.getFirstCsmAST(ast).getLine() + " " + containerfile.getAbsolutePath() + " " + container ;
+//            assert !TraceFlags.CPP_PARSER_ACTION : candidate + " " + name + " " + AstUtil.getFirstCsmAST(ast).getLine() + " " + containerfile.getAbsolutePath() + " " + container ;
             NamespaceDefinitionImpl ns = new NamespaceDefinitionImpl(ast, containerfile, parentNamespace);
             container.addDeclaration(ns);
             return ns;
@@ -301,6 +301,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         private CsmFile file;
         private FileContent fileContent;
         private int startOffset;
+        private int bodyStartOffset;
         private int endOffset;
         private NamespaceBuilder parent;
 
@@ -314,8 +315,13 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             qName = name.toString();
         }
 
+        public CharSequence getName() {
+            return name;
+        }
+        
         public void setFile(CsmFile file) {
             this.file = file;
+            this.fileContent = ((FileImpl)file).getParsingFileContent();
         }
         
         public void setEndOffset(int endOffset) {
@@ -326,6 +332,10 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             this.startOffset = startOffset;
         }
 
+        public void setBodyStartOffset(int bodyStartOffset) {
+            this.bodyStartOffset = bodyStartOffset;
+        }
+        
         public void setParentNamespace(NamespaceBuilder parent) {
             this.parent = parent;
         }
@@ -369,7 +379,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             NamespaceDefinitionImpl ns = getNamespaceDefinitionInstance();
             if (ns == null) {
                 NamespaceImpl parentNamespace = parent != null ? parent.getNamespace() : (NamespaceImpl)((ProjectBase) file.getProject()).getGlobalNamespace();
-                ns = new NamespaceDefinitionImpl(name, parentNamespace, file, startOffset, endOffset, startOffset);
+                ns = new NamespaceDefinitionImpl(name, parentNamespace, file, startOffset, endOffset, bodyStartOffset);
                 if(parent != null) {
                     parent.addDeclaration(ns);
                 } else {

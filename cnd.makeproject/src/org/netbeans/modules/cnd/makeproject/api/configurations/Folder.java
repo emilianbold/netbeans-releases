@@ -576,14 +576,18 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addItem(Item item) {
-        return addItem(item, true);
-    }
-
-    public Item addItem(Item item, boolean notify) {
-        return addItem(item, notify, true);
+        return addItem(item, true, true);
     }
 
     public Item addItem(Item item, boolean notify, boolean setModified) {
+        return addItem(item, notify, setModified, true);
+    }
+
+    public Item addItemWithoutConfiguration(Item item) {
+        return addItem(item, true, true, false);
+    }
+    
+    private Item addItem(Item item, boolean notify, boolean setModified, boolean createConfiguration) {
         if (item == null) {
             return null;
         }
@@ -622,9 +626,8 @@ public class Folder implements FileChangeListener, ChangeListener {
                 }
                 configurationDescriptor.setModified();
             }
-
             // Add configuration to all configurations
-            if (configurationDescriptor.getConfs() == null) {
+            if (!createConfiguration || configurationDescriptor.getConfs() == null) {
                 return item;
             }
             HashMap<Configuration, DeletedConfiguration> map = null;

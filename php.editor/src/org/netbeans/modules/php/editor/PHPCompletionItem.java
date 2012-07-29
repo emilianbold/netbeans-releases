@@ -60,7 +60,9 @@ import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
+import org.netbeans.modules.php.editor.actions.IconsUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
@@ -1257,6 +1259,26 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
     }
 
+    static class TraitItem extends PHPCompletionItem {
+
+        private static final ImageIcon ICON = IconsUtils.getElementIcon(PhpElementKind.TRAIT);
+
+        TraitItem(TraitElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return ICON;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CLASS;
+        }
+
+    }
+
     static class ClassItem extends PHPCompletionItem {
 
         private boolean endWithDoubleColon;
@@ -1273,9 +1295,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getInsertPrefix() {
-            final String insertPrefix = super.getInsertPrefix();
-            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
-            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+            return getName();
         }
 
         @Override
@@ -1353,9 +1373,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getInsertPrefix() {
-            final String insertPrefix = super.getInsertPrefix();
-            int indexOf = (request.prefix != null && insertPrefix != null) ? insertPrefix.toLowerCase().indexOf(request.prefix.toLowerCase()) : -1;
-            return indexOf > 0 ? insertPrefix.substring(indexOf) : insertPrefix;
+            return getName();
         }
 
         @Override

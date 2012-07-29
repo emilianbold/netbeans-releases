@@ -99,6 +99,10 @@ public class ApacheConfLexerTest extends ApacheConfTestBase {
         performTest("negativeFloat");
     }
 
+    public void testIssue215891() throws Exception {
+        performTest("issue215891");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = ApacheConfLexerUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/" + filename + ".conf"));

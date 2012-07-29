@@ -162,8 +162,7 @@ fi
 
 if [ 1 -eq $EN_BUILD ] || [ -z $EN_BUILD ] ; then
     cd $DIST
-    #bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters
-    bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk
+    bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
@@ -173,8 +172,7 @@ fi
 
 if [ $ML_BUILD == 1 ]; then
     cd $DIST/ml
-    #bash ${SCRIPTS_DIR}/files-info.sh bundles zip zip/moduleclusters
-    bash ${SCRIPTS_DIR}/files-info.sh bundles
+    bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk zip zip/moduleclusters
     ERROR_CODE=$?
     if [ $ERROR_CODE != 0 ]; then
         echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"

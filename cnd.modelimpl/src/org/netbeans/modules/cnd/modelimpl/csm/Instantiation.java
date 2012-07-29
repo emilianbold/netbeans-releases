@@ -1652,28 +1652,30 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
     }
 
     public static CharSequence getInstantiationCanonicalText(List<CsmSpecializationParameter> params) {
-        StringBuilder sb = new StringBuilder();
-        if (!params.isEmpty()) {
-            sb.append('<');
-            boolean first = true;
-            for (CsmSpecializationParameter param : params) {
-                if (first) {
-                    first = false;
-                } else {
-                    sb.append(',');
-                }
-                if(CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                    sb.append(TypeImpl.getCanonicalText(((CsmTypeBasedSpecializationParameter) param).getType()));
-                }
-                if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
-                    sb.append(param.getText());
-                }
-                if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
-                    sb.append(param.getText());
-                }
-            }
-            TemplateUtils.addGREATERTHAN(sb);
+        if (params == null || params.isEmpty()) {
+            return "";
         }
+        
+        StringBuilder sb = new StringBuilder();
+        sb.append('<');
+        boolean first = true;
+        for (CsmSpecializationParameter param : params) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(',');
+            }
+            if(CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+                sb.append(TypeImpl.getCanonicalText(((CsmTypeBasedSpecializationParameter) param).getType()));
+            }
+            if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(param)) {
+                sb.append(param.getText());
+            }
+            if(CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+                sb.append(param.getText());
+            }
+        }
+        TemplateUtils.addGREATERTHAN(sb);
         return sb;
     }
 }

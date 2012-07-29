@@ -72,7 +72,7 @@ public abstract class GitCommand {
                 monitor.started(getCommandDescription());
                 run();
             } catch (RuntimeException ex) {
-                if (ex.getMessage().contains(JGitText.get().unknownRepositoryFormat)) { //NOI18N
+                if (ex.getMessage() != null && ex.getMessage().contains(JGitText.get().unknownRepositoryFormat)) { //NOI18N
                     throw new GitException("It seems the config file for repository at [" + repository.getWorkTree() + "] is corrupted.\nEnsure it's valid.", ex); //NOI18N
                 } else {
                     throw ex;

@@ -279,6 +279,7 @@ public final class ResultView extends TopComponent {
                 rvp.getSearchComposition().terminate();
             }
             tabs.remove(panel);
+            rvp.getSearchComposition().getSearchResultsDisplayer().closed();
             if (tabs.getTabCount() == 0) {
                 contentCards.show(this, CARD_NAME_EMPTY);
                 updateLookup();
@@ -297,6 +298,7 @@ public final class ResultView extends TopComponent {
             }
             singlePanel.remove(comp);
             contentCards.show(this, CARD_NAME_EMPTY);
+            rvp.getSearchComposition().getSearchResultsDisplayer().closed();
             this.repaint();
         } else {
             close();

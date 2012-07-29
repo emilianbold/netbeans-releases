@@ -312,7 +312,7 @@ public class ErrorAnnotator extends AnnotationProvider /*implements FileStatusLi
                 if (f.isData()) {
                     recError = nonRecError = TaskCache.getDefault().isInError(f, true);
                 } else {
-                    ClassPath source = ClassPath.getClassPath(f, ClassPath.SOURCE);
+                    ClassPath source = Utilities.getSourceClassPathFor (f);
                     
                     if (source == null) {
                         //presumably not under an indexed root:

@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -198,12 +199,12 @@ public final class LibProjectImpl extends ProjectBase {
     public void write(RepositoryDataOutput aStream) throws IOException {
         super.write(aStream);
         assert this.includePath != null;
-        PersistentUtils.writeUTF(includePath, aStream);
+        APTSerializeUtils.writeFileNameIndex(includePath, aStream, getUnitId());
     }
 
     public LibProjectImpl(RepositoryDataInput aStream) throws IOException {
         super(aStream);
-        this.includePath = PersistentUtils.readUTF(aStream, FilePathCache.getManager());
+        this.includePath = APTSerializeUtils.readFileNameIndex(aStream, FilePathCache.getManager(), getUnitId());
         assert this.includePath != null;
         setPlatformProject(this.includePath);
     }

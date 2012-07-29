@@ -52,6 +52,7 @@ import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -71,9 +72,10 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
- * @todo we should check type of variable where property is called, now we check only name, see visitPropertyExpression
+ * Visitor for finding occurrences of the class types, variables and methods.
  *
  * @author Martin Adamek
+ * @author Martin Janicek
  */
 public final class VariableScopeVisitor extends TypeVisitor {
 
@@ -114,14 +116,19 @@ public final class VariableScopeVisitor extends TypeVisitor {
     protected boolean isValidToken(Token<? extends GroovyTokenId> currentToken, Token<? extends GroovyTokenId> previousToken) {
         // cursor must be positioned on identifier, otherwise occurences doesn't make sense
         // second check is here because we want to have occurences also at the end of the identifier (see issue #155574)
-        return currentToken.id() == GroovyTokenId.IDENTIFIER
-            || previousToken.id() == GroovyTokenId.IDENTIFIER;
+        return currentToken.id() == GroovyTokenId.IDENTIFIER || previousToken.id() == GroovyTokenId.IDENTIFIER;
     }
     
     @Override
     public void visitVariableExpression(VariableExpression variableExpression) {
-        if (leaf instanceof Variable && ((Variable) leaf).getName().equals(variableExpression.getName())) {
-            occurrences.add(variableExpression);
+        if (leaf instanceof FieldNode) {
+            addVariableExpressionOccurrences(variableExpression, (FieldNode) leaf);
+        } else if (leaf instanceof PropertyNode) {
+            addVariableExpressionOccurrences(variableExpression, ((PropertyNode) leaf).getField());
+        } else if (leaf instanceof Variable) {
+            if (((Variable) leaf).getName().equals(variableExpression.getName())) {
+                occurrences.add(variableExpression);
+            }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
             PropertyExpression property = (PropertyExpression) leafParent;
             if (variableExpression.getName().equals(property.getPropertyAsString())) {
@@ -132,9 +139,28 @@ public final class VariableScopeVisitor extends TypeVisitor {
         super.visitVariableExpression(variableExpression);
     }
 
+    private void addVariableExpressionOccurrences(VariableExpression visited, FieldNode findingNode) {
+        final String fieldName = findingNode.getName();
+        final String fieldTypeName = findingNode.getType().getName();
+
+        if (isCaretOnFieldType(findingNode, doc, cursorOffset)) {
+            if (visited.getType().getName().equals(fieldTypeName)) {
+                occurrences.add(new FakeASTNode(visited, findingNode.getType().getNameWithoutPackage()));
+            }
+        } else {
+            if (visited.getName().equals(fieldName)) {
+                occurrences.add(visited);
+            }
+        }
+    }
+
     @Override
     public void visitDeclarationExpression(DeclarationExpression expression) {
-        if (leaf instanceof DeclarationExpression) {
+        if (leaf instanceof FieldNode) {
+            addDeclarationExpressionOccurrences(expression, (FieldNode) leaf);
+        } else if (leaf instanceof PropertyNode) {
+            addDeclarationExpressionOccurrences(expression, ((PropertyNode) leaf).getField());
+        } else if (leaf instanceof DeclarationExpression) {
             DeclarationExpression visitedDeclaration = expression;
             DeclarationExpression declaration = (DeclarationExpression) leaf;
             VariableExpression variable = declaration.getVariableExpression();
@@ -183,32 +209,82 @@ public final class VariableScopeVisitor extends TypeVisitor {
         super.visitDeclarationExpression(expression);
     }
 
+    private void addDeclarationExpressionOccurrences(DeclarationExpression visited, FieldNode findingNode) {
+        final String fieldTypeName = findingNode.getType().getName();
+
+        if (isCaretOnFieldType(findingNode, doc, cursorOffset)) {
+            if (!visited.isMultipleAssignmentDeclaration()) {
+                if (visited.getVariableExpression().getType().getName().equals(fieldTypeName)) {
+                    occurrences.add(new FakeASTNode(visited, findingNode.getType().getNameWithoutPackage()));
+                }
+            } else {
+                if (visited.getTupleExpression().getType().getName().equals(fieldTypeName)) {
+                    occurrences.add(new FakeASTNode(visited, findingNode.getType().getNameWithoutPackage()));
+                }
+            }
+        }
+    }
+
     @Override
     public void visitField(FieldNode fieldNode) {
-        if (leaf instanceof Variable && ((Variable) leaf).getName().equals(fieldNode.getName())) {
+        final String fieldName = fieldNode.getType().getName();
+        final String fieldShortName = fieldNode.getType().getNameWithoutPackage();
+
+        if (leaf instanceof FieldNode) {
+            addFieldOccurrences(fieldNode, (FieldNode) leaf);
+        } else if (leaf instanceof PropertyNode) {
+            addFieldOccurrences(fieldNode, ((PropertyNode) leaf).getField());
+        } else if (leaf instanceof Variable && ((Variable) leaf).getName().equals(fieldNode.getName())) {
             occurrences.add(fieldNode);
+        } else if (leaf instanceof MethodNode) {
+            if (isCaretOnReturnType((MethodNode) leaf, doc, cursorOffset)) {
+                String methodReturnTypeName = ((MethodNode) leaf).getReturnType().getName();
+                if (fieldName.equals(methodReturnTypeName)) {
+                    occurrences.add(new FakeASTNode(fieldNode, fieldShortName));
+                }
+            }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
             PropertyExpression property = (PropertyExpression) leafParent;
             if (fieldNode.getName().equals(property.getPropertyAsString())) {
                 occurrences.add(fieldNode);
-                return;
+            }
+        } else if (leaf instanceof DeclarationExpression) {
+            DeclarationExpression declarationExpression = (DeclarationExpression) leaf;
+            if (!declarationExpression.isMultipleAssignmentDeclaration()) {
+                VariableExpression variableExpression = declarationExpression.getVariableExpression();
+                if (fieldName.equals(variableExpression.getType().getName())) {
+                    occurrences.add(new FakeASTNode(fieldNode, fieldShortName));
+                }
             }
         }
         super.visitField(fieldNode);
     }
 
+    private void addFieldOccurrences(FieldNode visitedField, FieldNode findingNode) {
+        final String fieldName = findingNode.getName();
+        final String fieldTypeName = findingNode.getType().getName();
+
+        if (isCaretOnFieldType(findingNode, doc, cursorOffset)) {
+            if (visitedField.getType().getName().equals(fieldTypeName)) {
+                occurrences.add(new FakeASTNode(visitedField, findingNode.getType().getNameWithoutPackage()));
+            }
+        } else {
+            if (visitedField.getName().equals(fieldName)) {
+                occurrences.add(visitedField);
+            }
+        }
+    }
+
     @Override
     public void visitMethod(MethodNode methodNode) {
-        VariableScope variableScope = methodNode.getVariableScope();
-        if (leaf instanceof Variable) {
-            String name = ((Variable) leaf).getName();
-            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
-                return;
+        if (leaf instanceof FieldNode) {
+            if (isCaretOnFieldType((FieldNode) leaf, doc, cursorOffset)) {
+                addMethodOccurrences(methodNode, ((FieldNode) leaf).getType());
             }
-        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
-            String name = ((ConstantExpression) leaf).getText();
-            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
-                return;
+        } else if (leaf instanceof PropertyNode) {
+            FieldNode field = ((PropertyNode) leaf).getField();
+            if (isCaretOnFieldType(field, doc, cursorOffset)) {
+                addMethodOccurrences(methodNode, field.getType());
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
             MethodCallExpression methodCallExpression = (MethodCallExpression) leafParent;
@@ -217,42 +293,44 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         } else if (leaf instanceof MethodNode) {
             MethodNode method = (MethodNode) leaf;
-            if (Methods.isSameMethod(methodNode, method)) {
-                OffsetRange range = getMethodReturnType(method, doc, cursorOffset);
-                if (range != OffsetRange.NONE) {
-                    FakeASTNode fakeNode = new FakeASTNode(methodNode, methodNode.getReturnType().getNameWithoutPackage());
-                    occurrences.add(fakeNode);
-                } else {
-                    occurrences.add(methodNode);
-                }
+
+            if (isCaretOnReturnType(method, doc, cursorOffset)) {
+                addMethodOccurrences(methodNode, method.getReturnType());   // We have caret on the return type and we want to add all occurrences
+            } else if (Methods.isSameMethod(methodNode, method)) {
+                occurrences.add(methodNode);    // We are on method name looking for method calls
             }
         } else if (leaf instanceof ClassExpression) {
-            ClassExpression clazz = (ClassExpression) leaf;
-            if (methodNode.getReturnType().getName().equals(clazz.getType().getName())) {
-                String simpleName = clazz.getType().getNameWithoutPackage();
-                FakeASTNode fakeNode = new FakeASTNode(methodNode, simpleName);
-                occurrences.add(fakeNode);
-            }
+            addMethodOccurrences(methodNode, ((ClassExpression) leaf).getType());
         } else if (leaf instanceof DeclarationExpression) {
-            DeclarationExpression declaration = (DeclarationExpression) leaf;
-            VariableExpression variable = declaration.getVariableExpression();
+            VariableExpression variable = ((DeclarationExpression) leaf).getVariableExpression();
             if (!variable.isDynamicTyped() && !methodNode.isDynamicReturnType()) {
-                String name = variable.getType().getNameWithoutPackage();
-                if (name.equals(methodNode.getReturnType().getNameWithoutPackage())) {
-                    FakeASTNode fakeNode = new FakeASTNode(methodNode, name);
-                    occurrences.add(fakeNode);
-                }
+                addMethodOccurrences(methodNode, variable.getType());
             }
         } else if (leaf instanceof ClassNode) {
-            ClassNode clazz = (ClassNode) leaf;
             if (!methodNode.isDynamicReturnType()) {
-                if (clazz.getName().equals(methodNode.getReturnType().getName())) {
-                    FakeASTNode fakeNode = new FakeASTNode(methodNode, clazz.getNameWithoutPackage());
-                    occurrences.add(fakeNode);
-                }
+                addMethodOccurrences(methodNode, (ClassNode) leaf);
             }
         }
         super.visitMethod(methodNode);
+    }
+
+    private void addMethodOccurrences(MethodNode visitedMethod, ClassNode findingNode) {
+        final String returnTypeName = visitedMethod.getReturnType().getName();
+        final String name = findingNode.getName();
+        final String nameWithoutPackage = findingNode.getNameWithoutPackage();
+
+        // Check return type
+        if (returnTypeName.equals(name)) {
+            occurrences.add(new FakeASTNode(visitedMethod, nameWithoutPackage));
+        }
+
+        // Check method parameters
+        for (Parameter parameter : visitedMethod.getParameters()) {
+            String paramName = parameter.getType().getName();
+            if (paramName.equals(name)) {
+                occurrences.add(new FakeASTNode(parameter, nameWithoutPackage));
+            }
+        }
     }
 
     @Override
@@ -283,12 +361,9 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
     @Override
     public void visitMethodCallExpression(MethodCallExpression methodCall) {
-
         if (leaf instanceof MethodNode) {
             MethodNode method = (MethodNode) leaf;
-            if (Methods.isSameMethod(method, methodCall) &&
-                    // making sure cursor is not on method's return type
-                    getMethodReturnType(method, doc, cursorOffset) == OffsetRange.NONE) {
+            if (Methods.isSameMethod(method, methodCall) && !isCaretOnReturnType(method, doc, cursorOffset)) {
                 occurrences.add(methodCall);
             }
         } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
@@ -376,13 +451,20 @@ public final class VariableScopeVisitor extends TypeVisitor {
             PropertyExpression propertyUnderCursor = (PropertyExpression) leafParent;
             String nodeAsString = node.getPropertyAsString();
             if (nodeAsString != null && nodeAsString.equals(propertyUnderCursor.getPropertyAsString())) {
-                occurrences.add(property);
+                occurrences.add(node);
             }
         }
         super.visitPropertyExpression(node);
     }
 
-    private static final OffsetRange getMethodReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
+    private static boolean isCaretOnReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
+        if (getMethodReturnType(method, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static OffsetRange getMethodReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
         int offset = AstUtilities.getOffset(doc, method.getLineNumber(), method.getColumnNumber());
         if (!method.isDynamicReturnType()) {
             OffsetRange range = AstUtilities.getNextIdentifierByName(doc, method.getReturnType().getNameWithoutPackage(), offset);
@@ -393,4 +475,21 @@ public final class VariableScopeVisitor extends TypeVisitor {
         return OffsetRange.NONE;
     }
 
+    private static boolean isCaretOnFieldType(FieldNode field, BaseDocument doc, int cursorOffset) {
+        if (getVariableType(field, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static OffsetRange getVariableType(FieldNode field, BaseDocument doc, int cursorOffset) {
+        int offset = AstUtilities.getOffset(doc, field.getLineNumber(), field.getColumnNumber());
+        if (!field.isDynamicTyped()) {
+            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, field.getType().getNameWithoutPackage(), offset);
+            if (range.containsInclusive(cursorOffset)) {
+                return range;
+            }
+        }
+        return OffsetRange.NONE;
+    }
 }

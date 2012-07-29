@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
+            <code-name-base>org.netbeans.libs.toolingSDK</code-name-base>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.osgi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+            </module-dependencies>
+            <public-packages>
+                <package>org.glassfish.tools.ide</package>
+                <package>org.glassfish.tools.ide.data</package>
+                <package>org.glassfish.tools.ide.data.cloud</package>
+                <package>org.glassfish.tools.ide.server</package>
+                <package>org.glassfish.tools.ide.server.parser</package>
+                <package>org.glassfish.tools.ide.admin</package>
+                <package>org.glassfish.tools.ide.admin.response</package>
+                <package>org.glassfish.tools.ide.logging</package>
+                <package>org.glassfish.tools.ide.utils</package>
+            </public-packages>
+            <class-path-extension>
+                <runtime-relative-path>ext/sdk-0.1.jar</runtime-relative-path>
+                <binary-origin>external/sdk-0.1-SNAPSHOT.jar</binary-origin>
+            </class-path-extension>
+        </data>
+    </configuration>
+</project>

@@ -41,14 +41,14 @@
  */
 package org.netbeans.modules.php.apigen.annotations;
 
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CopyrightTag extends PhpAnnotationTag {
+public class CopyrightTag extends AnnotationCompletionTag {
 
     public CopyrightTag() {
         super("copyright", "@copyright (c) ${year}, ${John} ${Doe}", //NOI18N

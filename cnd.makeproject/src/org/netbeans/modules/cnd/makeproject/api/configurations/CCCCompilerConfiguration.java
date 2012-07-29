@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.OptionItem;
@@ -284,13 +286,17 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         // Include Dirctories
         StringBuilder inheritedValues = new StringBuilder();
         master = (CCCCompilerConfiguration) getMaster();
+        List<CCCCompilerConfiguration> list = new ArrayList<CCCCompilerConfiguration>();
         while (master != null) {
-            inheritedValues.append(master.getIncludeDirectories().toString(visitor));
+            list.add(master);
             if (master.getInheritIncludes().getValue()) {
                 master = (CCCCompilerConfiguration) master.getMaster();
             } else {
                 master = null;
             }
+        }
+        for(int i = list.size() - 1; i >= 0; i--) {
+            inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor));
         }
         set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories"))); // NOI18N
         // Preprocessor Macros

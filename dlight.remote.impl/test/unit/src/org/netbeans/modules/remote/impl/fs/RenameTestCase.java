@@ -129,7 +129,9 @@ public class RenameTestCase extends RemoteFileTestBase  {
             assertNotNull(fo1);
             FileObject fo2 = tmpDirFO.getFileObject("lnk_dir/file_2");
             assertNotNull(fo2);
-            fo1.move(fo1.lock(), fo2.getParent(), "file1-renamed", "new-ext");
+            final FileLock lock = fo1.lock();
+            fo1.move(lock, fo2.getParent(), "file1-renamed", "new-ext");
+            lock.releaseLock();
         } finally {
             removeRemoteDirIfNotNull(tmpDir);
         }

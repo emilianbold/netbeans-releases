@@ -201,10 +201,11 @@ public class TaskChooser extends JPanel {
     private ComponentMorpher createItemMorpher(final Item item) {
         JComponent itemSmallComponent = setupItemSmallComponent(item);
         JComponent itemLargeComponent = setupItemLargeComponent(item);
-
+        
         final ComponentMorpher morpher = new ComponentMorpher(itemSmallComponent, itemLargeComponent, 6, 10);
-        morpher.getAccessibleContext().setAccessibleName(Bundle.TaskChooser_MorpherAccessName()); // NOI18N
-        morpher.getAccessibleContext().setAccessibleDescription(Bundle.TaskChooser_MorpherAccessDescr()); // NOI18N
+        String name = item.getSmallComponent().getName();
+        morpher.getAccessibleContext().setAccessibleName(name != null ? name : Bundle.TaskChooser_MorpherAccessName());
+        morpher.getAccessibleContext().setAccessibleDescription(Bundle.TaskChooser_MorpherAccessDescr());
 
         final XPStyleBorder morpherBorder = XPStyleBorder.getDefaultInstance(SelectProfilingTask.BACKGROUND_COLOR_INACTIVE,
                                                                              parentColor);

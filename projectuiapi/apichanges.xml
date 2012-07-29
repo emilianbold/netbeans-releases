@@ -107,6 +107,41 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectProblems">
+            <api name="general"/>
+            <summary>Added an SPI to provide project metadata problems.</summary>
+            <version major="1" minor="60"/>
+            <date day="24" month="7" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a SPI allowing project to provide project metadata problems.
+                    These problems are shown in the Resolve Project Problems Customizer,
+                    project with project problems are annotated by broken project badge.
+                </p>
+            </description>
+            <class package="org.netbeans.api.project.ui" name="ProjectProblems"/>
+            <class package="org.netbeans.spi.project.ui" name="ProjectProblemsProvider"/>
+            <class package="org.netbeans.spi.project.ui" name="ProjectProblemResolver"/>
+            <issue number="215628"/>
+        </change>
+        <change id="PathFinder">
+            <api name="general"/>
+            <summary>Extracted <code>findPath</code> method into a new interface <code>PathFinder</code></summary>
+            <version major="1" minor="59"/>
+            <date day="13" month="7" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Extracted <code>findPath</code> method from <code>LogicalViewProvider</code> into a new interface <code>PathFinder</code>.
+                    A new <code>PathFinder</code> simplifies delegation of <code>findPath</code> method.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui" name="PathFinder"/>
+            <issue number="208241"/>
+        </change>
         <change id="setAsMain">
             <api name="general"/>
             <summary>Programmatically setting main project deprecated</summary>

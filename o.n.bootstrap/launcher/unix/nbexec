@@ -189,7 +189,8 @@ if [ ! -x "${jdkhome}/bin/java" ] ; then
 fi
 
 # Make sure native code libraries of jdk7 are found
-export LD_LIBRARY_PATH=${jdkhome}/jre/lib/amd64:${jdkhome}/jre/lib/i386:${LD_LIBRARY_PATH}
+LD_LIBRARY_PATH=${jdkhome}/jre/lib/amd64:${jdkhome}/jre/lib/i386:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH
 
 # if the Java option for heap dump on OOME is supported enable it
 if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError -cp "${progdir}/boot.jar" org.netbeans.NbExecJavaStartTry > /dev/null 2>&1 ; then

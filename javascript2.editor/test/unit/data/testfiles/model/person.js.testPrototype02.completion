@@ -1,0 +1,22 @@
+Code completion result for source line:
+gk.showLegs(); lk.|showLegs();                 //Both share the common 'Person.prototype.legs' variable when looking at 'this.legs'
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      constructor                     [PUBLIC]   person.js
+CLASS      prototype                       [PUBLIC]   person.js
+METHOD     amputate(): undefined           [PUBLIC]   person.js
+METHOD     beCool(): undefined             [PUBLIC]   person.js
+METHOD     eat()                           [PROTECTE  person.js
+METHOD     exercise()                      [PROTECTE  person.js
+METHOD     getAge()                        [PROTECTE  person.js
+METHOD     getName()                       [PROTECTE  person.js
+METHOD     getRace()                       [PROTECTE  person.js
+METHOD     muchTimePasses(): undefined     [PROTECTE  person.js
+METHOD     showLegs(): undefined           [PUBLIC]   person.js
+METHOD     shower(): undefined             [PUBLIC]   person.js
+METHOD     toString()                      [PROTECTE  person.js
+METHOD     weigh()                         [PROTECTE  person.js
+FIELD      clothing                        [PUBLIC]   person.js
+FIELD      dirtFactor                      [PUBLIC]   person.js
+FIELD      legs                            [PUBLIC]   person.js
+FIELD      population                      [PUBLIC,   person.js
