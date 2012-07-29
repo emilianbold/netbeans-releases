@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -141,8 +143,14 @@ public class StyleSheetNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<Rule> toPopulate) {
-            StyleSheetBody body = css.getStyleSheet(header.getStyleSheetId());
-            toPopulate.addAll(body.getRules());
+            String styleSheetId = header.getStyleSheetId();
+            StyleSheetBody body = css.getStyleSheet(styleSheetId);
+            if (body == null) {
+                Logger.getLogger(StyleSheetNode.class.getName())
+                        .log(Level.INFO, "Null body obtained for style sheet {0}!", styleSheetId);
+            } else {
+                toPopulate.addAll(body.getRules());
+            }
             return true;
         }
 
