@@ -43,7 +43,14 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.awt.BorderLayout;
 import java.awt.dnd.DnDConstants;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JPanel;
+import org.netbeans.modules.web.inspect.PageInspectorImpl;
+import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.ui.FakeRootNode;
+import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.openide.explorer.ExplorerManager;
@@ -53,6 +60,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -86,7 +94,7 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
         treeView = new BeanTreeView();
         treeView.setAllowedDragActions(DnDConstants.ACTION_NONE);
         treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
-        treeView.setRootVisible(true);
+        treeView.setRootVisible(false);
         add(treeView, BorderLayout.CENTER);
     }
 
@@ -105,7 +113,9 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
                     root = new AbstractNode(Children.LEAF);
                 } else {
                     CSS css = webKit.getCSS();
-                    root = new DocumentNode(css);
+                    DocumentNode documentNode = new DocumentNode(css);
+                    root = new FakeRootNode<DocumentNode>(documentNode,
+                            new Action[] { new RefreshAction() });
                 }
                 manager.setRootContext(root);
             }
@@ -124,6 +134,29 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
     @Override
     public final ExplorerManager getExplorerManager() {
         return manager;
+    }
+
+    /**
+     * Action that refreshes the content of the document section of CSS Styles view.
+     */
+    private class RefreshAction extends AbstractAction {
+
+        private RefreshAction() {
+            String name = NbBundle.getMessage(RefreshAction.class,
+                    "CSSStylesDocumentPanel.RefreshAction.displayName"); // NOI18N
+            putValue(Action.NAME, name);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+            WebKitDebugging webKit = null;
+            if (pageModel instanceof WebKitPageModel) {
+                webKit = ((WebKitPageModel)pageModel).getWebKit();
+            }
+            updateContent(webKit);
+        }
+
     }
 
 }
