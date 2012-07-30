@@ -107,6 +107,20 @@ is the proper place.
 
   <changes>
 
+    <change id="BlockCompare-invalidX">
+      <summary>Added BlockCompare.invalidX() and invalidY()</summary>
+        <version major="1" minor="49"/>
+        <date day="30" month="7" year="2012"/>
+        <author login="mmetelka"/>
+        <compatibility addition="yes" deletion="no" modification="no" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Added <code>BlockCompare.invalidX()</code> and <code>BlockCompare.invalidY()</code>
+            to check for invalid bounds of compared blocks.
+        </p>
+        </description>
+    </change>
+
     <change id="DocumentUtilities.document-property-listeners">
       <summary>Added support for document property listeners</summary>
         <version major="1" minor="35"/>
