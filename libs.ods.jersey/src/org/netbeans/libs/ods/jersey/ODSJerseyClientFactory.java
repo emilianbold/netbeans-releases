@@ -42,8 +42,8 @@
 package org.netbeans.libs.ods.jersey;
 
 import java.net.PasswordAuthentication;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSFactory;
+import org.netbeans.modules.ods.client.api.ODSClient;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ODSFactory.class)
 public class ODSJerseyClientFactory extends ODSFactory {
 
-    public final static String ID = "team.ods.useJersey";
+    public final static String ID = "ods.useJersey";
     @Override
     public boolean isAvailable() {
         return Boolean.getBoolean(ID);

@@ -50,10 +50,10 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.team.ods.api.CloudServer;
-import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
+import org.netbeans.modules.ods.api.CloudServer;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSFactory;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**

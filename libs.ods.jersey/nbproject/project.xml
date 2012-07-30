@@ -96,7 +96,7 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.team.ods</code-name-base>
+                    <code-name-base>org.netbeans.modules.ods</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

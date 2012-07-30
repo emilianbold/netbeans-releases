@@ -19,8 +19,8 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 import org.netbeans.libs.ods.jersey.wrappers.ActivityWrapper;
 import org.netbeans.libs.ods.jersey.wrappers.ProfileWrapper;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.netbeans.modules.team.ods.client.api.ODSException;
+import org.netbeans.modules.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSException;
 
 public class ODSJerseyClient implements ODSClient {
     

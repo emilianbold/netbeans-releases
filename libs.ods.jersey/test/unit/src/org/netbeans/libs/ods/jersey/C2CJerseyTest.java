@@ -53,9 +53,9 @@ import java.net.PasswordAuthentication;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.netbeans.modules.team.ods.client.api.ODSException;
+import org.netbeans.modules.ods.client.api.ODSFactory;
+import org.netbeans.modules.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSException;
 
 /**
  *

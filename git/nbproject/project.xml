@@ -277,7 +277,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.team.ods.git</friend>
+                <friend>org.netbeans.modules.ods.git</friend>
                 <package>org.netbeans.modules.git.api</package>
             </friend-packages>
         </data>

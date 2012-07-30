@@ -64,9 +64,9 @@ import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.RemoteFileSystem;
-import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
-import org.netbeans.modules.team.ods.client.api.ODSException;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSException;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**

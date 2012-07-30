@@ -142,11 +142,11 @@
             <test-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.team.ods.ui</friend>
+                <friend>org.netbeans.modules.ods.ui</friend>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
                 <friend>org.netbeans.modules.ods.hudson</friend>
-                <friend>org.netbeans.modules.team.ods.git</friend>
+                <friend>org.netbeans.modules.ods.git</friend>
                 <package>org.netbeans.modules.team.ui.common</package>
                 <package>org.netbeans.modules.team.ui.spi</package>
                 <package>org.netbeans.modules.team.ui.treelist</package>

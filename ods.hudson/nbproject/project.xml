@@ -38,7 +38,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.team.ods</code-name-base>
+                    <code-name-base>org.netbeans.modules.ods</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -46,7 +46,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.team.ods.ui</code-name-base>
+                    <code-name-base>org.netbeans.modules.ods.ui</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

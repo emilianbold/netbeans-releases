@@ -61,8 +61,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.codeviation.pojson.PojsonLoad;
-import org.netbeans.modules.team.ods.client.api.ODSException;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSException;
+import org.netbeans.modules.ods.client.api.ODSClient;
 import org.openide.util.Exceptions;
 
 public final class ODSMockClient implements ODSClient {

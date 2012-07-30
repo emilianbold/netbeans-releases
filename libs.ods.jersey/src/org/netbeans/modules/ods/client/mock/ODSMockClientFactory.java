@@ -42,8 +42,8 @@
 package org.netbeans.modules.ods.client.mock;
 
 import java.net.PasswordAuthentication;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSFactory;
+import org.netbeans.modules.ods.client.api.ODSClient;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=ODSFactory.class)
 public class ODSMockClientFactory extends ODSFactory {
 
-    public final static String ID = "team.ods.useMock";
+    public final static String ID = "ods.useMock";
     
     @Override
     public boolean isAvailable() {

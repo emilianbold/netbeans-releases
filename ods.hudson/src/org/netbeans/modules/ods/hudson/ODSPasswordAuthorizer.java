@@ -53,9 +53,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.net.util.Base64;
 import org.netbeans.modules.hudson.spi.ConnectionAuthenticator;
-import org.netbeans.modules.team.ods.api.CloudServer;
-import org.netbeans.modules.team.ods.api.ODSProject;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.api.CloudServer;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.ods.client.api.ODSClient;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.lookup.ServiceProvider;
 

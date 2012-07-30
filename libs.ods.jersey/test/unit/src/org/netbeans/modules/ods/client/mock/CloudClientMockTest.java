@@ -49,8 +49,8 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.ods.jersey.ODSJerseyClient;
-import org.netbeans.modules.team.ods.client.api.ODSFactory;
-import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.ods.client.api.ODSFactory;
+import org.netbeans.modules.ods.client.api.ODSClient;
 
 /**
  *

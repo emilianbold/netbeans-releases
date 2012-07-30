@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+    <import resource="classpath*:org/netbeans/modules/ods/applicationContext-jackson.xml"/>
+
+    <bean id="restConnectionManager" class="org.apache.commons.httpclient.MultiThreadedHttpConnectionManager">
+        <property name="params">
+            <bean class="org.apache.commons.httpclient.params.HttpConnectionManagerParams">
+                <property name="defaultMaxConnectionsPerHost" value="50"/>
+                <property name="maxTotalConnections" value="100"/>
+            </bean>
+        </property>
+    </bean>
+    <bean id="restHttpClientParams" class="org.apache.commons.httpclient.params.HttpClientParams">  
+        <property name="authenticationPreemptive" value="true"/>  
+        <property name="cookiePolicy" value="ignoreCookies"/>
+    </bean>
+    
+    <bean id="clientHttpRequestFactorySource" class="com.tasktop.c2c.client.commons.client.EclipseCommonsClientHttpRequestFactorySource">
+    </bean>
+    
+    <bean id="restClientHttpClientFactory" class="com.tasktop.c2c.server.common.service.http.MultiUserClientHttpRequestFactory">  
+        <property name="connectionManager" ref="restConnectionManager"/>
+        <property name="threshold" value="1000"/>
+        <property name="cookiePolicy" value="ignoreCookies"/>
+        <property name="clientHttpRequestFactorySource" ref="clientHttpRequestFactorySource"/>
+    </bean>  
+    
+    <!-- This RestTemplate is needed by rest clients -->
+    <bean id="basicAuthRestTemplate" class="org.springframework.web.client.RestTemplate">
+        <qualifier value="basicAuth"/>
+        <constructor-arg ref="restClientHttpClientFactory"/> 
+        <property name="messageConverters">
+            <list>
+                <ref bean="jacksonMessageConverter"/>
+            </list>
+        </property>
+        <property name="errorHandler">
+            <bean
+                class="com.tasktop.c2c.server.common.service.web.ServiceResponseErrorHandler">
+                <property name="errorMessageConverter" ref="jacksonMessageConverter"/>
+            </bean>
+        </property>
+    </bean>
+
+</beans>
