@@ -49,7 +49,7 @@ import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -100,7 +100,7 @@ public final class OpenKenaiProjectAction extends AbstractAction {
                     ProjectHandleImpl pHandle = new ProjectHandleImpl(prj);
                     KenaiServer.getDashboard(pHandle).addProject(pHandle, false, true);
                 }
-                UIUtils.activateTeamDashboard();
+                TeamUIUtils.activateTeamDashboard();
             }
         }
 

@@ -90,7 +90,7 @@ import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.openide.DialogDescriptor;
@@ -200,7 +200,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         browseLocalButton = new JButton();
         proxyConfigButton = new JButton();
         emptySpace = new JPanel();
-        kenaiCombo = UIUtils.createTeamCombo(TeamServerProviderImpl.getDefault(), true);
+        kenaiCombo = TeamUIUtils.createTeamCombo(TeamServerProviderImpl.getDefault(), true);
 
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
         setPreferredSize(new Dimension(700, 250));
@@ -407,7 +407,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         boolean loginSuccess = org.netbeans.modules.kenai.ui.api.KenaiUIUtils.showLogin(kenai);
         if (loginSuccess) {
             refreshUsername();
-            UIUtils.activateTeamDashboard();
+            TeamUIUtils.activateTeamDashboard();
         } else {
             // login failed, do nothing
         }
@@ -662,7 +662,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         if (!localFolderPathEdited && selItem != null) {
             String urlString = selItem.feature.getLocation();
             String repoName = urlString.substring(urlString.lastIndexOf("/") + 1); // NOI18N
-            localFolderTextField.setText(UIUtils.getDefaultRepoFolder().getPath() + File.separator + repoName);
+            localFolderTextField.setText(TeamUIUtils.getDefaultRepoFolder().getPath() + File.separator + repoName);
         }
     }
 

@@ -58,7 +58,7 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
@@ -146,7 +146,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
         }
 
         public static void showDashboard(Set<CreatedProjectInfo> projects) {
-            UIUtils.activateTeamDashboard();
+            TeamUIUtils.activateTeamDashboard();
             ProjectHandleImpl project = new ProjectHandleImpl(projects.iterator().next().project);
             KenaiServer.getDashboard(project).selectAndExpand(project);
 

@@ -342,7 +342,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         proxyConfigButton = new JButton();
         lowercaseLabel = new JLabel();
         licenseDescription = new JLabel();
-        kenaiCombo = org.netbeans.modules.team.ui.spi.UIUtils.createTeamCombo(TeamServerProviderImpl.getDefault(), true);
+        kenaiCombo = org.netbeans.modules.team.ui.spi.TeamUIUtils.createTeamCombo(TeamServerProviderImpl.getDefault(), true);
 
         setLayout(new GridBagLayout());
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text")); // NOI18N

@@ -57,7 +57,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
@@ -236,7 +236,7 @@ public final class TeamServerTopComponent extends TopComponent {
         super.componentActivated();
         TeamServer pref = Utilities.getPreferredServer();
         if (pref != null) {
-            UIUtils.logTeamUsage("DASHBOARD"); //NOI18N
+            TeamUIUtils.logTeamUsage("DASHBOARD"); //NOI18N
         }
     }
 

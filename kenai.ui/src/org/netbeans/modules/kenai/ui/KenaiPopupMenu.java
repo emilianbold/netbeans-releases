@@ -397,7 +397,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                     SwingUtilities.invokeLater(new Runnable() {
 
                         public void run() {
-                            org.netbeans.modules.team.ui.spi.UIUtils.activateTeamDashboard();
+                            org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
                         }
                     });
                     RequestProcessor.getDefault().post(new Runnable() {

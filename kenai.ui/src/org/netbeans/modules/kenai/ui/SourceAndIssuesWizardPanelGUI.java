@@ -81,7 +81,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -350,7 +350,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 setRepoLocal(parent.getAbsolutePath());
             } else {
                 String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
-                setRepoLocal(UIUtils.getDefaultRepoFolder().getPath() + File.separator +
+                setRepoLocal(TeamUIUtils.getDefaultRepoFolder().getPath() + File.separator +
                         MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
             }
         }
@@ -989,7 +989,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 setRepoLocal(parent.getAbsolutePath());
             } else {
                 String prjName = (String) this.settings.getProperty(NewKenaiProjectWizardIterator.PROP_PRJ_NAME);
-                setRepoLocal(UIUtils.getDefaultRepoFolder().getPath() + File.separator +
+                setRepoLocal(TeamUIUtils.getDefaultRepoFolder().getPath() + File.separator +
                         MessageFormat.format(DEFAULT_REPO_FOLDER, prjName, getRepoName()));
             }
         } else {

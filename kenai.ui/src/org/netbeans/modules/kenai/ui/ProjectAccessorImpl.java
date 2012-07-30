@@ -139,7 +139,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                TeamServer ts = org.netbeans.modules.team.ui.spi.UIUtils.getSelectedServer();
+                TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
                 assert ts instanceof KenaiServer;
                 new OpenKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
             }
@@ -289,7 +289,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                TeamServer ts = org.netbeans.modules.team.ui.spi.UIUtils.getSelectedServer();
+                TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
                 assert ts instanceof KenaiServer;
                 new NewKenaiProjectAction(((KenaiServer)ts).getKenai()).actionPerformed(null);
             }

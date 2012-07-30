@@ -181,7 +181,7 @@ public class ChatNotifications {
         }, isDelayed(msg)?Priority.SILENT:Priority.NORMAL);
         privateNotifications.put(name, n);
         ChatTopComponent.refreshContactList();
-        TeamServer ts = org.netbeans.modules.team.ui.spi.UIUtils.getSelectedServer();
+        TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
         assert ts instanceof KenaiServer;
         ((KenaiServer)ts).getDashboard().getComponent().repaint();
     }

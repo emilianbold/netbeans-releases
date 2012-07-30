@@ -102,7 +102,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
         options[0] = getOption;
         options[1] = cancelOption;
 
-        org.netbeans.modules.team.ui.spi.UIUtils.activateTeamDashboard();
+        org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
 
         GetSourcesFromKenaiPanel getSourcesPanel = new GetSourcesFromKenaiPanel(prjAndFeature);
 

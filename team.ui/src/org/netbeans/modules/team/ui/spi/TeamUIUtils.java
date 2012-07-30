@@ -71,7 +71,7 @@ import org.openide.util.NbBundle;
  * This class is not yet final. We be changed
  * @author Jan Becicka
  */
-public final class UIUtils {
+public final class TeamUIUtils {
 
     // Usage logging
     private static Logger metricsLogger;
@@ -84,7 +84,7 @@ public final class UIUtils {
         LoginTask.waitStartupFinished();
     }
     
-    private UIUtils() {
+    private TeamUIUtils() {
     }
 
     public static TeamServer showLogin() {
@@ -188,7 +188,7 @@ public final class UIUtils {
     public static File getDefaultRepoFolder() {
         File defaultDir = FileSystemView.getFileSystemView().getDefaultDirectory();
         if (defaultDir != null && defaultDir.exists() && defaultDir.isDirectory()) {
-            String nbPrjDirName = NbBundle.getMessage(UIUtils.class, "DIR_NetBeansProjects");
+            String nbPrjDirName = NbBundle.getMessage(TeamUIUtils.class, "DIR_NetBeansProjects");
             File nbPrjDir = new File(defaultDir, nbPrjDirName);
             if (nbPrjDir.exists() && nbPrjDir.canWrite()) {
                 return nbPrjDir;

@@ -332,7 +332,7 @@
     </Component>
     <Component class="javax.swing.JComboBox" name="kenaiCombo">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="org.netbeans.modules.team.ui.spi.UIUtils.createTeamCombo(org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl.getDefault(), true)"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="org.netbeans.modules.team.ui.spi.TeamUIUtils.createTeamCombo(org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl.getDefault(), true)"/>
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
