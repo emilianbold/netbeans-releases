@@ -39,66 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.platform;
 
-import org.netbeans.api.annotations.common.NonNull;
+package org.netbeans.modules.web.clientproject.browser;
+
+import java.net.URL;
 import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
+import org.openide.filesystems.FileObject;
 
 /**
- * Implementation of project configuration and associated actions, customizer, etc.
+ *
  */
-public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
+public class ServerURLMappingImpl implements ServerURLMappingImplementation {
 
-    /**
-     * Configuration's unique ID used to persist selected configuration etc.
-     */
-    @NonNull String getId();
+    private ClientProjectConfigurationImpl cfg;
+
+    public ServerURLMappingImpl(ClientProjectConfigurationImpl cfg) {
+        this.cfg = cfg;
+    }
     
-    /**
-     * Configuration's customizer.
-     * @return can return null if none
-     */
-    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
+    @Override
+    public URL toServer(FileObject projectFile) {
+        if (cfg.isUseServer()) {
+            return WebServer.getWebserver().toServer(projectFile);
+        }
+        return null;
+    }
 
-    /**
-     * Persist changes done in configuration's customizer.
-     */
-    void save();
-    
-    /**
-     * Configuration's action provider.
-     * @return can return null
-     */
-    ActionProvider getActionProvider();
+    @Override
+    public FileObject fromServer(URL serverURL) {
+        if (cfg.isUseServer()) {
+            return WebServer.getWebserver().fromServer(serverURL);
+        }
+        return null;
+    }
 
-    /**
-     * Can this platform be deleted?
-     */
-    boolean canBeDeleted();
-
-    /**
-     * Delete this configuration.
-     */
-    void delete();
-
-
-    /**
-     * Configuration's handler changes in project sources.
-     * @return can return null
-     */
-    RefreshOnSaveListener getRefreshOnSaveListener();
-
-    /**
-     * Notification that configuration is not active anymore.
-     */
-    void deactivate();
-
-    /**
-     * If configuration deploys files to server this method should be implemented
-     * and provide mapping.
-     * @return can be null
-     */
-    ServerURLMappingImplementation getServerURLMapping();
 }

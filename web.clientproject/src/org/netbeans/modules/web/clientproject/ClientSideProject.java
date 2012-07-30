@@ -41,34 +41,22 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import org.netbeans.modules.web.clientproject.browser.ServerURLMappingImpl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
-import java.util.Collections;
-import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.GenericSources;
-import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
@@ -77,7 +65,6 @@ import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
 
 @AntBasedProjectRegistration(
     type=ClientSideProjectType.TYPE,
@@ -181,6 +168,7 @@ public class ClientSideProject implements Project {
                new ClientSideConfigurationProvider(this),
                //getBrowserSupport(),
                new ClassPathProviderImpl(this),
+               configurationProvider,
                GenericSources.genericOnly(this)
        });
     }
