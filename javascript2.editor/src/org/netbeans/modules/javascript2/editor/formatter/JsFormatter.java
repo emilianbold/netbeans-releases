@@ -361,58 +361,20 @@ public class JsFormatter implements Formatter {
                             handleSpaceBefore(tokens, i, formatContext,
                                     !CodeStyle.get(formatContext).spaceWithinArrayBrackets());
                             break;
+                        // line wrap and eol handling
                         case ELSE_IF_AFTER_BLOCK_START:
-                            if (ELSE_IF_SINGLE_LINE) {
-                                break;
+                            if (!ELSE_IF_SINGLE_LINE) {
+                                i = handleLineWrap(tokens, i, formatContext, initialIndent);
                             }
+                            break;
                         case AFTER_CASE:
+                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
+                            break;
                         case AFTER_BLOCK_START:
+                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
+                            break;
                         case AFTER_STATEMENT:
-                            if (!NEW_LINE_BREAKS) {
-                                break;
-                            }
-
-                            CodeStyle.WrapStyle style = getLineWrap(token, formatContext);
-                            
-                            // search for token which will be present after eol
-                            FormatToken tokenAfterEol = token.next();
-                            int startIndex = i;
-                            while (tokenAfterEol != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL
-                                    && tokenAfterEol.getKind() != FormatToken.Kind.TEXT) {
-                                tokenAfterEol = tokenAfterEol.next();
-                                startIndex++;
-                            }
-
-                            if (tokenAfterEol != null
-                                    && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
-
-                                // proceed the skipped tokens moving the main loop
-                                for (FormatToken current = token; current != tokenAfterEol; current = current.next()) {
-                                    formatContext.setIndentationLevel(updateIndentationLevel(current, formatContext.getIndentationLevel()));
-                                    i++;
-                                }
-
-                                // search for token which will be present just before eol
-                                FormatToken tokenBeforeEol = null;
-                                for (int j = startIndex - 1; j >= 0; j--) {
-                                    tokenBeforeEol = tokens.get(j);
-                                    if (!tokenBeforeEol.isVirtual()
-                                            && tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE) {
-                                        break;
-                                    }
-                                }
-
-                                // XXX too hacky would be great to hide offsetDiff completely
-                                // we dont have to remove trailing spaces as indentation will fix it
-
-                                // insert eol
-                                formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
-                                // do the indentation
-                                int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
-                                formatContext.indentLine(
-                                        tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
-                                        indentationSize, Indentation.ALLOWED);
-                            }
+                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
                             break;
                         case SOURCE_START:
                         case EOL:
@@ -493,6 +455,59 @@ public class JsFormatter implements Formatter {
             }
             start = start.next();
         }
+    }
+
+    private int handleLineWrap(List<FormatToken> tokens, int index,
+            FormatContext formatContext, int initialIndent) {
+
+        int i = index;
+        if (!NEW_LINE_BREAKS) {
+            return i;
+        }
+
+        FormatToken token = tokens.get(index);
+        
+        CodeStyle.WrapStyle style = getLineWrap(token, formatContext);
+
+        // search for token which will be present after eol
+        FormatToken tokenAfterEol = token.next();
+        int startIndex = i;
+        while (tokenAfterEol != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL
+                && tokenAfterEol.getKind() != FormatToken.Kind.TEXT) {
+            tokenAfterEol = tokenAfterEol.next();
+            startIndex++;
+        }
+
+        if (tokenAfterEol != null
+                && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+
+            // proceed the skipped tokens moving the main loop
+            for (FormatToken current = token; current != tokenAfterEol; current = current.next()) {
+                formatContext.setIndentationLevel(updateIndentationLevel(current, formatContext.getIndentationLevel()));
+                i++;
+            }
+
+            // search for token which will be present just before eol
+            FormatToken tokenBeforeEol = null;
+            for (int j = startIndex - 1; j >= 0; j--) {
+                tokenBeforeEol = tokens.get(j);
+                if (!tokenBeforeEol.isVirtual()
+                        && tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE) {
+                    break;
+                }
+            }
+
+            // we dont have to remove trailing spaces as indentation will fix it
+            // insert eol
+            formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
+            // do the indentation
+            int indentationSize = initialIndent
+                    + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+            formatContext.indentLine(
+                    tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
+                    indentationSize, Indentation.ALLOWED);
+        }
+        return i;
     }
 
     private void handleSpaceAfter(List<FormatToken> tokens, int index,
