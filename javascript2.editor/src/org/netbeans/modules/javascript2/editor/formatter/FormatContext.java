@@ -79,6 +79,10 @@ public final class FormatContext {
 
     private final boolean embedded;
 
+    private int indentationLevel;
+
+    private int offsetDiff;
+
     public FormatContext(Context context, Snapshot snapshot) {
         this.context = context;
         this.snapshot = snapshot;
@@ -139,6 +143,22 @@ public final class FormatContext {
             LOGGER.log(Level.FINE, "Tuned regions");
             dumpRegions();
         }
+    }
+
+    public int getIndentationLevel() {
+        return indentationLevel;
+    }
+
+    public void setIndentationLevel(int indentationLevel) {
+        this.indentationLevel = indentationLevel;
+    }
+
+    public int getOffsetDiff() {
+        return offsetDiff;
+    }
+
+    public void setOffsetDiff(int offsetDiff) {
+        this.offsetDiff = offsetDiff;
     }
 
     private void dumpRegions() {
@@ -237,56 +257,54 @@ public final class FormatContext {
         return (BaseDocument) context.document();
     }
 
-    public int indentLine(int voffset, int indentationSize, int offsetDiff,
+    public void indentLine(int voffset, int indentationSize,
             JsFormatter.Indentation indentationCheck) {
 
         if (!indentationCheck.isAllowed()) {
-            return offsetDiff;
+            return;
         }
 
         int offset = getDocumentOffset(voffset, !indentationCheck.isExceedLimits());
         if (offset < 0) {
-            return offsetDiff;
+            return;
         }
 
         try {
             int diff = GsfUtilities.setLineIndentation(getDocument(),
                     offset + offsetDiff, indentationSize);
-            return offsetDiff + diff;
+            setOffsetDiff(offsetDiff + diff);
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return offsetDiff;
     }
 
-    public int insert(int voffset, String newString, int offsetDiff) {
+    public void insert(int voffset, String newString) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
-            return offsetDiff;
+            return;
         }
 
         BaseDocument doc = getDocument();
         try {
             doc.insertString(offset + offsetDiff, newString, null);
-            return offsetDiff + newString.length();
+            setOffsetDiff(offsetDiff + newString.length());
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return offsetDiff;
     }
 
-    public int replace(int voffset, String oldString, String newString, int offsetDiff) {
+    public void replace(int voffset, String oldString, String newString) {
         if (oldString.equals(newString)) {
-            return offsetDiff;
+            return;
         }
 
-        return replace(voffset, oldString.length(), newString, offsetDiff);
+        replace(voffset, oldString.length(), newString);
     }
 
-    public int replace(int voffset, int length, String newString, int offsetDiff) {
+    public void replace(int voffset, int length, String newString) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
-            return offsetDiff;
+            return;
         }
 
         BaseDocument doc = getDocument();
@@ -294,38 +312,34 @@ public final class FormatContext {
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
                 doc.remove(offset + offsetDiff, length);
                 doc.insertString(offset + offsetDiff, newString, null);
-                return offsetDiff + (newString.length() - length);
+                setOffsetDiff(offsetDiff + (newString.length() - length));
             } else {
                 LOGGER.log(Level.WARNING, "Tried to remove non empty text: {0}",
                         doc.getText(offset + offsetDiff, length));
-                return offsetDiff;
             }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return offsetDiff;
     }
 
-    public int remove(int voffset, int length, int offsetDiff) {
+    public void remove(int voffset, int length) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
-            return offsetDiff;
+            return;
         }
 
         BaseDocument doc = getDocument();
         try {
             if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, length)).matches()) {
                 doc.remove(offset + offsetDiff, length);
-                return offsetDiff - length;
+                setOffsetDiff(offsetDiff - length);
             } else {
                 LOGGER.log(Level.WARNING, "Tried to remove non empty text: {0}",
                         doc.getText(offset + offsetDiff, length));
-                return offsetDiff;
             }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
-        return offsetDiff;
     }
 
     private static class Region {
