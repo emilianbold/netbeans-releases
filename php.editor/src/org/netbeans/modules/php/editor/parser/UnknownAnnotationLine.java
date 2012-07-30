@@ -57,7 +57,7 @@ public class UnknownAnnotationLine implements AnnotationParsedLine {
     private final String description;
 
     public UnknownAnnotationLine(final String name, final String description) {
-        Parameters.notEmpty("name", name); //NOI18N
+        Parameters.notNull("name", name); //NOI18N
         this.name = name;
         this.description = description;
     }

@@ -150,6 +150,29 @@ public class MavenProjectRestSupport extends WebRestSupport {
             addSwdpLibrary( restConfig );
         }
     }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.spi.WebRestSupport#enableRestSupport(org.netbeans.modules.websvc.rest.spi.WebRestSupport.RestConfig)
+     */
+    @Override
+    public void enableRestSupport( final RestConfig config ) {
+        if ( SwingUtilities.isEventDispatchThread() ){
+            Runnable runnable = new Runnable() {
+                
+                @Override
+                public void run() {
+                    enableRestSupport(config);
+                }
+            };
+            AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread( runnable , 
+                    NbBundle.getMessage(MavenProjectRestSupport.class, 
+                    "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
+        }
+        else {
+            super.enableRestSupport(config);
+        }
+    }
 
     @Override
     public void removeRestDevelopmentReadiness() throws IOException {
