@@ -72,7 +72,7 @@ public class DOMBreakpointType extends BreakpointType {
     @Override
     public JComponent getCustomizer() {
         DOMBreakpointCustomizer cust = new DOMBreakpointCustomizer();
-        customizerRef = new WeakReference(cust);
+        customizerRef = new WeakReference<DOMBreakpointCustomizer>(cust);
         return cust;
     }
 
