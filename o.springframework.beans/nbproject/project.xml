@@ -19,7 +19,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-springframework-beans.jar</runtime-relative-path>
-                <binary-origin>external/org.springframework.beans-3.1.0-rc2.jar</binary-origin>
+                <binary-origin>external/org.springframework.beans-3.1.1.RELEASE.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

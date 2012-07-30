@@ -44,7 +44,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-springframework-security-core.jar</runtime-relative-path>
-                <binary-origin>external/org.springframework.security.core-3.1.0-rc3.jar</binary-origin>
+                <binary-origin>external/org.springframework.security.core-3.1.1.RELEASE.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
