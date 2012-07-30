@@ -59,7 +59,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>org-eclipse-mylyn-commons-net.jar</runtime-relative-path>
-                <binary-origin>external/org.eclipse.mylyn.commons.net-3.8.0.jar</binary-origin>
+                <binary-origin>external/org.eclipse.mylyn.commons.net-3.8.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
