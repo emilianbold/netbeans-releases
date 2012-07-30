@@ -199,7 +199,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(loggedInLabel)
                         .addGap(33, 33, 33)
-                        .addComponent(cloudCombo, 0, 118, Short.MAX_VALUE)
+                        .addComponent(cloudCombo, 0, 254, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(usernameLabel)
                         .addGap(4, 4, 4)

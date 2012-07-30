@@ -132,7 +132,7 @@
         <Component class="javax.swing.JLabel" name="lblIcon">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/org/netbeans/modules/team/ods/ui/resources/unknown.png"/>
+              <Image iconType="3" name="/org/netbeans/modules/ods/ui/resources/unknown.png"/>
             </Property>
           </Properties>
         </Component>
@@ -169,7 +169,7 @@
     <Component class="javax.swing.JLabel" name="lblExpand">
       <Properties>
         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/org/netbeans/modules/team/ods/ui/resources/arrow-down.png"/>
+          <Image iconType="3" name="/org/netbeans/modules/ods/ui/resources/arrow-down.png"/>
         </Property>
         <Property name="verticalAlignment" type="int" value="3"/>
         <Property name="enabled" type="boolean" value="false"/>
