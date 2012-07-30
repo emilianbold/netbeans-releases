@@ -41,43 +41,23 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParser implements AnnotationLineParser {
+class SecureParamParsedLine extends BaseParsedLine {
 
-    private static final AnnotationLineParser INSTANCE = new Symfony2SecurityAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new SecureLineParser());
-        PARSERS.add(new SecureParamLineParser());
-    }
-
-    private Symfony2SecurityAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=300)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+    public SecureParamParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    public String getName() {
+        return SecureParamLineParser.ANNOTATION_NAME;
     }
 
 }

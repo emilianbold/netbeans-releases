@@ -66,4 +66,8 @@ public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("Secure"));
     }
 
+    public void testSecureParamParser() {
+        assertNotNull(parser.parse("SecureParam"));
+    }
+
 }
