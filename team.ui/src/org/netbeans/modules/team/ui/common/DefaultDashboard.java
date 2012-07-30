@@ -63,7 +63,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.treelist.TreeList;
 import org.netbeans.modules.team.ui.treelist.TreeListModel;
@@ -368,7 +368,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         
         // XXX this is the only usecase of .getTeamServer!
         // maybe if we could get rid of it the whole spi would get significantly simplier to deal with!
-        UIUtils.setSelectedServer(dashboardProvider.forProject(project));
+        TeamUIUtils.setSelectedServer(dashboardProvider.forProject(project));
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -501,7 +501,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
                 requestProcessor.post(new Runnable() {
                     @Override
                     public void run() {
-                        UIUtils.waitStartupFinished();
+                        TeamUIUtils.waitStartupFinished();
                         myProjectLoadingStarted();
                         projectLoadingStarted();
                         if (null != login && !memberProjectsLoaded) {

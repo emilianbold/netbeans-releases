@@ -73,7 +73,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSException;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
@@ -252,10 +252,10 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        boolean loginSuccess = UIUtils.showLogin(server, false) != null;
+        boolean loginSuccess = TeamUIUtils.showLogin(server, false) != null;
         if (loginSuccess) {
             refreshUsername();
-            UIUtils.activateTeamDashboard();
+            TeamUIUtils.activateTeamDashboard();
         } else {
             // login failed, do nothing
         }

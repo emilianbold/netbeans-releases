@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  * This class is not yet final. We be changed
  * @author Jan Becicka
  */
-public final class UIUtils {
+public final class KenaiUIUtils {
 
     // Usage logging
     private static Logger metricsLogger;
@@ -85,7 +85,11 @@ public final class UIUtils {
         KenaiServer.forKenai(kenai).getDashboard().addPropertyChangeListener(propertyChangeListener);
     }
     
-    private UIUtils() {
+    public static void removeDashboardListener(Kenai kenai, PropertyChangeListener propertyChangeListener) {
+        KenaiServer.forKenai(kenai).getDashboard().removePropertyChangeListener(propertyChangeListener);
+    }
+    
+    private KenaiUIUtils() {
     }
 
     /**
@@ -137,7 +141,7 @@ public final class UIUtils {
      */
     public static Kenai showKenaiLogin(final Kenai kenai) {
         TeamServer server = KenaiServer.forKenai(kenai);
-        server = org.netbeans.modules.team.ui.spi.UIUtils.showLogin(server, false);
+        server = org.netbeans.modules.team.ui.spi.TeamUIUtils.showLogin(server, false);
         return (server instanceof KenaiServer) ? ((KenaiServer) server).getKenai() : null;
     }
 

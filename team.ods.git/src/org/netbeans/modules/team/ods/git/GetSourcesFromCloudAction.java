@@ -90,7 +90,7 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
         options[0] = getOption;
         options[1] = cancelOption;
 
-        org.netbeans.modules.team.ui.spi.UIUtils.activateTeamDashboard();
+        org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
 
         GetSourcesFromCloudPanel getSourcesPanel = new GetSourcesFromCloudPanel(prjAndRepository);
 

@@ -46,7 +46,7 @@ import javax.swing.JComboBox;
 import org.netbeans.modules.team.ods.ui.CloudServerProviderImpl;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import static org.netbeans.modules.team.ods.ui.api.Bundle.*;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,6 +63,6 @@ public final class OdsUIUtil {
     }
     
     public static JComboBox createTeamCombo() {
-        return UIUtils.createTeamCombo(CloudServerProviderImpl.getDefault(), true);
+        return TeamUIUtils.createTeamCombo(CloudServerProviderImpl.getDefault(), true);
     }
 }

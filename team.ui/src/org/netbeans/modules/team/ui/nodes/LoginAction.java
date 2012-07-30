@@ -47,7 +47,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.team.ui.Dashboard;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -82,7 +82,7 @@ public final class LoginAction extends AbstractAction {
         if (teamServer.getStatus() != TeamServer.Status.OFFLINE) {
             teamServer.logout();
         } else {
-            UIUtils.showLogin(teamServer);
+            TeamUIUtils.showLogin(teamServer);
         }
     }
 

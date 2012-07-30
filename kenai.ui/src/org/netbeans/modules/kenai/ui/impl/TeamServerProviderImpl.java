@@ -60,7 +60,7 @@ import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -88,10 +88,10 @@ public class TeamServerProviderImpl implements TeamServerProvider {
             public void propertyChange(PropertyChangeEvent pce) {
                 if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName())) {
                     final Preferences preferences = NbPreferences.forModule(TeamServerProviderImpl.class);
-                    preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), LoginUtils.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                    preferences.put(KenaiUIUtils.getPrefName((Kenai) pce.getSource(), LoginUtils.LOGIN_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
                 } else if (Kenai.PROP_XMPP_LOGIN.equals(pce.getPropertyName())) {
                     final Preferences preferences = NbPreferences.forModule(TeamServerProviderImpl.class);
-                    preferences.put(UIUtils.getPrefName((Kenai) pce.getSource(), LoginUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
+                    preferences.put(KenaiUIUtils.getPrefName((Kenai) pce.getSource(), LoginUtils.ONLINE_STATUS_PREF), Boolean.toString(pce.getNewValue() != null));
                 } else if (KenaiManager.PROP_INSTANCES.equals(pce.getPropertyName())) {
                     KenaiServer oldValue = null, newValue = null;
                     if (pce.getOldValue() instanceof Kenai) {
@@ -167,7 +167,7 @@ public class TeamServerProviderImpl implements TeamServerProvider {
         try {
             if (prefs.keys().length > 0) {
                 for (Kenai k : KenaiManager.getDefault().getKenais()) {
-                    UIUtils.tryLogin(k, false);
+                    KenaiUIUtils.tryLogin(k, false);
                 }
             }
         } catch (BackingStoreException ex) {

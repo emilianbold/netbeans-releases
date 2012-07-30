@@ -44,7 +44,7 @@ package org.netbeans.modules.team.ui;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,7 +68,7 @@ public final class LoginAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        TeamServer k = (TeamServer) UIUtils.showLogin();
+        TeamServer k = (TeamServer) TeamUIUtils.showLogin();
         if (k==null) {
             return;
         }

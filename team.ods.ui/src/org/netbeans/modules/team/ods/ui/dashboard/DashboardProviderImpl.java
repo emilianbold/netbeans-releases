@@ -68,7 +68,7 @@ import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle.ResultType;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.spi.UIUtils;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.util.Exceptions;
@@ -107,7 +107,7 @@ public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODSP
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                UIUtils.showLogin(server, false);
+                TeamUIUtils.showLogin(server, false);
             }
         };
     }

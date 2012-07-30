@@ -99,7 +99,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import static org.netbeans.modules.kenai.ui.Bundle.*;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
@@ -342,7 +342,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         proxyConfigButton = new JButton();
         lowercaseLabel = new JLabel();
         licenseDescription = new JLabel();
-        kenaiCombo = org.netbeans.modules.team.ui.spi.UIUtils.createTeamCombo(TeamServerProviderImpl.getDefault(), true);
+        kenaiCombo = org.netbeans.modules.team.ui.spi.TeamUIUtils.createTeamCombo(TeamServerProviderImpl.getDefault(), true);
 
         setLayout(new GridBagLayout());
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text")); // NOI18N
@@ -545,7 +545,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        boolean loginSuccess = UIUtils.showLogin();
+        boolean loginSuccess = KenaiUIUtils.showLogin();
         if (loginSuccess) {
             panel.fireChangeEvent();
             refreshUsername();

@@ -51,7 +51,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.ui.Utilities;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.URLDisplayerAction;
 import org.openide.util.Exceptions;
@@ -192,7 +192,7 @@ class LoginPanelDetails extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void chkIsOnlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkIsOnlineActionPerformed
-        NbPreferences.forModule(LoginPanelDetails.class).put(UIUtils.getPrefName(kenai, LoginUtils.ONLINE_ON_CHAT_PREF), Boolean.toString(isOnline()));
+        NbPreferences.forModule(LoginPanelDetails.class).put(KenaiUIUtils.getPrefName(kenai, LoginUtils.ONLINE_ON_CHAT_PREF), Boolean.toString(isOnline()));
     }//GEN-LAST:event_chkIsOnlineActionPerformed
 
     private void passwordFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_passwordFocusGained
@@ -269,7 +269,7 @@ class LoginPanelDetails extends javax.swing.JPanel {
                             public void run() {
                                 final Preferences preferences = NbPreferences.forModule(LoginPanelDetails.class);
                                 chkIsOnline.setEnabled(true);
-                                chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(kenai, LoginUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
+                                chkIsOnline.setSelected(Boolean.parseBoolean(preferences.get(KenaiUIUtils.getPrefName(kenai, LoginUtils.ONLINE_ON_CHAT_PREF), "true"))); // NOI18N
                             }
                         });
                     }

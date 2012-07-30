@@ -51,7 +51,7 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -80,7 +80,7 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
             public void run() {
                 try {
                     PresenceIndicator.getDefault().init();
-                    UIUtils.logKenaiUsage("LOGIN"); // NOI18N
+                    KenaiUIUtils.logKenaiUsage("LOGIN"); // NOI18N
                     KenaiConnection.getDefault(kenai);
                     PasswordAuthentication current = kenai.getPasswordAuthentication();
                     if (current !=null && !(loginPanel.getUsername().equals(current.getUserName()) && Arrays.equals(loginPanel.getPassword(), current.getPassword()))) {
