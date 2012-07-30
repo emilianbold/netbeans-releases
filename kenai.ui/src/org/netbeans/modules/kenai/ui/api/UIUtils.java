@@ -85,6 +85,10 @@ public final class UIUtils {
         KenaiServer.forKenai(kenai).getDashboard().addPropertyChangeListener(propertyChangeListener);
     }
     
+    public static void removeDashboardListener(Kenai kenai, PropertyChangeListener propertyChangeListener) {
+        KenaiServer.forKenai(kenai).getDashboard().removePropertyChangeListener(propertyChangeListener);
+    }
+    
     private UIUtils() {
     }
 

@@ -172,7 +172,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             KenaiManager.getDefault().addPropertyChangeListener(this);
             for (Kenai kenai : KenaiManager.getDefault().getKenais()) {
                 if (isLoggedIn(kenai)) {
-                    attachToDashboard();
+                    attachToDashboard(kenai);
                 }
             }
         }
@@ -187,7 +187,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
             KenaiManager.getDefault().removePropertyChangeListener(this);
             for (Kenai kenai : KenaiManager.getDefault().getKenais()) {
                 if (!isLoggedIn(kenai)) {
-                    detachFromDashboard();
+                    detachFromDashboard(kenai);
                 }
             }
         }
@@ -200,9 +200,9 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
         } else if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
             Kenai kenai = (Kenai) evt.getSource();
             if (isLoggedIn(kenai)) {
-                attachToDashboard();
+                attachToDashboard(kenai);
             } else {
-                detachFromDashboard();
+                detachFromDashboard(kenai);
             }
         }
     }
@@ -265,8 +265,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
      * Attaches a listener to the kenai dashboard if immediate is set to true or user is logged into kenai
      * @param immediate
      */
-    private void attachToDashboard () {
-        Dashboard.getDefault().addPropertyChangeListener(this);
+    private void attachToDashboard (Kenai kenai) {
+        UIUtils.addDashboardListener(kenai, this);
         registerVCSNotificationListener(UIUtils.getDashboardProjects());
     }
 
@@ -274,8 +274,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
      * Dettaches a listener from the kenai dashboard if immediate is set to true or user is logged into kenai
      * @param immediate
      */
-    private void detachFromDashboard () {
-        Dashboard.getDefault().removePropertyChangeListener(this);
+    private void detachFromDashboard (Kenai kenai) {
+        UIUtils.removeDashboardListener(kenai, this);
         unregisterVCSNotificationListener(UIUtils.getDashboardProjects());
     }
 
