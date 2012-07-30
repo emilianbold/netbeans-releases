@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.inspect.webkit.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -78,9 +80,10 @@ public class StyleSheetNode extends AbstractNode {
      *
      * @param css CSS domain of the corresponding WebKit debugging.
      * @param header header of the represented stylesheet.
+     * @param filter filter for the subtree of the node.
      */
-    StyleSheetNode(CSS css, StyleSheetHeader header) {
-        super(Children.create(new StyleSheetChildFactory(css, header), true),
+    StyleSheetNode(CSS css, StyleSheetHeader header, Filter filter) {
+        super(Children.create(new StyleSheetChildFactory(css, header, filter), true),
                 Lookups.fixed(new Resource(header.getSourceURL())));
         this.header = header;
         updateDisplayName();
@@ -129,29 +132,71 @@ public class StyleSheetNode extends AbstractNode {
         private CSS css;
         /** Header of the style sheet. */
         private StyleSheetHeader header;
+        /** Body of the style sheet. */
+        private StyleSheetBody body;
+        /** Filter of the subtree of the node. */
+        private Filter filter;
 
         /**
          * Creates a new {@code StyleSheetChildFactory}.
          *
          * @param css CSS domain of the corresponding WebKit debugging.
          * @param header header of the style sheet.
+         * @param filter filter for the subtree of the node.
          */
-        StyleSheetChildFactory(CSS css, StyleSheetHeader header) {
+        StyleSheetChildFactory(CSS css, StyleSheetHeader header, Filter filter) {
             this.css = css;
             this.header = header;
+            this.filter = filter;
+            filter.addPropertyChangeListener(createListener());
+        }
+
+        /**
+         * Creates a property change listener on the changes of the filter.
+         *
+         * @return property change listener on the changes of the filter.
+         */
+        private PropertyChangeListener createListener() {
+            return new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String propertyName = evt.getPropertyName();
+                    if (Filter.PROPERTY_PATTERN.equals(propertyName)) {
+                        refresh(false);
+                    }
+                }
+            };
         }
 
         @Override
         protected boolean createKeys(List<Rule> toPopulate) {
             String styleSheetId = header.getStyleSheetId();
-            StyleSheetBody body = css.getStyleSheet(styleSheetId);
+            if (body == null) {
+                body = css.getStyleSheet(styleSheetId);
+            }
             if (body == null) {
                 Logger.getLogger(StyleSheetNode.class.getName())
                         .log(Level.INFO, "Null body obtained for style sheet {0}!", styleSheetId);
             } else {
-                toPopulate.addAll(body.getRules());
+                for (Rule rule : body.getRules()) {
+                    if (includeKey(rule)) {
+                        toPopulate.add(rule);
+                    }
+                }
             }
             return true;
+        }
+
+        /**
+         * Determines whether the specified rule should be included among keys.
+         *
+         * @param rule rule to check.
+         * @return {@code true} when the rule should be included among keys,
+         * returns {@code false} otherwise.
+         */
+        private boolean includeKey(Rule rule) {
+            String pattern = filter.getPattern();
+            return (pattern == null) || rule.getSelector().startsWith(pattern);
         }
 
         @Override
