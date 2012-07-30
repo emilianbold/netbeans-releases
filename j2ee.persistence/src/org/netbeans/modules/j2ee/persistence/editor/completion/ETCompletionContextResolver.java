@@ -51,7 +51,6 @@ import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
-import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -142,7 +141,7 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
             helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
             int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
             ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
-
+            
             if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
                 for (String var : buildContentAssistProposals.identificationVariables()) {
                     results.add(new JPACompletionItem.JPQLElementItem(var, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
