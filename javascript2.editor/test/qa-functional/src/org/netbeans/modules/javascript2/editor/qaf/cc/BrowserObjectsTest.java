@@ -69,16 +69,15 @@ public class BrowserObjectsTest extends GeneralJavaScript {
                 "testOverridenObject",
                 "testNavigatorInFunction",
                 "testScreenSimple",
-                "testHistorySimple"
-                ).enableModules(".*").clusters(".*"));
+                "testHistorySimple").enableModules(".*").clusters(".*"));
     }
 
     public void createApplication() {
         startTest();
         this.name_iterator++;
-        createPhpApplication(TEST_BASE_NAME + name_iterator);
-        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "JavaScript File");
-        this.currentFile = "cc.js";
+        createPhpApplication(TEST_BASE_NAME + "bo_" + name_iterator);
+        EditorOperator eo = createWebFile("bocc", TEST_BASE_NAME + "bo_" + name_iterator, "JavaScript File");
+        this.currentFile = "bocc.js";
         try {
             waitScanFinished();
         } catch (Exception e) {

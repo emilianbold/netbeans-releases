@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,56 +34,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.j2ee.persistence.jpqleditor.ui;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
+import org.netbeans.modules.j2ee.persistence.jpqleditor.JPQLEditorController;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * Action which shows JPQLEditor component.
+ * 
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
-
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
+public class JPQLEditorAction extends NodeAction {
+    
+    public JPQLEditorAction() {
+        super();
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
+    protected boolean asynchronous() {
+        return false;
     }
 
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
+    @Override
+    protected void performAction(final Node[] activatedNodes) {
+        new JPQLEditorController().init(activatedNodes);
     }
 
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if ((activatedNodes != null) && (activatedNodes.length == 1)) {
+            if (activatedNodes[0] != null) {
+                DataObject data = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+                if (data != null) {
+                    FileObject pXml = data.getPrimaryFile();
+                    Project project = pXml != null ? FileOwnerQuery.getOwner(pXml) : null;
+                    PersistenceEnvironment pe = project!=null ? project.getLookup().lookup(PersistenceEnvironment.class) : null;
+                    return pe != null;
+                }
+            }
+        }
+        return false;
     }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
+    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
+    
+    public String getName() {
+        return NbBundle.getMessage(JPQLEditorAction.class, "CTL_JPQLEditorAction");
     }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
-    }
-
 }

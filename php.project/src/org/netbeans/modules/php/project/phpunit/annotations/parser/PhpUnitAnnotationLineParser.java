@@ -39,51 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.php.project.phpunit.annotations.parser;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class PhpUnitAnnotationLineParser implements AnnotationLineParser {
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
+    private static final AnnotationLineParser INSTANCE = new PhpUnitAnnotationLineParser();
+
+    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    static {
+        PARSERS.add(new ExpectedExceptionLineParser());
+    }
+
+    @AnnotationLineParser.Registration(position=400)
+    public static AnnotationLineParser getDefault() {
+        return INSTANCE;
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
-    }
-
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
-    }
-
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
+    public AnnotationParsedLine parse(final String line) {
+        AnnotationParsedLine result = null;
+        for (AnnotationLineParser annotationLineParser : PARSERS) {
+            result = annotationLineParser.parse(line);
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
     }
 
 }

@@ -41,49 +41,33 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.symfony2.annotations.AnnotationUtils;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+class PreAuthorizeLineParser implements AnnotationLineParser {
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
-    }
+    static final String ANNOTATION_NAME = "PreAuthorize"; //NOI18N
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
-    }
-
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
-    }
-
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            result = new PreAuthorizeParsedLine(description, types);
+        }
+        return result;
     }
 
 }

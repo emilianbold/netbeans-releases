@@ -39,51 +39,34 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.php.project.phpunit.annotations.parser;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
+public class PhpUnitAnnotationLineParserTest extends NbTestCase {
     private AnnotationLineParser parser;
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
+    public PhpUnitAnnotationLineParserTest(String name) {
         super(name);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
+        parser = PhpUnitAnnotationLineParser.getDefault();
     }
 
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
+    public void testExpectedExceptionParser_01() {
+        assertNotNull(parser.parse("expectedException"));
     }
 
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
+    public void testExpectedExceptionParser_02() {
+        assertNotNull(parser.parse("ExpectedException"));
     }
 
 }

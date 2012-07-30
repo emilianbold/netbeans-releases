@@ -39,51 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.j2ee.persistence.api;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
+import java.net.URL;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * helper class to get project based environment info
+ * todo: consider to combine with scope/location providers
+ * @author sp153251
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public interface PersistenceEnvironment {
+    /**
+     * Prepares and returns a custom classloader for this project.
+     * The classloader is capable of loading project classes and resources.
+     * 
+     * @param classpaths, custom classpaths that are registered along with project based classpath.
+     * @return classloader which is a URLClassLoader instance.
+     */
+    ClassLoader getProjectClassLoader(URL[] classpaths);
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
-    }
+    /**
+     * Returns the NetBeans project to which this HibernateEnvironment instance is bound.
+     *
+     * @return NetBeans project.
+     */
+    Project getProject();
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
-    }
+    /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     *
+     * @param projectFile file in current project.
+     * @return List of java.io.File objects representing each entry on the classpath.
+     */
+    List<URL> getProjectClassPath(FileObject projectFile);
 
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
-    }
-
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
-    }
-
+    public List<URL> getProjectClassPath();
+    
+    /**
+     * 
+      * @return return persistence.xml location
+     */
+    FileObject getLocation();
 }

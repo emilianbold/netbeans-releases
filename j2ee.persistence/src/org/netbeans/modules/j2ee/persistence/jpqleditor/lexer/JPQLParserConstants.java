@@ -39,51 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
-
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
+package org.netbeans.modules.j2ee.persistence.jpqleditor.lexer;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author sp153251
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
-
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
-    }
-
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
-    }
-
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
-    }
-
+public interface JPQLParserConstants {
+  int EOF = 0;
+  int WHITESPACE = 1;
+  int INDENTIFICATIONVARIABLE = 2;
+  int MAPPING = 3;
+  int ABSTRACTSCHEMATYPE = 4;
+  int IDENTIFIER = 5;  
 }

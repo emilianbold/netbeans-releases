@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,56 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+package org.netbeans.modules.j2ee.persistence.jpqleditor;
 
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * Wraps JPQL execution results and errors.
+ * 
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class JPQLResult {
+    private List results = new ArrayList();
+    private int updateOrDeleteResult;
+    private List<Throwable> exceptions = new ArrayList<Throwable>();
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
+    public List<Throwable> getExceptions() {
+        return exceptions;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
+    public void setExceptions(List<Throwable> exceptions) {
+        this.exceptions = exceptions;
     }
 
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
+    public int getUpdateOrDeleteResult() {
+        return updateOrDeleteResult;
     }
 
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
+    public void setUpdateOrDeleteResult(int updateOrDeleteResult) {
+        this.updateOrDeleteResult = updateOrDeleteResult;
+    }
+    
+    public void setQueryResults(List results) {
+        this.results = results;
     }
 
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
+    public List getQueryResults() {
+        return results;
     }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
-    }
-
 }

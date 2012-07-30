@@ -41,49 +41,38 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
+import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class SatisfiesParentSecurityPolicyParsedLineTest extends NbTestCase {
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
+    public SatisfiesParentSecurityPolicyParsedLineTest(String name) {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
+    public void testNonNullDescription() throws Exception {
+        try {
+            new SatisfiesParentSecurityPolicyParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new SatisfiesParentSecurityPolicyParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
+    public void testCorrectName() throws Exception {
+        SatisfiesParentSecurityPolicyParsedLine cache = new SatisfiesParentSecurityPolicyParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(SatisfiesParentSecurityPolicyLineParser.ANNOTATION_NAME, cache.getName());
     }
 
 }

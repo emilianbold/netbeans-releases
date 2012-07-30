@@ -39,51 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.j2ee.persistence.jpqleditor.lexer;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+
+import java.util.*;
+import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
 
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author sp153251
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class JPQLLanguageHierarchy extends LanguageHierarchy<JPQLTokenId> {
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
+    private static Collection<JPQLTokenId> tokens;
+    private static Map<Integer, JPQLTokenId> idToToken;
+
+    private static void init() {
+        tokens = EnumSet.allOf(JPQLTokenId.class);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
+    protected synchronized Collection<JPQLTokenId> createTokenIds() {
+        if (tokens == null) {
+            init();
+        }
+        return tokens;
     }
 
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
+    @Override
+    protected synchronized Lexer<JPQLTokenId> createLexer(LexerRestartInfo<JPQLTokenId> info) {
+        return new JPQLLexer(info);
     }
 
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
+    @Override
+    protected String mimeType() {
+        return "text/x-jpql";
     }
 
 }

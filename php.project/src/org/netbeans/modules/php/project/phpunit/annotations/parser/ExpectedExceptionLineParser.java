@@ -39,51 +39,57 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.php.project.phpunit.annotations.parser;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+class ExpectedExceptionLineParser implements AnnotationLineParser {
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
-    }
+    static final String ANNOTATION_NAME = "expectedException"; //NOI18N
+    private String line;
+    private String[] tokens;
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
+    public AnnotationParsedLine parse(final String line) {
+        this.line = line;
+        AnnotationParsedLine result = null;
+        tokens = line.split("[ \t]+"); //NOI18N
+        if (tokens.length > 0 && ANNOTATION_NAME.equalsIgnoreCase(tokens[0])) {
+            result = handleAnnotation();
+        }
+        return result;
     }
 
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
+    private AnnotationParsedLine handleAnnotation() {
+        String description = "";
+        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        if (tokens.length > 1) {
+            description = line.substring(tokens[0].length()).trim();
+            int start = ANNOTATION_NAME.length() + countSpacesToFirstNonWhitespace(line.substring(ANNOTATION_NAME.length()));
+            int end = start + tokens[1].length();
+            types.put(new OffsetRange(start, end), line.substring(start, end));
+        }
+        return new ExpectedExceptionParsedLine(description, types);
     }
 
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
+    private static int countSpacesToFirstNonWhitespace(final String line) {
+        int result = 0;
+        for (int i = 0; i < line.length(); i++) {
+            if (Character.isWhitespace(line.charAt(i))) {
+                result++;
+            } else {
+                break;
+            }
+        }
+        return result;
     }
 
 }

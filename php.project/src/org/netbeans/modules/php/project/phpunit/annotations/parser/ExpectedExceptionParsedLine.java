@@ -39,51 +39,43 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.php.project.phpunit.annotations.parser;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class ExpectedExceptionParsedLine implements AnnotationParsedLine {
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
+    private final String description;
+    private final Map<OffsetRange, String> types;
+
+    public ExpectedExceptionParsedLine(final String description, final Map<OffsetRange, String> types) {
+        Parameters.notNull("description", description); //NOI18N
+        Parameters.notNull("types", types); //NOI18N
+        this.description = description;
+        this.types = types;
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
+    public String getDescription() {
+        return description;
     }
 
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return new HashMap<OffsetRange, String>(types);
     }
 
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
-    }
-
-    public void testRunAsParser() {
-        assertNotNull(parser.parse("RunAs"));
-    }
-
-    public void testSatisfiesParentSecurityPolicyParser() {
-        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
-    }
-
-    public void testPreAuthorizeParser() {
-        assertNotNull(parser.parse("PreAuthorize"));
+    @Override
+    public String getName() {
+        return ExpectedExceptionLineParser.ANNOTATION_NAME;
     }
 
 }
