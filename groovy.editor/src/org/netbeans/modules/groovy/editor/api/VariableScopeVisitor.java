@@ -277,7 +277,15 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
     @Override
     public void visitMethod(MethodNode methodNode) {
-        if (leaf instanceof FieldNode) {
+        VariableScope variableScope = methodNode.getVariableScope();
+        if (leaf instanceof Variable) {
+            String name = ((Variable) leaf).getName();
+            // This check is here because we can have method parameter with the same
+            // name hidding property/field and we don't want to show occurences of these
+            if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                return;
+            }
+        } else if (leaf instanceof FieldNode) {
             if (isCaretOnFieldType((FieldNode) leaf, doc, cursorOffset)) {
                 addMethodOccurrences(methodNode, ((FieldNode) leaf).getType());
             }
