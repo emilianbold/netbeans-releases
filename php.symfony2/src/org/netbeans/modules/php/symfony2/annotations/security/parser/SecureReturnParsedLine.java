@@ -39,25 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodParsedLine extends BaseParsedLine {
+public class SecureReturnParsedLine extends BaseParsedLine {
 
-    public MethodParsedLine(final String description, final Map<OffsetRange, String> types) {
+    public SecureReturnParsedLine(String description, Map<OffsetRange, String> types) {
         super(description, types);
     }
 
     @Override
     public String getName() {
-        return MethodLineParser.ANNOTATION_NAME;
+        return SecureReturnLineParser.ANNOTATION_NAME;
     }
 
 }

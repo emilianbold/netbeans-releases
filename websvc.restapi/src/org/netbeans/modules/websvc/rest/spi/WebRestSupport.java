@@ -136,6 +136,14 @@ public abstract class WebRestSupport extends RestSupport {
                 break;
             case DD:
                 type = CONFIG_TYPE_DD;
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                boolean added = false;
+                if ( support != null ){
+                    added = support.extendsJerseyProjectClasspath(project);
+                }
+                if ( !added ){
+                    JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
+                }
                 break;
         }
         if ( type!= null ){

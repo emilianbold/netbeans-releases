@@ -297,6 +297,9 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String restAppPackage = null;
             String restAppClass = null;
             
+            handle.progress(NbBundle.getMessage(EntityResourcesIterator.class,
+                    "MSG_EnableRestSupport"));                  // NOI18N     
+            
             if( restSupport instanceof WebRestSupport) {
                 Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
                 if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
