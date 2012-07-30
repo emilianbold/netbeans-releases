@@ -537,7 +537,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
             PropertyExpression propertyUnderCursor = (PropertyExpression) leafParent;
             String nodeAsString = node.getPropertyAsString();
             if (nodeAsString != null && nodeAsString.equals(propertyUnderCursor.getPropertyAsString())) {
-                occurrences.add(node);
+                occurrences.add(property);
             }
         }
         super.visitPropertyExpression(node);
