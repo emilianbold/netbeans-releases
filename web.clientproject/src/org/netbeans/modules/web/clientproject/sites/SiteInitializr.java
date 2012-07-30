@@ -69,6 +69,12 @@ public class SiteInitializr implements SiteTemplateImplementation {
         return Bundle.LBL_Name_Initializr();
     }
 
+    @NbBundle.Messages("SiteInitializr.description=Initializr")
+    @Override
+    public String getDescription() {
+        return Bundle.SiteInitializr_description();
+    }
+
     @Override
     public SiteTemplateCustomizer getCustomizer() {
         return customizer;

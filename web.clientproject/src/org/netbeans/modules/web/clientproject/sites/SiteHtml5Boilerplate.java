@@ -70,6 +70,12 @@ public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
         return Bundle.LBL_Name();
     }
 
+    @NbBundle.Messages("SiteHtml5Boilerplate.description=HTML 5 Boilerplate")
+    @Override
+    public String getDescription() {
+        return Bundle.SiteHtml5Boilerplate_description();
+    }
+
     @Override
     public SiteTemplateCustomizer getCustomizer() {
         return new SiteTemplateCustomizer() {

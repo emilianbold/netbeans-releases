@@ -70,6 +70,12 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
         return Bundle.LBL_Name2();
     }
 
+    @NbBundle.Messages("SiteMobileBoilerplate.description=Mobile Boilerplate")
+    @Override
+    public String getDescription() {
+        return Bundle.SiteMobileBoilerplate_description();
+    }
+
     @Override
     public SiteTemplateCustomizer getCustomizer() {
         return new SiteTemplateCustomizer() {

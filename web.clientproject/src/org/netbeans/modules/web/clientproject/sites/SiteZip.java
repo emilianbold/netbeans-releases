@@ -57,14 +57,13 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Special {@link SiteTemplateImplementation} (not registered in SFS).
  */
 @NbBundle.Messages({"LBL_SiteZip=Archive File",
     "LBL_SiteZip_Error=Template file does not exist"
         })
-@ServiceProvider(service=SiteTemplateImplementation.class, position=100)
 public class SiteZip implements SiteTemplateImplementation {
     
     private static final String USED_TEMPLATES = "last.templates";
@@ -75,6 +74,11 @@ public class SiteZip implements SiteTemplateImplementation {
     @Override
     public String getName() {
         return Bundle.LBL_SiteZip();
+    }
+
+    @Override
+    public String getDescription() {
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     @Override

@@ -41,13 +41,11 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.Component;
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -59,13 +57,12 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
 
     private SiteTemplateWizard component;
     private WizardDescriptor wizardDescriptor;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
     @Override
-    public Component getComponent() {
+    public SiteTemplateWizard getComponent() {
         if (component == null) {
-            component = new SiteTemplateWizard(this);
+            component = new SiteTemplateWizard();
             component.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
         }
         return component;
@@ -85,41 +82,41 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     public void storeSettings(WizardDescriptor settings) {
     }
 
-    public void setErrorMessage(String message) {
-        if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
-        }
-    }
-
     public Collection<String> getSupportedLibraries() {
         return component.getSupportedLibraries();
     }
 
     @Override
     public boolean isValid() {
-        getComponent();
-        String error = component.isValid2();
-        if (error.length() > 0) {
+        // error
+        String error = getComponent().getErrorMessage();
+        if (error != null && !error.isEmpty()) {
             setErrorMessage(error);
             return false;
-        } else {
-            setErrorMessage("");
+        }
+        // warning
+        String warning = getComponent().getWarningMessage();
+        if (warning != null && !warning.isEmpty()) {
+            setErrorMessage(warning);
             return true;
         }
+        // everything ok
+        setErrorMessage(""); // NOI18N
+        return true;
+    }
+
+    private void setErrorMessage(String message) {
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
+        getComponent().addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
-    }
-
-    protected final void fireChangeEvent() {
-        changeSupport.fireChange();
+        getComponent().removeChangeListener(l);
     }
 
     @Override
@@ -128,8 +125,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     }
 
     public void apply(FileObject p, ProgressHandle handle) {
-        if (component != null) {
-            component.apply(p, handle);
-        }
+        component.apply(p, handle);
     }
+
 }

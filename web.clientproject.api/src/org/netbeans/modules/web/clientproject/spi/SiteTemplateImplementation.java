@@ -51,6 +51,8 @@ import org.openide.filesystems.FileObject;
 public interface SiteTemplateImplementation {
 
     String getName();
+
+    String getDescription();
     
     SiteTemplateCustomizer getCustomizer();
     
