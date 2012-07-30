@@ -176,7 +176,7 @@ public class StyleSheetNode extends AbstractNode {
             }
             if (body == null) {
                 Logger.getLogger(StyleSheetNode.class.getName())
-                        .log(Level.INFO, "Null body obtained for style sheet {0}!", styleSheetId);
+                        .log(Level.INFO, "Null body obtained for style sheet {0}!", styleSheetId); // NOI18N
             } else {
                 for (Rule rule : body.getRules()) {
                     if (includeKey(rule)) {
