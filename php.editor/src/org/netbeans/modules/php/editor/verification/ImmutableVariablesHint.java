@@ -285,7 +285,13 @@ public class ImmutableVariablesHint extends AbstractRule implements PHPRuleWithP
         @Override
         public void visit(Assignment node) {
             if (node.getOperator().equals(Type.EQUAL)) {
-                processEqualAssignment(node);
+                if (parentNodes.peek() instanceof IfStatement) {
+                    parentNodes.push(node);
+                    processEqualAssignment(node);
+                    parentNodes.pop();
+                } else {
+                    processEqualAssignment(node);
+                }
             }
         }
 
