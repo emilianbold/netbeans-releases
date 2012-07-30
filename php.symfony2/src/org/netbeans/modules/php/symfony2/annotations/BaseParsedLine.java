@@ -39,25 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.php.symfony2.annotations;
 
-import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodParsedLine extends BaseParsedLine {
+public abstract class BaseParsedLine implements AnnotationParsedLine {
 
-    public MethodParsedLine(final String description, final Map<OffsetRange, String> types) {
-        super(description, types);
+    private final String description;
+    private final Map<OffsetRange, String> types;
+
+    public BaseParsedLine(final String description, final Map<OffsetRange, String> types) {
+        Parameters.notNull("description", description); //NOI18N
+        Parameters.notNull("types", types); //NOI18N
+        this.description = description;
+        this.types = types;
     }
 
     @Override
-    public String getName() {
-        return MethodLineParser.ANNOTATION_NAME;
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return new HashMap<OffsetRange, String>(types);
     }
 
 }

@@ -39,25 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodParsedLine extends BaseParsedLine {
+public class SecureReturnParsedLineTest extends NbTestCase {
 
-    public MethodParsedLine(final String description, final Map<OffsetRange, String> types) {
-        super(description, types);
+    public SecureReturnParsedLineTest(String name) {
+        super(name);
     }
 
-    @Override
-    public String getName() {
-        return MethodLineParser.ANNOTATION_NAME;
+    public void testNonNullDescription() throws Exception {
+        try {
+            new SecureReturnParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
+        }
+    }
+
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new SecureReturnParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
+    }
+
+    public void testCorrectName() throws Exception {
+        SecureReturnParsedLine cache = new SecureReturnParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(SecureReturnLineParser.ANNOTATION_NAME, cache.getName());
     }
 
 }

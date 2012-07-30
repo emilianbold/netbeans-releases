@@ -39,25 +39,46 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodParsedLine extends BaseParsedLine {
+public class Symfony2SecurityAnnotationLineParser implements AnnotationLineParser {
 
-    public MethodParsedLine(final String description, final Map<OffsetRange, String> types) {
-        super(description, types);
+    private static final AnnotationLineParser INSTANCE = new Symfony2SecurityAnnotationLineParser();
+
+    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    static {
+        PARSERS.add(new SecureLineParser());
+        PARSERS.add(new SecureParamLineParser());
+        PARSERS.add(new SecureReturnLineParser());
+    }
+
+    private Symfony2SecurityAnnotationLineParser() {
+    }
+
+    @AnnotationLineParser.Registration(position=300)
+    public static AnnotationLineParser getDefault() {
+        return INSTANCE;
     }
 
     @Override
-    public String getName() {
-        return MethodLineParser.ANNOTATION_NAME;
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        for (AnnotationLineParser annotationLineParser : PARSERS) {
+            result = annotationLineParser.parse(line);
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
     }
 
 }
