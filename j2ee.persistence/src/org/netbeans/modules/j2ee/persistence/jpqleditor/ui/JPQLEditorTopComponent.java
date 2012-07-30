@@ -112,7 +112,7 @@ import org.openide.windows.TopComponent;
     displayName="",
     extension="jpql",
     mimeType="text/x-jpql",
-    position=1650
+    position=1660
 )
 public final class JPQLEditorTopComponent extends TopComponent {
 
