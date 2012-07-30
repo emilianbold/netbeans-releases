@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -609,14 +610,6 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          */
         @Override
         public boolean extendsJerseyProjectClasspath( Project project ) {
-            if ( hasJee6Profile() ){
-                /*
-                 *  Do not extend project classpath with Jersey impl libraries
-                 *  Fix for BZ#206527 - Do not extend JEE6 project 
-                 *  classpath with Jersey libraries
-                 */
-                return true;
-            }
             List<URL> urls = getJerseyLibraryURLs();
             if ( urls.size() >0 ){
                 return addJars( project , urls );
@@ -755,8 +748,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             }
             FileObject sourceRoot = sourceGroups[0].getRootFolder();
             try {
+                String classPathType;
+                if ( hasJee6Profile() ){
+                    classPathType = JavaClassPathConstants.COMPILE_ONLY;
+                }
+                else {
+                    classPathType = ClassPath.COMPILE;
+                }
                 ProjectClassPathModifier.addRoots(urls.toArray( new URL[ urls.size()]), 
-                        sourceRoot, ClassPath.COMPILE);
+                        sourceRoot, classPathType );
             } 
             catch(UnsupportedOperationException ex) {
                 return false;
