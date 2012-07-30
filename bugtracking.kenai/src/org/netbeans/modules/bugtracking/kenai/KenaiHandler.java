@@ -64,7 +64,6 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
@@ -217,8 +216,12 @@ class KenaiHandler {
                 }
                 boolean predefined1 = false;
                 boolean predefined2 = false;
-                if(qh1 instanceof QueryDescriptor && ((QueryDescriptor) qh1).isPredefined()) predefined1 = true;
-                if(qh2 instanceof QueryDescriptor && ((QueryDescriptor) qh2).isPredefined()) predefined2 = true;
+                if(qh1 instanceof QueryDescriptor && ((QueryDescriptor) qh1).isPredefined()) {
+                    predefined1 = true;
+                }
+                if(qh2 instanceof QueryDescriptor && ((QueryDescriptor) qh2).isPredefined()) {
+                    predefined2 = true;
+                }
                 if(predefined1 && !predefined2) {
                     return -1;
                 } else if(predefined1 && !predefined2) {
@@ -247,8 +250,8 @@ class KenaiHandler {
     }
 
     void registerRepository(Repository repo, ProjectHandle<KenaiProject> project) {
-        KenaiRepositoryListener krl = null;
         synchronized (kenaiRepoListeners) {
+            KenaiRepositoryListener krl;
             String url = project.getTeamProject().getKenai().getUrl().toString();
             krl = kenaiRepoListeners.get(repo.getId());
             if (krl == null) {

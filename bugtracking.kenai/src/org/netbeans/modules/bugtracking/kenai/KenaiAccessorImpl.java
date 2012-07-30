@@ -68,7 +68,6 @@ import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
@@ -122,8 +121,8 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public Collection<RepositoryUser> getProjectMembers(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject kp) throws IOException {
-        List<RepositoryUser> members = null;
         if(kp instanceof KenaiProjectImpl) {
+            List<RepositoryUser> members;
             KenaiProjectMember[] kenaiMembers = ((KenaiProjectImpl)kp).getProject().getMembers();
             members = new ArrayList<RepositoryUser>(kenaiMembers.length);
             for (KenaiProjectMember member : kenaiMembers) {
