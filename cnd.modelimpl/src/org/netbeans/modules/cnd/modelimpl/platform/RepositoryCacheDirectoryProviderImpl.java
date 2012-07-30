@@ -66,6 +66,9 @@ public class RepositoryCacheDirectoryProviderImpl implements RepositoryCacheDire
             NativeProject np = projects.iterator().next();
             if (CndFileUtils.isLocalFileSystem(np.getFileSystem())) {
                 File cache = new File(np.getProjectRoot() + "/nbproject/private/cache/model"); //NOI18N
+                if (TraceFlags.CACHE_IN_PROJECT) {
+                    cache.mkdirs();
+                }
                 if (cache.exists()) {
                     return cache;
                 }
