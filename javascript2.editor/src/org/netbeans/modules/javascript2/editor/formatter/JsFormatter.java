@@ -66,8 +66,6 @@ public class JsFormatter implements Formatter {
 
     private static final Logger LOGGER = Logger.getLogger(JsFormatter.class.getName());
 
-    private static boolean NEW_LINE_BREAKS = true;
-
     private static boolean ELSE_IF_SINGLE_LINE = true;
 
     private final Language<JsTokenId> language;
@@ -460,14 +458,15 @@ public class JsFormatter implements Formatter {
     private int handleLineWrap(List<FormatToken> tokens, int index,
             FormatContext formatContext, int initialIndent) {
 
-        int i = index;
-        if (!NEW_LINE_BREAKS) {
-            return i;
-        }
-
         FormatToken token = tokens.get(index);
         
         CodeStyle.WrapStyle style = getLineWrap(token, formatContext);
+        if (style == CodeStyle.WrapStyle.WRAP_IF_LONG) {
+            // mark this point
+            return index;
+        }
+
+        int i = index;
 
         // search for token which will be present after eol
         FormatToken tokenAfterEol = token.next();
