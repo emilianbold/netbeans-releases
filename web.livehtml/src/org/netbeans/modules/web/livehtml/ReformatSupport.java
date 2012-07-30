@@ -42,18 +42,30 @@
 package org.netbeans.modules.web.livehtml;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author petr-podzimek
  */
 public class ReformatSupport {
+    public static final String SCRIPT_TAG = "script";
+    public static final String TEXT_JAVASCRIPT_MIME_TYPE = "text/javascript";
+    public static final String SPACE = " ";
     
     public static StringBuilder reformat(HtmlSource htmlSource, OpenTag openTag, List<Change> changes) {
         StringBuilder sb = new StringBuilder(htmlSource.getSourceCode());
@@ -127,5 +139,99 @@ public class ReformatSupport {
         }
         
     }
-
+    
+    /**
+     * 
+     * @param document
+     * @return 
+     */
+    public static StringBuilder removeAllJavaScripts(Document document) {
+        if (document == null) {
+            return null;
+        }
+        
+        final TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(document);
+        final TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        
+        Map<Integer, Integer> indexesToReplace = new HashMap<Integer, Integer>();
+        
+        while (tokenSequence.moveNext()) {
+            final TokenSequence<?> embedded = tokenSequence.embedded();
+            if (embedded == null) { // Processing NON-EMBEDED tokens
+                final Token token = tokenSequence.token();
+                if (token != null) {
+                    final CharSequence text = token.text();
+                    if (SCRIPT_TAG.equals(text)) {
+                        int start = tokenSequence.offset() - 1; // tag begins 1 characer before "script"
+                        if (searchFor("</", tokenSequence) != null) {
+                            final Token script = searchFor(SCRIPT_TAG, tokenSequence);
+                            if (script != null) {
+                                int length = (tokenSequence.offset() + token.length() + 1) - start;
+                                indexesToReplace.put(start, length);
+                                continue;
+                            }
+                        }
+                    }
+                }
+                
+            } else { // Processing EMBEDED tokens
+                final Language<?> innerLanguage = embedded.languagePath().innerLanguage();
+                if (innerLanguage != null && TEXT_JAVASCRIPT_MIME_TYPE.equals(innerLanguage.mimeType())) {
+                    embedded.moveNext();
+                    int start = embedded.offset();
+                    for (int i = 0; i < embedded.tokenCount(); i++) {
+                        embedded.moveNext();
+                    }
+                    final Token<?> token = embedded.token();
+                    if (token != null) {
+                        int length = embedded.offset() + token.length() - start;
+                        indexesToReplace.put(start, length);
+                    }
+                }
+            }
+        }
+        
+        try {
+            StringBuilder documentText = new StringBuilder(document.getText(0, document.getLength()));
+            for (Map.Entry<Integer, Integer> entry : indexesToReplace.entrySet()) {
+                final Integer start = entry.getKey();
+                final Integer length = entry.getValue();
+                
+                String source = documentText.substring(start, start + length);
+                String spaces = source.replaceAll(".", SPACE);
+                
+                documentText.replace(start, start + length, spaces);
+            }
+            
+            return documentText;
+            
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return null;
+    }
+    
+    private static Token searchFor(String tokenText, TokenSequence tokenSequence) {
+        if (tokenText == null || tokenText.isEmpty() || tokenSequence == null) {
+            return null;
+        }
+        
+        int i = 0;
+        
+        while (tokenSequence.moveNext() && i < 100) {
+            final Token token = tokenSequence.token();
+            if (token != null) {
+                final CharSequence text = token.text();
+                if (tokenText.equals(text)) {
+                    return token;
+                }
+            }
+            
+            i += 1;
+        }
+        
+        return null;
+    }
+    
 }
