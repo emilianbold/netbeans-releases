@@ -41,37 +41,23 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class SecureReturnParsedLine extends BaseParsedLine {
 
-    public Symfony2SecurityAnnotationLineParserTest(String name) {
-        super(name);
+    public SecureReturnParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Symfony2SecurityAnnotationLineParser.getDefault();
-    }
-
-    public void testSecureParser() {
-        assertNotNull(parser.parse("Secure"));
-    }
-
-    public void testSecureParamParser() {
-        assertNotNull(parser.parse("SecureParam"));
-    }
-
-    public void testSecureReturnParser() {
-        assertNotNull(parser.parse("SecureReturn"));
+    public String getName() {
+        return SecureReturnLineParser.ANNOTATION_NAME;
     }
 
 }
