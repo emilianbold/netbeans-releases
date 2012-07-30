@@ -55,7 +55,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateCustomizer;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -64,7 +63,7 @@ import org.openide.util.RequestProcessor;
 @NbBundle.Messages({"MSG_Loading=loading...",
     "MSG_None=Do not use any",
     "SiteTemplateWizard_Label1=Site Template to initialize project structure"})
-public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeListener {
+public class SiteTemplateWizard extends JPanel implements ChangeListener {
 
     private SiteTemplateCustomizer customizer = null;
     private SiteTemplateImplementation site = null;
