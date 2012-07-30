@@ -72,7 +72,7 @@ public class RunConfigurationPanel extends javax.swing.JPanel implements Documen
         this.project = project;
         initComponents();
         jFileToRunTextField.setText(cfg.getMainFile());
-        model = new DefaultComboBoxModel(new String[]{"None", "Internal Server"});
+        model = new DefaultComboBoxModel(new String[]{"None", "Internal Web Server"});
         jServerComboBox.setModel(model);
         jServerComboBox.addItemListener(this);
         jServerComboBox.setSelectedIndex(cfg.isUseServer() ? 1 : 0);
