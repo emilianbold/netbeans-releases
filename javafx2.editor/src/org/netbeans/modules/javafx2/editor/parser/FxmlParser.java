@@ -56,9 +56,12 @@ import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
 import org.netbeans.modules.javafx2.editor.sax.XmlLexerParser;
 import org.netbeans.modules.javafx2.editor.ErrorReporter;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInclude;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
 import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
+import org.netbeans.modules.javafx2.editor.parser.processors.IncludeResolver;
 import org.netbeans.modules.javafx2.editor.parser.processors.NamedInstancesCollector;
 import org.netbeans.modules.javafx2.editor.parser.processors.PropertyResolver;
 import org.netbeans.modules.javafx2.editor.parser.processors.ReferenceResolver;
@@ -164,6 +167,12 @@ class FxmlParser extends Parser implements ErrorReporter {
         }
 
         @Override
+        protected FxNewInstance resolveInstance(FxInclude include) {
+            // FIXME
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        
+        @Override
         protected FxTreeUtilities createTreeUtilities() {
             return new FxTreeUtilities(ModelAccessor.INSTANCE, getSourceModel(), getTokenHierarchy());
         }
@@ -172,6 +181,7 @@ class FxmlParser extends Parser implements ErrorReporter {
     private void initModelSteps() {
         steps = new ArrayList<ModelBuilderStep>();
         steps.add(new NamedInstancesCollector());
+        steps.add(new IncludeResolver());
         steps.add(new TypeResolver());
         steps.add(new ReferenceResolver());
         steps.add(new PropertyResolver());

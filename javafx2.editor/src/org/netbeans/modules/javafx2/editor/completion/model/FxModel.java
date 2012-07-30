@@ -66,6 +66,7 @@ import org.netbeans.modules.javafx2.editor.parser.NodeInfo;
  * @author sdedic
  */
 public final class FxModel extends FxNode {
+    private URL                        baseURL;
     /**
      * Import declarations
      */
@@ -123,7 +124,12 @@ public final class FxModel extends FxNode {
         return rootComponent;
     }
     
-    FxModel() {
+    FxModel(URL baseURL) {
+        this.baseURL = baseURL;
+    }
+
+    public URL getBaseURL() {
+        return baseURL;
     }
     
     void setLanguage(LanguageDecl lang) {
@@ -213,8 +219,8 @@ public final class FxModel extends FxNode {
     private static final class AccessorImpl extends ModelAccessor {
 
         @Override
-        public FxModel newModel(List<ImportDecl> imports, List<FxNewInstance> defs) {
-            FxModel m = new FxModel();
+        public FxModel newModel(URL baseURL, List<ImportDecl> imports, List<FxNewInstance> defs) {
+            FxModel m = new FxModel(baseURL);
             m.setImports(imports);
             m.setDefinitions(defs);
             
@@ -232,8 +238,8 @@ public final class FxModel extends FxNode {
         }
 
         @Override
-        public IncludeDecl createInclude(URL base, String included) {
-            return new IncludeDecl(base, included);
+        public FxInclude createInclude(String included) {
+            return new FxInclude(included);
         }
 
         @Override
@@ -319,8 +325,8 @@ public final class FxModel extends FxNode {
         }
 
         @Override
-        public void resolveResource(IncludeDecl decl, URL resolved) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public void resolveResource(FxInclude decl, URL resolved) {
+            decl.resolveFile(resolved);
         }
 
         @Override
@@ -345,8 +351,10 @@ public final class FxModel extends FxNode {
                 ((FxInstanceCopy)copyOrReference).resolveBlueprint(original);
             } else if (copyOrReference instanceof FxReference) {
                 ((FxReference)copyOrReference).resolveTarget((FxNewInstance)original);
+            } else if (copyOrReference instanceof FxInclude) {
+                ((FxInclude)copyOrReference).resolveTarget((FxNewInstance)original);
             } else {
-                throw new UnsupportedOperationException();
+                throw new IllegalArgumentException();
             }
         }
 

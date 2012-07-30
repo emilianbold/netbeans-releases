@@ -67,7 +67,7 @@ public abstract class FxNodeVisitor {
         visitNode(decl);
     }
     
-    public void visitInclude(IncludeDecl decl) {
+    public void visitInclude(FxInclude decl) {
         visitNode(decl);
     }
     

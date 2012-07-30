@@ -81,7 +81,7 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
     
     @NbBundle.Messages({
         "FMT_fxReferenceCompletionItem=<fx:reference source=\"\"",
-        "FMT_fxCopyCompletionItem=<fx:copy source=\"\"",
+        "FMT_fxCopyCompletionItem=<fx:copy source=\"\""
     })
     @Override
     public List<CompletionItem> complete() {

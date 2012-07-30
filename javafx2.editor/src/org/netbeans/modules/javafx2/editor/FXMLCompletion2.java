@@ -161,7 +161,7 @@ public class FXMLCompletion2 implements CompletionProvider {
                 Completer.Factory f = it.next();
                 Completer c = f.createCompleter(ctx);
                 if (c != null) {
-                    List<CompletionItem> newItems = c.complete();
+                    List<? extends CompletionItem> newItems = c.complete();
                     if (newItems != null) {
                         items.addAll(newItems);
                         if (c.hasMoreItems()) {

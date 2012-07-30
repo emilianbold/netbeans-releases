@@ -41,56 +41,53 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.beans.BeanInfo;
 import javax.swing.ImageIcon;
+import org.openide.loaders.DataObject;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author sdedic
  */
-public class ValueItem extends AbstractCompletionItem {
-    private String iconResource;
-    private ImageIcon icon;
-    private boolean attribute;
+public class ResourcePathItem extends AbstractCompletionItem {
+    private DataObject  target;
+    private ImageIcon   icon;
+    private String      right;
     
-    private static final Map<String, ImageIcon> cache = new HashMap<String, ImageIcon>();
-    
-    public ValueItem(CompletionContext ctx, String text, String icon) {
+    public ResourcePathItem(DataObject target, CompletionContext ctx, String text, String right) {
         super(ctx, text);
-        this.iconResource = icon;
-        this.attribute = ctx.getType() == CompletionContext.Type.PROPERTY_VALUE;
-    }
-    
-    public void setAttribute(boolean attribute) {
-        this.attribute = attribute;
+        this.target = target;
+        this.right = right;
     }
 
     @Override
-    protected String getSubstituteText() {
-        if (attribute) {
-            return "\"" + super.getSubstituteText() + "\"";
+    protected String getLeftHtmlText() {
+        String tn = target.getName();
+        if (target.getPrimaryFile().isFolder()) {
+            return "<i>" + tn + "/</i>";
         } else {
-            return super.getSubstituteText();
+            return tn;
         }
     }
 
+    @Override
+    protected int getCaretShift() {
+        int pos = super.getCaretShift();
+        if (!target.getPrimaryFile().isData()) {
+            // skip the closing " in the value.
+            pos -= 1;
+        }
+        return pos;
+    }
+    
     @Override
     protected ImageIcon getIcon() {
-        if (icon != null) {
-            return icon;
-        }
-        synchronized (cache) {
-            icon = cache.get(iconResource);
-        }
         if (icon == null) {
-            icon = ImageUtilities.loadImageIcon(iconResource, false);
-        }
-        synchronized (cache) {
-            cache.put(iconResource, icon);
+            icon = new ImageIcon(target.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
         }
         return icon;
     }
+
     
 }

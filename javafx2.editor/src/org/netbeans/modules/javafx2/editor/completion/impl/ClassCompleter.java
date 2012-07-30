@@ -61,6 +61,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -393,6 +394,11 @@ public class ClassCompleter implements Completer, Completer.Factory {
         if (dot != -1) {
             packagePrefix = namePrefix.substring(0, dot);
             namePrefix = namePrefix.substring(dot + 1);
+        }
+        
+        TypeMirror tm = getPropertyType();
+        if (tm != null && tm.getKind() != TypeKind.DECLARED) {
+            return null;
         }
         
         Set<ElementHandle<TypeElement>> handles;

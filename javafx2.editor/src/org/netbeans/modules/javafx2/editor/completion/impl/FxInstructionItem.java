@@ -70,7 +70,7 @@ public class FxInstructionItem extends AbstractCompletionItem {
 
     @NbBundle.Messages({
         "# {0} - instruction / special element name",
-        "FMT_fxmlInstructionItem=<b><font color='#000099'>{0}</font></b>",
+        "FMT_fxmlInstructionItem=<b><font color='#000099'>{0}</font></b>"
     })
     @Override
     protected String getLeftHtmlText() {

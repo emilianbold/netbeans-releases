@@ -56,6 +56,7 @@ final class Dummy extends XmlNode  {
 
     public Dummy(String tagName) {
         super(tagName);
+        markError();
     }
     
     @Override

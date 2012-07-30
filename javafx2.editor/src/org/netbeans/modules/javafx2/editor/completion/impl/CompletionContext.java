@@ -70,9 +70,11 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
 import org.netbeans.modules.javafx2.editor.parser.processors.ImportProcessor;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.nodes.ChildFactory;
+import sun.security.krb5.internal.SeqNumber;
 
 /**
  * Provides information about the soruce, caret position etc to the individual
@@ -248,6 +250,9 @@ public final class CompletionContext {
         processTokens(h);
     }
     
+    public Source getSource() {
+        return fxmlParserResult.getSnapshot().getSource();
+    }
     
     public FxModel    getModel() {
         return fxmlParserResult.getSourceModel();
@@ -503,16 +508,7 @@ public final class CompletionContext {
     }
     
     public boolean isAttribute() {
-        switch (type) {
-            case BINDING:
-            case BUNDLE_REF:
-            case PROPERTY:
-            case PROPERTY_VALUE:
-            case RESOURCE_REF:
-            case VARIABLE:
-                return true;
-        }
-        return false;
+        return attribute;
     }
     
     /**
@@ -903,7 +899,8 @@ public final class CompletionContext {
     }
 
     private void processValueType() {
-        if (type != Type.PROPERTY_VALUE) {
+        attribute = type == Type.PROPERTY_VALUE;
+        if (type != Type.PROPERTY_VALUE && type != Type.PROPERTY_VALUE_CONTENT) {
             return;
         }
         
@@ -1065,6 +1062,8 @@ public final class CompletionContext {
                     if (s.length() == 1 && s.charAt(0) == '>') {
                         // after the ending > of a tag
                         type = Type.CHILD_ELEMENT;
+                        startOffset = ts.offset() + 1;
+                        prefix = "";
                         break;
                     }
                     if (s.length() < 2) {
@@ -1075,23 +1074,29 @@ public final class CompletionContext {
                         type = Type.UNKNOWN;
                         break;
                     }
-                    s = getUnprefixed(s.subSequence(1, s.length()));
-                    // check if there's a prefix; if so, return the unprefixed tagname.
-                    if (wsFound) {
-                        type = Type.PROPERTY;
-                    } else if (s.length() == 0) {
+                    s = s.subSequence(1, s.length());
+                    CharSequence s2 = getUnprefixed(s);
+                    if (s.length() != s2.length()) {
+                        // all prefixed stuff are beans, most probably
                         type = Type.CHILD_ELEMENT;
-                    } else if (isClassTagName(s)) {
-                        type = Type.BEAN;
                     } else {
-                        type = Type.PROPERTY_ELEMENT;
+                        // check if there's a prefix; if so, return the unprefixed tagname.
+                        if (wsFound) {
+                            type = Type.PROPERTY;
+                        } else if (s2.length() == 0) {
+                            type = Type.CHILD_ELEMENT;
+                        } else if (isClassTagName(s2)) {
+                            type = Type.BEAN;
+                        } else {
+                            type = Type.PROPERTY_ELEMENT;
+                        }
                     }
                     
-                    int l = s.length();
-                    if (s.length() > 1 && s.charAt(l - 2) == '/') {
+                    int l = s2.length();
+                    if (s2.length() > 1 && s2.charAt(l - 2) == '/') {
                         l--;
                     }
-                    tagName = s.subSequence(0, l).toString();
+                    tagName = s2.subSequence(0, l).toString();
                     tagStartOffset = ts.offset();
                     dontAdvance = caretOffset == tagStartOffset + t.length();
                     break;

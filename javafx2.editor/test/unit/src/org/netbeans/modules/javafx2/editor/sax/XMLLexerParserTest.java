@@ -54,6 +54,7 @@ import junit.framework.TestSuite;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.javafx2.editor.FXMLCompletionTestBase;
+import org.netbeans.modules.javafx2.editor.GoldenFileTestBase;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
@@ -69,42 +70,10 @@ import org.xml.sax.ext.LexicalHandler;
  *
  * @author sdedic
  */
-public class XMLLexerParserTest extends FXMLCompletionTestBase {
-    private DataObject  sourceDO;
-    private Document    document;
-    private TokenHierarchy hierarchy;
-    private String fname;
+public class XMLLexerParserTest extends GoldenFileTestBase {
 
     public XMLLexerParserTest(String name) {
         super(name);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        File dataDir = getDataDir();
-        fname = getName().replace("test", "");
-        File f = new File(dataDir, XMLLexerParserTest.class.getName().
-                replaceAll("\\.", "/") + "/" + fname + ".fxml");
-        
-        File w = new File(getWorkDir(), f.getName());
-        InputStream is = new FileInputStream(f);
-        OutputStream os = new FileOutputStream(w);
-        FileUtil.copy(is, os);
-        os.close();
-        is.close();
-        FileObject fo = FileUtil.toFileObject(w);
-        sourceDO = DataObject.find(fo);
-        document = ((EditorCookie)sourceDO.getCookie(EditorCookie.class)).openDocument();
-        hierarchy = TokenHierarchy.get(document);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        if (document != null) {
-            ((EditorCookie)sourceDO.getCookie(EditorCookie.class)).close();
-        }
-        super.tearDown();
     }
     
     private CH handler;

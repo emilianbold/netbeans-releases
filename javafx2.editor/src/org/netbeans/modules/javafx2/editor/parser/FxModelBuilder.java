@@ -61,6 +61,7 @@ import static org.netbeans.modules.javafx2.editor.JavaFXEditorUtils.FXML_FX_NAME
 import org.netbeans.modules.javafx2.editor.ErrorMark;
 import org.netbeans.modules.javafx2.editor.sax.SequenceContentHandler;
 import org.netbeans.modules.javafx2.editor.completion.model.EventHandler;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInclude;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstanceCopy;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
@@ -159,7 +160,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
 
     @Override
     public void startDocument() throws SAXException {
-        fxModel = accessor.newModel(imports, instanceDefinitions);
+        fxModel = accessor.newModel(sourceURL, imports, instanceDefinitions);
         initElement(fxModel);
         
         nodeStack.push(fxModel);
@@ -391,6 +392,8 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             return handleFxReference(atts, true);
         } else if (FX_REFERENCE.equals(localName)) {
             return handleFxReference(atts, false);
+        } else if (FX_INCLUDE.equals(localName)) {
+            return handleFxInclude(atts, localName);
         } else {
             // error, invalid fx: element
             FxNode n = accessor.createErrorElement(localName);
@@ -772,10 +775,11 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         if (eh.isScript() && !eh.hasContent()) {
             if (content.length() == 0) {
                 throw new UnsupportedOperationException();
-            }
-            if (content.charAt(0) == '#') {
-                content = content.subSequence(1, content.length());
-                eh = accessor.asMethodRef(eh);
+            } else {
+                if (content.charAt(0) == '#') {
+                    content = content.subSequence(1, content.length());
+                    eh = accessor.asMethodRef(eh);
+                }
             }
         }
         accessor.addContent(eh, content);
@@ -941,9 +945,27 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
      * @param include 
      */
     @NbBundle.Messages({
-        "ERR_missingIncludeName=Missing include name"
+        "ERR_missingIncludeName=Missing include name",
+        "# {0} - attribute name",
+        "ERR_unexpectedIncludeAttribute=Unexpected attribute in fx:include: {0}"
     })
-    private FxNode handleFxInclude(String include) {
+    private FxNode handleFxInclude(Attributes atts, String localName) {
+        String include = null;
+        
+        for (int i = 0; i < atts.getLength(); i++) {
+            String attName = atts.getLocalName(i);
+            if (FX_ATTR_REFERENCE_SOURCE.equals(attName)) {
+                include = atts.getValue(i);
+            } else {
+                String qName = atts.getQName(i);
+                addAttributeError(
+                    qName,
+                    "unexpected-include-attribute",
+                    ERR_unexpectedIncludeAttribute(qName),
+                    qName
+                );
+            }
+        }
         if (include == null) {
             // must be some text, otherwise = error
             addAttributeError(
@@ -951,9 +973,15 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
                 "missing-included-name",
                 ERR_missingIncludeName()
             );
-            return null;
+            
+            FxNode n = accessor.createErrorElement(localName);
+            initElement(n);
+            addError("invalid-fx-element", ERR_invalidFxElement(localName), localName);
+            return n;
         }
-        throw new UnsupportedOperationException();
+        // guide: fnames starting with slash are treated relative to the classpath
+        FxInclude fxInclude = accessor.createInclude(include);
+        return fxInclude;
     }
     
     @NbBundle.Messages({

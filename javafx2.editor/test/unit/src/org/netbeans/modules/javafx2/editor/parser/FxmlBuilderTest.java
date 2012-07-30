@@ -41,47 +41,17 @@
  */
 package org.netbeans.modules.javafx2.editor.parser;
 
-import org.netbeans.modules.javafx2.editor.parser.ModelAccessor;
 import org.netbeans.modules.javafx2.editor.completion.model.FxTreeUtilities;
-import org.netbeans.modules.javafx2.editor.parser.FxModelBuilder;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import javax.swing.text.Document;
-import junit.framework.TestSuite;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.modules.javafx2.editor.FXMLCompletionTestBase;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
-import org.netbeans.modules.javafx2.editor.sax.XMLLexerParserTest;
+import org.netbeans.modules.javafx2.editor.GoldenFileTestBase;
 import org.netbeans.modules.javafx2.editor.sax.XmlLexerParser;
-import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
-import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
-import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
-import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
-import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
-import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
-import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
-import org.netbeans.modules.javafx2.editor.completion.model.StaticProperty;
-import org.netbeans.modules.javafx2.editor.completion.model.TextPositions;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 
 /**
  *
  * @author sdedic
  */
-public class FxmlBuilderTest extends FXMLCompletionTestBase {
-    DataObject sourceDO;
-    Document document;
-    TokenHierarchy hierarchy;
+public class FxmlBuilderTest extends GoldenFileTestBase {
     FxModelBuilder builder;
-    String fname;
     
     public FxmlBuilderTest(String testName) {
         super(testName);
@@ -93,28 +63,6 @@ public class FxmlBuilderTest extends FXMLCompletionTestBase {
 //        return ts;
 //    }
     
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        File dataDir = getDataDir();
-        fname = getName().replace("test", "");
-        File f = new File(dataDir, FxmlBuilderTest.class.getName().
-                replaceAll("\\.", "/") + "/" + fname + ".fxml");
-        
-        File w = new File(getWorkDir(), f.getName());
-        InputStream is = new FileInputStream(f);
-        OutputStream os = new FileOutputStream(w);
-        FileUtil.copy(is, os);
-        os.close();
-        is.close();
-        FileObject fo = FileUtil.toFileObject(w);
-        sourceDO = DataObject.find(fo);
-        document = ((EditorCookie)sourceDO.getCookie(EditorCookie.class)).openDocument();
-        hierarchy = TokenHierarchy.get(document);
-    }
-    
-    
-
     public void testBaseLoad() throws Exception {
         XmlLexerParser parser = new XmlLexerParser(hierarchy);
         builder = new FxModelBuilder();
@@ -150,16 +98,6 @@ public class FxmlBuilderTest extends FXMLCompletionTestBase {
     public void testBrokenHierarchy() throws Exception {
         defaultTestContents();
     }
-
-    private void assertContents(StringBuilder sb) throws IOException {
-        File out = new File(getWorkDir(), fname + ".parsed");
-        FileWriter wr = new FileWriter(out);
-        wr.append(sb);
-        wr.close();
-        
-        assertFile(out, getGoldenFile(fname + ".pass"), new File(getWorkDir(), fname + ".diff"));
-    }
-    
 
     private void defaultTestContents() throws Exception {
         XmlLexerParser parser = new XmlLexerParser(hierarchy);

@@ -105,4 +105,6 @@ public abstract class FxmlParserResult extends Parser.Result {
     public TokenHierarchy getTokenHierarchy() {
         return tokenHierarchy;
     }
+    
+    protected abstract FxNewInstance resolveInstance(FxInclude include);
 }

@@ -120,9 +120,6 @@ public final class FxTreeUtilities {
             @Override
             public void visitNode(FxNode node) {
                 NodeInfo ni = accessor.i(node);
-                if (ni.isAttribute()) {
-                    return;
-                }
                 if (ni.contains(position, caret)) {
                     nodeStack.push(node);
                     super.visitNode(node);

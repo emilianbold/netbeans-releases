@@ -188,16 +188,25 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
             if (end == -1) {
                 return false;
             }
-            return (s < position || s == position && !caret) &&
+            if (s == offset(end) && position == s && caret) {
+                return true;
+            }
+            return (s <= position) &&
                    offset(end) > position;
         } else {
-            return (s < position || s == position && !caret) &&
+            if (s == offset(contentEnd) && position == s && caret) {
+                return true;
+            }
+            return (s <= position) &&
                    offset(contentEnd) > position;
         }
     }
     
     public boolean contains(int position, boolean caret) {
-        if (position < start || (caret && position == start)) {
+        if (start == end && position == start && caret) {
+            return true;
+        }
+        if (position <= start) {
             return false;
         }
         int e = end;
@@ -206,7 +215,7 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
         } else if (end < 0) {
             e = (-end) - 1;
         }
-        return position <= e;
+        return position < e;
     }
 
     @Override

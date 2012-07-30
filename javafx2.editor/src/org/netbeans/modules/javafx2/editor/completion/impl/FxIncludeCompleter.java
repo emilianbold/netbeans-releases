@@ -41,57 +41,50 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
- * Completer provides CompletionItems for a certain feature or a language
- * construct. Its {@link Factory} is called when the user invokes the CC,
- * and may create a Completer instance if it decides the context is interesting.
- * The Completer may produce zero to many CompletionItems.
- * <p/>
- * The Completer may hold state, a new instance should be created for each Completion
- * invocation by the {@code Factory.createCompleter} method.
+ *
  * @author sdedic
  */
-public interface Completer {
-    /**
-     * Processes the CompletionContext and provides the completion items.
-     * The method is called <b>OUTSIDE</b> the Document's read lock.
-     * 
-     * @return null, or any number (incl. zero) CompletionItems
-     */
-    @CheckForNull
-    public List<? extends CompletionItem> complete();
-    
-    public boolean hasMoreItems();
-     
-    /**
-     * Factory interface should be registered into MIME lookup using {@link MimeRegistration}
-     * annotation. The {@link #createCompleter} will be called with an initialized
-     * CompletionContext to decide whether the Factory can provide an appropriate Completer.
-     * This allows to decompose completion code into pieces and extend it over time.
-     */
-    @MimeLocation(subfolderName="completion")
-    public interface Factory {
-        
-        /**
-         * Called by the infrastructure when completion items are to be produced.
-         * The method should check the {@link CompletionContext}, whether its state
-         * is applicable to this Completer and if so, the {@link Completer} instance 
-         * should be returned.
-         * <p/>
-         * New Completer instance should be allocated and initialized
-         * with CompletionContext by this method.
-         * 
-         * @param ctx contextual information to create completion items
-         * @return 
-         */
-        @CheckForNull
-        public Completer    createCompleter(@NonNull CompletionContext ctx);
+@MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
+public class FxIncludeCompleter implements Completer, Completer.Factory { 
+    private CompletionContext   context;
+
+    public FxIncludeCompleter() {
     }
+
+    public FxIncludeCompleter(CompletionContext context) {
+        this.context = context;
+    }
+
+    @Override
+    public List<? extends CompletionItem> complete() {
+        FxInstructionItem item = new FxInstructionItem("fx:include", context, 
+                "<fx:include source=\"\"/>", CompletionUtils.makeFxNamespaceCreator(context));
+        return Collections.singletonList(item);
+    }
+
+    @Override
+    public boolean hasMoreItems() {
+        return false;
+    }
+
+    @Override
+    public Completer createCompleter(CompletionContext ctx) {
+        switch (ctx.getType()) {
+            case BEAN:
+            case ROOT:
+            case CHILD_ELEMENT:
+                return new FxIncludeCompleter(ctx);
+        }
+        return null;
+    }
+
+    
+    
 }

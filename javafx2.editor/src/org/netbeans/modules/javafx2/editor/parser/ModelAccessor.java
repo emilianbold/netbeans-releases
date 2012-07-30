@@ -49,6 +49,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
 import org.netbeans.modules.javafx2.editor.completion.model.EventHandler;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInclude;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
@@ -56,7 +57,6 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxObjectBase;
 import org.netbeans.modules.javafx2.editor.completion.model.HasContent;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
-import org.netbeans.modules.javafx2.editor.completion.model.IncludeDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
@@ -94,10 +94,10 @@ public abstract class ModelAccessor {
      * @param defs
      * @return 
      */
-    public abstract FxModel    newModel(List<ImportDecl> imports, List<FxNewInstance> defs);
+    public abstract FxModel    newModel(URL baseURL, List<ImportDecl> imports, List<FxNewInstance> defs);
     public abstract ImportDecl createImport(String imported, boolean wildcard);
     public abstract LanguageDecl createLanguage(String lang);
-    public abstract IncludeDecl createInclude(URL base, String included);
+    public abstract FxInclude createInclude(String included);
     public abstract FxNewInstance createInstance(String sourceName, CharSequence value, String factory, String id);
     public abstract FxObjectBase createCopyReference(boolean copy, String targetName);
     public abstract PropertySetter createProperty(String name, boolean implicit);
@@ -132,7 +132,7 @@ public abstract class ModelAccessor {
      */
     public abstract void addChild(FxNode parent, FxNode child) throws IllegalArgumentException;
     
-    public abstract void resolveResource(IncludeDecl decl, URL resolved);
+    public abstract void resolveResource(FxInclude decl, URL resolved);
     
     public abstract NodeInfo i(FxNode n);
     public abstract <T extends FxNode> T makeBroken(T n);

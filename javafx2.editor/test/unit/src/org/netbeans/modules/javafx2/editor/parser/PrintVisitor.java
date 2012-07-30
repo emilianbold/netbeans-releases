@@ -56,8 +56,8 @@ import org.netbeans.modules.javafx2.editor.completion.model.TextPositions;
  *
  * @author sdedic
  */
-class PrintVisitor extends FxNodeVisitor.ModelTraversal {
-    StringBuilder out = new StringBuilder();
+public class PrintVisitor extends FxNodeVisitor.ModelTraversal {
+    public StringBuilder out = new StringBuilder();
     private int indent = 0;
     private FxTreeUtilities trees;
 

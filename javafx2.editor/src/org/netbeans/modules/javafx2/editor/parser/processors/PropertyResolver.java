@@ -141,7 +141,7 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
         "ERR_unableAnalyseClass=Unable to analyse class ''{0}''",
         "# {1} - attached property name",
         "# {0} - source class name",
-        "ERR_attachedPropertyNotExist=The class ''{0}'' does not provide attached property ''{1}''",
+        "ERR_attachedPropertyNotExist=The class ''{0}'' does not provide attached property ''{1}''"
     })
     private boolean doVisitStaticProperty(StaticProperty p) {
         // check whether 

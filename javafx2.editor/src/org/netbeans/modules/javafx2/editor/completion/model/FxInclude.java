@@ -41,53 +41,22 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
-import com.sun.istack.internal.NotNull;
 import java.net.URL;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.TypeMirrorHandle;
-import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinition;
 
 /**
- * Represents "include" processing instruction.
+ * Represents fx:include instruction. Initially, the fx:include may be unresolved,
+ * does not contain the included java type etc. Only filename is resolved (or an error
+ * is reported).
  *
  * @author sdedic
  */
-public final class IncludeDecl extends FxNode {
-    /**
-     * Base for the include, derived from the parsed resource location.
-     */
-    @NotNull
-    private URL     base;
-    
-    private String  includedResource;
-    
-    /**
-     * URL of the resolved resource, or {@code} null, if resource was not found
-     */
-    @NullAllowed
-    private URL     resolvedResource;
+public class FxInclude extends FxObjectBase {
+    private String  sourcePath;
+    private URL  resolvedURL;
+    private FxNewInstance target;
 
-    public IncludeDecl(@NotNull URL base, String includedResource) {
-        this.base = base;
-        this.includedResource = includedResource;
-    }
-
-    public URL getBase() {
-        return base;
-    }
-
-    public URL getResolvedResource() {
-        return resolvedResource;
-    }
-
-    void setResolvedResource(URL resolvedResource) {
-        this.resolvedResource = resolvedResource;
-    }
-
-    public String getIncludedResource() {
-        return includedResource;
+    public FxInclude(String sourcePath) {
+        this.sourcePath = sourcePath;
     }
 
     @Override
@@ -95,18 +64,37 @@ public final class IncludeDecl extends FxNode {
         return Kind.Include;
     }
 
-    @Override
-    public void accept(FxNodeVisitor v) {
-        v.visitInclude(this);
+    public String getSourcePath() {
+        return sourcePath;
     }
 
+    public URL getResolvedURL() {
+        return resolvedURL;
+    }
+
+    @Override
     public String getSourceName() {
         return FxXmlSymbols.FX_INCLUDE;
     }
     
     @Override
-    @SuppressWarnings("rawtypes")
-    void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
+    public void accept(FxNodeVisitor v) {
+        v.visitInclude(this);
     }
     
+    void resolveFile(URL targetFile) {
+        this.resolvedURL = targetFile;
+    }
+    
+    public FxNewInstance resolve(FxmlParserResult result) {
+        if (target != null) {
+            return target;
+        }
+        return target = result.resolveInstance(this);
+    }
+    
+    void resolveTarget(FxNewInstance target) {
+        this.target = target;
+        resolve(target.getJavaType(), null, null, target.getDefinition());
+    }
 }
