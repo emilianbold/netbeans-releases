@@ -403,11 +403,7 @@ public class JsFormatter implements Formatter {
                                 }
 
                                 // XXX too hacky would be great to hide offsetDiff completely
-                                // remove trailing spaces
-                                int offsetDiff = formatContext.getOffsetDiff();
-                                removeTrailingSpaces(tokens, startIndex, formatContext, tokenAfterEol);
-                                int subsequentOffsetDiff = formatContext.getOffsetDiff() - offsetDiff;
-                                formatContext.setOffsetDiff(offsetDiff);
+                                // we dont have to remove trailing spaces as indentation will fix it
 
                                 // insert eol
                                 formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
@@ -416,8 +412,6 @@ public class JsFormatter implements Formatter {
                                 formatContext.indentLine(
                                         tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
                                         indentationSize, Indentation.ALLOWED);
-
-                                formatContext.setOffsetDiff(formatContext.getOffsetDiff() + subsequentOffsetDiff);
                             }
                             break;
                         case SOURCE_START:

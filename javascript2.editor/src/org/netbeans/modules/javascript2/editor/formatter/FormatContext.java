@@ -157,7 +157,7 @@ public final class FormatContext {
         return offsetDiff;
     }
 
-    public void setOffsetDiff(int offsetDiff) {
+    private void setOffsetDiff(int offsetDiff) {
         this.offsetDiff = offsetDiff;
     }
 
