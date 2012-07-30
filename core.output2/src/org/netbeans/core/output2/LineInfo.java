@@ -85,7 +85,7 @@ public class LineInfo {
                 return;
             }
         }
-        boolean isColor = s != null || b != null;
+        boolean isColor = c != null || b != null;
         if (l != null) {
             s = isColor ? new ColorListenerSegment(end, l, important, c, b) : new ListenerSegment(end, l, important);
         } else if (err) {
