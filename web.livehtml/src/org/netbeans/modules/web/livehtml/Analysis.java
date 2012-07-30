@@ -81,6 +81,9 @@ public class Analysis implements Comparable<Analysis> {
     public static final String STACKTRACE = "stacktrace";
     public static final String DATA = "data";
     
+    public static final String NO_JS_CONTENT = "no_js_content";
+    public static final String FORMATTED_NO_JS_CONTENT = "formatted_no_js_content";
+    
     private URL sourceUrl;
     private Date created = new Date();
     private Date finished = null;
@@ -102,7 +105,7 @@ public class Analysis implements Comparable<Analysis> {
         this.rootDirectory = rootDirectory;
     }
 
-    protected void store(String type, String timestamp, String content) {
+    public void store(String type, String timestamp, String content) {
         File storeFile = new File(getRootDirectory(), timestamp + "." + type);
         storeFile.deleteOnExit();
         try {
@@ -146,7 +149,8 @@ public class Analysis implements Comparable<Analysis> {
                 Change.decodeFromJSON(beautifiedDiff == null ? null : beautifiedDiff.toString()), 
                 stacktrace,
                 data);
-        
+        revision.setPreviewContent(read(NO_JS_CONTENT, timeStamp));
+        revision.setReformattedPreviewContent(read(FORMATTED_NO_JS_CONTENT, timeStamp));
         return revision;
     }
     

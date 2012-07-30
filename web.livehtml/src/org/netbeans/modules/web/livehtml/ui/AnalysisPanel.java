@@ -41,14 +41,11 @@
  */
 package org.netbeans.modules.web.livehtml.ui;
 
-import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsRevisionFilterPanel;
 import java.awt.Rectangle;
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -64,10 +61,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.ext.ToolTipSupport;
@@ -82,6 +75,7 @@ import org.netbeans.modules.web.livehtml.ReformatSupport;
 import org.netbeans.modules.web.livehtml.Revision;
 import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
 import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsFilteredAnalysis;
+import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsRevisionFilterPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -211,6 +205,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
         
         if (selectedAnalysis != null && revision != null) {
             int index = revision.getIndex();
+            
             revisionLabel.setText(selectedAnalysisItem.getRevisionLabel(index));
             if (selectedAnalysisItem.getFilteredAnalysis() != null) {
                 final GroupScriptsFilteredAnalysis filteredAnalysis = (GroupScriptsFilteredAnalysis) selectedAnalysisItem.getFilteredAnalysis();
@@ -228,6 +223,33 @@ public class AnalysisPanel extends javax.swing.JPanel {
             revisionEditorPane.getDocument().putProperty(Change.class, revision.getChanges());
             
             revisionEditorPane.scrollRectToVisible(visibleRect);
+            
+            if (revision.resolvePreviewContent(reformatRevisionButton.isSelected()) == null) {
+                final Document document = revisionEditorPane.getDocument();
+                final Map<Integer, Integer> indexesOfJavaScript = ReformatSupport.getIndexesOfJavaScript(document);
+
+                StringBuilder documentText = null;
+                try {
+                    documentText = new StringBuilder(document.getText(0, document.getLength()));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                if (documentText != null) {
+                    final StringBuilder replaceBySpaces = ReformatSupport.replaceBySpaces(indexesOfJavaScript, documentText);
+                    revision.updatePreviewContent(replaceBySpaces, reformatRevisionButton.isSelected());
+                    
+                    final Analysis analysis = selectedAnalysisItem.getAnalysis();
+                    if (reformatRevisionButton.isSelected()) {
+                        analysis.store(Analysis.FORMATTED_NO_JS_CONTENT, revision.getTimeStamp(), replaceBySpaces.toString());
+                    } else {
+                        analysis.store(Analysis.NO_JS_CONTENT, revision.getTimeStamp(), replaceBySpaces.toString());
+                    }
+
+                }
+            }
+            
+            
         } else {
             revisionLabel.setText("- / -");
             
@@ -394,9 +416,16 @@ public class AnalysisPanel extends javax.swing.JPanel {
         return revisionToolTipPanel;
     }
     
-    private void previewRevision() {
-        final Document document = revisionEditorPane.getDocument();
-        final StringBuilder documentText = ReformatSupport.removeAllJavaScripts(document);
+    private void previewRevision(Revision revision) {
+        if (revision == null) {
+            return;
+        }
+        
+        final StringBuilder documentText = revision.resolvePreviewContent(reformatRevisionButton.isSelected());
+        
+        if (documentText == null) {
+            return;
+        }
         
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
@@ -411,7 +440,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
                     
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
                     
-                    //TODO: This part of code must be changed - now will open Chrome Tab for every "file". 
+                    //TODO: This part of code must be changed - now it will open Chrome Tab for every "file". 
                     getPrivateBrowserSupport().disablePageInspector();
                     getPrivateBrowserSupport().load(fo.toURL(), fo);
                 } catch (IOException ex) {
@@ -582,8 +611,9 @@ public class AnalysisPanel extends javax.swing.JPanel {
             lastSelectedRevisions.put(getSelectedAnalysis(), lastSelectedRevision);
             selectRevision(lastSelectedRevision);
             
+            
             if (previewRevisionToggleButton.isSelected()) {
-                previewRevision();
+                previewRevision(lastSelectedRevision);
             }
         }
     }//GEN-LAST:event_revisionSliderStateChanged
@@ -678,7 +708,9 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_startAnalysisButtonActionPerformed
 
     private void reformatRevisionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reformatRevisionButtonActionPerformed
-        selectRevision(getSelectedRevision());
+        final Revision selectedRevision = getSelectedRevision();
+        selectRevision(selectedRevision);
+        previewRevision(selectedRevision);
     }//GEN-LAST:event_reformatRevisionButtonActionPerformed
 
     private void analysisComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_analysisComboBoxItemStateChanged
@@ -723,7 +755,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_filterButtonActionPerformed
 
     private void previewRevisionToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRevisionToggleButtonActionPerformed
-        previewRevision();
+        previewRevision(getSelectedRevision());
     }//GEN-LAST:event_previewRevisionToggleButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

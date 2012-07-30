@@ -141,11 +141,37 @@ public class ReformatSupport {
     }
     
     /**
-     * 
-     * @param document
-     * @return 
+     * Replaces source text with spaces. Position and length of spaces is defined by {@link Map> of indexes and lengths.
+     * @param indexesToReplace {@link Map} defines position and length of desired spaces. Key of map is begin index of space and value of map is length of space (number of spaces). Can be null.
+     * @param text source of text used to replace. Can be null.
+     * @return text replaced by spaces. Can be null when any parameter is null.
      */
-    public static StringBuilder removeAllJavaScripts(Document document) {
+    public static StringBuilder replaceBySpaces(Map<Integer, Integer> indexesToReplace, StringBuilder text) {
+        if (indexesToReplace == null || text == null) {
+            return null;
+        }
+        
+        for (Map.Entry<Integer, Integer> entry : indexesToReplace.entrySet()) {
+            final Integer start = entry.getKey();
+            final Integer length = entry.getValue();
+
+            String source = text.substring(start, start + length);
+            String spaces = source.replaceAll(".", SPACE);
+
+            text.replace(start, start + length, spaces);
+        }
+
+        return text;
+    }
+    
+    /**
+     * Gets indexes and lengths of JavaScript code in content of Document.<br>
+     * Locate of "script" tags and JavaScript call in tag attributes is implemented.
+     * @param document Document instance to process. Can be null.
+     * @return content of Document without JavaScript. Returns null when input parameter is null or any error occurs.
+     */
+    public static Map<Integer, Integer> getIndexesOfJavaScript(Document document) {
+        System.out.println("getIndexesOfJavaScript");
         if (document == null) {
             return null;
         }
@@ -191,25 +217,7 @@ public class ReformatSupport {
             }
         }
         
-        try {
-            StringBuilder documentText = new StringBuilder(document.getText(0, document.getLength()));
-            for (Map.Entry<Integer, Integer> entry : indexesToReplace.entrySet()) {
-                final Integer start = entry.getKey();
-                final Integer length = entry.getValue();
-                
-                String source = documentText.substring(start, start + length);
-                String spaces = source.replaceAll(".", SPACE);
-                
-                documentText.replace(start, start + length, spaces);
-            }
-            
-            return documentText;
-            
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return null;
+        return indexesToReplace;
     }
     
     private static Token searchFor(String tokenText, TokenSequence tokenSequence) {
