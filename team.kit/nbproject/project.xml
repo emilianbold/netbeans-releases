@@ -5,62 +5,8 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.team.kit</code-name-base>
             <module-dependencies>
-                <!-- 
-                    for the time being declaring all modules known to be:
-                     - necessary for the team dashboard 
-                     - providing functionality for the dashboard - e.g. kenai and ods
-                     - bridges 
-                -->
                 <dependency>
-                    <code-name-base>org.netbeans.modules.team.ods</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>                
-                <dependency>
-                    <code-name-base>org.netbeans.modules.team.ui</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.team.ods.ui</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.team.ods.git</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.c2c.tasks</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.c2c.tasks.tasktop</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.ods.hudson</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                
-                <dependency>
-                    <code-name-base>com.tasktop.commons.repository.core</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>com.tasktop.commons.core</code-name-base>
+                    <code-name-base>com.tasktop.c2c.client.commons</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
@@ -70,17 +16,12 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>com.tasktop.c2c.client.commons</code-name-base>
+                    <code-name-base>com.tasktop.c2c.server.cloud.api</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
                     <code-name-base>com.tasktop.c2c.server.common.api</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>com.tasktop.c2c.server.cloud.api</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
@@ -100,12 +41,22 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.aopalliance</code-name-base>
+                    <code-name-base>com.tasktop.commons.core</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.repositories.core</code-name-base>
+                    <code-name-base>com.tasktop.commons.repository.core</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>javax.servlet</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.aopalliance</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
                 </dependency>
@@ -118,6 +69,86 @@
                     <code-name-base>org.codehaus.jackson.mapper</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.mylyn.commons.repositories.core</code-name-base>
+                    <build-prerequisite/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.ods.jersey</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.smack</code-name-base>
+                    <run-dependency>
+                        <specification-version>3.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.kenai</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.kenai.ui</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.ods.hudson</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.ods.tasks</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.ods.tasks.nb</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.ods.tasks.tasktop</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.team.ods</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.team.ods.git</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.team.ods.ui</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.team.ui</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.springframework.aop</code-name-base>
@@ -163,30 +194,6 @@
                     <code-name-base>org.springframework.web</code-name-base>
                     <build-prerequisite/>
                     <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>javax.servlet</code-name-base>
-                    <build-prerequisite/>
-                    <run-dependency/>
-                </dependency>
-                                
-                <dependency>
-                    <code-name-base>org.netbeans.libs.smack</code-name-base>
-                    <run-dependency>
-                        <specification-version>3.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.kenai</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.kenai.ui</code-name-base>
-                    <run-dependency>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
                 </dependency>
             </module-dependencies>
             <public-packages/>
