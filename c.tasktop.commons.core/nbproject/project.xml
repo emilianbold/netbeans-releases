@@ -9,7 +9,7 @@
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>com-tasktop-commons-core.jar</runtime-relative-path>
-                <binary-origin>external/com.tasktop.commons.core-1.1.1.jar</binary-origin>
+                <binary-origin>external/com.tasktop.commons.core-1.2.0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

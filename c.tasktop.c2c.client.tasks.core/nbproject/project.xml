@@ -36,11 +36,6 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.workbench</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
