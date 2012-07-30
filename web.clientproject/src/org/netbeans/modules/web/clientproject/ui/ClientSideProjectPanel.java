@@ -187,10 +187,10 @@ public class ClientSideProjectPanel extends javax.swing.JPanel {
                     .add(configCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(newButton)
                     .add(deleteButton))
-                .add(0, 0, 0)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(seperator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(0, 0, 0)
-                .add(customizerArea, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(customizerArea, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

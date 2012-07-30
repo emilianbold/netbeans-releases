@@ -42,14 +42,10 @@
 package org.netbeans.modules.web.clientproject;
 
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  *

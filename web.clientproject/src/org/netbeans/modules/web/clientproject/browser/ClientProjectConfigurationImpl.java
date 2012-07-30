@@ -42,23 +42,36 @@
 
 package org.netbeans.modules.web.clientproject.browser;
 
+import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
+import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
+import org.netbeans.modules.web.clientproject.ui.browser.RunConfigurationPanel;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation {
 
-    final private Project project;
+    private static String USE_SERVER = "use.server";
+    private static String MAIN_FILE = "main.file";
+    private static String WEB_ROOT = "web.context.root";
+    
+    final private ClientSideProject project;
     final private WebBrowser browser;
     final private ClientProjectPlatformImpl platform;
     private BrowserSupport browserSupport;
+    private ProjectConfigurationCustomizerImpl cust = null;
+    private ServerURLMappingImplementation mapping;
 
-    public ClientProjectConfigurationImpl(Project project, WebBrowser browser, ClientProjectPlatformImpl platform) {
+    public ClientProjectConfigurationImpl(ClientSideProject project, WebBrowser browser, ClientProjectPlatformImpl platform) {
         this.project = project;
         this.browser = browser;
         this.platform = platform;
@@ -66,11 +79,52 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     
     @Override
     public String getId() {
-        return browser.getId();
+        return PropertyUtils.getUsablePropertyName(browser.getId());
     }
 
     @Override
     public void save() {
+        if (cust != null) {
+            EditableProperties p = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            p.put(USE_SERVER+"."+getId(), Boolean.toString(cust.panel.isUseServer()));
+            p.put(MAIN_FILE+"."+getId(), cust.panel.getMainFile());
+            String s = cust.panel.getWebContextRoot();
+            if (s.trim().length() == 0) {
+                s = "/";
+            }
+            if (!s.startsWith("/")) {
+                s = "/" + s;
+            }
+            p.put(WEB_ROOT+"."+getId(), s);
+            project.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
+        }
+    }
+
+    public boolean isUseServer() {
+        String val = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(USE_SERVER+"."+getId());
+        if (val != null) {
+            return Boolean.parseBoolean(val);
+        } else {
+            return false;
+        }
+    }
+
+    public String getMainFile() {
+        String val = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(MAIN_FILE+"."+getId());
+        if (val == null) {
+            return "index.html";
+        } else {
+            return val;
+        }
+    }
+
+    public String getWebContextRoot() {
+        String val = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(WEB_ROOT+"."+getId());
+        if (val == null) {
+            return "/"+project.getProjectDirectory().getName();
+        } else {
+            return val;
+        }
     }
 
     @Override
@@ -80,17 +134,18 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshOnSaveListenerImpl(getBrowserSupport());
+        return new RefreshOnSaveListenerImpl(project, getBrowserSupport());
     }
 
     @Override
     public ActionProvider getActionProvider() {
-        return new BrowserActionProvider(project, getBrowserSupport());
+        return new BrowserActionProvider(project, getBrowserSupport(), this);
     }
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        return null;
+        cust = new ProjectConfigurationCustomizerImpl();
+        return cust;
     }
     
     public BrowserSupport getBrowserSupport() {
@@ -115,6 +170,26 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         if (browserSupport != null) {
             getBrowserSupport().close(true);
         }
+    }
+
+    @Override
+    public ServerURLMappingImplementation getServerURLMapping() {
+        if (mapping == null) {
+            mapping = new ServerURLMappingImpl(this);
+        }
+        return mapping;
+    }
+    
+    private class ProjectConfigurationCustomizerImpl implements ProjectConfigurationCustomizer {
+
+        private RunConfigurationPanel panel;
+        
+        @Override
+        public JPanel createPanel() {
+            panel = new RunConfigurationPanel(project, ClientProjectConfigurationImpl.this);
+            return panel;
+        }
+
     }
     
 }

@@ -41,23 +41,30 @@
  */
 package org.netbeans.modules.web.clientproject.browser;
 
-import java.net.URISyntaxException;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.CustomizerProviderImpl;
+import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public class BrowserActionProvider implements ActionProvider {
 
     final private Project project;
     private final BrowserSupport support;
+    private ClientProjectConfigurationImpl cfg;
 
-    public BrowserActionProvider(Project project, BrowserSupport support) {
+    public BrowserActionProvider(Project project, BrowserSupport support, ClientProjectConfigurationImpl cfg) {
         this.project = project;
         this.support = support;
+        this.cfg = cfg;
     }
     
     @Override
@@ -67,10 +74,25 @@ public class BrowserActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        if (cfg.isUseServer()) {
+            WebServer.getWebserver().start(project, cfg.getWebContextRoot());
+        } else {
+            WebServer.getWebserver().stop(project);
+        }
         FileObject fo = null;
         if (COMMAND_RUN.equals(command)) {
-// TODO: this needs to be configurable
-            fo = project.getProjectDirectory().getFileObject("index.html");
+            fo = project.getProjectDirectory().getFileObject(cfg.getMainFile());
+            if (fo == null) {
+                DialogDisplayer.getDefault().notify(
+                    new DialogDescriptor.Message("Main file "+cfg.getMainFile()+" cannot be found and opened."));
+                CustomizerProviderImpl cust = project.getLookup().lookup(CustomizerProviderImpl.class);
+                cust.showCustomizer("buildConfig");
+                // try again:
+                fo = project.getProjectDirectory().getFileObject(cfg.getMainFile());
+                if (fo == null) {
+                    return;
+                }
+            }
         } else if (COMMAND_RUN_SINGLE.equals(command)) {
             fo = getFile(context);
         }
@@ -99,18 +121,8 @@ public class BrowserActionProvider implements ActionProvider {
         return (fo != null && "html".equals(fo.getExt()));
     }
     
-    private static void browseFile(BrowserSupport bs, FileObject fo) {
-        URL url;
-        String urlString;
-        try {
-            url = fo.toURL();
-            urlString = url.toURI().toString();
-            // XXXXX:
-            urlString = urlString.replaceAll("file:/", "file:///");
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
+    private void browseFile(BrowserSupport bs, FileObject fo) {
+        URL url = ServerURLMapping.toServer(project, fo);
         bs.load(url, fo);
     }
 }

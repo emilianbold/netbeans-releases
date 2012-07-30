@@ -39,66 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.platform;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
+package org.netbeans.modules.web.clientproject.spi.webserver;
+
+import java.net.URL;
+import org.openide.filesystems.FileObject;
 
 /**
- * Implementation of project configuration and associated actions, customizer, etc.
+ * Provides mapping between project's source file and its location on server
+ * and vice versa.
  */
-public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
+public interface ServerURLMappingImplementation {
 
     /**
-     * Configuration's unique ID used to persist selected configuration etc.
+     * Convert given project's file into server URL.
+     * @return could return null if file is not deployed to server and therefore
+     *   not accessible
      */
-    @NonNull String getId();
+    URL toServer(FileObject projectFile);
     
     /**
-     * Configuration's customizer.
-     * @return can return null if none
+     * Convert given server URL into project's file.
+     * @return returns null if nothing is known about this server URL
      */
-    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
-
-    /**
-     * Persist changes done in configuration's customizer.
-     */
-    void save();
-    
-    /**
-     * Configuration's action provider.
-     * @return can return null
-     */
-    ActionProvider getActionProvider();
-
-    /**
-     * Can this platform be deleted?
-     */
-    boolean canBeDeleted();
-
-    /**
-     * Delete this configuration.
-     */
-    void delete();
-
-
-    /**
-     * Configuration's handler changes in project sources.
-     * @return can return null
-     */
-    RefreshOnSaveListener getRefreshOnSaveListener();
-
-    /**
-     * Notification that configuration is not active anymore.
-     */
-    void deactivate();
-
-    /**
-     * If configuration deploys files to server this method should be implemented
-     * and provide mapping.
-     * @return can be null
-     */
-    ServerURLMappingImplementation getServerURLMapping();
+    FileObject fromServer(URL serverURL);
 }
