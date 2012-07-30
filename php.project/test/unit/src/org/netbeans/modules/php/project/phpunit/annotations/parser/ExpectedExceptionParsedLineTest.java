@@ -39,50 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser;
+package org.netbeans.modules.php.project.phpunit.annotations.parser;
 
 import java.util.Collections;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.openide.util.Parameters;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnknownAnnotationLine implements AnnotationParsedLine {
+public class ExpectedExceptionParsedLineTest extends NbTestCase {
 
-    private final String name;
-    private final String description;
-
-    public UnknownAnnotationLine(final String name, final String description) {
-        Parameters.notNull("name", name); //NOI18N
-        this.name = name;
-        this.description = description;
+    public ExpectedExceptionParsedLineTest(String name) {
+        super(name);
     }
 
-    public UnknownAnnotationLine(final String name) {
-        this(name, null);
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        String result = "";
-        if (description != null) {
-            result = description;
+    public void testNonNullDescription() throws Exception {
+        try {
+            new ExpectedExceptionParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
         }
-        return result;
     }
 
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return Collections.EMPTY_MAP;
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new ExpectedExceptionParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
+    }
+
+    public void testCorrectName() throws Exception {
+        ExpectedExceptionParsedLine cache = new ExpectedExceptionParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(ExpectedExceptionLineParser.ANNOTATION_NAME, cache.getName());
     }
 
 }

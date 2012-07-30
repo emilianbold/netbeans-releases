@@ -39,9 +39,9 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser;
+package org.netbeans.modules.php.project.phpunit.annotations.parser;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
@@ -51,38 +51,31 @@ import org.openide.util.Parameters;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnknownAnnotationLine implements AnnotationParsedLine {
+public class ExpectedExceptionParsedLine implements AnnotationParsedLine {
 
-    private final String name;
     private final String description;
+    private final Map<OffsetRange, String> types;
 
-    public UnknownAnnotationLine(final String name, final String description) {
-        Parameters.notNull("name", name); //NOI18N
-        this.name = name;
+    public ExpectedExceptionParsedLine(final String description, final Map<OffsetRange, String> types) {
+        Parameters.notNull("description", description); //NOI18N
+        Parameters.notNull("types", types); //NOI18N
         this.description = description;
-    }
-
-    public UnknownAnnotationLine(final String name) {
-        this(name, null);
-    }
-
-    @Override
-    public String getName() {
-        return name;
+        this.types = types;
     }
 
     @Override
     public String getDescription() {
-        String result = "";
-        if (description != null) {
-            result = description;
-        }
-        return result;
+        return description;
     }
 
     @Override
     public Map<OffsetRange, String> getTypes() {
-        return Collections.EMPTY_MAP;
+        return new HashMap<OffsetRange, String>(types);
+    }
+
+    @Override
+    public String getName() {
+        return ExpectedExceptionLineParser.ANNOTATION_NAME;
     }
 
 }

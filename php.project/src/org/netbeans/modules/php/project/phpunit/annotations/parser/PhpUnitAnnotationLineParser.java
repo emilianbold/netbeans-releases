@@ -39,50 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser;
+package org.netbeans.modules.php.project.phpunit.annotations.parser;
 
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnknownAnnotationLine implements AnnotationParsedLine {
+public class PhpUnitAnnotationLineParser implements AnnotationLineParser {
 
-    private final String name;
-    private final String description;
+    private static final AnnotationLineParser INSTANCE = new PhpUnitAnnotationLineParser();
 
-    public UnknownAnnotationLine(final String name, final String description) {
-        Parameters.notNull("name", name); //NOI18N
-        this.name = name;
-        this.description = description;
+    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    static {
+        PARSERS.add(new ExpectedExceptionLineParser());
     }
 
-    public UnknownAnnotationLine(final String name) {
-        this(name, null);
-    }
-
-    @Override
-    public String getName() {
-        return name;
+    @AnnotationLineParser.Registration(position=400)
+    public static AnnotationLineParser getDefault() {
+        return INSTANCE;
     }
 
     @Override
-    public String getDescription() {
-        String result = "";
-        if (description != null) {
-            result = description;
+    public AnnotationParsedLine parse(final String line) {
+        AnnotationParsedLine result = null;
+        for (AnnotationLineParser annotationLineParser : PARSERS) {
+            result = annotationLineParser.parse(line);
+            if (result != null) {
+                break;
+            }
         }
         return result;
-    }
-
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return Collections.EMPTY_MAP;
     }
 
 }

@@ -39,50 +39,57 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser;
+package org.netbeans.modules.php.project.phpunit.annotations.parser;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class UnknownAnnotationLine implements AnnotationParsedLine {
+class ExpectedExceptionLineParser implements AnnotationLineParser {
 
-    private final String name;
-    private final String description;
-
-    public UnknownAnnotationLine(final String name, final String description) {
-        Parameters.notNull("name", name); //NOI18N
-        this.name = name;
-        this.description = description;
-    }
-
-    public UnknownAnnotationLine(final String name) {
-        this(name, null);
-    }
+    static final String ANNOTATION_NAME = "expectedException"; //NOI18N
+    private String line;
+    private String[] tokens;
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        String result = "";
-        if (description != null) {
-            result = description;
+    public AnnotationParsedLine parse(final String line) {
+        this.line = line;
+        AnnotationParsedLine result = null;
+        tokens = line.split("[ \t]+"); //NOI18N
+        if (tokens.length > 0 && ANNOTATION_NAME.equalsIgnoreCase(tokens[0])) {
+            result = handleAnnotation();
         }
         return result;
     }
 
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return Collections.EMPTY_MAP;
+    private AnnotationParsedLine handleAnnotation() {
+        String description = "";
+        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        if (tokens.length > 1) {
+            description = line.substring(tokens[0].length()).trim();
+            int start = ANNOTATION_NAME.length() + countSpacesToFirstNonWhitespace(line.substring(ANNOTATION_NAME.length()));
+            int end = start + tokens[1].length();
+            types.put(new OffsetRange(start, end), line.substring(start, end));
+        }
+        return new ExpectedExceptionParsedLine(description, types);
+    }
+
+    private static int countSpacesToFirstNonWhitespace(final String line) {
+        int result = 0;
+        for (int i = 0; i < line.length(); i++) {
+            if (Character.isWhitespace(line.charAt(i))) {
+                result++;
+            } else {
+                break;
+            }
+        }
+        return result;
     }
 
 }
