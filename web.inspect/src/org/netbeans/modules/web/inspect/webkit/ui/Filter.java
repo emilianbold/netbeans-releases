@@ -41,67 +41,67 @@
  */
 package org.netbeans.modules.web.inspect.webkit.ui;
 
-import java.util.List;
-import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
-import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
- * Root node of the document section of CSS Styles view.
+ * Descriptor of a filter.
  *
  * @author Jan Stola
  */
-public class DocumentNode extends AbstractNode {
-    /** Icon base of the node. */
-    static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
+public class Filter {
+    /** Name of the property fired when the pattern changes. */
+    public static final String PROPERTY_PATTERN = "pattern"; // NOI18N
+    /** Pattern of this filter. */
+    private String pattern;
+    /** Property change support. */
+    private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     /**
-     * Creates a new {@code DocumentNode}.
+     * Returns the pattern of this filter.
      *
-     * @param css CSS domain of WebKit debugging.
-     * @param filter filter for the subtree of the node.
+     * @return pattern of this filter.
      */
-    DocumentNode(CSS css, Filter filter) {
-        super(Children.create(new DocumentChildFactory(css, filter), true));
-        setDisplayName(NbBundle.getMessage(DocumentNode.class, "DocumentNode.displayName")); // NOI18N
-        setIconBaseWithExtension(ICON_BASE);
+    public String getPattern() {
+        return pattern;
     }
 
     /**
-     * Factory for children of {@code DocumentNode}.
+     * Sets the pattern of this filter.
+     *
+     * @param pattern new pattern of this filter.
      */
-    static class DocumentChildFactory extends ChildFactory<StyleSheetHeader> {
-        /** CSS domain of the corresponding WebKit debugging. */
-        private CSS css;
-        /** Filter for the subtree of the node. */
-        private Filter filter;
+    void setPattern(String pattern) {
+        String oldPattern = this.pattern;
+        this.pattern = pattern;
+        changeSupport.firePropertyChange(PROPERTY_PATTERN, oldPattern, pattern);
+    }
 
-        /**
-         * Creates a new {@code DocumentChildFactory}.
-         *
-         * @param css CSS domain of the corresponding WebKit debugging.
-         * @param filter filter for the subtree of the node.
-         */
-        DocumentChildFactory(CSS css, Filter filter) {
-            this.css = css;
-            this.filter = filter;
+    /**
+     * Registers a property change listener.
+     *
+     * @param listener listener to register.
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Unregisters a property change listener.
+     *
+     * @param listener listener to unregister.
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Unregisters all previously registered property change listeners.
+     */
+    public void removePropertyChangeListeners() {
+        for (PropertyChangeListener listener : changeSupport.getPropertyChangeListeners()) {
+            removePropertyChangeListener(listener);
         }
-
-        @Override
-        protected boolean createKeys(List<StyleSheetHeader> toPopulate) {
-            toPopulate.addAll(css.getAllStyleSheets());
-            return true;
-        }
-
-        @Override
-        protected Node createNodeForKey(StyleSheetHeader key) {
-            return new StyleSheetNode(css, key, filter);
-        }
-
     }
 
 }

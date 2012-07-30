@@ -42,11 +42,21 @@
 package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Insets;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.ui.FakeRootNode;
@@ -59,6 +69,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -77,6 +88,8 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
     private ExplorerManager manager = new ExplorerManager();
     /** Lookup of this panel. */
     private Lookup lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
+    /** Filter for the tree displayed in this panel. */
+    private Filter filter = new Filter();
 
     /**
      * Creates a new {@code CSSStylesDocumentPanel}.
@@ -84,6 +97,7 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
     CSSStylesDocumentPanel() {
         setLayout(new BorderLayout());
         initTreeView();
+        initFilter();
         updateContent(null);
     }
 
@@ -96,6 +110,67 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
         treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
         treeView.setRootVisible(false);
         add(treeView, BorderLayout.CENTER);
+    }
+
+    /**
+     * Initializes the filter section of this panel.
+     */
+    private void initFilter() {
+        JPanel panel = new JPanel();
+        Color background = treeView.getViewport().getView().getBackground();
+        panel.setBackground(background);
+
+        // "Find" label
+        JLabel label = new JLabel(ImageUtilities.loadImageIcon(
+                "org/netbeans/modules/web/inspect/resources/find.png", true)); // NOI18N
+        label.setVerticalAlignment(SwingConstants.CENTER);
+
+        // Pattern text field
+        final JTextField field = new JTextField();
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filter.setPattern(field.getText());
+            }
+        });
+
+        // Clear pattern button
+        JButton button = new JButton(ImageUtilities.loadImageIcon(
+                "org/netbeans/modules/web/inspect/resources/cancel.png", true)); // NOI18N
+        button.setBackground(background);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setMargin(new Insets(0,0,0,0));
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                field.setText(""); // NOI18N
+            }
+        });
+
+        // Layout
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(layout.createSequentialGroup()
+            .addGap(2)
+            .addComponent(label)
+            .addComponent(field)
+            .addComponent(button)
+            .addGap(2));
+        layout.setVerticalGroup(layout.createSequentialGroup()
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                .addComponent(label)
+                .addComponent(field)
+                .addComponent(button)));
+        add(panel, BorderLayout.PAGE_START);
     }
 
     /**
@@ -113,7 +188,8 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
                     root = new AbstractNode(Children.LEAF);
                 } else {
                     CSS css = webKit.getCSS();
-                    DocumentNode documentNode = new DocumentNode(css);
+                    filter.removePropertyChangeListeners();
+                    DocumentNode documentNode = new DocumentNode(css, filter);
                     root = new FakeRootNode<DocumentNode>(documentNode,
                             new Action[] { new RefreshAction() });
                 }
