@@ -61,6 +61,7 @@ public class Symfony2SecurityAnnotationLineParser implements AnnotationLineParse
         PARSERS.add(new SecureReturnLineParser());
         PARSERS.add(new RunAsLineParser());
         PARSERS.add(new SatisfiesParentSecurityPolicyLineParser());
+        PARSERS.add(new PreAuthorizeLineParser());
     }
 
     private Symfony2SecurityAnnotationLineParser() {
