@@ -78,4 +78,8 @@ public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("RunAs"));
     }
 
+    public void testSatisfiesParentSecurityPolicyParser() {
+        assertNotNull(parser.parse("SatisfiesParentSecurityPolicy"));
+    }
+
 }
