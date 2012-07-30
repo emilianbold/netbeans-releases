@@ -225,9 +225,9 @@ public class GroupScriptsFilteredAnalysis extends FilteredAnalysis {
     }
 
     private void storeDocumentVersion(Revision revision, boolean realChange) {
-        for (String fileName : getRoot().list()) {
+        for (String fileName : getRootDirectory().list()) {
             if (fileName.startsWith(revision.getTimeStamp())) {
-                File file = new File(getRoot(), fileName);
+                File file = new File(getRootDirectory(), fileName);
                 file.delete();
             }
         }

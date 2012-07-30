@@ -70,7 +70,10 @@ public final class Revision {
         this.content = content;
         
         if (stacktrace != null) {
-            this.stacktrace = (JSONArray) JSONValue.parse(stacktrace.toString());
+            final Object object = JSONValue.parse(stacktrace.toString());
+            if (object instanceof JSONArray) {
+                this.stacktrace = (JSONArray) object;
+            }
         }
         
         this.changes = changes;
