@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
+import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 

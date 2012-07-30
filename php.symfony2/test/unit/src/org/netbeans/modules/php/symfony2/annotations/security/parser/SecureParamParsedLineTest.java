@@ -39,38 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.openide.util.Parameters;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class BaseParsedLine implements AnnotationParsedLine {
+public class SecureParamParsedLineTest extends NbTestCase {
 
-    private final String description;
-    private final Map<OffsetRange, String> types;
-
-    public BaseParsedLine(final String description, final Map<OffsetRange, String> types) {
-        Parameters.notNull("description", description); //NOI18N
-        Parameters.notNull("types", types); //NOI18N
-        this.description = description;
-        this.types = types;
+    public SecureParamParsedLineTest(String name) {
+        super(name);
     }
 
-    @Override
-    public String getDescription() {
-        return description;
+    public void testNonNullDescription() throws Exception {
+        try {
+            new SecureParamParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return new HashMap<OffsetRange, String>(types);
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new SecureParamParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
+    }
+
+    public void testCorrectName() throws Exception {
+        SecureParamParsedLine cache = new SecureParamParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(SecureParamLineParser.ANNOTATION_NAME, cache.getName());
     }
 
 }
