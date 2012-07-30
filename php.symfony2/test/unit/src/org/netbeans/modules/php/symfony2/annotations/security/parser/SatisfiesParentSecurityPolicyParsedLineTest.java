@@ -41,46 +41,38 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Symfony2SecurityAnnotationLineParser implements AnnotationLineParser {
+public class SatisfiesParentSecurityPolicyParsedLineTest extends NbTestCase {
 
-    private static final AnnotationLineParser INSTANCE = new Symfony2SecurityAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new SecureLineParser());
-        PARSERS.add(new SecureParamLineParser());
-        PARSERS.add(new SecureReturnLineParser());
-        PARSERS.add(new RunAsLineParser());
-        PARSERS.add(new SatisfiesParentSecurityPolicyLineParser());
+    public SatisfiesParentSecurityPolicyParsedLineTest(String name) {
+        super(name);
     }
 
-    private Symfony2SecurityAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=300)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
-    }
-
-    @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
+    public void testNonNullDescription() throws Exception {
+        try {
+            new SatisfiesParentSecurityPolicyParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
         }
-        return result;
+    }
+
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new SatisfiesParentSecurityPolicyParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
+    }
+
+    public void testCorrectName() throws Exception {
+        SatisfiesParentSecurityPolicyParsedLine cache = new SatisfiesParentSecurityPolicyParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(SatisfiesParentSecurityPolicyLineParser.ANNOTATION_NAME, cache.getName());
     }
 
 }
