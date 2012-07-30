@@ -104,23 +104,21 @@ final class Mark extends WeakReference<EditorPosition> implements Runnable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(8);
-        sb.append('<').append(getOffset());
+        sb.append(getOffset());
         EditorPosition pos = get();
-        if (isBackwardBias() || pos == null) {
-            sb.append(';');
-            if (isBackwardBias()) {
-                sb.append("B"); // Means backward-bias mark
-            }
-            if (get() == null) {
-                sb.append('D'); // Disposed mark
-            }
+        sb.append(';');
+        if (isBackwardBias()) {
+            sb.append("B"); // Means backward-bias mark
         }
-        sb.append('>');
+        if (get() == null) {
+            sb.append('D'); // Disposed mark
+        }
+        sb.append("M@").append(System.identityHashCode(this));
         return sb.toString();
     }
     
     public String toStringDetail() {
-        return toString() + "R:" + rawOffset + ";M@" + System.identityHashCode(this); // NOI18N
+        return toString() + ";R:" + rawOffset; // NOI18N
     }
 
 }
