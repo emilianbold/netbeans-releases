@@ -39,25 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class MethodParsedLine extends BaseParsedLine {
+public class Symfony2SecurityAnnotationLineParserTest extends NbTestCase {
+    private AnnotationLineParser parser;
 
-    public MethodParsedLine(final String description, final Map<OffsetRange, String> types) {
-        super(description, types);
+    public Symfony2SecurityAnnotationLineParserTest(String name) {
+        super(name);
     }
 
     @Override
-    public String getName() {
-        return MethodLineParser.ANNOTATION_NAME;
+    protected void setUp() throws Exception {
+        super.setUp();
+        parser = Symfony2SecurityAnnotationLineParser.getDefault();
+    }
+
+    public void testSecureParser() {
+        assertNotNull(parser.parse("Secure"));
     }
 
 }
