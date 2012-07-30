@@ -224,6 +224,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     @Override
     public Action getBookmarkAction(final ProjectHandle<KenaiProject> project) {
         return new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 Kenai kenai = project.getTeamProject().getKenai();
                 try {
@@ -247,6 +248,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
                 final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(project);
                 dashboard.bookmarkingStarted();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             KenaiProject prj = project.getTeamProject();
@@ -259,6 +261,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
                             Exceptions.printStackTrace(ex);
                         } finally {
                             SwingUtilities.invokeLater(new Runnable() {
+                                @Override
                                 public void run() {
                                     dashboard.bookmarkingFinished();
                                 }
@@ -305,9 +308,10 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
             this.project = project;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             RequestProcessor.getDefault().post(new Runnable() {
-
+                @Override
                 public void run() {
                     try {
                         project.getTeamProject().getKenai().getProject(project.getId(), true);

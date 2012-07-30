@@ -66,6 +66,7 @@ import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport;
 import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -106,6 +107,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
         return new KenaiPopupMenuPresenter(actionContext);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         assert false;
     }
@@ -155,6 +157,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
             proj = actionContext.lookup(Project.class);
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             JMenu kenaiPopup = new JMenu(); //NOI18N
             final Node[] nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
@@ -165,7 +168,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
                     dummy.setVisible(true);
                     dummy.setEnabled(false);
                     RequestProcessor.getDefault().post(new Runnable() { // cache the results, update the popup menu
-
+                        @Override
                         public void run() {
                             String s = (String) proj.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
                             if (s == null || KenaiProject.getNameForRepository(s) == null) {
@@ -263,6 +266,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
             if (action instanceof SystemAction) {
                 final SystemAction sa = (SystemAction) action;
                 item = new JMenuItem(new AbstractAction(sa.getName()) {
+                    @Override
                     public void actionPerformed(ActionEvent e) {
                         sa.actionPerformed(e);
                     }
@@ -287,7 +291,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
             }
             return false;
         }
-
+        @Override
         public void actionPerformed(ActionEvent e) {
         }
 
@@ -298,7 +302,7 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
         public LazyFindIssuesAction(final Project proj) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "FIND_ISSUE")); //NOI18N
             this.addActionListener(new ActionListener() {
-
+                @Override
                 public void actionPerformed(final ActionEvent e) {
                     new RequestProcessor("__ISSUETRACKER", 1).post(new Runnable() { //NOI18N
 
@@ -345,10 +349,10 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
         public LazyNewIssuesAction(final Project proj) {
             super(NbBundle.getMessage(KenaiPopupMenu.class, "NEW_ISSUE")); //NOI18N
             this.addActionListener(new ActionListener() {
-
+                @Override
                 public void actionPerformed(final ActionEvent e) {
                     new RequestProcessor("__ISSUETRACKER", 1).post(new Runnable() {  //NOI18N
-
+                        @Override
                         public void run() {
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(KenaiPopupMenu.class, "CONTACTING_ISSUE_TRACKER")); //NOI18N
                             handle.start();
@@ -393,15 +397,18 @@ public class KenaiPopupMenu extends AbstractAction implements ContextAwareAction
             super(NbBundle.getMessage(KenaiPopupMenu.class, "OPEN_CORRESPONDING_KENAI_PROJ")); //NOI18N
             this.addActionListener(new ActionListener() {
 
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     SwingUtilities.invokeLater(new Runnable() {
 
+                        @Override
                         public void run() {
-                            org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
+                            TeamUIUtils.activateTeamDashboard();
                         }
                     });
                     RequestProcessor.getDefault().post(new Runnable() {
 
+                        @Override
                         public void run() {
                             ProgressHandle handle = null;
                             try {

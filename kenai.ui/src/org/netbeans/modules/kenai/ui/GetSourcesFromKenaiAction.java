@@ -60,6 +60,7 @@ import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -86,6 +87,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
         this(null, null);
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if (prjAndFeature!=null && KenaiService.Names.EXTERNAL_REPOSITORY.equals(prjAndFeature.feature.getService())) {
             tryExternalCheckout(prjAndFeature.feature.getLocation());
@@ -102,7 +104,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
         options[0] = getOption;
         options[1] = cancelOption;
 
-        org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
+        TeamUIUtils.activateTeamDashboard();
 
         GetSourcesFromKenaiPanel getSourcesPanel = new GetSourcesFromKenaiPanel(prjAndFeature);
 
@@ -123,7 +125,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
                     if (Subversion.isClientAvailable(true)) {
                         KenaiUIUtils.logKenaiUsage("KENAI_SVN_CHECKOUT"); // NOI18N
                         RequestProcessor.getDefault().post(new Runnable() {
-
+                            @Override
                             public void run() {
                                 try {
 
@@ -151,6 +153,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
                 } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
                     KenaiUIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
                     RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
                         public void run() {
                             try {
 
