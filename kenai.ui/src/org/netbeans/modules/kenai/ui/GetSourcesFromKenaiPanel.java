@@ -404,7 +404,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
-        boolean loginSuccess = org.netbeans.modules.kenai.ui.api.UIUtils.showLogin(kenai);
+        boolean loginSuccess = org.netbeans.modules.kenai.ui.api.KenaiUIUtils.showLogin(kenai);
         if (loginSuccess) {
             refreshUsername();
             UIUtils.activateTeamDashboard();

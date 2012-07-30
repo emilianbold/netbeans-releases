@@ -71,7 +71,7 @@ import org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -91,7 +91,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public void logKenaiUsage(Object... parameters) {
-        UIUtils.logKenaiUsage(parameters); 
+        KenaiUIUtils.logKenaiUsage(parameters); 
     }
 
     @Override
@@ -182,7 +182,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject[] getDashboardProjects() {
-        ProjectHandle<KenaiProject>[] handles = UIUtils.getDashboardProjects();
+        ProjectHandle<KenaiProject>[] handles = KenaiUIUtils.getDashboardProjects();
         if ((handles == null) || (handles.length == 0)) {
             return new KenaiProjectImpl[0];
         }
@@ -300,7 +300,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     static boolean showLoginIntern() {
-        return UIUtils.showLogin();
+        return KenaiUIUtils.showLogin();
     }
 
     void addPropertyChangeListener(PropertyChangeListener listener, Kenai kenai) {

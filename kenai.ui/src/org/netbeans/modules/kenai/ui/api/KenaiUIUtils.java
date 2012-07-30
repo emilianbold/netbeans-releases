@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  * This class is not yet final. We be changed
  * @author Jan Becicka
  */
-public final class UIUtils {
+public final class KenaiUIUtils {
 
     // Usage logging
     private static Logger metricsLogger;
@@ -89,7 +89,7 @@ public final class UIUtils {
         KenaiServer.forKenai(kenai).getDashboard().removePropertyChangeListener(propertyChangeListener);
     }
     
-    private UIUtils() {
+    private KenaiUIUtils() {
     }
 
     /**

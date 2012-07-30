@@ -63,7 +63,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.*;
@@ -596,7 +596,7 @@ public class ChatTopComponent extends TopComponent {
     private void loginLinkMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loginLinkMouseClicked
         final Kenai kenai = Utilities.getPreferredKenai();
         if (kenai==null || kenai.getStatus() == Kenai.Status.OFFLINE) {
-            UIUtils.showLogin();
+            KenaiUIUtils.showLogin();
         } else {
             if (!Utilities.isChatSupported(kenai)) {
                 JOptionPane.showMessageDialog(retryLink, NbBundle.getMessage(ChatTopComponent.class, "ChatTopComponent.ChatNotAvailable", kenai.getName()));

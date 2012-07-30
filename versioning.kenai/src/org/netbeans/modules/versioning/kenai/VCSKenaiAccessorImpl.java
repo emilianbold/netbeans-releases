@@ -68,7 +68,7 @@ import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiNotification.Modification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -128,7 +128,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
 
     @Override
     public boolean showLogin() {
-        return UIUtils.showLogin();
+        return KenaiUIUtils.showLogin();
     }
 
     @Override
@@ -196,7 +196,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getPropertyName().equals(DefaultDashboard.PROP_OPENED_PROJECTS)) {
-            registerVCSNotificationListener(UIUtils.getDashboardProjects());
+            registerVCSNotificationListener(KenaiUIUtils.getDashboardProjects());
         } else if (evt.getPropertyName().equals(Kenai.PROP_LOGIN)) {
             Kenai kenai = (Kenai) evt.getSource();
             if (isLoggedIn(kenai)) {
@@ -231,7 +231,7 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
     @Override
     public void logVcsUsage(String vcs, String repositoryUrl) {
         if (repositoryUrl != null && isKenai(repositoryUrl)) {
-            UIUtils.logKenaiUsage("SCM", vcs); // NOI18N
+            KenaiUIUtils.logKenaiUsage("SCM", vcs); // NOI18N
         }
     }
 
@@ -266,8 +266,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
      * @param immediate
      */
     private void attachToDashboard (Kenai kenai) {
-        UIUtils.addDashboardListener(kenai, this);
-        registerVCSNotificationListener(UIUtils.getDashboardProjects());
+        KenaiUIUtils.addDashboardListener(kenai, this);
+        registerVCSNotificationListener(KenaiUIUtils.getDashboardProjects());
     }
 
     /**
@@ -275,8 +275,8 @@ public class VCSKenaiAccessorImpl extends VCSKenaiAccessor implements PropertyCh
      * @param immediate
      */
     private void detachFromDashboard (Kenai kenai) {
-        UIUtils.removeDashboardListener(kenai, this);
-        unregisterVCSNotificationListener(UIUtils.getDashboardProjects());
+        KenaiUIUtils.removeDashboardListener(kenai, this);
+        unregisterVCSNotificationListener(KenaiUIUtils.getDashboardProjects());
     }
 
     private static boolean isLoggedIn(Kenai kenai) {

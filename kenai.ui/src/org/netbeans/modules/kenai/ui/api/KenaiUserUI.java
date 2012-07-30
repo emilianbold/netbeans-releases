@@ -111,7 +111,7 @@ public final class KenaiUserUI {
     }
 
     public JLabel createUserWidget() {
-        return UIUtils.createUserWidget(this);
+        return KenaiUIUtils.createUserWidget(this);
     }
 
     public String getUserName() {
@@ -149,12 +149,12 @@ public final class KenaiUserUI {
                                         Exceptions.printStackTrace(ex);
                                     }
                                 } else {
-                                    if (UIUtils.tryLogin(user.getKenai(), true)) {
+                                    if (KenaiUIUtils.tryLogin(user.getKenai(), true)) {
                                         startChat();
                                     } else {
                                         SwingUtilities.invokeLater(new Runnable() {
                                             public void run() {
-                                                if (UIUtils.showLogin()) {
+                                                if (KenaiUIUtils.showLogin()) {
                                                     startChat();
                                                 }
                                             }

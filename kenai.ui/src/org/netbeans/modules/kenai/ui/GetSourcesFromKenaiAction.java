@@ -57,7 +57,7 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.GetSourcesInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;
@@ -121,7 +121,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
                 final PasswordAuthentication passwdAuth = KenaiProject.forRepository(feature.getLocation()).getKenai().getPasswordAuthentication();
                 if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
                     if (Subversion.isClientAvailable(true)) {
-                        UIUtils.logKenaiUsage("KENAI_SVN_CHECKOUT"); // NOI18N
+                        KenaiUIUtils.logKenaiUsage("KENAI_SVN_CHECKOUT"); // NOI18N
                         RequestProcessor.getDefault().post(new Runnable() {
 
                             public void run() {
@@ -149,7 +149,7 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
                         });
                     }
                 } else if (KenaiService.Names.MERCURIAL.equals(feature.getService())) {
-                    UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
+                    KenaiUIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
                     RequestProcessor.getDefault().post(new Runnable() {
                         public void run() {
                             try {

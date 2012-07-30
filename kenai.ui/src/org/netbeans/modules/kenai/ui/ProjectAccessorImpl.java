@@ -65,7 +65,7 @@ import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.kenai.ui.project.DetailsAction;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
@@ -228,7 +228,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
                 Kenai kenai = project.getTeamProject().getKenai();
                 try {
                     if (kenai.getStatus()==Kenai.Status.OFFLINE) {
-                        UIUtils.showLogin(kenai);
+                        KenaiUIUtils.showLogin(kenai);
                         return;
                     }
                     if (kenai.getMyProjects().contains(project.getTeamProject())) {

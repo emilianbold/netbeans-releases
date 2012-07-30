@@ -49,7 +49,7 @@ import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
-import org.netbeans.modules.kenai.ui.api.UIUtils;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.openide.util.NbPreferences;
 import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
 import org.openide.util.NbBundle.Messages;
@@ -76,17 +76,17 @@ public class LoginUtils {
         final Preferences preferences = NbPreferences.forModule(DefaultDashboard.class);
 
         if (!force) {
-            String online = preferences.get(UIUtils.getPrefName(kenai, LOGIN_STATUS_PREF), "false"); // NOI18N
+            String online = preferences.get(KenaiUIUtils.getPrefName(kenai, LOGIN_STATUS_PREF), "false"); // NOI18N
             if (!Boolean.parseBoolean(online)) {
                 return false;
             }
         }
 
-        String uname=preferences.get(UIUtils.getPrefName(kenai, KENAI_USERNAME_PREF), null); // NOI18N
+        String uname=preferences.get(KenaiUIUtils.getPrefName(kenai, KENAI_USERNAME_PREF), null); // NOI18N
         if (uname==null) {
             return false;
         }
-        boolean goOnline = Boolean.parseBoolean(preferences.get(UIUtils.getPrefName(kenai, ONLINE_STATUS_PREF), "false")) && Utilities.isChatSupported(kenai);
+        boolean goOnline = Boolean.parseBoolean(preferences.get(KenaiUIUtils.getPrefName(kenai, ONLINE_STATUS_PREF), "false")) && Utilities.isChatSupported(kenai);
         PresenceIndicator.getDefault().init();
         try {
             KenaiConnection.getDefault(kenai);
@@ -108,7 +108,7 @@ public class LoginUtils {
      */
     @SuppressWarnings("deprecation")
     private static char[] loadPassword(Kenai kenai,Preferences preferences) {
-        String passwordPref = UIUtils.getPrefName(kenai, KENAI_PASSWORD_PREF);
+        String passwordPref = KenaiUIUtils.getPrefName(kenai, KENAI_PASSWORD_PREF);
         String scrambledPassword = preferences.get(passwordPref, null); // NOI18N
         char[] newPassword = Keyring.read(passwordPref);
         if (scrambledPassword != null) {
@@ -122,14 +122,14 @@ public class LoginUtils {
 
     @Messages({"# {0} - kenai server name", "Utilities.password_keyring_description=Password for {0}"})
     static void savePassword (Kenai kenai, String username, char[] password) {
-        String passwordPref = UIUtils.getPrefName(kenai, KENAI_PASSWORD_PREF);
+        String passwordPref = KenaiUIUtils.getPrefName(kenai, KENAI_PASSWORD_PREF);
         Preferences preferences = NbPreferences.forModule(LoginUtils.class);
         if (password != null) {
-            preferences.put(UIUtils.getPrefName(kenai, KENAI_USERNAME_PREF), username); //NOI18N
+            preferences.put(KenaiUIUtils.getPrefName(kenai, KENAI_USERNAME_PREF), username); //NOI18N
             Keyring.save(passwordPref, password,
                     Utilities_password_keyring_description(kenai.getUrl().getHost()));
         } else {
-            preferences.remove(UIUtils.getPrefName(kenai, KENAI_USERNAME_PREF)); //NOI18N
+            preferences.remove(KenaiUIUtils.getPrefName(kenai, KENAI_USERNAME_PREF)); //NOI18N
             Keyring.delete(passwordPref);
         }
         preferences.remove(passwordPref);
@@ -140,7 +140,7 @@ public class LoginUtils {
         @Override
         public String getUsername(Kenai kenai) {
             final Preferences preferences = NbPreferences.forModule(LoginUtils.class);
-            String uname = preferences.get(UIUtils.getPrefName(kenai, KENAI_USERNAME_PREF), ""); // NOI18N
+            String uname = preferences.get(KenaiUIUtils.getPrefName(kenai, KENAI_USERNAME_PREF), ""); // NOI18N
             if (uname==null) {
                 return "";
             }

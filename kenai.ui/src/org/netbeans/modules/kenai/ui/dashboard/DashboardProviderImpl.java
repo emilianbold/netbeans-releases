@@ -103,7 +103,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                org.netbeans.modules.kenai.ui.api.UIUtils.showLogin(server.getKenai());
+                org.netbeans.modules.kenai.ui.api.KenaiUIUtils.showLogin(server.getKenai());
             }
         };
     }
