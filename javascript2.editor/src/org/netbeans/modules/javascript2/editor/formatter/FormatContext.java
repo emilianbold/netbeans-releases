@@ -149,8 +149,12 @@ public final class FormatContext {
         return indentationLevel;
     }
 
-    public void setIndentationLevel(int indentationLevel) {
-        this.indentationLevel = indentationLevel;
+    public void incIndentationLevel() {
+        this.indentationLevel++;
+    }
+
+    public void decIndentationLevel() {
+        this.indentationLevel--;
     }
 
     public int getOffsetDiff() {

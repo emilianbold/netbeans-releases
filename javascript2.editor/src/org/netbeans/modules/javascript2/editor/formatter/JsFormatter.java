@@ -408,7 +408,7 @@ public class JsFormatter implements Formatter {
                                         current.append(nextToken.getText());
                                     }
                                 } else {
-                                    formatContext.setIndentationLevel(updateIndentationLevel(nextToken, formatContext.getIndentationLevel()));
+                                    updateIndentationLevel(nextToken, formatContext);
                                 }
                                 i++;
                             }
@@ -426,7 +426,7 @@ public class JsFormatter implements Formatter {
                     }
 
                     // update the indentation for the token
-                    formatContext.setIndentationLevel(updateIndentationLevel(token, formatContext.getIndentationLevel()));
+                    updateIndentationLevel(token, formatContext);
                 }
                 LOGGER.log(Level.INFO, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
             }
@@ -482,7 +482,7 @@ public class JsFormatter implements Formatter {
 
             // proceed the skipped tokens moving the main loop
             for (FormatToken current = token; current != tokenAfterEol; current = current.next()) {
-                formatContext.setIndentationLevel(updateIndentationLevel(current, formatContext.getIndentationLevel()));
+                updateIndentationLevel(current, formatContext);
                 i++;
             }
 
@@ -721,22 +721,23 @@ public class JsFormatter implements Formatter {
         return Indentation.FORBIDDEN;
     }
 
-    private int updateIndentationLevel(FormatToken token, int indentationLevel) {
+    private void updateIndentationLevel(FormatToken token, FormatContext formatContext) {
         switch (token.getKind()) {
             case ELSE_IF_INDENTATION_INC:
                 if (ELSE_IF_SINGLE_LINE) {
                     break;
                 }
             case INDENTATION_INC:
-                return indentationLevel + 1;
+                formatContext.incIndentationLevel();
+                break;
             case ELSE_IF_INDENTATION_DEC:
                 if (ELSE_IF_SINGLE_LINE) {
                     break;
                 }
             case INDENTATION_DEC:
-                return indentationLevel - 1;
+                formatContext.decIndentationLevel();
+                break;
         }
-        return indentationLevel;
     }
 
     private static CodeStyle.WrapStyle getLineWrap(List<FormatToken> tokens, int index, FormatContext context) {
