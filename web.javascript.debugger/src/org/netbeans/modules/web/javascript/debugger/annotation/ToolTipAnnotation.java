@@ -81,7 +81,7 @@ import org.openide.util.RequestProcessor;
  *
  */
 @NbBundle.Messages({
-    "# {0} variable name",
+    "# {0} - variable name",
     "var.undefined={0} is not defined"
 })
 public class ToolTipAnnotation extends Annotation
