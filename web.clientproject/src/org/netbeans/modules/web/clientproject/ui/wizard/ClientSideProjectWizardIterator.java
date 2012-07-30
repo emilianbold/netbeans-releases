@@ -64,7 +64,7 @@ import org.openide.util.NbBundle.Messages;
 @TemplateRegistration(folder = "Project/ClientSide", displayName = "#ClientSideProject_displayName", 
         description = "ClientSideProjectDescription.html", 
         iconBase = ClientSideProject.PROJECT_ICON )
-@Messages({"ClientSideProject_displayName=Client Side JavaScript Application",
+@Messages({"ClientSideProject_displayName=HTML Application",
             "MSG_Progress1=Creating project"})
 public class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
 
