@@ -107,9 +107,9 @@ public class JPQLLexer implements Lexer<JPQLTokenId>{
                                 return tokenFactory.createToken(lookupId, //XXX: \n handling for exotic identifiers?
                                         input.readLength(), PartType.START);
                         }
-                case '=':
-                    input.backup(1);
-                    return token(JPQLTokenId.EQ);
+//                case '=':
+//                    input.backup(1);
+//                    return token(JPQLTokenId.EQ);
 
                 case '>':
                     switch (input.read()) {

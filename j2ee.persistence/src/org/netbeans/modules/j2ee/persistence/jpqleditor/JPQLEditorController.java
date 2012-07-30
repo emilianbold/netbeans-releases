@@ -66,6 +66,7 @@ import org.openide.ErrorManager;
 //import org.netbeans.modules.hibernate.util.HibernateUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -90,12 +91,20 @@ public class JPQLEditorController {
         final List<URL> localResourcesURLList = new ArrayList<URL>();
 
         //connection open
-        DatabaseConnection dbconn = findDatabaseConnection(pu, pe.getProject());
-        if(dbconn != null) {
-            dbconn.getJDBCConnection().;
+        final DatabaseConnection dbconn = findDatabaseConnection(pu, pe.getProject());
+        if (dbconn != null) {
+            if (dbconn.getJDBCConnection() == null) {
+                Mutex.EVENT.readAccess(new Mutex.Action<DatabaseConnection>() {
+                    @Override
+                    public DatabaseConnection run() {
+                        ConnectionManager.getDefault().showConnectionDialog(dbconn);
+                        return dbconn;
+                    }
+                });
+            }
         }
         //
-        
+
         final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             ph.progress(10);
@@ -105,12 +114,11 @@ public class JPQLEditorController {
             localResourcesURLList.add(pe.getLocation().getParent().toURL());
             localResourcesURLList.add(pe.getLocation().toURL());
             localResourcesURLList.add(pe.getLocation().getFileObject("persistence.xml").toURL());
-            
+
             ClassLoader customClassLoader = pe.getProjectClassLoader(
                     localResourcesURLList.toArray(new URL[]{}));
             Thread.currentThread().setContextClassLoader(customClassLoader);
             Thread t = new Thread() {
-
                 @Override
                 public void run() {
                     //Thread.currentThread().setContextClassLoader(customClassLoader);
@@ -139,8 +147,8 @@ public class JPQLEditorController {
                         public void run() {
                             editorTopComponent.setResult(jpqlResult0, customClassLoader0);
                         }
-                    });    
-                    
+                    });
+
                     Thread.currentThread().setContextClassLoader(defClassLoader);
                 }
             };
@@ -161,32 +169,32 @@ public class JPQLEditorController {
 
         editorTopComponent.fillPersistenceConfigurations(activatedNodes);
     }
-        
+
     private DatabaseConnection findDatabaseConnection(PersistenceUnit pu, Project project) {
-        
+
         // try to find a connection specified using the PU properties
         DatabaseConnection dbcon = ProviderUtil.getConnection(pu);
         if (dbcon != null) {
             return dbcon;
         }
-        
+
         // try to find a datasource-based connection, but only for a FileObject-based context,
         // otherwise we don't have a J2eeModuleProvider to retrieve the DS's from
         String datasourceName = ProviderUtil.getDatasourceName(pu);
         if (datasourceName == null) {
             return null;
         }
-  
+
         if (project == null) {
             return null;
         }
         JPADataSource datasource = null;
         JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
-        if (dsProvider == null){
+        if (dsProvider == null) {
             return null;
         }
-        for (JPADataSource each : dsProvider.getDataSources()){
-            if (datasourceName.equals(each.getJndiName())){
+        for (JPADataSource each : dsProvider.getDataSources()) {
+            if (datasourceName.equals(each.getJndiName())) {
                 datasource = each;
             }
         }
@@ -200,6 +208,7 @@ public class JPQLEditorController {
         }
         return null;
     }
+
     private static List<DatabaseConnection> findDatabaseConnections(JPADataSource datasource) {
         // copied from j2ee.common.DatasourceHelper (can't depend on that)
         if (datasource == null) {
@@ -222,8 +231,6 @@ public class JPQLEditorController {
             return Collections.emptyList();
         }
     }
-
-
 //    public SessionFactory getHibernateSessionFactoryForThisContext(FileObject configFileObject,
 //            Set<FileObject> mappingFOList,
 //            List<Class> annotatedClassList,
