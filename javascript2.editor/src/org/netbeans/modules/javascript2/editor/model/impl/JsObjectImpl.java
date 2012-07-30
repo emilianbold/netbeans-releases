@@ -339,21 +339,6 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             unresolved.addAll(resolved);
         }
         
-        
-        if(!assignments.isEmpty()) {
-            int start = -1;
-            int end = -1;
-            for(Integer offset : assignments.keySet()) {
-                
-                end = offset.intValue();
-            }
-            for(JsObject property: getProperties().values()) {
-                if (!property.isDeclared()) {
-                    
-                }
-            }
-            
-        }
         if (parent != null && !isAnonymous() && assignments.isEmpty()) {
             // try to recount occurrences
             JsObject global = ModelUtils.getGlobalObject(parent);
