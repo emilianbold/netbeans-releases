@@ -606,9 +606,9 @@ public class JsFormatter implements Formatter {
                 if (remove) {
                     return formatContext.remove(start.getOffset(),
                             theToken.getOffset() - start.getOffset(), offsetDiff);
-                } else if (start.getText().length() != 1 || start.getKind() == FormatToken.Kind.EOL) {
+                } else if (theToken.getOffset() - start.getOffset() != 1 || start.getKind() == FormatToken.Kind.EOL) {
                     return formatContext.replace(start.getOffset(),
-                            start.getText().toString(), " ", offsetDiff); // NOI18N
+                            theToken.getOffset() - start.getOffset(), " ", offsetDiff); // NOI18N
                 }
             }
         }
