@@ -60,7 +60,7 @@ import org.openide.util.Lookup;
  *
  * @author Martin Janicek
  */
-public class FindUsagesElement extends SimpleRefactoringElementImplementation {
+public class FindUsagesElement extends SimpleRefactoringElementImplementation implements Comparable<FindUsagesElement> {
 
     private final GroovyRefactoringElement element;
     private final BaseDocument doc;
@@ -114,5 +114,10 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation {
         PositionRef ref1 = ces.createPositionRef(range.getStart(), Position.Bias.Forward);
         PositionRef ref2 = ces.createPositionRef(range.getEnd(), Position.Bias.Forward);
         return new PositionBounds(ref1, ref2);
+    }
+
+    @Override
+    public int compareTo(FindUsagesElement comparedElement) {
+        return this.lineNumber - comparedElement.lineNumber;
     }
 }

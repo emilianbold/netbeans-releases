@@ -131,13 +131,7 @@ public abstract class AbstractFindUsages {
                     usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, moduleNode, node, fo), doc));
                 }
             }
-            Collections.sort(usages, new Comparator<FindUsagesElement>() {
-
-                @Override
-                public int compare(FindUsagesElement o1, FindUsagesElement o2) {
-                    return o1.getLineNumber() - o2.getLineNumber();
-                }
-            });
+            Collections.sort(usages);
         }
     }
 }
