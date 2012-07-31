@@ -569,19 +569,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
     }
-
-    private void resolveAssignments(JsObject jsObject, CompletionRequest request, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
-        Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(request.anchor);
-        for (Type typeName : assignments) {
-            JsObject byOffset = findObjectForOffset(typeName.getType(), request.anchor, request.result.getModel());
-            if (byOffset != null) {
-                resolvedObjects.add(byOffset);
-                resolveAssignments(byOffset, request, resolvedObjects, resolvedTypes);
-            } else {
-                resolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
-            }
-        }
-    }
     
     private JsObject findObjectForOffset(String name, int offset, Model model) {
         for (JsObject object : model.getVariables(offset)) {
