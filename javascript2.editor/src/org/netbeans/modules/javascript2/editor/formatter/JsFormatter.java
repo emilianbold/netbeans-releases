@@ -548,11 +548,15 @@ public class JsFormatter implements Formatter {
                 // this handles the cases when there is no before/after space
                 // otherwise it is handle in appropriate methods
                 FormatToken endToken = extendedTokenAfterEol;
-                while (endToken != null) {
-                    endToken = endToken.next();
-                    if (endToken != null && !endToken.isVirtual()
-                            && endToken.getKind() != FormatToken.Kind.WHITESPACE) {
-                        break;
+                // if there is no eol at this place we have meaningful token
+                // as endToken so no shifting
+                if (endToken != null && endToken.getKind() == FormatToken.Kind.EOL) {
+                    while (endToken != null) {
+                        endToken = endToken.next();
+                        if (endToken != null && !endToken.isVirtual()
+                                && endToken.getKind() != FormatToken.Kind.WHITESPACE) {
+                            break;
+                        }
                     }
                 }
 
