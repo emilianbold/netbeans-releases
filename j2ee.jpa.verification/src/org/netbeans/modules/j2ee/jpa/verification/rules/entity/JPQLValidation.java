@@ -153,7 +153,7 @@ public class JPQLValidation extends JPAClassRule {
             }
             if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
             helper.dispose();
-            System.out.println("TIME TO COMPLETE: "+(System.nanoTime() - start));
+            //System.out.println("TIME TO COMPLETE: "+(System.nanoTime() - start));
         }
         if (problems != null && problems.size()>0){
             ErrorDescription[] ret = new ErrorDescription[problems.size()];
