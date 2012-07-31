@@ -60,7 +60,6 @@ import javax.lang.model.element.TypeElement;
 import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
-import org.eclipse.persistence.jpa.jpql.spi.IQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
@@ -81,7 +80,7 @@ import org.netbeans.spi.editor.hints.Severity;
  * Verify content of @NamedQuery query
  * TODO: good to move warning to query level instead of class level
  */
-public class JPQLValidation extends JPAClassRule {
+public class JPQLValidation extends JPAClassRule{
     
     /** Creates a new instance of NonFinalClass */
     public JPQLValidation() {
@@ -91,7 +90,6 @@ public class JPQLValidation extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
-        long start  = System.nanoTime();
         Object modEl = ctx.getModelElement();
         Entity entity = (Entity) (modEl instanceof Entity ? modEl : null);
         List<AnnotationMirror> first = Utilities.findAnnotations(subject, JPAAnnotations.NAMED_QUERY);
@@ -133,7 +131,7 @@ public class JPQLValidation extends JPAClassRule {
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
         List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
         ManagedTypeProvider mtp = new ManagedTypeProvider(project, ((JPAProblemContext)ctx).getMetaData());
-        for(int index=0;index<values.size();index++){
+        for(int index=0;index<values.size() && !ctx.isCancelled();index++){
             String value = values.get(index);
             String qName = names.get(index);
             NamedQuery nq = null;
@@ -153,9 +151,8 @@ public class JPQLValidation extends JPAClassRule {
             }
             if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
             helper.dispose();
-            //System.out.println("TIME TO COMPLETE: "+(System.nanoTime() - start));
         }
-        if (problems != null && problems.size()>0){
+        if (!ctx.isCancelled() && problems != null && problems.size()>0){
             ErrorDescription[] ret = new ErrorDescription[problems.size()];
             for(int i=0;i<ret.length;i++){
                 ListResourceBundle msgBundle = null;
