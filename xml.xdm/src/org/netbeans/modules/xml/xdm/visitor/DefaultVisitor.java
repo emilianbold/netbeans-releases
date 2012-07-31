@@ -59,7 +59,7 @@ package org.netbeans.modules.xml.xdm.visitor;
  *
  * @author ChrisWebster
  */
-public class DefaultVisitor implements XMLNodeVisitor {
+public class DefaultVisitor extends XMLNodeVisitorBase {
     public void visit(org.netbeans.modules.xml.xdm.nodes.Attribute attr) {
         visitNode(attr);
     }

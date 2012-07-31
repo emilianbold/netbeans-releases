@@ -145,8 +145,9 @@ public class PositionFinderVisitor implements XMLNodeVisitor{
     
     private int getLength(Text n) {
         int len = 0;
-        for(Token token:((NodeImpl)n).getTokens())
+        for(Token token:((NodeImpl)n).getTokens()) {
             len += token.getValue().length();
+        }
         return len;
     }
     
