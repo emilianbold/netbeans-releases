@@ -445,6 +445,9 @@ public class JFXProjectGenerator {
         ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_EMBEDJNLP, "true"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_REBASE_LIBS, "false"); // NOI18N
         ep.setComment(JFXProjectProperties.JAVAFX_REBASE_LIBS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_rebase_libs")}, false); // NOI18N
+
+        ep.setProperty(JFXProjectProperties.JAVAFX_NATIVE_BUNDLING_ENABLED, "false"); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_NATIVE_BUNDLING_TYPE, JFXProjectProperties.BundlingType.NONE.getString().toLowerCase());
         
         // update mode set to false with signing on to prevent malfunction caused by so-far unresolved issues in JavaFX 2.1.x WebStart
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "false"); // NOI18N

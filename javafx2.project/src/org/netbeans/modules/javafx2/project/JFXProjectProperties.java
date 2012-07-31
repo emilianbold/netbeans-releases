@@ -175,9 +175,15 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_SIGNING_KEY = "javafx.signing.keyalias"; //NOI18N
     public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keyalias.password"; //NOI18N
     
+    // Deployment - native packaging
+    public static final String JAVAFX_NATIVE_BUNDLING_ENABLED = "javafx.native.bundling.enabled"; //NOI18N
+    public static final String JAVAFX_NATIVE_BUNDLING_TYPE = "javafx.native.bundling.type"; //NOI18N
+
+    //
     public static final String RUN_CP = "run.classpath";    //NOI18N
     public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
     
+    // Deployment - libraries download mode
     public static final String DOWNLOAD_MODE_LAZY_JARS = "download.mode.lazy.jars";   //NOI18N
     private static final String DOWNLOAD_MODE_LAZY_JAR = "download.mode.lazy.jar."; //NOI18N
     private static final String DOWNLOAD_MODE_LAZY_FORMAT = DOWNLOAD_MODE_LAZY_JAR +"%s"; //NOI18N
@@ -310,7 +316,6 @@ public final class JFXProjectProperties {
             return propertyValue;
         }
     }
-
     boolean signingEnabled;
     SigningType signingType;
     String signingKeyStore;
@@ -318,6 +323,7 @@ public final class JFXProjectProperties {
     boolean permissionsElevated;
     char [] signingKeyStorePassword;
     char [] signingKeyPassword;
+
     public boolean getSigningEnabled() {
         return signingEnabled;
     }
@@ -361,6 +367,44 @@ public final class JFXProjectProperties {
         this.signingKeyStorePassword = signingKeyStorePassword;
     }
     
+    // Deployment - Native Packaging (JDK 7u6+)
+    public enum BundlingType {
+        NONE("None"), // NOI18N
+        ALL("All"), // NOI18N
+        IMAGE("Image"), // NOI18N
+        INSTALLER("Installer"); // NOI18N
+        private final String propertyValue;
+        BundlingType(String propertyValue) {
+            this.propertyValue = propertyValue;
+        }
+        public String getString() {
+            return propertyValue;
+        }
+    }
+    boolean nativeBundlingEnabled;
+    BundlingType nativeBundlingType;
+    public boolean getNativeBundlingEnabled() {
+        return nativeBundlingEnabled;
+    }
+    public void setNativeBundlingEnabled(boolean enabled) {
+        this.nativeBundlingEnabled = enabled;
+    }
+    public BundlingType getNativeBundlingType() {
+        return nativeBundlingType;
+    }
+    public void setNativeBundlingType(BundlingType type) {
+        this.nativeBundlingType = type;
+    }
+    public boolean setNativeBundlingType(String type) {
+        for (BundlingType bundleType : BundlingType.values()) {
+            if(bundleType.getString().equalsIgnoreCase(type)) {
+                this.nativeBundlingType = bundleType;
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Deployment - Libraries Download Mode
     List<? extends File> runtimeCP;
     List<? extends File> lazyJars;
@@ -533,6 +577,7 @@ public final class JFXProjectProperties {
             preloaderClassModel = new PreloaderClassComboBoxModel();
             
             initSigning(evaluator);
+            initNativeBundling(evaluator);
             initResources(evaluator, project, CONFIGS);
             initJSCallbacks(evaluator);
         }
@@ -834,6 +879,9 @@ public final class JFXProjectProperties {
         editableProps.setProperty(PERMISSIONS_ELEVATED, permissionsElevated ? "true" : "false"); //NOI18N
         setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
         setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);        
+        // store native bundling info
+        editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : "false"); //NOI18N
+        editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_TYPE, nativeBundlingType.getString().toLowerCase());
         // store resources
         storeResources(editableProps);
         // store JavaScript callbacks
@@ -1074,6 +1122,29 @@ public final class JFXProjectProperties {
         permissionsElevated = isTrue(eval.getProperty(PERMISSIONS_ELEVATED));
     }
     
+    private void initNativeBundling(PropertyEvaluator eval) {
+        String enabled = eval.getProperty(JAVAFX_NATIVE_BUNDLING_ENABLED);
+        String bundleProp = eval.getProperty(JAVAFX_NATIVE_BUNDLING_TYPE);
+        nativeBundlingEnabled = isTrue(enabled);
+        if(bundleProp == null) {
+            nativeBundlingType = BundlingType.NONE;
+        } else {
+            if(bundleProp.equalsIgnoreCase(BundlingType.ALL.getString())) {
+                nativeBundlingType = BundlingType.ALL;
+            } else {
+                if(bundleProp.equalsIgnoreCase(BundlingType.IMAGE.getString())) {
+                    nativeBundlingType = BundlingType.IMAGE;
+                } else {
+                    if(bundleProp.equalsIgnoreCase(BundlingType.INSTALLER.getString())) {
+                        nativeBundlingType = BundlingType.INSTALLER;
+                    } else {
+                        nativeBundlingType = BundlingType.NONE;
+                    }
+                }
+            }
+        }
+    }
+
     private void initResources (final PropertyEvaluator eval, final Project prj, final JFXConfigs configs) {
         final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
         final String rcp = eval.getProperty(RUN_CP);        

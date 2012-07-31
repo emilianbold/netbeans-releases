@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.netbeans.modules.javafx2.project.JFXProjectProperties.BundlingType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -68,6 +69,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private JFXProjectProperties jfxProps;
     
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
+    
+    private volatile boolean comboBoxNativeBundlingActionRunning = false;
     
     /**
      * Creates new form JFXDeploymentPanel
@@ -138,6 +141,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelSigningMessage.setEnabled(jfxProps.getSigningEnabled());
         buttonSigning.setEnabled(jfxProps.getSigningEnabled());
         refreshSigningLabel();
+        setupNativeBundlingCombo();
     }
 
     /** This method is called from within the constructor to
@@ -155,12 +159,13 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelInitialRemarkSwing = new javax.swing.JLabel();
         labelProperties = new javax.swing.JLabel();
         labelPropertiesSwing = new javax.swing.JLabel();
-        checkBoxUpgradeBackground = new javax.swing.JCheckBox();
-        checkBoxNoInternet = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
         checkBoxInstallPerm = new javax.swing.JCheckBox();
         checkBoxDeskShortcut = new javax.swing.JCheckBox();
         checkBoxMenuShortcut = new javax.swing.JCheckBox();
+        jPanel2 = new javax.swing.JPanel();
+        checkBoxNoInternet = new javax.swing.JCheckBox();
+        checkBoxUpgradeBackground = new javax.swing.JCheckBox();
         labelIcon = new javax.swing.JLabel();
         textFieldIcon = new javax.swing.JTextField();
         buttonIcon = new javax.swing.JButton();
@@ -176,6 +181,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelDownloadMode = new javax.swing.JLabel();
         labelDownloadModeMessage = new javax.swing.JLabel();
         buttonDownloadMode = new javax.swing.JButton();
+        checkBoxBundle = new javax.swing.JCheckBox();
+        comboBoxBundle = new javax.swing.JComboBox();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 32767));
 
         setLayout(new java.awt.GridBagLayout());
@@ -223,30 +230,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.insets = new java.awt.Insets(20, 0, 10, 0);
         panelTop.add(labelPropertiesSwing, gridBagConstraints);
 
-        checkBoxUpgradeBackground.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(checkBoxUpgradeBackground, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxUpgradeBackground.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
-        panelTop.add(checkBoxUpgradeBackground, gridBagConstraints);
-        checkBoxUpgradeBackground.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.checkBoxUpgradeBackground.text")); // NOI18N
-        checkBoxUpgradeBackground.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.checkBoxUpgradeBackground.text")); // NOI18N
-
-        checkBoxNoInternet.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(checkBoxNoInternet, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
-        panelTop.add(checkBoxNoInternet, gridBagConstraints);
-        checkBoxNoInternet.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
-        checkBoxNoInternet.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
-
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxInstallPerm, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxInstallPerm.text")); // NOI18N
@@ -286,8 +269,40 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 10, 0);
         panelTop.add(jPanel1, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        checkBoxNoInternet.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxNoInternet, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
+        jPanel2.add(checkBoxNoInternet, gridBagConstraints);
+        checkBoxNoInternet.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
+        checkBoxNoInternet.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.checkBoxNoInternet.text")); // NOI18N
+
+        checkBoxUpgradeBackground.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxUpgradeBackground, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.checkBoxUpgradeBackground.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        jPanel2.add(checkBoxUpgradeBackground, gridBagConstraints);
+        checkBoxUpgradeBackground.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.checkBoxUpgradeBackground.text")); // NOI18N
+        checkBoxUpgradeBackground.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.checkBoxUpgradeBackground.text")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 10, 0);
+        panelTop.add(jPanel2, gridBagConstraints);
 
         labelIcon.setLabelFor(textFieldIcon);
         org.openide.awt.Mnemonics.setLocalizedText(labelIcon, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelIcon.text")); // NOI18N
@@ -330,7 +345,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 15, 0);
         panelTop.add(labelIconRemark, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -353,7 +368,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
@@ -367,7 +382,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(labelSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelSigning.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 37, 20, 10);
         panelBottom.add(labelSigning, gridBagConstraints);
@@ -378,7 +393,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelSigningMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         panelBottom.add(labelSigningMessage, gridBagConstraints);
@@ -391,7 +406,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 0);
         panelBottom.add(buttonSigning, gridBagConstraints);
@@ -402,7 +417,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(labelCustomJS, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelCustomJS.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 15, 10);
         panelBottom.add(labelCustomJS, gridBagConstraints);
@@ -413,7 +428,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelCustomJSMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         panelBottom.add(labelCustomJSMessage, gridBagConstraints);
@@ -426,7 +441,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 5, 0);
         panelBottom.add(buttonCustomJSMessage, gridBagConstraints);
@@ -437,7 +452,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         org.openide.awt.Mnemonics.setLocalizedText(labelDownloadMode, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "LBL_JFXDeploymentPanel.labelDownloadMode.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 10);
         panelBottom.add(labelDownloadMode, gridBagConstraints);
@@ -448,7 +463,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelDownloadModeMessage.setPreferredSize(new java.awt.Dimension(200, 14));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         panelBottom.add(labelDownloadModeMessage, gridBagConstraints);
 
@@ -460,12 +475,41 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 0);
         panelBottom.add(buttonDownloadMode, gridBagConstraints);
         buttonDownloadMode.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.buttonDownloadMode.text")); // NOI18N
         buttonDownloadMode.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.buttonDownloadMode.text")); // NOI18N
+
+        checkBoxBundle.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.checkBoxBundle.text")); // NOI18N
+        checkBoxBundle.setToolTipText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "TOOLTIP_labelBundle")); // NOI18N
+        checkBoxBundle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkBoxBundleActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 15, 10, 0);
+        panelBottom.add(checkBoxBundle, gridBagConstraints);
+
+        comboBoxBundle.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All", "Image", "Installer", " " }));
+        comboBoxBundle.setEnabled(false);
+        comboBoxBundle.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comboBoxBundleActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        panelBottom.add(comboBoxBundle, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -575,6 +619,24 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
     }
 }//GEN-LAST:event_buttonCustomJSMessageActionPerformed
 
+    private void checkBoxBundleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxBundleActionPerformed
+        boolean sel = checkBoxBundle.isSelected();
+        comboBoxBundle.setEnabled(sel);
+        jfxProps.setNativeBundlingEnabled(sel);
+        if(jfxProps.getNativeBundlingEnabled() && jfxProps.getNativeBundlingType() == JFXProjectProperties.BundlingType.NONE) {
+            jfxProps.setNativeBundlingType(JFXProjectProperties.BundlingType.ALL);
+        }
+    }//GEN-LAST:event_checkBoxBundleActionPerformed
+
+    private void comboBoxBundleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxBundleActionPerformed
+        if(!comboBoxNativeBundlingActionRunning) {
+            comboBoxNativeBundlingActionRunning = true;
+            String sel = (String)comboBoxBundle.getSelectedItem();
+            jfxProps.setNativeBundlingType(sel);
+            comboBoxNativeBundlingActionRunning = false;
+        }
+    }//GEN-LAST:event_comboBoxBundleActionPerformed
+
     private void refreshCustomJSLabel() {
         int jsDefs = 0;
         for (Map.Entry<String,String> entry : jfxProps.getJSCallbacks().entrySet()) {
@@ -601,19 +663,38 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
         }
     }
 
+    private void setupNativeBundlingCombo() {
+        comboBoxNativeBundlingActionRunning = true;
+        comboBoxBundle.removeAllItems ();
+        for (BundlingType bundleType : BundlingType.values()) {
+            if(bundleType != BundlingType.NONE) {
+                comboBoxBundle.addItem(bundleType.getString());
+            }
+        }
+        BundlingType bundleType = jfxProps.getNativeBundlingType();
+        boolean sel = jfxProps.getNativeBundlingEnabled();
+        comboBoxBundle.setSelectedItem(bundleType.getString());
+        comboBoxBundle.setEnabled(sel && bundleType != BundlingType.NONE);
+        checkBoxBundle.setSelected(sel && bundleType != BundlingType.NONE);
+        comboBoxNativeBundlingActionRunning = false;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonCustomJSMessage;
     private javax.swing.JButton buttonDownloadMode;
     private javax.swing.JButton buttonIcon;
     private javax.swing.JButton buttonSigning;
+    private javax.swing.JCheckBox checkBoxBundle;
     private javax.swing.JCheckBox checkBoxDeskShortcut;
     private javax.swing.JCheckBox checkBoxInstallPerm;
     private javax.swing.JCheckBox checkBoxMenuShortcut;
     private javax.swing.JCheckBox checkBoxNoInternet;
     private javax.swing.JCheckBox checkBoxUnrestrictedAcc;
     private javax.swing.JCheckBox checkBoxUpgradeBackground;
+    private javax.swing.JComboBox comboBoxBundle;
     private javax.swing.Box.Filler filler1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel labelCustomJS;
     private javax.swing.JLabel labelCustomJSMessage;
     private javax.swing.JLabel labelDownloadMode;
