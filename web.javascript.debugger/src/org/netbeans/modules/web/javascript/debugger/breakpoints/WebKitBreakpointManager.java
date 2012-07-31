@@ -45,11 +45,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.PathNotFoundException;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -59,6 +61,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
     
     protected final Debugger d;
     private final AbstractBreakpoint ab;
+    private static final RequestProcessor rp = new RequestProcessor(WebKitBreakpointManager.class);
 
     protected WebKitBreakpointManager(Debugger d, AbstractBreakpoint ab) {
         this.d = d;
@@ -84,9 +87,18 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent event) {
+    public void propertyChange(final PropertyChangeEvent event) {
         if (!Breakpoint.PROP_ENABLED.equals(event.getPropertyName())) {
             return;
+        }
+        if (SwingUtilities.isEventDispatchThread()) {
+            rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    propertyChange(event);
+                }
+            });
+            return ;
         }
         Breakpoint b = (Breakpoint) event.getSource();
         if (b.isEnabled()) {
@@ -207,7 +219,16 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
 
         @Override
-        public void propertyChange(PropertyChangeEvent event) {
+        public void propertyChange(final PropertyChangeEvent event) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        propertyChange(event);
+                    }
+                });
+                return ;
+            }
             String propertyName = event.getPropertyName();
             if (DOMNode.PROP_NODE_CHANGED.equals(propertyName)) {
                 Node oldNode = (Node) event.getOldValue();
