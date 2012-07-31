@@ -838,8 +838,6 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 				printf("external_declaration_template_1b[%d]: Class template definition\n",
 					LT(1).getLine());
 			}
-                        {action.simple_declaration(LT(1));}
-                        {action.class_declaration(LT(1));}                           
 			declaration[declOther]
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
@@ -1029,6 +1027,8 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
+                {action.simple_declaration(LT(1));}
+                {action.class_declaration(LT(1));}
 		(LITERAL___extension__!)? declaration[declOther]
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
 
@@ -1050,6 +1050,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             )*
             LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
         ) =>
+        {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
@@ -1059,6 +1060,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
         enum_specifier (init_declarator_list[declOther])? 
         {action.end_enum_declaration(LT(1));}
+        {action.end_simple_declaration(LT(1));}
         SEMICOLON! //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
     |
@@ -1069,6 +1071,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             )*
             LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
         ) =>
+        {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
@@ -1077,6 +1080,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
         enum_specifier
         {action.end_enum_declaration(LT(1));}
+        {action.end_simple_declaration(LT(1));}
         SEMICOLON //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #external_declaration); }
     |
@@ -1437,6 +1441,7 @@ member_declaration
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
 		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY )=>
+                {action.simple_declaration(LT(1));}
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
@@ -1445,11 +1450,13 @@ member_declaration
 		}
 		enum_specifier (member_declarator_list)? 
                 {action.end_enum_declaration(LT(1));}
+                {action.end_simple_declaration(LT(1));}
                 SEMICOLON!	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|
 		// Enum definition (don't want to backtrack over this in other alts)
 		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON )=>
+                {action.simple_declaration(LT(1));}
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1)
@@ -1458,6 +1465,7 @@ member_declaration
 		}
 		enum_specifier
                 {action.end_enum_declaration(LT(1));}
+                {action.end_simple_declaration(LT(1));}
                 SEMICOLON	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #member_declaration); }
 	|	
