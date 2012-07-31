@@ -853,14 +853,6 @@ public class JsFormatter implements Formatter {
         return current;
     }
 
-    private static FormatToken getPreviousNonVirtual(FormatToken token) {
-        FormatToken current = token.previous();
-        while (current != null && current.isVirtual()) {
-            current = current.previous();
-        }
-        return current;
-    }
-
     private static boolean isWhitespace(CharSequence charSequence) {
         for (int i = 0; i < charSequence.length(); i++) {
             if (!Character.isWhitespace(charSequence.charAt(i))) {
