@@ -43,7 +43,6 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 
 import java.util.List;
 import java.util.Map;
-import javafx.beans.DefaultProperty;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;

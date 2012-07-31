@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
-import com.sun.istack.internal.NotNull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -50,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -397,7 +397,7 @@ public final class CompletionContext {
      * 
      * @return CompilationInfo instance
      */
-    @NotNull
+    @NonNull
     public CompilationInfo getCompilationInfo() {
         return compilationInfo;
     }
@@ -407,7 +407,7 @@ public final class CompletionContext {
      * 
      * @return classpath info
      */
-    @NotNull
+    @NonNull
     public ClasspathInfo getClasspathInfo() {
         return cpInfo;
     }
@@ -614,7 +614,7 @@ public final class CompletionContext {
      * @param suggested suggested prefix
      * @return suitable prefix
      */
-    public String findPrefixString(@NotNull String nsURI, @NotNull String suggested) {
+    public String findPrefixString(@NonNull String nsURI, @NonNull String suggested) {
         String existing = findNsPrefix(nsURI);
         if (existing != null) {
             return existing;
