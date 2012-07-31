@@ -70,7 +70,6 @@ import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -129,6 +128,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 break;
             }
             case FIELD:
+            case PROPERTY:
             default: {
                 panel = new WhereUsedPanelVariable();
                 break;
