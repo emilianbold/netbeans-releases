@@ -51,6 +51,7 @@ import java.awt.BorderLayout;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.modules.profiler.ProfilerTopComponent;
 import org.netbeans.modules.profiler.api.icons.Icons;
+import org.openide.windows.Mode;
 
 
 /**
@@ -60,7 +61,9 @@ import org.netbeans.modules.profiler.api.icons.Icons;
  */
 @NbBundle.Messages({
     "ProfilingPointsWindow_ComponentName=Profiling Points",
-    "ProfilingPointsWindow_ComponentAccessDescr=List of defined profiling points"
+    "ProfilingPointsWindow_ComponentAccessDescr=List of defined profiling points",
+    "#NOI18N",
+    "ProfilingPointsWindow_WindowMode=output"
 })
 public class ProfilingPointsWindow extends ProfilerTopComponent {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
@@ -112,6 +115,22 @@ public class ProfilingPointsWindow extends ProfilerTopComponent {
                 if (defaultInstance != null && defaultInstance.isOpened()) defaultInstance.close();
             }
         });
+    }
+    
+    public boolean needsDocking() {
+        return WindowManager.getDefault().findMode(this) == null;
+    }
+
+    public void open() {
+        if (needsDocking()) { // needs docking
+
+            Mode mode = WindowManager.getDefault().findMode(Bundle.ProfilingPointsWindow_WindowMode());
+            if (mode != null) {
+                mode.dockInto(this);
+            }
+        }
+
+        super.open();
     }
 
     public int getPersistenceType() {
