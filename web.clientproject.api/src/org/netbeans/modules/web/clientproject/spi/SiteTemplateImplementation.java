@@ -43,6 +43,8 @@ package org.netbeans.modules.web.clientproject.spi;
 
 import java.io.IOException;
 import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
 
@@ -51,10 +53,13 @@ import org.openide.filesystems.FileObject;
  */
 public interface SiteTemplateImplementation {
 
+    @NonNull
     String getName();
 
+    @NonNull
     String getDescription();
-    
+
+    @CheckForNull
     SiteTemplateCustomizer getCustomizer();
 
     /**
@@ -76,6 +81,6 @@ public interface SiteTemplateImplementation {
      * @throws IOException if any error occurs
      */
     void apply(FileObject projectRoot, ProgressHandle handle) throws IOException;
-    
+
     Collection<String> supportedLibraries();
 }
