@@ -69,14 +69,15 @@ public class GSFPHPLexer implements Lexer<PHPTokenId> {
     }
 
     public static GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
-        boolean short_tag = true;
-        boolean asp_tag = false;
+        PhpLanguageProperties languageProperties;
         FileObject fileObject = (FileObject)info.getAttributeValue(FileObject.class);
         if (fileObject != null) {
-            PhpLanguageProperties languageProperties = PhpLanguageProperties.forFileObject(fileObject);
-            asp_tag = languageProperties.areAspTagsEnabled();
-            short_tag = languageProperties.areShortTagsEnabled();
+            languageProperties = PhpLanguageProperties.forFileObject(fileObject);
+        } else {
+            languageProperties = PhpLanguageProperties.getDefault();
         }
+        boolean asp_tag = languageProperties.areAspTagsEnabled();
+        boolean short_tag = languageProperties.areShortTagsEnabled();
         synchronized(GSFPHPLexer.class) {
             return new GSFPHPLexer(info, short_tag, asp_tag, inPHP);
         }
