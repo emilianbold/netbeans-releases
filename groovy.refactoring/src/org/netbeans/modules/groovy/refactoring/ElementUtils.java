@@ -51,6 +51,7 @@ import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.modules.csl.api.ElementKind;
 
 /**
@@ -79,62 +80,71 @@ public final class ElementUtils {
     }
 
     public static String getTypeName(ASTNode node) {
-        ClassNode type;
+        ClassNode type = getType(node);
+        return normalizeTypeName(type.getName(), type);
+    }
+
+    public static String getTypeNameWithoutPackage(ASTNode node) {
+        ClassNode type = getType(node);
+        return normalizeTypeName(type.getNameWithoutPackage(), type);
+    }
+
+    private static ClassNode getType(ASTNode node) {
         if (node instanceof ClassNode) {
-            type = ((ClassNode) node);
+            return ((ClassNode) node);
         } else if (node instanceof FieldNode) {
-            type = ((FieldNode) node).getType();
+            return ((FieldNode) node).getType();
         } else if (node instanceof PropertyNode) {
-            type = ((PropertyNode) node).getType();
+            return ((PropertyNode) node).getType();
+        } else if (node instanceof Parameter) {
+           return ((Parameter) node).getType();
+        } else if (node instanceof ForStatement) {
+            return ((ForStatement) node).getVariableType();
+        } else if (node instanceof ClassExpression) {
+            return ((ClassExpression) node).getType();
         } else if (node instanceof VariableExpression) {
-            type = ((VariableExpression) node).getType();
+           return ((VariableExpression) node).getType();
         } else if (node instanceof DeclarationExpression) {
             DeclarationExpression declaration = ((DeclarationExpression) node);
             if (declaration.isMultipleAssignmentDeclaration()) {
-                type = declaration.getTupleExpression().getType();
+                return declaration.getTupleExpression().getType();
             } else {
-                type = declaration.getVariableExpression().getType();
+                return declaration.getVariableExpression().getType();
             }
-        } else {
-            return "Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!"; // NOI18N
         }
-        return getTypeName(type);
-    }
-
-    private static String getTypeName(ClassNode type) {
-        String typeName = type.getNameWithoutPackage();
-
-        // This will happened with all primitive type arrays, e.g. 'double [] x'
-        if (typeName.startsWith("[")) {                                         // NOI18N
-            typeName = type.getComponentType().getNameWithoutPackage() + "[]";  // NOI18N
-        }
-        return typeName;
+        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!"); // NOI18N
     }
 
     public static String getNameWithoutPackage(ASTNode node) {
+        String name = null;
         if (node instanceof ClassNode) {
-            return ((ClassNode) node).getNameWithoutPackage();
+            name = ((ClassNode) node).getNameWithoutPackage();
         } else if (node instanceof MethodNode) {
-            return ((MethodNode) node).getName();
+            name = ((MethodNode) node).getName();
         } else if (node instanceof FieldNode) {
-            return ((FieldNode) node).getName();
+            name = ((FieldNode) node).getName();
         } else if (node instanceof PropertyNode) {
-            return ((PropertyNode) node).getName();
+            name = ((PropertyNode) node).getName();
         } else if (node instanceof Parameter) {
-            return ((Parameter) node).getName();
+            name = ((Parameter) node).getName();
         } else if (node instanceof VariableExpression) {
-            return ((VariableExpression) node).getName();
+            name = ((VariableExpression) node).getName();
         } else if (node instanceof DeclarationExpression) {
             DeclarationExpression declaration = ((DeclarationExpression) node);
             if (declaration.isMultipleAssignmentDeclaration()) {
-                return declaration.getTupleExpression().getType().getNameWithoutPackage();
+                name = declaration.getTupleExpression().getType().getNameWithoutPackage();
             } else {
-                return declaration.getVariableExpression().getType().getNameWithoutPackage();
+                name = declaration.getVariableExpression().getType().getNameWithoutPackage();
             }
         } else if (node instanceof ClassExpression) {
-            return ((ClassExpression) node).getType().getNameWithoutPackage();
+            name = ((ClassExpression) node).getType().getNameWithoutPackage();
         }
-        return "Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName(); // NOI18N
+
+        if (name != null) {
+            return normalizeTypeName(name, null);
+        } else {
+            return "Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName(); // NOI18N
+        }
     }
 
     public static ClassNode getDeclaringClass(ASTNode node) {
@@ -164,6 +174,24 @@ public final class ElementUtils {
     }
 
     public static String getDeclaratingClassName(ASTNode node) {
-        return getDeclaringClass(node).getNameWithoutPackage();
+        ClassNode declaringClass = getDeclaringClass(node);
+        if (declaringClass != null) {
+            return declaringClass.getNameWithoutPackage();
+        } else {
+            return "Dynamic type!";
+        }
+    }
+
+    public static String normalizeTypeName(String typeName, ClassNode type) {
+        // This will happened with all primitive type arrays, e.g. 'double [] x'
+        if (typeName.startsWith("[") && type != null) { // NOI18N
+            typeName = type.getComponentType().getNameWithoutPackage();
+        }
+
+        // This will happened with all arrays except primitive type arrays
+        if (typeName.endsWith("[]")) { // NOI18N
+            typeName = typeName.substring(0, typeName.length() - 2);
+        }
+        return typeName;
     }
 }
