@@ -462,7 +462,7 @@ public class JsFormatter implements Formatter {
         
         CodeStyle.WrapStyle style = getLineWrap(token, formatContext);
         if (style == CodeStyle.WrapStyle.WRAP_IF_LONG) {
-            // mark this point
+            // TODO mark this point
             return index;
         }
 
@@ -477,11 +477,22 @@ public class JsFormatter implements Formatter {
             startIndex++;
         }
 
-        if (tokenAfterEol != null
-                && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+        FormatToken extendedTokenAfterEol = tokenAfterEol;
+        for (FormatToken current = tokenAfterEol; current != null && (current.getKind() == FormatToken.Kind.EOL
+                || current.getKind() == FormatToken.Kind.WHITESPACE
+                || current.isVirtual()); current = current.next()) {
+            if (current != tokenAfterEol && current.getKind() == FormatToken.Kind.EOL) {
+                extendedTokenAfterEol = current;
+            }
+        }
+
+        // AFTER_STATEMENT is a bit special at least for now
+        // we dont remove redundant eols
+        if (tokenAfterEol != null && style == CodeStyle.WrapStyle.WRAP_ALWAYS
+                && (tokenAfterEol.getKind() != FormatToken.Kind.EOL || extendedTokenAfterEol != tokenAfterEol && token.getKind() != FormatToken.Kind.AFTER_STATEMENT)) {
 
             // proceed the skipped tokens moving the main loop
-            for (FormatToken current = token; current != tokenAfterEol; current = current.next()) {
+            for (FormatToken current = token; current != extendedTokenAfterEol; current = current.next()) {
                 updateIndentationLevel(current, formatContext);
                 i++;
             }
@@ -496,15 +507,35 @@ public class JsFormatter implements Formatter {
                 }
             }
 
-            // we dont have to remove trailing spaces as indentation will fix it
-            // insert eol
-            formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
-            // do the indentation
-            int indentationSize = initialIndent
-                    + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-            formatContext.indentLine(
-                    tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
-                    indentationSize, Indentation.ALLOWED);
+            if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+                // we dont have to remove trailing spaces as indentation will fix it
+                // insert eol
+                formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
+                // do the indentation
+                int indentationSize = initialIndent
+                        + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                formatContext.indentLine(
+                        tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
+                        indentationSize, Indentation.ALLOWED);
+            }
+
+            if (extendedTokenAfterEol != tokenAfterEol) {
+
+                if (extendedTokenAfterEol != null) {
+                    formatContext.remove(tokenAfterEol.getOffset(),
+                            extendedTokenAfterEol.getOffset() - tokenAfterEol.getOffset());
+                    // move to eol to do indentation in next cycle
+                    // it is safe because we need the token to which we move is eol
+                    i--;
+                } else {
+                    FormatToken last = tokens.get(tokens.size() - 1);
+                    while (last != null && last.isVirtual()) {
+                        last = last.previous();
+                    }
+                    formatContext.remove(tokenAfterEol.getOffset(),
+                            last.getOffset() + last.getText().length() - tokenAfterEol.getOffset());
+                }
+            }
         }
         return i;
     }
