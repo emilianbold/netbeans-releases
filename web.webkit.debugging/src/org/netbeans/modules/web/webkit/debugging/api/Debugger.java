@@ -401,7 +401,12 @@ public final class Debugger {
                         return;
                     }
                 } else {
-                    notifyPaused((JSONArray)params.get("callFrames"), (String)params.get("reason"), (JSONObject)params.get("data"));
+                    JSONArray frames = (JSONArray)params.get("callFrames");
+                    //TODO: workaround for mobile safari
+                    if (frames == null) {
+                        frames = (JSONArray) ((JSONObject) params.get("details")).get("callFrames");
+                    }
+                    notifyPaused(frames, (String)params.get("reason"), (JSONObject)params.get("data"));
                 }
             } else if ("Debugger.globalObjectCleared".equals(response.getMethod())) {
                 notifyReset();

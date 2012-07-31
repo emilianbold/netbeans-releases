@@ -47,21 +47,21 @@ import org.netbeans.modules.web.livehtml.ui.RevisionToolTipService;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
+ * 
  * @author petr-podzimek
  */
 @ServiceProvider(service=RevisionToolTipService.class)
 public class DataToolTipProvider extends RevisionToolTipService<JTextPane> {
     
-    private static final String NAME = "Revision Data";
+    private static final String NAME = "Data";
 
     @Override
-    public JTextPane getComponent(Revision revision) {
+    public JTextPane createComponent(Revision revision) {
         return new JTextPane();
     }
 
     @Override
-    public void update(JTextPane textPane, Revision revision) {
+    public void updateComponent(JTextPane textPane, Revision revision, boolean reformatContent) {
         if (canProcess(revision)) {
             textPane.setText(revision.getData().toString());
         } else {
@@ -75,8 +75,13 @@ public class DataToolTipProvider extends RevisionToolTipService<JTextPane> {
     }
 
     @Override
-    public String getName() {
+    public String getDisplayName() {
         return NAME;
+    }
+
+    @Override
+    protected int getOrder() {
+        return 1000;
     }
     
 }

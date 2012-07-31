@@ -50,6 +50,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <file name="DomTC.wstcgrp" url="resources/DomTC.xml"/>
                 <file name="properties.wstcgrp" url="resources/properties.xml"/>
                 <file name="MatchedRulesTC.wstcgrp" url="resources/MatchedRulesTC.xml"/>
+                <file name="RuleEditorTC.wstcgrp" url="resources/RuleEditorTC.xml"/>
             </folder>
         </folder>
     </folder>

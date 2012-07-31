@@ -49,6 +49,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
@@ -558,13 +560,29 @@ public class DOM {
         Node parent;
         Node child;
         synchronized (this) {
-            int parentId = ((Number)params.get("parentNodeId")).intValue(); // NOI18N
+            Number nodeId = (Number)params.get("parentNodeId");
+            //TODO: workaround for mobile safari
+            if (nodeId==null) {
+                nodeId = (Number)params.get("parentId");
+            }
+            
+            int parentId = nodeId.intValue(); // NOI18N
             parent = nodes.get(parentId);
-            int previousNodeId = ((Number)params.get("previousNodeId")).intValue(); // NOI18N
+            Number prevId = (Number)params.get("previousNodeId");
+            
+            //TODO: workaround for mobile safari
+            if (prevId == null) {
+                prevId = (Number)params.get("prevId");
+            }
+            int previousNodeId = prevId.intValue(); // NOI18N
             Node previousNode = nodes.get(previousNodeId);
             JSONObject childData = (JSONObject)params.get("node"); // NOI18N
             child = new Node(childData);
             updateNodesMap(child);
+            if (parent == null) {
+                Logger.getLogger(DOM.class.getName()).log(Level.INFO, "Node inserted into an unknown parent: {0}!", params); // NOI18N
+                return;
+            }
             parent.insertChild(child, previousNode);
         }
         notifyChildNodeInserted(parent, child);
@@ -578,6 +596,10 @@ public class DOM {
             parent = nodes.get(parentId);
             int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
             child = nodes.get(nodeId);
+            if (parent == null) {
+                Logger.getLogger(DOM.class.getName()).log(Level.INFO, "Node removed from an unknown parent: {0}!", params); // NOI18N
+                return;
+            }
             parent.removeChild(child);
             nodes.remove(nodeId);
         }

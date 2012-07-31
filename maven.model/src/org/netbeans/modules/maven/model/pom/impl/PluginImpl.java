@@ -98,10 +98,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
 
     @Override
     public void removeExecution(PluginExecution execution) {
-        ModelList<PluginExecution> childs = getChild(PluginExecutionImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(execution);
-        }
+        remove(execution, getModel().getPOMQNames().EXECUTIONS.getName(), PluginExecutionImpl.List.class);
     }
 
     @Override
@@ -129,10 +126,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
 
     @Override
     public void removeDependency(Dependency dep) {
-        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
-        if (childs != null) {
-            childs.removeListChild(dep);
-        }
+        remove(dep, getModel().getPOMQNames().DEPENDENCIES.getName(), DependencyImpl.List.class);
     }
 
     @Override

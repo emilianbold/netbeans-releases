@@ -53,15 +53,19 @@ import org.json.simple.JSONValue;
  */
 public final class Revision {
     
-    private int index = -1;
+    private int index;
+    private String timeStamp;
     
     private StringBuilder content;
-    private JSONArray stacktrace;
-    private List<Change> changes;
-    private StringBuilder data;
+    private StringBuilder reformattedContent;
     
-    private String timeStamp = null;
+    private List<Change> changes;
+    private List<Change> reformattedChanges;
+    
+    private JSONArray stacktrace;
+    private StringBuilder data;
 
+    @Deprecated
     public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data, String timeStamp, int index) {
         this.content = content;
         
@@ -73,6 +77,21 @@ public final class Revision {
         this.data = data;
         this.timeStamp = timeStamp;
         this.index = index;
+        
+        addRemovedContent();
+    }
+
+    public Revision(int index, String timeStamp, StringBuilder content, StringBuilder reformattedContent, List<Change> changes, List<Change> reformattedChanges, StringBuilder stacktrace, StringBuilder data) {
+        this.index = index;
+        this.timeStamp = timeStamp;
+        this.content = content;
+        this.reformattedContent = reformattedContent;
+        this.changes = changes;
+        this.reformattedChanges = reformattedChanges;
+        if (stacktrace != null) {
+            this.stacktrace = (JSONArray) JSONValue.parse(stacktrace.toString());
+        }
+        this.data = data;
         
         addRemovedContent();
     }
@@ -119,7 +138,7 @@ public final class Revision {
         return timeStamp;
     }
     
-    public List<Object> getCallStackValues(String valueName) {
+    public List<Object> getStackTraceValues(String valueName) {
         List<Object> objects = new ArrayList<Object>();
         if (valueName == null || getStacktrace() == null) {
             return objects;
@@ -134,6 +153,26 @@ public final class Revision {
             }
         }
         return objects;
+    }
+
+    public String getReformattedContent() {
+        return reformattedContent == null ? null : reformattedContent.toString();
+    }
+
+    public List<Change> getReformattedChanges() {
+        return reformattedChanges;
+    }
+    
+    public boolean hasEmptyChanges() {
+        if (getChanges() == null || getChanges().isEmpty()) {
+            return true;
+        }
+        for (Change change : changes) {
+            if (!change.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

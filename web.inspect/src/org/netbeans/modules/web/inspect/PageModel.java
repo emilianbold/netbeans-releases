@@ -116,7 +116,9 @@ public abstract class PageModel {
     public abstract List<? extends Node> getHighlightedNodes();
 
     /**
-     * Returns CSS Styles view for this page.
+     * Returns CSS Styles view for this page. If the view needs to affect
+     * the lookup of the enclosing {@code TopComponent} it may do so using
+     * the value of its {@code "lookup"} client property.
      *
      * @return CSS Styles view for this page.
      */

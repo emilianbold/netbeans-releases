@@ -1,0 +1,8 @@
+Overriding Methods of <b>Iface.method</b> [3 occurrences]
+    RefactoringTest
+        SubClass.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font>&nbsp;<font color=#3c3c3c>{</font>
+        SuperClass.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font>&nbsp;<font color=#3c3c3c>{</font>
+        Test.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#3c3c3c>(</font><font color=#3c3c3c>)</font>&nbsp;<font color=#3c3c3c>{</font>

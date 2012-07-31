@@ -72,6 +72,7 @@ public class StyleSheetBody {
         for (Object o : cssRules) {
             JSONObject cssRule = (JSONObject)o;
             Rule rule = new Rule(cssRule);
+            rule.setParentStyleSheet(this);
             rules.add(rule);
         }
         text = (String)body.get("text"); // NOI18N

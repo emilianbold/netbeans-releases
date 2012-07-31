@@ -43,20 +43,20 @@
 package org.netbeans.modules.php.project;
 
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.php.project.deprecated.PhpInterpreter;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.php.project.deprecated.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
+import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
+import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.modules.php.project.ui.BrowseTestSources;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
-import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.project.api.PhpOptions;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -176,7 +176,7 @@ public final class ProjectPropertiesSupport {
         return PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
     }
 
-    public static PhpInterpreter getValidPhpInterpreter(PhpProject project) throws InvalidPhpProgramException {
+    public static PhpInterpreter getValidPhpInterpreter(PhpProject project) throws InvalidPhpExecutableException {
         String interpreter = project.getEvaluator().getProperty(PhpProjectProperties.INTERPRETER);
         if (StringUtils.hasText(interpreter)) {
             return PhpInterpreter.getCustom(interpreter);

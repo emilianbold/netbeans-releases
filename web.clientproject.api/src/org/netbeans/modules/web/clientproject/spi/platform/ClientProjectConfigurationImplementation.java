@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.spi.platform;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfiguration;
 
@@ -92,6 +93,12 @@ public interface ClientProjectConfigurationImplementation extends ProjectConfigu
     /**
      * Notification that configuration is not active anymore.
      */
-    public void deactivate();
+    void deactivate();
 
+    /**
+     * If configuration deploys files to server this method should be implemented
+     * and provide mapping.
+     * @return can be null
+     */
+    ServerURLMappingImplementation getServerURLMapping();
 }

@@ -149,6 +149,7 @@ public class PageInspectorImpl extends PageInspector {
                             pageModel.setSelectionMode(selectionMode);
                             if (!selectionMode) {
                                 pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
+                                pageModel.setSelectedNodes(Collections.EMPTY_LIST);
                             }
                         }
                     });
@@ -276,6 +277,7 @@ public class PageInspectorImpl extends PageInspector {
                         pageModel.setSelectionMode(selectionMode);
                         if (!selectionMode) {
                             pageModel.setHighlightedNodes(Collections.EMPTY_LIST);
+                            pageModel.setSelectedNodes(Collections.EMPTY_LIST);
                         }
                     }
                 } catch (ParseException ex) {

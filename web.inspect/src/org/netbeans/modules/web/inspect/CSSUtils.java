@@ -414,7 +414,52 @@ public class CSSUtils {
 
         return false;
     }
-    
+
+    /**
+     * Returns an unspecified "normalized" version of the selector suitable
+     * for {@code String} comparison with other normalized selectors.
+     *
+     * @param selector selector to normalize.
+     * @return "normalized" version of the selector.
+     */
+    public static String normalizeSelector(String selector) {
+        // Hack that simplifies the following cycle: adding a dummy
+        // character that ensures that the last group is ended.
+        // This character is removed at the end of this method.
+        selector += 'A';
+        String whitespaceChars = " \t\n\r\f"; // NOI18N
+        String specialChars = ".>+~#:*()[]|,"; // NOI18N
+        StringBuilder main = new StringBuilder();
+        StringBuilder group = null;
+        for (int i=0; i<selector.length(); i++) {
+            char c = selector.charAt(i);
+            boolean whitespace = (whitespaceChars.indexOf(c) != -1);
+            boolean special = (specialChars.indexOf(c) != -1);
+            if (whitespace || special) {
+                if (group == null) {
+                    group = new StringBuilder();
+                }
+                if (special) {
+                    group.append(c);
+                }
+            } else {
+                if (group != null) {
+                    if (group.length() == 0) {
+                        // whitespace only group => insert single space instead
+                        main.append(' ');
+                    } else {
+                        // group with special chars
+                        main.append(group);
+                    }
+                    group = null;
+                }
+                main.append(c);
+            }
+        }
+        // Removing the dummy character added at the beginning of the method
+        return main.substring(0, main.length()-1).trim();
+    }
+
     /**
      * Descriptor of a CSS property.
      */

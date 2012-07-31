@@ -50,10 +50,10 @@ import org.openide.util.lookup.ServiceProvider;
 public class LiveHTMLImpl implements LiveHTMLImplementation {
 
     @Override
-    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String callStack) {
+    public void storeDocumentVersionBeforeChange(URL connectionURL, long timeStamp, String content, String stackTrace) {
         final Analysis resolvedAnalysis = AnalysisStorage.getInstance().resolveAnalysis(connectionURL);
         if (resolvedAnalysis != null) {
-            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, callStack, true);
+            resolvedAnalysis.storeDocumentVersion(String.valueOf(timeStamp), content, stackTrace, true);
         }
     }
 

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.web.livehtml.filter;
 
-import org.netbeans.modules.web.livehtml.Revision;
+import java.util.List;
 
 /**
  *
@@ -49,6 +49,7 @@ import org.netbeans.modules.web.livehtml.Revision;
  */
 public interface RevisionFilter {
     
-    boolean match(Revision revision);
+    List<Object> filter(List<Object> objects);
+    boolean match(List<Object> objects1, List<Object> objects2);
     
 }

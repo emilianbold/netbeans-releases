@@ -70,7 +70,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.api.support.SourceGroups;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.wizard.HttpMethodsPanel.HttpMethods;
@@ -97,6 +99,13 @@ import com.sun.source.tree.VariableTree;
 public class OriginResourceIterator implements
         ProgressInstantiatingIterator<WizardDescriptor>
 {
+    private static final String CLASS = ".class";                       //NOI18N
+    private static final String CONTAINER_CONTAINER_RESPONSE = 
+            "com.sun.jersey.spi.container.ContainerResponse";           //NOI18N
+    private static final String CONTAINER_CONTAINER_REQUEST = 
+            "com.sun.jersey.spi.container.ContainerRequest";            //NOI18N
+    private static final String CONTAINER_RESPONSE_FILTER = 
+            "com.sun.jersey.spi.container.ContainerResponseFilter";     // NOI18N
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.AsynchronousInstantiatingIterator#instantiate()
      */
@@ -217,12 +226,25 @@ public class OriginResourceIterator implements
         
         FileObject filterClass = GenerationUtils.createClass(dir,filterName, null );
         
-        /*
-         *  TODO: extends project with Jersey lib ( even JEE6 profile ) : 
-         *  include package com.sun.jersey.spi.container.* into classpath
-         *  handle.progress(NbBundle.getMessage(OriginResourceIterator.class,
-         *      "MSG_UpdateClassPath"); 
-         */
+        Project project = Templates.getProject(myWizard);
+        WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
+        if ( support!= null ){
+            boolean hasRequest = RestUtils.hasClass(project, 
+                    CONTAINER_CONTAINER_REQUEST.replace('.', '/')+CLASS);
+            boolean hasFilter = RestUtils.hasClass(project, 
+                    CONTAINER_RESPONSE_FILTER.replace('.', '/')+CLASS);
+            boolean hasResponse = RestUtils.hasClass(project, 
+                    CONTAINER_CONTAINER_RESPONSE.replace('.', '/')+CLASS);
+            if ( !hasRequest || !hasFilter || !hasResponse ){
+                handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
+                        "MSG_ExtendsClasspath"));                                // NOI18N 
+                JaxRsStackSupport jaxRsSupport = support.getJaxRsStackSupport();
+                if ( jaxRsSupport == null ) {
+                    jaxRsSupport = JaxRsStackSupport.getDefault();
+                }
+                jaxRsSupport.extendsJerseyProjectClasspath(project);
+            }
+        }
         
         handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
                 "MSG_GenerateClassFilter"));                                // NOI18N
@@ -237,8 +259,8 @@ public class OriginResourceIterator implements
                 fqn[0] = JavaSourceHelper.getTopLevelClassElement(copy).
                         getQualifiedName().toString();
                 TreeMaker maker = copy.getTreeMaker();
-                ClassTree newTree = maker.setExtends(classTree, 
-                        maker.QualIdent("com.sun.jersey.spi.container.ContainerResponseFilter"));// NOI18N
+                ClassTree newTree = maker.addClassImplementsClause(classTree, 
+                        maker.QualIdent(CONTAINER_RESPONSE_FILTER));
                 
                 
                 List<VariableTree> params = new ArrayList<VariableTree>(2);
@@ -246,17 +268,17 @@ public class OriginResourceIterator implements
                         Collections.<Modifier>emptySet());
                 params.add(maker.Variable(paramModifiers, "request", 
                         maker.QualIdent(
-                        "com.sun.jersey.spi.container.ContainerRequest"), null)); //NOI18N
+                        CONTAINER_CONTAINER_REQUEST), null)); 
                 params.add(maker.Variable(paramModifiers, "response", 
                         maker.QualIdent(
-                        "com.sun.jersey.spi.container.ContainerResponse"), null)); //NOI18N
+                        CONTAINER_CONTAINER_RESPONSE), null)); 
                 MethodTree method = maker.Method(maker.Modifiers( 
                         EnumSet.of(Modifier.PUBLIC), 
                             Collections.singletonList(maker.Annotation(
                                     maker.QualIdent(Override.class.getName()), 
                                         Collections.<ExpressionTree>emptyList()))), 
                         "filter", 
-                        maker.QualIdent("com.sun.jersey.spi.container.ContainerResponse"),//NOI18N
+                        maker.QualIdent(CONTAINER_CONTAINER_RESPONSE),
                         Collections.<TypeParameterTree>emptyList(), params, 
                         Collections.<ExpressionTree>emptyList(), getFilterBody(), null);
                 newTree = maker.addClassMember( newTree, method);
@@ -266,8 +288,6 @@ public class OriginResourceIterator implements
         
         handle.progress(NbBundle.getMessage(OriginResourceIterator.class, 
                 "MSG_UpdateDescriptor"));               // NOI18N
-        Project project = Templates.getProject(myWizard);
-        WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
         if ( support != null ){
             support.addInitParam(WebRestSupport.CONTAINER_RESPONSE_FILTER, fqn[0]);
         }
@@ -296,8 +316,8 @@ public class OriginResourceIterator implements
         
         builder.append("response.getHttpHeaders().putSingle(\"ccess-Control-Allow-Headers\",\"");//NOI18N
         builder.append(myWizard.getProperty(RestFilterPanel.HEADERS));
-        builder.append("\");");                                                                                                                     //NOI18N
-        builder.append('}');
+        builder.append("\");");                                                     //NOI18N                                                              //NOI18N
+        builder.append("return response;}");                                        //NOI18N
         return builder.toString();
     }
     

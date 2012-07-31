@@ -54,6 +54,7 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 
@@ -97,11 +98,11 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
 
     private ClientProjectConfigurationImpl create(WebBrowser browser) {
         if (browser.getId().endsWith("webviewBrowser")) {
-            return new ClientProjectConfigurationImpl(p, browser, this);
+            return new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this);
         } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getId().endsWith("ChromeBrowser")) {
-            return new ClientProjectConfigurationImpl(p, browser, this);
+            return new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this);
         } else if (browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM || browser.getId().endsWith("ChromiumBrowser")) {
-            return new ClientProjectConfigurationImpl(p, browser, this);
+            return new ClientProjectConfigurationImpl((ClientSideProject)p, browser, this);
         } else {
             return null;
         }

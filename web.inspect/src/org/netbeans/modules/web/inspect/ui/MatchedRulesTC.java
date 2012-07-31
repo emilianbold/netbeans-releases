@@ -45,15 +45,21 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.explorer.view.BeanTreeView;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
- * Top component which displays matched style rules of an element.
+ * CSS Styles view.
  * 
  * @author Jan Stola
  */
@@ -62,7 +68,8 @@ import org.openide.util.NbBundle.Messages;
         persistenceType = TopComponent.PERSISTENCE_ALWAYS,
         iconBase = MatchedRulesTC.ICON_BASE)
 @TopComponent.Registration(
-        mode = "properties", // NOI18N
+        mode = "commonpalette", // NOI18N
+        position = 200,
         openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
@@ -83,6 +90,8 @@ public final class MatchedRulesTC extends TopComponent {
     static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
     /** TopComponent ID. */
     public static final String ID = "MatchedRulesTC"; // NOI18N
+    /** Label shown when no styles information is available. */
+    private JLabel noStylesLabel;
 
     /**
      * Creates a new {@code MatchedRulesTC}.
@@ -91,8 +100,23 @@ public final class MatchedRulesTC extends TopComponent {
         setName(Bundle.CTL_MatchedRulesTC());
         setToolTipText(Bundle.HINT_MatchedRulesTC());
         setLayout(new BorderLayout());
+        initNoStylesLabel();
+        associateLookup(new MatchedRulesLookup());
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
         update();
+    }
+
+    /**
+     * Initializes the "no Styles" label.
+     */
+    private void initNoStylesLabel() {
+        noStylesLabel = new JLabel();
+        noStylesLabel.setText(NbBundle.getMessage(MatchedRulesTC.class, "MatchedRulesTC.noStylesLabel.text")); // NOI18N
+        noStylesLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        noStylesLabel.setVerticalAlignment(SwingConstants.CENTER);
+        noStylesLabel.setEnabled(false);
+        noStylesLabel.setBackground(new BeanTreeView().getViewport().getView().getBackground());
+        noStylesLabel.setOpaque(true);
     }
 
     /**
@@ -100,12 +124,20 @@ public final class MatchedRulesTC extends TopComponent {
      */
     private void update() {
         PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-        if (pageModel == null) {
-            // PENDING
-        } else {
-            JComponent stylesView = pageModel.getCSSStylesView();
-            add(stylesView, BorderLayout.CENTER);
+        boolean noPage = (pageModel == null);
+        boolean noStylesLabelShown = noStylesLabel.getParent() != null;
+        if (!noStylesLabelShown || !noPage) {
+            removeAll();
+            if (noPage) {
+                add(noStylesLabel, BorderLayout.CENTER);
+            } else {
+                JComponent stylesView = pageModel.getCSSStylesView();
+                ((MatchedRulesLookup)getLookup()).setView(stylesView);
+                add(stylesView, BorderLayout.CENTER);
+            }
         }
+        revalidate();
+        repaint();
     }
 
     /**
@@ -123,6 +155,29 @@ public final class MatchedRulesTC extends TopComponent {
                 }
             }
         };
+    }
+
+    /**
+     * Lookup of CSS Styles view.
+     */
+    private static class MatchedRulesLookup extends ProxyLookup {
+
+        /**
+         * Updates the lookup according to the actual panel
+         * that shows the style information.
+         *
+         * @param view component that displays the style information
+         * within the CSS Styles view.
+         */
+        void setView(JComponent view) {
+            Object lookup = view.getClientProperty("lookup"); // NOI18N
+            if (lookup instanceof Lookup) {
+                setLookups((Lookup)lookup);
+            } else {
+                setLookups();
+            }
+        }
+        
     }
 
 }

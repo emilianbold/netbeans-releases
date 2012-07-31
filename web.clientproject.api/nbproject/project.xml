@@ -86,6 +86,7 @@
                 <package>org.netbeans.modules.web.clientproject.api</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
+                <package>org.netbeans.modules.web.clientproject.spi.webserver</package>
             </public-packages>
         </data>
     </configuration>

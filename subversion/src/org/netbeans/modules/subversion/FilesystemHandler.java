@@ -279,7 +279,7 @@ class FilesystemHandler extends VCSInterceptor {
         if (from != null && destDir != null) {
             // a direct cache call could, because of the synchrone beforeMove handling,
             // trigger an reentrant call on FS => we have to check manually
-            if (isVersioned(from)) {
+            if (isVersioned(from) || isVersioned(to)) {
                 return SvnUtils.isManaged(to);
             }
             // else XXX handle file with saved administative
@@ -325,7 +325,7 @@ class FilesystemHandler extends VCSInterceptor {
         if (from != null && destDir != null) {
             // a direct cache call could, because of the synchrone beforeCopy handling,
             // trigger an reentrant call on FS => we have to check manually
-            if (isVersioned(from)) {
+            if (isVersioned(from) || isVersioned(to)) {
                 
                 if(from.isDirectory()) {
                     // always handle copy of versioned folders.
@@ -800,8 +800,9 @@ class FilesystemHandler extends VCSInterceptor {
                     try {
                         srcChildren = SvnUtils.listRecursively(from);
                         boolean moved = true;
-                        if (status != null && status.getTextStatus().equals(SVNStatusKind.ADDED) &&
-                                (!status.isCopied() || (url != null && url.equals(toUrl)))) {
+                        if (status != null 
+                                && (status.getTextStatus().equals(SVNStatusKind.ADDED) || status.getTextStatus().equals(SVNStatusKind.REPLACED)) 
+                                && (!status.isCopied() || (url != null && url.equals(toUrl)))) {
                             // 1. file is ADDED (new or added) AND is not COPIED (by invoking svn copy)
                             // 2. file is ADDED and COPIED (by invoking svn copy) and target equals the original from the first copy
                             // otherwise svn move should be invoked
@@ -811,7 +812,11 @@ class FilesystemHandler extends VCSInterceptor {
 
                             moved = from.renameTo(to);
                             if (moved) {
-                                client.revert(from, true);
+                                if (status.getTextStatus().equals(SVNStatusKind.ADDED)) {
+                                    client.revert(from, true);
+                                } else {
+                                    client.remove(new File[] { from }, true);
+                                }
                             }
                         } else if (status != null && (status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)
                                 || status.getTextStatus().equals(SVNStatusKind.IGNORED))) { // ignored file CAN'T be moved via svn

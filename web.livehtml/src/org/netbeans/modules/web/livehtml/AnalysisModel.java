@@ -51,7 +51,7 @@ import org.netbeans.modules.web.livehtml.filter.FilteredAnalysis;
  *
  * @author petr-podzimek
  */
-public class AnalysisModel implements AnalysisStorageListener {
+public class AnalysisModel {
     
     private List<AnalysisModelListener> analysisModelListeners = new CopyOnWriteArrayList<AnalysisModelListener>();
     private URL sourceUrl = null;
@@ -78,13 +78,12 @@ public class AnalysisModel implements AnalysisStorageListener {
         }
     }
     
-    @Override
-    public void analysisAdded(Analysis analysis) {
-        if (getSourceUrl() == null || analysis.getSourceUrl().equals(getSourceUrl())) {
-            fireAnalysisAdded(analysis);
+    private void fireAnalysisRemoved(Analysis analysis) {
+        for (AnalysisModelListener analysisModelListener : analysisModelListeners) {
+            analysisModelListener.analysisRemoved(analysis);
         }
     }
-
+    
     public List<Analysis> getAnalyses() {
         List<Analysis> filteredAnalysises = new ArrayList<Analysis>();
         for (Analysis analysis : AnalysisStorage.getInstance().getStoredAnalyses()) {
@@ -95,10 +94,14 @@ public class AnalysisModel implements AnalysisStorageListener {
         return filteredAnalysises;
     }
 
-    public Analysis addAnalysis(URL url) {
+    public Analysis resolveAnalysis(URL url) {
         return AnalysisStorage.getInstance().resolveAnalysis(url);
     }
 
+    public FilteredAnalysis getFilteredAnalysis(Analysis parentAnalysis) {
+        return AnalysisStorage.getInstance().getFilteredAnalysis(parentAnalysis);
+    }
+    
     public URL getSourceUrl() {
         return sourceUrl;
     }
@@ -108,32 +111,25 @@ public class AnalysisModel implements AnalysisStorageListener {
     }
 
     private void registerListeners() {
-        AnalysisStorage.getInstance().addAnalysisStorageListener(this);
+        AnalysisStorage.getInstance().addAnalysisStorageListener(new PrivateAnalysisStorageListener());
     }
 
-//    public void unregisterListeners() {
-//        AnalysisStorage.getInstance().removeAnalysisStorageListener(this);
-//    }
-
-//    public void releaseResources() {
-//        unregisterListeners();
-//        analysisModelListeners.clear();
-//        analysisModelListeners = null;
-//    }
-
-    public FilteredAnalysis getFilteredAnalysis(Analysis parentAnalysis) {
-        if (parentAnalysis == null) {
-            return null;
-        }
-        for (Analysis analysis : AnalysisStorage.getInstance().getStoredAnalyses()) {
-            if (analysis instanceof FilteredAnalysis) {
-                FilteredAnalysis filteredAnalysis = (FilteredAnalysis) analysis;
-                if (parentAnalysis == filteredAnalysis.getParentAnalysis()) {
-                    return filteredAnalysis;
-                }
+    private class PrivateAnalysisStorageListener implements AnalysisStorageListener {
+        
+        @Override
+        public void analysisAdded(Analysis analysis) {
+            if (getSourceUrl() == null || getSourceUrl().equals(analysis.getSourceUrl())) {
+                fireAnalysisAdded(analysis);
             }
         }
-        return null;
+
+        @Override
+        public void analysisRemoved(Analysis analysis) {
+            if (getSourceUrl() == null || analysis.getSourceUrl().equals(getSourceUrl())) {
+                fireAnalysisRemoved(analysis);
+            }
+        }
+
     }
 
 }
