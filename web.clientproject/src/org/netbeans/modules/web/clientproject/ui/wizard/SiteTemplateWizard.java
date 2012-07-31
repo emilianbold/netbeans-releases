@@ -61,7 +61,6 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateCustomizer;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -80,9 +79,9 @@ public class SiteTemplateWizard extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     // @GuardedBy("EDT")
-    private final SiteTemplateImplementation archiveSiteTemplate = new SiteZip();
+    private final SiteZip archiveSiteTemplate = new SiteZip();
     // @GuardedBy("EDT")
-    private final SiteTemplateCustomizer archiveSiteCustomizer;
+    private final SiteZip.Customizer archiveSiteCustomizer;
     // @GuardedBy("EDT")
     final DefaultListModel onlineTemplatesListModel = new DefaultListModel();
     final Object siteTemplateLock = new Object();
@@ -403,11 +402,6 @@ public class SiteTemplateWizard extends JPanel {
 
         @Override
         public String getDescription() {
-            throw new UnsupportedOperationException("Not supported.");
-        }
-
-        @Override
-        public SiteTemplateCustomizer getCustomizer() {
             throw new UnsupportedOperationException("Not supported.");
         }
 
