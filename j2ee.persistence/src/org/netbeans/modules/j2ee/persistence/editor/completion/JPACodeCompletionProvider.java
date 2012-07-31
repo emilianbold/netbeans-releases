@@ -90,7 +90,7 @@ import org.openide.util.NbBundle;
 @MimeRegistrations(
         {
             @MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400),//NOI18N
-            @MimeRegistration(mimeType = "text/x-jpql", service = CompletionProvider.class, position = 400),//NOI18N
+            @MimeRegistration(mimeType = "text/x-jpql", service = CompletionProvider.class, position = 400)//NOI18N
         })
 public class JPACodeCompletionProvider implements CompletionProvider {
 
