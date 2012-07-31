@@ -81,7 +81,6 @@ public class TypeRepository implements ITypeRepository {
     
     @Override
     public IType getEnumType(String fqn) {
-        System.out.println("ENUM: "+fqn);
         IType[] ret = types.get(fqn);
         if(ret == null){
             fillTypeElement(fqn);
@@ -93,7 +92,6 @@ public class TypeRepository implements ITypeRepository {
     @Override
     public IType getType(Class<?> type) {
         String fqn = type.getCanonicalName();
-        System.out.println("TYPECL: "+fqn);
         IType[] ret = types.get(fqn);
         if(ret == null){
             fillTypeElement(type);
@@ -104,7 +102,6 @@ public class TypeRepository implements ITypeRepository {
 
     @Override
     public IType getType(String fqn) {
-        System.out.println("TYPEFQ: "+fqn);
         IType[] ret = types.get(fqn);
         if(ret == null){
             if(IType.UNRESOLVABLE_TYPE.equals(fqn)){
@@ -123,7 +120,6 @@ public class TypeRepository implements ITypeRepository {
     }
     
     private void fillTypeElement(final String fqn){
-        System.out.println("FILL FQN: "+fqn);
         Sources sources=ProjectUtils.getSources(project);
         SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         types.put(fqn, new Type[]{null});
