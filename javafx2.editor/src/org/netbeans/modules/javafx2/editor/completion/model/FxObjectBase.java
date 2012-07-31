@@ -99,6 +99,7 @@ public abstract class FxObjectBase extends FxNode {
         return javaType == null ? null : javaType.getQualifiedName();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
         this.javaType = nameHandle;

@@ -150,7 +150,7 @@ public final class FxTreeUtilities {
     
     public int[] findAttributePos(FxNode node, String uri, String name, boolean value) {
         NodeInfo ni = accessor.i(node);
-        TokenSequence seq = hierarchy.tokenSequence();
+        TokenSequence<XMLTokenId> seq = hierarchy.tokenSequence();
         seq.move(ni.getStart());
         
         int state = 0;
@@ -168,6 +168,7 @@ public final class FxTreeUtilities {
                         // broken tag or something
                         return null;
                     }
+                    break;
                     
                 case ARGUMENT: {
                     String n = t.text().toString();

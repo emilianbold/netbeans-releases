@@ -193,7 +193,7 @@ public abstract class FxNodeVisitor {
             NodeInfo n1 = o1.i();
             NodeInfo n2 = o2.i();
             
-            int diff = (int)(n1.getStart() - n2.getStart());
+            int diff = n1.getStart() - n2.getStart();
             if (diff != 0) {
                 return diff;
             }

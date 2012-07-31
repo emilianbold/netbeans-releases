@@ -116,7 +116,7 @@ public class PropertySetter extends PropertyValue implements HasContent {
             parts.add(content);
             valueContent = parts;
         } else if (valueContent instanceof List) {
-            ((List<CharSequence>)valueContent).add(content);
+            ((List<CharSequence>)(List)valueContent).add(content);
         }
         return valueContent;
     }
@@ -128,7 +128,7 @@ public class PropertySetter extends PropertyValue implements HasContent {
         if (valueContent instanceof CharSequence) {
             return (CharSequence)valueContent;
         } else if (valueContent instanceof List) {
-            return new CompoundCharSequence(0, (List<CharSequence>)valueContent, -1);
+            return new CompoundCharSequence(0, (List<CharSequence>)(List)valueContent, -1);
         }
         throw new IllegalStateException();
     }

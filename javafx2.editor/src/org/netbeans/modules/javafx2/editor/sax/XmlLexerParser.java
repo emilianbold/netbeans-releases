@@ -51,10 +51,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
-import javax.print.attribute.SetOfIntegerSyntax;
-import javax.xml.namespace.QName;
-import javax.xml.stream.events.EndDocument;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -62,10 +58,8 @@ import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 import org.xml.sax.ext.LexicalHandler;
 
 import static org.netbeans.modules.javafx2.editor.sax.Bundle.*;
@@ -132,6 +126,7 @@ public class XmlLexerParser implements ContentLocator {
     }
     
     @NbBundle.Messages({
+        "# {0} - tag name",
         "ERR_elementNotClosed=Element is not closed: {0}"
     })
     private void markUnclosedElement(String qName) {
@@ -144,8 +139,9 @@ public class XmlLexerParser implements ContentLocator {
     }
 
     @Override
-    public TokenSequence getTokenSequence() {
-        return hierarchy.tokenSequence();
+    @SuppressWarnings("unchecked")
+    public TokenSequence<XMLTokenId> getTokenSequence() {
+        return (TokenSequence<XMLTokenId>)hierarchy.tokenSequence();
     }
     
     private void addError(String type, String msg, Object... params) {
@@ -280,8 +276,9 @@ public class XmlLexerParser implements ContentLocator {
         return nextToken().id();
     }
     
+    @SuppressWarnings("unchecked")
     public void parse() throws SAXException {
-        seq = hierarchy.tokenSequence();
+        seq = (TokenSequence<XMLTokenId>)hierarchy.tokenSequence();
         seq.move(0);
         parse2();
     }
@@ -478,7 +475,8 @@ public class XmlLexerParser implements ContentLocator {
             elementOffset, endOffset, tokenOffsets, matchedTokens
         };
     }
-    
+
+    @SuppressWarnings("unchecked")
     private void restore(Object[] o) {
         this.elementOffset = (Integer)o[0];
         this.endOffset = (Integer)o[1];
@@ -498,6 +496,7 @@ public class XmlLexerParser implements ContentLocator {
     private Map<String, int[]>  attrOffsets;
     
     @NbBundle.Messages({
+        "# {0} - tag name",
         "ERR_unexpectedTag=Unexpected closing tag: {0}"
     })
     private void parseClosingTag(String tagName) throws SAXException {
@@ -892,6 +891,7 @@ public class XmlLexerParser implements ContentLocator {
      * the closing brace (>). Report tag open with attributes.
      */
     @NbBundle.Messages({
+        "# {0} - tag name",
         "ERR_tagNotTerminated=Open tag is not terminated: {0}"
     })
     private void errorStartTagInTagName() throws SAXException {
@@ -911,9 +911,10 @@ public class XmlLexerParser implements ContentLocator {
     private boolean selfClosed;
     
     @NbBundle.Messages({
+        "# {0} - token text",
         "ERR_unexpectedToken=Unexpected token: \"{0}\"",
         "TOKEN_newline=< new line >",
-        "TOKEN_tab=< tab >",
+        "TOKEN_tab=< tab >"
     })
     private void markUnexpectedToken() {
         String s = currentToken.text().toString();

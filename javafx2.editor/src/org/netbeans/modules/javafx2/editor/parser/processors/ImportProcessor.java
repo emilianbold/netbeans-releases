@@ -119,6 +119,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
      * that contains the resolved fully qualified name, or a collection of
      * alternative names, if the identifier is ambiguous.
      */
+    @SuppressWarnings("unchecked")
     public Set<String> resolveName(String simpleName) {
         String res = importedNames.get(simpleName);
         if (res != null) {
@@ -160,6 +161,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
     }
     
     @NbBundle.Messages({
+        "# {0} - package name",
         "ERR_importPackageNotExists=Package {0} does not exist."
     })
     private void handleWildcard(String packName, boolean add) {
@@ -183,6 +185,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private void addType(String sn, String pack) {
         Object o = packageNames.get(sn);
         Collection<String> packs;
@@ -195,7 +198,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
             packs.add((String)o);
             packageNames.put(sn, packs);
         } else if (o instanceof Collection) {
-            packs = (Collection)o;
+            packs = (Collection<String>)o;
         } else {
             throw new IllegalStateException(sn);
         }
@@ -210,6 +213,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
     }
 
     @NbBundle.Messages({
+        "# {0} - class name",
         "ERR_importIdentifierNotExists=Class {0} does not exist."
     })
     private void handleSingleImport(String name) {
@@ -228,7 +232,8 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
         String simpleName = dotIndex == -1 ? name : name.substring(dotIndex + 1);
         importedNames.put(simpleName, name);
     }
-    
+
+    @SuppressWarnings("unchecked")
     private int[] findPiContentOffsets(FxNode node) {
         TokenSequence<XMLTokenId> seq = (TokenSequence<XMLTokenId>)hierarchy.tokenSequence();
         int start = -1;

@@ -44,6 +44,7 @@ package org.netbeans.modules.javafx2.editor.parser;
 import org.netbeans.modules.javafx2.editor.completion.model.FxTreeUtilities;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBeanProvider;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
@@ -79,7 +80,7 @@ public final class BuildEnvironment implements FxBeanProvider, ErrorReporter {
     /**
      * The underlying TokenHierarchy
      */
-    private TokenHierarchy hierarchy;
+    private TokenHierarchy<XMLTokenId> hierarchy;
     
     /**
      * The model being built; top-level node of the model
@@ -96,11 +97,11 @@ public final class BuildEnvironment implements FxBeanProvider, ErrorReporter {
         this.model = model;
     }
 
-    public TokenHierarchy getHierarchy() {
+    public TokenHierarchy<XMLTokenId> getHierarchy() {
         return hierarchy;
     }
 
-    public void setHierarchy(TokenHierarchy hierarchy) {
+    public void setHierarchy(TokenHierarchy<XMLTokenId> hierarchy) {
         this.hierarchy = hierarchy;
     }
     

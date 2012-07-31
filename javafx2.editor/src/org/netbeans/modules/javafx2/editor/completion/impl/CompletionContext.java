@@ -229,10 +229,11 @@ public final class CompletionContext {
         this.caretOffset = offset;
         this.completionType = completionType;
     }
-    
+
+    @SuppressWarnings("unchecked")
     /* For testing only */ CompletionContext(FxmlParserResult result, int offset, int completionType) {
         this.fxmlParserResult = result;
-        this.hierarchy = result.getTokenHierarchy();
+        this.hierarchy = (TokenHierarchy<XMLTokenId>)result.getTokenHierarchy();
         this.caretOffset = offset;
         this.completionType = completionType;
         processTokens(hierarchy);
@@ -296,6 +297,7 @@ public final class CompletionContext {
         return names.iterator().next();
     }
 
+    @SuppressWarnings("unchecked")
     private void processTokens(TokenHierarchy<XMLTokenId> h) {
         TokenSequence<XMLTokenId> ts = (TokenSequence<XMLTokenId>)h.tokenSequence();
         processType(ts);
@@ -969,6 +971,7 @@ public final class CompletionContext {
         }
     }
     
+    @SuppressWarnings("fallthrough")
     private void processType(TokenSequence<XMLTokenId> ts) {
         int diff = ts.move(caretOffset);
         boolean hasToken;
