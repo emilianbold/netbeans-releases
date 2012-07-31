@@ -477,6 +477,8 @@ public class JsFormatter implements Formatter {
             startIndex++;
         }
 
+        // contains the last eol in case of multiple empty lines
+        // otherwise equal to tokenAfterEol
         FormatToken extendedTokenAfterEol = tokenAfterEol;
         for (FormatToken current = tokenAfterEol; current != null && (current.getKind() == FormatToken.Kind.EOL
                 || current.getKind() == FormatToken.Kind.WHITESPACE
@@ -488,8 +490,13 @@ public class JsFormatter implements Formatter {
 
         // AFTER_STATEMENT is a bit special at least for now
         // we dont remove redundant eols
-        if (tokenAfterEol != null && style == CodeStyle.WrapStyle.WRAP_ALWAYS
-                && (tokenAfterEol.getKind() != FormatToken.Kind.EOL || extendedTokenAfterEol != tokenAfterEol && token.getKind() != FormatToken.Kind.AFTER_STATEMENT)) {
+        if (tokenAfterEol != null && style != CodeStyle.WrapStyle.WRAP_IF_LONG
+                // there is no eol
+                && (tokenAfterEol.getKind() != FormatToken.Kind.EOL
+                // or we are removing everything
+                || style == CodeStyle.WrapStyle.WRAP_NEVER
+                // or there are multiple lines and we are not AFTER_STATEMENT
+                || extendedTokenAfterEol != tokenAfterEol && token.getKind() != FormatToken.Kind.AFTER_STATEMENT)) {
 
             // proceed the skipped tokens moving the main loop
             for (FormatToken current = token; current != extendedTokenAfterEol; current = current.next()) {
@@ -507,33 +514,57 @@ public class JsFormatter implements Formatter {
                 }
             }
 
-            if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
-                // we dont have to remove trailing spaces as indentation will fix it
-                // insert eol
-                formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
-                // do the indentation
-                int indentationSize = initialIndent
-                        + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
-                formatContext.indentLine(
-                        tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
-                        indentationSize, Indentation.ALLOWED);
-            }
+            if (style == CodeStyle.WrapStyle.WRAP_ALWAYS) {
+                if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+                    // we dont have to remove trailing spaces as indentation will fix it
+                    // insert eol
+                    formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
+                    // do the indentation
+                    int indentationSize = initialIndent
+                            + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                    formatContext.indentLine(
+                            tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
+                            indentationSize, Indentation.ALLOWED);
+                }
 
-            if (extendedTokenAfterEol != tokenAfterEol) {
+                if (extendedTokenAfterEol != tokenAfterEol) {
 
-                if (extendedTokenAfterEol != null) {
-                    formatContext.remove(tokenAfterEol.getOffset(),
-                            extendedTokenAfterEol.getOffset() - tokenAfterEol.getOffset());
-                    // move to eol to do indentation in next cycle
-                    // it is safe because we need the token to which we move is eol
-                    i--;
+                    if (extendedTokenAfterEol != null) {
+                        formatContext.remove(tokenAfterEol.getOffset(),
+                                extendedTokenAfterEol.getOffset() - tokenAfterEol.getOffset());
+                        // move to eol to do indentation in next cycle
+                        // it is safe because we need the token to which we move is eol
+                        i--;
+                    } else {
+                        FormatToken last = tokens.get(tokens.size() - 1);
+                        while (last != null && last.isVirtual()) {
+                            last = last.previous();
+                        }
+                        formatContext.remove(tokenAfterEol.getOffset(),
+                                last.getOffset() + last.getText().length() - tokenAfterEol.getOffset());
+                    }
+                }
+            } else if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+                // this handles the cases when there is no before/after space
+                // otherwise it is handle in appropriate methods
+                FormatToken endToken = extendedTokenAfterEol;
+                while (endToken != null) {
+                    endToken = endToken.next();
+                    if (endToken != null && !endToken.isVirtual()
+                            && endToken.getKind() != FormatToken.Kind.WHITESPACE) {
+                        break;
+                    }
+                }
+
+                int start = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length();
+                if (endToken != null) {
+                    formatContext.remove(start, endToken.getOffset() - start);
                 } else {
                     FormatToken last = tokens.get(tokens.size() - 1);
                     while (last != null && last.isVirtual()) {
                         last = last.previous();
                     }
-                    formatContext.remove(tokenAfterEol.getOffset(),
-                            last.getOffset() + last.getText().length() - tokenAfterEol.getOffset());
+                    formatContext.remove(start, last.getOffset() + last.getText().length() - start);
                 }
             }
         }
