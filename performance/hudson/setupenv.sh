@@ -17,24 +17,22 @@ ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureJ2SEStartupTest* -Dnetb
 awk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/j2se/build/test/unit/results/TEST-org.netbeans.performance.j2se.MeasureJ2SEStartupTest.xml > tmp.xml && mv tmp.xml "$performance"/j2se/build/test/unit/results/TEST-org.netbeans.performance.j2se.MeasureJ2SEStartupTest.xml
 sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/j2se/build/test/unit/results/TEST-org.netbeans.performance.j2se.MeasureJ2SEStartupTest.xml
 
+touch  $performance/j2se/build/test/unit/work/userdir0
+touch  $performance/j2se/build/test/unit/work/tmpdir
+rm -rf  $performance/j2se/build/test/unit/work/o.n.p.j.s*
+rm -rf  $performance/j2se/build/test/unit/work/userdir0
+rm -rf  $performance/j2se/build/test/unit/work/tmpdir
 cp -R build/test/unit/work/ "$WORKSPACE"/startup/
 cp -R build/test/unit/results/ "$WORKSPACE"/startup/
-rm -rf "$WORKSPACE"/startup/userdir0
-rm -rf "$WORKSPACE"/startup/tmpdir
 
 cd "$performance"
-
-# ergonomics root
-cd "$project_root"
-rm -rf nbbuild/nbproject/private
-ant bootstrap
 
 # performance project
 cd "$performance"
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/Enable*Test* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/Enable*Test* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/fod/Enable*Test* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Dorg.netbeans.editor.linewrap=true
 
 buildnum=`cat "$reposdir"/build.number`
 
@@ -66,9 +64,17 @@ ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbean
 awk -v str="$str" '{print} NR == 4 {printf (str);}'  "$performance"/build/test/unit/results/TEST-org.netbeans.performance.scanning.MeasureScanningTest.xml > tmp.xml && mv tmp.xml "$performance"/build/test/unit/results/TEST-org.netbeans.performance.scanning.MeasureScanningTest.xml
 sed -i "s/\(<property name=\"buildnumber\" value=\"\).*\(\"\)/\1$buildnum\2/g" $performance/build/test/unit/results/TEST-org.netbeans.performance.scanning.MeasureScanningTest.xml
 
+touch $performance/build/test/unit/work/tmpdir
+touch "$performance"/build/test/unit/classes
+touch "$performance"/build/test/unit/classes-generated
+touch "$performance"/build/test/unit/data
+rm -rf "$performance"/build/test/unit/work/o.n.p.s*
+rm -rf "$performance"/build/test/unit/work/tmpdir
+rm -rf "$performance"/build/test/unit/classes
+rm -rf "$performance"/build/test/unit/classes-generated
+rm -rf "$performance"/build/test/unit/data
+
 cp -R build/test/unit/work/ "$WORKSPACE"/scanning
 cp -R build/test/unit/results/ "$WORKSPACE"/scanning
-rm -rf "$WORKSPACE"/scanning/userdir0
-rm -rf "$WORKSPACE"/scanning/tmpdir
 
 fi
