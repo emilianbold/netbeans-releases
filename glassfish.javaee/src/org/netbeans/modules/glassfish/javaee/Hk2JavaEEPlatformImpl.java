@@ -649,6 +649,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         public void configureCustomJersey( Project project ){
         }
         
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#isBundled(java.lang.String)
+         */
+        @Override
+        public boolean isBundled( String classFqn ) {
+            // TODO Auto-generated method stub
+            return false;
+        }
+        
         private boolean hasJee6Profile(){
             Set<Profile> profiles = getSupportedProfiles();
             return profiles.contains(Profile.JAVA_EE_6_FULL) || 
