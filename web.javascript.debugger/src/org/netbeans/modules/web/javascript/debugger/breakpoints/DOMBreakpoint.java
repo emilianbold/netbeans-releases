@@ -45,7 +45,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
-import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 
 /**
  *
@@ -151,6 +150,40 @@ public class DOMBreakpoint extends AbstractBreakpoint {
             types = createTypes();
         }
         return types;
+    }
+    
+    public boolean addType(Type type) {
+        boolean added = false;
+        if (Type.SUBTREE_MODIFIED.equals(type)) {
+            added = !isOnSubtreeModification();
+            setOnSubtreeModification(true);
+        }
+        if (Type.ATTRIBUTE_MODIFIED.equals(type)) {
+            added = !isOnAttributeModification();
+            setOnAttributeModification(true);
+        }
+        if (Type.NODE_REMOVED.equals(type)) {
+            added = !isOnNodeRemoval();
+            setOnNodeRemoval(true);
+        }
+        return added;
+    }
+    
+    public synchronized boolean removeType(Type type) {
+        boolean removed = false;
+        if (Type.SUBTREE_MODIFIED.equals(type)) {
+            removed = isOnSubtreeModification();
+            setOnSubtreeModification(false);
+        }
+        if (Type.ATTRIBUTE_MODIFIED.equals(type)) {
+            removed = isOnAttributeModification();
+            setOnAttributeModification(false);
+        }
+        if (Type.NODE_REMOVED.equals(type)) {
+            removed = isOnNodeRemoval();
+            setOnNodeRemoval(false);
+        }
+        return removed;
     }
     
     private Set<Type> createTypes() {
