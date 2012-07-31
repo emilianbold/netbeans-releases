@@ -547,7 +547,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         
         addElementErrors();
         
-        if (FXML_FX_NAMESPACE.equals(uri)) {
+        if ("".equals(localName)) {
+            newElement = accessor.createErrorElement(localName);
+        } else if (FXML_FX_NAMESPACE.equals(uri)) {
             newElement = handleFxmlElement(localName, atts);
         } else {
             String eventName = FxXmlSymbols.getEventHandlerName(localName);

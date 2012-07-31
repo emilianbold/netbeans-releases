@@ -151,7 +151,10 @@ public class FxCopyReferenceCompleter implements Completer, Completer.Factory {
             return false;
         }
         FxNode parentNode = ctx.getElementParent();
-        
+
+        if (parentNode == null) {
+            return false;
+        }
         TypeMirror t;
         
         if (parentNode.getKind() == FxNode.Kind.Instance) {

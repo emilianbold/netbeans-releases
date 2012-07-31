@@ -309,7 +309,7 @@ public final class CompletionContext {
         processPath();
         
         // try to narrow the CHILD_ELEMENT if possible:
-        if (getType() == Type.CHILD_ELEMENT) {
+        if (getType() == Type.CHILD_ELEMENT && !getParents().isEmpty()) {
             List<? extends FxNode> parents = getParents();
             FxNode n = parents.get(0);
             if (n.getKind() == FxNode.Kind.Property) {
@@ -349,6 +349,9 @@ public final class CompletionContext {
     }
     
     public FxProperty getEnclosingProperty() {
+        if (parents.isEmpty()) {
+            return null;
+        }
         FxNode parent = parents.get(0);
         if (parent.getKind() == FxNode.Kind.Property) {
             return ((PropertySetter)parent).getPropertyInfo();
@@ -364,6 +367,9 @@ public final class CompletionContext {
     private void processPath() {
         parents = fxmlParserResult.getTreeUtilities().findEnclosingElements(
                 getCaretOffset(), getType() == CompletionContext.Type.PROPERTY_ELEMENT, true);
+        if (parents.isEmpty()) {
+            return;
+        }
         FxNode parent = parents.get(0);
         
         if (parent instanceof PropertySetter) {

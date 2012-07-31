@@ -72,5 +72,5 @@ final class Dummy extends XmlNode  {
     @Override
     void resolve(ElementHandle nameHandle, TypeMirrorHandle typeHandle, ElementHandle<TypeElement> sourceTypeHandle, FxDefinition info) {
     }
-    
+
 }
