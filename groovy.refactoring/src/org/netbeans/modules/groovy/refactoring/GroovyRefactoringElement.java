@@ -42,8 +42,6 @@
 package org.netbeans.modules.groovy.refactoring;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -73,63 +71,29 @@ public class GroovyRefactoringElement extends ASTElement {
     }
 
     @Override
-    public String getName() {
-        if (node instanceof ClassNode) {
-            return ((ClassNode) node).getNameWithoutPackage();
-        } else if (node instanceof MethodNode) {
-            return ((MethodNode) node).getName();
-        } else if (node instanceof FieldNode) {
-            return ((FieldNode) node).getName();
-        } else if (node instanceof PropertyNode) {
-            return ((PropertyNode) node).getName();
-        } else if (node instanceof VariableExpression) {
-            return ((VariableExpression) node).getName();
-        } else if (node instanceof ClassExpression) {
-            return ((ClassExpression) node).getType().getNameWithoutPackage();
-        }
-        return "Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName();
+    public ElementKind getKind() {
+        return ElementUtils.getKind(node);
     }
 
     @Override
-    public ElementKind getKind() {
-        if ((node instanceof ClassNode) ||
-            (node instanceof ClassExpression)) {
-            return ElementKind.CLASS;
-        } else if (node instanceof MethodNode) {
-            return ElementKind.METHOD;
-        } else if (node instanceof FieldNode) {
-            return ElementKind.FIELD;
-        } else if (node instanceof PropertyNode) {
-            return ElementKind.PROPERTY;
-        } else if (node instanceof VariableExpression) {
-            return ElementKind.VARIABLE;
-        }
-        return super.getKind();
+    public String getName() {
+        return ElementUtils.getNameWithoutPackage(node);
     }
 
-    public final String getDeclaratingClassName() {
-        return getDeclaringClass().getNameWithoutPackage();
-    }
-
-    public final ClassNode getDeclaringClass() {
-        if (node instanceof ClassNode) {
-            return (ClassNode) node;
-        } else if (node instanceof MethodNode) {
-            return ((MethodNode) node).getDeclaringClass();
-        } else if (node instanceof FieldNode) {
-            return ((FieldNode) node).getDeclaringClass();
-        } else if (node instanceof PropertyNode) {
-            return ((PropertyNode) node).getDeclaringClass();
-        } else if (node instanceof VariableExpression) {
-            return ((VariableExpression) node).getDeclaringClass();
-        } else if (node instanceof ClassExpression) {
-            return ((ClassExpression) node).getType().getDeclaringClass();
-        }
-        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + "isn't handled at the moment!");
+    public final String getType() {
+        return ElementUtils.getTypeName(node);
     }
 
     public final String getFQN() {
         return AstUtilities.getFqnName(path);
+    }
+
+    public final ClassNode getDeclaringClass() {
+        return ElementUtils.getDeclaringClass(node);
+    }
+
+    public final String getDeclaratingClassName() {
+        return ElementUtils.getDeclaratingClassName(node);
     }
 
     @Override
@@ -141,7 +105,7 @@ public class GroovyRefactoringElement extends ASTElement {
             if (params.length > 0) {
                 builder.append("("); // NOI18N
                 for (Parameter param : params) {
-                    builder.append(getTypeName(param.getType()));
+                    builder.append(ElementUtils.getTypeName(param.getType()));
                     builder.append(" "); // NOI18N
                     builder.append(param.getName());
                     builder.append(","); // NOI18N
@@ -156,31 +120,5 @@ public class GroovyRefactoringElement extends ASTElement {
             return builder.toString();
         }
         return super.getSignature();
-    }
-
-    public final String getType() {
-        ClassNode type;
-        if (node instanceof ClassNode) {
-            type = ((ClassNode) node);
-        } else if (node instanceof FieldNode) {
-            type = ((FieldNode) node).getType();
-        } else if (node instanceof PropertyNode) {
-            type = ((PropertyNode) node).getType();
-        } else if (node instanceof VariableExpression) {
-            type = ((VariableExpression) node).getType();
-        } else {
-            return "Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!";
-        }
-        return getTypeName(type);
-    }
-
-    private String getTypeName(ClassNode type) {
-        String typeName = type.getNameWithoutPackage();
-
-        // This will happened with all primitive type arrays, e.g. 'double [] x'
-        if (typeName.startsWith("[")) {
-            typeName = type.getComponentType().getNameWithoutPackage() + "[]";
-        }
-        return typeName;
     }
 }
