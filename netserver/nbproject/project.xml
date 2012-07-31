@@ -6,6 +6,7 @@
             <code-name-base>org.netbeans.modules.netserver</code-name-base>
             <module-dependencies/>
             <friend-packages>
+                <friend>org.netbeans.modules.cordova</friend>
                 <friend>org.netbeans.modules.extbrowser</friend>
                 <package>org.netbeans.modules.netserver</package>
                 <package>org.netbeans.modules.netserver.websocket</package>

@@ -50,11 +50,13 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.core.browser.webview</friend>
+                <friend>org.netbeans.modules.cordova</friend>
                 <friend>org.netbeans.modules.extbrowser</friend>
                 <friend>org.netbeans.modules.web.browser.api</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <friend>org.netbeans.modules.web.livehtml</friend>
+                <package>org.netbeans.modules.web.webkit.debugging</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api.css</package>
                 <package>org.netbeans.modules.web.webkit.debugging.api.debugger</package>
