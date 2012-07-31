@@ -64,10 +64,19 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation {
 
     private final GroovyRefactoringElement element;
     private final BaseDocument doc;
+    private final Line line;
+    private final int lineNumber;
+
 
     public FindUsagesElement(GroovyRefactoringElement element, BaseDocument doc) {
         this.element = element;
         this.doc = doc;
+        this.line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
+        this.lineNumber = line.getLineNumber();
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
     }
 
     @Override
@@ -77,7 +86,6 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation {
 
     @Override
     public String getDisplayText() {
-        Line line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
         return line.getText().trim();
     }
 
