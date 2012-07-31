@@ -113,6 +113,10 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
         gbc.insets = new Insets(0, 5, 0, 0);
         panel.add(lblTime, gbc);
 
+        gbc = new GridBagConstraints();
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(new JLabel(), gbc);
         return panel;
     }
 
@@ -124,9 +128,9 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
     @Override
     public Icon getActivityIcon() {
         String iconSuffix = getResultText();
-        Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/build_" + iconSuffix + ".png", true); //NOI18N
+        Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/activity_build_" + iconSuffix + ".png", true); //NOI18N
         if (icon == null) {
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/build_unknown.png", true); //NOI18N
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/activity_build_unknown.png", true); //NOI18N
         }
         return icon;
     }

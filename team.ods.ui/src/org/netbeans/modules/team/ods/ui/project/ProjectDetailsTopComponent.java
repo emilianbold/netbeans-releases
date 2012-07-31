@@ -60,18 +60,20 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSFactory;
 import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
+import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.BuildHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
@@ -103,14 +105,16 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     private boolean detailsExpanded;
     private ExpandableMouseListener expandMouseListener;
     private final Color borderColor = new java.awt.Color(150, 150, 150);
+    private ProjectHandle<ODSProject> projectHandle;
     private ODSProject project = null;
     private ODSClient client = null;
 
-    static ProjectDetailsTopComponent getInstanceFor(ODSProject project) {
+    static ProjectDetailsTopComponent getInstanceFor(ProjectHandle<ODSProject> projectHandle) {
+        ODSProject project = projectHandle.getTeamProject();
         if (projectToTC.containsKey(project.getId())) {
             return projectToTC.get(project.getId());
         }
-        final ProjectDetailsTopComponent newInstance = new ProjectDetailsTopComponent(project);
+        final ProjectDetailsTopComponent newInstance = new ProjectDetailsTopComponent(projectHandle);
         projectToTC.put(project.getId(), newInstance);
         return newInstance;
     }
@@ -127,8 +131,9 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         init();
     }
 
-    private ProjectDetailsTopComponent(ODSProject project) {
-        this.project = project;
+    private ProjectDetailsTopComponent(ProjectHandle<ODSProject> projectHandle) {
+        this.projectHandle = projectHandle;
+        this.project = projectHandle.getTeamProject();
         init();
     }
 
@@ -136,6 +141,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         if (project != null) {
             setName(project.getName());
             initComponents();
+            scrollPanel.getVerticalScrollBar().setUnitIncrement(16);
             detailsExpanded = false;
             pnlDetails.setVisible(false);
             expandMouseListener = new ExpandableMouseListener(this, this);
@@ -193,7 +199,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
             }
         };
         jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        scrollPanel = new javax.swing.JScrollPane();
         pnlMainContent = new javax.swing.JPanel();
 
         setBackground(java.awt.Color.white);
@@ -321,12 +327,12 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         pnlContent.add(pnlDetails, gridBagConstraints);
 
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setOpaque(false);
+        scrollPanel.setBorder(null);
+        scrollPanel.setOpaque(false);
 
         pnlMainContent.setBackground(new java.awt.Color(255, 255, 255));
         pnlMainContent.setLayout(new java.awt.GridBagLayout());
-        jScrollPane1.setViewportView(pnlMainContent);
+        scrollPanel.setViewportView(pnlMainContent);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -335,7 +341,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        pnlContent.add(jScrollPane1, gridBagConstraints);
+        pnlContent.add(scrollPanel, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -358,13 +364,13 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblExpandIcon;
     private javax.swing.JLabel lblProjectName;
     private javax.swing.JPanel pnlContent;
     private javax.swing.JPanel pnlDetails;
     private javax.swing.JPanel pnlMainContent;
     private javax.swing.JPanel pnlProjectName;
+    private javax.swing.JScrollPane scrollPanel;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -399,7 +405,9 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     }
 
     private void loadBuildStatus() {
-        BuildStatusPanel buildStatusPanel = new BuildStatusPanel(client, project.getId());
+        BuildAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(project.getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
+        List<BuildHandle> builds = buildAccessor.getBuilds(projectHandle);
+        BuildStatusPanel buildStatusPanel = new BuildStatusPanel(buildAccessor, projectHandle);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 3, 0, 3);
         gbc.anchor = GridBagConstraints.NORTHWEST;

@@ -138,7 +138,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             .addGroup(pnlTitleLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(lblTitle)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 405, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 247, Short.MAX_VALUE)
                 .addComponent(pnlShow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         pnlTitleLayout.setVerticalGroup(
@@ -164,7 +164,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(pnlTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE))
+                .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -281,7 +281,9 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
             }
 
             final ActivityPanel activityPanel = new ActivityPanel(activity, maxWidth);
-            activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
+            if (activityPanel.hasDetails()) {
+                activityPanel.addMouseListener(new ExpandableMouseListener(activityPanel, this));
+            }
             currentDatePanel.addActivityPanel(activityPanel, gbc);
             lastDate = currentDate;
         }
