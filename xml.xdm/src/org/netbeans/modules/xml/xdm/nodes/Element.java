@@ -86,7 +86,6 @@ public class Element extends NodeImpl implements Node, org.w3c.dom.Element {
     
     Element(String tagName) {
 	super();
-        this.tagName = tagName;
 	List<Token> tokens = getTokensForWrite();
 	tokens.add(Token.create("<".concat(tagName), TokenType.TOKEN_ELEMENT_START_TAG));
 	tokens.add(Token.create("/>", TokenType.TOKEN_ELEMENT_END_TAG));

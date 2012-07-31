@@ -62,7 +62,6 @@ import org.netbeans.modules.xml.xdm.nodes.Text;
 /**
  * A visitor for the set of text related nodes.
  * @author Chris Webster
- * @deprecated Use the XMLNodeVisitorBase abstract class as a base for your visitors.
  */
 public interface XMLNodeVisitor {
 	void visit(Attribute attr);
