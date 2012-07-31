@@ -44,17 +44,17 @@
     </target>
     <target name="gen-json-lexer" depends="-gen-json-lexer,-patch-json-lexer"/>
 
-    <!-- JSDoc section - generating JSDoc lexer -->
-    <target name="-gen-jsdoc-lexer" depends="-prepare-jflex">
-        <jflex file="tools/JsDocColoringScanner.flex" destdir="src" nobak="true"/>
+    <!-- Javascript Documentation section - generating JsDocumentation lexer -->
+    <target name="-gen-jsdocumentation-lexer" depends="-prepare-jflex">
+        <jflex file="tools/JsDocumentationColoringScanner.flex" destdir="src" nobak="true"/>
     </target>
-    <target name="-patch-jsdoc-lexer">
-        <patch patchfile="tools/lexer-jsdoc.patch"
-               dir="src/org/netbeans/modules/javascript2/editor/jsdoc"/>
+    <target name="-patch-jsdocumentation-lexer">
+        <patch patchfile="tools/lexer-jsdocumentation.patch"
+               dir="src/org/netbeans/modules/javascript2/editor/lexer"/>
     </target>
-    <target name="gen-jsdoc-lexer" depends="-gen-jsdoc-lexer,-patch-jsdoc-lexer"/>
+    <target name="gen-jsdocumentation-lexer" depends="-gen-jsdocumentation-lexer, -patch-jsdocumentation-lexer"/>
 
-    <!-- SDoc section - generating SDoc lexer -->
+<!--     SDoc section - generating SDoc lexer
     <target name="-gen-sdoc-lexer" depends="-prepare-jflex">
         <jflex file="tools/SDocColoringScanner.flex" destdir="src" nobak="true"/>
     </target>
@@ -62,7 +62,7 @@
         <patch patchfile="tools/lexer-sdoc.patch"
                dir="src/org/netbeans/modules/javascript2/editor/sdoc"/>
     </target>
-    <target name="gen-sdoc-lexer" depends="-gen-sdoc-lexer,-patch-sdoc-lexer"/>
+    <target name="gen-sdoc-lexer" depends="-gen-sdoc-lexer,-patch-sdoc-lexer"/>-->
 
 </project>
 
