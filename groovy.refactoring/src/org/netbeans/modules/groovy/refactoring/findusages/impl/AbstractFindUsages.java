@@ -43,6 +43,8 @@
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -129,6 +131,13 @@ public abstract class AbstractFindUsages {
                     usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, moduleNode, node, fo), doc));
                 }
             }
+            Collections.sort(usages, new Comparator<FindUsagesElement>() {
+
+                @Override
+                public int compare(FindUsagesElement o1, FindUsagesElement o2) {
+                    return o1.getLineNumber() - o2.getLineNumber();
+                }
+            });
         }
     }
 }
