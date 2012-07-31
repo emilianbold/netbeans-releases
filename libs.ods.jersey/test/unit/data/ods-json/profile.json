@@ -1,0 +1,13 @@
+{
+    "username" : "joe.bloe",
+    "email" : "joe.bloe@example.com",
+    "firstName" : "Joe",
+    "lastName" : "Bloe",
+    "password" : null,
+    "githubUsername" : null,
+    "gravatarHash" : null,
+    "notificationSettings" : null,
+    "emailVerfied" : null,
+    "accountDisabled" : null,
+    "id" : 1234
+}

@@ -1,0 +1,8 @@
+Name: AOP Alliance
+Version: 3.6.0
+License: Public Domain
+OSR: XXX
+Origin: http://aopalliance.sourceforge.net/
+Description: AOP Alliance (Java/J2EE AOP standards)
+
+All the source code provided by AOP Alliance is Public Domain
