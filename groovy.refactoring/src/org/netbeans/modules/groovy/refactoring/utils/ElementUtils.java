@@ -89,7 +89,7 @@ public final class ElementUtils {
         return normalizeTypeName(type.getNameWithoutPackage(), type);
     }
 
-    private static ClassNode getType(ASTNode node) {
+    public static ClassNode getType(ASTNode node) {
         if (node instanceof ClassNode) {
             return ((ClassNode) node);
         } else if (node instanceof FieldNode) {
@@ -127,6 +127,8 @@ public final class ElementUtils {
             name = ((PropertyNode) node).getName();
         } else if (node instanceof Parameter) {
             name = ((Parameter) node).getName();
+        } else if (node instanceof ForStatement) {
+            name = ((ForStatement) node).getVariableType().getNameWithoutPackage();
         } else if (node instanceof VariableExpression) {
             name = ((VariableExpression) node).getName();
         } else if (node instanceof DeclarationExpression) {
@@ -142,9 +144,8 @@ public final class ElementUtils {
 
         if (name != null) {
             return normalizeTypeName(name, null);
-        } else {
-            return "Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName(); // NOI18N
         }
+        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName()); // NOI18N
     }
 
     public static ClassNode getDeclaringClass(ASTNode node) {
@@ -156,6 +157,12 @@ public final class ElementUtils {
             return ((FieldNode) node).getDeclaringClass();
         } else if (node instanceof PropertyNode) {
             return ((PropertyNode) node).getDeclaringClass();
+        } else if (node instanceof Parameter) {
+            return ((Parameter) node).getDeclaringClass();
+        } else if (node instanceof ForStatement) {
+            return ((ForStatement) node).getVariableType().getDeclaringClass();
+        } else if (node instanceof ClassExpression) {
+            return ((ClassExpression) node).getType().getDeclaringClass();
         } else if (node instanceof VariableExpression) {
             return ((VariableExpression) node).getDeclaringClass();
         } else if (node instanceof DeclarationExpression) {
@@ -165,12 +172,8 @@ public final class ElementUtils {
             } else {
                 return declaration.getVariableExpression().getDeclaringClass();
             }
-        } else if (node instanceof ClassExpression) {
-            return ((ClassExpression) node).getType().getDeclaringClass();
-        } else if (node instanceof Parameter) {
-            return ((Parameter) node).getDeclaringClass();
         }
-        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + "isn't handled at the moment!"); // NOI18N
+        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + " isn't handled at the moment!"); // NOI18N
     }
 
     public static String getDeclaratingClassName(ASTNode node) {
