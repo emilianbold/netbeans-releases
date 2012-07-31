@@ -47,9 +47,11 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.DOMBreakpointCustomizer;
+import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 @NbBundle.Messages({"DOMBreakpointTypeName=DOM"})
@@ -99,16 +101,8 @@ public class DOMBreakpointType extends BreakpointType {
      */
     @Override
     public boolean isDefault() {
-//        JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-//        if (lastFocusedComponent == null) {
-//            return false;
-//        }
-//        FileObject fileObject = NbEditorUtilities.getFileObject(lastFocusedComponent.getDocument());
-//        if (fileObject == null) {
-//            return false;
-//        }
-//        return FileUtils.isPhpFile(fileObject);
-        return false;
+        Node node = Utilities.actionsGlobalContext().lookup(Node.class);
+        return node != null;
     }
 
 }

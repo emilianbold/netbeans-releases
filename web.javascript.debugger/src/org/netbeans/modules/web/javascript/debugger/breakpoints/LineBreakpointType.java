@@ -45,9 +45,13 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import javax.swing.JComponent;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.LineBreakpointCustomizer;
+import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 @NbBundle.Messages({"JavaScriptBreakpointTypeCategory=JavaScript",
@@ -95,16 +99,13 @@ public class LineBreakpointType extends BreakpointType {
      */
     @Override
     public boolean isDefault() {
-//        JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-//        if (lastFocusedComponent == null) {
-//            return false;
-//        }
-//        FileObject fileObject = NbEditorUtilities.getFileObject(lastFocusedComponent.getDocument());
-//        if (fileObject == null) {
-//            return false;
-//        }
-//        return FileUtils.isPhpFile(fileObject);
-        return true;
+        Node node = Utilities.actionsGlobalContext().lookup(Node.class);
+        if (node != null) {
+            return false;
+        }
+        FileObject mostRecentFile = EditorContextDispatcher.getDefault().getMostRecentFile();
+        String mimeType = mostRecentFile.getMIMEType();
+        return "text/javascript".equals(mimeType) || "text/html".equals(mimeType);  // NOI18N
     }
 
 }
