@@ -128,7 +128,12 @@ public class Node {
      * @return ID of this node.
      */
     public int getNodeId() {
-        return ((Number)getProperties().get("nodeId")).intValue(); // NOI18N
+        Number nodeId = (Number)getProperties().get("nodeId");
+        //workaround for mobile safari
+        if (nodeId==null) {
+            nodeId = (Number)getProperties().get("id");
+        }
+        return (nodeId).intValue(); // NOI18N
     }
 
     /**
@@ -138,7 +143,7 @@ public class Node {
      */
     public int getNodeType() {
         return ((Number)getProperties().get("nodeType")).intValue(); // NOI18N
-    }
+        }
 
     /**
      * Returns node name.

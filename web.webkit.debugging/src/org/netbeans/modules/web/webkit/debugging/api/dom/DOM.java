@@ -560,9 +560,21 @@ public class DOM {
         Node parent;
         Node child;
         synchronized (this) {
-            int parentId = ((Number)params.get("parentNodeId")).intValue(); // NOI18N
+            Number nodeId = (Number)params.get("parentNodeId");
+            //TODO: workaround for mobile safari
+            if (nodeId==null) {
+                nodeId = (Number)params.get("parentId");
+            }
+            
+            int parentId = nodeId.intValue(); // NOI18N
             parent = nodes.get(parentId);
-            int previousNodeId = ((Number)params.get("previousNodeId")).intValue(); // NOI18N
+            Number prevId = (Number)params.get("previousNodeId");
+            
+            //TODO: workaround for mobile safari
+            if (prevId == null) {
+                prevId = (Number)params.get("prevId");
+            }
+            int previousNodeId = prevId.intValue(); // NOI18N
             Node previousNode = nodes.get(previousNodeId);
             JSONObject childData = (JSONObject)params.get("node"); // NOI18N
             child = new Node(childData);
