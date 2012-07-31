@@ -52,7 +52,7 @@ import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
-import org.netbeans.modules.groovy.refactoring.ElementUtils;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**

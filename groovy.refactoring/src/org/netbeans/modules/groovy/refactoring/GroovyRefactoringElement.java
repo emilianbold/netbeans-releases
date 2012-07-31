@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.groovy.refactoring;
 
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 import org.codehaus.groovy.ast.*;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
