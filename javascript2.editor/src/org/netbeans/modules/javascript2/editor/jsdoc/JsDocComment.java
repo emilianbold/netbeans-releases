@@ -165,11 +165,10 @@ public class JsDocComment extends JsComment {
      * Should be used just in testing use cases.
      * @return list of {@code JsDocTag}s
      */
-    public List<? extends JsDocElement> getTags() {
+    protected List<? extends JsDocElement> getTags() {
         List<JsDocElement> allTags = new LinkedList<JsDocElement>();
-        Iterator<Map.Entry<JsDocElement.Type, List<JsDocElement>>> iterator = tags.entrySet().iterator();
-        while (iterator.hasNext()) {
-            allTags.addAll(iterator.next().getValue());
+        for (List<JsDocElement> list : tags.values()) {
+            allTags.addAll(list);
         }
         return allTags;
     }

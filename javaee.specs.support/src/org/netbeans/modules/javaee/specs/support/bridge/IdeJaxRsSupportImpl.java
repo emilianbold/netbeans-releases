@@ -44,6 +44,7 @@ package org.netbeans.modules.javaee.specs.support.bridge;
 
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +63,8 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 
 /**
@@ -115,7 +118,7 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
         }
 
         Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
-        if (restapiLibrary == null) {
+        if (restapiLibrary != null) {
             libraries.add( restapiLibrary );
         }
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
@@ -140,6 +143,26 @@ public class IdeJaxRsSupportImpl implements JaxRsStackSupportImplementation {
     
     @Override
     public void configureCustomJersey(Project project) {
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#isBundled(java.lang.String)
+     */
+    @Override
+    public boolean isBundled( String classFqn ) {
+        Library restapiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+        List<URL> urls = restapiLibrary.getContent("classpath");            // NOI18N
+        for( URL url : urls ){
+            FileObject root = URLMapper.findFileObject(url);
+            if ( FileUtil.isArchiveFile(root)){
+                root = FileUtil.getArchiveRoot(root);
+            }
+            String classFileObject = classFqn.replace('.', '/')+".class";   // NOI18N
+            if ( root.getFileObject(classFileObject) != null ){
+                return true;
+            }
+        }
+        return false;
     }
     
     private boolean addSwdpLibrary( Project project , Library lib)  {

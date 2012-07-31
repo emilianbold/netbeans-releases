@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc;
+package org.netbeans.modules.javascript2.editor.lexer;
 
 import java.util.Collection;
 import java.util.EnumSet;
@@ -56,11 +56,11 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * List of SDoc TokenIds.
+ * List of JsDocumentation TokenIds.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public enum SDocTokenId implements TokenId {
+public enum JsDocumentationTokenId implements TokenId {
 
     // IMPORTANT - Categories of JavaScript tokenIds should be shared across
     //  all JavaScript documentation tools to preserve coloring settings.
@@ -90,12 +90,12 @@ public enum SDocTokenId implements TokenId {
     STRING_BEGIN(null, "COMMENT"),
     STRING_END(null, "COMMENT");
 
-    public static final String MIME_TYPE = "text/js-sdoc"; //NOI18N
+    public static final String MIME_TYPE = "text/javascript-doc"; //NOI18N
 
     private final String fixedText;
     private final String primaryCategory;
 
-    SDocTokenId(String fixedText, String primaryCategory) {
+    JsDocumentationTokenId(String fixedText, String primaryCategory) {
         this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
     }
@@ -109,37 +109,37 @@ public enum SDocTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<SDocTokenId> LANGUAGE =
-        new LanguageHierarchy<SDocTokenId>() {
+    protected static final Language<JsDocumentationTokenId> LANGUAGE =
+        new LanguageHierarchy<JsDocumentationTokenId>() {
                 @Override
                 protected String mimeType() {
-                    return SDocTokenId.MIME_TYPE;
+                    return JsDocumentationTokenId.MIME_TYPE;
                 }
 
                 @Override
-                protected Collection<SDocTokenId> createTokenIds() {
-                    return EnumSet.allOf(SDocTokenId.class);
+                protected Collection<JsDocumentationTokenId> createTokenIds() {
+                    return EnumSet.allOf(JsDocumentationTokenId.class);
                 }
 
                 @Override
-                protected Map<String, Collection<SDocTokenId>> createTokenCategories() {
-            Map<String, Collection<SDocTokenId>> cats = new HashMap<String, Collection<SDocTokenId>>();
+                protected Map<String, Collection<JsDocumentationTokenId>> createTokenCategories() {
+            Map<String, Collection<JsDocumentationTokenId>> cats = new HashMap<String, Collection<JsDocumentationTokenId>>();
                     return cats;
                 }
 
                 @Override
-                protected Lexer<SDocTokenId> createLexer(LexerRestartInfo<SDocTokenId> info) {
-                    return SDocLexer.create(info);
+                protected Lexer<JsDocumentationTokenId> createLexer(LexerRestartInfo<JsDocumentationTokenId> info) {
+                    return JsDocumentationLexer.create(info);
                 }
 
                 @Override
-                protected LanguageEmbedding<?> embedding(Token<SDocTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+                protected LanguageEmbedding<?> embedding(Token<JsDocumentationTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
                     // No embedding
                     return null;
                 }
             }.language();
 
-     public static Language<SDocTokenId> language() {
+     public static Language<JsDocumentationTokenId> language() {
         return LANGUAGE;
     }
 

@@ -61,6 +61,9 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.Comment.Style;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
@@ -788,7 +791,7 @@ public abstract class WebRestSupport extends RestSupport {
                         modified = removeResourcesMethod( restResources,
                                 maker, modified);
                         modified = createMethods(getClasses, 
-                                maker, modified , restResources== null);
+                                maker, modified , restResources== null, workingCopy);
 
                         workingCopy.rewrite(classTree, modified);
                     }
@@ -893,7 +896,8 @@ public abstract class WebRestSupport extends RestSupport {
     }
     
     private ClassTree createMethods( MethodTree getClasses,
-            TreeMaker maker,ClassTree modified, boolean addComment) throws IOException
+            TreeMaker maker,ClassTree modified, boolean addComment, 
+            CompilationController controller ) throws IOException
     {
         WildcardTree wildCard = maker.Wildcard(Kind.UNBOUNDED_WILDCARD, 
                 null);
@@ -915,7 +919,7 @@ public abstract class WebRestSupport extends RestSupport {
             modified = maker.addClassMember(modified, methodTree);
         }
         StringBuilder builder = new StringBuilder();
-        collectRestResources(builder);
+        collectRestResources(builder, controller);
         ModifiersTree modifiersTree = maker.Modifiers(EnumSet
                 .of(Modifier.PRIVATE));
         MethodTree methodTree = maker.Method(modifiersTree,
@@ -935,7 +939,9 @@ public abstract class WebRestSupport extends RestSupport {
         return modified;
     }
 
-    private void collectRestResources( final StringBuilder builder ) throws IOException {
+    private void collectRestResources( final StringBuilder builder , 
+            final CompilationController controller ) throws IOException 
+    {
         builder.append('{');
         builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
         RestServicesModel model = getRestServicesModel();
@@ -952,6 +958,15 @@ public abstract class WebRestSupport extends RestSupport {
                         getRestServiceDescription();
                     for (RestServiceDescription description : descriptions){
                         String className = description.getClassName();
+                        // Fix for BZ#216168 
+                        TypeElement typeElement = controller.getElements().getTypeElement(className);
+                        if ( typeElement != null ){
+                            FileObject file = SourceUtils.getFile(ElementHandle.
+                                    create(typeElement), controller.getClasspathInfo());
+                            if ( file == null ){
+                                continue;
+                            }
+                        }
                         builder.append("resources.add(");       // NOI18N
                         builder.append( className );
                         builder.append(".class);");             // NOI18N

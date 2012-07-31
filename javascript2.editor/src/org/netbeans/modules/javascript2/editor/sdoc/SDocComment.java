@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -110,6 +111,20 @@ public class SDocComment extends JsComment {
             }
             tags.get(element.getType()).add(element);
         }
+    }
+
+    /**
+     * Gets list of all {@code SDocTag}s inside this comment.
+     * <p>
+     * Used just in testing use cases.
+     * @return list of {@code SDocTag}s
+     */
+    protected List<? extends SDocElement> getTags() {
+        List<SDocElement> allTags = new ArrayList<SDocElement>();
+        for (List<SDocElement> list : tags.values()) {
+            allTags.addAll(list);
+        }
+        return allTags;
     }
 
 }
