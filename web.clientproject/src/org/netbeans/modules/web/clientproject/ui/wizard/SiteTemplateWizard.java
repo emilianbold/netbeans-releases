@@ -46,8 +46,11 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -56,9 +59,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateCustomizer;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
@@ -69,7 +75,8 @@ public class SiteTemplateWizard extends JPanel {
 
     private static final long serialVersionUID = 154768576465454L;
 
-    private static final SiteTemplateImplementation NO_SITE_TEMPLATE = new NoSiteTemplateImplementation();
+    static final Logger LOGGER = Logger.getLogger(SiteTemplateWizard.class.getName());
+    private static final SiteTemplateImplementation NO_SITE_TEMPLATE = new DummySiteTemplateImplementation(null);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     // @GuardedBy("EDT")
@@ -78,15 +85,17 @@ public class SiteTemplateWizard extends JPanel {
     private final SiteTemplateCustomizer archiveSiteCustomizer;
     // @GuardedBy("EDT")
     final DefaultListModel onlineTemplatesListModel = new DefaultListModel();
+    final Object siteTemplateLock = new Object();
 
-    // @GuardedBy("EDT")
-    private SiteTemplateImplementation siteTemplate = NO_SITE_TEMPLATE;
+    // @GuardedBy("siteTemplateLock")
+    SiteTemplateImplementation siteTemplate = NO_SITE_TEMPLATE;
 
 
     public SiteTemplateWizard() {
         assert EventQueue.isDispatchThread();
 
         archiveSiteCustomizer = archiveSiteTemplate.getCustomizer();
+        assert archiveSiteCustomizer != null : "Archive template must have a customizer";
 
         initComponents();
         // archive
@@ -110,27 +119,7 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateList.setCellRenderer(new TemplateListCellRenderer(onlineTemplateList.getCellRenderer()));
         // data
         onlineTemplateList.setModel(onlineTemplatesListModel);
-        onlineTemplatesListModel.addElement(new SiteTemplateImplementation() {
-            @Override
-            public String getName() {
-                return Bundle.SiteTemplateWizard_loading();
-            }
-            @Override
-            public String getDescription() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override
-            public SiteTemplateCustomizer getCustomizer() {
-                return null;
-            }
-            @Override
-            public void apply(FileObject p, ProgressHandle handle) {
-            }
-            @Override
-            public Collection<String> supportedLibraries() {
-                return Collections.emptyList();
-            }
-        });
+        onlineTemplatesListModel.addElement(new DummySiteTemplateImplementation(Bundle.SiteTemplateWizard_loading()));
         RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
@@ -153,7 +142,7 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                siteTemplate = getSelectedOnlineTemplate();
+                setSiteTemplate(getSelectedOnlineTemplate());
                 fireChange();
                 updateOnlineTemplateDescription();
             }
@@ -162,15 +151,15 @@ public class SiteTemplateWizard extends JPanel {
 
     final void updateSiteTemplate() {
         if (noTemplateRadioButton.isSelected()) {
-            siteTemplate = NO_SITE_TEMPLATE;
+            setSiteTemplate(NO_SITE_TEMPLATE);
             setArchiveTemplateEnabled(false);
             setOnlineTemplateEnabled(false);
         } else if (archiveTemplateRadioButton.isSelected()) {
-            siteTemplate = archiveSiteTemplate;
+            setSiteTemplate(archiveSiteTemplate);
             setArchiveTemplateEnabled(true);
             setOnlineTemplateEnabled(false);
         } else if (onlineTemplateRadioButton.isSelected()) {
-            siteTemplate = getSelectedOnlineTemplate();
+            setSiteTemplate(getSelectedOnlineTemplate());
             setArchiveTemplateEnabled(false);
             setOnlineTemplateEnabled(true);
         } else {
@@ -180,8 +169,9 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     void updateOnlineTemplateDescription() {
-        if (siteTemplate != null) {
-            onlineTemplateDescriptionTextPane.setText(siteTemplate.getDescription());
+        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        if (siteTemplateRef != null) {
+            onlineTemplateDescriptionTextPane.setText(siteTemplateRef.getDescription());
         }
     }
 
@@ -220,10 +210,11 @@ public class SiteTemplateWizard extends JPanel {
 
     @NbBundle.Messages("SiteTemplateWizard.error.noTemplateSelected=No online template selected.")
     public String getErrorMessage() {
-        if (siteTemplate == null) {
+        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        if (siteTemplateRef == null) {
             return Bundle.SiteTemplateWizard_error_noTemplateSelected();
         }
-        if (siteTemplate == archiveSiteTemplate) {
+        if (siteTemplateRef == archiveSiteTemplate) {
             // archive
             return archiveSiteCustomizer.getErrorMessage();
         }
@@ -231,16 +222,57 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     public String getWarningMessage() {
-        if (siteTemplate == archiveSiteTemplate) {
+        if (getSiteTemplate() == archiveSiteTemplate) {
             // archive
             return archiveSiteCustomizer.getWarningMessage();
         }
         return null;
     }
 
-    public void apply(FileObject p, ProgressHandle handle) {
+    @NbBundle.Messages({
+        "# {0} - template name",
+        "SiteTemplateWizard.template.preparing=Preparing template \"{0}\" for first usage...",
+        "# {0} - template name",
+        "SiteTemplateWizard.error.preparing=Cannot prepare template \"{0}\"...",
+    })
+    public void prepareTemplate() {
         assert EventQueue.isDispatchThread();
-        siteTemplate.apply(p, handle);
+        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        if (siteTemplateRef.isPrepared()) {
+            // already prepared
+            return;
+        }
+        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+            @Override
+            public void run() {
+                SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+                try {
+                    siteTemplateRef.prepare();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    errorOccured(Bundle.SiteTemplateWizard_error_preparing(siteTemplateRef.getName()));
+                }
+            }
+        }, Bundle.SiteTemplateWizard_template_preparing(siteTemplateRef.getName()));
+    }
+
+    @NbBundle.Messages({
+        "# {0} - template name",
+        "SiteTemplateWizard.error.applying=Cannot apply template \"{0}\"..."
+    })
+    public void apply(final FileObject p, final ProgressHandle handle) {
+        assert !EventQueue.isDispatchThread();
+        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        try {
+            siteTemplateRef.apply(p, handle);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            errorOccured(Bundle.SiteTemplateWizard_error_applying(siteTemplateRef.getName()));
+        }
+    }
+
+    void errorOccured(String message) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     void fireChange() {
@@ -248,8 +280,19 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     Collection<String> getSupportedLibraries() {
-        assert EventQueue.isDispatchThread();
-        return siteTemplate.supportedLibraries();
+        return getSiteTemplate().supportedLibraries();
+    }
+
+    private SiteTemplateImplementation getSiteTemplate() {
+        synchronized (siteTemplateLock) {
+            return siteTemplate;
+        }
+    }
+
+    void setSiteTemplate(SiteTemplateImplementation siteTemplate) {
+        synchronized (siteTemplateLock) {
+            this.siteTemplate = siteTemplate;
+        }
     }
 
     /**
@@ -344,21 +387,38 @@ public class SiteTemplateWizard extends JPanel {
 
     //~ Inner classes
 
-    private static final class NoSiteTemplateImplementation implements SiteTemplateImplementation {
+    private static final class DummySiteTemplateImplementation implements SiteTemplateImplementation {
+
+        private final String name;
+
+
+        public DummySiteTemplateImplementation(String name) {
+            this.name = name;
+        }
 
         @Override
         public String getName() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return name;
         }
 
         @Override
         public String getDescription() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported.");
         }
 
         @Override
         public SiteTemplateCustomizer getCustomizer() {
-            return null;
+            throw new UnsupportedOperationException("Not supported.");
+        }
+
+        @Override
+        public boolean isPrepared() {
+            return true;
+        }
+
+        @Override
+        public void prepare() {
+            // noop
         }
 
         @Override

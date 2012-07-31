@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
+import java.io.File;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -80,6 +84,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
+        component.prepareTemplate();
     }
 
     public Collection<String> getSupportedLibraries() {
