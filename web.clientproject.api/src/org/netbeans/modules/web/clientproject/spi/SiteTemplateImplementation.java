@@ -43,7 +43,6 @@ package org.netbeans.modules.web.clientproject.spi;
 
 import java.io.IOException;
 import java.util.Collection;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
@@ -59,9 +58,6 @@ public interface SiteTemplateImplementation {
 
     @NonNull
     String getDescription();
-
-    @CheckForNull
-    SiteTemplateCustomizer getCustomizer();
 
     /**
      * Check whether site template is already {@link #prepare(ProgressHandle) prepared}.
