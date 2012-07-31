@@ -41,10 +41,18 @@
  */
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -52,6 +60,7 @@ import org.netbeans.modules.web.webkit.debugging.api.Debugger;
  */
 public class DOMBreakpoint extends AbstractBreakpoint {
     
+    public static final String PROP_URL = "url";            // NOI18N
     public static final String PROP_TYPES = "types";        // NOI18N
 
     public enum Type {
@@ -75,10 +84,28 @@ public class DOMBreakpoint extends AbstractBreakpoint {
     private boolean onAttributeModification;
     private boolean onNodeRemoval;
     private Set<Type> types;
+    private URL url;
     private final DOMNode node;
     
-    public DOMBreakpoint(DOMNode node) {
+    public DOMBreakpoint(URL url, DOMNode node) {
+        this.url = url;
         this.node = node;
+        if (url != null) {
+            FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                fo.addFileChangeListener(new DOMFileChange());
+            }
+        }
+    }
+    
+    public URL getURL() {
+        return url;
+    }
+    
+    private void setURL(URL url) {
+        URL oldURL = this.url;
+        this.url = url;
+        firePropertyChange(PROP_URL, oldURL, url);
     }
 
     public DOMNode getNode() {
@@ -207,4 +234,33 @@ public class DOMBreakpoint extends AbstractBreakpoint {
             setValidity(VALIDITY.INVALID, pnfex.getLocalizedMessage());
         }
     }
+    
+    private class DOMFileChange implements FileChangeListener {
+
+        public DOMFileChange() {
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {}
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {}
+
+        @Override
+        public void fileChanged(FileEvent fe) {}
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(DOMBreakpoint.this);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            setURL(URLMapper.findURL(fe.getFile(), URLMapper.EXTERNAL));
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {}
+    }
+
 }

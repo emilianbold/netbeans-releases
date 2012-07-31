@@ -44,10 +44,13 @@
 
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -90,8 +93,19 @@ public class BreakpointsReader implements Properties.Reader {
             if (nodePathDefinition == null) {
                 return null;
             }
+            String urlStr = properties.getString(URL, null);
+            URL url;
+            if (urlStr != null) {
+                try {
+                    url = new URL(urlStr);
+                } catch (MalformedURLException ex) {
+                    url = null;
+                }
+            } else {
+                url = null;
+            }
             DOMNode node = DOMNode.create(nodePathDefinition);
-            DOMBreakpoint db = new DOMBreakpoint(node);
+            DOMBreakpoint db = new DOMBreakpoint(url, node);
             db.setOnSubtreeModification(properties.getBoolean(Debugger.DOM_BREAKPOINT_SUBTREE, false));
             db.setOnAttributeModification(properties.getBoolean(Debugger.DOM_BREAKPOINT_ATTRIBUTE, false));
             db.setOnNodeRemoval(properties.getBoolean(Debugger.DOM_BREAKPOINT_NODE, false));
@@ -115,6 +129,14 @@ public class BreakpointsReader implements Properties.Reader {
         else if (object instanceof DOMBreakpoint) {
             DOMBreakpoint db = (DOMBreakpoint) object;
             
+            String urlStr;
+            URL url = db.getURL();
+            if (url != null) {
+                urlStr = url.toExternalForm();
+            } else {
+                urlStr = null;
+            }
+            properties.setString(URL, urlStr);
             properties.setString(DOM_NODE_PATH, db.getNode().getStringDefinition());
             properties.setBoolean(Debugger.DOM_BREAKPOINT_SUBTREE, db.isOnSubtreeModification());
             properties.setBoolean(Debugger.DOM_BREAKPOINT_ATTRIBUTE, db.isOnAttributeModification());

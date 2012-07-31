@@ -166,7 +166,7 @@ public class AddDOMBreakpointAction extends NodeAction {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (dbPtr[0] == null) {
-                    dbPtr[0] = new DOMBreakpoint(DOMNode.create(node));
+                    dbPtr[0] = new DOMBreakpoint(DOMNode.findURL(node), DOMNode.create(node));
                     DebuggerManager.getDebuggerManager().addBreakpoint(dbPtr[0]);
                 }
                 if (cmi.isSelected()) {

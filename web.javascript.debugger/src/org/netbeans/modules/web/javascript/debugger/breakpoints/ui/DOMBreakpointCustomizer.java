@@ -43,6 +43,8 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints.ui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode;
@@ -50,7 +52,6 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -67,12 +68,15 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
     private static DOMBreakpoint createBreakpoint() {
         Node node = Utilities.actionsGlobalContext().lookup(Node.class);
         DOMNode dn;
+        URL url;
         if (node != null) {
             dn = DOMNode.create(node);
+            url = DOMNode.findURL(node);
         } else {
             dn = DOMNode.create("[\u0003-1,]"); // root
+            url = null;
         }
-        DOMBreakpoint b = new DOMBreakpoint(dn);
+        DOMBreakpoint b = new DOMBreakpoint(url, dn);
         return b;
     }
     
@@ -93,6 +97,19 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
         controller = new CustomizerController();
         DOMNode node = db.getNode();
         nodeTextField.setText((node != null) ? node.getNodePathNames() : "");
+        URL url = db.getURL();
+        String urlStr;
+        if (url != null) {
+            urlStr = url.toExternalForm();
+            if (urlStr.startsWith("file:")) {
+                try {
+                    urlStr = Utilities.toFile(url.toURI()).getAbsolutePath();
+                } catch (URISyntaxException ex) {}
+            }
+        } else {
+            urlStr = "";
+        }
+        fileTextField.setText(urlStr);
         onSubtreeModifCheckBox.setSelected(db.isOnSubtreeModification());
         onAttrModifCheckBox.setSelected(db.isOnAttributeModification());
         onNodeRemoveCheckBox.setSelected(db.isOnNodeRemoval());
@@ -117,6 +134,8 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
         onSubtreeModifCheckBox = new javax.swing.JCheckBox();
         onAttrModifCheckBox = new javax.swing.JCheckBox();
         onNodeRemoveCheckBox = new javax.swing.JCheckBox();
+        fileLabel = new javax.swing.JLabel();
+        fileTextField = new javax.swing.JTextField();
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.jLabel2.text")); // NOI18N
 
@@ -144,6 +163,11 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
             }
         });
 
+        fileLabel.setText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.fileLabel.text")); // NOI18N
+
+        fileTextField.setEditable(false);
+        fileTextField.setText(org.openide.util.NbBundle.getMessage(DOMBreakpointCustomizer.class, "DOMBreakpointCustomizer.fileTextField.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -152,12 +176,16 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(onSubtreeModifCheckBox, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nodeTextField))
                     .addComponent(onAttrModifCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
-                    .addComponent(onNodeRemoveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(onNodeRemoveCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(fileLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(nodeTextField)
+                            .addComponent(fileTextField))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -167,6 +195,10 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(nodeTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fileLabel)
+                    .addComponent(fileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(onSubtreeModifCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -192,6 +224,8 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
     }//GEN-LAST:event_onNodeRemoveCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel fileLabel;
+    private javax.swing.JTextField fileTextField;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField nodeTextField;
     private javax.swing.JCheckBox onAttrModifCheckBox;

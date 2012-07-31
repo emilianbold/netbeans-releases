@@ -179,6 +179,10 @@ public final class Debugger {
         }
     }
     
+    public URL getConnectionURL() {
+        return transport.getConnectionURL();
+    }
+    
     private List<CallFrame> createCallStack(JSONArray callFrames) {
         List<CallFrame> callStack = new ArrayList<CallFrame>();
         for (Object cf : callFrames) {

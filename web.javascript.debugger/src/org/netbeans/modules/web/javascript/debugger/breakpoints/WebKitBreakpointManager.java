@@ -43,6 +43,7 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.SwingUtilities;
@@ -168,6 +169,11 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         public void add() {
             if (bps != null) {
                 return ;
+            }
+            URL url = wd.getDebugger().getConnectionURL();
+            URL urlBP = db.getURL();
+            if (urlBP != null && urlBP.equals(url)) {
+                return;
             }
             DOMNode dn = db.getNode();
             dn.addPropertyChangeListener(this);

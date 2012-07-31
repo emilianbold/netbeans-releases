@@ -43,6 +43,8 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -95,6 +97,24 @@ public final class DOMNode {
             LOG.fine("new DOMNode("+dn.getNodePathNames()+") created from "+origNode);
         }
         return dn;
+    }
+    
+    /**
+     * A utility method to find node's URL.
+     */
+    public static URL findURL(Node node) {
+        String urlStr = null;
+        while (urlStr == null && node != null) {
+            urlStr = node.getDocumentURL();
+            node = node.getParent();
+        }
+        if (urlStr != null) {
+            try {
+                return new URL(urlStr);
+            } catch (MalformedURLException ex) {
+            }
+        }
+        return null;
     }
     
     /**
@@ -256,6 +276,9 @@ public final class DOMNode {
      * Unbind from the DOM document.
      */
     public synchronized void unbind() {
+        if (dom == null) {
+            return;
+        }
         dom.removeListener(domListener);
         domListener = null;
         dom = null;
