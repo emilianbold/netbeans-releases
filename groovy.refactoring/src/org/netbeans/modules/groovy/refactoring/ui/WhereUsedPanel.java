@@ -129,6 +129,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             }
             case FIELD:
             case PROPERTY:
+            case PARAMETER:
             default: {
                 panel = new WhereUsedPanelVariable();
                 break;
