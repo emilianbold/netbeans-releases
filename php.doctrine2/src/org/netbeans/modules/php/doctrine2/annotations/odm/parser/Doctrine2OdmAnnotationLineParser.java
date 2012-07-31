@@ -39,59 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc;
+package org.netbeans.modules.php.doctrine2.annotations.odm.parser;
 
-import com.oracle.nashorn.ir.Node;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class SDocDocumentationHolder extends JsDocumentationHolder {
+public class Doctrine2OdmAnnotationLineParser implements AnnotationLineParser {
 
-    private final Map<Integer, SDocComment> blocks;
+    private static final AnnotationLineParser INSTANCE = new Doctrine2OdmAnnotationLineParser();
 
-    public SDocDocumentationHolder(Snapshot snapshot) {
-        super(snapshot);
-        blocks = SDocParser.parse(snapshot);
+    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+
+    private Doctrine2OdmAnnotationLineParser() {
+    }
+
+    @AnnotationLineParser.Registration(position=600)
+    public static AnnotationLineParser getDefault() {
+        return INSTANCE;
     }
 
     @Override
-    public List<Type> getReturnType(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<DocParameter> getParameters(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String getDocumentation(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isDeprecated(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Set<JsModifier> getModifiers(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Map getCommentBlocks() {
-        return blocks;
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        for (AnnotationLineParser annotationLineParser : PARSERS) {
+            result = annotationLineParser.parse(line);
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
     }
 
 }

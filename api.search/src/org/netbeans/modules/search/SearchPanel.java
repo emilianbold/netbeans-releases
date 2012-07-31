@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.search;
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,8 +58,10 @@ import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -91,6 +97,10 @@ public class SearchPanel extends JPanel implements FocusListener,
      * Cancel button.
      */
     private JButton cancelButton;
+    /**
+     * Open in new Tab checkbox
+     */
+    private JCheckBox newTabCheckBox;
     /**
      * Tabbed pane if there are extra providers.
      */
@@ -151,6 +161,11 @@ public class SearchPanel extends JPanel implements FocusListener,
         if (selectedPresenter == null) {
             chooseLastUsedPresenter();
         }
+        newTabCheckBox = new JCheckBox(NbBundle.getMessage(SearchPanel.class,
+                "TEXT_BUTTON_NEW_TAB"));                                //NOI18N
+        newTabCheckBox.setMaximumSize(new Dimension(1000, 200));
+        newTabCheckBox.setSelected(
+                FindDialogMemory.getDefault().isOpenInNewTab());
         initLocalStrings();
         initAccessibility();
     }
@@ -197,6 +212,7 @@ public class SearchPanel extends JPanel implements FocusListener,
         }
         okButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_SEARCH")); // NOI18N
         cancelButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_CANCEL")); // NOI18N
+        newTabCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_TEXT_BUTTON_NEW_TAB")); //NOI18N
     }
 
     /**
@@ -236,7 +252,7 @@ public class SearchPanel extends JPanel implements FocusListener,
                 this,
                 NbBundle.getMessage(getClass(), titleMsgKey),
                 false,
-                new Object[]{okButton, cancelButton},
+                new Object[]{newTabCheckBox, okButton,  cancelButton},
                 okButton,
                 DialogDescriptor.BOTTOM_ALIGN,
                 new HelpCtx(getClass().getCanonicalName() + "." + replacing),
@@ -249,6 +265,7 @@ public class SearchPanel extends JPanel implements FocusListener,
         dialog.addWindowListener(new DialogCloseListener());
         this.setDialogDescriptor(dialogDescriptor);
 
+        setControlsLayoutAndSizes();
         dialog.pack();
         setCurrentlyShown(this);
         dialog.setVisible(
@@ -320,6 +337,11 @@ public class SearchPanel extends JPanel implements FocusListener,
             SearchComposition<?> sc = selectedPresenter.composeSearch();
             if (sc != null) {
                 SearchTask st = new SearchTask(sc, replacing);
+                boolean openInNewTab = newTabCheckBox.isSelected();
+                if (!openInNewTab) {
+                    ResultView.getInstance().markCurrentTabAsReusable();
+                }
+                FindDialogMemory.getDefault().setOpenInNewTab(openInNewTab);
                 Manager.getInstance().scheduleSearchTask(st);
                 close();
             }
@@ -410,6 +432,40 @@ public class SearchPanel extends JPanel implements FocusListener,
             return false;
         } else {
             return sp.isPreferScopeSelection();
+        }
+    }
+
+    /**
+     * Set layout and sizes of control buttons at the bottom of the dialog.
+     *
+     * Caution: This implementation can be dangerous, as changes in the
+     * DialogDescriptor can make it work incorrectly.
+     */
+    private void setControlsLayoutAndSizes() {
+        Container parent = newTabCheckBox.getParent();
+        if (parent == null) {
+            return;
+        }
+        double maxWidth = 0;
+        List<Integer> buttons = new LinkedList<Integer>();
+        for (int i = 0; i < parent.getComponentCount(); i++) {
+            Component c = parent.getComponent(i);
+            if (c instanceof JButton) {
+                maxWidth = Math.max(maxWidth, c.getPreferredSize().getWidth());
+                buttons.add(i);
+            }
+        }
+        if (maxWidth > 0 && !buttons.isEmpty()) {
+            parent.setLayout(new BoxLayout(parent, BoxLayout.LINE_AXIS));
+            int added = 0;
+            for (Integer origIndex : buttons) {
+                Component b = parent.getComponent(origIndex + added);
+                b.setPreferredSize(new Dimension((int) maxWidth,
+                        (int) b.getPreferredSize().getHeight()));
+                parent.add(Box.createHorizontalStrut(5),
+                        origIndex + added + 1);
+                added++;
+            }
         }
     }
 

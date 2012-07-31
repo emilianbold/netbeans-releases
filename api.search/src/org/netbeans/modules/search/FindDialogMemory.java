@@ -161,6 +161,8 @@ public final class FindDialogMemory {
     /** Last selected search provider. */
     private String provider;
 
+    private boolean openInNewTab;
+
     /** Preferences node for storing history info */
     private static Preferences prefs;
     /** Name of preferences node where we persist history */
@@ -185,6 +187,7 @@ public final class FindDialogMemory {
     private static final String PROP_RESULTS_COLUMN_WIDTHS_REPLACING = "results_column_widths_replacing"; //NOI18N
     private static final String PROP_RESULTS_VIEW_MODE = "results_view_mode"; //NOI18N
     private static final String PROP_PROVIDER = "provider"; //NOI18N
+    private static final String PROP_OPEN_IN_NEW_TAB = "open_in_new_tab"; //NOI18N
     /** Creates a new instance of FindDialogMemory */
     private FindDialogMemory() {
         prefs = NbPreferences.forModule(FindDialogMemory.class).node(PREFS_NODE);
@@ -226,6 +229,7 @@ public final class FindDialogMemory {
                 "100:-1:-1:-1:-1:|0:");                                 //NOI18N
         resultsViewMode = prefs.get(PROP_RESULTS_VIEW_MODE, null);
         provider = prefs.get(PROP_PROVIDER, null);
+        openInNewTab = prefs.getBoolean(PROP_OPEN_IN_NEW_TAB, true);
         fileNamePatterns = new ArrayList<String>(maxFileNamePatternCount);
         replExpressions = new ArrayList<String>(maxReplExprCount);
         ignoreList = new ArrayList();
@@ -512,5 +516,14 @@ public final class FindDialogMemory {
     public void setProvider(String provider) {
         this.provider = provider;
         prefs.put(PROP_PROVIDER, provider);
+    }
+
+    public boolean isOpenInNewTab() {
+        return openInNewTab;
+    }
+
+    public void setOpenInNewTab(boolean openInNewTab) {
+        this.openInNewTab = openInNewTab;
+        prefs.putBoolean(PROP_OPEN_IN_NEW_TAB, openInNewTab);
     }
 }

@@ -41,18 +41,19 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.SimpleElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.LinkElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.AssignElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import java.util.*;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.AssignElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.LinkElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.ParameterElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.SimpleElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -400,14 +401,7 @@ public class JsDocModelTest extends JsDocumentationTestBase {
                 NamedParameterElement namedParameterElement = (NamedParameterElement) parsed;
                 assertEquals(expected.getProperty("name"), namedParameterElement.getParamName().getName());
                 assertEquals(expected.getProperty("desc"), namedParameterElement.getParamDescription().toString());
-                if (expected.getProperty("type").indexOf("|") != -1) {
-                    String[] splitedType = expected.getProperty("type").split("[|]");
-                    for (int i = 0; i < splitedType.length; i++) {
-                        assertEquals(splitedType[i], namedParameterElement.getParamTypes().get(i).getType());
-                    }
-                } else {
-                    assertEquals(expected.getProperty("type"), namedParameterElement.getParamTypes().get(0).getType());
-                }
+                assertTypesEquality(expected, namedParameterElement);
                 break;
             case SIMPLE:
                 assertTrue(parsed instanceof SimpleElement);
@@ -416,17 +410,21 @@ public class JsDocModelTest extends JsDocumentationTestBase {
                 assertTrue(parsed instanceof UnnamedParameterElement);
                 UnnamedParameterElement unnamedParameterElement = (UnnamedParameterElement) parsed;
                 assertEquals(expected.getProperty("desc"), unnamedParameterElement.getParamDescription().toString());
-                if (expected.getProperty("type").indexOf("|") != -1) {
-                    String[] splitedType = expected.getProperty("type").split("[|]");
-                    for (int i = 0; i < splitedType.length; i++) {
-                        assertEquals(splitedType[i], unnamedParameterElement.getParamTypes().get(i).getType());
-                    }
-                } else {
-                    assertEquals(expected.getProperty("type"), unnamedParameterElement.getParamTypes().get(0).getType());
-                }
+                assertTypesEquality(expected, unnamedParameterElement);
                 break;
             default:
                 throw new AssertionError();
+        }
+    }
+
+    private static void assertTypesEquality(FakeJsDocElement expected, ParameterElement element) {
+        if (expected.getProperty("type").indexOf("|") != -1) {
+            String[] splitedType = expected.getProperty("type").split("[|]");
+            for (int i = 0; i < splitedType.length; i++) {
+                assertEquals(splitedType[i], element.getParamTypes().get(i).getType());
+            }
+        } else {
+            assertEquals(expected.getProperty("type"), element.getParamTypes().get(0).getType());
         }
     }
 
