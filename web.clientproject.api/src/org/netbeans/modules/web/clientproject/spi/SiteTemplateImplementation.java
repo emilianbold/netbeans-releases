@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
 
@@ -63,8 +64,16 @@ public interface SiteTemplateImplementation {
     SiteTemplateCustomizer getCustomizer();
 
     /**
+     * Check whether site template is already {@link #prepare(ProgressHandle) prepared}.
+     * @return {@code true} if site template is already {@link #prepare(ProgressHandle) prepared}, {@code false} otherwise
+     * @since 1.3
+     */
+    boolean isPrepared();
+
+    /**
      * Prepare site template, e.g. download it to a cache directory if it is not already downloaded.
-     * This method is always called before {@link #apply(FileObject, ProgressHandle) applying} this site template.
+     * This method is always called before {@link #apply(FileObject, ProgressHandle) applying} this site template
+     * but only if the site template is not already {@link #isPrepared() prepared}.
      * <p>
      * This method is never called in the UI thread.
      * @throws IOException if any error occurs
@@ -77,10 +86,10 @@ public interface SiteTemplateImplementation {
      * <p>
      * This method is never called in the UI thread.
      * @param projectRoot directory where site template should be applied
-     * @param handle progress handle
+     * @param handle progress handle, can be {@code null}
      * @throws IOException if any error occurs
      */
-    void apply(FileObject projectRoot, ProgressHandle handle) throws IOException;
+    void apply(FileObject projectRoot, @NullAllowed ProgressHandle handle) throws IOException;
 
     Collection<String> supportedLibraries();
 }
