@@ -57,8 +57,11 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 class SDocDocumentationHolder extends JsDocumentationHolder {
 
+    private final Map<Integer, SDocComment> blocks;
+
     public SDocDocumentationHolder(Snapshot snapshot) {
         super(snapshot);
+        blocks = SDocParser.parse(snapshot);
     }
 
     @Override
@@ -88,7 +91,7 @@ class SDocDocumentationHolder extends JsDocumentationHolder {
 
     @Override
     public Map getCommentBlocks() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return blocks;
     }
 
 }
