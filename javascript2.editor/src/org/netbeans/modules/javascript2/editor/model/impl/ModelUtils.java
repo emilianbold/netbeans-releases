@@ -47,10 +47,14 @@ import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
  *
@@ -328,7 +332,233 @@ public class ModelUtils {
         }
         return result;
     }
+    
+    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, JsIndex jsIndex, List<String> exp, int offset) {
+        List<JsObject> localObjects = new ArrayList<JsObject>();
+        List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
+        List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
+        
+        
+            for (int i = exp.size() - 1; i > -1; i--) {
+                String kind = exp.get(i);
+                String name = exp.get(--i);
+                if (i == (exp.size() - 2)) {
+                    JsObject localObject = null;
+                    // resolving the first part of expression
+                    // find possible variables from local context, index contains only 
+                    // public definition, we are interested in the private here as well
+                    for (JsObject object : model.getVariables(offset)) {
+                        if (object.getName().equals(name)) {
+                            localObjects.add(object);
+                            localObject = object;
+                            break;
+                        }
+                    }
 
+                    for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                        for (JsObject object : libGlobal.getProperties().values()) {
+                            if (object.getName().equals(name)) {
+                                //localObjects.add(object);
+                                lastResolvedTypes.add(new TypeUsageImpl(object.getName(), -1, true));
+                                break;
+                            }
+                        }
+                    }
+                    if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
+                            && localObject.getJSKind() != JsElement.Kind.VARIABLE)) {
+                        // Add global variables from index
+                        Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
+                        for (IndexedElement globalVar : globalVars) {
+                            Collection<TypeUsage> assignments = globalVar.getAssignments();
+                            lastResolvedTypes.addAll(assignments);
+                        }
+                    }
+                    
+                    if(!localObjects.isEmpty()){
+                        for(JsObject lObject : localObjects) {
+                            if(lObject.getAssignmentForOffset(offset).isEmpty()) {
+                                boolean addAsType = lObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL;
+                                if (lObject instanceof JsObjectReference) {
+                                    // translate reference objects to the original objects / type
+                                    name = ((JsObjectReference)lObject).getOriginal().getDeclarationName().getName();
+                                }
+                                if(addAsType) {
+                                    // here it doesn't have to be real type, it's possible that it's just an object name
+                                    lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
+                                }
+                            }
+                            if ("@mtd".equals(kind)) {  //NOI18N
+                                if (lObject.getJSKind().isFunction()) {
+                                    // if it's a method call, add all retuturn types
+                                    lastResolvedTypes.addAll(((JsFunction) lObject).getReturnTypes());
+                                }
+                            } else {
+                                // just property
+                                Collection<? extends Type> lastTypeAssignment = lObject.getAssignmentForOffset(offset);
+                                if (lastTypeAssignment.isEmpty()) {
+                                    // no assignments for the local object, we need to process the object later.
+                                    lastResolvedObjects.add(lObject);
+                                } else {
+                                    // go through the assignments and find the last object / type in the assignment chain
+                                    // it solve assignements like a = b; b = c; c = d;. the result for a should be d.
+                                    resolveAssignments(model, lObject, offset, lastResolvedObjects, lastResolvedTypes);
+                                    break;
+                                }
+                            }
+                            
+                        }
+                    } 
+                    // now we should have collected possible local objects
+                    // also objects from index, that fits the first part of the expression
+                } else {
+                    List<JsObject> newResolvedObjects = new ArrayList<JsObject>();
+                    List<TypeUsage> newResolvedTypes = new ArrayList<TypeUsage>();
+                    for (JsObject localObject : lastResolvedObjects) {
+                        // go through the loca object and try find the method / property from the next expression part
+                        JsObject property = ((JsObject) localObject).getProperty(name);
+                        if (property != null) {
+                            if ("@mtd".equals(kind)) {  //NOI18N
+                                if (property.getJSKind().isFunction()) {
+                                    //Collection<TypeUsage> resovledTypes = resolveTypeFromSemiType(model, property, ((JsFunction) property).getReturnTypes());
+                                    Collection<? extends TypeUsage> resovledTypes = ((JsFunction) property).getReturnTypes();
+                                    newResolvedTypes.addAll(resovledTypes);
+                                }
+                            } else {
+                                newResolvedObjects.add(property);
+                            }
+                        }
+                    }
+                    
+                    
+                    
+                    for (TypeUsage typeUsage : lastResolvedTypes) {
+                        // for the type build the prototype chain. 
+                        Collection<String> prototypeChain = new ArrayList<String>();
+                        prototypeChain.add(typeUsage.getType());
+                        prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                        
+                        Collection<? extends IndexResult> indexResults = null;        
+                        for (String fqn : prototypeChain) {
+                            // at first look at the properties of the object
+                            indexResults = jsIndex.findFQN(fqn + "." + name); //NOI18N
+                            if (indexResults.isEmpty()) {
+                                // if the property was not found, try to look at the prototype of the object
+                                indexResults = jsIndex.findFQN(fqn + ".prototype." + name); //NOI18N
+                            }
+                            if(!indexResults.isEmpty()) {
+                                // if the property / method was already found, we don't need to continue. 
+                                // in the runtime is also used the first one that is found in the prototype chain
+                                break;
+                            }
+                        }
+                        
+                        for (IndexResult indexResult : indexResults) {
+                            // go through the resul from index and add appropriate types to the new resolved
+                            JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
+                            if ("@mtd".equals(kind) && jsKind.isFunction()) {
+                                //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
+                                Collection<? extends TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
+                                newResolvedTypes.addAll(resolvedTypes);
+                            } else {
+                                newResolvedTypes.add(new TypeUsageImpl(typeUsage.getType() + "." + name));
+                            }
+                        }
+                        // from libraries look for top level types
+                        for (JsObject libGlobal : getLibrariesGlobalObjects()) {
+                            for (JsObject object : libGlobal.getProperties().values()) {
+                                if (object.getName().equals(typeUsage.getType())) {
+                                    JsObject property = object.getProperty(name);
+                                    if (property != null) {
+                                        JsElement.Kind jsKind = property.getJSKind();
+                                        if ("@mtd".equals(kind) && jsKind.isFunction()) {
+                                            newResolvedTypes.addAll(((JsFunction) property).getReturnTypes());
+                                        } else {
+                                            newResolvedObjects.add(property);
+                                        }
+                                    }
+                                    newResolvedObjects.add(object);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    lastResolvedObjects = newResolvedObjects;
+                    lastResolvedTypes = newResolvedTypes;
+                }
+            }
+            
+            HashMap<String, TypeUsage> resultTypes  = new HashMap<String, TypeUsage> ();
+            for (TypeUsage typeUsage : lastResolvedTypes) {
+                if(!resultTypes.containsKey(typeUsage.getType())) {
+                    resultTypes.put(typeUsage.getType(), typeUsage);
+                }
+            }
+            for (JsObject jsObject : lastResolvedObjects) {
+//                if (jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                    String fqn = ModelUtils.createFQN(jsObject);
+                    if(!resultTypes.containsKey(fqn)) {
+                        resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
+                    }
+//                }
+             }
+            return resultTypes.values();
+    }
+
+    private static void resolveAssignments(Model model, JsObject jsObject, int offset, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
+        Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(offset);
+        for (Type typeName : assignments) {
+            
+            JsObject byOffset = findObjectForOffset(typeName.getType(), offset, model);
+            if (byOffset != null) {
+                if(!jsObject.getName().equals(byOffset.getName())) {
+                    resolvedObjects.add(byOffset);
+                    resolveAssignments(model, byOffset, offset, resolvedObjects, resolvedTypes);
+                }
+            } else {
+                resolvedTypes.add((TypeUsage)typeName);
+            }
+        }
+    }
+    
+    private static JsObject findObjectForOffset(String name, int offset, Model model) {
+        for (JsObject object : model.getVariables(offset)) {
+            if (object.getName().equals(name)) {
+                return object;
+            }
+        }
+        return null;
+    }
+
+    public static Collection<String> findPrototypeChain(String fqn, JsIndex jsIndex) {
+        Collection<String> result = new ArrayList<String>();
+        Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
+        for (IndexedElement property : properties) {
+            if("prototype".equals(property.getName())) {  //NOI18N
+                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
+                for (IndexResult indexResult : indexResults) {
+                    Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                    for (TypeUsage typeUsage : assignments) {
+                        result.add(typeUsage.getType());
+                    }
+                    for (TypeUsage typeUsage : assignments) {
+                        result.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    private static Collection<JsObject> getLibrariesGlobalObjects() {
+        Collection<JsObject> result = new ArrayList<JsObject>();
+        JsObject libGlobal = JQueryModel.getGlobalObject();
+        if (libGlobal != null) {
+            result.add(libGlobal);
+        }
+        return result;
+    }
+    
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
         
         private final Set<TypeUsage> result = new HashSet<TypeUsage>();
