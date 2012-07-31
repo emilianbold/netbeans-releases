@@ -93,7 +93,7 @@ public class FindTypeUsages extends AbstractFindUsages {
 
         @Override
         public void visitField(FieldNode field) {
-            if (field.isSynthetic() && findingFqn.equals(field.getType().getName())) {
+            if (findingFqn.equals(field.getType().getName())) {
                 usages.add(field);
             }
             super.visitField(field);
