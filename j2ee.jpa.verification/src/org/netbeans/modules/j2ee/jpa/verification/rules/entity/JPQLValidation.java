@@ -91,6 +91,7 @@ public class JPQLValidation extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
+        long start  = System.nanoTime();
         Object modEl = ctx.getModelElement();
         Entity entity = (Entity) (modEl instanceof Entity ? modEl : null);
         List<AnnotationMirror> first = Utilities.findAnnotations(subject, JPAAnnotations.NAMED_QUERY);
@@ -131,6 +132,7 @@ public class JPQLValidation extends JPAClassRule {
         JPQLQueryHelper helper = new JPQLQueryHelper();
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
         List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
+        ManagedTypeProvider mtp = new ManagedTypeProvider(project, ((JPAProblemContext)ctx).getMetaData());
         for(int index=0;index<values.size();index++){
             String value = values.get(index);
             String qName = names.get(index);
@@ -140,7 +142,7 @@ public class JPQLValidation extends JPAClassRule {
                 nq.setQuery(value);
                 nq.setName(qName);
             }
-            helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project, ((JPAProblemContext)ctx).getMetaData())));
+            helper.setQuery(new Query(nq, value, mtp));
             List<JPQLQueryProblem> tmp = null;
             try{
                 tmp = helper.validate();
@@ -151,6 +153,7 @@ public class JPQLValidation extends JPAClassRule {
             }
             if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
             helper.dispose();
+            //System.out.println("TIME TO COMPLETE: "+(System.nanoTime() - start));
         }
         if (problems != null && problems.size()>0){
             ErrorDescription[] ret = new ErrorDescription[problems.size()];

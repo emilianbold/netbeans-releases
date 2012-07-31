@@ -45,7 +45,11 @@ package org.netbeans.modules.groovy.refactoring;
 import java.util.Collection;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -53,6 +57,7 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.groovy.refactoring.utils.OccurrencesUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -118,12 +123,39 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             int end = textC.getSelectionEnd();
 
             BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
-            AstPath path = new AstPath(root, caret, doc);
+            ASTNode findingNode = getNodeOnCaretLocation(root, doc, caret);
 
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, (ModuleNode) root, path.leaf(), fileObject);
+            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, (ModuleNode) root, findingNode, fileObject);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, start, end, parserResult);
             }
+        }
+
+        private ASTNode getNodeOnCaretLocation(ASTNode root, BaseDocument doc, int caret) {
+            AstPath path = new AstPath(root, caret, doc);
+            ASTNode leaf = path.leaf();
+
+            if (leaf instanceof FieldNode) {
+                if (OccurrencesUtil.isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
+                    return ((FieldNode) leaf).getType();
+                }
+            } else if (leaf instanceof PropertyNode) {
+                if (OccurrencesUtil.isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
+                    return ((PropertyNode) leaf).getField().getType();
+                }
+            } else if (leaf instanceof MethodNode) {
+                MethodNode method = ((MethodNode) leaf);
+                if (OccurrencesUtil.isCaretOnReturnType(method, doc, caret)) {
+                    return method.getReturnType();
+                }
+
+                for (Parameter param : method.getParameters()) {
+                    if (OccurrencesUtil.isCaretOnParamType(param, doc, caret)) {
+                        return param.getType();
+                    }
+                }
+            }
+            return leaf;
         }
 
         @Override
