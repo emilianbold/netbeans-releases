@@ -221,7 +221,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         //System.out.println("enum_declaration " + ((APTToken)token).getOffset());
         
         EnumBuilder enumBuilder = new EnumBuilder(currentContext.file.getParsingFileContent());
-        enumBuilder.setParent(builderContext.top(1));
+        CsmObjectBuilder parent = builderContext.top(1);
+        if(parent instanceof ClassBuilder) {
+            ((ClassBuilder)parent).addChild(enumBuilder);
+        }        
+        enumBuilder.setParent(parent);
         enumBuilder.setFile(currentContext.file);
         if(token instanceof APTToken) {
             enumBuilder.setStartOffset(((APTToken)token).getOffset());
@@ -309,19 +313,20 @@ public class CppParserActionImpl implements CppParserActionEx {
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof EnumBuilder) {
             EnumBuilder enumBuilder = builderContext.getEnumBuilder();
-        
-//            EnumImpl e = enumBuilder.create(true);
-//            if(e != null) {
-//                currentContext.objects.put(e.getStartOffset(), e);
-//                SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
-//                enumEntry.setAttribute(CppAttributes.DEFINITION, e);
-//                for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
-//                    SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
-//                    assert enumeratorEntry != null;
-//                    enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
-//                }
-//            }
-
+            CsmObjectBuilder parent = builderContext.top(2);
+            if(parent == null || parent instanceof NamespaceBuilder) {
+                EnumImpl e = enumBuilder.create(true);
+                if(e != null) {
+                    currentContext.objects.put(e.getStartOffset(), e);
+                    SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
+                    enumEntry.setAttribute(CppAttributes.DEFINITION, e);
+                    for (CsmEnumerator csmEnumerator : e.getEnumerators()) {
+                        SymTabEntry enumeratorEntry = globalSymTab.lookupLocal(csmEnumerator.getName());
+                        assert enumeratorEntry != null;
+                        enumeratorEntry.setAttribute(CppAttributes.DEFINITION, csmEnumerator);
+                    }
+                }
+            }
             builderContext.pop();
         }
     }
@@ -329,7 +334,11 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public void class_declaration(Token token) {
         ClassBuilder classBuilder = new ClassBuilder(currentContext.file.getParsingFileContent());
-        classBuilder.setParent(builderContext.top(1));
+        CsmObjectBuilder parent = builderContext.top(1);
+        if(parent instanceof ClassBuilder) {
+            ((ClassBuilder)parent).addChild(classBuilder);
+        }
+        classBuilder.setParent(parent);
         classBuilder.setFile(currentContext.file);
         if(token instanceof APTToken) {
             classBuilder.setStartOffset(((APTToken)token).getOffset());
@@ -410,15 +419,17 @@ public class CppParserActionImpl implements CppParserActionEx {
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof ClassBuilder) {
             ClassBuilder classBuilder = (ClassBuilder) top;
-
-            ClassImpl cls = classBuilder.create();
-            if(cls != null) {
-                currentContext.objects.put(cls.getStartOffset(), cls);
-                SymTabEntry classEntry = globalSymTab.lookupLocal(cls.getName());
-                if(classEntry != null) {
-                    classEntry.setAttribute(CppAttributes.DEFINITION, cls);
-                } else {
-//                    System.out.println("classEntry is empty " + cls);
+            CsmObjectBuilder parent = builderContext.top(2);
+            if(parent == null || parent instanceof NamespaceBuilder) {
+                ClassImpl cls = classBuilder.create();
+                if(cls != null) {
+                    currentContext.objects.put(cls.getStartOffset(), cls);
+                    SymTabEntry classEntry = globalSymTab.lookupLocal(cls.getName());
+                    if(classEntry != null) {
+                        classEntry.setAttribute(CppAttributes.DEFINITION, cls);
+                    } else {
+    //                    System.out.println("classEntry is empty " + cls);
+                    }
                 }
             }
             builderContext.pop();

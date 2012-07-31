@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
@@ -307,6 +308,11 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
             return instance;
         }
         
+        public void setScope(CsmScope scope) {
+            assert scope != null;
+            this.scope = scope;
+        }
+        
         public CsmScope getScope() {
             if(scope != null) {
                 return scope;
@@ -337,8 +343,12 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
                     impl.addEnumerator(ei);
                 }
                 
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(impl);
+                if(parent != null) {
+                    if(parent instanceof ClassBuilder) {
+                        ((ClassBuilder)parent).getClassDefinitionInstance().addMember(impl, true);
+                    } else if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                        ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(impl);
+                    }
                 } else {
                     fileContent.addDeclaration(impl);
                 }
