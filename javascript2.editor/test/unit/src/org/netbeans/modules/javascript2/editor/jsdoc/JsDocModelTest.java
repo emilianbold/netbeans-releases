@@ -41,18 +41,18 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.SimpleElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.LinkElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.AssignElement;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import java.util.*;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.AssignElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.LinkElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.SimpleElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
