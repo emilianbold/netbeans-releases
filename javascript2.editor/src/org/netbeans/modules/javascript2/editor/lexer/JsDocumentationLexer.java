@@ -39,48 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc;
+package org.netbeans.modules.javascript2.editor.lexer;
 
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.javascript2.editor.lexer.JsLexer;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
 
+
 /**
- * Base JsDoc Lexer class.
+ * Base JsDocumentation Lexer class.
  * <p>
- * <i>Created on base of {@link JsLexer}</i>
+ * <i>Created on base of {@link JsDocumentationLexer}</i>
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class JsDocLexer implements Lexer<JsDocTokenId> {
+final class JsDocumentationLexer implements Lexer<JsDocumentationTokenId> {
 
-    private static final Logger LOGGER = Logger.getLogger(JsDocLexer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(JsDocumentationLexer.class.getName());
 
-    private final JsDocColoringLexer coloringLexer;
+    private final JsDocumentationColoringLexer coloringLexer;
 
-    private TokenFactory<JsDocTokenId> tokenFactory;
+    private TokenFactory<JsDocumentationTokenId> tokenFactory;
 
-    private JsDocLexer(LexerRestartInfo<JsDocTokenId> info) {
-        coloringLexer = new JsDocColoringLexer(info);
+    private JsDocumentationLexer(LexerRestartInfo<JsDocumentationTokenId> info) {
+        coloringLexer = new JsDocumentationColoringLexer(info);
         tokenFactory = info.tokenFactory();
     }
 
-    public static JsDocLexer create(LexerRestartInfo<JsDocTokenId> info) {
-        synchronized(JsDocLexer.class) {
-            return new JsDocLexer(info);
+    public static JsDocumentationLexer create(LexerRestartInfo<JsDocumentationTokenId> info) {
+        synchronized (JsDocumentationLexer.class) {
+            return new JsDocumentationLexer(info);
         }
     }
 
     @Override
-    public Token<JsDocTokenId> nextToken() {
+    public Token<JsDocumentationTokenId> nextToken() {
         try {
-            JsDocTokenId tokenId = coloringLexer.nextToken();
+            JsDocumentationTokenId tokenId = coloringLexer.nextToken();
             LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
-            Token<JsDocTokenId> token = null;
+            Token<JsDocumentationTokenId> token = null;
             if (tokenId != null) {
                 token = tokenFactory.createToken(tokenId);
             }

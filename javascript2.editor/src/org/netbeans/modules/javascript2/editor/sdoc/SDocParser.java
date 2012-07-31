@@ -51,6 +51,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
@@ -93,12 +94,12 @@ public class SDocParser {
         return blocks;
     }
 
-    private static boolean isCommentImportantToken(Token<? extends SDocTokenId> token) {
-        return (token.id() != SDocTokenId.ASTERISK && token.id() != SDocTokenId.COMMENT_START);
+    private static boolean isCommentImportantToken(Token<? extends JsDocumentationTokenId> token) {
+        return (token.id() != JsDocumentationTokenId.ASTERISK && token.id() != JsDocumentationTokenId.COMMENT_START);
     }
 
     private static TokenSequence getEmbeddedSDocTS(TokenSequence ts) {
-        return ts.embedded(SDocTokenId.language());
+        return ts.embedded(JsDocumentationTokenId.language());
     }
 
     private static SDocComment parseCommentBlock(TokenSequence ts, OffsetRange range) {
@@ -107,7 +108,7 @@ public class SDocParser {
         List<SDocElement> sDocElements = new ArrayList<SDocElement>();
         StringBuilder sb = new StringBuilder();
         
-        Token<? extends SDocTokenId> currentToken;
+        Token<? extends JsDocumentationTokenId> currentToken;
         boolean afterDescriptionEntry = false;
         
         SDocElementType lastType = null;
@@ -119,7 +120,7 @@ public class SDocParser {
                 continue;
             }
 
-            if (currentToken.id() == SDocTokenId.KEYWORD || currentToken.id() == SDocTokenId.COMMENT_END) {
+            if (currentToken.id() == JsDocumentationTokenId.KEYWORD || currentToken.id() == JsDocumentationTokenId.COMMENT_END) {
                 if (sb.toString().trim().isEmpty()) {
                     // simple tag
                     if (lastType != null) {
@@ -135,12 +136,12 @@ public class SDocParser {
                     sb = new StringBuilder();
                 }
 
-                while (ets.moveNext() && ets.token().id() == SDocTokenId.WHITESPACE) {
+                while (ets.moveNext() && ets.token().id() == JsDocumentationTokenId.WHITESPACE) {
                     continue;
                 }
 
                 lastOffset = ets.offset();
-                if (currentToken.id() != SDocTokenId.COMMENT_END) {
+                if (currentToken.id() != JsDocumentationTokenId.COMMENT_END) {
                     ets.movePrevious();
                 }
                 afterDescriptionEntry = true;

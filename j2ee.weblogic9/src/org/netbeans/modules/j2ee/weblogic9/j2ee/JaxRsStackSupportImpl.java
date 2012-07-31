@@ -276,6 +276,15 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#isBundled(java.lang.String)
+     */
+    @Override
+    public boolean isBundled( String classFqn ) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+    
 //====REMOVE THIS ALONG WITH CHANGE CODE FOR DIRECT WEBLOGIC.XML MODIFICATION========
 
     private void addPackage( Document document,

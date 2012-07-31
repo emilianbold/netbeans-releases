@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript2.editor.sdoc;
+package org.netbeans.modules.javascript2.editor.lexer;
 
-import org.netbeans.modules.javascript2.editor.jsdoc.*;
 import junit.framework.TestCase;
 import org.netbeans.lib.lexer.test.*;
 
@@ -53,9 +52,9 @@ import org.netbeans.lib.lexer.test.*;
  * @author Martin Adamek
  * @author Martin Fousek
  */
-public class SDocLexerRandomTest extends TestCase {
+public class JsDocumentationLexerRandomTest extends TestCase {
 
-    public SDocLexerRandomTest(String testName) {
+    public JsDocumentationLexerRandomTest(String testName) {
         super(testName);
     }
 
@@ -75,7 +74,7 @@ public class SDocLexerRandomTest extends TestCase {
 
     private void test(long seed) throws Exception {
         TestRandomModify randomModify = new TestRandomModify(seed);
-        randomModify.setLanguage(JsDocTokenId.language());
+        randomModify.setLanguage(JsDocumentationTokenId.language());
 
 //        randomModify.setDebugOperation(true);
 //        randomModify.setDebugDocumentText(true);
