@@ -67,6 +67,14 @@ public class AnnotationUtilsTest extends NbTestCase {
         assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME, ANNOTATION_NAME));
     }
 
+    public void testValidUseCase_04() throws Exception {
+        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
+    }
+
+    public void testValidUseCase_05() throws Exception {
+        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
+    }
+
     public void testInvalidUseCase_01() throws Exception {
         assertFalse(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME + "\\Foo\\Bar\\Baz\\", ANNOTATION_NAME));
     }

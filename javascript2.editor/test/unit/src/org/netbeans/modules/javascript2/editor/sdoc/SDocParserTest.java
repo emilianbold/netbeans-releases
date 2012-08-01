@@ -41,31 +41,21 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
-import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class SDocParserTest extends JsTestBase {
-
-    Snapshot snapshot;
 
     public SDocParserTest(String name) {
         super(name);
@@ -96,19 +86,19 @@ public class SDocParserTest extends JsTestBase {
         Source source = getTestSource(getTestFile("testfiles/sdoc/allTypesNoAsterisks.js"));
         List<? extends SDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();
         assertEquals(SDocElementType.DESCRIPTION, tags.get(0).getType());
-        assertEquals("This should be description", ((SDocDescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals("This should be description.", ((SDocDescriptionElement) tags.get(0)).getDescription().toString());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/sdoc/allTypesAsterisks.js"));
         List<? extends SDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();
         assertEquals(SDocElementType.DESCRIPTION, tags.get(0).getType());
-        assertEquals("This should be description", ((SDocDescriptionElement) tags.get(0)).getDescription().toString());
+        assertEquals("This should be description.", ((SDocDescriptionElement) tags.get(0)).getDescription().toString());
     }
 
     private void checkElementTypes(String filePath) throws Exception {
         Source source = getTestSource(getTestFile(filePath));
-        List<? extends SDocElement> tags = getFirstDocumentationBlock(snapshot).getTags();
+        List<? extends SDocElement> tags = getFirstDocumentationBlock(source.createSnapshot()).getTags();
         for (int i = 0; i < expectedTypes.length; i++) {
             assertEquals(expectedTypes[i], tags.get(i).getType());
         }

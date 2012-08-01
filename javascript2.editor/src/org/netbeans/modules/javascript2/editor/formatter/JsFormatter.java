@@ -455,8 +455,8 @@ public class JsFormatter implements Formatter {
         }
     }
 
-    private int handleLineWrap(List<FormatToken> tokens, int index,
-            FormatContext formatContext, int initialIndent) {
+    private int handleLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext,
+            int initialIndent) {
 
         FormatToken token = tokens.get(index);
         
@@ -493,10 +493,8 @@ public class JsFormatter implements Formatter {
         if (tokenAfterEol != null && style != CodeStyle.WrapStyle.WRAP_IF_LONG
                 // there is no eol
                 && (tokenAfterEol.getKind() != FormatToken.Kind.EOL
-                // or we are removing everything
-                || style == CodeStyle.WrapStyle.WRAP_NEVER
                 // or there are multiple lines and we are not AFTER_STATEMENT
-                || extendedTokenAfterEol != tokenAfterEol && token.getKind() != FormatToken.Kind.AFTER_STATEMENT)) {
+                || extendedTokenAfterEol != tokenAfterEol && !isStatementWrap(token))) {
 
             // proceed the skipped tokens moving the main loop
             i = moveForward(token, i, extendedTokenAfterEol, formatContext);
@@ -542,38 +540,33 @@ public class JsFormatter implements Formatter {
                     }
                 }
             } else if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                // this handles the cases when there is no before/after space
-                // otherwise it is handle in appropriate methods
-                FormatToken endToken = extendedTokenAfterEol;
-                // if there is no eol at this place we have meaningful token
-                // as endToken so no shifting
-                if (endToken != null && endToken.getKind() == FormatToken.Kind.EOL) {
-                    while (endToken != null) {
-                        endToken = endToken.next();
-                        if (endToken != null && !endToken.isVirtual()
-                                && endToken.getKind() != FormatToken.Kind.WHITESPACE) {
-                            break;
-                        }
-                    }
-                }
-
                 int start = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length();
-                if (endToken != null) {
+                
+                FormatToken endToken = extendedTokenAfterEol;
+                if (endToken == null) {
+                    // end of file
+                    endToken = tokens.get(tokens.size() - 1);
+                    while (endToken != null && endToken.isVirtual()) {
+                        endToken = endToken.previous();
+                    }
+                    formatContext.remove(start, endToken.getOffset() + endToken.getText().length() - start);
+                } else if (endToken.getKind() != FormatToken.Kind.EOL) {
+                    // no eol
+                    // XXX do it only when it is really needed
+                    formatContext.replace(start, endToken.getOffset() - start, " "); // NOI18N
+                } else if (tokenAfterEol != endToken) {
+                    // multiple eols
                     formatContext.remove(start, endToken.getOffset() - start);
                 } else {
-                    FormatToken last = tokens.get(tokens.size() - 1);
-                    while (last != null && last.isVirtual()) {
-                        last = last.previous();
-                    }
-                    formatContext.remove(start, last.getOffset() + last.getText().length() - start);
+                    return index;
                 }
             }
         }
         return i;
     }
 
-    private int handleSpaceAfter(List<FormatToken> tokens, int index,
-            FormatContext formatContext, boolean remove) {
+    private int handleSpaceAfter(List<FormatToken> tokens, int index, FormatContext formatContext,
+            boolean remove) {
 
         FormatToken token = tokens.get(index);
         assert token.isVirtual();
@@ -618,8 +611,7 @@ public class JsFormatter implements Formatter {
                 if (!remove) {
                     formatContext.insert(start.getOffset(), " "); // NOI18N
                 }
-            // TODO is this right ? not consistent with java and php
-            } else if (!containsEol || style == CodeStyle.WrapStyle.WRAP_NEVER) {
+            } else if (!containsEol) {
                 if (remove) {
                     formatContext.remove(start.getOffset(),
                             end.getOffset() - start.getOffset());
@@ -633,8 +625,8 @@ public class JsFormatter implements Formatter {
         return index;
     }
 
-    private int handleSpaceBefore(List<FormatToken> tokens, int index,
-            FormatContext formatContext, boolean remove) {
+    private int handleSpaceBefore(List<FormatToken> tokens, int index, FormatContext formatContext,
+            boolean remove) {
 
         FormatToken token = tokens.get(index);
         assert token.isVirtual();
@@ -672,8 +664,7 @@ public class JsFormatter implements Formatter {
                 if (!remove) {
                     formatContext.insert(start.getOffset(), " "); // NOI18N
                 }
-            // TODO is this right ? not consistent with java and php
-            } else if (!containsEol || style == CodeStyle.WrapStyle.WRAP_NEVER) {
+            } else if (!containsEol) {
                 if (remove) {
                     formatContext.remove(start.getOffset(),
                             theToken.getOffset() - start.getOffset());
@@ -805,6 +796,13 @@ public class JsFormatter implements Formatter {
                 formatContext.decIndentationLevel();
                 break;
         }
+    }
+
+    private static boolean isStatementWrap(FormatToken token) {
+        return token.getKind() == FormatToken.Kind.AFTER_STATEMENT
+                || token.getKind() == FormatToken.Kind.AFTER_BLOCK_START
+                || token.getKind() == FormatToken.Kind.AFTER_CASE
+                || token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START;
     }
 
     private static CodeStyle.WrapStyle getLineWrap(List<FormatToken> tokens, int index, FormatContext context) {
