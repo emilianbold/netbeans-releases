@@ -2240,6 +2240,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="windows"/>
+		<param name="bundle.platform.filename"  value="windows-i586"/>
 		<param name="bundle.extension"		value=".exe"/>
 		<param name="bundled.jvm.file.suffix"   value="windows-i586.exe"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
@@ -2251,6 +2252,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="windows-x64"/>
+                <param name="bundle.platform.filename"  value="windows-x64"/>
 		<param name="bundle.extension"		value=".exe"/>
 		<param name="bundled.jvm.file.suffix"   value="windows-x64.exe"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
@@ -2262,6 +2264,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="linux"/>
+                <param name="bundle.platform.filename"  value="linux-i586"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="linux-i586.bin"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
@@ -2274,6 +2277,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </condition>
 	<antcall target="generate-jdk-bundle">
 		<param name="bundle.platform"           value="linux-x64"/>
+                <param name="bundle.platform.filename"  value="linux-x64"/>
 		<param name="bundle.extension"		value=".sh"/>
 		<param name="bundled.jvm.file.suffix"   value="linux-x64.bin"/>
 	        <param name="jdk.full.version"          value="${jdk.full.version.platform}"/>
@@ -2282,7 +2286,7 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-jdk-bundle"  depends="get-bundled-jvm">
         <property name="bundle.prefix"
-                      value="${jdk.output.dir}/${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-${bundle.platform}${nb.build.suffix}"/>
+                      value="${jdk.output.dir}/${jdk.bundle.files.prefix}-${jdk.bundle.files.suffix}-${bundle.platform.filename}${nb.build.suffix}"/>
 
         <create-bundle root="${output.dir}/registry-temp"
                         platform="${bundle.platform}"
