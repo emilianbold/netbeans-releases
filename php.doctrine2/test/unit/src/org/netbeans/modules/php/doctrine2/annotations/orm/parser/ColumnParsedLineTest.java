@@ -41,42 +41,38 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
+public class ColumnParsedLineTest extends NbTestCase {
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OrmAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ColumnLineParser());
+    public ColumnParsedLineTest(String name) {
+        super(name);
     }
 
-    private Doctrine2OrmAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=500)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
-    }
-
-    @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
+    public void testNonNullDescription() throws Exception {
+        try {
+            new ColumnParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
         }
-        return result;
+    }
+
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new ColumnParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
+    }
+
+    public void testCorrectName() throws Exception {
+        ColumnParsedLine parsedLine = new ColumnParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(ColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
     }
 
 }

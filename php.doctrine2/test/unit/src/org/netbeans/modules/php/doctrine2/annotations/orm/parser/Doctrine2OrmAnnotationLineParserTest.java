@@ -41,42 +41,28 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
+public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
+    private AnnotationLineParser parser;
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OrmAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ColumnLineParser());
-    }
-
-    private Doctrine2OrmAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=500)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+    public Doctrine2OrmAnnotationLineParserTest(String name) {
+        super(name);
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    protected void setUp() throws Exception {
+        super.setUp();
+        parser = Doctrine2OrmAnnotationLineParser.getDefault();
+    }
+
+    public void testColumnParser() {
+        assertNotNull(parser.parse("Column"));
     }
 
 }
