@@ -169,9 +169,8 @@ public class SiteTemplateWizard extends JPanel {
 
     void updateOnlineTemplateDescription() {
         SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
-        if (siteTemplateRef != null) {
-            onlineTemplateDescriptionTextPane.setText(siteTemplateRef.getDescription());
-        }
+        String desc = siteTemplateRef != null ? siteTemplateRef.getDescription() : ""; // NOI18N
+        onlineTemplateDescriptionTextPane.setText(desc);
     }
 
     SiteTemplateImplementation getSelectedOnlineTemplate() {
