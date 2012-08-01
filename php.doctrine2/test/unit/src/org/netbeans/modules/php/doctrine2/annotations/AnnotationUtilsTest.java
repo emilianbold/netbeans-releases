@@ -109,4 +109,25 @@ public class AnnotationUtilsTest extends NbTestCase {
         assertTrue(types.containsKey(new OffsetRange(59, 75)));
     }
 
+    public void testNotNullTypeAnnotation_01() throws Exception {
+        try {
+            AnnotationUtils.isTypeAnnotation(null, "");
+            fail();
+        } catch (NullPointerException ex) {}
+    }
+
+    public void testNotNullTypeAnnotation_02() throws Exception {
+        try {
+            AnnotationUtils.isTypeAnnotation("", null);
+            fail();
+        } catch (NullPointerException ex) {}
+    }
+
+    public void testNotNullExtracParamTypes() throws Exception {
+        try {
+            AnnotationUtils.extractTypesFromParameters(null);
+            fail();
+        } catch (NullPointerException ex) {}
+    }
+
 }
