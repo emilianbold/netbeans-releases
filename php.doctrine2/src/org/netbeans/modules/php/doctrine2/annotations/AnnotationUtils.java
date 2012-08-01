@@ -41,17 +41,36 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.openide.util.Parameters;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class AnnotationUtils {
 
+    private static final Pattern PARAM_TYPE_PATTERN = Pattern.compile("=\\s*\\\"\\s*(\\w+)\\s*\\\""); //NOI18N
+
     private AnnotationUtils() {
     }
 
     public static boolean isTypeAnnotation(final String lineToCheck, final String annotationName) {
         return lineToCheck.toLowerCase().matches("\\\\?(\\w+\\\\)*" + annotationName.toLowerCase() + "\\s*"); //NOI18N
+    }
+
+    public static Map<OffsetRange, String> extractTypes(final String line) {
+        Parameters.notNull("line", line); //NOI18N
+        final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
+        final Matcher matcher = PARAM_TYPE_PATTERN.matcher(line);
+        while (matcher.find()) {
+            result.put(new OffsetRange(matcher.start(1), matcher.end(1)), matcher.group(1));
+        }
+        return result;
     }
 
 }
