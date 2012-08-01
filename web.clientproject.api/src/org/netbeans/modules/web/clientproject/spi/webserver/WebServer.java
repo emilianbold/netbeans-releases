@@ -240,7 +240,8 @@ public final class WebServer {
                     if (fo != null) {
                         fis = fo.getInputStream();
                         out = new DataOutputStream(outputStream);
-                        out.writeBytes("HTTP/1.0 200 OK\nContent-Length: "+fo.getSize()+"\n\n");
+                        out.writeBytes("HTTP/1.0 200 OK\nContent-Length: "+fo.getSize()+"\n"
+                                + "Content-Type: "+fo.getMIMEType()+"\n\n");
                         FileUtil.copy(fis, out);
                     }
                 }
