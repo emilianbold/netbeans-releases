@@ -98,4 +98,15 @@ public class AnnotationUtilsTest extends NbTestCase {
         assertTrue(types.containsKey(new OffsetRange(56, 64)));
     }
 
+    public void testQualifiedExtractParamTypes() throws Exception {
+        Map<OffsetRange, String> types = AnnotationUtils.extractTypesFromParameters("DiscriminatorMap({\"person\" = \" My\\Person \", \"employee\" = \" \\Full\\Q\\Employee \"})");
+        assertNotNull(types);
+        assertTrue(!types.isEmpty());
+        assertEquals(2, types.size());
+        assertTrue(types.containsValue("My\\Person"));
+        assertTrue(types.containsValue("\\Full\\Q\\Employee"));
+        assertTrue(types.containsKey(new OffsetRange(31, 40)));
+        assertTrue(types.containsKey(new OffsetRange(59, 75)));
+    }
+
 }
