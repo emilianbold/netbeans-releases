@@ -160,6 +160,19 @@ public class WebKitPageModel extends PageModel {
         }
     }
 
+    @Override
+    public String getDocumentURL() {
+        String documentURL = null;
+        org.openide.nodes.Node node = getDocumentNode();
+        if (node != null) {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            if (webKitNode != null) {
+                documentURL = webKitNode.getDocumentURL();
+            }
+        }
+        return documentURL;
+    }
+
     /**
      * Creates DOM domain listener.
      *
