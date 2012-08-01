@@ -58,7 +58,7 @@ public class ChangeTrackingPolicyParsedLineTest extends NbTestCase {
         try {
             new ChangeTrackingPolicyParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -66,7 +66,7 @@ public class ChangeTrackingPolicyParsedLineTest extends NbTestCase {
         try {
             new ChangeTrackingPolicyParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
