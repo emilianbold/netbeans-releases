@@ -88,7 +88,7 @@ public class AnnotationUtilsTest extends NbTestCase {
     }
 
     public void testExtractParamTypes() throws Exception {
-        Map<OffsetRange, String> types = AnnotationUtils.extractTypes("DiscriminatorMap({\"person\" = \" Person \", \"employee\" = \" Employee \"})");
+        Map<OffsetRange, String> types = AnnotationUtils.extractTypesFromParameters("DiscriminatorMap({\"person\" = \" Person \", \"employee\" = \" Employee \"})");
         assertNotNull(types);
         assertTrue(!types.isEmpty());
         assertEquals(2, types.size());

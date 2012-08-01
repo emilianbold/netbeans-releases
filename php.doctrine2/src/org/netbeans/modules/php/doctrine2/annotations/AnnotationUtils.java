@@ -63,7 +63,7 @@ public class AnnotationUtils {
         return lineToCheck.toLowerCase().matches("\\\\?(\\w+\\\\)*" + annotationName.toLowerCase() + "\\s*"); //NOI18N
     }
 
-    public static Map<OffsetRange, String> extractTypes(final String line) {
+    public static Map<OffsetRange, String> extractTypesFromParameters(final String line) {
         Parameters.notNull("line", line); //NOI18N
         final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
         final Matcher matcher = PARAM_TYPE_PATTERN.matcher(line);
