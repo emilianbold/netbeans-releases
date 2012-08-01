@@ -60,7 +60,7 @@ public interface SiteTemplateImplementation {
     String getDescription();
 
     /**
-     * Check whether site template is already {@link #prepare(ProgressHandle) prepared}.
+     * Check whether site template is already {@link #prepare() prepared}.
      * @return {@code true} if site template is already {@link #prepare(ProgressHandle) prepared}, {@code false} otherwise
      * @since 1.3
      */

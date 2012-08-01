@@ -69,6 +69,7 @@ public class DeveloperToolbar {
     private final ArrayList<BrowserResizeButton> resizeButtons;
     private final ItemListener resizeListener;
     private boolean ignoreSelectionChanges;
+    private final JComboBox comboZoom = new JComboBox();
 
     private DeveloperToolbar() {
         panel = new JPanel( new FlowLayout(FlowLayout.LEFT) );
@@ -87,6 +88,16 @@ public class DeveloperToolbar {
                 }
             }
         };
+        comboZoom.addItemListener( new ItemListener() {
+
+            @Override
+            public void itemStateChanged( ItemEvent e ) {
+                if( e.getStateChange() == ItemEvent.DESELECTED )
+                    return;
+                String newZoom = zoom( comboZoom.getSelectedItem().toString() );
+                comboZoom.setSelectedItem( newZoom );
+            }
+        });
     }
 
     public static DeveloperToolbar create() {
@@ -116,21 +127,11 @@ public class DeveloperToolbar {
         zoomModel.addElement( "100%" ); //NOI18N
         zoomModel.addElement( "75%" ); //NOI18N
         zoomModel.addElement( "50%" ); //NOI18N
-        final JComboBox comboZoom = new JComboBox(zoomModel);
+        comboZoom.setModel(zoomModel);
         comboZoom.setEditable( true );
         if( comboZoom.getEditor().getEditorComponent() instanceof JTextField )
             ((JTextField)comboZoom.getEditor().getEditorComponent()).setColumns( 4 );
         comboZoom.setSelectedItem( "100%" ); //NOI18N
-        comboZoom.addItemListener( new ItemListener() {
-
-            @Override
-            public void itemStateChanged( ItemEvent e ) {
-                if( e.getStateChange() == ItemEvent.DESELECTED )
-                    return;
-                String newZoom = zoom( comboZoom.getSelectedItem().toString() );
-                comboZoom.setSelectedItem( newZoom );
-            }
-        });
         comboZoom.setEnabled( null != getLookup().lookup( Zoomable.class ) );
         bar.add( comboZoom );
 

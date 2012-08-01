@@ -43,6 +43,7 @@
 package org.netbeans.core.browser.webview.ext;
 
 import java.awt.AWTEvent;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
@@ -63,9 +64,7 @@ import javafx.collections.ListChangeListener.Change;
 import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.*;
 import javafx.util.Callback;
@@ -435,13 +434,11 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             INIT_LOCK.release();
         }
 
-        HBox.setHgrow( browser, Priority.ALWAYS );
-        HBox hbox = new HBox();
-        hbox.getChildren().add( browser );
-        VBox.setVgrow( hbox, Priority.ALWAYS );
-        VBox root = new VBox();
-        root.getChildren().add( hbox );
-        container.setScene( new Scene( root ) );
+        BorderPane pane = new BorderPane();
+        pane.setCenter( browser );
+        Scene scene = new Scene( pane );
+        scene.setFill( getSceneFillColor() );
+        container.setScene( scene );
 
         if( null != urlToLoad ) {
             _setURL( urlToLoad );
@@ -712,5 +709,14 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 browser.autosize();
             }
         });
+    }
+
+    private javafx.scene.paint.Color getSceneFillColor() {
+        javafx.scene.paint.Color res = javafx.scene.paint.Color.LIGHTGRAY;
+        Color c = new JPanel().getBackground();
+        if( null != c ) {
+            res = javafx.scene.paint.Color.rgb( c.getRed(), c.getGreen(), c.getBlue() );
+        }
+        return res;
     }
 }

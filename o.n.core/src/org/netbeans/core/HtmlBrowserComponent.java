@@ -51,18 +51,22 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableTopComponent;
 
 /**
@@ -77,6 +81,8 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     /** Delegating component */
     private HtmlBrowser browserComponent;
     private HtmlBrowser.Factory browserFactory;
+
+    private final ProxyLookup proxyLookup = new ProxyLookup( Lookup.EMPTY );
     
 
     // initialization ....................................................................................
@@ -110,11 +116,15 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         //don't use page title for display name as it can be VERY long
         setName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
         setDisplayName(NbBundle.getMessage(HtmlBrowserComponent.class, "Title_WebBrowser")); //NOI18N
+
+        putClientProperty( "KeepNonPersistentTCInModelWhenClosed", Boolean.TRUE );
+
+        associateLookup( proxyLookup );
     }
     
     @Override
     public int getPersistenceType() {
-        return PERSISTENCE_NEVER;
+        return PERSISTENCE_ONLY_OPENED;
     }
     
     @Override
@@ -209,6 +219,18 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
 
     @Override
     protected void componentClosed() {
+        releaseBrowser();
+    }
+
+    /**
+     * Creates and initializes the internal browser component again.
+     */
+    public void recreateBrowser() {
+        releaseBrowser();
+        createBrowser();
+    }
+
+    private void releaseBrowser() {
         if( null != browserComponent ) {
             toolbarVisible = isToolbarVisible();
             statusVisible = isStatusLineVisible();
@@ -221,6 +243,13 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
         browserComponent = null;
     }
 
+    private void createBrowser() {
+        if( null == browserComponent ) {
+            browserComponent = createBrowser( browserFactory, toolbarVisible, statusVisible );
+            initBrowser();
+        }
+    }
+
     Lookup getBrowserLookup() {
         if (browserComponent != null) {
             return browserComponent.getBrowserImpl().getLookup();
@@ -231,10 +260,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
 
     @Override
     protected void componentOpened() {
-        if( null == browserComponent ) {
-            browserComponent = createBrowser( browserFactory, toolbarVisible, statusVisible );
-            initBrowser();
-        }
+        createBrowser();
     }
 
     @Override
@@ -249,13 +275,23 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     private void initBrowser() {
         add( browserComponent, BorderLayout.CENTER );
         // associate with this TopComponent lookup provided by browser (HtmlBrowser.Impl.getLookup)
-        associateLookup(getBrowserLookup());
+        associateBrowserLookup(getBrowserLookup());
 
         browserComponent.getBrowserImpl().addPropertyChangeListener (this);
 
         // Ensure closed browsers are not stored:
         if (browserComponent.getBrowserComponent() != null) {
             putClientProperty("InternalBrowser", Boolean.TRUE); // NOI18N
+        }
+    }
+
+    private void associateBrowserLookup( Lookup lkp ) {
+        try {
+            Method m = proxyLookup.getClass().getDeclaredMethod( "setLookups", Executor.class, Lookup[].class );
+            m.setAccessible( true );
+            m.invoke( proxyLookup, (Executor)null, new Lookup[] { lkp } );
+        } catch( Exception e ) {
+            Exceptions.printStackTrace( e );
         }
     }
 
@@ -379,10 +415,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     }
 
     public void setURLAndOpen( URL url ) {
-        if( null == browserComponent ) {
-            browserComponent = createBrowser( browserFactory, toolbarVisible, statusVisible );
-            initBrowser();
-        }
+        createBrowser();
         browserComponent.setURL(url);
         if( null != browserComponent.getBrowserComponent() ) {
             open();

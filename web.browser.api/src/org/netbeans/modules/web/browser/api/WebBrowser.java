@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.browser.api;
 
+import org.openide.awt.HtmlBrowser;
+
 /**
  * Single browser registered in the IDE.
  */
@@ -108,5 +110,11 @@ public final class WebBrowser {
         return new WebBrowserPane( factoryDesc, wrapEmbeddedBrowserInTopComponent);
     }
 
-    
+    /**
+     * Retrieve HTMLBrowser factory wrapped in this instance.
+     * @return HtmlBrowser factory.
+     */
+    public HtmlBrowser.Factory getHtmlBrowserFactory() {
+        return factoryDesc.getFactory();
+    }
 }
