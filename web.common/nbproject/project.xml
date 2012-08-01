@@ -193,6 +193,7 @@
                 <friend>org.netbeans.modules.css.model</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html</friend>
+                <friend>org.netbeans.modules.html.navigator</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
                 <friend>org.netbeans.modules.html.parser</friend>

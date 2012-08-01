@@ -239,7 +239,10 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.html.navigator</friend>
+                <package>org.netbeans.modules.web.inspect</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
