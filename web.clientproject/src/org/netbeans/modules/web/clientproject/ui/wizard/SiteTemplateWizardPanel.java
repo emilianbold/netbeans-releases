@@ -41,32 +41,32 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.Component;
+import java.io.File;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  */
-public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.FinishablePanel {
+public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>,
+        WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
     private SiteTemplateWizard component;
     private WizardDescriptor wizardDescriptor;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
+
 
     @Override
-    public Component getComponent() {
+    public SiteTemplateWizard getComponent() {
         if (component == null) {
-            component = new SiteTemplateWizard(this);
+            component = new SiteTemplateWizard();
             component.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
         }
         return component;
@@ -74,63 +74,63 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(SiteTemplateWizard.class);
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.SiteTemplateWizard"); // NOI18N
     }
 
     @Override
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
     }
 
     @Override
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
+        component.prepareTemplate();
     }
 
-    public void setErrorMessage(String message) {
-        if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
-        }
-    }
-    
     public Collection<String> getSupportedLibraries() {
         return component.getSupportedLibraries();
     }
-    
+
     @Override
     public boolean isValid() {
-        getComponent();
-        String error = component.isValid2();
-        if (error.length() > 0) {
+        // error
+        String error = getComponent().getErrorMessage();
+        if (error != null && !error.isEmpty()) {
             setErrorMessage(error);
             return false;
-        } else {
-            setErrorMessage("");
+        }
+        // warning
+        String warning = getComponent().getWarningMessage();
+        if (warning != null && !warning.isEmpty()) {
+            setErrorMessage(warning);
             return true;
         }
+        // everything ok
+        setErrorMessage(""); // NOI18N
+        return true;
+    }
+
+    private void setErrorMessage(String message) {
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
 
     @Override
     public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
+        getComponent().addChangeListener(l);
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+        getComponent().removeChangeListener(l);
     }
 
-    protected final void fireChangeEvent() {
-        changeSupport.fireChange();
-    }
-    
     @Override
     public boolean isFinishPanel() {
         return true;
     }
-    
+
     public void apply(FileObject p, ProgressHandle handle) {
-        if (component != null) {
-            component.apply(p, handle);
-        }
+        component.apply(p, handle);
     }
+
 }

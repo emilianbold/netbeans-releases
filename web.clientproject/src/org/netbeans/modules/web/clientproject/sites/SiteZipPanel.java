@@ -41,13 +41,14 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({"LBL_SiteZipPanel_Select=Select",
@@ -55,9 +56,7 @@ import org.openide.util.NbBundle;
 public class SiteZipPanel extends javax.swing.JPanel implements DocumentListener {
 
     private SiteZip.Customizer cust;
-    /**
-     * Creates new form SiteZipPanel
-     */
+
     public SiteZipPanel(SiteZip.Customizer cust) {
         this.cust = cust;
         initComponents();
@@ -78,72 +77,73 @@ public class SiteZipPanel extends javax.swing.JPanel implements DocumentListener
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        browseButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
+        archiveLabel = new javax.swing.JLabel();
         archiveComboBox = new javax.swing.JComboBox();
+        browseButton = new javax.swing.JButton();
+        infoLabel = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(SiteZipPanel.class, "SiteZipPanel.jLabel1.text")); // NOI18N
+        archiveLabel.setLabelFor(archiveComboBox);
+        org.openide.awt.Mnemonics.setLocalizedText(archiveLabel, org.openide.util.NbBundle.getMessage(SiteZipPanel.class, "SiteZipPanel.archiveLabel.text")); // NOI18N
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(SiteZipPanel.class, "SiteZipPanel.browseButton.text")); // NOI18N
+        archiveComboBox.setEditable(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(SiteZipPanel.class, "SiteZipPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
 
-        jLabel2.setFont(jLabel2.getFont().deriveFont(jLabel2.getFont().getSize()-1f));
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(SiteZipPanel.class, "SiteZipPanel.jLabel2.text")); // NOI18N
-
-        archiveComboBox.setEditable(true);
+        infoLabel.setFont(infoLabel.getFont().deriveFont(infoLabel.getFont().getSize()-1f));
+        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(SiteZipPanel.class, "SiteZipPanel.infoLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
+                .addComponent(archiveLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(archiveComboBox, 0, 238, Short.MAX_VALUE)
+                        .addComponent(archiveComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton))
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                    .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(archiveLabel)
                     .addComponent(browseButton)
                     .addComponent(archiveComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 0, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 39, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     public String getTemplate() {
         return ((JTextField)(archiveComboBox.getEditor().getEditorComponent())).getText();
     }
-    
+
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(Bundle.LBL_SiteZipPanel_Title());
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setApproveButtonText(Bundle.LBL_SiteZipPanel_Select());
-        if (chooser.showDialog(this, null) == JFileChooser.APPROVE_OPTION) {
-            ((JTextField)(archiveComboBox.getEditor().getEditorComponent())).setText(chooser.getSelectedFile().getAbsolutePath());
+        File file = new FileChooserBuilder(SiteZipPanel.class.getName())
+                .setTitle(Bundle.LBL_SiteZipPanel_Title())
+                .setFilesOnly(true)
+                .setApproveText(Bundle.LBL_SiteZipPanel_Select())
+                .showOpenDialog();
+        if (file != null) {
+            ((JTextField)(archiveComboBox.getEditor().getEditorComponent())).setText(file.getAbsolutePath());
         }
-         
+
     }//GEN-LAST:event_browseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox archiveComboBox;
+    private javax.swing.JLabel archiveLabel;
     private javax.swing.JButton browseButton;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel infoLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override

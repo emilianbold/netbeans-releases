@@ -52,13 +52,13 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.FinishablePanel {
+public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<WizardDescriptor>,
+        WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
     private JavaScriptLibrarySelection component;
     private WizardDescriptor wizardDescriptor;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
+
 
     @Override
     public Component getComponent() {
@@ -68,23 +68,23 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel,
         }
         return component;
     }
-    
+
     public void updateDefaults(Collection<String> defaultLibs) {
         component.updateDefaults(defaultLibs);
     }
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(SiteTemplateWizard.class);
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.SiteTemplateWizard"); // NOI18N
     }
 
     @Override
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
     }
 
     @Override
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
     }
 
     public void setErrorMessage(String message) {
@@ -92,7 +92,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel,
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
         }
     }
-    
+
     @Override
     public boolean isValid() {
         return true;
@@ -111,12 +111,12 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel,
     protected final void fireChangeEvent() {
         changeSupport.fireChange();
     }
-    
+
     @Override
     public boolean isFinishPanel() {
         return true;
     }
-    
+
     public void apply(FileObject p, ProgressHandle handle) throws IOException {
         if (component != null) {
             component.apply(p, handle);

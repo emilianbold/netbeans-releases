@@ -43,61 +43,259 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateCustomizer;
+import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.openide.WizardDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-@NbBundle.Messages({"MSG_Loading=loading...",
-    "MSG_None=Do not use any",
-    "SiteTemplateWizard_Label1=Site Template to initialize project structure"})
-public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeListener {
+public class SiteTemplateWizard extends JPanel {
 
-    private SiteTemplateCustomizer customizer = null;
-    private SiteTemplateImplementation site = null;
-    private JComponent component = null;
-    private SiteTemplateWizardPanel wizardPanel;
-    
-    /**
-     * Creates new form SiteTemplateWizard
-     */
-    public SiteTemplateWizard(SiteTemplateWizardPanel wizardPanel) {
-        this.wizardPanel = wizardPanel;
+    private static final long serialVersionUID = 154768576465454L;
+
+    static final Logger LOGGER = Logger.getLogger(SiteTemplateWizard.class.getName());
+    private static final SiteTemplateImplementation NO_SITE_TEMPLATE = new DummySiteTemplateImplementation(null);
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    // @GuardedBy("EDT")
+    private final SiteZip archiveSiteTemplate = new SiteZip();
+    // @GuardedBy("EDT")
+    private final SiteZip.Customizer archiveSiteCustomizer;
+    // @GuardedBy("EDT")
+    final DefaultListModel onlineTemplatesListModel = new DefaultListModel();
+    final Object siteTemplateLock = new Object();
+
+    // @GuardedBy("siteTemplateLock")
+    SiteTemplateImplementation siteTemplate = NO_SITE_TEMPLATE;
+
+
+    public SiteTemplateWizard() {
+        assert EventQueue.isDispatchThread();
+
+        archiveSiteCustomizer = archiveSiteTemplate.getCustomizer();
+        assert archiveSiteCustomizer != null : "Archive template must have a customizer";
+
         initComponents();
-        loadTemplates();
-        final ListCellRenderer defaultRender = sitesComboBox.getRenderer();
-        sitesComboBox.setRenderer(new ListCellRenderer() {
+        // archive
+        initArchiveTemplate();
+        // other templates
+        initOnlineTemplates();
+        // listeners
+        initListeners();
+        // fire first change
+        updateSiteTemplate();
+    }
+
+    private void initArchiveTemplate() {
+        archiveTemplatePanel.add(archiveSiteCustomizer.getComponent(), BorderLayout.CENTER);
+    }
+
+    @NbBundle.Messages("SiteTemplateWizard.loading=Loading...")
+    private void initOnlineTemplates() {
+        assert EventQueue.isDispatchThread();
+        // renderer
+        onlineTemplateList.setCellRenderer(new TemplateListCellRenderer(onlineTemplateList.getCellRenderer()));
+        // data
+        onlineTemplateList.setModel(onlineTemplatesListModel);
+        onlineTemplatesListModel.addElement(new DummySiteTemplateImplementation(Bundle.SiteTemplateWizard_loading()));
+        RequestProcessor.getDefault().post(new Runnable() {
             @Override
-            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                SiteTemplateImplementation site = (SiteTemplateImplementation)value;
-                return defaultRender.getListCellRendererComponent(list, site.getName(), index, isSelected, cellHasFocus);
-            }
-        });
-        sitesComboBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                updatePlaceholder();
+            public void run() {
+                Collection<? extends SiteTemplateImplementation> templates = Lookup.getDefault().lookupAll(SiteTemplateImplementation.class);
+                onlineTemplatesListModel.removeAllElements();
+                for (SiteTemplateImplementation template : templates) {
+                    onlineTemplatesListModel.addElement(template);
+                }
             }
         });
     }
 
-    public String getName() {
-        return Bundle.SiteTemplateWizard_Label1();
+    private void initListeners() {
+        // radios
+        ItemListener defaultItemListener = new DefaultItemListener();
+        noTemplateRadioButton.addItemListener(defaultItemListener);
+        archiveTemplateRadioButton.addItemListener(defaultItemListener);
+        onlineTemplateRadioButton.addItemListener(defaultItemListener);
+        // online templates
+        onlineTemplateList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                setSiteTemplate(getSelectedOnlineTemplate());
+                fireChange();
+                updateOnlineTemplateDescription();
+            }
+        });
     }
-    
+
+    final void updateSiteTemplate() {
+        if (noTemplateRadioButton.isSelected()) {
+            setSiteTemplate(NO_SITE_TEMPLATE);
+            setArchiveTemplateEnabled(false);
+            setOnlineTemplateEnabled(false);
+        } else if (archiveTemplateRadioButton.isSelected()) {
+            setSiteTemplate(archiveSiteTemplate);
+            setArchiveTemplateEnabled(true);
+            setOnlineTemplateEnabled(false);
+        } else if (onlineTemplateRadioButton.isSelected()) {
+            setSiteTemplate(getSelectedOnlineTemplate());
+            setArchiveTemplateEnabled(false);
+            setOnlineTemplateEnabled(true);
+        } else {
+            throw new IllegalStateException("No template radio button selected?!"); // NOI18N
+        }
+        fireChange();
+    }
+
+    void updateOnlineTemplateDescription() {
+        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        if (siteTemplateRef != null) {
+            onlineTemplateDescriptionTextPane.setText(siteTemplateRef.getDescription());
+        }
+    }
+
+    SiteTemplateImplementation getSelectedOnlineTemplate() {
+        return (SiteTemplateImplementation) onlineTemplateList.getSelectedValue();
+    }
+
+    private void setArchiveTemplateEnabled(boolean enabled) {
+        for (Component component : archiveSiteCustomizer.getComponent().getComponents()) {
+            component.setEnabled(enabled);
+        }
+    }
+
+    private void setOnlineTemplateEnabled(boolean enabled) {
+        onlineTemplateList.setEnabled(enabled);
+        onlineTemplateDescriptionTextPane.setEnabled(enabled);
+    }
+
+    @NbBundle.Messages("SiteTemplateWizard.name=Site Template")
+    @Override
+    public String getName() {
+        return Bundle.SiteTemplateWizard_name();
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        assert EventQueue.isDispatchThread();
+        changeSupport.addChangeListener(listener);
+        archiveSiteCustomizer.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        assert EventQueue.isDispatchThread();
+        changeSupport.removeChangeListener(listener);
+        archiveSiteCustomizer.removeChangeListener(listener);
+    }
+
+    @NbBundle.Messages("SiteTemplateWizard.error.noTemplateSelected=No online template selected.")
+    public String getErrorMessage() {
+        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        if (siteTemplateRef == null) {
+            return Bundle.SiteTemplateWizard_error_noTemplateSelected();
+        }
+        if (siteTemplateRef == archiveSiteTemplate) {
+            // archive
+            archiveSiteCustomizer.isValid();
+            return archiveSiteCustomizer.getErrorMessage();
+        }
+        return null;
+    }
+
+    public String getWarningMessage() {
+        if (getSiteTemplate() == archiveSiteTemplate) {
+            // archive
+            archiveSiteCustomizer.isValid();
+            return archiveSiteCustomizer.getWarningMessage();
+        }
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - template name",
+        "SiteTemplateWizard.template.preparing=Preparing template \"{0}\" for first usage...",
+        "# {0} - template name",
+        "SiteTemplateWizard.error.preparing=<html>Cannot prepare template \"{0}\".<br><br>See IDE log for more details.",
+    })
+    public void prepareTemplate() {
+        assert EventQueue.isDispatchThread();
+        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        if (siteTemplateRef.isPrepared()) {
+            // already prepared
+            return;
+        }
+        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+            @Override
+            public void run() {
+                SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+                try {
+                    siteTemplateRef.prepare();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, null, ex);
+                    errorOccured(Bundle.SiteTemplateWizard_error_preparing(siteTemplateRef.getName()));
+                }
+            }
+        }, Bundle.SiteTemplateWizard_template_preparing(siteTemplateRef.getName()));
+    }
+
+    @NbBundle.Messages({
+        "# {0} - template name",
+        "SiteTemplateWizard.error.applying=Cannot apply template \"{0}\"..."
+    })
+    public void apply(final FileObject p, final ProgressHandle handle) {
+        assert !EventQueue.isDispatchThread();
+        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        try {
+            siteTemplateRef.apply(p, handle);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            errorOccured(Bundle.SiteTemplateWizard_error_applying(siteTemplateRef.getName()));
+        }
+    }
+
+    void errorOccured(String message) {
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
+    void fireChange() {
+        changeSupport.fireChange();
+    }
+
+    Collection<String> getSupportedLibraries() {
+        return getSiteTemplate().supportedLibraries();
+    }
+
+    private SiteTemplateImplementation getSiteTemplate() {
+        synchronized (siteTemplateLock) {
+            return siteTemplate;
+        }
+    }
+
+    void setSiteTemplate(SiteTemplateImplementation siteTemplate) {
+        synchronized (siteTemplateLock) {
+            this.siteTemplate = siteTemplate;
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -107,140 +305,156 @@ public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeList
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        sitesComboBox = new javax.swing.JComboBox();
-        placeholder = new javax.swing.JPanel();
+        templateButtonGroup = new javax.swing.ButtonGroup();
+        infoLabel = new javax.swing.JLabel();
+        noTemplateRadioButton = new javax.swing.JRadioButton();
+        archiveTemplateRadioButton = new javax.swing.JRadioButton();
+        archiveTemplatePanel = new javax.swing.JPanel();
+        onlineTemplateRadioButton = new javax.swing.JRadioButton();
+        onlineTemplateScrollPane = new javax.swing.JScrollPane();
+        onlineTemplateList = new javax.swing.JList();
+        onlineTemplateDescriptionScrollPane = new javax.swing.JScrollPane();
+        onlineTemplateDescriptionTextPane = new javax.swing.JTextPane();
 
-        placeholder.setLayout(new java.awt.BorderLayout());
+        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.infoLabel.text")); // NOI18N
+        infoLabel.setEnabled(false);
+
+        templateButtonGroup.add(noTemplateRadioButton);
+        noTemplateRadioButton.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(noTemplateRadioButton, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.noTemplateRadioButton.text")); // NOI18N
+
+        templateButtonGroup.add(archiveTemplateRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(archiveTemplateRadioButton, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.archiveTemplateRadioButton.text")); // NOI18N
+
+        archiveTemplatePanel.setLayout(new java.awt.BorderLayout());
+
+        templateButtonGroup.add(onlineTemplateRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(onlineTemplateRadioButton, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.onlineTemplateRadioButton.text")); // NOI18N
+
+        onlineTemplateList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        onlineTemplateScrollPane.setViewportView(onlineTemplateList);
+
+        onlineTemplateDescriptionScrollPane.setViewportView(onlineTemplateDescriptionTextPane);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(sitesComboBox, 0, 400, Short.MAX_VALUE)
-            .addComponent(placeholder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(infoLabel, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(noTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(archiveTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(onlineTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(archiveTemplatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.Alignment.LEADING))))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(sitesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(infoLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(noTemplateRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(placeholder, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                .addComponent(archiveTemplateRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(archiveTemplatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(onlineTemplateRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel placeholder;
-    private javax.swing.JComboBox sitesComboBox;
+    private javax.swing.JPanel archiveTemplatePanel;
+    private javax.swing.JRadioButton archiveTemplateRadioButton;
+    private javax.swing.JLabel infoLabel;
+    private javax.swing.JRadioButton noTemplateRadioButton;
+    private javax.swing.JScrollPane onlineTemplateDescriptionScrollPane;
+    private javax.swing.JTextPane onlineTemplateDescriptionTextPane;
+    private javax.swing.JList onlineTemplateList;
+    private javax.swing.JRadioButton onlineTemplateRadioButton;
+    private javax.swing.JScrollPane onlineTemplateScrollPane;
+    private javax.swing.ButtonGroup templateButtonGroup;
     // End of variables declaration//GEN-END:variables
 
-    private void loadTemplates() {
-        sitesComboBox.addItem(new SiteTemplateImplementation() {
+    //~ Inner classes
 
-            @Override
-            public String getName() {
-                return Bundle.MSG_Loading();
-            }
+    private static final class DummySiteTemplateImplementation implements SiteTemplateImplementation {
 
-            @Override
-            public SiteTemplateCustomizer getCustomizer() {
-                return null;
-            }
+        private final String name;
 
-            @Override
-            public void apply(FileObject p, ProgressHandle handle) {
-            }
 
-            @Override
-            public Collection<String> supportedLibraries() {
-                return Collections.emptyList();
-            }
-        });
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                loadTemplatesImpl();
-            }
-        });
-    }
-    
-    private void loadTemplatesImpl() {
-        List<SiteTemplateImplementation> sites = new ArrayList<SiteTemplateImplementation>();
-        sites.add(new SiteTemplateImplementation() {
-
-            @Override
-            public String getName() {
-                return Bundle.MSG_None();
-            }
-
-            @Override
-            public SiteTemplateCustomizer getCustomizer() {
-                return null;
-            }
-
-            @Override
-            public void apply(FileObject projectRoot, ProgressHandle handle) {
-            }
-
-            @Override
-            public Collection<String> supportedLibraries() {
-                return Collections.emptyList();
-            }
-        });
-        sites.addAll(Lookup.getDefault().lookupAll(SiteTemplateImplementation.class));
-        sitesComboBox.setModel(new DefaultComboBoxModel(sites.toArray(new SiteTemplateImplementation[sites.size()])));
-        updatePlaceholder();
-    }
-    
-    private void updatePlaceholder() {
-        final ChangeListener l = this;
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                if (component != null) {
-                    placeholder.remove(component);
-                }
-                if (customizer != null) {
-                    customizer.removeChangeListener(l);
-                }
-                site = (SiteTemplateImplementation)sitesComboBox.getSelectedItem();
-                customizer = site.getCustomizer();
-                if (customizer != null) {
-                    component = customizer.getComponent();
-                    placeholder.add(component, BorderLayout.CENTER);
-                    customizer.addChangeListener(l);
-                } else {
-                    component = null;
-                }
-                placeholder.revalidate();
-                wizardPanel.fireChangeEvent();
-            }
-        };
-        if (SwingUtilities.isEventDispatchThread()) {
-            r.run();
-        } else {
-            SwingUtilities.invokeLater(r);
+        public DummySiteTemplateImplementation(String name) {
+            this.name = name;
         }
-    }
-    
-    public String isValid2() {
-        if (customizer == null) {
-            return "";
+
+        @Override
+        public String getName() {
+            return name;
         }
-        if (!customizer.isValid()) {
-            return customizer.getErrorMessage();
+
+        @Override
+        public String getDescription() {
+            throw new UnsupportedOperationException("Not supported.");
         }
-        return "";
+
+        @Override
+        public boolean isPrepared() {
+            return true;
+        }
+
+        @Override
+        public void prepare() {
+            // noop
+        }
+
+        @Override
+        public void apply(FileObject projectRoot, ProgressHandle handle) {
+            // noop
+        }
+
+        @Override
+        public Collection<String> supportedLibraries() {
+            return Collections.emptyList();
+        }
+
     }
 
-    public void apply(FileObject p, ProgressHandle handle) {
-        site.apply(p, handle);
+    private static final class TemplateListCellRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer cellRenderer;
+
+
+        public TemplateListCellRenderer(ListCellRenderer cellRenderer) {
+            this.cellRenderer = cellRenderer;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            SiteTemplateImplementation site = (SiteTemplateImplementation) value;
+            return cellRenderer.getListCellRendererComponent(list, site.getName(), index, isSelected, cellHasFocus);
+        }
+
     }
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        wizardPanel.fireChangeEvent();
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent event) {
+            if (event.getStateChange() == ItemEvent.SELECTED) {
+                updateSiteTemplate();
+            }
+        }
+
     }
 
-    Collection<String> getSupportedLibraries() {
-        return site.supportedLibraries();
-    }
 }

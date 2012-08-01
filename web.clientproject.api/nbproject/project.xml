@@ -82,12 +82,13 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.clientproject</friend>
                 <package>org.netbeans.modules.web.clientproject.api</package>
                 <package>org.netbeans.modules.web.clientproject.spi</package>
                 <package>org.netbeans.modules.web.clientproject.spi.platform</package>
                 <package>org.netbeans.modules.web.clientproject.spi.webserver</package>
-            </public-packages>
+            </friend-packages>
         </data>
     </configuration>
 </project>

@@ -41,85 +41,67 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
-import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateCustomizer;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  */
-@NbBundle.Messages({"LBL_Name2=Mobile Boilerplate",
-        "LBL_Description2=Site template from html5boilerplate.com/mobile. Version: 3.0"})
 @ServiceProvider(service=SiteTemplateImplementation.class, position=400)
 public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
+    private static final Logger LOGGER = Logger.getLogger(SiteMobileBoilerplate.class.getName());
+    private static final File LIB_FILE = new File(SiteHelper.getJsLibDirectory(), "mobile-boilerplate-30.zip"); // NOI18N
+
+
+    @NbBundle.Messages("SiteMobileBoilerplate.name=Mobile Boilerplate")
     @Override
     public String getName() {
-        return Bundle.LBL_Name2();
+        return Bundle.SiteMobileBoilerplate_name();
+    }
+
+    @NbBundle.Messages("SiteMobileBoilerplate.description=Site template from html5boilerplate.com/mobile. Version: 3.0")
+    @Override
+    public String getDescription() {
+        return Bundle.SiteMobileBoilerplate_description();
     }
 
     @Override
-    public SiteTemplateCustomizer getCustomizer() {
-        return new SiteTemplateCustomizer() {
-
-            @Override
-            public void addChangeListener(ChangeListener listener) {
-            }
-
-            @Override
-            public void removeChangeListener(ChangeListener listener) {
-            }
-
-            @Override
-            public JComponent getComponent() {
-                JPanel p = new JPanel(new BorderLayout());
-                p.add(new JLabel(Bundle.LBL_Description2()), BorderLayout.NORTH);
-                return p;
-            }
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public String getErrorMessage() {
-                return null;
-            }
-
-            @Override
-            public String getWarningMessage() {
-                return null;
-            }
-        };
+    public boolean isPrepared() {
+        return LIB_FILE.isFile();
     }
 
     @Override
-    public void apply(FileObject p, ProgressHandle handle) {
-        try {
-            SiteHelper.install("https://github.com/h5bp/mobile-boilerplate/zipball/v3.0", p, handle);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Throwable ex) {
-            Exceptions.printStackTrace(ex);
+    public void prepare() throws IOException {
+        assert !EventQueue.isDispatchThread();
+        assert !isPrepared();
+        SiteHelper.download("https://github.com/h5bp/mobile-boilerplate/zipball/v3.0", LIB_FILE, null); // NOI18N
+    }
+
+    @Override
+    public void apply(FileObject p, ProgressHandle handle) throws IOException {
+        assert !EventQueue.isDispatchThread();
+        if (!isPrepared()) {
+            // not correctly prepared, user has to know about it already
+            LOGGER.info("Template not correctly prepared, nothing to be applied");
+            return;
         }
+        SiteHelper.unzip(LIB_FILE, FileUtil.toFile(p), handle);
     }
 
     @Override
     public Collection<String> supportedLibraries() {
         return Collections.emptyList();
     }
-    
+
 }

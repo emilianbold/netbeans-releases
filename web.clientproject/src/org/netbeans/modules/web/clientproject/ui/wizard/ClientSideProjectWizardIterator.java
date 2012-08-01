@@ -61,17 +61,17 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
-@TemplateRegistration(folder = "Project/ClientSide", displayName = "#ClientSideProject_displayName", 
-        description = "ClientSideProjectDescription.html", 
+@TemplateRegistration(folder = "Project/ClientSide", displayName = "#ClientSideProject_displayName",
+        description = "ClientSideProjectDescription.html",
         iconBase = ClientSideProject.PROJECT_ICON )
-@Messages({"ClientSideProject_displayName=Client Side JavaScript Application",
+@Messages({"ClientSideProject_displayName=HTML Application",
             "MSG_Progress1=Creating project"})
-public class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
 
     private int index;
-    private WizardDescriptor.Panel[] panels;
+    private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private WizardDescriptor wiz;
-    
+
     private SiteTemplateWizardPanel sitesPanel;
     private JavaScriptLibrarySelectionPanel librariesPanel;
 
@@ -82,14 +82,16 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         return new ClientSideProjectWizardIterator();
     }
 
-    private WizardDescriptor.Panel[] createPanels() {
+    private WizardDescriptor.Panel<WizardDescriptor>[] createPanels() {
         sitesPanel = new SiteTemplateWizardPanel();
         librariesPanel = new JavaScriptLibrarySelectionPanel();
-        return new WizardDescriptor.Panel[]{
+        @SuppressWarnings("unchecked")
+        WizardDescriptor.Panel<WizardDescriptor>[] pnls = new WizardDescriptor.Panel[] {
                     new ClientSideProjectWizardPanel(),
                     sitesPanel,
                     librariesPanel,
         };
+        return pnls;
     }
 
     private String[] createSteps() {
@@ -100,7 +102,8 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
                 };
     }
 
-    public Set instantiate(ProgressHandle handle) throws IOException {
+    @Override
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
         handle.progress(Bundle.MSG_Progress1());
         Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
@@ -129,10 +132,11 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
     }
 
     @Override
-    public Set instantiate() throws IOException {
+    public Set<FileObject> instantiate() throws IOException {
         throw new UnsupportedOperationException("never implemented - use progress one");
     }
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -158,6 +162,7 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         }
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wiz.putProperty("projdir", null);
         this.wiz.putProperty("name", null);
@@ -165,19 +170,23 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         panels = null;
     }
 
+    @Override
     public String name() {
         return MessageFormat.format("{0} of {1}",
                 new Object[]{new Integer(index + 1), new Integer(panels.length)});
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -188,6 +197,7 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -195,14 +205,17 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         index--;
     }
 
-    public WizardDescriptor.Panel current() {
+    @Override
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
         return panels[index];
     }
 
     // If nothing unusual changes in the middle of the wizard, simply:
+    @Override
     public final void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
     }
 
