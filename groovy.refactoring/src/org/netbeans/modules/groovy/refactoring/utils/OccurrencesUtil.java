@@ -49,6 +49,8 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.TupleExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -88,7 +90,13 @@ public class OccurrencesUtil {
                 return leaf;
             }
         } else if (leaf instanceof DeclarationExpression) {
-
+            if (!OccurrencesUtil.isCaretOnDeclarationType(((DeclarationExpression) leaf), doc, caret)) {
+                return leaf;
+            }
+        } else if (leaf instanceof VariableExpression) {
+            if (!OccurrencesUtil.isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
+                return leaf;
+            }
         }
 
         ClassNode currentType = ElementUtils.getType(leaf);
@@ -99,13 +107,13 @@ public class OccurrencesUtil {
     }
 
     public static boolean isCaretOnReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
-        if (getMethodReturnType(method, doc, cursorOffset) != OffsetRange.NONE) {
+        if (getMethodRange(method, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
         }
         return false;
     }
 
-    private static OffsetRange getMethodReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
+    private static OffsetRange getMethodRange(MethodNode method, BaseDocument doc, int cursorOffset) {
         if (!method.isDynamicReturnType()) {
             OffsetRange range = AstUtilities.getNextIdentifierByName(doc, method.getReturnType().getNameWithoutPackage(), getOffset(method, doc));
             if (range.containsInclusive(cursorOffset)) {
@@ -142,6 +150,45 @@ public class OccurrencesUtil {
     private static OffsetRange getParameterRange(Parameter param, BaseDocument doc, int cursorOffset) {
         if (!param.isDynamicTyped()) {
             OffsetRange range = AstUtilities.getNextIdentifierByName(doc, param.getType().getNameWithoutPackage(), getOffset(param, doc));
+            if (range.containsInclusive(cursorOffset)) {
+                return range;
+            }
+        }
+        return OffsetRange.NONE;
+    }
+
+    public static boolean isCaretOnDeclarationType(DeclarationExpression expression, BaseDocument doc, int cursorOffset) {
+        if (getDeclarationExpressionRange(expression, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static OffsetRange getDeclarationExpressionRange(DeclarationExpression expression, BaseDocument doc, int cursorOffset) {
+        OffsetRange range;
+        if (!expression.isMultipleAssignmentDeclaration()) {
+            VariableExpression variable = expression.getVariableExpression();
+            range = AstUtilities.getNextIdentifierByName(doc, variable.getType().getNameWithoutPackage(), getOffset(variable, doc));
+        } else {
+            TupleExpression tuple = expression.getTupleExpression();
+            range = AstUtilities.getNextIdentifierByName(doc, tuple.getType().getNameWithoutPackage(), getOffset(tuple, doc));
+        }
+        if (range.containsInclusive(cursorOffset)) {
+            return range;
+        }
+        return OffsetRange.NONE;
+    }
+
+    public static boolean isCaretOnVariableType(VariableExpression expression, BaseDocument doc, int cursorOffset) {
+        if (getVariableRange(expression, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static OffsetRange getVariableRange(VariableExpression expression, BaseDocument doc, int cursorOffset) {
+        if (!expression.isDynamicTyped()) {
+            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, expression.getType().getNameWithoutPackage(), getOffset(expression, doc));
             if (range.containsInclusive(cursorOffset)) {
                 return range;
             }
