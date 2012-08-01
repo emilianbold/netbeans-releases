@@ -89,6 +89,14 @@ public final class ElementUtils {
         return normalizeTypeName(type.getNameWithoutPackage(), type);
     }
 
+    /**
+     * Returns type for the given ASTNode. For example if FieldNode is passed
+     * as a parameter, it returns type of the given field etc.
+     *
+     * @param node where we want to know declared type
+     * @return type of the given node
+     * @throws IllegalStateException if an implementation is missing for the given ASTNode type
+     */
     public static ClassNode getType(ASTNode node) {
         if (node instanceof ClassNode) {
             return ((ClassNode) node);
@@ -96,6 +104,8 @@ public final class ElementUtils {
             return ((FieldNode) node).getType();
         } else if (node instanceof PropertyNode) {
             return ((PropertyNode) node).getType();
+        } else if (node instanceof MethodNode) {
+            return ((MethodNode) node).getReturnType();
         } else if (node instanceof Parameter) {
            return ((Parameter) node).getType();
         } else if (node instanceof ForStatement) {
