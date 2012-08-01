@@ -41,19 +41,17 @@
  */
 package org.netbeans.modules.javascript2.editor.jsdoc;
 
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
+import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
+import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
