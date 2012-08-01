@@ -98,11 +98,17 @@ public class SiteHelper {
         if (progressHandle != null) {
             progressHandle.progress(Bundle.SiteHelper_progress_download(target.getName()));
         }
-        InputStream is = new URL(url).openStream();
         try {
-            copyToFile(is, target);
-        } finally {
-            is.close();
+            InputStream is = new URL(url).openStream();
+            try {
+                copyToFile(is, target);
+            } finally {
+                is.close();
+            }
+        } catch (IOException ex) {
+            // error => ensure file is deleted
+            target.delete();
+            throw ex;
         }
     }
 
