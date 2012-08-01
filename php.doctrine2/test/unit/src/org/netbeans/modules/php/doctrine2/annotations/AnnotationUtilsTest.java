@@ -98,9 +98,4 @@ public class AnnotationUtilsTest extends NbTestCase {
         assertTrue(types.containsKey(new OffsetRange(56, 64)));
     }
 
-    @Override
-    protected int timeOut() {
-        return 1000000;
-    }
-
 }
