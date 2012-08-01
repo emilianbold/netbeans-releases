@@ -74,7 +74,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
         super(testName);
     }
 
-    private void initializeDocumentationHolder(Source source, final int offset) throws ParseException {
+    private void initializeDocumentationHolder(Source source) throws ParseException {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result result = resultIterator.getParserResult();
@@ -87,7 +87,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     }
 
     private void checkReturnType(Source source, final int offset, final List<? extends Type> expected) throws Exception {
-        initializeDocumentationHolder(source, offset);
+        initializeDocumentationHolder(source);
         if (expected == null) {
             assertNull(documentationHolder.getReturnType(getNodeForOffset(parserResult, offset)));
         } else {
@@ -98,7 +98,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     }
 
     private void checkParameter(Source source, final int offset, final FakeDocParameter expectedParam) throws Exception {
-        initializeDocumentationHolder(source, offset);
+        initializeDocumentationHolder(source);
         if (expectedParam == null) {
             assertNull(documentationHolder.getParameters(getNodeForOffset(parserResult, offset)));
         } else {
@@ -114,17 +114,17 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     }
 
     private void checkDocumentation(Source source, final int offset, final String expected) throws Exception {
-        initializeDocumentationHolder(source, offset);
+        initializeDocumentationHolder(source);
         assertEquals(expected, documentationHolder.getDocumentation(getNodeForOffset(parserResult, offset)));
     }
 
     private void checkDeprecated(Source source, final int offset, final boolean expected) throws Exception {
-        initializeDocumentationHolder(source, offset);
+        initializeDocumentationHolder(source);
         assertEquals(expected, documentationHolder.isDeprecated(getNodeForOffset(parserResult, offset)));
     }
 
     private void checkModifiers(Source source, final int offset, final String expectedModifiers) throws Exception {
-        initializeDocumentationHolder(source, offset);
+        initializeDocumentationHolder(source);
         Set<JsModifier> realModifiers = documentationHolder.getModifiers(getNodeForOffset(parserResult, offset));
         if (expectedModifiers == null) {
             assertEquals(0, realModifiers.size());
