@@ -42,19 +42,26 @@
 package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeNamedElement;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeSimpleElement;
 
 /**
+ * Represents documentation comment block of ScriptDoc.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -69,37 +76,54 @@ public class SDocComment extends JsComment {
 
     @Override
     public List<String> getSummary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<String> summaries = new LinkedList<String>();
+        for (SDocElement sDocElement : getTagsForTypes(
+                new SDocElementType[]{SDocElementType.DESCRIPTION, SDocElementType.CLASS_DESCRIPTION, SDocElementType.PROJECT_DESCRIPTION})) {
+            summaries.add(((SDocDescriptionElement) sDocElement).getDescription());
+        }
+        return summaries;
     }
 
     @Override
     public List<String> getSyntax() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Collections.<String>emptyList();
     }
 
     @Override
     public DocParameter getReturnType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for (SDocElement sDocElement : getTagsForTypes(
+                new SDocElementType[]{SDocElementType.RETURN, SDocElementType.TYPE, SDocElementType.PROPERTY})) {
+            return (SDocTypeSimpleElement) sDocElement;
+        }
+        return null;
     }
 
     @Override
     public List<DocParameter> getParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<DocParameter> params = new LinkedList<DocParameter>();
+        for (SDocElement jsDocElement : getTagsForType(SDocElementType.PARAM)) {
+            params.add((SDocTypeNamedElement) jsDocElement);
+        }
+        return params;
     }
 
     @Override
     public String getDocumentation() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return JsDocumentationPrinter.printDocumentation(this);
     }
 
     @Override
     public boolean isDeprecated() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return !getTagsForType(SDocElementType.DEPRECATED).isEmpty();
     }
 
     @Override
     public Set<JsModifier> getModifiers() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Set<JsModifier> modifiers = EnumSet.noneOf(JsModifier.class);
+        for (SDocElement jsDocElement : getTagsForType(SDocElementType.PRIVATE)) {
+            modifiers.add(JsModifier.fromString(jsDocElement.getType().toString().substring(1)));
+        }
+        return modifiers;
     }
 
     private void initComment(List<SDocElement> elements) {
@@ -114,9 +138,8 @@ public class SDocComment extends JsComment {
     }
 
     /**
-     * Gets list of all {@code SDocTag}s inside this comment.
-     * <p>
-     * Used just in testing use cases.
+     * Gets list of all {@code SDocTag}s inside this comment. <p> Used just in testing use cases.
+     *
      * @return list of {@code SDocTag}s
      */
     protected List<? extends SDocElement> getTags() {
@@ -127,4 +150,26 @@ public class SDocComment extends JsComment {
         return allTags;
     }
 
+    /**
+     * Gets list of {@code SDocElement}s of given type.
+     *
+     * @return list of {@code SDocElement}s
+     */
+    public List<? extends SDocElement> getTagsForType(SDocElementType type) {
+        List<SDocElement> tagsForType = tags.get(type);
+        return tagsForType == null ? Collections.<SDocElement>emptyList() : tagsForType;
+    }
+
+    /**
+     * Gets list of {@code JsDocTag}s of given types.
+     *
+     * @return list of {@code JsDocTag}s
+     */
+    public List<? extends SDocElement> getTagsForTypes(SDocElementType[] types) {
+        List<SDocElement> list = new LinkedList<SDocElement>();
+        for (SDocElementType type : types) {
+            list.addAll(getTagsForType(type));
+        }
+        return list;
+    }
 }

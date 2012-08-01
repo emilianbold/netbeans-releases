@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.jsdoc;
+package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,12 +65,12 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
+public class SDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     JsDocumentationHolder documentationHolder;
     JsParserResult parserResult;
 
-    public JsDocDocumentationProviderTest(String testName) {
+    public SDocDocumentationProviderTest(String testName) {
         super(testName);
     }
 
@@ -81,7 +81,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
                 assertTrue(result instanceof JsParserResult);
                 
                 parserResult = (JsParserResult) result;
-                documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
+                documentationHolder = getDocumentationHolder(parserResult, new SDocDocumentationProvider());
             }
         });
     }
@@ -137,71 +137,67 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
         }
     }
 
+    private void checkFirstSummary(Source source, int offset, String summary) throws ParseException {
+        initializeDocumentationHolder(source);
+        assertEquals(summary, documentationHolder.getCommentForOffset(offset, documentationHolder.getCommentBlocks()).getSummary().get(0));
+    }
+
+    public void testGetSummaryOfClassFromContextDescription() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "function Rectangle2(width, height) {^");
+        checkFirstSummary(testSource, caretOffset, "Create a new Rectangle instance.");
+    }
+
+    public void testGetSummaryOfClassFromClassDescription() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "function ShapeFactory(){^");
+        checkFirstSummary(testSource, caretOffset, "This class exists to demonstrate the assignment of a class prototype\n  as an anonymous block.");
+    }
+
     public void testGetReturnTypeForReturn() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function(){^");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Shape", 3605)));
-    }
-
-    public void testGetReturnTypeForReturns() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
-
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone2 = function(){^");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Shape", 3759)));
-    }
-
-    public void testGetReturnTypeForType() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
-
-        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getClassName= function(){^");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("String", 5079)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Shape", 3499)));
     }
 
     public void testGetNullReturnTypeAtNoReturnTypeComment() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
-
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone3 = function(){^");
         checkReturnType(testSource, caretOffset, Collections.<Type>emptyList());
     }
 
-    public void testGetNullReturnTypeByMissingComment() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
-
+    public void testGetNullReturnTypeAtMissingComment() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone4 = function(){^");
         checkReturnType(testSource, caretOffset, Collections.<Type>emptyList());
     }
 
     public void testGetReturnTypeAtFunction() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
-
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function martion () {^");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 571)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 10625)));
     }
 
     public void testGetReturnTypeAtObjectFunction() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
-
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "getVersion: function() {^");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 478)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 10919)));
+    }
+
+    public void testGetReturnTypeAtType() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.getColor = function(){^");
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Color", 2821)));
     }
 
     public void testGetReturnTypeAtProperty() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
-
-        final int caretOffset = getCaretOffset(testSource, "Math.E^");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 654)));
-    }
-
-    public void testGetParametersForOnlyNameParam() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
-        final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 348), null, "", false,
-                Arrays.<Type>asList(new TypeImpl("", -1)));
-        checkParameter(testSource, caretOffset, fakeDocParameter);
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.border = function(){^return border;};");
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("int", 2277)));
     }
 
     public void testGetParametersForNameAndTypeParam() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line1(userName){^}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 23), null, "", false,
                 Arrays.<Type>asList(new TypeImpl("String", 15)));
@@ -209,131 +205,81 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     }
 
     public void testGetParametersForNameAndMoreTypesParam() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line2(product){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("product", 94), null, "", false,
-                Arrays.<Type>asList(new TypeImpl("String", 79), new TypeImpl("Number", 86)));
-        checkParameter(testSource, caretOffset, fakeDocParameter);
-    }
-
-    public void testGetParametersForFullDocParam() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
-        final int caretOffset = getCaretOffset(testSource, "function line6(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 418), null, "name of the user", false,
-                Arrays.<Type>asList(new TypeImpl("String", 410)));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("product", 95), null, "", false,
+                Arrays.<Type>asList(new TypeImpl("String", 79), new TypeImpl("Number", 87)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForFullDocOptionalParam() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line3(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 157), null, "accessLevel is optional", true,
-                Arrays.<Type>asList(new TypeImpl("String", 148)));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 158), null, "accessLevel is optional", true,
+                Arrays.<Type>asList(new TypeImpl("String", 149)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
-    public void testGetParametersForDefaultValueParam() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
-        final int caretOffset = getCaretOffset(testSource, "function line4(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 253), "\"author\"", "accessLevel is optional", true,
-                Arrays.<Type>asList(new TypeImpl("String", 244)));
-        checkParameter(testSource, caretOffset, fakeDocParameter);
-    }
-
-    public void testGetParametersForNameAndTypeArgument() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
-        final int caretOffset = getCaretOffset(testSource, "function line7(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 502), null, "", false,
-                Arrays.<Type>asList(new TypeImpl("String", 494)));
-        checkParameter(testSource, caretOffset, fakeDocParameter);
-    }
-
-    public void testGetParametersForDefaultValueArgument() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
-        final int caretOffset = getCaretOffset(testSource, "function line8(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 570), "\"Jackie\"", "userName is optional", true,
-                Arrays.<Type>asList(new TypeImpl("String", 561)));
-        checkParameter(testSource, caretOffset, fakeDocParameter);
-    }
-
-    public void testGetParametersForDefaultValueWithSpacesArgument() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
-        final int caretOffset = getCaretOffset(testSource, "function line9(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 669), "\"for example Jackie Chan\"", "userName is optional", true,
-                Arrays.<Type>asList(new TypeImpl("String", 660)));
+    public void testGetParametersForFullDocParam() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/parameterTypes.js"));
+        final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel){^}");
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 334), null, "accessLevel is optional", false,
+                Arrays.<Type>asList(new TypeImpl("String", 326)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testDocumentationDescriptionReturns() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function Shape(){^");
-        checkDocumentation(testSource, caretOffset, "<p style=\"margin: 5 5 5 5\">Construct a new Shape object.</p><h3>Returns:</h3><table style=\"margin-left:10px;\"><tr><td valign=\"top\" style=\"margin-right:5px;\"><b>Type:</b></td><td valign=\"top\">Shape | Coordinate</td></tr><tr><td valign=\"top\" style=\"margin-right:5px;\"><b>Description:</b></td><td valign=\"top\">A new shape.</td></tr></table>");
+        checkDocumentation(testSource, caretOffset, "<p style=\"margin: 5 5 5 5\">Construct a new Shape object.This is the basic Shape class.\n  It can be considered an abstract class, even though no such thing\n  really existing in JavaScript</p><h3>Returns:</h3><table style=\"margin-left:10px;\"><tr><td valign=\"top\" style=\"margin-right:5px;\"><b>Type:</b></td><td valign=\"top\">Shape | Coordinate</td></tr><tr><td valign=\"top\" style=\"margin-right:5px;\"><b>Description:</b></td><td valign=\"top\">A new shape.</td></tr></table>");
     }
 
     public void testDocumentationDescription() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function addReference(){^");
         checkDocumentation(testSource, caretOffset, "<p style=\"margin: 5 5 5 5\">This is an inner method, just used here as an example</p>");
     }
 
     public void testDocumentationDescriptionExamples() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function Hexagon(sideLength) {^");
-        checkDocumentation(testSource, caretOffset, "<p style=\"margin: 5 5 5 5\">Create a new Hexagon instance.</p><h3>Parameters:</h3><table style=\"margin-left:10px;\"><tr><td valign=\"top\" style=\"margin-right:5px;\">int</td><td valign=\"top\" style=\"margin-right:5px;\"><b>sideLength</b></td><td>The length of one side for the new Hexagon</td></tr></table>");
+        checkDocumentation(testSource, caretOffset, "<p style=\"margin: 5 5 5 5\">Create a new Hexagon instance.Hexagon is a class that is a <i>logical</i> sublcass of\n  Shape (thanks to the <code>&#64;extends</code> tag), but in\n  reality it is completely unrelated to Shape.</p><h3>Parameters:</h3><table style=\"margin-left:10px;\"><tr><td valign=\"top\" style=\"margin-right:5px;\">int</td><td valign=\"top\" style=\"margin-right:5px;\"><b>sideLength</b></td><td>The length of one side for the new Hexagon</td></tr></table>");
     }
 
     public void testDeprecated01() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function Add(One, Two){^");
         checkDeprecated(testSource, caretOffset, true);
     }
 
     public void testDeprecated02() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Circle.^PI = 3.14;");
         checkDeprecated(testSource, caretOffset, true);
     }
 
     public void testDeprecated03() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.^width = 0;");
         checkDeprecated(testSource, caretOffset, false);
     }
 
     public void testDeprecated04() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Coordinate.prototype.getX = function(){^");
         checkDeprecated(testSource, caretOffset, false);
     }
 
     public void testModifiers01() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.^width = 0;");
         checkModifiers(testSource, caretOffset, "private");
     }
 
     public void testModifiers02() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        Source testSource = getTestSource(getTestFile("testfiles/sdoc/classWithSDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getWidth = function(){^");
         checkModifiers(testSource, caretOffset, null);
-    }
-
-    public void testModifiers03() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
-        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.setWidth = function(width){^");
-        checkModifiers(testSource, caretOffset, "public");
-    }
-
-    public void testModifiers04() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
-        final int caretOffset = getCaretOffset(testSource, "Circle.^PI = 3.14;");
-        checkModifiers(testSource, caretOffset, "static");
-    }
-
-    public void testModifiers05() throws Exception {
-        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
-        final int caretOffset = getCaretOffset(testSource, "Circle.createCircle = function(radius){^");
-        checkModifiers(testSource, caretOffset, "static|public");
     }
 
     private static class FakeDocParameter implements DocParameter {
