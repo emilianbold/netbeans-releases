@@ -73,4 +73,8 @@ public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("DiscriminatorColumn"));
     }
 
+    public void testDiscriminatorMapParser() {
+        assertNotNull(parser.parse("DiscriminatorMap"));
+    }
+
 }

@@ -39,67 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
 
 /**
- * Represents sDoc elements with type declaration purpose.
- * <p>
- * <i>Examples:</i> @property {String}, @type {Number}, ...
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class SDocTypeSimpleElement extends SDocBaseElement implements DocParameter {
+class DiscriminatorMapParsedLine extends BaseParsedLine {
 
-    protected final List<Type> declaredTypes;
-
-    protected SDocTypeSimpleElement(SDocElementType type, List<Type> declaredTypes) {
-        super(type);
-        this.declaredTypes = declaredTypes;
-    }
-
-    /**
-     * Creates new {@code SDocTypeSimpleElement}.
-     */
-    public static SDocTypeSimpleElement create(SDocElementType type, List<Type> declaredTypes) {
-        return new SDocTypeSimpleElement(type, declaredTypes);
-    }
-
-    /**
-     * Gets the type declared by this element.
-     * @return declared type
-     */
-    public List<Type> getDeclaredTypes() {
-        return declaredTypes;
-    }
-
-
-    @Override
-    public DocIdentifier getParamName() {
-        return null;
+    public DiscriminatorMapParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
     @Override
-    public String getDefaultValue() {
-        return null;
+    public String getName() {
+        return DiscriminatorMapLineParser.ANNOTATION_NAME;
     }
 
-    @Override
-    public boolean isOptional() {
-        return false;
-    }
-
-    @Override
-    public String getParamDescription() {
-        return null;
-    }
-
-    @Override
-    public List<Type> getParamTypes() {
-        return declaredTypes;
-    }
 }

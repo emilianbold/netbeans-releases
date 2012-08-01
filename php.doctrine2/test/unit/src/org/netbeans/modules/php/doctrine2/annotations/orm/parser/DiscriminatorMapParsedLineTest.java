@@ -39,67 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import java.util.Collections;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * Represents sDoc elements with type declaration purpose.
- * <p>
- * <i>Examples:</i> @property {String}, @type {Number}, ...
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class SDocTypeSimpleElement extends SDocBaseElement implements DocParameter {
+public class DiscriminatorMapParsedLineTest extends NbTestCase {
 
-    protected final List<Type> declaredTypes;
-
-    protected SDocTypeSimpleElement(SDocElementType type, List<Type> declaredTypes) {
-        super(type);
-        this.declaredTypes = declaredTypes;
+    public DiscriminatorMapParsedLineTest(String name) {
+        super(name);
     }
 
-    /**
-     * Creates new {@code SDocTypeSimpleElement}.
-     */
-    public static SDocTypeSimpleElement create(SDocElementType type, List<Type> declaredTypes) {
-        return new SDocTypeSimpleElement(type, declaredTypes);
+    public void testNonNullDescription() throws Exception {
+        try {
+            new DiscriminatorMapParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
-    /**
-     * Gets the type declared by this element.
-     * @return declared type
-     */
-    public List<Type> getDeclaredTypes() {
-        return declaredTypes;
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new DiscriminatorMapParsedLine("", null);
+            fail();
+        } catch (NullPointerException ex) {
+        }
     }
 
-
-    @Override
-    public DocIdentifier getParamName() {
-        return null;
+    public void testCorrectName() throws Exception {
+        DiscriminatorMapParsedLine parsedLine = new DiscriminatorMapParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(DiscriminatorMapLineParser.ANNOTATION_NAME, parsedLine.getName());
     }
 
-    @Override
-    public String getDefaultValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isOptional() {
-        return false;
-    }
-
-    @Override
-    public String getParamDescription() {
-        return null;
-    }
-
-    @Override
-    public List<Type> getParamTypes() {
-        return declaredTypes;
-    }
 }

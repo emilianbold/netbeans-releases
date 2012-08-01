@@ -39,67 +39,36 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.Type;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
- * Represents sDoc elements with type declaration purpose.
- * <p>
- * <i>Examples:</i> @property {String}, @type {Number}, ...
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class SDocTypeSimpleElement extends SDocBaseElement implements DocParameter {
+class DiscriminatorMapLineParser implements AnnotationLineParser {
 
-    protected final List<Type> declaredTypes;
-
-    protected SDocTypeSimpleElement(SDocElementType type, List<Type> declaredTypes) {
-        super(type);
-        this.declaredTypes = declaredTypes;
-    }
-
-    /**
-     * Creates new {@code SDocTypeSimpleElement}.
-     */
-    public static SDocTypeSimpleElement create(SDocElementType type, List<Type> declaredTypes) {
-        return new SDocTypeSimpleElement(type, declaredTypes);
-    }
-
-    /**
-     * Gets the type declared by this element.
-     * @return declared type
-     */
-    public List<Type> getDeclaredTypes() {
-        return declaredTypes;
-    }
-
+    static final String ANNOTATION_NAME = "DiscriminatorMap"; //NOI18N
 
     @Override
-    public DocIdentifier getParamName() {
-        return null;
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            types.putAll(AnnotationUtils.extractTypesFromParameters(line));
+            result = new DiscriminatorMapParsedLine(description, types);
+        }
+        return result;
     }
 
-    @Override
-    public String getDefaultValue() {
-        return null;
-    }
-
-    @Override
-    public boolean isOptional() {
-        return false;
-    }
-
-    @Override
-    public String getParamDescription() {
-        return null;
-    }
-
-    @Override
-    public List<Type> getParamTypes() {
-        return declaredTypes;
-    }
 }

@@ -98,7 +98,7 @@ public class SDocElementUtils {
         textToParse = removeCurlyBraces(textToParse);
         String[] typesArray = textToParse.split("[,]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
+            types.add(new TypeImpl(string.trim(), offset + textToParse.indexOf(string.trim())));
         }
         return types;
     }
@@ -118,6 +118,7 @@ public class SDocElementUtils {
                     while (process < parts.length) {
                         sb.append(parts[process]);
                         if (parts[process].indexOf("}") == -1) { //NOI18N
+                            sb.append(" ");
                             process++;
                         } else {
                             break;
