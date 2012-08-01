@@ -242,7 +242,7 @@ public class SiteTemplateWizard extends JPanel {
         "# {0} - template name",
         "SiteTemplateWizard.template.preparing=Preparing template \"{0}\" for first usage...",
         "# {0} - template name",
-        "SiteTemplateWizard.error.preparing=<html>Cannot prepare template \"{0}\".<br><br>See IDE log for more details.",
+        "SiteTemplateWizard.error.preparing=<html>Cannot prepare template \"{0}\".<br><br>See IDE log for more details."
     })
     public void prepareTemplate() {
         assert EventQueue.isDispatchThread();
