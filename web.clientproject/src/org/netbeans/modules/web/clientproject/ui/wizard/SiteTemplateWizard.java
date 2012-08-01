@@ -168,8 +168,10 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     void updateOnlineTemplateDescription() {
-        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
-        String desc = siteTemplateRef != null ? siteTemplateRef.getDescription() : ""; // NOI18N
+        String desc;
+        synchronized (siteTemplateLock) {
+            desc = siteTemplate != null ? siteTemplate.getDescription() : ""; // NOI18N
+        }
         onlineTemplateDescriptionTextPane.setText(desc);
     }
 
@@ -208,11 +210,14 @@ public class SiteTemplateWizard extends JPanel {
 
     @NbBundle.Messages("SiteTemplateWizard.error.noTemplateSelected=No online template selected.")
     public String getErrorMessage() {
-        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
-        if (siteTemplateRef == null) {
-            return Bundle.SiteTemplateWizard_error_noTemplateSelected();
+        boolean isArchiveSiteTemplate;
+        synchronized (siteTemplateLock) {
+            if (siteTemplate == null) {
+                return Bundle.SiteTemplateWizard_error_noTemplateSelected();
+            }
+            isArchiveSiteTemplate = siteTemplate == archiveSiteTemplate;
         }
-        if (siteTemplateRef == archiveSiteTemplate) {
+        if (isArchiveSiteTemplate) {
             // archive
             archiveSiteCustomizer.isValid();
             return archiveSiteCustomizer.getErrorMessage();
@@ -221,7 +226,11 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     public String getWarningMessage() {
-        if (getSiteTemplate() == archiveSiteTemplate) {
+        boolean isArchiveSiteTemplate;
+        synchronized (siteTemplateLock) {
+            isArchiveSiteTemplate = siteTemplate == archiveSiteTemplate;
+        }
+        if (isArchiveSiteTemplate) {
             // archive
             archiveSiteCustomizer.isValid();
             return archiveSiteCustomizer.getWarningMessage();
@@ -237,23 +246,27 @@ public class SiteTemplateWizard extends JPanel {
     })
     public void prepareTemplate() {
         assert EventQueue.isDispatchThread();
-        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
-        if (siteTemplateRef.isPrepared()) {
-            // already prepared
-            return;
+        final String templateName;
+        synchronized (siteTemplateLock) {
+            if (siteTemplate.isPrepared()) {
+                // already prepared
+                return;
+            }
+            templateName = siteTemplate.getName();
         }
         ProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
-                SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
                 try {
-                    siteTemplateRef.prepare();
+                    synchronized (siteTemplateLock) {
+                        siteTemplate.prepare();
+                    }
                 } catch (IOException ex) {
                     LOGGER.log(Level.INFO, null, ex);
-                    errorOccured(Bundle.SiteTemplateWizard_error_preparing(siteTemplateRef.getName()));
+                    errorOccured(Bundle.SiteTemplateWizard_error_preparing(templateName));
                 }
             }
-        }, Bundle.SiteTemplateWizard_template_preparing(siteTemplateRef.getName()));
+        }, Bundle.SiteTemplateWizard_template_preparing(templateName));
     }
 
     @NbBundle.Messages({
@@ -262,12 +275,17 @@ public class SiteTemplateWizard extends JPanel {
     })
     public void apply(final FileObject p, final ProgressHandle handle) {
         assert !EventQueue.isDispatchThread();
-        SiteTemplateImplementation siteTemplateRef = getSiteTemplate();
+        final String templateName;
+        synchronized (siteTemplateLock) {
+            templateName = siteTemplate.getName();
+        }
         try {
-            siteTemplateRef.apply(p, handle);
+            synchronized (siteTemplateLock) {
+                siteTemplate.apply(p, handle);
+            }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            errorOccured(Bundle.SiteTemplateWizard_error_applying(siteTemplateRef.getName()));
+            errorOccured(Bundle.SiteTemplateWizard_error_applying(templateName));
         }
     }
 
@@ -280,12 +298,8 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     Collection<String> getSupportedLibraries() {
-        return getSiteTemplate().supportedLibraries();
-    }
-
-    private SiteTemplateImplementation getSiteTemplate() {
         synchronized (siteTemplateLock) {
-            return siteTemplate;
+            return siteTemplate.supportedLibraries();
         }
     }
 
