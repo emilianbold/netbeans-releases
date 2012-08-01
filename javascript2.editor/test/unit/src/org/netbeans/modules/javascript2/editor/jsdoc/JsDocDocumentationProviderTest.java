@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
@@ -66,102 +67,74 @@ import org.netbeans.modules.parsing.spi.Parser;
  */
 public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
 
+    JsDocumentationHolder documentationHolder;
+    JsParserResult parserResult;
+
     public JsDocDocumentationProviderTest(String testName) {
         super(testName);
     }
 
-    private void checkReturnType(Source source, final int offset, final List<? extends Type> expected) throws Exception {
+    private void initializeDocumentationHolder(Source source, final int offset) throws ParseException {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result result = resultIterator.getParserResult();
                 assertTrue(result instanceof JsParserResult);
-                JsParserResult parserResult = (JsParserResult) result;
-
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
-                if (expected == null) {
-                    assertNull(documentationHolder.getReturnType(getNodeForOffset(parserResult, offset)));
-                } else {
-                    for (int i = 0; i < expected.size(); i++) {
-                        assertEquals(expected.get(i), documentationHolder.getReturnType(getNodeForOffset(parserResult, offset)).get(i));
-                    }
-                }
+                
+                parserResult = (JsParserResult) result;
+                documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
             }
         });
+    }
+
+    private void checkReturnType(Source source, final int offset, final List<? extends Type> expected) throws Exception {
+        initializeDocumentationHolder(source, offset);
+        if (expected == null) {
+            assertNull(documentationHolder.getReturnType(getNodeForOffset(parserResult, offset)));
+        } else {
+            for (int i = 0; i < expected.size(); i++) {
+                assertEquals(expected.get(i), documentationHolder.getReturnType(getNodeForOffset(parserResult, offset)).get(i));
+            }
+        }
     }
 
     private void checkParameter(Source source, final int offset, final FakeDocParameter expectedParam) throws Exception {
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                Parser.Result result = resultIterator.getParserResult();
-                assertTrue(result instanceof JsParserResult);
-                JsParserResult parserResult = (JsParserResult) result;
-
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
-                if (expectedParam == null) {
-                    assertNull(documentationHolder.getParameters(getNodeForOffset(parserResult, offset)));
-                } else {
-                    List<DocParameter> parameters = documentationHolder.getParameters(getNodeForOffset(parserResult, offset));
-                    assertEquals(expectedParam.getDefaultValue(), parameters.get(0).getDefaultValue());
-                    assertEquals(expectedParam.getParamDescription(), parameters.get(0).getParamDescription());
-                    assertEquals(expectedParam.getParamName(), parameters.get(0).getParamName());
-                    assertEquals(expectedParam.isOptional(), parameters.get(0).isOptional());
-                    for (int i = 0; i < expectedParam.getParamTypes().size(); i++) {
-                        assertEquals(expectedParam.getParamTypes().get(i), parameters.get(0).getParamTypes().get(i));
-                    }
-                }
+        initializeDocumentationHolder(source, offset);
+        if (expectedParam == null) {
+            assertNull(documentationHolder.getParameters(getNodeForOffset(parserResult, offset)));
+        } else {
+            List<DocParameter> parameters = documentationHolder.getParameters(getNodeForOffset(parserResult, offset));
+            assertEquals(expectedParam.getDefaultValue(), parameters.get(0).getDefaultValue());
+            assertEquals(expectedParam.getParamDescription(), parameters.get(0).getParamDescription());
+            assertEquals(expectedParam.getParamName(), parameters.get(0).getParamName());
+            assertEquals(expectedParam.isOptional(), parameters.get(0).isOptional());
+            for (int i = 0; i < expectedParam.getParamTypes().size(); i++) {
+                assertEquals(expectedParam.getParamTypes().get(i), parameters.get(0).getParamTypes().get(i));
             }
-        });
+        }
     }
 
-    // TODO - REFACTOR LATER
     private void checkDocumentation(Source source, final int offset, final String expected) throws Exception {
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                Parser.Result result = resultIterator.getParserResult();
-                assertTrue(result instanceof JsParserResult);
-                JsParserResult parserResult = (JsParserResult) result;
-
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
-                assertEquals(expected, documentationHolder.getDocumentation(getNodeForOffset(parserResult, offset)));
-            }
-        });
+        initializeDocumentationHolder(source, offset);
+        assertEquals(expected, documentationHolder.getDocumentation(getNodeForOffset(parserResult, offset)));
     }
 
-    // TODO - REFACTOR LATER
     private void checkDeprecated(Source source, final int offset, final boolean expected) throws Exception {
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                Parser.Result result = resultIterator.getParserResult();
-                assertTrue(result instanceof JsParserResult);
-                JsParserResult parserResult = (JsParserResult) result;
-
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
-                assertEquals(expected, documentationHolder.isDeprecated(getNodeForOffset(parserResult, offset)));
-            }
-        });
+        initializeDocumentationHolder(source, offset);
+        assertEquals(expected, documentationHolder.isDeprecated(getNodeForOffset(parserResult, offset)));
     }
 
-    // TODO - REFACTOR LATER
     private void checkModifiers(Source source, final int offset, final String expectedModifiers) throws Exception {
-        ParserManager.parse(Collections.singleton(source), new UserTask() {
-            public @Override void run(ResultIterator resultIterator) throws Exception {
-                Parser.Result result = resultIterator.getParserResult();
-                assertTrue(result instanceof JsParserResult);
-                JsParserResult parserResult = (JsParserResult) result;
-
-                JsDocumentationHolder documentationHolder = getDocumentationHolder(parserResult, new JsDocDocumentationProvider());
-                Set<JsModifier> realModifiers = documentationHolder.getModifiers(getNodeForOffset(parserResult, offset));
-                if (expectedModifiers == null) {
-                    assertEquals(0, realModifiers.size());
-                } else {
-                    String[] expModifiers = expectedModifiers.split("[|]");
-                    assertEquals(expModifiers.length, realModifiers.size());
-                    for (int i = 0; i < expModifiers.length; i++) {
-                        assertTrue(realModifiers.contains(JsModifier.fromString(expModifiers[i])));
-                    }
-                }
+        initializeDocumentationHolder(source, offset);
+        Set<JsModifier> realModifiers = documentationHolder.getModifiers(getNodeForOffset(parserResult, offset));
+        if (expectedModifiers == null) {
+            assertEquals(0, realModifiers.size());
+        } else {
+            String[] expModifiers = expectedModifiers.split("[|]");
+            assertEquals(expModifiers.length, realModifiers.size());
+            for (int i = 0; i < expModifiers.length; i++) {
+                assertTrue(realModifiers.contains(JsModifier.fromString(expModifiers[i])));
             }
-        });
+        }
     }
 
     public void testGetReturnTypeForReturn() throws Exception {
