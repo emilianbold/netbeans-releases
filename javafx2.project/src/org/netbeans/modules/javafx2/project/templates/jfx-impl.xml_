@@ -1806,7 +1806,7 @@
         </sequential>
     </macrodef>
 
-    <!-- JavaFX 2.0+ deploy task as yet can not generate pre-FX jnlp which is needed for FX-in-Swing projects-->
+    <!-- JavaFX SDK 2.0.x and 2.1.x deploy task can not generate pre-FX jnlp which is needed for FX-in-Swing projects-->
     <macrodef name="deploy-deploy-swing">
         <sequential>
             <antcall target="-pre-jfx-deploy"/>
