@@ -43,7 +43,7 @@
 package org.netbeans.modules.versioning.util.status;
 
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.openide.explorer.view.NodeTableModel;
@@ -86,7 +86,7 @@ public class VCSStatusTableModel<T extends VCSStatusNode> extends NodeTableModel
 
     @SuppressWarnings("unchecked")
     public void remove (List<T> toRemove) {
-        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
+        Set<T> newNodes = new LinkedHashSet<T>(Arrays.asList(nodes));
         newNodes.removeAll(toRemove);
         nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(getItemClass(), newNodes.size()));
         super.setNodes(nodes);
@@ -94,7 +94,7 @@ public class VCSStatusTableModel<T extends VCSStatusNode> extends NodeTableModel
 
     @SuppressWarnings("unchecked")
     public void add (List<T> toAdd) {
-        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
+        Set<T> newNodes = new LinkedHashSet<T>(Arrays.asList(nodes));
         newNodes.addAll(toAdd);
         nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(getItemClass(), newNodes.size()));
         super.setNodes(nodes);
