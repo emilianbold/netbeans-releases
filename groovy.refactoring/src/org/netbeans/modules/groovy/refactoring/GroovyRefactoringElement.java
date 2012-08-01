@@ -103,8 +103,9 @@ public class GroovyRefactoringElement extends ASTElement {
             MethodNode method = ((MethodNode) node);
             StringBuilder builder = new StringBuilder(super.getSignature());
             Parameter[] params = method.getParameters();
+
+            builder.append("("); // NOI18N
             if (params.length > 0) {
-                builder.append("("); // NOI18N
                 for (Parameter param : params) {
                     builder.append(ElementUtils.getTypeNameWithoutPackage(param.getType()));
                     builder.append(" "); // NOI18N
@@ -112,8 +113,9 @@ public class GroovyRefactoringElement extends ASTElement {
                     builder.append(","); // NOI18N
                 }
                 builder.setLength(builder.length() - 1);
-                builder.append(")"); // NOI18N
             }
+            builder.append(")"); // NOI18N
+
             String returnType = method.getReturnType().getNameWithoutPackage();
             builder.append(" : "); // NOI18N
             builder.append(returnType);
