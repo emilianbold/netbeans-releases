@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.PathNotFoundException;
@@ -60,6 +62,7 @@ import org.openide.util.RequestProcessor;
  */
 abstract class WebKitBreakpointManager implements PropertyChangeListener {
     
+    private static final Logger LOG = Logger.getLogger(WebKitBreakpointManager.class.getName());
     protected final Debugger d;
     private final AbstractBreakpoint ab;
     private static final RequestProcessor rp = new RequestProcessor(WebKitBreakpointManager.class);
@@ -172,7 +175,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             }
             URL url = wd.getDebugger().getConnectionURL();
             URL urlBP = db.getURL();
-            if (urlBP != null && urlBP.equals(url)) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("WebKitDOMBreakpointManager.add(): connection URL = '"+url+"', breakpoint URL = '"+urlBP+"', adding = "+(!(urlBP != null && !urlBP.equals(url))));
+            }
+            if (urlBP != null && !urlBP.equals(url)) {
                 return;
             }
             DOMNode dn = db.getNode();
