@@ -45,7 +45,6 @@ package org.netbeans.modules.web.clientproject.browser;
 import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.openide.filesystems.FileObject;
 
@@ -63,7 +62,6 @@ public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
     public void fileChanged(FileObject fo) {
         URL u = support.getBrowserURL(fo, true);
         if (u != null) {
-            assert u.equals(ServerURLMapping.toServer(project, fo));
             assert support.canReload(u) : u;
             support.reload(u);
         }
