@@ -207,13 +207,6 @@ public class DOM {
         transport.sendCommand(new Command("DOM.hideHighlight")); // NOI18N
     }
 
-    public String getNodeHTML(Node node) {
-        JSONObject params = new JSONObject();
-        params.put("nodeId", node.getNodeId()); // NOI18N
-        Response response = transport.sendBlockingCommand(new Command("DOM.getOuterHTML", params)); // NOI18N
-        return (String)((JSONObject)response.getResponse().get("result")).get("outerHTML");
-    }
-   
     /**
      * Executes the given selector on the specified node and returns
      * a matching node.

@@ -347,7 +347,7 @@ public final class Debugger {
             removeEventBreakpoint("DOMContentLoaded");
             removeEventBreakpoint("load");
         }
-        String content = webkit.getDOM().getNodeHTML(n);
+        String content = webkit.getDOM().getOuterHTML(n);
         JSONArray callStack2 = callStack != null ? normalizeStackTrace(callStack) : null;
         if (realChange) {
             LiveHTML.getDefault().storeDocumentVersionBeforeChange(transport.getConnectionURL(), 
