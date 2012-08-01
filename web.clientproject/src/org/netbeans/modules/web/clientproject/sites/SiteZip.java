@@ -179,7 +179,7 @@ public class SiteZip implements SiteTemplateImplementation {
                 error = Bundle.SiteZip_error_template();
                 return false;
             }
-            error = ""; // NOI18N
+            error = null;
             return true;
         }
 
@@ -188,7 +188,7 @@ public class SiteZip implements SiteTemplateImplementation {
         }
 
         public String getWarningMessage() {
-            return ""; // NOI18N
+            return null;
         }
 
         void fireChange() {
