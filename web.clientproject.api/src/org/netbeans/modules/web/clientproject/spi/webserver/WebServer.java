@@ -53,6 +53,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.URL;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -145,18 +146,31 @@ public final class WebServer {
     }
 
     private FileObject fromServer(String serverURL) {
+        Map.Entry<Project, String> rootEntry = null;
         for (Map.Entry<Project, String> entry : deployedApps.entrySet()) {
+            if ("/".equals(entry.getValue())) {
+                rootEntry = entry;
+                // process this one as last one:
+                continue;
+            }
             if (serverURL.startsWith(entry.getValue())) {
-                Project p = entry.getKey();
-                int index = entry.getValue().length()+1;
-                if (entry.getValue().equals("/")) {
-                    index = 1;
-                }
-                String file = serverURL.substring(index);
-                return p.getProjectDirectory().getFileObject(file);
+                return findFile(entry, serverURL);
             }
         }
+        if (rootEntry != null) {
+            return findFile(rootEntry, serverURL);
+        }
         return null;
+    }
+
+    private FileObject findFile(Entry<Project, String> entry, String serverURL) {
+        Project p = entry.getKey();
+        int index = entry.getValue().length()+1;
+        if (entry.getValue().equals("/")) {
+            index = 1;
+        }
+        String file = serverURL.substring(index);
+        return p.getProjectDirectory().getFileObject(file);
     }
 
     private void startServer() {
@@ -243,8 +257,15 @@ public final class WebServer {
                     if (fo != null) {
                         fis = fo.getInputStream();
                         out = new DataOutputStream(outputStream);
+                        String mime = fo.getMIMEType();
+                        // #216136 - temporary hotfix
+                        if ("text/x-css".equals(mime)) {
+                            mime = "text/css";
+                        } else if ("content/unknown".equals(mime)) {
+                            mime = "text/plain";
+                        }
                         out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n"
-                                + "Content-Type: "+fo.getMIMEType()+"\n\n");
+                                + "Content-Type: "+mime+"\n\n");
                         FileUtil.copy(fis, out);
                     }
                 }
