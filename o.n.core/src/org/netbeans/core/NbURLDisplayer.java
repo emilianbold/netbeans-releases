@@ -46,7 +46,6 @@ package org.netbeans.core;
 
 import java.awt.Component;
 import java.awt.Desktop;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
@@ -64,7 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.TopComponent;
 
 /**
  * Implementation of URL displayer, which shows documents in the configured web browser.
@@ -127,7 +125,6 @@ public final class NbURLDisplayer extends URLDisplayer {
         private HtmlBrowserComponent externalBrowser;
         private PreferenceChangeListener idePCL;
         private static Lookup.Result factoryResult;
-        private PropertyChangeListener tcListener;
 
         static {
             factoryResult = Lookup.getDefault().lookupResult(Factory.class);
@@ -205,25 +202,11 @@ public final class NbURLDisplayer extends URLDisplayer {
                                 idePCL = null;
                                 brComp = null;
                                 externalBrowser = null;
-                                TopComponent.getRegistry().removePropertyChangeListener( tcListener );
                             }
                         }
                     }
                 };
                 IDESettings.getPreferences().addPreferenceChangeListener(idePCL);
-                tcListener = new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange( PropertyChangeEvent evt ) {
-                        if( TopComponent.Registry.PROP_TC_CLOSED.equals( evt.getPropertyName() ) ) {
-                            if( evt.getNewValue() == brComp ) {
-                                brComp = null;
-                            } else if( evt.getNewValue() == externalBrowser ) {
-                                externalBrowser = null;
-                            }
-                        }
-                    }
-                };
-                TopComponent.getRegistry().addPropertyChangeListener( tcListener );
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }

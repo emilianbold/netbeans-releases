@@ -156,20 +156,24 @@ class RuntimePathPanel extends javax.swing.JPanel {
         return runtimePath;
     }
 
-    private static void reopenBrowser( HtmlBrowserComponent browser ) {
+    private static void reopenBrowser( final HtmlBrowserComponent browser ) {
+//        browser
         HtmlBrowser.Impl impl = browser.getBrowserImpl();
         final String url = impl.getLocation();
-        final boolean showToolbar = browser.isToolbarVisible();
-        final boolean showStatus = browser.isStatusLineVisible();
-        browser.close();
+//        final boolean showToolbar = browser.isToolbarVisible();
+//        final boolean showStatus = browser.isStatusLineVisible();
+//        browser.close();
         SwingUtilities.invokeLater( new Runnable() {
 
             @Override
             public void run() {
-                HtmlBrowserComponent newBrowser = new HtmlBrowserComponent( new BrowserFactory(), showToolbar, showStatus );
-                newBrowser.setURL( url );
-                newBrowser.open();
-                newBrowser.requestActive();
+//                HtmlBrowserComponent newBrowser = new HtmlBrowserComponent( new BrowserFactory(), showToolbar, showStatus );
+//                newBrowser.setURL( url );
+//                newBrowser.open();
+//                newBrowser.requestActive();
+                browser.recreateBrowser();
+                browser.setURL( url );
+                browser.requestActive();
             }
         } );
     }

@@ -49,9 +49,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.HtmlBrowserComponent;
-import org.netbeans.modules.web.browser.ui.DeveloperToolbar;
+import org.netbeans.modules.web.browser.ui.DeveloperHtmlBrowserComponent;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.util.Lookup;
 
 /**
@@ -69,7 +68,6 @@ public final class WebBrowserPane {
     private HtmlBrowserComponent topComponent;
     private boolean wrapEmbeddedBrowserInTopComponent;
     private boolean createTopComponent = false;
-    private DeveloperToolbar devToolbar;
     
 //    WebBrowserPane(HtmlBrowserComponent comp) {
 //        this(comp.getBrowserImpl(), null, false, comp);
@@ -152,30 +150,10 @@ public final class WebBrowserPane {
     
     private synchronized HtmlBrowserComponent getTopComponent() {
         if (topComponent == null && createTopComponent) {
-            devToolbar = DeveloperToolbar.create();
 
             // below constructor sets some TopComponent properties and needs
             // to be therefore called in AWT thread:
-            topComponent = new HtmlBrowserComponent(descriptor.getFactory(), false, false) {
-
-                @Override
-                protected void componentOpened() {
-                    super.componentOpened();
-                    devToolbar.intialize( getLookup() );
-                }
-
-                @Override
-                protected void componentClosed() {
-                    super.componentClosed();
-                    topComponent = null;
-                }
-
-                @Override
-                protected HtmlBrowser createBrowser( Factory factory, boolean showToolbar, boolean showStatus ) {
-                    return new HtmlBrowser( factory, showToolbar, showStatus, devToolbar.getComponent() );
-                }
-
-            };
+            topComponent = new DeveloperHtmlBrowserComponent(descriptor.getFactory());
         }
         return topComponent;
     }
