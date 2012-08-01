@@ -39,9 +39,8 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor;
+package org.netbeans.modules.html.navigator;
 
-import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,14 +48,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.html.api.HtmlEditorSupportControl;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
@@ -64,14 +60,6 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.openide.cookies.EditorCookie;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.ExplorerUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node.Property;
@@ -79,11 +67,7 @@ import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -95,55 +79,6 @@ import org.openide.windows.TopComponent;
     "element.element.attributes.title=Element Attributes"
 })
 public class HtmlElementProperties {
-
-    static void parsed(HtmlParserResult result, SchedulerEvent event) {
-        try {
-            FileObject file = result.getSnapshot().getSource().getFileObject();
-            if (file == null) {
-                return;
-            }
-
-            DataObject dobj = DataObject.find(file);
-            HtmlEditorSupportControl control = HtmlEditorSupportControl.Query.get(dobj);
-            if (control == null) {
-                return;
-            }
-
-            //filter out embedded html cases
-            int caretPosition = ((CursorMovedSchedulerEvent) event).getCaretOffset();
-            Node node = result.findBySemanticRange(caretPosition, true);
-            if (node != null) {
-                if (node.type() == ElementType.OPEN_TAG) { //may be root node!
-                    OpenTag ot = (OpenTag) node;
-                    control.setNode(createOpenTagNode(result, ot, file, dobj));
-                }
-            }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-    }
-    
-    public static org.openide.nodes.Node createOpenTagNode(HtmlParserResult result, OpenTag openTag) {
-        try {
-            FileObject file = result.getSnapshot().getSource().getFileObject();
-            DataObject dobj = DataObject.find(file);
-            return createOpenTagNode(result, openTag, file, dobj);
-            
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return null;
-    }
-    
-    private static org.openide.nodes.Node createOpenTagNode(HtmlParserResult result, OpenTag openTag, Object... nodeLookupContent) {
-        InstanceContent ic = new InstanceContent();
-        for(Object o : nodeLookupContent) {
-            ic.add(o);
-        }
-        return new OpenTagNode(result, openTag, new AbstractLookup(ic));
-    }
 
     /**
      * A {@link Node} representing an HTML source code element.
@@ -159,30 +94,7 @@ public class HtmlElementProperties {
      * to the same {@link NavigatorPanel} are switched.
      *
      */
-    public static class OpenTagNode extends AbstractNode {
 
-        private OpenTag openTag;
-        private HtmlParserResult res;
-
-        public OpenTagNode(HtmlParserResult res, OpenTag openTag, Lookup nodeLookup) {
-            super(Children.LEAF, nodeLookup);
-            this.res = res;
-            this.openTag = openTag;
-
-            setDisplayName(openTag.name().toString());
-        }
-
-        @Override
-        public PropertySet[] getPropertySets() {
-            PropertySet[] sets = new PropertySet[]{
-                new PropertiesPropertySet(res, openTag)
-            };
-            return sets;
-        }
-        
-        
-    }
-    
     public static class PropertiesPropertySet extends PropertySet {
 
         private OpenTag openTag;

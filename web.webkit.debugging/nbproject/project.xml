@@ -52,6 +52,7 @@
                 <friend>org.netbeans.core.browser.webview</friend>
                 <friend>org.netbeans.modules.cordova</friend>
                 <friend>org.netbeans.modules.extbrowser</friend>
+                <friend>org.netbeans.modules.html.navigator</friend>
                 <friend>org.netbeans.modules.web.browser.api</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
                 <friend>org.netbeans.modules.web.javascript.debugger</friend>
