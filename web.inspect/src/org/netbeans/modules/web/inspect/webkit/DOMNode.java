@@ -51,6 +51,7 @@ import org.netbeans.modules.web.inspect.webkit.actions.GoToNodeSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -61,6 +62,8 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Stola
  */
 public class DOMNode extends AbstractNode {
+    /** Lookup path with context actions. */
+    private static final String ACTIONS_PATH = "Navigation/DOM/Actions"; // NOI18N
     /** Icon base of the node. */
     static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/domElement.png"; // NOI18N
     /** WebKit node represented by this node. */
@@ -201,9 +204,15 @@ public class DOMNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(GoToNodeSourceAction.class)
-        };
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(SystemAction.get(GoToNodeSourceAction.class));
+        for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
+            if (action instanceof ContextAwareAction) {
+                action = ((ContextAwareAction)action).createContextAwareInstance(getLookup());
+            }
+            actions.add(action);
+        }
+        return actions.toArray(new Action[actions.size()]);
     }
 
     @Override

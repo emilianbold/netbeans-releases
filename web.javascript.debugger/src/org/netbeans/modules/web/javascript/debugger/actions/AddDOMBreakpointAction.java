@@ -76,8 +76,8 @@ import org.openide.util.actions.NodeAction;
     "CTL_BreakOnNodeRemove=Break on Node Removal"
 })
 @ActionRegistration(displayName="#AddDOMBreakpoint", lazy=false, asynchronous=false)
-@ActionID(category="HTML/DOM", id="web.javascript.debugger.actions.AddDOMBreakpointAction")
-@ActionReference(path="Navigation/HTML/DOM/Actions")
+@ActionID(category="DOM", id="web.javascript.debugger.actions.AddDOMBreakpointAction")
+@ActionReference(path="Navigation/DOM/Actions", position=200, separatorBefore=100)
 public class AddDOMBreakpointAction extends NodeAction {
 
     @Override
