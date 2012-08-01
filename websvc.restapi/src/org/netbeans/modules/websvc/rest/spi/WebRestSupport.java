@@ -61,9 +61,6 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.Comment.Style;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
@@ -93,7 +90,10 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class WebRestSupport extends RestSupport {
 
-    
+    private static final String POJO_MAPPING_FEATURE = 
+            "com.sun.jersey.api.json.POJOMappingFeature";                   // NOI18N
+    private static final String JACKSON_JSON_PROVIDER = 
+            "org.codehaus.jackson.jaxrs.JacksonJsonProvider";               // NOI18N
     private static final String GET_REST_RESOURCE_CLASSES = "getRestResourceClasses";//NOI18N
     private static final String GET_CLASSES = "getClasses";                         //NOI18N
     
@@ -683,11 +683,20 @@ public abstract class WebRestSupport extends RestSupport {
     private InitParam createJerseyPackagesInitParam( Servlet adaptorServlet,
             String... packs ) throws ClassNotFoundException
     {
+        return createInitParam(adaptorServlet, JERSEY_PROP_PACKAGES, 
+                getPackagesList(packs), JERSEY_PROP_PACKAGES_DESC);
+    }
+    
+    private InitParam createInitParam( Servlet adaptorServlet, String name,  
+            String value , String description ) throws ClassNotFoundException
+    {
         InitParam initParam = (InitParam) adaptorServlet
                 .createBean("InitParam"); // NOI18N
-        initParam.setParamName(JERSEY_PROP_PACKAGES);
-        initParam.setParamValue(getPackagesList(packs));
-        initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+        initParam.setParamName(name);
+        initParam.setParamValue(value);
+        if ( description != null ){
+            initParam.setDescription(description);
+        }
         return initParam;
     }
 
@@ -833,7 +842,7 @@ public abstract class WebRestSupport extends RestSupport {
     
     private void configRestPackages( String... packs ) throws IOException {
         try {
-	    addResourceConfigToWebApp("/webresources/*");
+            addResourceConfigToWebApp("/webresources/*");           // NOI18N
             FileObject ddFO = getWebXml();
             WebApp webApp = getWebApp();
             if (webApp == null) {
@@ -844,14 +853,15 @@ public abstract class WebRestSupport extends RestSupport {
             }
             boolean needsSave = false;
             Servlet adaptorServlet = getRestServletAdaptor(webApp);
-	    if ( adaptorServlet == null ){
-		return;
-	    }
+            if ( adaptorServlet == null ){
+                return;
+            }
             InitParam[] initParams = adaptorServlet.getInitParam();
-            boolean initParamFound = false;
+            boolean jerseyParamFound = false;
+            boolean jacksonParamFound = false;
             for (InitParam initParam : initParams) {
                 if (initParam.getParamName().equals(JERSEY_PROP_PACKAGES)) {
-                    initParamFound = true;
+                    jerseyParamFound = true;
                     String paramValue = initParam.getParamValue();
                     if (paramValue != null) {
                         paramValue = paramValue.trim();
@@ -872,10 +882,27 @@ public abstract class WebRestSupport extends RestSupport {
                         needsSave = existed.length != set.size();
                     }
                 }
+                else if ( initParam.getParamName().equals( POJO_MAPPING_FEATURE)){
+                    jacksonParamFound = true;
+                    String paramValue = initParam.getParamValue();
+                    if (paramValue != null) {
+                        paramValue = paramValue.trim();
+                    }
+                    if ( !Boolean.TRUE.toString().equals(paramValue)){
+                        initParam.setParamValue(Boolean.TRUE.toString());
+                        needsSave = true;
+                    }
+                }
             }
-            if (!initParamFound) {
+            if (!jerseyParamFound) {
                 InitParam initParam = createJerseyPackagesInitParam(adaptorServlet,
                         packs);
+                adaptorServlet.addInitParam(initParam);
+                needsSave = true;
+            }
+            if ( !jacksonParamFound ){
+                InitParam initParam = createInitParam(adaptorServlet,
+                        POJO_MAPPING_FEATURE, Boolean.TRUE.toString(), null);
                 adaptorServlet.addInitParam(initParam);
                 needsSave = true;
             }
@@ -909,7 +936,10 @@ public abstract class WebRestSupport extends RestSupport {
                 Collections.singletonList(wildClass));
         if ( getClasses == null ){
             ModifiersTree modifiersTree = maker.Modifiers(
-                    EnumSet.of(Modifier.PUBLIC));
+                    EnumSet.of(Modifier.PUBLIC), Collections.singletonList( 
+                            maker.Annotation( maker.QualIdent(
+                                    Override.class.getCanonicalName()), 
+                                    Collections.<ExpressionTree>emptyList())));
             MethodTree methodTree = maker.Method(modifiersTree, 
                     GET_CLASSES, wildSet, 
                     Collections.<TypeParameterTree>emptyList(), 
@@ -971,6 +1001,7 @@ public abstract class WebRestSupport extends RestSupport {
                         builder.append( className );
                         builder.append(".class);");             // NOI18N
                     }
+                    builder.append(getJacksonProviderSnippet());
                     return null;
                 }
 
@@ -983,6 +1014,33 @@ public abstract class WebRestSupport extends RestSupport {
         finally{
             builder.append("return resources;");                // NOI18N
             builder.append('}');
+        }
+    }
+    
+    private String getJacksonProviderSnippet(){
+        boolean addJacksonProvider = hasResource(
+                "org/codehaus/jackson/jaxrs/JacksonJsonProvider.class");    // NOI18N
+        if( !addJacksonProvider) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                addJacksonProvider = support.isBundled(JACKSON_JSON_PROVIDER);    
+            }
+        }
+        StringBuilder builder = new StringBuilder();
+        if ( addJacksonProvider ){
+            builder.append("try {");
+            builder.append("Class<?> jacksonProvider = Class.forName(");
+            builder.append('"');
+            builder.append(JACKSON_JSON_PROVIDER);
+            builder.append("\");");
+            builder.append("resources.add(jacksonProvider);");
+            builder.append("} catch (ClassNotFoundException ex) {");
+            builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
+            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}");
+            return builder.toString();
+        }
+        else {
+            return builder.toString();
         }
     }
 }

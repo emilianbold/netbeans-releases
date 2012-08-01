@@ -585,29 +585,9 @@ public abstract class RestSupport {
      * Should be overridden by sub-classes
      */
     public boolean hasSwdpLibrary() {
-        return ! needsSwdpLibrary(getProject());
+        return hasResource(REST_SERVLET_ADAPTOR_CLASS.replace('.', '/')+".class");  // NOI18N
     }
 
-    /**
-     * A quick check if swdp is already part of classpath.
-     */
-    private static boolean needsSwdpLibrary(Project restEnableProject) {
-        // check if swdp is already part of classpath
-        SourceGroup[] sgs = ProjectUtils.getSources(restEnableProject).
-                getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        //this package name will change when open source, should just rely on subclass to use file names
-        FileObject restClass = classPath.findResource(REST_SERVLET_ADAPTOR_CLASS);  
-        if (restClass != null) {
-            return false;
-        }
-        return true;
-    }
-    
     public abstract boolean isRestSupportOn();
 
     public void setProjectProperty(String name, String value) {
@@ -707,19 +687,7 @@ public abstract class RestSupport {
      * Check to see if there is JTA support.
      */
     public boolean hasJTASupport() {
-        // check if swdp is already part of classpath
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        //this package name will change when open source, should just rely on subclass to use file names
-        FileObject utxClass = classPath.findResource("javax/transaction/UserTransaction.class"); // NOI18N
-        if (utxClass != null) {
-            return true;
-        }
-        return false;
+        return hasResource("javax/transaction/UserTransaction.class");  // NOI18N
     }
     
     /**
@@ -727,21 +695,9 @@ public abstract class RestSupport {
      * 
      */
     public boolean hasSpringSupport() {
-          // check if swdp is already part of classpath
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        //this package name will change when open source, should just rely on subclass to use file names
-        FileObject utxClass = classPath.findResource("org/springframework/transaction/annotation/Transactional.class"); // NOI18N
-        if (utxClass != null) {
-            return true;
-        }
-        return false;
+        return hasResource("org/springframework/transaction/annotation/Transactional.class"); // NOI18N
     }
-
+    
     public String getServerType() {
         return getProjectProperty(J2EE_SERVER_TYPE);
     }
@@ -840,6 +796,20 @@ public abstract class RestSupport {
                 (contextRoot.length()>0 ? contextRoot+"/" : ""); //NOI18N
     }
 
+    protected boolean hasResource(String resource ){
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        FileObject resourceFile = classPath.findResource(resource); 
+        if (resourceFile != null) {
+            return true;
+        }
+        return false;
+    }
 
     public abstract void configure(String... packages) throws IOException;
 
