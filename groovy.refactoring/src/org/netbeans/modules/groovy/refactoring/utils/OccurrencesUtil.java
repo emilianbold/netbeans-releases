@@ -50,6 +50,7 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -96,6 +97,12 @@ public class OccurrencesUtil {
             if (!OccurrencesUtil.isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
                 return leaf;
             }
+        } else if (leaf instanceof ForStatement) {
+            if (!OccurrencesUtil.isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
+                return ((ForStatement) leaf).getVariable();
+            } else {
+                return ((ForStatement) leaf).getVariableType();
+            }
         }
 
         ClassNode currentType = ElementUtils.getType(leaf);
@@ -121,6 +128,13 @@ public class OccurrencesUtil {
 
     private static boolean isCaretOnParamType(Parameter param, BaseDocument doc, int cursorOffset) {
         if (getParameterRange(param, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isCaretOnForStatementType(ForStatement forLoop, BaseDocument doc, int cursorOffset) {
+        if (getForLoopRange(forLoop, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
         }
         return false;
@@ -173,6 +187,10 @@ public class OccurrencesUtil {
             return OffsetRange.NONE;
         }
         return getRange(param, doc, cursorOffset);
+    }
+
+    private static OffsetRange getForLoopRange(ForStatement forLoop, BaseDocument doc, int cursorOffset) {
+        return getRange(forLoop.getVariableType(), doc, cursorOffset);
     }
 
     private static OffsetRange getVariableRange(VariableExpression variable, BaseDocument doc, int cursorOffset) {
