@@ -82,7 +82,7 @@ public class GroovyRefactoringElement extends ASTElement {
     }
 
     public final String getType() {
-        return ElementUtils.getTypeName(node);
+        return ElementUtils.getTypeNameWithoutPackage(node);
     }
 
     public final String getFQN() {
@@ -106,7 +106,7 @@ public class GroovyRefactoringElement extends ASTElement {
             if (params.length > 0) {
                 builder.append("("); // NOI18N
                 for (Parameter param : params) {
-                    builder.append(ElementUtils.getTypeName(param.getType()));
+                    builder.append(ElementUtils.getTypeNameWithoutPackage(param.getType()));
                     builder.append(" "); // NOI18N
                     builder.append(param.getName());
                     builder.append(","); // NOI18N

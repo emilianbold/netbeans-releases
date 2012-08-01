@@ -88,6 +88,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Document;
@@ -281,8 +282,23 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
      */
     @Override
     public boolean isBundled( String classFqn ) {
-        // TODO Auto-generated method stub
-        return false;
+        try {
+            List<URL> urls = getJerseyJars();
+            for (URL url : urls) {
+                FileObject root = URLMapper.findFileObject(url);
+                if (FileUtil.isArchiveFile(root)) {
+                    root = FileUtil.getArchiveRoot(root);
+                }
+                String path = classFqn.replace('.', '/') + ".class";
+                if (root.getFileObject(path) != null) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        catch (FileStateInvalidException e) {
+            return false;
+        }
     }
     
 //====REMOVE THIS ALONG WITH CHANGE CODE FOR DIRECT WEBLOGIC.XML MODIFICATION========
@@ -430,39 +446,39 @@ class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
         FileObject client = getJarFile("com.sun.jersey.client_");   // NOI18N
         List<URL> urls = new LinkedList<URL>();
         if ( client != null){
-            urls.add( client.getURL());
+            urls.add( client.toURL());
         }
         FileObject json = getJarFile("com.sun.jersey.json_");       // NOI18N
         if ( json != null){
-            urls.add( json.getURL());
+            urls.add( json.toURL());
         }
         FileObject multipart = getJarFile("com.sun.jersey.multipart_");// NOI18N
         if ( multipart != null){
-            urls.add( multipart.getURL());
+            urls.add( multipart.toURL());
         }
         FileObject server = getJarFile("com.sun.jersey.server_");       // NOI18N
         if ( server != null){
-            urls.add( server.getURL());
+            urls.add( server.toURL());
         }
         FileObject asl = getJarFile("org.codehaus.jackson.core.asl_");  // NOI18N
         if ( asl != null){
-            urls.add( asl.getURL());
+            urls.add( asl.toURL());
         }
         FileObject jacksonJaxRs = getJarFile("org.codehaus.jackson.jaxrs_");// NOI18N
         if ( jacksonJaxRs != null){
-            urls.add( jacksonJaxRs.getURL());
+            urls.add( jacksonJaxRs.toURL());
         }
         FileObject jacksonMapper = getJarFile("org.codehaus.jackson.mapper.asl_");// NOI18N
         if ( jacksonMapper != null){
-            urls.add( jacksonMapper.getURL());
+            urls.add( jacksonMapper.toURL());
         }
         FileObject jacksonXc = getJarFile("org.codehaus.jackson.xc_");// NOI18N
         if ( jacksonXc != null){
-            urls.add( jacksonXc.getURL());
+            urls.add( jacksonXc.toURL());
         }
         FileObject jettison = getJarFile("org.codehaus.jettison_");// NOI18N
         if ( jettison != null){
-            urls.add( jettison.getURL());
+            urls.add( jettison.toURL());
         }
         return urls;
     }

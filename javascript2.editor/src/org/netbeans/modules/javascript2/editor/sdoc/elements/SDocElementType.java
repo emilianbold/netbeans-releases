@@ -56,18 +56,18 @@ public enum SDocElementType {
     CONSTRUCTOR("@constructor", Category.SIMPLE), //NOI18N
     DEPRECATED("@deprecated", Category.SIMPLE), //NOI18N
     EXAMPLE("@example", Category.DESCRIPTION), //NOI18N
-    EXCEPTION("@exception", Category.TYPE_NAMED), //NOI18N
+    EXCEPTION("@exception", Category.TYPE_DESCRIBED), //NOI18N
     ID("@id", Category.DESCRIPTION), //NOI18N
     INHERITS("@inherits", Category.IDENT), //NOI18N
     INTERNAL("@internal", Category.SIMPLE), //NOI18N
     MEMBER_OF("@memberOf", Category.IDENT), //NOI18N
     METHOD("@method", Category.SIMPLE), //NOI18N
     NAMESPACE("@namespace", Category.IDENT), //NOI18N
-    PARAM("@param", Category.TYPE_DESCRIBED), //NOI18N
+    PARAM("@param", Category.TYPE_NAMED), //NOI18N
     PRIVATE("@private", Category.SIMPLE), //NOI18N
     PROJECT_DESCRIPTION("@projectDescription", Category.DESCRIPTION), //NOI18N
     PROPERTY("@property", Category.TYPE_SIMPLE), //NOI18N
-    RETURN("@return", Category.TYPE_NAMED), //NOI18N
+    RETURN("@return", Category.TYPE_DESCRIBED), //NOI18N
     SEE("@see", Category.DESCRIPTION), //NOI18N
     SINCE("@since", Category.DESCRIPTION), //NOI18N
     TYPE("@type", Category.TYPE_SIMPLE), //NOI18N
