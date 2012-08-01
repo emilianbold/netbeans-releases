@@ -181,6 +181,12 @@
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.FmtSpaces.getController"/>
                             <attr name="position" intvalue="700"/>
                         </file>
+
+                        <file name="Wrapping.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.FmtWrapping.getController"/>
+                            <attr name="position" intvalue="750"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
