@@ -65,4 +65,8 @@ public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("Column"));
     }
 
+    public void testChangeTrackingPolicyParser() {
+        assertNotNull(parser.parse("ChangeTrackingPolicy"));
+    }
+
 }
