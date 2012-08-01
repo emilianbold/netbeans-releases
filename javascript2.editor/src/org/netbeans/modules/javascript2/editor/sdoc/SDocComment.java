@@ -108,11 +108,6 @@ public class SDocComment extends JsComment {
     }
 
     @Override
-    public String getDocumentation() {
-        return JsDocumentationPrinter.printDocumentation(this);
-    }
-
-    @Override
     public boolean isDeprecated() {
         return !getTagsForType(SDocElementType.DEPRECATED).isEmpty();
     }
