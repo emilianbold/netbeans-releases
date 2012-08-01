@@ -54,11 +54,9 @@ import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
-import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
-import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeDescribedElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeNamedElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeSimpleElement;
 
