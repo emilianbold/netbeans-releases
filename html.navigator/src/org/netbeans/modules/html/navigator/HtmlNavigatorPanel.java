@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author marekfukala
  */
-@NavigatorPanel.Registration(displayName = "#navigator.panel.displayname", mimeType = "text/html", position = 5)
+@NavigatorPanel.Registration(displayName = "#navigator.panel.displayname", mimeType = "text/html")
 public class HtmlNavigatorPanel implements NavigatorPanel {
 
     static HtmlNavigatorPanelUI ui = new HtmlNavigatorPanelUI();
