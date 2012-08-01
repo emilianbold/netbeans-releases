@@ -49,6 +49,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
@@ -121,6 +122,8 @@ public final class ElementUtils {
             } else {
                 return declaration.getVariableExpression().getType();
             }
+        } else if (node instanceof ConstantExpression) {
+            return ((ConstantExpression) node).getType();
         }
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!"); // NOI18N
     }
@@ -139,6 +142,8 @@ public final class ElementUtils {
             name = ((Parameter) node).getName();
         } else if (node instanceof ForStatement) {
             name = ((ForStatement) node).getVariableType().getNameWithoutPackage();
+        } else if (node instanceof ClassExpression) {
+            name = ((ClassExpression) node).getType().getNameWithoutPackage();
         } else if (node instanceof VariableExpression) {
             name = ((VariableExpression) node).getName();
         } else if (node instanceof DeclarationExpression) {
@@ -148,9 +153,10 @@ public final class ElementUtils {
             } else {
                 name = declaration.getVariableExpression().getType().getNameWithoutPackage();
             }
-        } else if (node instanceof ClassExpression) {
-            name = ((ClassExpression) node).getType().getNameWithoutPackage();
+        } else if (node instanceof ConstantExpression) {
+            name = ((ConstantExpression) node).getConstantName();
         }
+
 
         if (name != null) {
             return normalizeTypeName(name, null);
