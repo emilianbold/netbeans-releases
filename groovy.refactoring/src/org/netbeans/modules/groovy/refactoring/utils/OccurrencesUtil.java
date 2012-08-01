@@ -42,9 +42,13 @@
 
 package org.netbeans.modules.groovy.refactoring.utils;
 
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -59,6 +63,41 @@ public class OccurrencesUtil {
     }
 
 
+    public static ASTNode findCurrentNode(ASTNode leaf, BaseDocument doc, int caret) {
+        if (leaf instanceof FieldNode) {
+            if (!OccurrencesUtil.isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
+                return leaf;
+            }
+        } else if (leaf instanceof PropertyNode) {
+            if (!OccurrencesUtil.isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
+                return leaf;
+            }
+        } else if (leaf instanceof MethodNode) {
+            MethodNode method = ((MethodNode) leaf);
+            if (!OccurrencesUtil.isCaretOnReturnType(method, doc, caret)) {
+                return leaf;
+            }
+
+            for (Parameter param : method.getParameters()) {
+                if (!OccurrencesUtil.isCaretOnParamType(param, doc, caret)) {
+                    return param;
+                }
+            }
+        } else if (leaf instanceof Parameter) {
+            if (!OccurrencesUtil.isCaretOnParamType(((Parameter) leaf), doc, caret)) {
+                return leaf;
+            }
+        } else if (leaf instanceof DeclarationExpression) {
+
+        }
+
+        ClassNode currentType = ElementUtils.getType(leaf);
+        if (currentType != null) {
+            return currentType;
+        }
+        return leaf;
+    }
+
     public static boolean isCaretOnReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
         if (getMethodReturnType(method, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
@@ -66,10 +105,9 @@ public class OccurrencesUtil {
         return false;
     }
 
-    public static OffsetRange getMethodReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
-        int offset = AstUtilities.getOffset(doc, method.getLineNumber(), method.getColumnNumber());
+    private static OffsetRange getMethodReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
         if (!method.isDynamicReturnType()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, method.getReturnType().getNameWithoutPackage(), offset);
+            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, method.getReturnType().getNameWithoutPackage(), getOffset(method, doc));
             if (range.containsInclusive(cursorOffset)) {
                 return range;
             }
@@ -84,10 +122,9 @@ public class OccurrencesUtil {
         return false;
     }
 
-    public static OffsetRange getFieldRange(FieldNode field, BaseDocument doc, int cursorOffset) {
-        int offset = AstUtilities.getOffset(doc, field.getLineNumber(), field.getColumnNumber());
+    private static OffsetRange getFieldRange(FieldNode field, BaseDocument doc, int cursorOffset) {
         if (!field.isDynamicTyped()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, field.getType().getNameWithoutPackage(), offset);
+            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, field.getType().getNameWithoutPackage(), getOffset(field, doc));
             if (range.containsInclusive(cursorOffset)) {
                 return range;
             }
@@ -102,14 +139,17 @@ public class OccurrencesUtil {
         return false;
     }
 
-    public static OffsetRange getParameterRange(Parameter param, BaseDocument doc, int cursorOffset) {
-        int offset = AstUtilities.getOffset(doc, param.getLineNumber(), param.getColumnNumber());
+    private static OffsetRange getParameterRange(Parameter param, BaseDocument doc, int cursorOffset) {
         if (!param.isDynamicTyped()) {
-            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, param.getType().getNameWithoutPackage(), offset);
+            OffsetRange range = AstUtilities.getNextIdentifierByName(doc, param.getType().getNameWithoutPackage(), getOffset(param, doc));
             if (range.containsInclusive(cursorOffset)) {
                 return range;
             }
         }
         return OffsetRange.NONE;
+    }
+
+    private static int getOffset(ASTNode node, BaseDocument doc) {
+        return AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
     }
 }

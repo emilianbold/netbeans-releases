@@ -329,6 +329,13 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         cancelBackgroundTasks();
         setups.clear();
         editorCookies.clear();
+        
+        if (list != null) {
+            Git.getInstance().getFileStatusCache().removePropertyChangeListener(list);
+        }
+        if (prefList != null) {
+            GitModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(prefList);
+        }
     }
 
     private void cancelBackgroundTasks() {

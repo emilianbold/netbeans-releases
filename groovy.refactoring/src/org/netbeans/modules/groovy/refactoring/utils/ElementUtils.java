@@ -89,13 +89,23 @@ public final class ElementUtils {
         return normalizeTypeName(type.getNameWithoutPackage(), type);
     }
 
-    private static ClassNode getType(ASTNode node) {
+    /**
+     * Returns type for the given ASTNode. For example if FieldNode is passed
+     * as a parameter, it returns type of the given field etc.
+     *
+     * @param node where we want to know declared type
+     * @return type of the given node
+     * @throws IllegalStateException if an implementation is missing for the given ASTNode type
+     */
+    public static ClassNode getType(ASTNode node) {
         if (node instanceof ClassNode) {
             return ((ClassNode) node);
         } else if (node instanceof FieldNode) {
             return ((FieldNode) node).getType();
         } else if (node instanceof PropertyNode) {
             return ((PropertyNode) node).getType();
+        } else if (node instanceof MethodNode) {
+            return ((MethodNode) node).getReturnType();
         } else if (node instanceof Parameter) {
            return ((Parameter) node).getType();
         } else if (node instanceof ForStatement) {
@@ -127,6 +137,8 @@ public final class ElementUtils {
             name = ((PropertyNode) node).getName();
         } else if (node instanceof Parameter) {
             name = ((Parameter) node).getName();
+        } else if (node instanceof ForStatement) {
+            name = ((ForStatement) node).getVariableType().getNameWithoutPackage();
         } else if (node instanceof VariableExpression) {
             name = ((VariableExpression) node).getName();
         } else if (node instanceof DeclarationExpression) {
@@ -142,9 +154,8 @@ public final class ElementUtils {
 
         if (name != null) {
             return normalizeTypeName(name, null);
-        } else {
-            return "Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName(); // NOI18N
         }
+        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName()); // NOI18N
     }
 
     public static ClassNode getDeclaringClass(ASTNode node) {
@@ -156,6 +167,12 @@ public final class ElementUtils {
             return ((FieldNode) node).getDeclaringClass();
         } else if (node instanceof PropertyNode) {
             return ((PropertyNode) node).getDeclaringClass();
+        } else if (node instanceof Parameter) {
+            return ((Parameter) node).getDeclaringClass();
+        } else if (node instanceof ForStatement) {
+            return ((ForStatement) node).getVariableType().getDeclaringClass();
+        } else if (node instanceof ClassExpression) {
+            return ((ClassExpression) node).getType().getDeclaringClass();
         } else if (node instanceof VariableExpression) {
             return ((VariableExpression) node).getDeclaringClass();
         } else if (node instanceof DeclarationExpression) {
@@ -165,12 +182,8 @@ public final class ElementUtils {
             } else {
                 return declaration.getVariableExpression().getDeclaringClass();
             }
-        } else if (node instanceof ClassExpression) {
-            return ((ClassExpression) node).getType().getDeclaringClass();
-        } else if (node instanceof Parameter) {
-            return ((Parameter) node).getDeclaringClass();
         }
-        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + "isn't handled at the moment!"); // NOI18N
+        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + " isn't handled at the moment!"); // NOI18N
     }
 
     public static String getDeclaratingClassName(ASTNode node) {

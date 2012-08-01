@@ -51,7 +51,7 @@ public class AnnotationUtils {
     }
 
     public static boolean isTypeAnnotation(final String lineToCheck, final String annotationName) {
-        return lineToCheck.matches("\\\\?(\\w+\\\\)*" + annotationName + "\\s*"); //NOI18N
+        return lineToCheck.toLowerCase().matches("\\\\?(\\w+\\\\)*" + annotationName.toLowerCase() + "\\s*"); //NOI18N
     }
 
 }

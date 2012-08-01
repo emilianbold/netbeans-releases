@@ -45,11 +45,7 @@ package org.netbeans.modules.groovy.refactoring;
 import java.util.Collection;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
@@ -135,27 +131,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             AstPath path = new AstPath(root, caret, doc);
             ASTNode leaf = path.leaf();
 
-            if (leaf instanceof FieldNode) {
-                if (OccurrencesUtil.isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
-                    return ((FieldNode) leaf).getType();
-                }
-            } else if (leaf instanceof PropertyNode) {
-                if (OccurrencesUtil.isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
-                    return ((PropertyNode) leaf).getField().getType();
-                }
-            } else if (leaf instanceof MethodNode) {
-                MethodNode method = ((MethodNode) leaf);
-                if (OccurrencesUtil.isCaretOnReturnType(method, doc, caret)) {
-                    return method.getReturnType();
-                }
-
-                for (Parameter param : method.getParameters()) {
-                    if (OccurrencesUtil.isCaretOnParamType(param, doc, caret)) {
-                        return param.getType();
-                    }
-                }
-            }
-            return leaf;
+            return OccurrencesUtil.findCurrentNode(leaf, doc, caret);
         }
 
         @Override
