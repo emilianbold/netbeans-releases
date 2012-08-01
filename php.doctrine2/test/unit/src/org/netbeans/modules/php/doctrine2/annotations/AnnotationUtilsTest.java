@@ -42,8 +42,6 @@
 package org.netbeans.modules.php.doctrine2.annotations;
 
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 
