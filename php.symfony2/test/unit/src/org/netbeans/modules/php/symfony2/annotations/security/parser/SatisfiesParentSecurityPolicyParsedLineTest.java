@@ -58,7 +58,7 @@ public class SatisfiesParentSecurityPolicyParsedLineTest extends NbTestCase {
         try {
             new SatisfiesParentSecurityPolicyParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -66,7 +66,7 @@ public class SatisfiesParentSecurityPolicyParsedLineTest extends NbTestCase {
         try {
             new SatisfiesParentSecurityPolicyParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 

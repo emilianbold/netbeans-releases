@@ -63,7 +63,7 @@ public class RouteParsedLineTest extends NbTestCase {
         try {
             new RouteParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -71,7 +71,7 @@ public class RouteParsedLineTest extends NbTestCase {
         try {
             new RouteParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 

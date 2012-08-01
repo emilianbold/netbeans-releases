@@ -39,40 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.Collections;
-import org.netbeans.junit.NbTestCase;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class SecureParamParsedLineTest extends NbTestCase {
+class DiscriminatorMapParsedLine extends BaseParsedLine {
 
-    public SecureParamParsedLineTest(String name) {
-        super(name);
+    public DiscriminatorMapParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
-    public void testNonNullDescription() throws Exception {
-        try {
-            new SecureParamParsedLine(null, Collections.EMPTY_MAP);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
-
-    public void testNonNullTypes() throws Exception  {
-        try {
-            new SecureParamParsedLine("", null);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
-
-    public void testCorrectName() throws Exception {
-        SecureParamParsedLine cache = new SecureParamParsedLine("", Collections.EMPTY_MAP);
-        assertEquals(SecureParamLineParser.ANNOTATION_NAME, cache.getName());
+    @Override
+    public String getName() {
+        return DiscriminatorMapLineParser.ANNOTATION_NAME;
     }
 
 }

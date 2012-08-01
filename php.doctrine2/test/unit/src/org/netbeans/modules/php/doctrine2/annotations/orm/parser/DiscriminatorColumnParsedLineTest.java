@@ -53,12 +53,12 @@ public class DiscriminatorColumnParsedLineTest extends NbTestCase {
     public DiscriminatorColumnParsedLineTest(String name) {
         super(name);
     }
-    
+
     public void testNonNullDescription() throws Exception {
         try {
             new DiscriminatorColumnParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -66,7 +66,7 @@ public class DiscriminatorColumnParsedLineTest extends NbTestCase {
         try {
             new DiscriminatorColumnParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
