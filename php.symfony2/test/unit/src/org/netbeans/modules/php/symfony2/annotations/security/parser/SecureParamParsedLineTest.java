@@ -58,7 +58,7 @@ public class SecureParamParsedLineTest extends NbTestCase {
         try {
             new SecureParamParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -66,7 +66,7 @@ public class SecureParamParsedLineTest extends NbTestCase {
         try {
             new SecureParamParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 

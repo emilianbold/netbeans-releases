@@ -67,6 +67,8 @@ import org.netbeans.modules.parsing.spi.Parser;
  */
 public class JsDocModelTest extends JsDocumentationTestBase {
 
+    private static JsDocElementComparator elementComparator = new JsDocElementComparator();
+
     public JsDocModelTest(String testName) {
         super(testName);
     }
@@ -429,8 +431,8 @@ public class JsDocModelTest extends JsDocumentationTestBase {
     }
 
     private static void assertElementsEquality(List<JsDocElement> expectedTags, List<? extends JsDocElement> elements) {
-        Collections.sort(expectedTags, new JsDocElementComparator());
-        Collections.sort(elements, new JsDocElementComparator());
+        Collections.sort(expectedTags, elementComparator);
+        Collections.sort(elements, elementComparator);
 
         assertEquals(expectedTags.size(), elements.size());
 

@@ -58,7 +58,7 @@ public class MethodParsedLineTest extends NbTestCase {
         try {
             new MethodParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -66,7 +66,7 @@ public class MethodParsedLineTest extends NbTestCase {
         try {
             new MethodParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 

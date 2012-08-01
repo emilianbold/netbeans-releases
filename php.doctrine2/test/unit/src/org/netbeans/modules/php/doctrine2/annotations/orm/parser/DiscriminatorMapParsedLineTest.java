@@ -58,7 +58,7 @@ public class DiscriminatorMapParsedLineTest extends NbTestCase {
         try {
             new DiscriminatorMapParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -66,7 +66,7 @@ public class DiscriminatorMapParsedLineTest extends NbTestCase {
         try {
             new DiscriminatorMapParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
