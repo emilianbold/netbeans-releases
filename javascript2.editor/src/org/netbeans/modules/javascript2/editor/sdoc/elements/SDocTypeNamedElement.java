@@ -95,4 +95,19 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
         return typeName;
     }
 
+    @Override
+    public DocIdentifier getParamName() {
+        return typeName;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return optional;
+    }
+
 }

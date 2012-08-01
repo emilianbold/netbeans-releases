@@ -42,6 +42,8 @@
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
@@ -51,7 +53,7 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocTypeDescribedElement extends SDocTypeSimpleElement {
+public class SDocTypeDescribedElement extends SDocTypeSimpleElement implements DocParameter {
 
     protected final String typeDescription;
 
@@ -75,6 +77,31 @@ public class SDocTypeDescribedElement extends SDocTypeSimpleElement {
      */
     public String getTypeDescription() {
         return typeDescription;
+    }
+
+    @Override
+    public DocIdentifier getParamName() {
+        return null;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return false;
+    }
+
+    @Override
+    public String getParamDescription() {
+        return typeDescription;
+    }
+
+    @Override
+    public List<Type> getParamTypes() {
+        return declaredTypes;
     }
 
 }

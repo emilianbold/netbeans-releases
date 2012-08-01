@@ -42,19 +42,26 @@
 package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeDescribedElement;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeNamedElement;
 
 /**
+ * Represents documentation comment block of ScriptDoc.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -69,37 +76,51 @@ public class SDocComment extends JsComment {
 
     @Override
     public List<String> getSummary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<String> summaries = new LinkedList<String>();
+        for (SDocElement sDocElement : getTagsForType(SDocElementType.DESCRIPTION)) {
+            summaries.add(((SDocDescriptionElement) sDocElement).getDescription());
+        }
+        return summaries;
     }
 
     @Override
     public List<String> getSyntax() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Collections.<String>emptyList();
     }
 
     @Override
     public DocParameter getReturnType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<? extends SDocElement> tagsForType = getTagsForType(SDocElementType.RETURN);
+        // return just the first occurance of return - more of them is wrong
+        return (SDocTypeDescribedElement) tagsForType.get(0);
     }
 
     @Override
     public List<DocParameter> getParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<DocParameter> params = new LinkedList<DocParameter>();
+        for (SDocElement jsDocElement : getTagsForType(SDocElementType.PARAM)) {
+            params.add((SDocTypeNamedElement) jsDocElement);
+        }
+        return params;
     }
 
     @Override
     public String getDocumentation() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return JsDocumentationPrinter.printDocumentation(this);
     }
 
     @Override
     public boolean isDeprecated() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return !getTagsForType(SDocElementType.DEPRECATED).isEmpty();
     }
 
     @Override
     public Set<JsModifier> getModifiers() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Set<JsModifier> modifiers = EnumSet.noneOf(JsModifier.class);
+        for (SDocElement jsDocElement : getTagsForType(SDocElementType.PRIVATE)) {
+            modifiers.add(JsModifier.fromString(jsDocElement.getType().toString().substring(1)));
+        }
+        return modifiers;
     }
 
     private void initComment(List<SDocElement> elements) {
@@ -125,6 +146,15 @@ public class SDocComment extends JsComment {
             allTags.addAll(list);
         }
         return allTags;
+    }
+
+    /**
+     * Gets list of {@code SDocElement}s of given type.
+     * @return list of {@code SDocElement}s
+     */
+    public List<? extends SDocElement> getTagsForType(SDocElementType type) {
+        List<SDocElement> tagsForType = tags.get(type);
+        return tagsForType == null ? Collections.<SDocElement>emptyList() : tagsForType;
     }
 
 }
