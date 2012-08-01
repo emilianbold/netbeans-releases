@@ -215,6 +215,7 @@ public class SiteTemplateWizard extends JPanel {
         }
         if (siteTemplateRef == archiveSiteTemplate) {
             // archive
+            archiveSiteCustomizer.isValid();
             return archiveSiteCustomizer.getErrorMessage();
         }
         return null;
@@ -223,6 +224,7 @@ public class SiteTemplateWizard extends JPanel {
     public String getWarningMessage() {
         if (getSiteTemplate() == archiveSiteTemplate) {
             // archive
+            archiveSiteCustomizer.isValid();
             return archiveSiteCustomizer.getWarningMessage();
         }
         return null;

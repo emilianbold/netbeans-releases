@@ -41,19 +41,19 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
+import java.awt.EventQueue;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,72 +68,64 @@ import org.openide.util.NbBundle;
 public class SiteHelper {
 
     private static final Logger LOGGER = Logger.getLogger(SiteHelper.class.getName());
-    
-    public static void install(String url, FileObject root, ProgressHandle handle) throws IOException {
-        URL u;
-        try {
-            u = new URL(url);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
+    private static final String JS_LIBS_DIR = "jslibs"; // NOI18N
+
+
+    private SiteHelper() {
+    }
+
+    /**
+     * Return <i>&lt;var/cache>/jslibs</i> directory.
+     * @return <i>&lt;var/cache>/jslibs</i> directory
+     */
+    public static File getJsLibDirectory() {
+        return Places.getCacheSubdirectory(JS_LIBS_DIR);
+    }
+
+    /**
+     * Download the given URL to the target file.
+     * @param url URL to be downloaded
+     * @param target target file
+     * @param progressHandle progress handle, can be {@code null}
+     * @throws IOException if any error occurs
+     */
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "SiteHelper.progress.download=Downloading file {0}"
+    })
+    public static void download(String url, File target, @NullAllowed ProgressHandle progressHandle) throws IOException {
+        assert !EventQueue.isDispatchThread();
+        if (progressHandle != null) {
+            progressHandle.progress(Bundle.SiteHelper_progress_download(target.getName()));
         }
-        handle.progress(Bundle.MSG_Progress2());
-        InputStream is;
+        InputStream is = new URL(url).openStream();
         try {
-            is = u.openStream();
-        } catch (FileNotFoundException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for "+u, ex);
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_NotFoundError(url)));
-            return;
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for "+u, ex);
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_StreamError()));
-            return;
-        }
-        File localFile = null;
-        InputStream is2 = null;
-        InputStream is3 = null;
-        try {
-            localFile = downloadFile(is, handle);
-            handle.progress(Bundle.MSG_Progress3());
-            is2 = new FileInputStream(localFile);
-            String rootFolder = testRootFolder(is2);
-            is3 = new FileInputStream(localFile);
-            unZipFile(is3, root, handle, rootFolder);
+            copyToFile(is, target);
         } finally {
             is.close();
-            if (is2 != null) {
-                is2.close();
-            }
-            if (is3 != null) {
-                is3.close();
-            }
         }
     }
-    
-    public static void install(File f, FileObject root, ProgressHandle handle) throws IOException {
-        handle.progress(Bundle.MSG_Progress3());
-        InputStream is;
-        try {
-            is = new FileInputStream(f);
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "could not open stream for "+f, ex);
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_StreamError()));
-            return;
+
+    /**
+     * Unzip the given ZIP file to the given target directory. The target directory must exist.
+     * @param zipFile ZIP file to be extracted
+     * @param targetDirectory existing target directory
+     * @param progressHandle progress handle, can be {@code null}
+     * @throws IOException if any error occurs
+     */
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "SiteHelper.progress.unzip=Unziping file {0}"
+    })
+    public static void unzip(File zipFile, File targetDirectory, @NullAllowed ProgressHandle progressHandle) throws IOException {
+        assert targetDirectory.isDirectory() : "Target directory must be a directory: " + targetDirectory;
+        if (progressHandle != null) {
+            progressHandle.progress(Bundle.SiteHelper_progress_unzip(zipFile.getName()));
         }
-        InputStream is2 = null;
-        try {
-            String rootFolder = testRootFolder(is);
-            is2 = new FileInputStream(f);
-            unZipFile(is2, root, handle, rootFolder);
-        } finally {
-            is.close();
-            if (is2 != null) {
-                is2.close();
-            }
-        }
+        String rootFolder = getZipRootFolder(new FileInputStream(zipFile));
+        unZipFile(new FileInputStream(zipFile), FileUtil.toFileObject(targetDirectory), null, rootFolder);
     }
-    
+
     private static void unZipFile(InputStream source, FileObject projectRoot, ProgressHandle handle, String rootFolder) throws IOException {
         boolean firstItem = true;
         try {
@@ -185,18 +177,17 @@ public class SiteHelper {
         }
     }
 
-    private static File downloadFile(InputStream is, ProgressHandle handle) throws IOException {
-        File temp = File.createTempFile("template", "zip");
-        OutputStream os = new FileOutputStream(temp);
+    private static File copyToFile(InputStream is, File target) throws IOException {
+        OutputStream os = new FileOutputStream(target);
         try {
             FileUtil.copy(is, os);
         } finally {
             os.close();
         }
-        return temp;
+        return target;
     }
 
-    private static String testRootFolder(InputStream source) throws IOException {
+    private static String getZipRootFolder(InputStream source) throws IOException {
         String folder = null;
         try {
             ZipInputStream str = new ZipInputStream(source);
@@ -221,5 +212,5 @@ public class SiteHelper {
         }
         return folder;
     }
-    
+
 }

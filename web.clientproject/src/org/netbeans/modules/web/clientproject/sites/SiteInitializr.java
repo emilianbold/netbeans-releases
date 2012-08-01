@@ -41,54 +41,67 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
+import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeListener;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateCustomizer;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- */
-@NbBundle.Messages({"LBL_Name_Initializr=Initializr"
-        })
-@ServiceProvider(service=SiteTemplateImplementation.class, position=200)
-public class SiteInitializr implements SiteTemplateImplementation {
 
-    private SiteTemplateCustomizerImpl customizer = new SiteTemplateCustomizerImpl();
-    
-    @Override
-    public String getName() {
-        return Bundle.LBL_Name_Initializr();
+abstract class SiteInitializr implements SiteTemplateImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(SiteInitializr.class.getName());
+
+    private final String name;
+    private final String url;
+    private final File libFile;
+
+
+    private SiteInitializr(String name, String url, File libFile) {
+        this.name = name;
+        this.url = url;
+        this.libFile = libFile;
     }
 
-    @NbBundle.Messages("SiteInitializr.description=Initializr")
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @NbBundle.Messages("SiteInitializr.description=Site template from initializr.com. Version: 3.0")
     @Override
     public String getDescription() {
         return Bundle.SiteInitializr_description();
     }
 
     @Override
-    public SiteTemplateCustomizer getCustomizer() {
-        return customizer;
+    public boolean isPrepared() {
+        return libFile.isFile();
     }
 
     @Override
-    public void apply(FileObject p, ProgressHandle handle) {
-        try {
-            SiteHelper.install(customizer.getURL(), p, handle);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Throwable ex) {
-            Exceptions.printStackTrace(ex);
+    public void prepare() throws IOException {
+        assert !EventQueue.isDispatchThread();
+        assert !isPrepared();
+        SiteHelper.download(url, libFile, null);
+    }
+
+    @Override
+    public void apply(FileObject p, ProgressHandle handle) throws IOException {
+        assert !EventQueue.isDispatchThread();
+        if (!isPrepared()) {
+            // not correctly prepared, user has to know about it already
+            LOGGER.info("Template not correctly prepared, nothing to be applied");
+            return;
         }
+        SiteHelper.unzip(libFile, FileUtil.toFile(p), handle);
     }
 
     @Override
@@ -96,54 +109,42 @@ public class SiteInitializr implements SiteTemplateImplementation {
         return Collections.emptyList();
     }
 
-    private static class SiteTemplateCustomizerImpl implements SiteTemplateCustomizer {
+    //~ Inner classes
 
-        private SiteInitializrPanel panel;
-        
-        public SiteTemplateCustomizerImpl() {
-        }
+    @ServiceProvider(service=SiteTemplateImplementation.class, position=200)
+    public static class BootstrapSiteInitializr extends SiteInitializr {
 
-        @Override
-        public void addChangeListener(ChangeListener listener) {
-        }
-
-        @Override
-        public void removeChangeListener(ChangeListener listener) {
+        @NbBundle.Messages("BootstrapSiteInitializr.name=Initializr: Bootstrap")
+        public BootstrapSiteInitializr() {
+            super(Bundle.BootstrapSiteInitializr_name(),
+                    "http://www.initializr.com/builder?mode=less&boot-hero&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts", // NOI18N
+                    new File(SiteHelper.getJsLibDirectory(), "initializr-bootstrap-30.zip")); // NOI18N
         }
 
-        @Override
-        public JComponent getComponent() {
-            if (panel == null) {
-                panel = new SiteInitializrPanel();
-            }
-            return panel;
-        }
-
-        @Override
-        public boolean isValid() {
-            return true;
-        }
-
-        @Override
-        public String getErrorMessage() {
-            return null;
-        }
-
-        @Override
-        public String getWarningMessage() {
-            return null;
-        }
-        
-        public String getURL() {
-            if (panel.getUserChoice() == SiteInitializrPanel.Type.Classic) {
-                return "http://www.initializr.com/builder?h5bp-content&modernizr&h5bp-htaccess&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&h5bp-scripts&h5bp-robots&h5bp-humans&h5bp-404&h5bp-adobecrossdomain&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&h5bp-mediaqueries";
-            }
-            if (panel.getUserChoice() == SiteInitializrPanel.Type.Reponsive) {
-                return "http://www.initializr.com/builder?izr-responsive&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&izr-emptyscript";
-            }
-            // Bootstrap:
-            return "http://www.initializr.com/builder?mode=less&boot-hero&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts";
-        }
     }
-    
+
+    @ServiceProvider(service=SiteTemplateImplementation.class, position=210)
+    public static class ClassicSiteInitializr extends SiteInitializr {
+
+        @NbBundle.Messages("ClassicSiteInitializr.name=Initializr: Classic")
+        public ClassicSiteInitializr() {
+            super(Bundle.ClassicSiteInitializr_name(),
+                    "http://www.initializr.com/builder?h5bp-content&modernizr&h5bp-htaccess&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&h5bp-scripts&h5bp-robots&h5bp-humans&h5bp-404&h5bp-adobecrossdomain&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&h5bp-mediaqueries", // NOI18N
+                    new File(SiteHelper.getJsLibDirectory(), "initializr-classic-30.zip")); // NOI18N
+        }
+
+    }
+
+    @ServiceProvider(service=SiteTemplateImplementation.class, position=220)
+    public static class ResponsiveSiteInitializr extends SiteInitializr {
+
+        @NbBundle.Messages("ResponsiveSiteInitializr.name=Initializr: Responsive")
+        public ResponsiveSiteInitializr() {
+            super(Bundle.ResponsiveSiteInitializr_name(),
+                    "http://www.initializr.com/builder?izr-responsive&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&izr-emptyscript", // NOI18N
+                    new File(SiteHelper.getJsLibDirectory(), "initializr-responsive-30.zip")); // NOI18N
+        }
+
+    }
+
 }

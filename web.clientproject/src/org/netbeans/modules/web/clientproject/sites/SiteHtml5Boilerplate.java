@@ -41,91 +41,64 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
-import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.event.ChangeListener;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateCustomizer;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
-/**
- *
- */
-@NbBundle.Messages({"LBL_Name=HTML5 Boilerplate",
-        "LBL_Description=Site template from html5boilerplate.com. Version: 3.0.1"})
 @ServiceProvider(service=SiteTemplateImplementation.class, position=300)
 public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
 
+    private static final Logger LOGGER = Logger.getLogger(SiteHtml5Boilerplate.class.getName());
+    private static final File LIB_FILE = new File(SiteHelper.getJsLibDirectory(), "html5-boilerplate-301.zip"); // NOI18N
+
+
+    @NbBundle.Messages("SiteHtml5Boilerplate.name=HTML5 Boilerplate")
     @Override
     public String getName() {
-        return Bundle.LBL_Name();
+        return Bundle.SiteHtml5Boilerplate_name();
     }
 
-    @NbBundle.Messages("SiteHtml5Boilerplate.description=HTML 5 Boilerplate")
+    @NbBundle.Messages("SiteHtml5Boilerplate.description=Site template from html5boilerplate.com. Version: 3.0.1")
     @Override
     public String getDescription() {
         return Bundle.SiteHtml5Boilerplate_description();
     }
 
     @Override
-    public SiteTemplateCustomizer getCustomizer() {
-        return new SiteTemplateCustomizer() {
-
-            @Override
-            public void addChangeListener(ChangeListener listener) {
-            }
-
-            @Override
-            public void removeChangeListener(ChangeListener listener) {
-            }
-
-            @Override
-            public JComponent getComponent() {
-                JPanel p = new JPanel(new BorderLayout());
-                p.add(new JLabel(Bundle.LBL_Description()), BorderLayout.NORTH);
-                return p;
-            }
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public String getErrorMessage() {
-                return null;
-            }
-
-            @Override
-            public String getWarningMessage() {
-                return null;
-            }
-        };
+    public boolean isPrepared() {
+        return LIB_FILE.isFile();
     }
 
     @Override
-    public void apply(FileObject p, ProgressHandle handle) {
-        try {
-            SiteHelper.install("https://github.com/h5bp/html5-boilerplate/zipball/v3.0.1", p, handle);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Throwable ex) {
-            Exceptions.printStackTrace(ex);
+    public void prepare() throws IOException {
+        assert !EventQueue.isDispatchThread();
+        assert !isPrepared();
+        SiteHelper.download("https://github.com/h5bp/html5-boilerplate/zipball/v3.0.1", LIB_FILE, null); // NOI18N
+    }
+
+    @Override
+    public void apply(FileObject p, ProgressHandle handle) throws IOException {
+        assert !EventQueue.isDispatchThread();
+        if (!isPrepared()) {
+            // not correctly prepared, user has to know about it already
+            LOGGER.info("Template not correctly prepared, nothing to be applied");
+            return;
         }
+        SiteHelper.unzip(LIB_FILE, FileUtil.toFile(p), handle);
     }
 
     @Override
     public Collection<String> supportedLibraries() {
         return Collections.emptyList();
     }
-    
+
 }

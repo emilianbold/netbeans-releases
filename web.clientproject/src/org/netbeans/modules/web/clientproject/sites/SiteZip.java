@@ -41,136 +41,160 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.CRC32;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.web.clientproject.spi.SiteTemplateCustomizer;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
  * Special {@link SiteTemplateImplementation} (not registered in SFS).
  */
-@NbBundle.Messages({"LBL_SiteZip=Archive File",
-    "LBL_SiteZip_Error=Template file does not exist"
-        })
 public class SiteZip implements SiteTemplateImplementation {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(SiteZip.class.getName());
     private static final String USED_TEMPLATES = "last.templates";
     private static final String SEPARATOR = "=s e p=";
 
     private Customizer cust;
-    
+
+    @NbBundle.Messages("SiteZip.name=Archive File")
     @Override
     public String getName() {
-        return Bundle.LBL_SiteZip();
+        return Bundle.SiteZip_name();
     }
 
     @Override
     public String getDescription() {
-        throw new UnsupportedOperationException("Not supported yet");
+        return null;
     }
 
-    @Override
-    public SiteTemplateCustomizer getCustomizer() {
+    public Customizer getCustomizer() {
         cust = new Customizer();
         return cust;
     }
 
     @Override
-    public void apply(FileObject projectRoot, ProgressHandle handle) {
-        try {
-            String template = cust.panel.getTemplate();
-            if (!template.startsWith("http")) {
-                File templ = new File(template);
-                SiteHelper.install(templ, projectRoot, handle);
-            } else {
-                SiteHelper.install(template, projectRoot, handle);
-            }
-            registerTemplate(template);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Throwable ex) {
-            Exceptions.printStackTrace(ex);
+    public boolean isPrepared() {
+        return getArchiveFile().isFile();
+    }
+
+    @Override
+    public void prepare() throws IOException {
+        assert !EventQueue.isDispatchThread();
+        assert !isPrepared();
+        String template = cust.panel.getTemplate();
+        assert isRemoteUrl(template) : "Remote URL expected: " + template;
+        SiteHelper.download(template, getArchiveFile(), null); // NOI18N
+    }
+
+    @Override
+    public void apply(FileObject projectRoot, ProgressHandle handle) throws IOException {
+        assert !EventQueue.isDispatchThread();
+        if (!isPrepared()) {
+            // not correctly prepared, user has to know about it already
+            LOGGER.info("Template not correctly prepared, nothing to be applied");
+            return;
         }
+        SiteHelper.unzip(getArchiveFile(), FileUtil.toFile(projectRoot), handle);
+        registerTemplate(cust.panel.getTemplate());
     }
 
     @Override
     public Collection<String> supportedLibraries() {
         return Collections.emptyList();
     }
-    
-    static class Customizer implements SiteTemplateCustomizer {
 
-        private SiteZipPanel panel = new SiteZipPanel(this);
-        private ChangeSupport sup = new ChangeSupport(this);
-        private String error = "";
-        
-        @Override
-        public void addChangeListener(ChangeListener listener) {
-            sup.addChangeListener(listener);
+    private File getArchiveFile() {
+        String template = cust.panel.getTemplate();
+        if (!isRemoteUrl(template)) {
+            return new File(template);
         }
-
-        @Override
-        public void removeChangeListener(ChangeListener listener) {
-            sup.removeChangeListener(listener);
-        }
-
-        @Override
-        public JComponent getComponent() {
-            return panel;
-        }
-
-        @Override
-        public boolean isValid() {
-            String tpl = panel.getTemplate();
-            if (!tpl.startsWith("http")  && !new File(tpl).exists()) {
-                error = Bundle.LBL_SiteZip_Error();
-                return false;
-            }
-            error = "";
-            return true;
-        }
-
-        @Override
-        public String getErrorMessage() {
-            return error;
-        }
-
-        @Override
-        public String getWarningMessage() {
-            return "";
-        }
-        
-        void fireChange() {
-            sup.fireChange();
-        }
-    
+        // remote file => calculate hash of its url
+        CRC32 crc = new CRC32();
+        crc.update(template.getBytes());
+        String filename = String.valueOf(crc.getValue()) + ".zip"; // NOI18N
+        LOGGER.log(Level.INFO, "Remote URL \"{0}\" set, downloaded to {1}", new Object[] {template, filename});
+        return new File(SiteHelper.getJsLibDirectory(), filename);
     }
-    
+
+    private boolean isRemoteUrl(String input) {
+        return input.toLowerCase().startsWith("http"); // NOI18N
+    }
+
     public static void registerTemplate(File f) {
         String name = f.getAbsolutePath();
         registerTemplate(name);
     }
-    
+
     public static void registerTemplate(String name) {
         String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, "");
         templates = name + SEPARATOR + templates.replaceAll(name+SEPARATOR, "");
         NbPreferences.forModule(SiteZip.class).put(USED_TEMPLATES, templates);
     }
-    
+
     public static List<String> getUsedTemplates() {
         String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, "");
         return Arrays.asList(templates.split(SEPARATOR));
     }
+
+    //~ Inner classes
+
+    public static class Customizer {
+
+        private SiteZipPanel panel = new SiteZipPanel(this);
+        private ChangeSupport sup = new ChangeSupport(this);
+        private String error = "";
+
+        public void addChangeListener(ChangeListener listener) {
+            sup.addChangeListener(listener);
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+            sup.removeChangeListener(listener);
+        }
+
+        public JComponent getComponent() {
+            return panel;
+        }
+
+        @NbBundle.Messages("SiteZip.error.template=Template file does not exist.")
+        public boolean isValid() {
+            String tpl = panel.getTemplate();
+            if (!tpl.startsWith("http")  && !new File(tpl).exists()) {
+                error = Bundle.SiteZip_error_template();
+                return false;
+            }
+            error = ""; // NOI18N
+            return true;
+        }
+
+        public String getErrorMessage() {
+            return error;
+        }
+
+        public String getWarningMessage() {
+            return ""; // NOI18N
+        }
+
+        void fireChange() {
+            sup.fireChange();
+        }
+
+    }
+
 }
