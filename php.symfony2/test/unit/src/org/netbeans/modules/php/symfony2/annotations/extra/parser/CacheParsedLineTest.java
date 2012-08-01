@@ -58,7 +58,7 @@ public class CacheParsedLineTest extends NbTestCase {
         try {
             new CacheParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -66,7 +66,7 @@ public class CacheParsedLineTest extends NbTestCase {
         try {
             new CacheParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 

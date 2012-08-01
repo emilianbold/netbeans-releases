@@ -42,8 +42,6 @@
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
 import java.util.Collections;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -65,7 +63,7 @@ public class ParamConverterParsedLineTest extends NbTestCase {
         try {
             new ParamConverterParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -73,7 +71,7 @@ public class ParamConverterParsedLineTest extends NbTestCase {
         try {
             new ParamConverterParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 }
