@@ -88,6 +88,7 @@ class TeamServerComboModel extends AbstractListModel implements ComboBoxModel {
     public TeamServerComboModel (TeamServerProvider provider) {
         this();
         this.provider = provider;
+        selected = (getElementAt(0) instanceof TeamServer)?getElementAt(0):null;
     }
 
     public TeamServerComboModel() {

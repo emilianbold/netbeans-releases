@@ -126,7 +126,9 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         this.prjAndFeature = prjFtr;
         initComponents();
         if (prjAndFeature==null) {
-            kenai = ((KenaiServer) kenaiCombo.getSelectedItem()).getKenai();
+            if (kenaiCombo.getSelectedItem() instanceof KenaiServer) {
+                kenai = ((KenaiServer) kenaiCombo.getSelectedItem()).getKenai();
+            }
         } else {
             kenai = prjAndFeature.kenaiProject.getKenai();
             kenaiCombo.setSelectedItem(kenai);
