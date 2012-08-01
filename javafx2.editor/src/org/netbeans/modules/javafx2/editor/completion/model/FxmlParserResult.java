@@ -44,6 +44,7 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -71,10 +72,10 @@ public abstract class FxmlParserResult extends Parser.Result {
     
     private FxTreeUtilities treeUtils;
     
-    private final TokenHierarchy tokenHierarchy;
+    private final TokenHierarchy<XMLTokenId> tokenHierarchy;
 
     protected FxmlParserResult(Snapshot _snapshot, FxModel sourceModel, Collection<ErrorMark> problems, 
-            TokenHierarchy h) {
+            TokenHierarchy<XMLTokenId> h) {
         super(_snapshot);
         this.sourceModel = sourceModel;
         this.problems = Collections.unmodifiableCollection(problems);
@@ -102,7 +103,7 @@ public abstract class FxmlParserResult extends Parser.Result {
         return treeUtils;
     }
 
-    public TokenHierarchy getTokenHierarchy() {
+    public TokenHierarchy<XMLTokenId> getTokenHierarchy() {
         return tokenHierarchy;
     }
     

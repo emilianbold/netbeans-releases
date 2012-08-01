@@ -373,6 +373,7 @@ public final class FxBean extends FxDefinition {
         return sb.toString();
     }
     
+    @SuppressWarnings("unchecked")
     private void appendMap(StringBuilder sb, Map m) {
         ArrayList al = new ArrayList(m.keySet());
         Collections.sort(al);

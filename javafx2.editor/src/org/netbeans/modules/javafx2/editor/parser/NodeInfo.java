@@ -70,9 +70,9 @@ public class NodeInfo implements XmlTreeNode, TextPositions {
     
     private String tagName;
     
-    private List<FxNode>    attributes = Collections.EMPTY_LIST;
+    private List<FxNode>    attributes = Collections.emptyList();
 
-    private List<FxNode>    children = Collections.EMPTY_LIST;
+    private List<FxNode>    children = Collections.emptyList();
     
     public static NodeInfo newNode() {
         return new NodeInfo(-1);

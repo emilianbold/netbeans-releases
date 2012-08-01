@@ -102,6 +102,7 @@ class FxmlParser extends Parser implements ErrorReporter {
     }
     
     @Override
+    @SuppressWarnings("unchecked")
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         this.snapshot = snapshot;
         TokenHierarchy<XMLTokenId> h = (TokenHierarchy<XMLTokenId>)snapshot.getTokenHierarchy();
@@ -187,12 +188,13 @@ class FxmlParser extends Parser implements ErrorReporter {
         steps.add(new PropertyResolver());
     }
     
+    @SuppressWarnings("unchecked")
     private BuildEnvironment createBuildEnvironment() {
         BuildEnvironment env = new BuildEnvironment();
         env.setAccessor(ModelAccessor.INSTANCE);
         env.setBeanProvider(FxBean.getBeanProvider(info));
         env.setCompilationInfo(info);
-        env.setHierarchy(snapshot.getTokenHierarchy());
+        env.setHierarchy((TokenHierarchy<XMLTokenId>)snapshot.getTokenHierarchy());
         env.setModel(model);
         env.setReporter(this);
         env.setTreeUtilities(new FxTreeUtilities(ModelAccessor.INSTANCE, model, env.getHierarchy()));

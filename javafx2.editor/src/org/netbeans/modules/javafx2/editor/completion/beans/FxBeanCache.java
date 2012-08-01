@@ -197,7 +197,7 @@ class FxBeanCache implements ChangeListener {
             dependencies.clear();
         }
         
-        
+        @SuppressWarnings("unchecked")
         private synchronized void addDependency(String from, String to) {
             Object o = dependencies.get(from);
 
@@ -230,6 +230,7 @@ class FxBeanCache implements ChangeListener {
             return classInfos.get(fqn);
         }
         
+        @SuppressWarnings("unchecked")
         public synchronized void clearFrom(Collection<String> roots) {
             Set<String> allDeps = new HashSet<String>();
             Deque<String> process = new LinkedList<String>();
