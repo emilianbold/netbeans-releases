@@ -42,14 +42,17 @@
 
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.ForStatement;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
@@ -79,50 +82,80 @@ public class FindTypeUsages extends AbstractFindUsages {
 
         public FindAllTypeUsagesVisitor(ModuleNode moduleNode, String findingFqn) {
            super(moduleNode);
-           this.findingFqn = findingFqn;
+           this.findingFqn = ElementUtils.normalizeTypeName(findingFqn, null);
         }
 
         @Override
         public void visitDeclarationExpression(DeclarationExpression expression) {
-            VariableExpression variable = expression.getVariableExpression();
-            if (findingFqn.equals(variable.getType().getName())) {
-                usages.add(variable);
+            if (isEquals(expression)) {
+                if (!expression.isMultipleAssignmentDeclaration()) {
+                    usages.add(expression.getVariableExpression());
+                } else {
+                    usages.add(expression.getTupleExpression());
+                }
             }
             super.visitDeclarationExpression(expression);
         }
 
         @Override
+        public void visitClassExpression(ClassExpression expression) {
+            addIfEquals(expression);
+            super.visitClassExpression(expression);
+        }
+
+        @Override
         public void visitField(FieldNode field) {
-            if (field.isSynthetic() && findingFqn.equals(field.getType().getName())) {
-                usages.add(field);
-            }
+            addIfEquals(field);
             super.visitField(field);
         }
 
         @Override
-        public void visitProperty(PropertyNode node) {
-            if (node.isSynthetic() && findingFqn.equals(node.getType().getName())) {
-                usages.add(node);
+        public void visitProperty(PropertyNode property) {
+            if (property.isSynthetic() && isEquals(property)) {
+                usages.add(property);
             }
-            super.visitProperty(node);
+            super.visitProperty(property);
         }
 
         @Override
-        public void visitClass(ClassNode node) {
-            if (findingFqn.equals(node.getSuperClass().getName())) {
-                usages.add(node);
+        public void visitClass(ClassNode clazz) {
+            if (isEquals(clazz.getSuperClass())) {
+                usages.add(clazz);
             }
-            super.visitClass(node);
+            super.visitClass(clazz);
         }
 
         @Override
-        public void visitMethod(MethodNode node) {
-            for (Parameter param : node.getParameters()) {
-                if (findingFqn.equals(param.getType().getName())) {
-                    usages.add(param);
-                }
+        protected void visitConstructorOrMethod(MethodNode method, boolean isConstructor) {
+            if (!isConstructor && isEquals(method.getReturnType())) {
+                usages.add(method);
             }
-            super.visitMethod(node);
+
+            for (Parameter param : method.getParameters()) {
+                addIfEquals(param);
+            }
+            super.visitConstructorOrMethod(method, isConstructor);
+        }
+
+        @Override
+        public void visitForLoop(ForStatement forLoop) {
+            if (isEquals(forLoop.getVariableType())) {
+                usages.add(forLoop.getCollectionExpression());
+            }
+            super.visitForLoop(forLoop);
+        }
+
+        private void addIfEquals(ASTNode node) {
+            if (isEquals(node)) {
+                usages.add(node);
+            }
+        }
+
+        private boolean isEquals(ASTNode node) {
+            if (findingFqn.equals(ElementUtils.getTypeName(node))) {
+                return true;
+            }
+            return false;
         }
     }
 }

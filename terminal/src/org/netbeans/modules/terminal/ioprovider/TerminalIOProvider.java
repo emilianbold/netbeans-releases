@@ -60,7 +60,8 @@ public final class TerminalIOProvider extends IOProvider {
 	return getIO(name, true, actions, ioContainer);
     }
 
-    private InputOutput getIO(String name,
+    @Override
+    public InputOutput getIO(String name,
 	                      boolean newIO,
 			      Action[] actions,
 			      IOContainer ioContainer) {

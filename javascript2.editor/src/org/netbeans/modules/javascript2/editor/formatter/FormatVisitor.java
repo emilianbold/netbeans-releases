@@ -370,6 +370,8 @@ public class FormatVisitor extends NodeVisitor {
             for (Node property : objectNode.getElements()) {
                 int finish = getFinish(property);
 
+                property.accept(this);
+
                 formatToken = getPreviousToken(finish, null);
                 if (formatToken != null) {
                     appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_PROPERTY));
@@ -384,7 +386,7 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
 
-        return super.visit(objectNode, onset);
+        return null;
     }
 
     @Override

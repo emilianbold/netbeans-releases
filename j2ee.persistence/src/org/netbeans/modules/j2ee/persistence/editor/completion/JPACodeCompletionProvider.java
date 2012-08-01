@@ -51,6 +51,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -86,7 +87,11 @@ import org.openide.util.NbBundle;
  *
  * @author sp153251
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)//NOI18N
+@MimeRegistrations(
+        {
+            @MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)///,//NOI18N
+            //@MimeRegistration(mimeType = "text/x-jpql", service = CompletionProvider.class, position = 400)//NOI18N
+        })
 public class JPACodeCompletionProvider implements CompletionProvider {
 
     @Override

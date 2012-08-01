@@ -470,6 +470,13 @@ public class AstUtilities {
     }
 
     public static OffsetRange getNextIdentifierByName(final BaseDocument doc, final String fieldName, final int startOffset) {
+        final String identifier;
+        if (fieldName.endsWith("[]")) { // NOI18N
+            identifier = fieldName.substring(0, fieldName.length() - 2);
+        } else {
+            identifier = fieldName;
+        }
+
         // since Groovy 1.5.6 the start offset is on 'def' on field/method declaration:
         // ^def foo = ...
         // ^Map bar = ...
@@ -480,16 +487,16 @@ public class AstUtilities {
                 TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
                 if (ts != null) {
                     Token<? extends GroovyTokenId> token = ts.token();
-                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
+                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), identifier)) {
                         int offset = ts.offset();
-                        result[0] = new OffsetRange(offset, offset + fieldName.length());
+                        result[0] = new OffsetRange(offset, offset + identifier.length());
                         return;
                     }
                     while (ts.moveNext()) {
                         token = ts.token();
-                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), fieldName)) {
+                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), identifier)) {
                             int offset = ts.offset();
-                            result[0] = new OffsetRange(offset, offset + fieldName.length());
+                            result[0] = new OffsetRange(offset, offset + identifier.length());
                             return;
                         }
                     }

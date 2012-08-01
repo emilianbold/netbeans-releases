@@ -38,16 +38,108 @@
 
 package org.netbeans.modules.maven.osgi;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.project.MavenProject;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.problem.ProblemReport;
+import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import static org.netbeans.modules.maven.osgi.Bundle.*;
 
 @ProjectServiceProvider(service=ForeignClassBundler.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI)
+@NbBundle.Messages({
+    "PRBL_Name=Export-Package/Private-Package contains packages from dependencies",
+    "PRBL_DESC=When the final bundle jar contains classes not originating in current project, NetBeans internal compiler cannot use the sources of the project. Then changes done in project's source code only appears in depending projects when project is recompiled. Also applies to features like Refactoring which will not be able to find usages in depending projects."
+})
 public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
+    private static final ProblemReport PROBLEM_REPORT = new ProblemReport(ProblemReport.SEVERITY_MEDIUM, 
+            PRBL_Name(), PRBL_DESC(), null);
+    
+    private final Project project;
+    private boolean calculated = false;
+    private boolean calculatedValue = false;
 
-    @Override public boolean preferSources() {
-        // XXX #208410: crude guess
-        return false;
+
+    public ForeignClassBundlerImpl(Project p) {
+        project = p;
+    }
+    
+    @Override 
+    public synchronized boolean preferSources() {
+        if (calculated) {
+            return calculatedValue;
+        }
+        calculatedValue = calculateValue(); 
+        calculated = true;
+        return calculatedValue;
+    }
+
+    private boolean calculateValue() {
+        ProblemReporter pr = project.getLookup().lookup(ProblemReporter.class);
+        if (pr != null) {
+            pr.removeReport(PROBLEM_REPORT);
+        }
+        NbMavenProject nbmp = project.getLookup().lookup(NbMavenProject.class);
+        if (nbmp == null) {
+            return true;
+        }
+        MavenProject mp = nbmp.getMavenProject();
+        Properties props = PluginPropertyUtils.getPluginPropertyParameter(mp, "org.apache.felix", "maven-bundle-plugin", "instructions", "bundle");
+        if (props != null) {
+            String embed = props.getProperty("Embed-Dependency"); //TODO should we parse it somehow?
+            //are embedded ones a problem? not on CP I guess
+//            if (embed != null && embed.contains("inline=true")) {
+//                return false;
+//            }
+            String exportedPack = props.getProperty("Export-Package");
+            String privatePack = props.getProperty("Private-Package");
+            if (exportedPack != null || privatePack != null) {
+                Matcher exported = new Matcher(exportedPack);
+                Matcher prived = new Matcher(privatePack);
+                for (Artifact a : mp.getRuntimeArtifacts()) { //TODO runtime or compile??
+                    File f = a.getFile();
+                    if (f != null && f.isFile()) {
+                        try {
+                            JarFile jf = new JarFile(f);
+                            Enumeration<JarEntry> en = jf.entries();
+                            while (en.hasMoreElements()) {
+                                JarEntry je = en.nextElement();
+                                if (je.isDirectory() && !je.getName().startsWith("META-INF")) { //is this optimization correct?
+                                    String pack = je.getName().substring(0, je.getName().length() - 1).replace("/", "."); //last char is /
+                                    if (exported.matches(pack) || prived.matches(pack)) {
+                                        if (pr != null) {
+                                            pr.addReport(PROBLEM_REPORT);
+                                        }
+                                        return false;
+                                    }
+                                }
+                            }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+        }
+        //according to http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html default value is just 
+        //project's own sources
+        return true;
+    }
+
+    @Override
+    public synchronized void resetCachedValue() {
+        calculated = false;
     }
 
 }

@@ -708,15 +708,17 @@ abstract class Lookup implements ContextProvider {
                 return true;
             }
             
-            private synchronized void refreshContent() {
+            private void refreshContent() {
                 // Perform changes under a lock so that iterators reading this list
                 // can sync on it
-                clear();
-                List<String> l = list(folder, service);
-                Result lr = listLookup(folder, service);
-                Set<String> s = getHiddenClassNames(l);
-                hiddenClassNames = s;
-                fillInstances(l, lr, s);
+                synchronized(this) {
+                    clear();
+                    List<String> l = list(folder, service);
+                    Result lr = listLookup(folder, service);
+                    Set<String> s = getHiddenClassNames(l);
+                    hiddenClassNames = s;
+                    fillInstances(l, lr, s);
+                }
                 firePropertyChange();
             }
             

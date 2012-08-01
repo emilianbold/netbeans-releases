@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.SelectImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -430,14 +432,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private CsmFile file;
         private final FileContent fileContent;
-        private int startOffset;
-        private int endOffset;
+        private int startOffset = 0;
+        private int endOffset = 0;
         private CsmObjectBuilder parent;
 
         private NamespaceImpl namespace;
         private CsmScope scope;
         private ClassImpl instance;
-        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+        private NameHolder nameHolder;
+        
+        private List<CsmObjectBuilder> children = new ArrayList<CsmObjectBuilder>();
 
         public ClassBuilder(FileContent fileContent) {
             assert fileContent != null;
@@ -476,8 +480,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             this.parent = parent;
         }
 
-        public void addDeclaration(CsmOffsetableDeclaration decl) {
-            this.declarations.add(decl);
+        public void addChild(CsmObjectBuilder builder) {
+            this.children.add(builder);
         }
         
         public ClassImpl getClassDefinitionInstance() {
@@ -514,25 +518,46 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             return scope;
         }
+
+        public void setScope(CsmScope scope) {
+            assert scope != null;
+            this.scope = scope;
+        }
         
         public ClassImpl create() {
             ClassImpl cls = getClassDefinitionInstance();
-            if (cls == null && name != null && getScope() != null) {
-                NameHolder nameHolder = NameHolder.createName(name, nameStartOffset, nameEndOffset);
+            CsmScope s = getScope();
+            if (cls == null && s != null && name != null && endOffset != 0) {
+                nameHolder = NameHolder.createName(name, nameStartOffset, nameEndOffset);
                 cls = new ClassImpl(nameHolder, kind, file, startOffset, endOffset);
-                cls.init3(getScope(), true);
-//                temporaryRepositoryRegistration(true, cls);
+                cls.init3(s, true);
+                instance = cls;
                 if (nameHolder != null) {
                     nameHolder.addReference(fileContent, cls);
-                }
+                }                
                 if(parent != null) {
-                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(cls);
+                    if(parent instanceof ClassBuilder) {
+                        ((ClassBuilder)parent).getClassDefinitionInstance().addMember(cls, true);
+                    } else if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                        ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(cls);
+                    }
                 } else {
                     fileContent.addDeclaration(cls);
                 }
+                for (CsmObjectBuilder builder : children) {
+                    if(builder instanceof ClassBuilder) {
+                        ((ClassBuilder)builder).setScope(cls);
+                        ((ClassBuilder)builder).create();
+                    }
+                    if(builder instanceof EnumBuilder) {
+                        ((EnumBuilder)builder).setScope(cls);
+                        ((EnumBuilder)builder).create(true);
+                    }
+                }                
             }
             return cls;
         }
+        
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -683,8 +708,21 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
                                 ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile(), getFileContent(), !isRenderingLocalContext(), ClassImpl.this)
                                 : ClassImpl.create(token, ClassImpl.this, getContainingFile(), getFileContent(), !isRenderingLocalContext(), ClassImpl.this);
+                        
+                        boolean created = false; 
+                        if(TraceFlags.CPP_PARSER_ACTION) {
+                            for (CsmMember member : ClassImpl.this.getMembers()) {
+                                if(CsmKindUtilities.isClass(member) && member.getStartOffset() == innerClass.getStartOffset()) {
+                                    innerClass = (ClassImpl)member;
+                                    created = true;
+                                    break;
+                                }
+                            }
+                        }
                         innerClass.setVisibility(curentVisibility);
-                        addMember(innerClass,!isRenderingLocalContext());
+                        if(!created) {
+                            addMember(innerClass,!isRenderingLocalContext());
+                        }
                         typedefs = renderTypedef(token, innerClass, ClassImpl.this);
                         if (!typedefs.getTypesefs().isEmpty()) {
                             for (CsmTypedef typedef : typedefs.getTypesefs()) {
@@ -705,8 +743,20 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
                         EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), fileContent, !isRenderingLocalContext());
+                        boolean enumCreated = false; 
+                        if(TraceFlags.CPP_PARSER_ACTION) {
+                            for (CsmMember member : ClassImpl.this.getMembers()) {
+                                if(CsmKindUtilities.isEnum(member) && member.getStartOffset() == innerEnum.getStartOffset()) {
+                                    innerEnum = (EnumImpl)member;
+                                    enumCreated = true;
+                                    break;
+                                }
+                            }
+                        }
                         innerEnum.setVisibility(curentVisibility);
-                        addMember(innerEnum,!isRenderingLocalContext());
+                        if(!enumCreated) {
+                            addMember(innerEnum,!isRenderingLocalContext());
+                        }
                         renderVariableInClassifier(token, innerEnum, null, null);
                         checkInnerIncludes(innerEnum, Collections.<CsmObject>emptyList());
                         break;

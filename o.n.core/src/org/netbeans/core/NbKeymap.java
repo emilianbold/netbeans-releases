@@ -211,7 +211,7 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
             boolean processingProfile = false;
             for (FileObject dir : dirs) {
                 if (dir != null) {
-                    for (FileObject def : dir.getChildren()) {
+                     outer: for (FileObject def : dir.getChildren()) {
                         if (def.isData()) {
                             boolean removed = processingProfile && BINDING_REMOVED.equals(def.getExt());
                             KeyStroke[] strokes = Utilities.stringToKeys(def.getName());
@@ -228,27 +228,29 @@ public final class NbKeymap implements Keymap, Comparator<KeyStroke> {
                                 }
                                 if (sub == null) {
                                     if (removed) {
-                                        // nothing more to remove now
-                                        break;
+                                        // not defined, no further strokes, nothing to remove, skip
+                                        continue outer;
                                     }
                                     binder.put(strokes[i], sub = new Binding());
                                 }
                                 binder = sub.nested;
                             }
                             if (removed) {
-                                if (strokes.length == 1) {
-                                    // remove the recorded stroke so it is not found by keyStrokeForAction
-                                    id2Stroke.values().remove(strokes[0]);
-                                }
-                                
                                 KeyStroke stroke = strokes[strokes.length - 1];
                                 Binding b = binder.get(stroke);
-                                if (b.nested != null) {
-                                    Binding b2 = new Binding();
-                                    b2.nested.putAll(b.nested);
-                                    binder.put(stroke, b2);
-                                } else {
-                                    binder.remove(stroke);
+                                // last keystroke may be undefined
+                                if (b != null) {
+                                    if (strokes.length == 1) {
+                                        // remove the recorded stroke so it is not found by keyStrokeForAction
+                                        id2Stroke.values().remove(strokes[0]);
+                                    }
+                                    if (b.nested != null) {
+                                        Binding b2 = new Binding();
+                                        b2.nested.putAll(b.nested);
+                                        binder.put(stroke, b2);
+                                    } else {
+                                        binder.remove(stroke);
+                                    }
                                 }
                             } else {
                                 // XXX warn about conflicts here too:

@@ -105,6 +105,29 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="SearchResultsDisplayer-closed">
+            <api name="api.search"/>
+            <summary>Added method SearchResultsDisplayer.closed()</summary>
+            <version major="1" minor="1.5"/>
+            <date day="25" month="6" year="2012"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    The new <code>SearchResultsDisplayer.closed()</code> is
+                    called when the results panel is closed by the user. It can
+                    be overriden to release all resouces held by the panel.
+                </p>
+                <p>
+                    Before this change, <code>HierarchyListener</code>s were
+                    used to detect detaching of search results panels. But it
+                    is quite complicated as the panels can be often detached and
+                    attached again when they are moved from a simple pane to a
+                    tabbed pane or vice versa.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.search.provider" name="SearchResultsDisplayer"/>
+        </change>
         <change id="UriSupport">
             <api name="api.search"/>
             <summary>Support for URI-based searching</summary>

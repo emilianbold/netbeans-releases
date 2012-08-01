@@ -44,13 +44,15 @@
 
 package org.netbeans.modules.editor.lib2.document;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
-import javax.swing.text.Segment;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
 import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Position;
+import javax.swing.text.Segment;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.lib2.document.ContentEdit.InsertEdit;
 import org.netbeans.modules.editor.lib2.document.ContentEdit.RemoveEdit;
 
@@ -85,7 +87,7 @@ import org.netbeans.modules.editor.lib2.document.ContentEdit.RemoveEdit;
 public final class EditorDocumentContent implements AbstractDocument.Content {
     
     // -J-Dorg.netbeans.modules.editor.lib2.document.EditorDocumentContent.level=FINE
-    private static final Logger LOG = Logger.getLogger(EditorDocumentContent.class.getName());
+    static final Logger LOG = Logger.getLogger(EditorDocumentContent.class.getName());
 
     /** Character contents of document. */
     private final CharContent charContent;
@@ -120,13 +122,11 @@ public final class EditorDocumentContent implements AbstractDocument.Content {
         }
         checkOffsetInDoc(offset);
         InsertEdit insertEdit = new InsertEdit(this, offset, text);
-        insertEdit(insertEdit);
+        insertEdit(insertEdit, ""); // NOI18N
         return insertEdit;
     }
     
-    synchronized void insertEdit(ContentEdit edit) {
-//        checkConsistency(); LOG.fine("insertEdit:" + edit); // NOI18N
-//        LOG.fine("markVector-before-insert:\n" + toStringDetail()); // NOI18N
+    synchronized void insertEdit(ContentEdit edit, String opType) {
         charContent.insertText(edit.offset, edit.text);
         markVector.insertUpdate(edit.offset, edit.length(), edit.markUpdates);
         edit.markUpdates = null; // Allow GC
@@ -134,7 +134,18 @@ public final class EditorDocumentContent implements AbstractDocument.Content {
             bbMarkVector.insertUpdate(edit.offset, edit.length(), edit.bbMarkUpdates);
             edit.bbMarkUpdates = null; // Allow GC
         }
-//        LOG.fine("INSERT-after: DUMP\n"+ markVector.toStringDetail(null)); checkConsistency();
+        if (LOG.isLoggable(Level.FINE)) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append(opType).append("insertEdit(off=").append(edit.offset).append(", len="). // NOI18N
+                    append(edit.length()).append(") text=\""). // NOI18N
+                    append(CharSequenceUtilities.debugText(edit.text)).append("\"\n"); // NOI18N
+            logMarkUpdates(sb, edit.markUpdates, false, false);
+            logMarkUpdates(sb, edit.bbMarkUpdates, true, false);
+            LOG.fine(sb.toString());
+            if (LOG.isLoggable(Level.FINER)) {
+                checkConsistency();
+            }
+        }
     }
     
     @Override
@@ -151,12 +162,11 @@ public final class EditorDocumentContent implements AbstractDocument.Content {
      */
     public UndoableEdit remove(int offset, String removedText) throws BadLocationException { // optimized version 
         RemoveEdit removeEdit = new RemoveEdit(this, offset, removedText);
-        removeEdit(removeEdit);
+        removeEdit(removeEdit, ""); // NOI18N
         return removeEdit;
     }
     
-    synchronized void removeEdit(ContentEdit edit) {
-//        checkConsistency(); LOG.fine("removeEdit:" + edit); // NOI18N
+    synchronized void removeEdit(ContentEdit edit, String opType) {
 //        LOG.fine("markVector-before-remove:\n" + toStringDetail()); // NOI18N
         int len = edit.length();
         charContent.removeText(edit.offset, len);
@@ -164,13 +174,22 @@ public final class EditorDocumentContent implements AbstractDocument.Content {
         if (bbMarkVector != null) {
             edit.bbMarkUpdates = bbMarkVector.removeUpdate(edit.offset, len);
         }
-//        LOG.fine("REMOVE-after: DUMP\n"+ markVector.toStringDetail(null)); checkConsistency();
+        if (LOG.isLoggable(Level.FINE)) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append(opType).append("removeEdit(off=").append(edit.offset). // NOI18N
+                    append(", len=").append(len).append(")\n"); // NOI18N
+            logMarkUpdates(sb, edit.markUpdates, false, true);
+            logMarkUpdates(sb, edit.markUpdates, true, true);
+            LOG.fine(sb.toString());
+            if (LOG.isLoggable(Level.FINER)) {
+                checkConsistency();
+            }
+        }
     }
 
     @Override
     public synchronized Position createPosition(int offset) throws BadLocationException {
         checkOffsetInContent(offset);
-//        checkConsistency(); LOG.fine("createPosition(" + offset + ")-before\n"); // NOI18N
         EditorPosition pos = markVector.position(offset);
 //        LOG.fine("createPosition(" + offset + ")=" + pos.getMark().toStringDetail() + "\n"); checkConsistency(); // NOI18N
         return pos;
@@ -285,6 +304,23 @@ public final class EditorDocumentContent implements AbstractDocument.Content {
 	    throw new BadLocationException("Invalid (offset=" + offset + " + length=" + length + // NOI18N
                     ")=" + (offset+length) + " > (docLen+1)=" + length(), offset + length); // NOI18N
 	}
+    }
+    
+    private void logMarkUpdates(StringBuilder sb, MarkVector.MarkUpdate[] updates, boolean bbMarks, boolean forRemove) {
+        if (updates != null) {
+            for (int i = 0; i < updates.length; i++) {
+                MarkVector.MarkUpdate update = updates[i];
+                if (forRemove) {
+                    sb.append("    ").append(bbMarks ? "BB" : "").append("Mark's original offset saved: "). // NOI18N
+                            append(update).append('\n'); // NOI18N
+                } else {
+                    if (update.mark.isActive()) {
+                        sb.append("    Restoring offset for ").append(bbMarks ? "BB" : "").append("MarkUpdate: "). // NOI18N
+                                append(update).append('\n'); // NOI18N
+                    }
+                }
+            }
+        }
     }
 
     @Override

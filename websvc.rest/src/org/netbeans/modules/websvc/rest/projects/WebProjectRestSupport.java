@@ -107,16 +107,20 @@ public class WebProjectRestSupport extends WebRestSupport {
         boolean needsRefresh = false;
         
         WebRestSupport.RestConfig restConfig = null;
-        if (!isRestSupportOn()) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        Profile profile = webModule.getJ2eeProfile();
+        boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
+                Profile.JAVA_EE_6_FULL.equals(profile); 
+        
+        /*
+         *  do not show config dialog in JEE6 case. Manually created REST service 
+         *  should be configured via editor hint  
+         */
+        if ( !isJee6 && !isRestSupportOn()) {
             needsRefresh = true;
             restConfig = setApplicationConfigProperty(
                     RestUtils.isAnnotationConfigAvailable(project));
         }
-        
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        Profile profile = webModule.getJ2eeProfile();
-        boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) || 
-            Profile.JAVA_EE_6_FULL.equals(profile); 
         
         extendBuildScripts();
 

@@ -124,6 +124,13 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         "javax.microedition.sensor.PrivateSensor", // NOI18N
         "javax.microedition.sensor.ProtectedSensor",  // NOI18N
         "javax.microedition.io.Connector.sensor", // NOI18N
+        // Fix for IZ#216134 - Add new IMP-NG Permissions to Application Descriptor>API Permissions tab
+        "com.oracle.deviceaccess.gpio", // NOI18N
+        "com.oracle.deviceaccess.gpio.read", // NOI18N
+        "com.oracle.deviceaccess.gpio.write", // NOI18N
+        "com.oracle.deviceaccess.i2c", // NOI18N
+        "com.oracle.deviceaccess.spi", // NOI18N
+        "com.oracle.deviceaccess.mmio", // NOI18N
     };
     
     private DialogDescriptor dd;

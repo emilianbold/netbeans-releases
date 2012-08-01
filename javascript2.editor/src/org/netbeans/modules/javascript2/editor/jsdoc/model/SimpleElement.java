@@ -43,7 +43,7 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 
 /**
- * Represents simple jsDoc elements without any additional property.
+ * Represents simple jsDoc elements without any additional type, description etc.
  * <p>
  * <i>Examples:</i> @private, @public, @event, @ignore, ...
  *
@@ -57,7 +57,7 @@ public class SimpleElement extends JsDocElementImpl {
 
     /**
      * Creates new {@code SimpleElement}.
-     * @param type {@code SimpleElement} type, never null
+     * @param type simple type (tag), never null
      */
     public static SimpleElement create(Type type) {
         return new SimpleElement(type);

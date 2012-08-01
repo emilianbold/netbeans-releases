@@ -53,6 +53,7 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.groovy.refactoring.utils.OccurrencesUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -118,12 +119,19 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             int end = textC.getSelectionEnd();
 
             BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
-            AstPath path = new AstPath(root, caret, doc);
+            ASTNode findingNode = getNodeOnCaretLocation(root, doc, caret);
 
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, (ModuleNode) root, path.leaf(), fileObject);
+            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, (ModuleNode) root, findingNode, fileObject);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, start, end, parserResult);
             }
+        }
+
+        private ASTNode getNodeOnCaretLocation(ASTNode root, BaseDocument doc, int caret) {
+            AstPath path = new AstPath(root, caret, doc);
+            ASTNode leaf = path.leaf();
+
+            return OccurrencesUtil.findCurrentNode(leaf, doc, caret);
         }
 
         @Override

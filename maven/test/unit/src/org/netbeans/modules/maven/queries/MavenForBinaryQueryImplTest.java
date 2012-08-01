@@ -154,6 +154,10 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         @Override public boolean preferSources() {
             return false;
         }
+
+        @Override
+        public void resetCachedValue() {
+        }
     }
 
 }

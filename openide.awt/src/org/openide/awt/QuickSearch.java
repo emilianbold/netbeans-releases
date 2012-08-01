@@ -356,6 +356,7 @@ public class QuickSearch {
         searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.X_AXIS));
         searchPanel.add(lbl);
         searchPanel.add(searchTextField);
+        searchPanel.setBackground(component.getBackground());
         lbl.setLabelFor(searchTextField);
         searchTextField.setColumns(10);
         searchTextField.setMaximumSize(searchTextField.getPreferredSize());

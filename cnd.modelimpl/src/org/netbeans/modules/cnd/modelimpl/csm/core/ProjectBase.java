@@ -416,28 +416,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-
-    public static CharSequence getProjectName(CharSequence unitName) {
-        if (TraceFlags.CACHE_IN_PROJECT) {
-            if (unitName != null && unitName.length() > 2) {
-                char c = unitName.charAt(unitName.length() - 1);
-                if (c == 'L') {
-                    c = unitName.charAt(unitName.length() - 2);
-                    if (c == 'N' || c == 'L') {
-                        return unitName.subSequence(0, unitName.length() - 2);
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     public static CharSequence getUniqueName(FileSystem fs, Object platformProject) {
         Parameters.notNull("FileSystem", fs); //NOI18N
         String postfix = CndFileUtils.isLocalFileSystem(fs) ? "" : fs.getDisplayName();
-        if (TraceFlags.CACHE_IN_PROJECT) {
-            postfix += CndFileUtils.isLocalFileSystem(fs) ? "L" : "R"; //NOI18N
-        }
         String result;
         if (platformProject instanceof NativeProject) {
             result = ((NativeProject) platformProject).getProjectRoot() + 'N' + postfix;
@@ -1664,8 +1645,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 synchronized (entry.getLock()) {
                     PreprocessorStatePair newStatePair = new PreprocessorStatePair(newState, pcState);
-                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
-                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
+//                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
+//                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
                     // register included file and it's states in start project under current included file lock
                     startProjectUpdateResult = startProject.updateFileEntryForIncludedFile(entry, this, file, csmFile, newStatePair);
                     

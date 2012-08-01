@@ -350,6 +350,9 @@ public final class CndFileUtils {
 
    /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
    private static final boolean isWindows = Utilities.isWindows();
+   
+   // expensive check
+   private static final boolean ASSERT_INDEXED_NOTFOUND = Boolean.getBoolean("cnd.modelimpl.assert.notfound"); // NOI18N
 
     private static Flags getFlags(FileSystem fs, String absolutePath, boolean indexParentFolder) {
         assert fs != null;
@@ -386,14 +389,18 @@ public final class CndFileUtils {
                         if (exists == null) {
                             // if we're inside INDEXED_DIRECTORY then the file does not exist
                             exists = Flags.NOT_FOUND;
-                            assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                            if (ASSERT_INDEXED_NOTFOUND) {
+                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                            }
                         }
                     }
                 } else {
                     if (parentDirFlags == Flags.INDEXED_DIRECTORY) {
                         // if we're inside INDEXED_DIRECTORY then the file does not exist
                         exists = Flags.NOT_FOUND;
-                        assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                        if (ASSERT_INDEXED_NOTFOUND) {
+                            assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                        }
                     } else if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.BROKEN_LINK) {
                         // no need to check non existing file
                         exists = Flags.NOT_FOUND;

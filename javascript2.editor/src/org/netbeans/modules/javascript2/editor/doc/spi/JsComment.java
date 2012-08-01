@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.doc.spi;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 
 /**
@@ -71,6 +72,14 @@ public abstract class JsComment {
         return offsetRange;
     }
 
+    /**
+     * Gets formated documentation for the CC doc window.
+     * @return formated documentation text
+     */
+    public final String getDocumentation() {
+        return JsDocumentationPrinter.printDocumentation(this);
+    }
+
     public abstract List<String> getSummary();
 
     public abstract List<String> getSyntax();
@@ -78,8 +87,6 @@ public abstract class JsComment {
     public abstract DocParameter getReturnType();
 
     public abstract List<DocParameter> getParameters();
-
-    public abstract String getDocumentation();
 
     public abstract boolean isDeprecated();
 

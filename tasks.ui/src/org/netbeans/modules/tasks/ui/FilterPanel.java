@@ -46,7 +46,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.swingx.painter.BusyPainter;
-import org.jdesktop.swingx.painter.PainterIcon;
+import org.jdesktop.swingx.icon.PainterIcon;
 import org.netbeans.modules.tasks.ui.actions.DummyAction;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.filter.OpenedCategoryFilter;

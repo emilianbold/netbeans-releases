@@ -52,11 +52,13 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement.Type;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementUtils;
+import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Parses jsDoc comment blocks and returns list of these blocks and contained {@code JsDocElement}s.
+ * Parses jsDoc comment blocks.
+ * It can return map of these blocks, their end offset in the snapshot.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -65,9 +67,9 @@ public class JsDocParser {
     private static final Logger LOGGER = Logger.getLogger(JsDocParser.class.getName());
 
     /**
-     * Parses given snapshot and returns list of all jsDoc blocks.
-     * @param scriptText text to parse
-     * @return list of blocks
+     * Parses given snapshot and returns map of all jsDoc blocks.
+     * @param snapshot snapshot to parse
+     * @return map of blocks, key is end offset of each block
      */
     public static Map<Integer, JsDocComment> parse(Snapshot snapshot) {
         Map<Integer, JsDocComment> blocks = new HashMap<Integer, JsDocComment>();
@@ -99,20 +101,21 @@ public class JsDocParser {
         return blocks;
     }
 
-    private static boolean isTextToken(Token<? extends JsDocTokenId> token) {
-        return (token.id() != JsDocTokenId.ASTERISK && token.id() != JsDocTokenId.COMMENT_SHARED_BEGIN
-                && token.id() != JsDocTokenId.COMMENT_START);
+    private static boolean isTextToken(Token<? extends JsDocumentationTokenId> token) {
+        return (token.id() != JsDocumentationTokenId.ASTERISK && token.id() != JsDocumentationTokenId.COMMENT_START);
+//        return (token.id() != JsDocumentationTokenId.ASTERISK && token.id() != JsDocumentationTokenId.COMMENT_SHARED_BEGIN
+//                && token.id() != JsDocumentationTokenId.COMMENT_START);
     }
 
     private static TokenSequence getEmbeddedJsDocTS(TokenSequence ts) {
-        return ts.embedded(JsDocTokenId.language());
+        return ts.embedded(JsDocumentationTokenId.language());
     }
 
     private static JsDocComment parseCommentBlock(TokenSequence ts, OffsetRange range, JsDocCommentType commentType) {
         TokenSequence ets = getEmbeddedJsDocTS(ts);
 
         List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
-        Token<? extends JsDocTokenId> token;
+        Token<? extends JsDocumentationTokenId> token;
         Type type = null;
         boolean afterDescription = false;
         StringBuilder sb = new StringBuilder();
@@ -123,7 +126,7 @@ public class JsDocParser {
                 continue;
             }
 
-            if (token.id() == JsDocTokenId.KEYWORD || token.id() == JsDocTokenId.COMMENT_END) {
+            if (token.id() == JsDocumentationTokenId.KEYWORD || token.id() == JsDocumentationTokenId.COMMENT_END) {
                 if (sb.toString().trim().isEmpty()) {
                     // simple tag
                     if (type != null) {
@@ -140,12 +143,12 @@ public class JsDocParser {
                     sb = new StringBuilder();
                 }
 
-                while (ets.moveNext() && ets.token().id() == JsDocTokenId.WHITESPACE) {
+                while (ets.moveNext() && ets.token().id() == JsDocumentationTokenId.WHITESPACE) {
                     continue;
                 }
 
                 offset = ets.offset();
-                if (token.id() != JsDocTokenId.COMMENT_END) {
+                if (token.id() != JsDocumentationTokenId.COMMENT_END) {
                     ets.movePrevious();
                 }
                 afterDescription = true;

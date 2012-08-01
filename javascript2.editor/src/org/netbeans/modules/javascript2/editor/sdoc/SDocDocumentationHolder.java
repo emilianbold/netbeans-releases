@@ -41,14 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc;
 
-import com.oracle.nashorn.ir.Node;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -57,38 +51,16 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 class SDocDocumentationHolder extends JsDocumentationHolder {
 
+    private final Map<Integer, SDocComment> blocks;
+
     public SDocDocumentationHolder(Snapshot snapshot) {
         super(snapshot);
-    }
-
-    @Override
-    public List<Type> getReturnType(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public List<DocParameter> getParameters(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String getDocumentation(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public boolean isDeprecated(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Set<JsModifier> getModifiers(Node node) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        blocks = SDocParser.parse(snapshot);
     }
 
     @Override
     public Map getCommentBlocks() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return blocks;
     }
 
 }

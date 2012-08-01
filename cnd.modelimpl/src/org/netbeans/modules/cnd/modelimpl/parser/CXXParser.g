@@ -879,7 +879,13 @@ using_declaration
     ;
 
 using_directive:
-        LITERAL_using LITERAL_namespace SCOPE? nested_name_specifier? IDENT SEMICOLON
+        LITERAL_using LITERAL_namespace                                         {action.using_directive($LITERAL_using, $LITERAL_namespace);}
+        (
+            SCOPE                                                               {action.using_directive(action.USING_DIRECTIVE__SCOPE, $SCOPE);}
+        )? 
+        nested_name_specifier? 
+        IDENT                                                                   {action.using_directive(action.USING_DIRECTIVE__IDENT, $IDENT);}
+        SEMICOLON                                                               {action.end_using_directive($SEMICOLON);}
     ;
 
 

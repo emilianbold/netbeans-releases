@@ -54,11 +54,12 @@ import javax.enterprise.deploy.spi.exceptions.DConfigBeanVersionUnsupportedExcep
 import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 
 /**
- * Deployment manager for GlassFish cloud.
+ * Deployment manager for GlassFish local glassFish server registered
+ * with cloud.
  * <p/>
  * Provides the core set of functions a Java EE platform must provide for
  * Java EE application deployment. It provides server related information,
@@ -69,10 +70,45 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudDeploymentManager implements DeploymentManager2 {
+public class GlassFishCloudDeploymentManager
+        extends GlassFishDeploymentManager {
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates an instance of GlassFish local server deployment manager.
+     * <p/>
+     * This is non public constructor called only in deployment manager factory
+     * methods.
+     * <p/>
+     * @param url GlassFish cloud URL.
+     */
+    GlassFishCloudDeploymentManager(GlassFishUrl url) {
+        super(url);
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Implemented Interface Methods                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * The redeploy method provides a means for updating currently deployed
+     * Java EE applications.
+     * <p/>
+     * This is an optional method for GlassFish cloud implementation.
+     * <p/>
+     * @param targetList  A list of server targets the user is specifying
+     *                    this application be deployed to.
+     * @param deployment  Context describing everything necessary for a module
+     *                    deployment.
+     * @return An object that tracks and reports the status of the distribution
+     *         process. 
+     */
     @Override
-    public ProgressObject redeploy(TargetModuleID[] tmids, DeploymentContext deployment) {
+    public ProgressObject redeploy(TargetModuleID[] targetList,
+            DeploymentContext deployment) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -92,20 +128,6 @@ public class GlassFishCloudDeploymentManager implements DeploymentManager2 {
     @Override
     public ProgressObject distribute(Target[] targetList,
             DeploymentContext deployment) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    /**
-     * Retrieve the list of deployment targets supported by this
-     * DeploymentManager.
-     * <p/>
-     * @return List of deployment Target designators the user may select for
-     *         application deployment or <code>null</code> if there are none. 
-     * @throws IllegalStateException Is thrown when the method is called when
-     *         running in disconnected mode.
-     */
-    @Override
-    public Target[] getTargets() throws IllegalStateException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

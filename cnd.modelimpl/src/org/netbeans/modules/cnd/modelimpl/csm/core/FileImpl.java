@@ -771,7 +771,8 @@ public final class FileImpl implements CsmFile,
         synchronized (changeStateLock) {
             if (state == State.PARSED) {
                 long lastModified = getBuffer().lastModified();
-                if (lastModified != lastParsed) {
+                // using "==" when comparison disallows offline index: in most cases timestamps differ
+                if (TraceFlags.USE_CURR_PARSE_TIME ? (lastModified > lastParsed) : (lastModified != lastParsed)) {
                     if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_191307_BUG) {
                         System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
                     }
@@ -1425,6 +1426,10 @@ public final class FileImpl implements CsmFile,
         }
         clearStateCache();
         lastParsed = fileBuffer.lastModified();
+        // using file time as parse time disallows offline index: in most cases timestamps differ
+        if (TraceFlags.USE_CURR_PARSE_TIME) {
+            lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
+        }
         lastMacroUsages = null;
         if (TraceFlags.TRACE_VALIDATION) {
             System.err.printf("PARSED    %s \n\tlastModified=%d\n\t  lastParsed=%d  diff=%d\n",

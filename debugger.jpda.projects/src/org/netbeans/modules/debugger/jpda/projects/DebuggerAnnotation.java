@@ -105,6 +105,7 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
         attach (new HighlightAnnotatable(attrs, start, end, fo));
     }
     
+    @Override
     public String getAnnotationType () {
         return type;
     }
@@ -113,6 +114,7 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
         return line;
     }
     
+    @Override
     public String getShortDescription () {
         if (type == EditorContext.CURRENT_LINE_ANNOTATION_TYPE)
             return NbBundle.getMessage 
@@ -152,17 +154,20 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
             this.end = end;
             try {
                 DataObject dobj = DataObject.find(fo);
-                EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                doc = ec.getDocument();
-                if (doc == null) {
-                    try {
-                        doc = ec.openDocument();
-                    } catch (java.io.IOException ioex) {}
+                EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+                if (ec != null) {
+                    doc = ec.getDocument();
+                    if (doc == null) {
+                        try {
+                            doc = ec.openDocument();
+                        } catch (java.io.IOException ioex) {}
+                    }
                 }
             } catch (DataObjectNotFoundException ex) {
             }
         }
         
+        @Override
         public String getText() {
             return null;
         }
@@ -189,6 +194,7 @@ public class DebuggerAnnotation extends Annotation implements Lookup.Provider {
 
     }
 
+    @Override
     public Lookup getLookup() {
         if (thread == null) {
             return Lookup.EMPTY;

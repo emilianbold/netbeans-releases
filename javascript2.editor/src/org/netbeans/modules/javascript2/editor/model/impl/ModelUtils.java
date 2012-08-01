@@ -289,7 +289,7 @@ public class ModelUtils {
                     object.getParent().addProperty(object.getName(), new JsFunctionReference(object.getParent(), object.getDeclarationName(), function, true));
                 }
             }
-        } else if (type.getType().startsWith("@new:")) {
+        } else if (type.getType().startsWith("@new;")) {
             String function = type.getType().substring(5);
             JsObject possible = null;
             JsObject parent = object;
@@ -306,14 +306,14 @@ public class ModelUtils {
             } else {
                 result.add(type);
             }
-        } else if (type.getType().startsWith("@call:")) {
+        } else if (type.getType().startsWith("@call;")) {
             String functionName = type.getType().substring(6);
             JsObject globalObject = ModelUtils.getGlobalObject(object);
             JsObject function = globalObject.getProperty(functionName);
             if (function != null && function instanceof JsFunction) {
                 result.addAll(((JsFunction)function).getReturnTypes());
             }
-        } else if(type.getType().startsWith("@anonym:")){
+        } else if(type.getType().startsWith("@anonym;")){
             int start = Integer.parseInt(type.getType().substring(8));
             JsObject globalObject = ModelUtils.getGlobalObject(object);
             for(JsObject children : globalObject.getProperties().values()) {
@@ -332,6 +332,7 @@ public class ModelUtils {
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
         
         private final Set<TypeUsage> result = new HashSet<TypeUsage>();
+        private StringBuilder sb = new StringBuilder();
         
         public SemiTypeResolverVisitor() {
         }
@@ -351,7 +352,22 @@ public class ModelUtils {
                             result.add(new TypeUsageImpl("@this." + aNode.getProperty().getName(), iNode.getStart(), false));                //NOI18N
                             // plus five due to this.
                         }
-                        return null;
+                    } else {
+                        if (sb.length() > 5) {
+                            sb.insert(6, aNode.getProperty().getName());
+                        } else {
+                            sb.append(aNode.getProperty().getName());
+                        }
+                        sb.insert(0, ((IdentNode)aNode.getBase()).getName());
+                        sb.insert(0, "@exp;");
+                        result.add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
+                    }
+                    return null;
+                } else {
+                    if(sb.length() > 5) {
+                        sb.insert(6, aNode.getProperty().getName());
+                    } else {
+                        sb.append(aNode.getProperty().getName());
                     }
                 }
             }
@@ -389,7 +405,14 @@ public class ModelUtils {
                 if (callNode.getFunction() instanceof ReferenceNode) {
                     FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
                     String name = function.getIdent().getName();
-                    result.add(new TypeUsageImpl("@call:" + name, function.getStart(), false));
+                    result.add(new TypeUsageImpl("@call;" + name, function.getStart(), false)); //NOI18N
+                    return null;
+                } else {
+                    if (sb.length() < 6) {
+                        sb.append("@call;");    //NOI18N
+                    } else {
+                        sb.insert(6, "@call;"); //NOI18N
+                    }
                 }
             }
             return super.visit(callNode, onset);
@@ -436,7 +459,7 @@ public class ModelUtils {
         @Override
         public Node visit(ObjectNode objectNode, boolean onset) {
             if (onset) {
-                result.add(new TypeUsageImpl("@anonym:" + objectNode.getStart(), objectNode.getStart(), false));
+                result.add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), objectNode.getStart(), false));
                 return null;
             }
             return super.visit(objectNode, onset);
@@ -450,7 +473,7 @@ public class ModelUtils {
                     if (uNode.rhs() instanceof CallNode
                         && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
                             IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
-                            result.add(new TypeUsageImpl("@new:" + iNode.getName(), iNode.getStart(), false));
+                            result.add(new TypeUsageImpl("@new;" + iNode.getName(), iNode.getStart(), false));
                             return null;
                     }
                 }

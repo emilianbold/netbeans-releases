@@ -63,14 +63,26 @@ public class StorageAllocator {
     private final File diskRepository;
     
     private StorageAllocator() {
-        String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
-        if (diskRepositoryPath != null) {
-            diskRepository = new File(diskRepositoryPath);
-        } else {
-            diskRepository = Places.getCacheSubdirectory("cnd/model"); // NOI18N
-        }
+        diskRepository = getCacheBaseDirectoryImpl();
     };
-    
+
+    private static File getCacheBaseDirectoryImpl() {
+        File diskRepository = null;
+        RepositoryCacheDirectoryProvider provider = Lookup.getDefault().lookup(RepositoryCacheDirectoryProvider.class);
+        if (provider != null) {
+            diskRepository = provider.getCacheBaseDirectory();
+        }
+        if (diskRepository == null) {
+            String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
+            if (diskRepositoryPath != null) {
+                diskRepository = new File(diskRepositoryPath);
+            } else {
+                diskRepository = Places.getCacheSubdirectory("cnd/model"); // NOI18N
+            }
+        }
+        return diskRepository;
+    }
+
     public static StorageAllocator getInstance() {
         return instance;
     }
@@ -115,6 +127,13 @@ public class StorageAllocator {
         unit2path.remove(unitName);
     }
     
+    public boolean renameUnitDirectory (CharSequence oldUnitName, CharSequence newUnitName) {
+        deleteUnitFiles(newUnitName, true);
+        File newUnitStorage = new File(getUnitStorageName(newUnitName));
+        File oldUnitStorage = new File(getUnitStorageName(oldUnitName));
+        return oldUnitStorage.renameTo(newUnitStorage);
+    }
+
     public void deleteUnitFiles (CharSequence unitName, boolean removeUnitFolder) {
 	if( Stats.TRACE_UNIT_DELETION ) System.err.printf("Deleting unit files for %s\n", unitName);
         String path = getUnitStorageName(unitName);
@@ -164,14 +183,18 @@ public class StorageAllocator {
         }
     }
 
+    public File getCacheBaseDirectory() {
+        return diskRepository;
+    }
+
     private File getUnitCacheBaseDirectory(CharSequence unit) {
-        RepositoryCacheDirectoryProvider provider = Lookup.getDefault().lookup(RepositoryCacheDirectoryProvider.class);
-        if (provider != null) {
-            File dir = provider.getUnitCacheBaseDirectory(unit);
-            if (dir != null) {
-                return dir;
-            }
-        }
+//        RepositoryCacheDirectoryProvider provider = Lookup.getDefault().lookup(RepositoryCacheDirectoryProvider.class);
+//        if (provider != null) {
+//            File dir = provider.getUnitCacheBaseDirectory(unit);
+//            if (dir != null) {
+//                return dir;
+//            }
+//        }
         return diskRepository;
     }
 

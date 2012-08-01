@@ -261,7 +261,8 @@ public class VersionsCache {
                     return null;
                 }
                 File expanded = new File(svnDir, "text-base/" + referenceFile.getName() + ".netbeans-base"); //NOI18N
-                if (expanded.canRead() && svnBase.isFile() && (expanded.lastModified() >= svnBase.lastModified())) {
+                if (expanded.canRead() && svnBase.isFile() && expanded.length() == svnBase.length()
+                        && (expanded.lastModified() >= svnBase.lastModified())) {
                     return expanded;
                 }
                 expanded = getContentBase(referenceFile, expanded);

@@ -253,5 +253,17 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override
     public void template_declaration(int kind, Token token) {
     }
+
+    @Override
+    public void using_directive(Token usingToken, Token namespaceToken) {
+    }
+
+    @Override
+    public void using_directive(int kind, Token token) {
+    }
+
+    @Override
+    public void end_using_directive(Token semicolonToken) {
+    }
     
 }

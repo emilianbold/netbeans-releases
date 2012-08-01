@@ -43,6 +43,9 @@
 package org.netbeans.modules.git.ui.fetch;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.git.client.GitClient;
@@ -81,7 +84,7 @@ public class FetchAction extends GetRemoteChangesAction {
                 }
             });
         } else {
-            fetch(repository, remote.getUris().get(0), remote.getFetchRefSpecs());
+            fetch(repository, remote.getUris().get(0), remote.getFetchRefSpecs(), null);
         }
     }
     
@@ -92,17 +95,28 @@ public class FetchAction extends GetRemoteChangesAction {
         FetchWizard wiz = new FetchWizard(repository, remotes);
         if (wiz.show()) {
             Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
-            fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs());
+            fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getRemoteToPersist());
         }
     }
     
-    public void fetch (File repository, final String remote, final List<String> fetchRefSpecs) {
+    public void fetch (File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
                 try {
                     GitClient client = getClient();
-                    Map<String, GitTransportUpdate> updates = client.fetch(remote, fetchRefSpecs, getProgressMonitor());
+                    if (remoteNameToUpdate != null) {
+                        GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
+                        if (isCanceled()) {
+                            return;
+                        }
+                        config = prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
+                        client.setRemote(config, getProgressMonitor());
+                        if (isCanceled()) {
+                            return;
+                        }
+                    }
+                    Map<String, GitTransportUpdate> updates = client.fetch(target, fetchRefSpecs, getProgressMonitor());
                     log(updates, getLogger());
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
@@ -110,5 +124,33 @@ public class FetchAction extends GetRemoteChangesAction {
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(FetchAction.class, "LBL_FetchAction.progressName")); //NOI18N
+    }
+    
+    static GitRemoteConfig prepareConfig (GitRemoteConfig original, String remoteName, String remoteUri, List<String> fetchRefSpecs) {
+        List<String> remoteUris;
+        if (original != null) {
+            remoteUris = new LinkedList<String>(original.getUris());
+            if (!remoteUris.contains(remoteUri)) {
+                remoteUris.add(remoteUri);
+            }
+        } else {
+            remoteUris = Arrays.asList(remoteUri);
+        }
+        List<String> refSpecs;
+        if (original != null) {
+            refSpecs = new LinkedList<String>(original.getFetchRefSpecs());
+            for (String refSpec : fetchRefSpecs) {
+                if (!refSpecs.contains(refSpec)) {
+                    refSpecs.add(refSpec);
+                }
+            }
+        } else {
+            refSpecs = fetchRefSpecs;
+        }
+        return new GitRemoteConfig(remoteName,
+                remoteUris,
+                original == null ? Collections.<String>emptyList() : original.getPushUris(),
+                refSpecs,
+                original == null ? Collections.<String>emptyList() : original.getPushRefSpecs());
     }
 }

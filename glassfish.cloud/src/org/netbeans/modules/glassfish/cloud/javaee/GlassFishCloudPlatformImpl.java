@@ -43,11 +43,7 @@ package org.netbeans.modules.glassfish.cloud.javaee;
 
 import java.awt.Image;
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.glassfish.cloud.data.GlassFishAccountInstance;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 
 /**
  * Java EE platform SPI interface implementation for Java EE platform registered
@@ -55,26 +51,11 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudPlatformImpl extends J2eePlatformImpl2 {
+public class GlassFishCloudPlatformImpl extends GlassFishPlatformImpl {
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Class attributes                                                       //
-    ////////////////////////////////////////////////////////////////////////////
-
-    // Now there is only GlassFish 4 so we have single option to return.
-    /** Set of Java platforms supported by GlassFish cloud. */
-    private static final Set<String> JAVA_PLATFORMS = new HashSet<String>();
-    static {
-        JAVA_PLATFORMS.add("1.6");
-        JAVA_PLATFORMS.add("1.7");
-    }
-    
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
-
-    /** GlassFish cloud user account instance. */
-    GlassFishAccountInstance cloudAccount;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -83,17 +64,15 @@ public class GlassFishCloudPlatformImpl extends J2eePlatformImpl2 {
     /**
      * Creates an instance of Java EE platform registered with GlassFish cloud.
      * <p/>
-     * @param cloudAccount GlassFish cloud user account instance registered
-     *                     in NetBeans.
+     * @param url GlassFish cloud URL.
      */
-    GlassFishCloudPlatformImpl(GlassFishAccountInstance cloudAccount) {
-        this.cloudAccount = cloudAccount;
+    GlassFishCloudPlatformImpl(GlassFishUrl url) {
+        super(url);
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Implemented Interface Methods                                          //
     ////////////////////////////////////////////////////////////////////////////
-
 
     @Override
     public File getServerHome() {
@@ -161,32 +140,5 @@ public class GlassFishCloudPlatformImpl extends J2eePlatformImpl2 {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    /**
-     * Return a set of J2SE platform versions GlassFish cloud can run with.
-     * <p/>
-     * This method should be updated once there will be more options to return.
-     * <p/>
-     * @return Set of J2SE platform versions GlassFish cloud can run with.
-     */
-    @SuppressWarnings("rawtypes")
-    @Override
-    public Set getSupportedJavaPlatformVersions() {
-        // Now there is only GlassFish 4 so we have single option to return.
-        return JAVA_PLATFORMS;
-    }
-
-    /**
-     * Return GlassFish cloud J2SE platform.
-     * <p/>
-     * Now this method returns default J2SE platform set in NEtBeans. In the
-     * future it may return <code>AS_JAVA</code> value set in
-     * <code>asenv.conf</code> or <code>asenv.bat</code> files.
-     * <p/>
-     * @return Default J2SE platform set in NetBeans.
-     */
-    @Override
-    public org.netbeans.api.java.platform.JavaPlatform getJavaPlatform() {
-        return JavaPlatformManager.getDefault().getDefaultPlatform();
-    }
     
 }
