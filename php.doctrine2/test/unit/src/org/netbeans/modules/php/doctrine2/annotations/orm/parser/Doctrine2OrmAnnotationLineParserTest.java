@@ -39,48 +39,34 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AnnotationUtilsTest extends NbTestCase {
+public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
+    private AnnotationLineParser parser;
 
-    private static final String ANNOTATION_NAME = "Annotation";
-
-    public AnnotationUtilsTest(String name) {
+    public Doctrine2OrmAnnotationLineParserTest(String name) {
         super(name);
     }
 
-    public void testValidUseCase_01() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        parser = Doctrine2OrmAnnotationLineParser.getDefault();
     }
 
-    public void testValidUseCase_02() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
+    public void testColumnParser() {
+        assertNotNull(parser.parse("Column"));
     }
 
-    public void testValidUseCase_03() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME, ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_04() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_05() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
-    }
-
-    public void testInvalidUseCase_01() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME + "\\Foo\\Bar\\Baz\\", ANNOTATION_NAME));
-    }
-
-    public void testInvalidUseCase_02() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar" + ANNOTATION_NAME + "\\Baz\\", ANNOTATION_NAME));
+    public void testChangeTrackingPolicyParser() {
+        assertNotNull(parser.parse("ChangeTrackingPolicy"));
     }
 
 }

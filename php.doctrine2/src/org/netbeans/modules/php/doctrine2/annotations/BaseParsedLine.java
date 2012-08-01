@@ -39,48 +39,38 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AnnotationUtilsTest extends NbTestCase {
+public abstract class BaseParsedLine implements AnnotationParsedLine {
 
-    private static final String ANNOTATION_NAME = "Annotation";
+    private final String description;
+    private final Map<OffsetRange, String> types;
 
-    public AnnotationUtilsTest(String name) {
-        super(name);
+    public BaseParsedLine(final String description, final Map<OffsetRange, String> types) {
+        Parameters.notNull("description", description); //NOI18N
+        Parameters.notNull("types", types); //NOI18N
+        this.description = description;
+        this.types = types;
     }
 
-    public void testValidUseCase_01() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
+    @Override
+    public String getDescription() {
+        return description;
     }
 
-    public void testValidUseCase_02() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_03() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME, ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_04() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_05() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
-    }
-
-    public void testInvalidUseCase_01() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME + "\\Foo\\Bar\\Baz\\", ANNOTATION_NAME));
-    }
-
-    public void testInvalidUseCase_02() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar" + ANNOTATION_NAME + "\\Baz\\", ANNOTATION_NAME));
+    @Override
+    public Map<OffsetRange, String> getTypes() {
+        return new HashMap<OffsetRange, String>(types);
     }
 
 }

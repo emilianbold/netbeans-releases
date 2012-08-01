@@ -39,48 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AnnotationUtilsTest extends NbTestCase {
+public class ColumnParsedLine extends BaseParsedLine {
 
-    private static final String ANNOTATION_NAME = "Annotation";
-
-    public AnnotationUtilsTest(String name) {
-        super(name);
+    public ColumnParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
-    public void testValidUseCase_01() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_02() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME, ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_03() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME, ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_04() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
-    }
-
-    public void testValidUseCase_05() throws Exception {
-        assertTrue(AnnotationUtils.isTypeAnnotation("Foo\\Bar\\Baz\\" + ANNOTATION_NAME.toLowerCase(), ANNOTATION_NAME));
-    }
-
-    public void testInvalidUseCase_01() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation(ANNOTATION_NAME + "\\Foo\\Bar\\Baz\\", ANNOTATION_NAME));
-    }
-
-    public void testInvalidUseCase_02() throws Exception {
-        assertFalse(AnnotationUtils.isTypeAnnotation("\\Foo\\Bar" + ANNOTATION_NAME + "\\Baz\\", ANNOTATION_NAME));
+    @Override
+    public String getName() {
+        return ColumnLineParser.ANNOTATION_NAME;
     }
 
 }
