@@ -54,11 +54,13 @@ import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeDescribedElement;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeNamedElement;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocTypeSimpleElement;
 
 /**
  * Represents documentation comment block of ScriptDoc.
@@ -77,7 +79,8 @@ public class SDocComment extends JsComment {
     @Override
     public List<String> getSummary() {
         List<String> summaries = new LinkedList<String>();
-        for (SDocElement sDocElement : getTagsForType(SDocElementType.DESCRIPTION)) {
+        for (SDocElement sDocElement : getTagsForTypes(
+                new SDocElementType[]{SDocElementType.DESCRIPTION, SDocElementType.CLASS_DESCRIPTION, SDocElementType.PROJECT_DESCRIPTION})) {
             summaries.add(((SDocDescriptionElement) sDocElement).getDescription());
         }
         return summaries;
@@ -90,9 +93,11 @@ public class SDocComment extends JsComment {
 
     @Override
     public DocParameter getReturnType() {
-        List<? extends SDocElement> tagsForType = getTagsForType(SDocElementType.RETURN);
-        // return just the first occurance of return - more of them is wrong
-        return (SDocTypeDescribedElement) tagsForType.get(0);
+        for (SDocElement sDocElement : getTagsForTypes(
+                new SDocElementType[]{SDocElementType.RETURN, SDocElementType.TYPE, SDocElementType.PROPERTY})) {
+            return (SDocTypeSimpleElement) sDocElement;
+        }
+        return null;
     }
 
     @Override
@@ -135,9 +140,8 @@ public class SDocComment extends JsComment {
     }
 
     /**
-     * Gets list of all {@code SDocTag}s inside this comment.
-     * <p>
-     * Used just in testing use cases.
+     * Gets list of all {@code SDocTag}s inside this comment. <p> Used just in testing use cases.
+     *
      * @return list of {@code SDocTag}s
      */
     protected List<? extends SDocElement> getTags() {
@@ -150,6 +154,7 @@ public class SDocComment extends JsComment {
 
     /**
      * Gets list of {@code SDocElement}s of given type.
+     *
      * @return list of {@code SDocElement}s
      */
     public List<? extends SDocElement> getTagsForType(SDocElementType type) {
@@ -157,4 +162,16 @@ public class SDocComment extends JsComment {
         return tagsForType == null ? Collections.<SDocElement>emptyList() : tagsForType;
     }
 
+    /**
+     * Gets list of {@code JsDocTag}s of given types.
+     *
+     * @return list of {@code JsDocTag}s
+     */
+    public List<? extends SDocElement> getTagsForTypes(SDocElementType[] types) {
+        List<SDocElement> list = new LinkedList<SDocElement>();
+        for (SDocElementType type : types) {
+            list.addAll(getTagsForType(type));
+        }
+        return list;
+    }
 }

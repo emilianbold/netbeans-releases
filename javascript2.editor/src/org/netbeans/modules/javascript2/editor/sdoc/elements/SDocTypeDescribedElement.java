@@ -53,7 +53,7 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocTypeDescribedElement extends SDocTypeSimpleElement implements DocParameter {
+public class SDocTypeDescribedElement extends SDocTypeSimpleElement {
 
     protected final String typeDescription;
 
