@@ -72,6 +72,13 @@ public abstract class PageModel {
     public abstract Node getDocumentNode();
 
     /**
+     * Returns the document URL.
+     * 
+     * @return document URL.
+     */
+    public abstract String getDocumentURL();
+
+    /**
      * Sets the selected nodes.
      * 
      * @param nodes nodes to select in the page.
