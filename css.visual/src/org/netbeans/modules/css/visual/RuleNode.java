@@ -373,6 +373,10 @@ public class RuleNode extends AbstractNode {
 
         @Override
         public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            if(EMPTY.equals(val)) {
+                return ; //no change
+            }
+            
             //add a new declaration to the rule
             ElementFactory factory = getModel().getElementFactory();
             
