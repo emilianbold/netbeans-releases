@@ -52,28 +52,38 @@
  */
 package org.netbeans.modules.team.ods.ui.project;
 
+import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import org.netbeans.modules.team.ods.ui.utils.Utils;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.Scrollable;
 import javax.swing.UIManager;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.team.ods.api.ODSProject;
 import org.netbeans.modules.team.ods.client.api.ODSFactory;
 import org.netbeans.modules.team.ods.client.api.ODSClient;
+import org.netbeans.modules.team.ods.client.api.ODSException;
 import org.netbeans.modules.team.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
@@ -87,7 +97,7 @@ autostore = false)
 @TopComponent.Description(
     preferredID = "ProjectDetailsTopComponent",
 //iconBase="SET/PATH/TO/ICON/HERE", 
-persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
 @ActionID(category = "Window", id = "org.netbeans.modules.team.ods.ui.project.ProjectDetailsTopComponent")
 @ActionReference(path = "Menu/Window" /*, position = 333 */)
@@ -141,12 +151,14 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         if (project != null) {
             setName(project.getName());
             initComponents();
-            scrollPanel.getVerticalScrollBar().setUnitIncrement(16);
+            scrollPanelMain.getVerticalScrollBar().setUnitIncrement(16);
+            scrollPanelDetails.getVerticalScrollBar().setUnitIncrement(16);
             detailsExpanded = false;
-            pnlDetails.setVisible(false);
+            scrollPanelDetails.setVisible(false);
             expandMouseListener = new ExpandableMouseListener(this, this);
             pnlProjectName.addMouseListener(expandMouseListener);
             client = ODSFactory.getInstance().createClient(project.getServer().getUrl().toString(), project.getServer().getPasswordAuthentication());
+            initDetails();
             loadBuildStatus();
             loadRecentActivities();
         } else {
@@ -165,42 +177,45 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        lblError = new javax.swing.JLabel();
         pnlContent = new javax.swing.JPanel();
         pnlProjectName = new TitlePanel();
         lblProjectName = new javax.swing.JLabel();
         lblExpandIcon = new javax.swing.JLabel();
-        pnlDetails = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel6 = new LinkLabel() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                openUrl(getText());
-            }
-        };
-        jLabel7 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel11 = new LinkLabel() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                openUrl(getText());
-            }
-        };
-        jLabel12 = new LinkLabel() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                openUrl(getText());
-            }
-        };
-        jLabel13 = new LinkLabel() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                openUrl(getText());
-            }
-        };
-        jLabel2 = new javax.swing.JLabel();
-        scrollPanel = new javax.swing.JScrollPane();
+        scrollPanelMain = new javax.swing.JScrollPane();
         pnlMainContent = new javax.swing.JPanel();
+        scrollPanelDetails = new javax.swing.JScrollPane();
+        pnlDetails = new ScrollablePanel();
+        lblDescription = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        pnlLinksMaven = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        linkProject = new LinkLabel(true) {
+            public void mouseClicked(MouseEvent e) {
+                openUrl(this.getText());
+            }
+        };
+        linkWiki = new LinkLabel(true) {
+            public void mouseClicked(MouseEvent e) {
+                openUrl(this.getText());
+            }
+        };
+        pnlMaven = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        textMaven = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        textArtifacts = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        pnlSources = new javax.swing.JPanel();
+        lblSources = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+
+        lblError.setForeground(new java.awt.Color(255, 0, 0));
+        lblError.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/error.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.lblError.text")); // NOI18N
 
         setBackground(java.awt.Color.white);
 
@@ -224,7 +239,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
             .addGroup(pnlProjectNameLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(lblProjectName)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 781, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 702, Short.MAX_VALUE)
                 .addComponent(lblExpandIcon)
                 .addContainerGap())
         );
@@ -242,135 +257,269 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 588;
-        gridBagConstraints.ipady = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         pnlContent.add(pnlProjectName, gridBagConstraints);
 
-        pnlDetails.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 1, 1, 1, borderColor));
-        pnlDetails.setOpaque(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel3.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel4.text")); // NOI18N
-
-        jLabel6.setForeground(new java.awt.Color(0, 51, 204));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel6.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel7.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel9.text")); // NOI18N
-
-        jLabel11.setForeground(new java.awt.Color(0, 51, 204));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel11, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel11.text")); // NOI18N
-
-        jLabel12.setForeground(new java.awt.Color(0, 51, 204));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel12, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel12.text")); // NOI18N
-
-        jLabel13.setForeground(new java.awt.Color(0, 51, 204));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel13, org.openide.util.NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel13.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, project.getDescription());
-
-        javax.swing.GroupLayout pnlDetailsLayout = new javax.swing.GroupLayout(pnlDetails);
-        pnlDetails.setLayout(pnlDetailsLayout);
-        pnlDetailsLayout.setHorizontalGroup(
-            pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDetailsLayout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addGroup(pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlDetailsLayout.createSequentialGroup()
-                        .addGroup(pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel7))
-                        .addGap(59, 59, 59)
-                        .addGroup(pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel13)
-                            .addComponent(jLabel12))
-                        .addGap(176, 176, 176)
-                        .addGroup(pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel9))
-                        .addGap(47, 47, 47)
-                        .addGroup(pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6)
-                            .addComponent(jLabel11))
-                        .addGap(0, 221, Short.MAX_VALUE))
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        pnlDetailsLayout.setVerticalGroup(
-            pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDetailsLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel4)
-                    .addComponent(jLabel6)
-                    .addComponent(jLabel12))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
-                    .addComponent(jLabel9)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel13))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 662;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        pnlContent.add(pnlDetails, gridBagConstraints);
-
-        scrollPanel.setBorder(null);
-        scrollPanel.setOpaque(false);
+        scrollPanelMain.setBorder(null);
+        scrollPanelMain.setOpaque(false);
 
         pnlMainContent.setBackground(new java.awt.Color(255, 255, 255));
         pnlMainContent.setLayout(new java.awt.GridBagLayout());
-        scrollPanel.setViewportView(pnlMainContent);
+        scrollPanelMain.setViewportView(pnlMainContent);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
-        pnlContent.add(scrollPanel, gridBagConstraints);
+        pnlContent.add(scrollPanelMain, gridBagConstraints);
+
+        scrollPanelDetails.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 1, 1, 1, borderColor));
+        scrollPanelDetails.setOpaque(false);
+
+        pnlDetails.setBackground(new java.awt.Color(255, 255, 255));
+        pnlDetails.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblDescription, "<html>" + project.getDescription() + "</html>");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(14, 29, 0, 0);
+        pnlDetails.add(lblDescription, gridBagConstraints);
+
+        jPanel2.setOpaque(false);
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        pnlLinksMaven.setOpaque(false);
+        pnlLinksMaven.setLayout(new java.awt.GridBagLayout());
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel2.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        pnlLinksMaven.add(jLabel2, gridBagConstraints);
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel1.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        pnlLinksMaven.add(jLabel1, gridBagConstraints);
+
+        linkProject.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/link.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.ipady = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 18, 0, 0);
+        pnlLinksMaven.add(linkProject, gridBagConstraints);
+
+        linkWiki.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/team/ods/ui/resources/link.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(15, 18, 0, 0);
+        pnlLinksMaven.add(linkWiki, gridBagConstraints);
+
+        pnlMaven.setOpaque(false);
+        pnlMaven.setLayout(new java.awt.GridBagLayout());
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel4.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        pnlMaven.add(jLabel4, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel5.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        pnlMaven.add(jLabel5, gridBagConstraints);
+
+        textMaven.setEditable(false);
+        textMaven.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        pnlMaven.add(textMaven, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel6.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        pnlMaven.add(jLabel6, gridBagConstraints);
+
+        textArtifacts.setEditable(false);
+        textArtifacts.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 11, 0);
+        pnlMaven.add(textArtifacts, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        pnlMaven.add(jLabel7, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        pnlLinksMaven.add(pnlMaven, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(pnlLinksMaven, gridBagConstraints);
+
+        pnlSources.setOpaque(false);
+        pnlSources.setLayout(new java.awt.GridBagLayout());
+
+        lblSources.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblSources, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.lblSources.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        pnlSources.add(lblSources, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jLabel3.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 5, 0);
+        pnlSources.add(jLabel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(pnlSources, gridBagConstraints);
+
+        jSeparator1.setForeground(new java.awt.Color(180, 180, 180));
+        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        jSeparator1.setToolTipText(NbBundle.getMessage(ProjectDetailsTopComponent.class, "ProjectDetailsTopComponent.jSeparator1.toolTipText")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 0, 20);
+        jPanel2.add(jSeparator1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(18, 29, 10, 10);
+        pnlDetails.add(jPanel2, gridBagConstraints);
+
+        scrollPanelDetails.setViewportView(pnlDetails);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 0.5;
+        pnlContent.add(scrollPanelDetails, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pnlContent, javax.swing.GroupLayout.PREFERRED_SIZE, 940, Short.MAX_VALUE)
+            .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, 861, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, 787, Short.MAX_VALUE)
+            .addComponent(pnlContent, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblDescription;
+    private javax.swing.JLabel lblError;
     private javax.swing.JLabel lblExpandIcon;
     private javax.swing.JLabel lblProjectName;
+    private javax.swing.JLabel lblSources;
+    private javax.swing.JLabel linkProject;
+    private javax.swing.JLabel linkWiki;
     private javax.swing.JPanel pnlContent;
     private javax.swing.JPanel pnlDetails;
+    private javax.swing.JPanel pnlLinksMaven;
     private javax.swing.JPanel pnlMainContent;
+    private javax.swing.JPanel pnlMaven;
     private javax.swing.JPanel pnlProjectName;
-    private javax.swing.JScrollPane scrollPanel;
+    private javax.swing.JPanel pnlSources;
+    private javax.swing.JScrollPane scrollPanelDetails;
+    private javax.swing.JScrollPane scrollPanelMain;
+    private javax.swing.JTextField textArtifacts;
+    private javax.swing.JTextField textMaven;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -398,6 +547,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     }
 
     private void openUrl(String url) {
+        Utils.openBrowser(url);
     }
 
     private Color getBackgroundColor() {
@@ -436,7 +586,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
 
     @Override
     public void toggleExpandablePanel() {
-        pnlDetails.setVisible(!detailsExpanded);
+        scrollPanelDetails.setVisible(!detailsExpanded);
         detailsExpanded = !detailsExpanded;
         lblExpandIcon.setIcon(detailsExpanded ? Utils.COLLAPSE_ICON : Utils.EXPAND_ICON);
         pnlProjectName.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, detailsExpanded ? 0 : 1, 1, borderColor));
@@ -459,5 +609,64 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     @Override
     public void revalidateExpandable() {
         pnlContent.revalidate();
+    }
+
+    private void initDetails() {
+        linkProject.setText(project.getWebUrl());
+        linkWiki.setText(Utils.getRealUrl(project.getWikiUrl()));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 0, 0, 0);
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 0.1;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        Collection<ScmRepository> repositories = Collections.emptyList();
+        try {
+            repositories = project.getRepositories();
+        } catch (ODSException ex) {
+            Utils.getLogger().warning(ex.getLocalizedMessage());
+            pnlSources.add(lblError, gbc);
+        }
+        for (ScmRepository repository : repositories) {
+            List<String> list = new ArrayList<String>();
+            list.add(repository.getUrl());
+            String alternateUrl = repository.getAlternateUrl();
+            if (alternateUrl != null && !alternateUrl.isEmpty()) {
+                list.add(alternateUrl);
+            }
+            pnlSources.add(new RepositoryPanel(repository.getName(), list), gbc);
+        }
+
+        textMaven.setText(project.getMavenUrl());
+        textArtifacts.setText("dav:" + project.getMavenUrl());
+    }
+
+    private static class ScrollablePanel extends JPanel implements Scrollable {
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return this.getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return false;
+        }
+
     }
 }

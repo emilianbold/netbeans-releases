@@ -49,7 +49,9 @@ import java.awt.event.MouseListener;
 import java.awt.font.TextAttribute;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.Icon;
 import javax.swing.JLabel;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -60,21 +62,39 @@ public abstract class LinkLabel extends JLabel implements MouseListener{
     private Map<TextAttribute, Object> underlineFontMap;
     private static final Color FOREGROUND_COLOR = Color.BLUE;
     private static final Color FOREGROUND_FOCUS_COLOR = new Color(0, 150, 255);
+    private static final Icon ICON_LINK = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/link.png", true); //NOI18N
+    private static final Icon ICON_LINK_FOCUS = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/link_focus.png", true); //NOI18N
+    private final boolean showIcon;
+
+    public LinkLabel(String text, boolean showIcon) {
+        this.showIcon = showIcon;
+        underlineFontMap = new HashMap<TextAttribute, Object>();
+        underlineFontMap.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL);
+        if (!text.isEmpty()) {
+            setText(text);
+        }
+        init();
+    }
+
+    public LinkLabel(boolean showIcon) {
+        this("", showIcon);
+    }
 
     public LinkLabel(String text) {
-        this();
+        this(text, false);
         setText(text);
     }
 
     public LinkLabel() {
-        underlineFontMap = new HashMap<TextAttribute, Object>();
-        underlineFontMap.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_LOW_ONE_PIXEL);
-        init();
+        this("", false);
     }
 
 
 
     private void init() {
+        if (showIcon) {
+            setIcon(ICON_LINK);
+        }
         Font font = getFont();
         font = font.deriveFont(underlineFontMap);
         setFont(font);
@@ -103,11 +123,17 @@ public abstract class LinkLabel extends JLabel implements MouseListener{
     public void mouseEntered(MouseEvent e) {
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         setForeground(FOREGROUND_FOCUS_COLOR);
+        if (showIcon) {
+            setIcon(ICON_LINK_FOCUS);
+        }
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         setForeground(FOREGROUND_COLOR);
+        if (showIcon) {
+            setIcon(ICON_LINK);
+        }
     }
 }

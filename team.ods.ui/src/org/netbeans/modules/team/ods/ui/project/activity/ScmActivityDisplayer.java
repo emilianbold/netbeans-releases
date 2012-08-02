@@ -104,7 +104,7 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
     }
 
     private String getCommitUrl() {
-        String url = scmUrl.replaceFirst("/s/", "/#projects/"); //NOI18N
+        String url = Utils.getRealUrl(scmUrl);
         if (!url.endsWith("/")) { //NOI18N
             url += "/"; //NOI18N
         }
