@@ -350,7 +350,6 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateDescriptionTextPane = new javax.swing.JTextPane();
 
         org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.infoLabel.text")); // NOI18N
-        infoLabel.setEnabled(false);
 
         templateButtonGroup.add(noTemplateRadioButton);
         noTemplateRadioButton.setSelected(true);
