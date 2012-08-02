@@ -155,9 +155,6 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
 
     @Override
     public void setActiveConfiguration(ClientProjectConfigurationImplementation c) throws IllegalArgumentException, IOException {
-        if ( !configs.values().contains(c)) {
-            throw new IllegalArgumentException();
-        }
         final String n = c.getId();
         EditableProperties ep = p.getHelper().getProperties(CONFIG_PROPS_PATH);
         if (Utilities.compareObjects(n, ep.getProperty(PROP_CONFIG))) {
