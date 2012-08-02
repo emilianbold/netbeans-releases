@@ -824,7 +824,7 @@ public class JsFormatter implements Formatter {
     private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
         if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
             // XXX option
-            return CodeStyle.WrapStyle.WRAP_ALWAYS;
+            return CodeStyle.get(context).wrapStatement();
         }
         if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
             // XXX option
