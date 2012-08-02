@@ -67,7 +67,7 @@ import org.openide.windows.WindowManager;
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParserResult> {
 
-    private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+    private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
     
     //holds a reference to the RuleEditorTC top component
@@ -184,7 +184,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
 
     }
 
-    @MimeRegistration(mimeType = "text/x-css", service = TaskFactory.class)
+    @MimeRegistration(mimeType = "text/css", service = TaskFactory.class)
     public static class Factory extends TaskFactory {
 
         @Override

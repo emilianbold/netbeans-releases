@@ -73,7 +73,7 @@ public class TestUtil {
     public static CssParserResult parse(String code) {
         try {
             Document doc = new PlainDocument();
-            doc.putProperty("mimeType", "text/x-css");
+            doc.putProperty("mimeType", "text/css");
             doc.insertString(0, code, null);
             Source source = Source.create(doc);
             return parse(source);

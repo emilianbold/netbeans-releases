@@ -329,7 +329,7 @@ public final class ElementScanningTask extends IndexingAwareParserResultTask<Par
     static final class MimetypeRootNode implements StructureItem {
 
         //hack - see the getSortText() comment
-        private static final String CSS_MIMETYPE = "text/x-css"; //NOI18N
+        private static final String CSS_MIMETYPE = "text/css"; //NOI18N
         private static final String CSS_SORT_TEXT = "2";//NOI18N
         private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
         private static final String RUBY_MIMETYPE = "text/x-ruby";//NOI18N
