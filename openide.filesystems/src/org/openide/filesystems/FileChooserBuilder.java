@@ -418,6 +418,8 @@ public class FileChooserBuilder {
             return null;
         if( !Boolean.getBoolean("nb.native.filechooser") )
             return null;
+        if( dirsOnly && !Utilities.isMac() )
+            return null;
         Component parentComponent = findDialogParent();
         Frame parentFrame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parentComponent);
         FileDialog fileDialog = new FileDialog(parentFrame);
