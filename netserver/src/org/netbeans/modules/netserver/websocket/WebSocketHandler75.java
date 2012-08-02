@@ -52,11 +52,11 @@ import java.nio.charset.Charset;
  * @author ads
  *
  */
-class WebSocketHandler75 extends AbstractWSHandler75 {
+class WebSocketHandler75 extends AbstractWSHandler75<WebSocketServer> {
     
     public WebSocketHandler75( WebSocketServer webSocketServer, SelectionKey key ) {
-        server = webSocketServer;
-        this.key = key;
+        super(webSocketServer);
+        this.myKey = key;
     }
 
     /* (non-Javadoc)
@@ -71,21 +71,21 @@ class WebSocketHandler75 extends AbstractWSHandler75 {
         builder.append(Utils.CONN_UPGRADE);
         builder.append(Utils.CRLF);
         builder.append("WebSocket-Origin: ");                        // NOI18N
-        String origin = getServer().getContext(key).getHeaders().get("Origin");      // NOI18N
+        String origin = getWebSocketPoint().getContext(myKey).getHeaders().get("Origin");      // NOI18N
         if ( origin != null ){
             builder.append( origin);
         }
         builder.append(Utils.CRLF);
         builder.append("WebSocket-Location: ws://");                 // NOI18N
-        String host = getServer().getContext(key).getHeaders().get(Utils.HOST);                
+        String host = getWebSocketPoint().getContext(myKey).getHeaders().get(Utils.HOST);                
         if ( host != null) {
             builder.append( host );
         }
         else {
             builder.append("127.0.0.1:");                            // NOI18N
-            builder.append( ((InetSocketAddress)server.getAddress()).getPort());
+            builder.append( ((InetSocketAddress)getWebSocketPoint().getAddress()).getPort());
         }
-        String request = getServer().getContext(key).getRequestString();
+        String request = getWebSocketPoint().getContext(myKey).getRequestString();
         int index = request.indexOf(' ');
         String url = null;
         if ( index != -1 ){
@@ -100,7 +100,7 @@ class WebSocketHandler75 extends AbstractWSHandler75 {
         }
         builder.append( url );
         builder.append( Utils.CRLF );
-        String protocol = getServer().getContext(key).getHeaders().get(Utils.WS_PROTOCOL);
+        String protocol = getWebSocketPoint().getContext(myKey).getHeaders().get(Utils.WS_PROTOCOL);
         if ( protocol != null ){
             builder.append( Utils.WS_PROTOCOL );
             builder.append(": ");               // NOI18N
@@ -108,44 +108,23 @@ class WebSocketHandler75 extends AbstractWSHandler75 {
         }
         builder.append( Utils.CRLF );
         builder.append( Utils.CRLF );
-        getServer().send(builder.toString().getBytes( 
-                Charset.forName(Utils.UTF_8)), key );
-    }
-    
-    protected WebSocketServer getServer(){
-        return server;
+        getWebSocketPoint().send(builder.toString().getBytes( 
+                Charset.forName(Utils.UTF_8)), myKey );
     }
     
     @Override
     protected SelectionKey getKey(){
-        return key;
+        return myKey;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#close()
-     */
-    @Override
-    protected void close() throws IOException {
-        getServer().close(getKey());
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#readDelegate(byte[])
      */
     @Override
     protected void readDelegate( byte[] bytes ) {
-        getServer().getWebSocketReadHandler().read(key, bytes, null);        
+        getWebSocketPoint().getWebSocketReadHandler().read(myKey, bytes, null);        
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#isStopped()
-     */
-    @Override
-    protected boolean isStopped() {
-        return getServer().isStopped();
-    }
-    
-    private WebSocketServer server;
-    private SelectionKey key;
+    private SelectionKey myKey;
 
 }
