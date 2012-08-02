@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.j2ee.jpa.verification;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.j2ee.jpa.model.AccessType;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -60,6 +62,7 @@ public class JPAProblemContext extends ProblemContext {
     private boolean mappedSuperClass;
     private AccessType accessType;
     private EntityMappingsMetadata metadata;
+    private Set<CancelListener> cListeners;
     
     public boolean isEntity(){
         return entity;
@@ -111,5 +114,28 @@ public class JPAProblemContext extends ProblemContext {
     
     public boolean isJPAClass(){
         return entity || embeddable || idClass || mappedSuperClass;
+    }
+
+    @Override
+    public void setCancelled(boolean cancelled) {
+        super.setCancelled(cancelled);
+        if(cancelled && cListeners != null) {
+            for(CancelListener cl:cListeners) {
+                cl.cancelled();
+            }
+        }
+    }
+
+    public void addCancelListener(CancelListener aThis) {
+        if(cListeners == null) {
+            cListeners = new HashSet();
+        }
+        cListeners.add(aThis);
+    }
+    
+    public void removeCancelListener(CancelListener cl) {
+        if(cListeners != null) {
+            cListeners.remove(cl);
+        }
     }
 }
