@@ -72,17 +72,17 @@ public class JsStructureScannerTest extends JsTestBase {
         checkStructure("testfiles/completion/simpleMethodChain/methodChainSimple.js");
     }
     
-    public void testTypeInferenceNew() throws Exception {
-        checkStructure("testfiles/completion/typeInferenceNew.js");
-    }
+//    public void testTypeInferenceNew() throws Exception {
+//        checkStructure("testfiles/completion/typeInferenceNew.js");
+//    }
     
     public void testGetterSettterInObjectLiteral() throws Exception {
         checkStructure("testfiles/model/getterSettterInObjectLiteral.js");
     }
     
-    public void testPerson() throws Exception {
-        checkStructure("testfiles/model/person.js");
-    }
+//    public void testPerson() throws Exception {
+//        checkStructure("testfiles/model/person.js");
+//    }
     
     public void testAnonymousFunction() throws Exception {
         checkStructure("testfiles/model/jQueryFragment01.js");
@@ -96,9 +96,9 @@ public class JsStructureScannerTest extends JsTestBase {
         checkStructure("testfiles/coloring/Formatter.js");
     }
     
-    public void testAssignmnets01() throws Exception {
-        checkStructure("testfiles/coloring/assignments01.js");
-    }
+//    public void testAssignmnets01() throws Exception {
+//        checkStructure("testfiles/coloring/assignments01.js");
+//    }
     
     public void testArrays() throws Exception {
         checkStructure("testfiles/completion/arrays/arrays.js");

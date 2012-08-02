@@ -58,6 +58,7 @@ import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -177,6 +178,12 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
                 throw new IOException(msg);
             }
             schemaCompiler.compileSchema(wiz);
+        } else {
+            String msg = NbBundle.getMessage(JAXBWizardIterator.class,
+                    "MSG_NoSchemaCompiler");//NOI18N
+            wiz.putProperty(JAXBWizModuleConstants.WIZ_ERROR_MSG, msg);
+            project.getProjectDirectory().getFileSystem().refresh(true);
+            throw new IOException(msg);
         }
 
         ProjectHelper.addJaxbApiEndorsed(project);

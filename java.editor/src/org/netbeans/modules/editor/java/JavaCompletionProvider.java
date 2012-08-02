@@ -3122,8 +3122,9 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void addPackages(Env env, String fqnPrefix, boolean inPkgStmt) {
             if (fqnPrefix == null)
                 fqnPrefix = EMPTY;
+            String prefix = env.getPrefix() != null ? fqnPrefix + env.getPrefix() : null;
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true, EnumSet.allOf(ClassIndex.SearchScope.class)))
-                if (startsWith(env, pkgName) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
+                if (startsWith(env, pkgName, prefix) && !Utilities.isExcluded(pkgName + ".")) //NOI18N
                     results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }
         

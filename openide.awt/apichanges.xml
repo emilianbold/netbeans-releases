@@ -50,6 +50,20 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="QuickSearch.alwaysShown">
+      <api name="awt"/>
+      <summary>QuickSearch allows to customize of whether the quick search field should always be shown, or not.</summary>
+      <version major="7" minor="49"/>
+      <date day="2" month="8" year="2012"/>
+      <author login="theofanis"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          QuickSearch.isAlwaysShown() and QuickSearch.setAlwaysShown(boolean) methods are added.
+          They can be used to change the default behavior of not showing the quick search field until something is typed.
+      </description>
+      <class package="org.openide.awt" name="QuickSearch"/>
+        <issue number="215833"/>
+    </change>
     <change id="TabbedPaneFactorySubClass">
       <api name="awt"/>
       <summary>TabbedPaneFactory can be subclassed.</summary>
