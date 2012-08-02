@@ -83,6 +83,7 @@ public class DOMNode extends AbstractNode {
         super(new DOMChildren(model), Lookups.fixed(node));
         this.node = node;
         setIconBaseWithExtension(ICON_BASE);
+        setName(node.getNodeName());
         updateDisplayName();
     }
 
