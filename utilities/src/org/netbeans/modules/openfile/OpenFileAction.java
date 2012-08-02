@@ -143,6 +143,7 @@ public class OpenFileAction implements ActionListener {
                     FileDialog fileDialog = new FileDialog(WindowManager.getDefault().getMainWindow());
                     fileDialog.setMode(FileDialog.LOAD);
                     fileDialog.setDirectory(getCurrentDirectory().getAbsolutePath());
+                    fileDialog.setTitle(chooser.getDialogTitle());
                     fileDialog.setVisible(true);
                     if( null != oldFileDialogProp ) {
                         System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
