@@ -289,6 +289,7 @@ public final class UpdateTracking {
 
         File file;
         InputStream is;
+        int avail = 0;
         try {
             file = trackingFile;
             
@@ -296,6 +297,7 @@ public final class UpdateTracking {
                 return;
             
             is = new FileInputStream( file );
+            avail = is.available();
 
             InputSource xmlInputSource = new InputSource( is );
             document = XMLUtil.parse( xmlInputSource, false, false, new ErrorCatcher(), XMLUtil.createAUResolver() );
@@ -303,11 +305,11 @@ public final class UpdateTracking {
                 is.close();
         }
         catch ( org.xml.sax.SAXException e ) {
-            XMLUtil.LOG.log(Level.SEVERE, "Bad update_tracking", e); // NOI18N
+            XMLUtil.LOG.log(Level.SEVERE, "Bad update_tracking: " + trackingFile + ", available bytes: " + avail, e); // NOI18N
             return;
         }
         catch ( java.io.IOException e ) {
-            XMLUtil.LOG.log(Level.SEVERE, "Missing update_tracking", e); // NOI18N
+            XMLUtil.LOG.log(Level.SEVERE, "Missing update_tracking: " + trackingFile + ", available bytes: " + avail, e); // NOI18N
             return;
         }
 
