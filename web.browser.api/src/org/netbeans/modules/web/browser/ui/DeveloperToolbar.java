@@ -70,6 +70,8 @@ public class DeveloperToolbar {
     private final ItemListener resizeListener;
     private boolean ignoreSelectionChanges;
     private final JComboBox comboZoom = new JComboBox();
+    private JToolBar customToolbar;
+    private final ContainerListener toolbarListener;
 
     private DeveloperToolbar() {
         panel = new JPanel( new FlowLayout(FlowLayout.LEFT) );
@@ -98,6 +100,18 @@ public class DeveloperToolbar {
                 comboZoom.setSelectedItem( newZoom );
             }
         });
+        toolbarListener = new ContainerListener() {
+
+            @Override
+            public void componentAdded( ContainerEvent e ) {
+                initActions( customToolbar );
+            }
+
+            @Override
+            public void componentRemoved( ContainerEvent e ) {
+                //TODO remove action from TC's map
+            }
+        };
     }
 
     public static DeveloperToolbar create() {
@@ -136,6 +150,11 @@ public class DeveloperToolbar {
         bar.add( comboZoom );
 
         initActions(bar);
+
+        if( null != customToolbar )
+            customToolbar.removeContainerListener( toolbarListener );
+        bar.addContainerListener( toolbarListener );
+        customToolbar = bar;
     }
 
     private Lookup getLookup() {

@@ -45,14 +45,20 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -61,9 +67,11 @@ import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -142,10 +150,22 @@ public class PageInspectorImpl extends PageInspector {
         if (toolBar != null) {
             String selectionModeTxt = NbBundle.getMessage(PageInspectorImpl.class, "PageInspectorImpl.selectionMode"); // NOI18N
             final JToggleButton selectionModeButton = new JToggleButton(selectionModeTxt);
-            selectionModeButton.setName(SELECTION_MODE_COMPONENT_NAME);
-            selectionModeButton.addActionListener(new ActionListener() {
+            Action a = new AbstractAction() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void actionPerformed( ActionEvent e ) {
+                    selectionModeButton.setSelected( !selectionModeButton.isSelected() );
+                }
+            };
+            //default keyboard shortcut for Selection Mode is Ctrl+Shift+S
+            KeyStroke ks = KeyStroke.getKeyStroke( KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK+KeyEvent.SHIFT_DOWN_MASK );
+            a.putValue( Action.ACCELERATOR_KEY, ks );
+            a.putValue( Action.NAME, selectionModeTxt);
+            a.putValue( Action.SHORT_DESCRIPTION, ks.toString() );
+            selectionModeButton.setAction( a );
+            selectionModeButton.setName(SELECTION_MODE_COMPONENT_NAME);
+            selectionModeButton.addItemListener( new ItemListener() {
+                @Override
+                public void itemStateChanged( ItemEvent e ) {
                     final boolean selectionMode = selectionModeButton.isSelected();
                     RequestProcessor.getDefault().post(new Runnable() {
                         @Override
