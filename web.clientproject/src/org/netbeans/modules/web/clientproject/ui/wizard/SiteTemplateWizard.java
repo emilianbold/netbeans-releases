@@ -59,6 +59,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
@@ -67,6 +68,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -202,10 +204,16 @@ public class SiteTemplateWizard extends JPanel {
         archiveSiteCustomizer.addChangeListener(listener);
     }
 
-    public void removeChangeListener(ChangeListener listener) {
-        assert EventQueue.isDispatchThread();
+    public void removeChangeListener(final ChangeListener listener) {
         changeSupport.removeChangeListener(listener);
-        archiveSiteCustomizer.removeChangeListener(listener);
+        // #216283 - can be called form non-EDT thread
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                assert EventQueue.isDispatchThread();
+                archiveSiteCustomizer.removeChangeListener(listener);
+            }
+        });
     }
 
     @NbBundle.Messages("SiteTemplateWizard.error.noTemplateSelected=No online template selected.")
@@ -245,7 +253,6 @@ public class SiteTemplateWizard extends JPanel {
         "SiteTemplateWizard.error.preparing=<html>Cannot prepare template \"{0}\".<br><br>See IDE log for more details."
     })
     public void prepareTemplate() {
-        assert EventQueue.isDispatchThread();
         final String templateName;
         synchronized (siteTemplateLock) {
             if (siteTemplate.isPrepared()) {
@@ -254,7 +261,7 @@ public class SiteTemplateWizard extends JPanel {
             }
             templateName = siteTemplate.getName();
         }
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+        Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -266,7 +273,20 @@ public class SiteTemplateWizard extends JPanel {
                     errorOccured(Bundle.SiteTemplateWizard_error_preparing(templateName));
                 }
             }
-        }, Bundle.SiteTemplateWizard_template_preparing(templateName));
+        };
+        if (EventQueue.isDispatchThread()) {
+            // going to the next step
+            ProgressUtils.showProgressDialogAndRun(task, Bundle.SiteTemplateWizard_template_preparing(templateName));
+        } else {
+            // #216283 - finish from the current step
+            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
+            progressHandle.start();
+            try {
+                task.run();
+            } finally {
+                progressHandle.finish();
+            }
+        }
     }
 
     @NbBundle.Messages({
