@@ -44,7 +44,8 @@ package org.netbeans.modules.ods.ui.project;
 import org.netbeans.modules.ods.ui.utils.Utils;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.text.SimpleDateFormat;
+import java.awt.event.MouseListener;
+import java.text.DateFormat;
 import java.util.Date;
 import javax.swing.JComponent;
 
@@ -166,8 +167,13 @@ public class DateSeparatorPanel extends javax.swing.JPanel implements Expandable
         this.revalidate();
     }
 
+    @Override
+    public synchronized void addMouseListener(MouseListener l) {
+        pnlTitle.addMouseListener(l);
+    }
+
     private String getDateText() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM dd, YYYY");
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT);
         return dateFormat.format(date);
     }
 }

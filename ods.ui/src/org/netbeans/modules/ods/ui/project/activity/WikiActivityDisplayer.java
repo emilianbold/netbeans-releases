@@ -79,12 +79,17 @@ public class WikiActivityDisplayer extends ActivityDisplayer {
             }
         };
         panel.add(linkPage, gbc);
+        
+        gbc = new GridBagConstraints();
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(new JLabel(), gbc);
         return panel;
     }
 
     @Override
     public JComponent getDetailsComponent() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 
     @Override
@@ -94,6 +99,6 @@ public class WikiActivityDisplayer extends ActivityDisplayer {
 
     @Override
     public Icon getActivityIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/wiki.png", true); //NOI18N
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/activity_wiki.png", true); //NOI18N
     }
 }

@@ -79,7 +79,7 @@ public class DetailsAction {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.getInstanceFor(project);
+                                ProjectDetailsTopComponent tc = ProjectDetailsTopComponent.getInstanceFor(proj);
                                 tc.open();
                                 tc.requestActive();
                             }

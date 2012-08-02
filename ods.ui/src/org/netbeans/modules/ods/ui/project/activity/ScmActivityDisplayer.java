@@ -43,13 +43,11 @@ package org.netbeans.modules.ods.ui.project.activity;
 
 import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
 import org.netbeans.modules.ods.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
@@ -73,7 +71,7 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(0, 5, 0, 0);
         gbc.gridheight = GridBagConstraints.REMAINDER;
-        titlePanel.add(new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_Committed")), gbc);
+        titlePanel.add(new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_Committed")), gbc); //NOI18N
         LinkLabel linkCommit = new LinkLabel(activity.getCommit().getMinimizedCommitId()) {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -86,15 +84,8 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
 
     @Override
     public JComponent getShortDescriptionComponent() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        JLabel lblCause = new JLabel(); //NOI18N
-        String comment = Utils.computeFitText(lblCause, maxWidth, activity.getCommit().getComment() + ".", false);
-        lblCause.setText(comment);
-        panel.add(lblCause, gbc);
-        return panel;
+        JLabel lblCause = new JLabel("<html>" + activity.getCommit().getComment() + "</html>"); //NOI18N
+        return lblCause;
     }
 
     @Override
@@ -109,15 +100,15 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
 
     @Override
     public Icon getActivityIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/commit.png", true); //NOI18N
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/activity_commit.png", true); //NOI18N
     }
 
     private String getCommitUrl() {
-        String url = scmUrl.replaceFirst("/s/", "/#projects/");
+        String url = Utils.getRealUrl(scmUrl);
         if (!url.endsWith("/")) { //NOI18N
-            url += "/";
+            url += "/"; //NOI18N
         }
-        url += activity.getCommit().getRepository() + "/" + activity.getCommit().getCommitId();
+        url += activity.getCommit().getRepository() + "/" + activity.getCommit().getCommitId(); //NOI18N
         return url;
     }
 }

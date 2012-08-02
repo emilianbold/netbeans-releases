@@ -112,6 +112,10 @@ public class Utils {
         return LOG;
     }
 
+    public static String getRealUrl(String defaultUrl) {
+        return defaultUrl.replaceFirst("/s/", "/#projects/"); //NOI18N
+    }
+
     public static class Settings {
 
         private static final String SHOW_TASKS = "ods.ui.show_tasks";

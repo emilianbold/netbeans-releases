@@ -61,7 +61,7 @@ import org.netbeans.modules.ods.ui.project.activity.WikiActivityDisplayer;
  *
  * @author jpeska
  */
-public class ActivityPanel extends javax.swing.JPanel implements Expandable{
+public class ActivityPanel extends javax.swing.JPanel implements Expandable {
 
     private static final Border NORMAL_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(153, 153, 153));
     private static final Border EXPAND_BORDER = BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(0, 0, 255));
@@ -103,20 +103,26 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable{
         pnlTitle.add(new JLabel(), gbc);
 
         gbc = new GridBagConstraints();
+        gbc.weightx = 1.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridheight = GridBagConstraints.REMAINDER;
         final JComponent shortDescriptionComponent = activityAccessor.getShortDescriptionComponent();
         shortDescriptionComponent.setOpaque(false);
         pnlShortDesc.add(shortDescriptionComponent, gbc);
 
-        gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        pnlShortDesc.add(new JLabel(), gbc);
-
-
+        JComponent detailsComponent = activityAccessor.getDetailsComponent();
+        if (detailsComponent != null) {
+            pnlDetails.removeAll();
+            gbc = new GridBagConstraints();
+            gbc.anchor = GridBagConstraints.NORTHWEST;
+            gbc.weightx = 1.0;
+            gbc.weighty = 1.0;
+            gbc.fill = GridBagConstraints.BOTH;
+            pnlDetails.add(detailsComponent, gbc);
+        } else {
+            lblExpand.setVisible(false);
+        }
         detailsExpanded = false;
         pnlDetails.setVisible(false);
     }
@@ -144,28 +150,19 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable{
         setOpaque(false);
 
         pnlDetails.setOpaque(false);
+        pnlDetails.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ActivityPanel.class, "ActivityPanel.jLabel1.text")); // NOI18N
-
-        javax.swing.GroupLayout pnlDetailsLayout = new javax.swing.GroupLayout(pnlDetails);
-        pnlDetails.setLayout(pnlDetailsLayout);
-        pnlDetailsLayout.setHorizontalGroup(
-            pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDetailsLayout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addGap(0, 366, Short.MAX_VALUE))
-        );
-        pnlDetailsLayout.setVerticalGroup(
-            pnlDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDetailsLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(75, Short.MAX_VALUE))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 75, 366);
+        pnlDetails.add(jLabel1, gridBagConstraints);
 
         jPanel1.setOpaque(false);
 
-        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/ods/ui/resources/unknown.png"))); // NOI18N
+        lblIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/ods/ui/resources/activity_unknown.png"))); // NOI18N
 
         pnlTitle.setOpaque(false);
         pnlTitle.setLayout(new java.awt.GridBagLayout());
@@ -229,8 +226,9 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable{
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(5, 5, 5)
-                        .addComponent(pnlDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pnlDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(39, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(lblExpand, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())))
@@ -271,5 +269,9 @@ public class ActivityPanel extends javax.swing.JPanel implements Expandable{
     @Override
     public void revalidateExpandable() {
         this.revalidate();
+    }
+
+    boolean hasDetails() {
+        return lblExpand.isVisible();
     }
 }

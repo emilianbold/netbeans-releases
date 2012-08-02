@@ -42,10 +42,15 @@
 package org.netbeans.modules.ods.ui.project.activity;
 
 import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
+import com.tasktop.c2c.server.tasks.domain.Comment;
+import com.tasktop.c2c.server.tasks.domain.TaskActivity.FieldUpdate;
+import com.tasktop.c2c.server.tasks.domain.TaskActivity.Type;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -54,6 +59,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.ods.ui.project.LinkLabel;
 import org.netbeans.modules.ods.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 public class TaskActivityDisplayer extends ActivityDisplayer {
 
@@ -93,7 +99,14 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
 
     @Override
     public JComponent getDetailsComponent() {
-        return null;
+        Type activityType = activity.getActivity().getActivityType();
+        if (activityType.equals(Type.COMMENTED)) {
+            return commentDetailsPanel(activity.getActivity().getComment());
+        } else if (activityType.equals(Type.UPDATED)) {
+            return updateDetailsPanel(activity.getActivity().getFieldUpdates());
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -104,17 +117,95 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
     @Override
     public Icon getActivityIcon() {
         String activityType = activity.getActivity().getActivityType().getPrettyName().toLowerCase();
-        String iconSuffix = activityType.split(" ")[0];
-        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/task_" + iconSuffix + ".png", true); //NOI18N
+        String iconSuffix = activityType.split(" ")[0]; //NOI18N
+        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/activity_task_" + iconSuffix + ".png", true); //NOI18N
         if (icon == null) {
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/task.png", true); //NOI18N
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/activity_task.png", true); //NOI18N
         }
         return icon;
     }
 
     private String getTaskDisplayName() {
         return activity.getActivity().getTask().getTaskType() + " "
-                + activity.getActivity().getTask().getId() + ": "
+                + activity.getActivity().getTask().getId() + ": " //NOI18N
                 + activity.getActivity().getTask().getShortDescription();
+    }
+
+    private JComponent updateDetailsPanel(List<FieldUpdate> fieldUpdates) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(3, 0, 3, 10);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        
+        gbc.gridy = 0;
+
+        gbc.gridx = 0;
+        JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_FieldName"));
+        lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
+        panel.add(lbl, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_OldValue"));
+        lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
+        panel.add(lbl, gbc);
+
+        gbc.gridx = 2;
+        gbc.weightx = 1.0;
+        lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_NewValue"));
+        lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
+        panel.add(lbl, gbc);
+
+        gbc.weightx = 0.0;
+        for (int i = 0; i < fieldUpdates.size(); i++) {
+            gbc.gridy = i + 1;
+            FieldUpdate update = fieldUpdates.get(i);
+            gbc.gridx = 0;
+            JLabel lblField = new JLabel(update.getFieldDescription());
+            panel.add(lblField, gbc);
+
+            gbc.gridx = 1;
+            JLabel lblOldValue = new JLabel();
+            String oldText = "<html>" + update.getOldValue() + "</html>";
+            if (update.getOldValue().isEmpty()) {
+                oldText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty");
+            }
+            lblOldValue.setText(oldText);
+            panel.add(lblOldValue, gbc);
+
+            gbc.gridx = 2;
+            JLabel lblNewValue = new JLabel();
+            String newText = "<html>" + update.getNewValue() + "</html>";
+            if (update.getNewValue().isEmpty()) {
+                newText = NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Empty");
+            }
+            lblNewValue.setText(newText);
+            panel.add(lblNewValue, gbc);
+        }
+
+        return panel;
+    }
+
+    private JComponent commentDetailsPanel(Comment comment) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 0, 5, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+        
+        JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Comment"));
+        lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
+        panel.add(lbl, gbc);
+
+        String formatedText = comment.getWikiRenderedText();
+        formatedText = "<html>" + formatedText + "</html>";
+        JLabel lblComment = new JLabel(formatedText);
+        panel.add(lblComment, gbc);
+        return panel;
     }
 }

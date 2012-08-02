@@ -51,7 +51,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="pnlTitle" alignment="0" max="32767" attributes="0"/>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
-              <Component id="pnlContent" alignment="0" pref="548" max="32767" attributes="0"/>
+              <Component id="pnlContent" alignment="0" pref="390" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -82,7 +82,7 @@
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace pref="405" max="32767" attributes="0"/>
+                  <EmptySpace pref="247" max="32767" attributes="0"/>
                   <Component id="pnlShow" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>

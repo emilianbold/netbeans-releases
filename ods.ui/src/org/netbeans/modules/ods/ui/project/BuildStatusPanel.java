@@ -41,22 +41,21 @@
  */
 package org.netbeans.modules.ods.ui.project;
 
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobSummary;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.ods.client.api.ODSClient;
-import org.netbeans.modules.ods.client.api.ODSException;
-import org.netbeans.modules.ods.ui.utils.Utils;
+import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.BuildHandle;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
@@ -67,15 +66,15 @@ import org.openide.util.RequestProcessor;
 public class BuildStatusPanel extends javax.swing.JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(BuildStatusPanel.class);
-    private final String projectId;
-    private final ODSClient client;
+    private final BuildAccessor<ODSProject> buildAccessor;
+    private final ProjectHandle<ODSProject> projectHandle;
 
     /**
      * Creates new form BuildStatusPanel
      */
-    public BuildStatusPanel(ODSClient client, String projectId) {
-        this.client = client;
-        this.projectId = projectId;
+    public BuildStatusPanel(BuildAccessor<ODSProject> buildAccessor, ProjectHandle<ODSProject> projectHandle) {
+        this.buildAccessor = buildAccessor;
+        this.projectHandle = projectHandle;
         initComponents();
         loadBuildStatuses();
     }
@@ -162,36 +161,27 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                try {
-                    final HudsonStatus hudsonStatus = client.getHudsonStatus(projectId);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (hudsonStatus.getJobs() != null && !hudsonStatus.getJobs().isEmpty()) {
-                                showBuildStatuses(hudsonStatus);
-                            } else {
-                                showEmptyContent();
-                            }
-                        }
-                    });
-                } catch (ODSException ex) {
-                    Utils.getLogger().log(Level.SEVERE, ex.getMessage());
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
+                final List<BuildHandle> builds = buildAccessor.getBuilds(projectHandle);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (builds != null && !builds.isEmpty()) {
+                            showBuildStatuses(builds);
+                        } else if (builds == null) {
                             showError();
+                        } else {
+                            showEmptyContent();
                         }
-                    });
-                }
+                    }
+                });
             }
         });
     }
 
-    private void showBuildStatuses(HudsonStatus hudsonStatus) {
+    private void showBuildStatuses(List<BuildHandle> builds) {
         pnlStatuses.removeAll();
-        List<JobSummary> jobs = hudsonStatus.getJobs();
-        for (JobSummary jobSummary : jobs) {
-            JPanel panel = createPanel(jobSummary);
+        for (BuildHandle buildHandle : builds) {
+            JPanel panel = createPanel(buildHandle);
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(0, 0, 5, 0);
             gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -208,18 +198,18 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         this.repaint();
     }
 
-    private JPanel createPanel(final JobSummary jobSummary) {
+    private JPanel createPanel(final BuildHandle buildHandle) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         panel.setOpaque(false);
 
-        LinkLabel lblName = new LinkLabel(jobSummary.getName()) {
+        LinkLabel lblName = new LinkLabel(buildHandle.getDisplayName()) {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(jobSummary.getUrl());
+                buildHandle.getDefaultAction().actionPerformed(new ActionEvent(this, 0, "")); // NOI18N
             }
         };
-        lblName.setIcon(getJobIcon(jobSummary.getColor()));
+        lblName.setIcon(getJobIcon(buildHandle.getStatus().toString()));
         panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 6, 0, 0), 0, 0));
         panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
 
@@ -227,9 +217,9 @@ public class BuildStatusPanel extends javax.swing.JPanel {
     }
 
     private Icon getJobIcon(String colorString) {
-        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/" + colorString + ".png", true); //NOI18N
+        ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/build_" + colorString + ".png", true); //NOI18N
         if (icon == null) {
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/grey.png", true); //NOI18N
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/build_unknown.png", true); //NOI18N
         }
         return icon;
     }
