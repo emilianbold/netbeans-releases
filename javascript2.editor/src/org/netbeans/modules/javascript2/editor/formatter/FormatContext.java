@@ -79,6 +79,8 @@ public final class FormatContext {
 
     private final boolean embedded;
 
+    private final List<LineWrap> currentLineWraps = new ArrayList<LineWrap>();
+
     private int indentationLevel;
 
     private int offsetDiff;
@@ -143,6 +145,18 @@ public final class FormatContext {
             LOGGER.log(Level.FINE, "Tuned regions");
             dumpRegions();
         }
+    }
+
+    public void addLineWrap(FormatToken token, int segmentLength) {
+        currentLineWraps.add(new LineWrap(token, offsetDiff, segmentLength));
+    }
+
+    public List<LineWrap> getLineWraps() {
+        return currentLineWraps;
+    }
+
+    public void clearLineWraps() {
+        currentLineWraps.clear();
     }
 
     public int getIndentationLevel() {
@@ -343,6 +357,33 @@ public final class FormatContext {
             }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
+        }
+    }
+
+    public static class LineWrap {
+
+        private final FormatToken token;
+
+        private final int offsetDiff;
+
+        private final int segmentLength;
+
+        private LineWrap(FormatToken token, int offsetDiff, int segmentLength) {
+            this.token = token;
+            this.offsetDiff = offsetDiff;
+            this.segmentLength = segmentLength;
+        }
+
+        public FormatToken getToken() {
+            return token;
+        }
+
+        public int getOffsetDiff() {
+            return offsetDiff;
+        }
+
+        public int getSegmentLength() {
+            return segmentLength;
         }
     }
 

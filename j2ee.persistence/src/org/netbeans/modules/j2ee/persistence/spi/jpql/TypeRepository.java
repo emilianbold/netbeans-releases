@@ -73,9 +73,12 @@ public class TypeRepository implements ITypeRepository {
     private final Map<String, IType[]> types;
     private PUDataObject dObj;
     private MetadataModelReadHelper<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>> readHelper;
+    private final ManagedTypeProvider mtp;
 
-    TypeRepository(Project project){
+
+    TypeRepository(Project project, ManagedTypeProvider mtp) {
         this.project = project;
+        this.mtp = mtp;
         types = new HashMap<String, IType[]>();
     }
     
@@ -123,7 +126,7 @@ public class TypeRepository implements ITypeRepository {
         Sources sources=ProjectUtils.getSources(project);
         SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         types.put(fqn, new Type[]{null});
-        if(groups != null && groups.length>0){
+        if(mtp.isValid() && groups != null && groups.length>0){
             SourceGroup firstGroup=groups[0];
             FileObject fo=firstGroup.getRootFolder();
             ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
@@ -132,8 +135,12 @@ public class TypeRepository implements ITypeRepository {
                 javaSource.runModificationTask(new Task<WorkingCopy>() {
                     @Override
                     public void run(WorkingCopy wc) throws Exception {
-                        TypeElement te = wc.getElements().getTypeElement(fqn);
-                        if(te!=null) types.put(fqn, new Type[]{new Type(TypeRepository.this, te)});
+                        if(mtp.isValid()) {//model will be filled with nulls  after provider invalidation and with values only if valid provider
+                            TypeElement te = wc.getElements().getTypeElement(fqn);
+                            if(te!=null) {
+                                types.put(fqn, new Type[]{new Type(TypeRepository.this, te)});
+                            }
+                        }
                     }
                 });
             } catch (IOException ex) {

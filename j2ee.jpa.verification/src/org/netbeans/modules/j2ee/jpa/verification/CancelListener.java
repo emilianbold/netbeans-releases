@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.options.keymap;
-
-import javax.swing.Popup;
+package org.netbeans.modules.j2ee.jpa.verification;
 
 /**
- * All parent components having a popup
- * Required to be able to close a special-key popup
- *
- * @author Max Sauer
+ * handle verification cancelling with this interface
+ * @author sp153251
  */
-public interface Popupable {
-
-    /**
-     * @return popup of this parent component
-     */
-    public Popup getPopup();
-    
-    public void hidePopup();
+public interface CancelListener {
+    void cancelled();
 }
