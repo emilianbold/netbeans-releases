@@ -526,8 +526,8 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater" url="collab/csh/issues_jiraplugin.html" />
 <mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater$JiraProxyController" url="collab/csh/issues_jiraplugin.html" />
 
-<!-- Issue tracking csh topic for parameter dialog in vcs commit dialog -->
-<mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_parameterformat.html" />
+<!-- Issue tracking csh topic for Modify templates dialog box in vcs Commit dialog box -->
+<mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="collab/csh/issues_vcs_modify_templates.html" />
 
 <!-- Issue tracking csh topic for Options window -->
 <mapID target="org.netbeans.modules.bugzilla.options.BugzillaOptionsController" url="collab/csh/issues_options.html" />

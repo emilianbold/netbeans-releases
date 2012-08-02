@@ -45,6 +45,7 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.EventQueue;
+import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
@@ -98,18 +99,44 @@ public class OpenProject extends BasicAction {
     }
 
     private static void show(final JFileChooser chooser) {
-            int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Sow the chooser
-              
-            if ( option == JFileChooser.APPROVE_OPTION ) {
+            final File[] projectDirs;
 
-                final File[] projectDirs;
-                if ( chooser.isMultiSelectionEnabled() ) {                    
-                    projectDirs = chooser.getSelectedFiles();
-                }
-                else {
-                    projectDirs = new File[] { chooser.getSelectedFile() };
+            if( Boolean.getBoolean("nb.native.filechooser") ) { //NOI18N
+                String oldFileDialogProp = System.getProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+                System.setProperty("apple.awt.fileDialogForDirectories", "true"); //NOI18N
+                FileDialog fileDialog = new FileDialog(WindowManager.getDefault().getMainWindow(), DISPLAY_NAME);
+                fileDialog.setMode(FileDialog.LOAD);
+                fileDialog.setVisible(true);
+                if( null != oldFileDialogProp ) {
+                    System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
+                } else {
+                    System.clearProperty("apple.awt.fileDialogForDirectories"); //NOI18N
                 }
 
+                if( fileDialog.getDirectory() != null && fileDialog.getFile() != null ) {
+                    String selFile = fileDialog.getFile();
+                    File dir = new File( fileDialog.getDirectory() );
+                    projectDirs = new File[] { new File( dir, selFile ) };
+                } else {
+                    projectDirs = null;
+                }
+            } else {
+                int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() ); // Sow the chooser
+
+                if ( option == JFileChooser.APPROVE_OPTION ) {
+
+                    if ( chooser.isMultiSelectionEnabled() ) {                    
+                        projectDirs = chooser.getSelectedFiles();
+                    }
+                    else {
+                        projectDirs = new File[] { chooser.getSelectedFile() };
+                    }
+                } else {
+                    projectDirs = null;
+                }
+            }
+            
+            if( projectDirs != null ) {
                 RP.post(new Runnable() {
                     @Override public void run() {
                 ArrayList<Project> projects = new ArrayList<Project>( projectDirs.length );
