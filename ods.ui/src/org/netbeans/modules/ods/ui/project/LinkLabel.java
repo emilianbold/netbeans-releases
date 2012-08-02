@@ -62,8 +62,8 @@ public abstract class LinkLabel extends JLabel implements MouseListener{
     private Map<TextAttribute, Object> underlineFontMap;
     private static final Color FOREGROUND_COLOR = Color.BLUE;
     private static final Color FOREGROUND_FOCUS_COLOR = new Color(0, 150, 255);
-    private static final Icon ICON_LINK = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/link.png", true); //NOI18N
-    private static final Icon ICON_LINK_FOCUS = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ods/ui/resources/link_focus.png", true); //NOI18N
+    private static final Icon ICON_LINK = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/link.png", true); //NOI18N
+    private static final Icon ICON_LINK_FOCUS = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/link_focus.png", true); //NOI18N
     private final boolean showIcon;
 
     public LinkLabel(String text, boolean showIcon) {
