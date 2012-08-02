@@ -81,6 +81,9 @@ public class HtmlNavigatorPanel implements NavigatorPanel {
     @Override
     public void panelActivated(org.openide.util.Lookup context) {
         FileObject file = context.lookup(FileObject.class);
+        if(file == null) {
+            return ;
+        }
         Source source = Source.create(file);
         if (source == null) {
             return;
