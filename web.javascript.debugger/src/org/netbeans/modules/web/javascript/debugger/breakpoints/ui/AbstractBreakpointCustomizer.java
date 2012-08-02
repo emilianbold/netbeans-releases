@@ -48,15 +48,17 @@ import java.beans.Customizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.AbstractBreakpoint;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.BrkptsViewActionProvider;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Martin
  */
 public class AbstractBreakpointCustomizer extends JPanel implements Customizer, Controller {
-    
+
     private AbstractBreakpoint b;
     private JComponent c;
     
@@ -73,7 +75,7 @@ public class AbstractBreakpointCustomizer extends JPanel implements Customizer, 
     }
     
     private void init(AbstractBreakpoint b) {
-        c = BrkptsViewActionProvider.getCustomizerComponent(b);
+        c = getCustomizerComponent(b);
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
@@ -82,6 +84,20 @@ public class AbstractBreakpointCustomizer extends JPanel implements Customizer, 
         add(c, gbc);
     }
 
+    @NbBundle.Messages("ACSD_Breakpoint_Customizer_Dialog=Customize this breakpoint's properties")
+    public static JComponent getCustomizerComponent(AbstractBreakpoint ab) {
+        JComponent c;
+        if (ab instanceof LineBreakpoint) {
+            c = new LineBreakpointCustomizer((LineBreakpoint) ab);
+        } else if (ab instanceof DOMBreakpoint) {
+            c = new DOMBreakpointCustomizer((DOMBreakpoint) ab);
+        } else {
+            throw new IllegalArgumentException("Unknown breakpoint " + ab);
+        }
+        c.getAccessibleContext().setAccessibleDescription(Bundle.ACSD_Breakpoint_Customizer_Dialog());
+        return c;
+    }
+    
     @Override
     public boolean ok() {
         Controller cc;

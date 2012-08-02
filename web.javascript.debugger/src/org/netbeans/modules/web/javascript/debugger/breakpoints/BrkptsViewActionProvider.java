@@ -48,9 +48,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.AbstractBreakpointCustomizer;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.ControllerProvider;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.DOMBreakpointCustomizer;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.LineBreakpointCustomizer;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Controller;
 
@@ -115,23 +114,9 @@ public class BrkptsViewActionProvider implements NodeActionsProviderFilter {
         }
     }
     
-    @NbBundle.Messages("ACSD_Breakpoint_Customizer_Dialog=Customize this breakpoint's properties")
-    public static JComponent getCustomizerComponent(AbstractBreakpoint ab) {
-        JComponent c;
-        if (ab instanceof LineBreakpoint) {
-            c = new LineBreakpointCustomizer ((LineBreakpoint) ab);
-        } else if (ab instanceof DOMBreakpoint) {
-            c = new DOMBreakpointCustomizer((DOMBreakpoint) ab);
-        } else {
-            throw new IllegalArgumentException("Unknown breakpoint "+ab);
-        }
-        c.getAccessibleContext().setAccessibleDescription(Bundle.ACSD_Breakpoint_Customizer_Dialog());
-        return c;
-    }
-    
     @NbBundle.Messages("CTL_Breakpoint_Customizer_Title=Breakpoint Properties")
     private static void customize(AbstractBreakpoint ab) {
-        JComponent c = getCustomizerComponent(ab);
+        JComponent c = AbstractBreakpointCustomizer.getCustomizerComponent(ab);
         HelpCtx helpCtx = HelpCtx.findHelp (c);
         if (helpCtx == null) {
             helpCtx = new HelpCtx ("debug.add.breakpoint");  // NOI18N
