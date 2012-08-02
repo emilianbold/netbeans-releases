@@ -537,8 +537,8 @@ public final class CodeStyle {
 
     // Wrapping ----------------------------------------------------------------
 
-    public WrapStyle wrapExtendsImplementsKeyword() {
-        String wrap = preferences.get(wrapExtendsImplementsKeyword, getDefaultAsString(wrapExtendsImplementsKeyword));
+    public WrapStyle wrapStatement() {
+        String wrap = preferences.get(wrapStatement, getDefaultAsString(wrapStatement));
         return WrapStyle.valueOf(wrap);
     }
 
