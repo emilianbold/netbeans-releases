@@ -141,7 +141,7 @@ public class RuleEditorTCController implements PropertyChangeListener {
         }
         FileObject fob = tc.getLookup().lookup(FileObject.class);
         if (fob != null) {
-            if ("text/x-css".equals(fob.getMIMEType())) { //NOI18N
+            if ("text/css".equals(fob.getMIMEType())) { //NOI18N
                 return true;
             }
         }

@@ -71,8 +71,8 @@ public class TestUtils {
 
         Reader r1 = new StringReader(first.toString());
         Reader r2 = new StringReader(second.toString());
-        StreamSource in = StreamSource.createSource("input", "input", "text/x-css", r1);
-        StreamSource out = StreamSource.createSource("output", "output", "text/x-css", r2);
+        StreamSource in = StreamSource.createSource("input", "input", "text/css", r1);
+        StreamSource out = StreamSource.createSource("output", "output", "text/css", r2);
 
         DiffController dc = DiffController.createEnhanced(in, out);
 

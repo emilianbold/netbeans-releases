@@ -75,7 +75,7 @@ public class CssFileModelTest extends CslTestBase {
         Source source = Source.create(doc);
         assertNotNull(source);
 
-        assertEquals("text/x-css", source.getMimeType());
+        assertEquals("text/css", source.getMimeType());
 
         CssFileModel model = CssFileModel.create(source);
         assertNotNull(model);

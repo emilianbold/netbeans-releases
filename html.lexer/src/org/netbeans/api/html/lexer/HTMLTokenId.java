@@ -104,7 +104,7 @@ public enum HTMLTokenId implements TokenId {
     TAG_CLOSE_SYMBOL("tag");
     private final String primaryCategory;
     private static final String JAVASCRIPT_MIMETYPE = "text/javascript";//NOI18N
-    private static final String STYLE_MIMETYPE = "text/x-css";//NOI18N
+    private static final String STYLE_MIMETYPE = "text/css";//NOI18N
     /**
      * Property key of css value tokens determining the token type in more detail.
      * The value may either be null for common embedded

@@ -4,7 +4,7 @@
     
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-css">
+            <folder name="css">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.css.resources.Bundle"/>
                 <folder name="CodeGenerators">
                     <file name="org-netbeans-modules-css-refactoring-CssCodeGenerators$Factory.instance"/>
@@ -77,7 +77,7 @@
     </folder>
     <folder name="Loaders">
         <folder name="text">
-            <folder name="x-css">
+            <folder name="css">
                 
                 <!-- GSF -->
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/style_sheet_16.png"/>
@@ -156,7 +156,7 @@
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">
-                <file name="x-css" url="CssExample"/>
+                <file name="css" url="CssExample"/>
             </folder>
         </folder>
     </folder>

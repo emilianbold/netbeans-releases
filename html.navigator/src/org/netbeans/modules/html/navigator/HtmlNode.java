@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -210,28 +211,28 @@ public class HtmlNode extends AbstractNode {
         return openAction;
     }
 
-    /**
-     * Refreshes the Node recursively. Only initiates the refresh; the refresh
-     * itself may happen asynchronously.
-     */
-    public void refreshRecursively() {
-        List<Node> toExpand = new ArrayList<Node>();
-        refreshRecursively(Collections.singleton(this), toExpand);
-        ui.performExpansion(toExpand, Collections.<Node>emptyList());
-    }
-
-    private void refreshRecursively(Collection<HtmlNode> toDo, final Collection<Node> toExpand) {
-        for (HtmlNode elnod : toDo) {
-            final Children ch = elnod.getChildren();
-            if (ch instanceof ElementChildren) {
-                ((ElementChildren) ch).resetKeys(elnod.element.getChildren());
-
-                Collection<HtmlNode> children = (Collection<HtmlNode>) (List) Arrays.asList(ch.getNodes());
-                toExpand.addAll(children);
-                refreshRecursively(children, toExpand);
-            }
-        }
-    }
+//    /**
+//     * Refreshes the Node recursively. Only initiates the refresh; the refresh
+//     * itself may happen asynchronously.
+//     */
+//    public void refreshRecursively() {
+//        List<Node> toExpand = new ArrayList<Node>();
+//        refreshRecursively(Collections.singleton(this), toExpand);
+//        ui.performExpansion(toExpand, Collections.<Node>emptyList());
+//    }
+//
+//    private void refreshRecursively(Collection<HtmlNode> toDo, final Collection<Node> toExpand) {
+//        for (HtmlNode elnod : toDo) {
+//            final Children ch = elnod.getChildren();
+//            if (ch instanceof ElementChildren) {
+//                ((ElementChildren) ch).resetKeys(elnod.element.getChildren());
+//
+//                Collection<HtmlNode> children = (Collection<HtmlNode>) (List) Arrays.asList(ch.getNodes());
+//                toExpand.addAll(children);
+//                refreshRecursively(children, toExpand);
+//            }
+//        }
+//    }
 
     public HtmlNode getNodeForOffset(int offset) {
         if (getElement().getFrom() > offset) {
@@ -276,7 +277,7 @@ public class HtmlNode extends AbstractNode {
         }
 
         if (ch instanceof ElementChildren) {
-            HashSet<HtmlElementDescription> oldSubs = new HashSet<HtmlElementDescription>(element.getChildren());
+            Set<HtmlElementDescription> oldSubs = new HashSet<HtmlElementDescription>(element.getChildren());
 
 
             // Create a hashtable which maps StructureItem to node.
@@ -296,45 +297,38 @@ public class HtmlNode extends AbstractNode {
             // Reread nodes
             nodes = ch.getNodes(true);
 
-            boolean alreadyExpanded = false;
-
             for (HtmlElementDescription newSub : newDescriptionChildren ) {
                 HtmlNode node = oldD2node.get(newSub);
-                if (node != null) { // filtered out
+                if (node != null) { 
+                    //the node already existed in the old node children
                     if (!oldSubs.contains(newSub)) {
                         nodesToExpand.add(node);
                     }
-                    node.updateRecursively(newSub, nodesToExpand, nodesToExpandRec); // update the node recursively
-                } else { // a new node
-                    if (!alreadyExpanded) {
-                        alreadyExpanded = true;
-//                        if (ui.isExpandedByDefault(this)) {
-//                            nodesToExpand.add(this);
-//                        }
-                    }
+                    // update the node recursively
+                    node.updateRecursively(newSub, nodesToExpand, nodesToExpandRec); 
+                } else { 
+                    // a new node
                     for (Node newNode : nodes) {
                         if (newNode instanceof HtmlNode && ((HtmlNode) newNode).getElement() == newSub) {
+                            //recursively expand the new nodes
                             nodesToExpandRec.add(newNode);
                             break;
                         }
                     }
                 }
             }
+            
         }
 
-        HtmlElementDescription oldDescription = element; // Remember old description        
-        element = newDescription; // set new descrioption to the new node
-        String oldHtml = oldDescription.getName();
-        String descHtml = element.getName();
+        String oldHtml = element.getName();
+        String descHtml = newDescription.getName();
         
         if (oldHtml != null && !oldHtml.equals(descHtml)) {
             // Different headers => we need to fire displayname change
             fireDisplayNameChange(oldHtml, descHtml);
         }
-//        if (oldDescription.getModifiers() != null && !oldDescription.getModifiers().equals(newDescription.getModifiers())) {
-//            fireIconChange();
-//            fireOpenedIconChange();
-//        }
+
+        element = newDescription;
     }
 
     public HtmlElementDescription getElement() {
