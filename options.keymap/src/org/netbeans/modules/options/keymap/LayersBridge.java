@@ -166,8 +166,8 @@ public class LayersBridge extends KeymapManager {
                 continue;
             }
             GlobalAction action = createAction (dataObject, name);
-            if (actions.contains (action)) continue;
             if (action == null) continue;
+            if (actions.contains (action)) continue;
             actions.add (action);
             
             // add to actions (Map (String (folderName) > Set (GlobalAction))).
@@ -533,6 +533,7 @@ public class LayersBridge extends KeymapManager {
             FileObject pf = dataObject.getPrimaryFile();
             if (!EXT_REMOVED.equals(pf.getExt())) {
                 LOG.log(Level.WARNING, "Invalid shortcut: {0}", dataObject);
+                return null;
             }
             // ignore the 'remove' file, if there's a shadow (= real action) present
             if (FileUtil.findBrother(pf, "shadow") != null) {
