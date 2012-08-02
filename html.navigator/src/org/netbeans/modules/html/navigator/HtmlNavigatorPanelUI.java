@@ -162,7 +162,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private void pageModelDocumentChanged() {
         setStatusText("Fresh DOM obtained.");
         
-        getRootNode().refreshDOMStatus();
+        HtmlNode root = getRootNode();
+        if(root != null) {
+            root.refreshDOMStatus();
+        }
     }
     
     public PageModel getPageModel() {
