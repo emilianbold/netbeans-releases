@@ -53,10 +53,10 @@ import java.util.List;
  * @author ads
  *
  */
-class WebSocketHandlerClient7 extends AbstractWSHandler7 {
+class WebSocketHandlerClient7 extends AbstractWSHandler7<WebSocketClient> {
 
     WebSocketHandlerClient7( WebSocketClient webSocketClient, int version ){
-        client = webSocketClient;
+        super(webSocketClient);
         this.version = version;
     }
 
@@ -67,14 +67,14 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
     public void sendHandshake() {
         StringBuilder builder = new StringBuilder(Utils.GET);
         builder.append(' ');
-        builder.append(getClient().getUri().getPath());
+        builder.append(getWebSocketPoint().getUri().getPath());
         builder.append(' ');
         builder.append( Utils.HTTP_11);
         builder.append(Utils.CRLF);
         
         builder.append(Utils.HOST);
         builder.append(": ");                               // NOI18N
-        builder.append(getClient().getUri().getHost());
+        builder.append(getWebSocketPoint().getUri().getHost());
         builder.append(Utils.CRLF);
         
         builder.append(Utils.WS_UPGRADE_1);
@@ -89,7 +89,7 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
         else {
             builder.append("Origin: ");
         }
-        builder.append( Utils.getOrigin(getClient().getUri()));
+        builder.append( Utils.getOrigin(getWebSocketPoint().getUri()));
         builder.append( Utils.CRLF );
         
         builder.append("Sec-WebSocket-Protocol: chat");     // NOI18N
@@ -114,8 +114,8 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
         builder.append( Utils.CRLF );
         builder.append( Utils.CRLF );
         
-        getClient().send(builder.toString().getBytes( 
-                Charset.forName(Utils.UTF_8)), client.getKey() );
+        getWebSocketPoint().send(builder.toString().getBytes( 
+                Charset.forName(Utils.UTF_8)), getWebSocketPoint().getKey() );
     }
 
     /* (non-Javadoc)
@@ -129,7 +129,7 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
         else {
             readHandshake( byteBuffer );
             handshakeRed = true;
-            getClient().getWebSocketReadHandler().accepted(getKey());
+            getWebSocketPoint().getWebSocketReadHandler().accepted(getKey());
         }
     }
 
@@ -141,34 +141,14 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
         return true;
     }
     
-    protected WebSocketClient getClient(){
-        return client;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#close()
-     */
-    @Override
-    protected void close() throws IOException {
-        getClient().close( getKey());
-    }
-    
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#readDelegate(byte[], int)
      */
     @Override
     protected void readDelegate( byte[] bytes, int dataType ) {
-        getClient().getWebSocketReadHandler().read(getKey(), bytes, dataType);
+        getWebSocketPoint().getWebSocketReadHandler().read(getKey(), bytes, dataType);
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#getKey()
-     */
-    @Override
-    protected SelectionKey getKey() {
-        return getClient().getKey();
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#verifyMask(boolean)
      */
@@ -178,15 +158,15 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
     }
     
     /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#isStopped()
+     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler#getKey()
      */
     @Override
-    protected boolean isStopped() {
-        return getClient().isStopped();
+    protected SelectionKey getKey() {
+        return getWebSocketPoint().getKey();
     }
     
     private void readHandshake( ByteBuffer buffer ) throws IOException {
-        List<String> headers = Utils.readHttpRequest(getClient().getChannel(), 
+        List<String> headers = Utils.readHttpRequest(getWebSocketPoint().getChannel(), 
                 buffer);
         String acceptKey =null;
         String accept = Utils.ACCEPT+':';
@@ -208,7 +188,6 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7 {
     }
     
     private boolean handshakeRed;
-    private WebSocketClient client;
     private int version;
 
 }

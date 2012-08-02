@@ -64,14 +64,14 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
     public void sendHandshake() {
         StringBuilder builder = new StringBuilder(Utils.GET);
         builder.append(' ');
-        builder.append(getClient().getUri().getPath());
+        builder.append(getWebSocketPoint().getUri().getPath());
         builder.append(' ');
         builder.append( Utils.HTTP_11);
         builder.append(Utils.CRLF);
         
         builder.append(Utils.HOST);
         builder.append(": ");                               // NOI18N
-        builder.append(getClient().getUri().getHost());
+        builder.append(getWebSocketPoint().getUri().getHost());
         builder.append(Utils.CRLF);
         
         builder.append(Utils.CONN_UPGRADE);
@@ -81,7 +81,7 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         builder.append(Utils.CRLF);
         
         builder.append("Origin: ");
-        builder.append( Utils.getOrigin(getClient().getUri()));
+        builder.append( Utils.getOrigin(getWebSocketPoint().getUri()));
         builder.append(Utils.CRLF);
         
         builder.append(Utils.KEY1);
@@ -106,7 +106,7 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         byte[] toSend = new byte[ bytes.length +generated.length];
         System.arraycopy(bytes, 0, toSend, 0, bytes.length);
         System.arraycopy(generated, 0, toSend, bytes.length, generated.length);
-        getClient().send( toSend, getKey() );
+        getWebSocketPoint().send( toSend, getKey() );
     }
     
     private String generateKey() {
@@ -126,7 +126,7 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
             throws IOException
     {
         byte[] md5Challenge = new byte[16];
-        Utils.readHttpRequest(getClient().getChannel(), buffer, md5Challenge);
+        Utils.readHttpRequest(getWebSocketPoint().getChannel(), buffer, md5Challenge);
         boolean md5red = false;
         for( byte b: md5Challenge ){
             if ( b!= 0){

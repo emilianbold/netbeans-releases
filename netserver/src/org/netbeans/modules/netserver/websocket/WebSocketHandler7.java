@@ -56,12 +56,12 @@ import javax.xml.bind.DatatypeConverter;
  * @author ads
  *
  */
-class WebSocketHandler7 extends AbstractWSHandler7 {
+class WebSocketHandler7 extends AbstractWSHandler7<WebSocketServer> {
     
     
     public WebSocketHandler7( WebSocketServer webSocketServer, SelectionKey key ) {
-        server = webSocketServer;
-        this.key=key;
+        super( webSocketServer ); 
+        this.myKey=key;
     }
 
     /* (non-Javadoc)
@@ -81,9 +81,9 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         builder.append(Utils.CONN_UPGRADE);
         builder.append(Utils.CRLF);
         builder.append("Sec-WebSocket-Origin: ");           // NOI18N
-        String origin = server.getContext(key).getHeaders().get("Sec-WebSocket-Origin");  // NOI18N
+        String origin = getWebSocketPoint().getContext(myKey).getHeaders().get("Sec-WebSocket-Origin");  // NOI18N
         if ( origin == null ){
-            origin = server.getContext(key).getHeaders().get("Origin");  // NOI18N
+            origin = getWebSocketPoint().getContext(myKey).getHeaders().get("Origin");  // NOI18N
         }
         if ( origin != null ){
             builder.append( origin);
@@ -94,8 +94,8 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         builder.append(acceptKey);
         builder.append( Utils.CRLF );
         builder.append( Utils.CRLF );
-        server.send(builder.toString().getBytes(
-                Charset.forName(Utils.UTF_8)), key );
+        getWebSocketPoint().send(builder.toString().getBytes(
+                Charset.forName(Utils.UTF_8)), myKey );
     }
     
     /* (non-Javadoc)
@@ -107,7 +107,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
     }
     
     private String createAcceptKey(SelectionKey key ){
-        String originalKey = server.getContext(key).getHeaders().get(Utils.KEY);
+        String originalKey = getWebSocketPoint().getContext(key).getHeaders().get(Utils.KEY);
         if ( originalKey == null ){
             return null;
         }
@@ -129,12 +129,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
      */
     @Override
     protected SelectionKey getKey() {
-        return key;
-    }
-    
-    @Override
-    protected void close( ) throws IOException {
-        server.close(getKey());
+        return myKey;
     }
     
     /* (non-Javadoc)
@@ -142,7 +137,7 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
      */
     @Override
     protected void readDelegate( byte[] bytes, int dataType ) {
-        server.getWebSocketReadHandler().read(getKey(), bytes, dataType);        
+        getWebSocketPoint().getWebSocketReadHandler().read(getKey(), bytes, dataType);        
     }
     
     /* (non-Javadoc)
@@ -159,15 +154,6 @@ class WebSocketHandler7 extends AbstractWSHandler7 {
         return true;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#isStopped()
-     */
-    @Override
-    protected boolean isStopped() {
-        return server.isStopped();
-    }
-
-    private WebSocketServer server;
-    private SelectionKey key;
+    private SelectionKey myKey;
     
 }

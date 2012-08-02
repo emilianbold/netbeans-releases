@@ -44,16 +44,19 @@ package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+
+import org.netbeans.modules.netserver.SocketFramework;
 
 
 /**
  * @author ads
  *
  */
-abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
+abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSHandler<T> 
+    implements WebSocketChanelHandler 
+{
 
     protected static final String SALT = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";     // NOI18N
     
@@ -81,6 +84,10 @@ abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
      * "Extended payload length" section 
      */
     protected static final int LENGTH_LEVEL  = 0x10000;  
+    
+    AbstractWSHandler7(T t){
+        super( t );
+    }
     
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
@@ -328,14 +335,8 @@ abstract class AbstractWSHandler7 implements WebSocketChanelHandler {
      */
     protected abstract boolean isClient();
     
-    protected abstract SelectionKey getKey();
-    
-    protected abstract void close() throws IOException;
-    
     protected abstract void readDelegate( byte[] bytes , int dataType ) ;
     
     protected abstract boolean verifyMask( boolean hasMask ) throws IOException ;
     
-    protected abstract boolean isStopped();
-
 }
