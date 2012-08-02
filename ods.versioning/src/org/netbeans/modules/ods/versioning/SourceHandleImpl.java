@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ods.git;
+package org.netbeans.modules.ods.versioning;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.beans.PropertyChangeEvent;
@@ -61,7 +61,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.git.api.Git;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
@@ -89,11 +88,13 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     private static final String RECENTPROJECTS_PREFIX = "recent.projects."; // NOI18N
     public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
     private RequestProcessor rp = new RequestProcessor(SourceHandleImpl.class);
+    private final boolean supported;
 
-    public SourceHandleImpl(final ProjectHandle<ODSProject> projectHandle, ScmRepository repository) {
+    public SourceHandleImpl(final ProjectHandle<ODSProject> projectHandle, ScmRepository repository, boolean isSupported) {
         this.repository = repository;
-        prefs = NbPreferences.forModule(Git.class);
+        prefs = NbPreferences.forModule(SourceHandleImpl.class);
         this.projectHandle = projectHandle;
+        this.supported = isSupported;
         OpenProjects.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this , OpenProjects.getDefault()));
         initRecent();
     }
@@ -113,7 +114,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     @Override
     public boolean isSupported() {
-        return true;
+        return supported;
     }
 
     @Override

@@ -39,38 +39,53 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.git.api;
+package org.netbeans.modules.ods.mercurial;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
-import java.net.URISyntaxException;
-import javax.swing.SwingUtilities;
-import org.netbeans.libs.git.GitURI;
-import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.git.ui.clone.CloneAction;
-import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.mercurial.api.Mercurial;
+import org.netbeans.modules.ods.versioning.spi.ApiProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Vrabec
  */
-public final class Git {
+@ServiceProvider(service=ApiProvider.class)
+public class HgApiProviderImpl implements ApiProvider {
 
-    public static File cloneRepository (String url, String userName, char[] password) throws URISyntaxException {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
-        
-        if (url == null) {
-            throw new IllegalArgumentException("repository URL is null"); //NOI18N
+    @Override
+    public void addRecentUrl (String repositoryUrl) {
+        try {
+            Mercurial.addRecentUrl(repositoryUrl);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(HgApiProviderImpl.class.getName()).log(Level.INFO, repositoryUrl, ex);
         }
-
-        return CloneAction.performClone(url, userName == null || password == null
-                ? null
-                : new PasswordAuthentication(userName, password), true); 
-        
     }
 
-    public static void addRecentUrl(String url) throws URISyntaxException {
-        GitModuleConfig.getDefault().insertRecentConnectionSettings(new ConnectionSettings(new GitURI(url)));
+    @Override
+    public boolean accepts (String type) {
+        return "HG".equals(type); //NOI18N
+    }
+    
+    @Override
+    public File getSources (String repositoryUrl, PasswordAuthentication passwdAuth) {
+        File cloneDest = null;
+        try {
+            cloneDest = Mercurial.openCloneWizard(repositoryUrl, true);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return cloneDest;
+    }
+
+    @Override
+    public String getName () {
+        return "Mercurial"; //NOI18N
     }
     
 }

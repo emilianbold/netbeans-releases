@@ -22,7 +22,7 @@
     <Component class="javax.swing.JLabel" name="projectNameLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ods/git/Bundle.properties" key="CloudServiceCellRenderer.projectNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/ods/versioning/Bundle.properties" key="CloudServiceCellRenderer.projectNameLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="name" type="java.lang.String" value="projectNameLabel" noResource="true"/>
       </Properties>
@@ -35,7 +35,7 @@
     <Component class="javax.swing.JLabel" name="projectRepoLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ods/git/Bundle.properties" key="CloudServiceCellRenderer.projectRepoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/ods/versioning/Bundle.properties" key="CloudServiceCellRenderer.projectRepoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="name" type="java.lang.String" value="projectRepoLabel" noResource="true"/>
       </Properties>
@@ -48,7 +48,7 @@
     <Component class="javax.swing.JLabel" name="repoTypeLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/ods/git/Bundle.properties" key="CloudServiceCellRenderer.repoTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/ods/versioning/Bundle.properties" key="CloudServiceCellRenderer.repoTypeLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="name" type="java.lang.String" value="repoTypeLabel" noResource="true"/>
       </Properties>

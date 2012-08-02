@@ -3,19 +3,14 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.ods.git</code-name-base>
+            <code-name-base>org.netbeans.modules.ods.mercurial</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>com.tasktop.c2c.server.scm.api</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.git</code-name-base>
+                    <code-name-base>org.netbeans.modules.mercurial</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.6</specification-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

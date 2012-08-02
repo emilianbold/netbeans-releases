@@ -40,13 +40,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ods.git;
+package org.netbeans.modules.ods.versioning;
 
+import com.tasktop.c2c.server.scm.domain.ScmLocation;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
+import com.tasktop.c2c.server.scm.domain.ScmType;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,9 +62,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.favorites.api.Favorites;
-import org.netbeans.modules.git.api.Git;
 import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSException;
+import org.netbeans.modules.ods.versioning.spi.ApiProvider;
 import org.netbeans.modules.team.ui.common.NbProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.NbProjectHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -75,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
@@ -103,13 +105,17 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
                 // XXX add support for external - see repository.getScmLocation()
                 Collection<ScmRepository> repositories = project.getRepositories();
                 for (ScmRepository repository : repositories) {
-                    SourceHandleImpl srcHandle = new SourceHandleImpl((ProjectHandle<ODSProject>)prjHandle, repository);
-                    handlesList.add(srcHandle);
-                    try {
-                        Git.addRecentUrl(repository.getUrl());
-                    } catch (URISyntaxException ex) {
-                        Logger.getLogger(SourceAccessorImpl.class.getName()).log(Level.OFF, repository.getUrl(), ex);
+                    boolean supported;
+                    if (repository.getScmLocation() == ScmLocation.CODE2CLOUD) {
+                        supported = isSupported(repository.getType());
+                        if (supported) {
+                            addRecentUrl(repository);
+                        }
+                    } else {
+                        supported = isSupported(null);
                     }
+                    SourceHandleImpl srcHandle = new SourceHandleImpl((ProjectHandle<ODSProject>)prjHandle, repository, supported);
+                    handlesList.add(srcHandle);
                 }
             }
         } catch (ODSException ex) {
@@ -122,9 +128,7 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
 
     @Override
     public Action getOpenSourcesAction(SourceHandle srcHandle) {
-        assert srcHandle instanceof SourceHandleImpl;
-        SourceHandleImpl impl = (SourceHandleImpl) srcHandle;
-        return new GetSourcesFromCloudAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), srcHandle);
+        return getDefaultAction(srcHandle);
     }
 
     @Override
@@ -261,4 +265,31 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
         }
     }
 
+    static boolean isSupported (ScmType type) {
+        boolean supported;
+        if (type == null) {
+            supported = Lookup.getDefault().lookup(ApiProvider.class) != null;
+        } else {
+            supported = getProvidersFor(type).length > 0;
+        }
+        return supported;
+    }
+
+    static ApiProvider[] getProvidersFor (ScmType type) {
+        Collection<? extends ApiProvider> allProviders = Lookup.getDefault().lookupAll(ApiProvider.class);
+        List<ApiProvider> providers = new ArrayList<ApiProvider>(allProviders.size());
+        for (ApiProvider prov : allProviders) {
+            if (type == null || prov.accepts(type.name())) {
+                providers.add(prov);
+            }
+        }
+        return providers.toArray(new ApiProvider[providers.size()]);
+    }
+
+    private void addRecentUrl (ScmRepository repository) {
+        if (repository.getType() == ScmType.GIT) {
+            ApiProvider prov = Lookup.getDefault().lookup(ApiProvider.class);
+            prov.addRecentUrl(repository.getUrl());
+        }
+    }
 }

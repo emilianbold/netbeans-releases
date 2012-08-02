@@ -46,10 +46,10 @@
  * Created on Mar 3, 2009, 1:15:30 PM
  */
 
-package org.netbeans.modules.ods.git;
+package org.netbeans.modules.ods.versioning;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import org.netbeans.modules.ods.git.GetSourcesFromCloudPanel.ScmRepositoryListItem;
+import org.netbeans.modules.ods.versioning.GetSourcesFromCloudPanel.ScmRepositoryListItem;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

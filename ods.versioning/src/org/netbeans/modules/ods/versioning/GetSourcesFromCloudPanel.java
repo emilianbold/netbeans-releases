@@ -46,8 +46,9 @@
  * Created on Feb 24, 2009, 3:36:03 PM
  */
 
-package org.netbeans.modules.ods.git;
+package org.netbeans.modules.ods.versioning;
 
+import com.tasktop.c2c.server.scm.domain.ScmLocation;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.domain.ScmType;
 import java.awt.Color;
@@ -78,7 +79,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.ods.git.SourceAccessorImpl.ProjectAndRepository;
+import org.netbeans.modules.ods.versioning.SourceAccessorImpl.ProjectAndRepository;
 import org.netbeans.modules.ods.ui.api.OdsUIUtil;
 import org.netbeans.modules.team.ui.common.LoginHandleImpl;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -86,6 +87,8 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import static org.netbeans.modules.ods.versioning.Bundle.*;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -304,7 +307,9 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                                     continue;
                                 }
                                 for (final ScmRepository repository : repositories) {
-                                    if(repository.getType() == ScmType.GIT) {
+                                    if (SourceAccessorImpl.isSupported(repository.getScmLocation() == ScmLocation.CODE2CLOUD
+                                            ? repository.getType()
+                                            : null)) {
                                         final ScmRepositoryListItem item = new ScmRepositoryListItem(prjHandle, repository);
                                         EventQueue.invokeLater(new Runnable() {
                                             @Override
@@ -395,15 +400,26 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
 
     }
 
+    @Messages({"# {0} - project name", "# {1} - repository type",
+        "LBL_GetSourceFromCloudPanel.repositoryLabel=({0}; {1} repository)",
+        "LBL_GetSourceFromCloudPanel.repository.external=External",
+        "LBL_GetSourceFromCloudPanel.repository.svn=Subversion",
+        "LBL_GetSourceFromCloudPanel.repository.git=Git"})
     private void updatePanelUI() {
         ScmRepositoryListItem item = (ScmRepositoryListItem) cloudRepoComboBox.getSelectedItem();
         if (item != null) {
-            String repositoryText = NbBundle.getMessage(GetSourcesFromCloudPanel.class,
-                    "GetSourcesFromCloudPanel.RepositoryLabel"); // NOI18N
-            if (item.repository.getType() == ScmType.GIT) {
-                projectPreviewLabel.setText("(" + item.projectHandle.getDisplayName() + // NOI18N
-                        "; Git " + repositoryText + ")"); // NOI18N
-            } 
+            String repositoryType = null;
+            if (item.repository.getScmLocation() == ScmLocation.CODE2CLOUD) {
+                if (item.repository.getType() == ScmType.GIT) {
+                    repositoryType = LBL_GetSourceFromCloudPanel_repository_git();
+                } else if (item.repository.getType() == ScmType.SVN) {
+                    repositoryType = LBL_GetSourceFromCloudPanel_repository_svn();
+                }
+            }
+            if (repositoryType == null) {
+                repositoryType = LBL_GetSourceFromCloudPanel_repository_external();
+            }
+            projectPreviewLabel.setText(LBL_GetSourceFromCloudPanel_repositoryLabel(item.projectHandle.getDisplayName(), repositoryType));
         }
     }
 

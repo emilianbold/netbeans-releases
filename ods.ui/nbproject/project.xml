@@ -139,7 +139,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.ods.hudson</friend>
-                <friend>org.netbeans.modules.ods.git</friend>
+                <friend>org.netbeans.modules.ods.versioning</friend>
                 <package>org.netbeans.modules.ods.ui.api</package>
             </friend-packages>
         </data>

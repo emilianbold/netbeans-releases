@@ -119,10 +119,10 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.ods.ui</friend>
-                <friend>org.netbeans.modules.ods.hudson</friend>
-                <friend>org.netbeans.modules.ods.git</friend>
                 <friend>org.netbeans.libs.ods.jersey</friend>
+                <friend>org.netbeans.modules.ods.hudson</friend>
+                <friend>org.netbeans.modules.ods.ui</friend>
+                <friend>org.netbeans.modules.ods.versioning</friend>
                 <package>org.netbeans.modules.ods.api</package>
                 <package>org.netbeans.modules.ods.client.api</package>
             </friend-packages>

@@ -39,38 +39,15 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.git.api;
-
-import java.io.File;
-import java.net.PasswordAuthentication;
-import java.net.URISyntaxException;
-import javax.swing.SwingUtilities;
-import org.netbeans.libs.git.GitURI;
-import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.git.ui.clone.CloneAction;
-import org.netbeans.modules.git.ui.repository.remote.ConnectionSettings;
+package org.netbeans.modules.ods.versioning;
 
 /**
  *
- * @author Tomas Stupka
+ * @author Ondrej Vrabec
  */
-public final class Git {
+public class Utils {
 
-    public static File cloneRepository (String url, String userName, char[] password) throws URISyntaxException {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
-        
-        if (url == null) {
-            throw new IllegalArgumentException("repository URL is null"); //NOI18N
-        }
-
-        return CloneAction.performClone(url, userName == null || password == null
-                ? null
-                : new PasswordAuthentication(userName, password), true); 
+    private Utils () {
         
     }
-
-    public static void addRecentUrl(String url) throws URISyntaxException {
-        GitModuleConfig.getDefault().insertRecentConnectionSettings(new ConnectionSettings(new GitURI(url)));
-    }
-    
 }
