@@ -110,7 +110,7 @@ public class Utils {
             case org.w3c.dom.Node.DOCUMENT_NODE:
                 return "html";
             default:
-                return "???";
+                return node.getNodeValue().trim();
         }
     }
 }
