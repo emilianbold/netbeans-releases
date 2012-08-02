@@ -56,7 +56,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
             <attr name="position" intvalue="610"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
             
-            <file name="new.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
+            <file name="html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -64,7 +64,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
             </file>
-            <file name="new.js" url="nbresloc:/org/netbeans/modules/javascript2/editor/resources/jstemplate.js">
+            <file name="javascript.js" url="nbresloc:/org/netbeans/modules/javascript2/editor/resources/jstemplate.js">
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -72,7 +72,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="templateCategory" stringvalue="clientside-types"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javascript2/editor/resources/javascript.html"/>
             </file>
-            <file name="new.css" url="nbresloc:/org/netbeans/modules/css/resources/CascadeStyleSheet.css.template">
+            <file name="css.css" url="nbresloc:/org/netbeans/modules/css/resources/CascadeStyleSheet.css.template">
                 <attr name="position" intvalue="300"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
@@ -81,7 +81,7 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/style_sheet_16.png"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.clientproject.Bundle"/>
             </file>
-            <file name="new.json" url="nbresloc:/org/netbeans/modules/javascript2/editor/resources/jsontemplate.json">
+            <file name="json.json" url="nbresloc:/org/netbeans/modules/javascript2/editor/resources/jsontemplate.json">
                 <attr name="position" intvalue="400"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>

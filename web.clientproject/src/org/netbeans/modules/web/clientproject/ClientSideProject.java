@@ -231,10 +231,10 @@ public class ClientSideProject implements Project {
         @Override
         public String[] getPrivilegedTemplates() {
             return new String[] {
-                "Templates/ClientSide/new.html",            // NOI18N
-                "Templates/ClientSide/new.js",            // NOI18N
-                "Templates/ClientSide/new.css",            // NOI18N
-                "Templates/ClientSide/new.json",            // NOI18N
+                "Templates/ClientSide/html.html",            // NOI18N
+                "Templates/ClientSide/javascript.js",            // NOI18N
+                "Templates/ClientSide/css.css",            // NOI18N
+                "Templates/ClientSide/json.json",            // NOI18N
                 "Templates/Other/Folder"                   // NOI18N
             };
         }
