@@ -55,7 +55,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
-
+import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 /**
  * Provides embedding of PHP sources within TPL files.
  *
@@ -63,7 +63,6 @@ import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
  */
 public class TplPhpEmbeddingProvider extends EmbeddingProvider {
 
-    private static final String MIME_TYPE_PHP = "text/x-php5"; //NOI18N
     private static final String GENERATED_CODE = "@@@"; //NOI18N
     private boolean isPhpEnabled;
 
@@ -93,7 +92,7 @@ public class TplPhpEmbeddingProvider extends EmbeddingProvider {
             if (isSmartyToken(t.id())) {
                 if (isPhpEnabled) {
                     isPhpEnabled = false;
-                    embeddings.add(snapshot.create(";?>", MIME_TYPE_PHP)); //NOI18N
+                    embeddings.add(snapshot.create(";?>", PHP_MIME_TYPE)); //NOI18N
                 }
                 if (from < 0) {
                     from = sequence.offset();
@@ -112,13 +111,13 @@ public class TplPhpEmbeddingProvider extends EmbeddingProvider {
                     if (t.id() == TplTopTokenId.T_PHP) {
                         if (!isPhpEnabled) {
                             isPhpEnabled = true;
-                            embeddings.add(snapshot.create("<?", MIME_TYPE_PHP)); //NOI18N
+                            embeddings.add(snapshot.create("<?", PHP_MIME_TYPE)); //NOI18N
                         }
-                        embeddings.add(snapshot.create(from, len, MIME_TYPE_PHP));
+                        embeddings.add(snapshot.create(from, len, PHP_MIME_TYPE));
                     } else {
                         if (isPhpEnabled) {
                             isPhpEnabled = false;
-                            embeddings.add(snapshot.create(";?>", MIME_TYPE_PHP)); //NOI18N
+                            embeddings.add(snapshot.create(";?>", PHP_MIME_TYPE)); //NOI18N
                         }
                     }
                 }
@@ -128,11 +127,11 @@ public class TplPhpEmbeddingProvider extends EmbeddingProvider {
             }
         }
         if (from >= 0) {
-            embeddings.add(snapshot.create(from, len, MIME_TYPE_PHP));
-            embeddings.add(snapshot.create(GENERATED_CODE, MIME_TYPE_PHP));
+            embeddings.add(snapshot.create(from, len, PHP_MIME_TYPE));
+            embeddings.add(snapshot.create(GENERATED_CODE, PHP_MIME_TYPE));
         }
         if (embeddings.isEmpty()) {
-            return Collections.singletonList(snapshot.create("", MIME_TYPE_PHP)); //NOI18N
+            return Collections.singletonList(snapshot.create("", PHP_MIME_TYPE)); //NOI18N
         } else {
             return Collections.singletonList(Embedding.create(embeddings));
         }
