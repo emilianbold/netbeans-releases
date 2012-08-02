@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryCacheDirectoryProvider;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.openide.modules.Places;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
 
 /**
  *
@@ -68,9 +69,14 @@ public class StorageAllocator {
 
     private static File getCacheBaseDirectoryImpl() {
         File diskRepository = null;
-        RepositoryCacheDirectoryProvider provider = Lookup.getDefault().lookup(RepositoryCacheDirectoryProvider.class);
-        if (provider != null) {
-            diskRepository = provider.getCacheBaseDirectory();
+        Result<RepositoryCacheDirectoryProvider> lookupResult = Lookup.getDefault().lookupResult(RepositoryCacheDirectoryProvider.class);
+        if (lookupResult != null) {
+            for(RepositoryCacheDirectoryProvider provider : lookupResult.allInstances()) {
+                diskRepository = provider.getCacheBaseDirectory();
+                if (diskRepository != null) {
+                    break;
+                }
+            }
         }
         if (diskRepository == null) {
             String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
