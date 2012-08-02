@@ -370,7 +370,11 @@ public class ModelUtils {
                         Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
                         for (IndexedElement globalVar : globalVars) {
                             Collection<TypeUsage> assignments = globalVar.getAssignments();
-                            lastResolvedTypes.addAll(assignments);
+                            if (assignments.isEmpty()) {
+                                lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
+                            } else {
+                                lastResolvedTypes.addAll(assignments);
+                            }
                         }
                     }
                     

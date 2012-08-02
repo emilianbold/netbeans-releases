@@ -478,8 +478,43 @@ class JsCodeCompletion implements CodeCompletionHandler {
             
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             JsIndex jsIndex = JsIndex.get(fo);
-            Collection<TypeUsage> resolveTypeFromExpression = ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, request.anchor);
+            Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, request.anchor));
             
+            int cycle = 0;
+            boolean resolvedAll = false;
+            while(!resolvedAll && cycle < 10) {
+                cycle++;
+                resolvedAll = true;
+                Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
+                for (TypeUsage typeUsage : resolveTypeFromExpression) {
+                    if(!((TypeUsageImpl)typeUsage).isResolved()) {
+                        resolvedAll = false;
+                        String sexp = typeUsage.getType();
+                        if (sexp.startsWith("@exp;")) {
+                            sexp = sexp.substring(5);
+                            List<String> nExp = new ArrayList<String>();
+                            String[] split = sexp.split("@call;");
+                            for (int i = split.length - 1; i > -1; i--) {
+                                String string = split[i];
+                                nExp.add(split[i]);
+                                if (i == 0) {
+                                    nExp.add("@pro");
+                                } else {
+                                    nExp.add("@mtd");
+                                }
+                            }
+                            resolved.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, nExp, cycle));
+                        } else {
+                            resolved.add(new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
+                        }
+                    } else {
+                        resolved.add(typeUsage);
+                    }
+                }
+                resolveTypeFromExpression.clear();
+                resolveTypeFromExpression.addAll(resolved);
+            }
             Collection<String> prototypeChain = new ArrayList<String>();
             for (TypeUsage typeUsage : resolveTypeFromExpression) {
                 prototypeChain.addAll(ModelUtils.findPrototypeChain(typeUsage.getType(), jsIndex));
@@ -514,7 +549,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 //}
                 if(jsObject == null || !jsObject.isDeclared()){
                     // look at the index
-                    if (exp.get(1).equals("@pro")) {
+//                    if (exp.get(1).equals("@pro")) {
+                    boolean isObject = typeUsage.getType().equals("Object");
+                    if(exp.get(1).equals("@pro") && !isObject) {
                         for(IndexResult indexResult : jsIndex.findFQN(typeUsage.getType())){
                             JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if (kind.isFunction()) {
@@ -522,7 +559,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             }
                         }
                     }
-                    addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
+//                    }
+                    if (!isObject) {
+                        addObjectPropertiesFromIndex(typeUsage.getType(), jsIndex, request, addedProperties);
+                    }
                 }
             }
             for (JsObject resolved : lastResolvedObjects) {
