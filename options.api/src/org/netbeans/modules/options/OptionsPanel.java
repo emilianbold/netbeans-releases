@@ -55,6 +55,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Container;
 import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -70,36 +71,71 @@ import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.options.advanced.AdvancedPanel;
 import org.netbeans.modules.options.ui.VariableBorder;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.QuickSearch;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.WindowManager;
 
 public class OptionsPanel extends JPanel {
     private JPanel pCategories;
     private JPanel pCategories2;
     private JPanel pOptions;
     private CardLayout cLayout;
+    
+    private int selectedTabIndex = -1;
+    private HashMap<String, JTabbedPane> categoryid2tabbedpane = new HashMap<String, JTabbedPane>();
+    private HashMap<String, ArrayList<String>> categoryid2words = new HashMap<String, ArrayList<String>>();
+    private HashMap<String, CategoryInfo> categoryid2jcomponents = new HashMap<String, CategoryInfo>();
+    private HashMap<JTabbedPane, HashMap<Integer, TabInfo>> tabbedpane2tabs = new HashMap<JTabbedPane, HashMap<Integer, TabInfo>>();
+    private HashMap<JTabbedPane, HashMap<Integer, TabInfo>> tabbedpane2removedtabs = new HashMap<JTabbedPane, HashMap<Integer, TabInfo>>();
+    private ArrayList<String> removedCategories = new ArrayList<String>();
+    private static ArrayList<JComponent> componentsShowing = new ArrayList<JComponent>();
+    private JTextField keymapsSearch = null;
 
     private Map<String, CategoryButton> buttons = new LinkedHashMap<String, CategoryButton>();    
     private final boolean isMac = UIManager.getLookAndFeel ().getID ().equals ("Aqua");
@@ -166,32 +202,63 @@ public class OptionsPanel extends JPanel {
         }
     }
     
+    private boolean isErgonomicsPresent() {
+        List<UpdateUnit> unit = UpdateManager.getDefault().getUpdateUnits();
+        for (Iterator<UpdateUnit> it = unit.iterator(); it.hasNext();) {
+            UpdateUnit updateUnit = it.next();
+            UpdateElement element = updateUnit.getInstalled();
+            
+            if(element != null && element.getDisplayName().equalsIgnoreCase("Ergonomic IDE") && element.isEnabled()) {//NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private void setCurrentCategory (final CategoryModel.Category category, String subpath) {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            CategoryModel.Category oldCategory = CategoryModel.getInstance().getCurrent();
-            if (oldCategory != null) {
-                (buttons.get(oldCategory.getID())).setNormal ();
-            }
-            if (category != null) {
-                (buttons.get(category.getID())).setSelected ();
-            }
+            if(category == null) {
+                JComponent component = new JPanel(new BorderLayout());
+                JLabel label = isErgonomicsPresent() ? new JLabel(loc("CTL_Options_Search_Nothing_Found_Ergonomics")) //NOI18N
+                        : new JLabel(loc("CTL_Options_Search_Nothing_Found"));//NOI18N
+                label.setHorizontalAlignment(JLabel.CENTER);
+                label.setHorizontalTextPosition(JLabel.CENTER);
+                component.add(label, BorderLayout.CENTER);
+                component.setSize(pOptions.getSize());
+                component.setPreferredSize(pOptions.getPreferredSize());
+                final Dimension size = component.getSize();
+                if (component.getParent() == null || !pOptions.equals(component.getParent())) {
+                    pOptions.add(component, label.getText());
+                }
+                cLayout.show(pOptions, label.getText());
+                checkSize(size);
+                firePropertyChange("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
+            } else {
+                CategoryModel.Category oldCategory = CategoryModel.getInstance().getCurrent();
+                if (oldCategory != null) {
+                    (buttons.get(oldCategory.getID())).setNormal();
+                }
+                if (category != null) {
+                    (buttons.get(category.getID())).setSelected();
+                }
 
-            CategoryModel.getInstance().setCurrent(category);
-            JComponent component = category.getComponent();
-            category.update(controllerListener, false);
-            final Dimension size = component.getSize();
-            if( component.getParent() == null || !pOptions.equals(component.getParent()) ) {
-                pOptions.add(component, category.getCategoryName());
-            }
-            cLayout.show(pOptions, category.getCategoryName());
-            checkSize (size);
-            /*if (CategoryModel.getInstance().getCurrent() != null) {
-                ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();
-            } */
-            firePropertyChange ("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
-            if(subpath != null) {
-                category.setCurrentSubcategory(subpath);
+                CategoryModel.getInstance().setCurrent(category);
+                JComponent component = category.getComponent();                
+                category.update(controllerListener, false);
+                final Dimension size = component.getSize();
+                if (component.getParent() == null || !pOptions.equals(component.getParent())) {
+                    pOptions.add(component, category.getCategoryName());
+                }
+                cLayout.show(pOptions, category.getCategoryName());
+                checkSize(size);
+                /*if (CategoryModel.getInstance().getCurrent() != null) {
+                 ((CategoryButton) buttons.get (CategoryModel.getInstance().getCurrentCategoryID())).requestFocus();
+                 } */
+                firePropertyChange("buran" + OptionsPanelController.PROP_HELP_CTX, null, null);
+                if (subpath != null) {
+                    category.setCurrentSubcategory(subpath);
+                }
             }
         } finally {
             setCursor(null);
@@ -271,6 +338,481 @@ public class OptionsPanel extends JPanel {
         }
     }
         
+    private void computeOptionsWords() {
+        Set<Map.Entry<String, CategoryModel.Category>> categories = CategoryModel.getInstance().getCategories();
+        for (Map.Entry<String, CategoryModel.Category> set : categories) {
+            JComponent jcomp = set.getValue().getComponent();
+            String id = set.getValue().getID();
+            ArrayList<String> strings = categoryid2words.get(id);
+            if (strings == null) {
+                strings = new ArrayList<String>();
+            }
+            if (!strings.contains(id.toUpperCase())) {
+                strings.add(id.toUpperCase());
+            }
+            categoryid2words.put(id, strings);
+            if(jcomp instanceof JTabbedPane) {
+                categoryid2tabbedpane.put(id, (JTabbedPane)jcomp);
+                handleJTabbedPane((JTabbedPane)jcomp, id);
+            } else if(jcomp instanceof AdvancedPanel) {
+                categoryid2tabbedpane.put(id, (JTabbedPane)jcomp.getComponent(0));
+                handleJTabbedPane((JTabbedPane)jcomp.getComponent(0), id);
+            } else if (jcomp instanceof Container) {
+                setCurrentCategory(set.getValue(), null);
+                handleAllComponents((Container) jcomp, id, null, -1);
+            }
+        }
+    }
+
+    private void handleJTabbedPane(JTabbedPane pane, String categoryID) {
+        int tabsNum = pane.getTabCount();
+        selectedTabIndex = pane.getSelectedIndex();
+        for (int i = 0; i < tabsNum; i++) {
+            pane.setSelectedIndex(i);
+            Component tab = pane.getComponentAt(i);
+            
+            HashMap<Integer, TabInfo> hash = tabbedpane2tabs.get(pane);
+            if(hash == null) {
+                hash = new HashMap<Integer, TabInfo>();
+            }
+            hash.put(i, new TabInfo(pane.getTitleAt(i), CategoryModel.getInstance().getCategory(categoryID).getCategoryName(), tab));
+            tabbedpane2tabs.put(pane, hash);
+            
+            ArrayList<String> strings = categoryid2words.get(categoryID);
+            if (strings == null) {
+                strings = new ArrayList<String>();
+            }
+            if (!strings.contains(pane.getTitleAt(i).toUpperCase())) {
+                strings.add(pane.getTitleAt(i).toUpperCase());
+            }
+            categoryid2words.put(categoryID, strings);            
+            
+            if (tab instanceof Container) {
+                handleAllComponents((Container) tab, categoryID, pane, i);
+            }
+        }
+        pane.setSelectedIndex(selectedTabIndex);
+    }
+
+    private void handleAllComponents(Container container, String categoryID, JTabbedPane tabbedPane, int index) {
+        Component[] components = container.getComponents();
+        Component component = null;
+        ArrayList<String> strings = categoryid2words.get(categoryID);
+        if(strings == null) {
+            strings = new ArrayList<String>();
+        }
+
+        CategoryInfo categoryInfo = categoryid2jcomponents.get(categoryID);
+        if (categoryInfo == null) {
+            categoryInfo = new CategoryInfo();
+        }
+        for (int i = 0; i < components.length; i++) {
+            component = components[i];
+            String text = "";
+            
+            if (component instanceof JComponent) {
+                final Border border = ((JComponent)component).getBorder();
+                if (border instanceof TitledBorder) {
+                    TitledBorder titledBorder = (TitledBorder) border;
+                    text = titledBorder.getTitle();
+                    if (text != null && !text.isEmpty() && !strings.contains(text.toUpperCase())) {
+                        strings.add(text.toUpperCase());
+                    }
+                }
+                categoryInfo.addComponent(text, (JComponent)component);
+            }
+            
+            if (component instanceof JLabel) {
+                text = ((JLabel) component).getText();
+                if (text != null && !text.isEmpty() && !strings.contains(text.toUpperCase())) {
+                    strings.add(text.toUpperCase());
+                }
+                // hack to search into Keymaps category
+                if(categoryID.equals("Keymaps") && text.equals("Search:")) { // NOI18N
+                    keymapsSearch = (JTextField)((JLabel) component).getLabelFor();
+                }
+            } else if (component instanceof AbstractButton) {
+                text = ((AbstractButton) component).getText();
+                if (text != null && !text.isEmpty() && !strings.contains(text.toUpperCase())) {
+                    strings.add(text.toUpperCase());
+                }
+            } else if (component instanceof JTextComponent) {
+                text = ((JTextComponent) component).getText();
+                if (text != null && !text.isEmpty() && !strings.contains(text.toUpperCase())) {
+                    strings.add(text.toUpperCase());
+                }
+            } else if (component instanceof JComboBox) {
+                StringBuilder sb = new StringBuilder();
+                for (int j = 0; j < ((JComboBox) component).getItemCount(); j++) {
+                    Object object = ((JComboBox) component).getItemAt(j);
+                    text = object.toString();
+                    if (text != null && !text.isEmpty()) {
+                        if (!strings.contains(text.toUpperCase())) {
+                            strings.add(text.toUpperCase());
+                        }
+                        sb.append(text.toUpperCase().concat(" "));
+                    }
+                }
+                text = sb.toString().trim();
+            } else if (component instanceof JList) {
+                StringBuilder sb = new StringBuilder();
+                ListModel model = ((JList) component).getModel();
+                if (model != null) {
+                    for (int j = 0; j < model.getSize(); j++) {
+                        Object object = model.getElementAt(j);
+                        if (object != null) {
+                            text = object.toString();
+                            if (text != null && !text.isEmpty()) {
+                                if (!strings.contains(text.toUpperCase())) {
+                                    strings.add(text.toUpperCase());
+                                }
+                                sb.append(text.toUpperCase().concat(" "));
+                            }
+                        }
+                    }
+                }
+                text = sb.toString().trim();
+            } else if (component instanceof JTable) {
+                StringBuilder sb = new StringBuilder();
+                JTableHeader header = ((JTable) component).getTableHeader();
+                if (header != null) {
+                    TableColumnModel columnModel = header.getColumnModel();
+                    for (int j = 0; j < columnModel.getColumnCount(); j++) {
+                        Object object = columnModel.getColumn(j).getHeaderValue();
+                        if (object != null) {
+                            text = object.toString();
+                            if (text != null && !text.isEmpty()) {
+                                if (!strings.contains(text.toUpperCase())) {
+                                    strings.add(text.toUpperCase());
+                                }
+                                sb.append(text.toUpperCase().concat(" "));
+                            }
+                        }
+                    }
+                }
+                
+                TableModel model = ((JTable) component).getModel();
+                for (int j = 0; j < model.getRowCount(); j++) {
+                    for (int k = 0; k < model.getColumnCount(); k++) {
+                        Object object = model.getValueAt(j, k);
+                        if(object != null) {
+                            text = object.toString();
+                            if (text != null && !text.isEmpty()) {
+                                if (!strings.contains(text.toUpperCase())) {
+                                    strings.add(text.toUpperCase());
+                                }
+                                sb.append(text.toUpperCase().concat(" "));
+                            }
+                        }
+                    }                    
+                }
+                text = sb.toString().trim();
+            }
+
+            if (component instanceof JComponent) {
+                categoryInfo.addComponent(text, (JComponent) component);
+            }
+            
+            categoryid2jcomponents.put(categoryID, categoryInfo);
+            categoryid2words.put(categoryID, strings);
+            
+            if (tabbedPane != null && index > -1) {
+                TabInfo tabInfo = tabbedpane2tabs.get(tabbedPane).get(index);
+                if (text != null && !text.isEmpty() && !tabInfo.getWords().contains(text.toUpperCase())) {
+                    tabInfo.addWord(text.toUpperCase());
+                    tabbedpane2tabs.get(tabbedPane).put(index, tabInfo);
+                }
+            }
+            if(component instanceof JTabbedPane) {
+                if(categoryid2tabbedpane.get(categoryID) == null) {
+                    categoryid2tabbedpane.put(categoryID, (JTabbedPane)component);
+                }
+                handleJTabbedPane((JTabbedPane)component, categoryID);
+            } else {
+                handleAllComponents((Container)component, categoryID, tabbedPane, index);
+            }
+        }
+        
+    }
+    
+    private class CategoryInfo {
+
+        private HashMap<String, ArrayList<JComponent>> map;
+
+        public CategoryInfo() {
+            map = new HashMap<String, ArrayList<JComponent>>();
+        }
+
+        public void addComponent(String text, JComponent component) {
+            if (text != null && !text.isEmpty() && component != null) {
+                ArrayList<JComponent> components = map.get(text);
+                if (components == null) {
+                    components = new ArrayList<JComponent>();
+                }
+                components.add(component);
+                map.put(text.toUpperCase(), components);
+            }
+        }
+
+        public ArrayList<JComponent> getComponents(String text) {
+            return map.get(text);
+        }
+
+        public Set<String> getKeys() {
+            return map.keySet();
+        }
+    }
+    
+    private class TabInfo {
+
+        private String tabTitle;
+        private Component tab;
+        private String categoryName;
+        private ArrayList<String> words;
+
+        public TabInfo(String tabTitle, String categoryName, Component tab) {
+            this.tabTitle = tabTitle;
+            this.categoryName = categoryName;
+            this.tab = tab;
+            this.words = new ArrayList<String>();
+            words.add(tabTitle.toUpperCase());
+            words.add(categoryName.toUpperCase());
+        }
+
+        public String getTabTitle() {
+            return tabTitle;
+        }
+
+        public Component getTab() {
+            return tab;
+        }
+
+        public String getCategoryName() {
+            return categoryName;
+        }
+
+        public ArrayList<String> getWords() {
+            return words;
+        }
+
+        public void addWord(String word) {
+            words.add(word.toUpperCase());
+        }
+    }
+
+    final class OptionsQSCallback implements QuickSearch.Callback {
+
+        private boolean initialized = false;
+
+        @Override
+        public void quickSearchUpdate(String searchText) {
+            searchText = searchText.trim();
+            if (searchText.length() < 3) {
+                return;
+            }
+            showWaitCursor();
+            try {
+                if (!initialized) {
+                    final String sText = searchText;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            computeOptionsWords();
+                            initialized = true;
+                            handleSearch(sText);
+                        }
+                    });
+                } else {
+                    handleSearch(searchText);
+                }
+            } finally {
+                hideWaitCursor();
+            }
+        }
+        
+        private void showWaitCursor() {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+                    mainWindow.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    mainWindow.getGlassPane().setVisible(true);
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OptionsDisplayerImpl.class, "CTL_Searching_Options"));
+                }
+            });
+        }
+
+        private void hideWaitCursor() {
+            Mutex.EVENT.readAccess(new Runnable() {
+                public void run() {
+                    StatusDisplayer.getDefault().setStatusText("");  //NOI18N
+                    JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+                    mainWindow.getGlassPane().setVisible(false);
+                    mainWindow.getGlassPane().setCursor(null);
+                }
+            });
+        }
+        
+        private void handleSearch(String searchText) {
+            String visibleCategory = null;
+            String exactCategory = null;
+            int exactTabIndex = 0;
+            for (String id : CategoryModel.getInstance().getCategoryIDs()) {
+                ArrayList<String> entry = categoryid2words.get(id);
+                boolean found = false;
+                for (String text : entry) {
+                    if (text.contains(searchText.toUpperCase())) {
+                        found = true;
+                        if(id.toUpperCase().contains(searchText.toUpperCase())) {
+                            exactCategory = id;
+                        }
+                        break;
+                    }
+                }
+                
+                if (found) {
+                    visibleCategory = id;
+                    removedCategories.remove(id);
+                    buttons.get(id).setVisible(true);
+                    JTabbedPane pane = categoryid2tabbedpane.get(id);
+                    if (pane != null) {
+                        HashMap<Integer, TabInfo> tabsInfo = tabbedpane2tabs.get(pane);
+                        for (Integer tabIndex : tabsInfo.keySet()) {
+                            ArrayList<String> tabWords = tabsInfo.get(tabIndex).getWords();
+                            boolean foundInTab = false;
+                            for (int i = 0; i < tabWords.size(); i++) {
+                                String txt = tabWords.get(i).toString().toUpperCase();
+                                if (txt.contains(searchText.toUpperCase())) {
+                                    foundInTab = true;
+                                    String tabTitle = tabsInfo.get(tabIndex).getTabTitle();
+                                    if (tabTitle.toUpperCase().contains(searchText.toUpperCase())) {
+                                        if (exactCategory == null
+                                                || (exactCategory != null && exactCategory.equals(id) 
+                                                    && exactCategory.toUpperCase().contains(searchText.toUpperCase()))) {
+                                            exactTabIndex = tabIndex;
+                                            setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                            HashMap<Integer, TabInfo> removedTabsInfo = tabbedpane2removedtabs.get(pane);
+                            if (removedTabsInfo == null) {
+                                removedTabsInfo = new HashMap<Integer, TabInfo>();
+                            }
+                            if (foundInTab) {
+                                int removedTabsBefore = 0;
+                                for (Integer removedTabIndex : removedTabsInfo.keySet()) {
+                                    if (removedTabIndex < tabIndex) {
+                                        removedTabsBefore++;
+                                    }
+                                }
+                                if (removedTabsInfo.get(tabIndex) != null) {
+                                    pane.insertTab(removedTabsInfo.get(tabIndex).getTabTitle(), null, removedTabsInfo.get(tabIndex).getTab(), null, tabIndex - removedTabsBefore);
+                                    removedTabsInfo.remove(tabIndex);
+                                    tabbedpane2removedtabs.put(pane, removedTabsInfo);
+                                }
+                                if (exactTabIndex == tabIndex) {
+                                    pane.setSelectedIndex(tabIndex - removedTabsBefore);
+                                }
+                            } else {
+                                int removedTabs = tabbedpane2removedtabs.get(pane) == null ? 0 : tabbedpane2removedtabs.get(pane).size();
+                                if (removedTabs != tabbedpane2tabs.get(pane).size()) {
+                                    if (!removedTabsInfo.containsKey(tabIndex)) {
+                                        int removedTabsBefore = 0;
+                                        for (Integer removedTabIndex : removedTabsInfo.keySet()) {
+                                            if (removedTabIndex < tabIndex) {
+                                                removedTabsBefore++;
+                                            }
+                                        }
+                                        removedTabsInfo.put(tabIndex, tabsInfo.get(tabIndex));
+                                        tabbedpane2removedtabs.put(pane, removedTabsInfo);
+                                        pane.removeTabAt(tabIndex - removedTabsBefore);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
+                    }
+                } else {
+                    if (!removedCategories.contains(id)) {
+                        removedCategories.add(id);
+                    }
+                    buttons.get(id).setVisible(false);
+                    if(removedCategories.size() == buttons.size()) {
+                        setCurrentCategory(null, null);
+                        visibleCategory = null;
+                    } else {
+                        for (String id3 : CategoryModel.getInstance().getCategoryIDs()) {
+                            if (buttons.get(id3).isVisible() && exactCategory == null) {
+                                setCurrentCategory(CategoryModel.getInstance().getCategory(id3), null);
+                                visibleCategory = id3;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if(visibleCategory != null) {
+                componentsShowing.clear();
+                CategoryInfo catInfo = categoryid2jcomponents.get(visibleCategory);
+                if (catInfo != null) {
+                    for (String key : catInfo.getKeys()) {
+                        if (key.contains(searchText.toUpperCase())) {
+                            ArrayList<JComponent> comps = catInfo.getComponents(key);
+                            if (comps != null) {
+                                for (JComponent comp : comps) {
+                                    if(comp.isShowing()) {
+                                        componentsShowing.add(comp);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if(keymapsSearch != null) {
+                keymapsSearch.setText(searchText);
+            }
+        }
+
+        @Override
+        public void showNextSelection(boolean forward) {
+        }
+
+        @Override
+        public String findMaxPrefix(String prefix) {
+            return prefix;
+        }
+
+        @Override
+        public void quickSearchConfirmed() {
+            clearAll();
+        }
+
+        @Override
+        public void quickSearchCanceled() {
+            clearAll();
+        }
+
+        private void clearAll() {
+            for (String category : removedCategories) {
+                buttons.get(category).setVisible(true);
+            }
+
+            for (JTabbedPane pane : tabbedpane2removedtabs.keySet()) {
+                HashMap<Integer, TabInfo> stuff = tabbedpane2removedtabs.get(pane);
+                for (Integer index : stuff.keySet()) {
+                    TabInfo stuff2 = stuff.get(index);
+                    pane.insertTab(stuff2.getTabTitle(), null, stuff2.getTab(), null, index);
+                }
+            }
+            setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
+            removedCategories.clear();
+            tabbedpane2removedtabs.clear();
+        }
+    }
+    
     private void initActions () {
         if (getActionMap ().get("PREVIOUS") == null) {//NOI18N
             InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);

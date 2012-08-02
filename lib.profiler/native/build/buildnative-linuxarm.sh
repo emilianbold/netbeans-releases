@@ -1,6 +1,8 @@
+#!/bin/sh
+
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -40,38 +42,25 @@
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
 
-OpenIDE-Module-Name=Options Dialog and SPI
-OpenIDE-Module-Display-Category=Tools
-OpenIDE-Module-Short-Description=Provides the Options dialog and an SPI to add panels to it.
-OpenIDE-Module-Long-Description=\
-    Provides the Tools | Options dialog. \
-    The SPI lets you add whole new panels, or sections to the Miscellaneous panel.
+BuildForJDK()
+{
+        JAVA_HOME=$1
+        JDK_ID=$2
+	echo $JAVA_HOME $JDK_ID
+	gcc -I$JAVA_HOME/include -I$JAVA_HOME/include/linux -DLINUX -pthread -fPIC -shared -O3 -msoft-float -march=armv5t -Wall \
+	-o ../../release/lib/deployed/$JDK_ID/linux-arm/libprofilerinterface.so \
+	../src-jdk15/class_file_cache.c \
+	../src-jdk15/attach.c \
+	../src-jdk15/Classes.c \
+	../src-jdk15/HeapDump.c \
+	../src-jdk15/Timers.c \
+	../src-jdk15/GC.c \
+	../src-jdk15/Threads.c \
+	../src-jdk15/Stacks.c \
+	../src-jdk15/common_functions.c
 
-#OptionsWindowAction
-CTL_Options_Window_Action=&Options
-CTL_Options_Dialog_Title=Options
-CTL_OK=OK
-CTL_Classic=Advanced Options
-CTL_Classic_Title=Advanced Options
-CTL_Modern=&Basic Options
-CTL_Loading_Options=Loading Settings ...
-CTL_Error_Loading_Options=Loading Options Failed.
-CTL_Some_values_changed=There are some changes. Do you want to apply them?
+	rm -f *.o
+}
 
-CTL_Export=Expor&t
-CTL_Import=&Import
+BuildForJDK "$JAVA_HOME_16" "jdk16"
 
-#A11Y
-ACS_OKButton=OK
-ACS_ClassicButton= Invokes Advanced Options dialog
-ACS_OptionsPanel=Options Dialog
-ACS_Export=Export Options
-ACS_Import=Import Options
-TabbedController.pane.AD=Options Panel
-
-QuickSearch/GoToOption=Options
-
-#OptionsSearch
-CTL_Searching_Options=Searching Settings ...
-CTL_Options_Search_Nothing_Found=Nothing found
-CTL_Options_Search_Nothing_Found_Ergonomics=Nothing found. Activating some features might return more results.
