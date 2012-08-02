@@ -137,6 +137,23 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
         }
     }
 
+    private void checkFirstSummary(Source source, int offset, String summary) throws ParseException {
+        initializeDocumentationHolder(source);
+        assertEquals(summary, documentationHolder.getCommentForOffset(offset, documentationHolder.getCommentBlocks()).getSummary().get(0));
+    }
+
+    public void testGetSummaryOfClassFromContextDescription() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "function Rectangle2(width, height) {^");
+        checkFirstSummary(testSource, caretOffset, "Create a new Rectangle2 instance.");
+    }
+
+    public void testGetSummaryOfClassFromDescription() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "function Rectangle3(width, height) {^");
+        checkFirstSummary(testSource, caretOffset, "Create a new Rectangle3 instance.");
+    }
+
     public void testGetReturnTypeForReturn() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function(){^");
