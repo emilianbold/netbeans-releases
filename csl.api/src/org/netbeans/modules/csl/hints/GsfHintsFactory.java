@@ -87,6 +87,10 @@ public class GsfHintsFactory extends AbstractTaskFactory {
      */
     public static List<ErrorDescription> getErrors(Snapshot s, ParserResult res, Snapshot tls) throws ParseException {
         FileObject fo = s.getSource().getFileObject();
+        if (fo == null) {
+            // see issue #212967
+            return new ArrayList<ErrorDescription>();
+        }
         GsfHintsProvider hp = new GsfHintsProvider(fo);
         List<ErrorDescription> descs = new ArrayList<ErrorDescription>();
         hp.processErrors(s, res, null, descs, tls);
