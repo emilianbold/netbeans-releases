@@ -222,6 +222,34 @@ public final class ODSProject {
         return null;
     }
 
+    public synchronized String getWikiUrl() {
+        List<ProjectService> s = project.getProjectServicesOfType(ServiceType.WIKI);
+        if (s != null) {
+            for (ProjectService ps : s) {
+                if (ps.isAvailable()) {
+                    return ps.getUrl();
+                }
+            }
+        }
+        return null;
+    }
+
+    public synchronized String getMavenUrl() {
+        List<ProjectService> s = project.getProjectServicesOfType(ServiceType.WIKI);
+        if (s != null) {
+            for (ProjectService ps : s) {
+                if (ps.isAvailable()) {
+                    return ps.getUrl();
+                }
+            }
+        }
+        return null;
+    }
+
+    public synchronized String getWebUrl() {
+        return server.getUrl().toString() + "/#projects/" +  project.getIdentifier();
+    }
+
     private synchronized boolean hasService(ServiceType type) {
         List<ProjectService> s = project.getProjectServicesOfType(type);
         if(s != null) {
