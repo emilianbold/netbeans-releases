@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.api.util.FileUtils;
+import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
@@ -89,7 +90,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -116,7 +116,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     @MIMEResolver.ExtensionRegistration(
         extension={ "php", "php3", "php4", "php5", "phtml", "inc", "phpt" },
         displayName="#PHPResolver",
-        mimeType="text/x-php5",
+        mimeType=PHP_MIME_TYPE,
         position=282
     )
     @NbBundle.Messages("PHPResolver=PHP Files")

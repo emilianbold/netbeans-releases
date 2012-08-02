@@ -496,7 +496,7 @@ public class ActionFactory {
                                     doc.insertString(previousLineStartOffset, linesText, null);
                                     
                                     // remove the line
-                                    doc.remove(startLineStartOffset + linesText.length(), Math.min(doc.getLength(),endLineEndOffset) - startLineStartOffset);
+                                    doc.remove(startLineStartOffset + linesText.length(), Math.min(doc.getLength() - linesText.length(),endLineEndOffset) - startLineStartOffset);
                                     
                                     if (selection) {
                                         // select moved lines
