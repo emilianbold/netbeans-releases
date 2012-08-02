@@ -133,7 +133,7 @@ public final class WebBrowserPane {
         }
     }
     
-    public void enablePageInspector() {
+    public void enableLiveHTML() {
         assert impl instanceof EnhancedBrowser;
         if ( impl instanceof EnhancedBrowser ){
             ((EnhancedBrowser) impl).enableLiveHTML();
