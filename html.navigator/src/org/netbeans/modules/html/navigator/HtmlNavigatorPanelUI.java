@@ -217,7 +217,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
     
     public void selectElementNode(final int offset) {
-        final Node match = getRootNode().getNodeForOffset(offset);
+        HtmlNode root = getRootNode();
+        if(root == null) {
+            return ;
+        }
+        
+        final Node match = root.getNodeForOffset(offset);
         if(match == null) {
             return ;
         }
