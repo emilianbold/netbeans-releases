@@ -167,7 +167,7 @@ public final class MemoryCache {
     public void put(Key key, Persistent obj) {
         Slice s = cache.getSilce(key);
         Reference<Persistent> value;
-        if (CndTraceFlags.WEAK_REFS_HOLDERS && key.getBehavior() != Key.Behavior.LargeAndMutable) {
+        if (false && CndTraceFlags.WEAK_REFS_HOLDERS && key.getBehavior() != Key.Behavior.LargeAndMutable) {
             value = new WeakValue<Persistent>(obj, key, refQueue);
         } else {
             value = new SoftValue<Persistent>(obj, key, refQueue);
