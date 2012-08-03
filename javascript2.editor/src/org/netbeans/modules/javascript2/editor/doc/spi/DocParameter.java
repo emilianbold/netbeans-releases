@@ -53,7 +53,7 @@ public interface DocParameter {
 
     /**
      * Gets name of the parameter.
-     * @return parameter name
+     * @return parameter name, {@code null} if it doesn't have any name
      */
     DocIdentifier getParamName();
 
@@ -77,7 +77,7 @@ public interface DocParameter {
 
     /**
      * Gets the parameter type.
-     * @return parameter type, or {@code null} when no type is set
+     * @return parameter possible types, or empty list when no type is set, never {@code null}
      */
     List<Type> getParamTypes();
 

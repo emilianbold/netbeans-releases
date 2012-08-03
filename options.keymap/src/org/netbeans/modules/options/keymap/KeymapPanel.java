@@ -535,10 +535,19 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         searchField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(KeymapPanel.class, "KeymapPanel.searchField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    public void hidePopup() {
+        if (searchPopup != null) {
+            searchPopup.hide();
+            searchPopup = null;
+        }
+    }
     /**
      * Shows popup with ESC and TAB keys
      */
     private void moreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moreButtonActionPerformed
+        if (searchPopup != null) {
+            return;
+        }
         JComponent tf = (JComponent) evt.getSource();
         Point p = new Point(tf.getX(), tf.getY());
         SwingUtilities.convertPointToScreen(p, this);

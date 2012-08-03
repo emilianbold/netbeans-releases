@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**

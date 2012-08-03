@@ -95,7 +95,7 @@ public class SDocTypeSimpleElement extends SDocBaseElement implements DocParamet
 
     @Override
     public String getParamDescription() {
-        return null;
+        return "";
     }
 
     @Override

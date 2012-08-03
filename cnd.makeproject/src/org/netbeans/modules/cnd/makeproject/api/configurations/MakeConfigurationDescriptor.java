@@ -653,12 +653,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public void checkForChangedItems(Project project, Folder folder, Item item) {
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
-            checkForChangedItems(folder, item);
+            checkForChangedItems2(folder, item);
         }
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, folder, item);
     }
-    
-    public void checkForChangedItems(final Folder folder, final Item item) {
+
+    private void checkForChangedItems2(final Folder folder, final Item item) {
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
 
@@ -814,7 +814,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (!cFiles && makeConfiguration.getCCompilerConfiguration().getSixtyfourBits().getDirty()) {
                 makeConfiguration.getCCompilerConfiguration().getSixtyfourBits().setDirty(false);
                 cFiles = true;
-            }                            
+            }
             cInheritMacros = makeConfiguration.getCCompilerConfiguration().getInheritPreprocessor();
             cInheritUndefinedMacros = makeConfiguration.getCCompilerConfiguration().getInheritUndefinedPreprocessor();
             ccIncludeDirectories = makeConfiguration.getCCCompilerConfiguration().getIncludeDirectories();
@@ -834,7 +834,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (!ccFiles && makeConfiguration.getCCCompilerConfiguration().getSixtyfourBits().getDirty()) {
                 makeConfiguration.getCCCompilerConfiguration().getSixtyfourBits().setDirty(false);
                 ccFiles = true;
-            }                            
+            }
             items = descriptor.getProjectItems();
             projectChanged = true;
         }
@@ -883,7 +883,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         MakeLogicalViewProvider.checkForChangedViewItemNodes(project, delta);
     }
 
-    public void checkForChangedItems2(final Delta delta) {
+    private void checkForChangedItems2(final Delta delta) {
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
 
@@ -901,18 +901,23 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (delta.isEmpty()) {
             return;
         }
-        if (!(delta.deleted.isEmpty() && delta.exluded.isEmpty())) {
-            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.deleted);
-            list.addAll(delta.exluded);
+        List<Item> deleted = delta.getDeleted();
+        List<Item> excluded = delta.getExcluded();
+        if (!(deleted.isEmpty() && excluded.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(deleted);
+            list.addAll(excluded);
             getNativeProjectChangeSupport().fireFilesRemoved(list);
         }
-        if (!(delta.added.isEmpty() && delta.included.isEmpty())) {
-            List<NativeFileItem> list = new ArrayList<NativeFileItem>(delta.added);
-            list.addAll(delta.included);
+        List<Item> added = delta.getAdded();
+        List<Item> included = delta.getIncluded();
+        if (!(added.isEmpty() && included.isEmpty())) {
+            List<NativeFileItem> list = new ArrayList<NativeFileItem>(added);
+            list.addAll(included);
             getNativeProjectChangeSupport().fireFilesAdded(list);
         }
-        if (!delta.changed.isEmpty()) {
-            getNativeProjectChangeSupport().fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(delta.changed));
+        List<Item> changed = delta.getChanged();
+        if (!changed.isEmpty()) {
+            getNativeProjectChangeSupport().fireFilesPropertiesChanged(new ArrayList<NativeFileItem>(changed));
         }
     }
     
@@ -1861,8 +1866,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                     LOGGER.log(Level.INFO, ex.getMessage(), ex);
                     continue;
                 }
-                Folder dirfolder = folder;
-                dirfolder = folder.findFolderByName(file.getNameExt());
+                Folder dirfolder = folder.findFolderByName(file.getNameExt());
                 if (dirfolder == null) {
                     if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
                         dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);

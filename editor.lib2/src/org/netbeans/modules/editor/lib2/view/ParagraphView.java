@@ -408,19 +408,14 @@ public final class ParagraphView extends EditorView implements EditorView.Parent
     }
 
     @Override
-    public HighlightsSequence getPaintHighlights(EditorView view, int shift) {
-        return getDocumentView().getPaintHighlights(view, shift);
-    }
-
-    @Override
     public int getViewEndOffset(int rawChildEndOffset) {
         return getStartOffset() + children.raw2Offset(rawChildEndOffset);
     }
 
     @Override
-    public FontRenderContext getFontRenderContext() {
+    public ViewRenderContext getViewRenderContext() {
         EditorView.Parent parent = (EditorView.Parent) getParent();
-        return (parent != null) ? parent.getFontRenderContext() : null;
+        return (parent != null) ? parent.getViewRenderContext() : null;
     }
 
     @Override

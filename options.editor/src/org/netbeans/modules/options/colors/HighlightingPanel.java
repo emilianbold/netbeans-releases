@@ -44,13 +44,12 @@
 
 package org.netbeans.modules.options.colors;
 
-import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -71,6 +70,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
+import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -78,7 +79,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Jan Jancura
  */
-public class HighlightingPanel extends JPanel implements ActionListener, PropertyChangeListener, FontsColorsController {
+public class HighlightingPanel extends JPanel implements ActionListener, ItemListener, FontsColorsController {
     
     private ColorModel          colorModel = null;
     private boolean             listen = false;
@@ -103,8 +104,6 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         cbForeground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground_Chooser"));
         cbBackground.getAccessibleContext ().setAccessibleName (loc ("AN_Background_Chooser"));
         cbBackground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background_Chooser"));
-        ColorComboBox.init (cbForeground);
-        ColorComboBox.init (cbBackground);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
         lCategories.addListSelectionListener (new ListSelectionListener () {
@@ -115,10 +114,8 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
             }
         });
         lCategories.setCellRenderer (new CategoryRenderer ());
-        cbForeground.addActionListener (this);
-        ((JComponent) cbForeground.getEditor ()).addPropertyChangeListener (this);
-        cbBackground.addActionListener (this);
-        ((JComponent) cbBackground.getEditor ()).addPropertyChangeListener (this);
+        cbForeground.addItemListener(this);
+        cbBackground.addItemListener (this);
 
         lCategory.setLabelFor (lCategories);
         loc (lCategory, "CTL_Category");
@@ -139,8 +136,8 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         lCategories = new javax.swing.JList();
         lForeground = new javax.swing.JLabel();
         lBackground = new javax.swing.JLabel();
-        cbBackground = new javax.swing.JComboBox();
-        cbForeground = new javax.swing.JComboBox();
+        cbBackground = new ColorComboBox();
+        cbForeground = new ColorComboBox();
 
         lCategory.setText(org.openide.util.NbBundle.getMessage(HighlightingPanel.class, "CTL_Category")); // NOI18N
 
@@ -210,12 +207,12 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
     }
     
     @Override
-    public void propertyChange (PropertyChangeEvent evt) {
+    public void itemStateChanged( ItemEvent e ) {
+        if( e.getStateChange() == ItemEvent.DESELECTED )
+            return;
         if (!listen) return;
-        if (ColorComboBox.PROP_COLOR.equals (evt.getPropertyName ())) {
-            updateData ();
-            changed = true;
-        }
+        updateData ();
+        changed = true;
     }
     
     @Override
@@ -321,14 +318,14 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
         AttributeSet category = categories.get(lCategories.getSelectedIndex());
         SimpleAttributeSet c = new SimpleAttributeSet(category);
         
-        Color color = ColorComboBox.getColor(cbBackground);
+        Color color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbBackground );
         if (color != null) {
             c.addAttribute(StyleConstants.Background, color);
         } else {
             c.removeAttribute(StyleConstants.Background);
         }
         
-        color = ColorComboBox.getColor(cbForeground);
+        color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbForeground );
         if (color != null) {
             c.addAttribute(StyleConstants.Foreground, color);
         } else {
@@ -361,24 +358,18 @@ public class HighlightingPanel extends JPanel implements ActionListener, Propert
             if (inheritedForeground == null) {
                 inheritedForeground = Color.black;
             }
-            ColorComboBox.setInheritedColor(cbForeground, inheritedForeground);
+            ColorComboBoxSupport.setInheritedColor((ColorComboBox)cbForeground, inheritedForeground);
             
             Color inheritedBackground = (Color) defAs.getAttribute(StyleConstants.Background);
             if (inheritedBackground == null) {
                 inheritedBackground = Color.white;
             }
-            ColorComboBox.setInheritedColor(cbBackground, inheritedBackground);
+            ColorComboBoxSupport.setInheritedColor((ColorComboBox)cbBackground, inheritedBackground);
         }
         
         // set values
-        ColorComboBox.setColor (
-            cbForeground, 
-            (Color) category.getAttribute (StyleConstants.Foreground)
-        );
-        ColorComboBox.setColor (
-            cbBackground,
-            (Color) category.getAttribute (StyleConstants.Background)
-        );
+        ColorComboBoxSupport.setSelectedColor((ColorComboBox)cbForeground, (Color) category.getAttribute (StyleConstants.Foreground));
+        ColorComboBoxSupport.setSelectedColor((ColorComboBox)cbBackground, (Color) category.getAttribute (StyleConstants.Background));
         listen = true;
     }
     

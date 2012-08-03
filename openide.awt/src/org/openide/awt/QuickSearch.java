@@ -84,6 +84,7 @@ public class QuickSearch {
     private final RequestProcessor rp;
     private static enum QS_FIRE { UPDATE, NEXT, MAX }
     private AnimationTimer animationTimer;
+    private boolean alwaysShown = false;
     
     private QuickSearch(JComponent component, Object constraints,
                         Callback callback, boolean asynchronous, JMenu popupMenu) {
@@ -199,6 +200,30 @@ public class QuickSearch {
     public void detach() {
         setEnabled(false);
         component.putClientProperty(CLIENT_PROPERTY_KEY, null);
+    }
+
+    /**
+     * Test whether the quick search field is always shown. 
+     * This is <code>false</code> by default.
+     * @return <code>true</code> when the search field is always shown,
+     *                           <code>false</code> otherwise.
+     * @since 7.49
+     */
+    public boolean isAlwaysShown() {
+        return alwaysShown;
+    }
+
+    /**
+     * Set whether the quick search field should always be shown.
+     * @param alwaysShown <code>true</code> to always show the search field,
+     *                           <code>false</code> otherwise.
+     * @since 7.49
+     */
+    public void setAlwaysShown(boolean alwaysShown) {
+        this.alwaysShown = alwaysShown;
+        if(alwaysShown) {
+            displaySearchField();
+        }
     }
     
     /**
@@ -322,7 +347,9 @@ public class QuickSearch {
         searchTextField.addKeyListener(searchFieldListener);
         searchTextField.addFocusListener(searchFieldListener);
         searchTextField.getDocument().addDocumentListener(searchFieldListener);
-        
+        if(isAlwaysShown()) {
+            displaySearchField();
+        }
     }
     
     private void displaySearchField() {
@@ -374,6 +401,10 @@ public class QuickSearch {
     }
     
     private void removeSearchField() {
+        if (isAlwaysShown()) {
+            searchTextField.setText("");
+            return;
+        }
         if (searchPanel == null) {
             return;
         }
@@ -711,7 +742,9 @@ public class QuickSearch {
 
         @Override
         public void focusLost(FocusEvent e) {
-            if (e.isTemporary()) return ;
+            if (e.isTemporary() || isAlwaysShown()) {
+                return ;
+            }
             Component oppositeComponent = e.getOppositeComponent();
             if (e.getSource() != searchTextField) {
                 ((Component) e.getSource()).removeFocusListener(this);

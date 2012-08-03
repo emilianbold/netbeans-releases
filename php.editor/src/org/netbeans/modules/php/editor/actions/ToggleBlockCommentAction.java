@@ -49,17 +49,17 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.CslActions;
+import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;
-
 /**
  *
  * @author Petr Pisl
  */
 
-@EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType="text/x-php5")
+@EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType=PHP_MIME_TYPE)
 public class ToggleBlockCommentAction extends BaseAction{
 
     static final long serialVersionUID = -1L;

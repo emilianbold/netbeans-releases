@@ -101,11 +101,12 @@ public class OpenProject extends BasicAction {
     private static void show(final JFileChooser chooser) {
             final File[] projectDirs;
 
-            if( Boolean.getBoolean("nb.native.filechooser") ) { //NOI18N
+            if( Boolean.getBoolean("nb.native.filechooser") && Utilities.isMac() ) { //NOI18N
                 String oldFileDialogProp = System.getProperty("apple.awt.fileDialogForDirectories"); //NOI18N
                 System.setProperty("apple.awt.fileDialogForDirectories", "true"); //NOI18N
                 FileDialog fileDialog = new FileDialog(WindowManager.getDefault().getMainWindow(), DISPLAY_NAME);
                 fileDialog.setMode(FileDialog.LOAD);
+                fileDialog.setTitle(chooser.getDialogTitle());
                 fileDialog.setVisible(true);
                 if( null != oldFileDialogProp ) {
                     System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
