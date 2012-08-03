@@ -44,6 +44,9 @@
 package org.netbeans.modules.html.navigator;
 
 import java.awt.Image;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +55,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
@@ -61,6 +66,7 @@ import org.netbeans.modules.html.navigator.actions.OpenAction;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -111,7 +117,7 @@ public class HtmlElementNode extends AbstractNode {
         //finally set the children keys to the node
         getElementChildren().resetKeys();
     }
-
+    
     private PageModel getPageModel() {
         return ui.getPageModel();
     }
@@ -124,6 +130,16 @@ public class HtmlElementNode extends AbstractNode {
     }
 
     private Node findWebKitNode() {
+        //check if the inspected fileobject matches our fileobject
+        FileObject inspectedFile = ui.getInspectedFileObject();
+        if(inspectedFile == null) {
+            return null;
+        }
+        if(!inspectedFile.equals(fileObject)) {
+            //foreign fileobject, someone likely switched the inspector do different file
+            return null;
+        }
+        
         PageModel pageModel = getPageModel();
         if(pageModel == null) {
             return null;
