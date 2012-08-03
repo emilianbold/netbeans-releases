@@ -135,7 +135,7 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
     public Action getDefaultAction(SourceHandle srcHandle) {
         assert srcHandle instanceof SourceHandleImpl;
         SourceHandleImpl impl = (SourceHandleImpl) srcHandle;
-        return new GetSourcesFromCloudAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), srcHandle);
+        return new GetSourcesFromCloudAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), impl);
     }
 
     @Override

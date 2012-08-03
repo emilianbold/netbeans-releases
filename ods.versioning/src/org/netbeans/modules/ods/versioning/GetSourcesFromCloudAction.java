@@ -76,9 +76,9 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
     private String getOption = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudAction.GetFromKenai.option");
     private String cancelOption = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudAction.Cancel.option");
 
-    public GetSourcesFromCloudAction(ProjectAndRepository prjRepo, SourceHandle src) {
+    public GetSourcesFromCloudAction(ProjectAndRepository prjRepo, SourceHandleImpl src) {
         prjAndRepository = prjRepo;
-        this.srcHandle = (SourceHandleImpl) src;
+        this.srcHandle = src;
     }
 
     @Override
@@ -117,6 +117,7 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
                         if (prov != null) {
                             File cloneDest = prov.getSources(repository.getUrl(), passwdAuth);
                             if (cloneDest != null && srcHandle != null) {
+                                srcHandle.setWorkingDirectory(repository.getUrl(), cloneDest.getAbsolutePath());
                                 srcHandle.refresh();
                             }
                         }

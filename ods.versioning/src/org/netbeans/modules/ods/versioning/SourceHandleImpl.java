@@ -87,6 +87,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
     private static final int MAX_PROJECTS = 5;
     private static final String RECENTPROJECTS_PREFIX = "recent.projects."; // NOI18N
     public static final String SCM_TYPE_UNKNOWN = "unknown";//NOI18N
+    private static final String WORKINGDIR = "working.dir."; //NOI18N
     private RequestProcessor rp = new RequestProcessor(SourceHandleImpl.class);
     private final boolean supported;
 
@@ -130,10 +131,8 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
 
     @Override
     public File getWorkingDirectory() {
-        if (prefs==null)
-            return guessWorkdir();
         try {
-            String uriString = prefs.get("working.dir." + repository.getUrl(), null); // NOI18N
+            String uriString = prefs.get(WORKINGDIR + repository.getUrl(), null); // NOI18N
             if (uriString!=null) {
                 URI uri = new URI(uriString);
                 final File file = new File(uri);
@@ -170,6 +169,10 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         if (projectHandle!=null) {
             projectHandle.firePropertyChange(ProjectHandle.PROP_SOURCE_LIST, null, null);
         }
+    }
+
+    void setWorkingDirectory (String url, String absolutePath) {
+        prefs.put(WORKINGDIR + url, absolutePath); //NOI18N
     }
 
     private synchronized void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
