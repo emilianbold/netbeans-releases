@@ -107,7 +107,7 @@ public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODSP
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                TeamUIUtils.showLogin(server, false);
+                TeamUIUtils.showLogin(server, true);
             }
         };
     }

@@ -207,7 +207,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
 
                 @Override
                 public void run() {
-                    new AddInstanceAction().actionPerformed(e);
+                    new AddInstanceAction(listedProvider).actionPerformed(e);
                     server = ((TeamServer) teamCombo.getSelectedItem());
                     if (!(teamCombo.getSelectedItem() instanceof TeamServer) || server == null) {
                         return;

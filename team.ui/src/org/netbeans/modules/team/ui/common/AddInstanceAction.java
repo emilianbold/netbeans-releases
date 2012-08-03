@@ -94,6 +94,10 @@ public class AddInstanceAction extends AbstractAction {
         super(CTL_AddInstance());
     }
 
+    public AddInstanceAction (TeamServerProvider teamProvider) {
+        this(teamProvider, CTL_AddInstance());
+    }
+
     public AddInstanceAction(TeamServerProvider teamProvider, String actionName) {
         super(actionName);
         this.provider = teamProvider;
