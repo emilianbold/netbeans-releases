@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -552,6 +553,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     if(builder instanceof EnumBuilder) {
                         ((EnumBuilder)builder).setScope(cls);
                         ((EnumBuilder)builder).create(true);
+                    }
+                    if(builder instanceof UsingDeclarationBuilder) {
+                        ((UsingDeclarationBuilder)builder).setScope(cls);
+                        ((UsingDeclarationBuilder)builder).create();
                     }
                 }                
             }

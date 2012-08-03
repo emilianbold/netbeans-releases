@@ -31,7 +31,6 @@
 package org.netbeans.modules.cnd.highlight.error.includes;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -74,17 +73,7 @@ public class FailedIncludesAction extends NodeAction {
             NativeProject nativeProject = projects.get(0);
             set = BadgeProvider.getInstance().getFailedFiles(nativeProject);
         }
-        Set<CsmFile> list = new HashSet<CsmFile>();
-        if (set != null) {
-            for (CsmUID<CsmFile> fileUID : set) {
-                CsmFile csmFile = fileUID.getObject();
-                assert csmFile != null;
-                if (csmFile != null) {
-                    list.add(csmFile);
-                }
-            }
-        }
-        ErrorIncludeDialog.showErrorIncludeDialog(list);
+        ErrorIncludeDialog.showErrorIncludeDialog(set);
     }
 
     @Override

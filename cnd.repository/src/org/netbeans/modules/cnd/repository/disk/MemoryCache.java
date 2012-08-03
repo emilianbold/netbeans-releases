@@ -44,7 +44,7 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -84,9 +84,9 @@ public final class MemoryCache {
         }
     }
 
-    private static class SoftValue<T> extends SoftReference<T> {
+    private static class CacheValue<T> extends WeakReference<T> {
         private final Key key;
-        private SoftValue(T k, Key key, ReferenceQueue<T> q) {
+        private CacheValue(T k, Key key, ReferenceQueue<T> q) {
             super(k, q);
             this.key = key;
         }
@@ -140,7 +140,7 @@ public final class MemoryCache {
     
     public void put(Key key, Persistent obj) {
         Slice s = cache.getSilce(key);
-        SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
+        CacheValue<Persistent> value = new CacheValue<Persistent>(obj, key, refQueue);
         s.w.lock();
         try {
             s.storage.put(key, value);
@@ -173,7 +173,7 @@ public final class MemoryCache {
                 System.err.println("unexpected value " + old + " for key " + key);
             }
             if (prevPersistent == null) {
-                SoftValue<Persistent> value = new SoftValue<Persistent>(obj, key, refQueue);
+                CacheValue<Persistent> value = new CacheValue<Persistent>(obj, key, refQueue);
                 // no previous value
                 // put new item into storage
                 s.storage.put(key, value);
@@ -267,8 +267,8 @@ public final class MemoryCache {
     private void processQueue() {
         if (refQueueLock.tryLock()) {
             try {
-                SoftValue sv;
-                while ((sv = (SoftValue) refQueue.poll()) != null) {
+                CacheValue sv;
+                while ((sv = (CacheValue) refQueue.poll()) != null) {
                     Object value;
                     final Key key = sv.key;
                     if (key != null) {
