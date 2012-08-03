@@ -189,10 +189,11 @@ public class OptionsDisplayerImpl {
             additionalOptionspanel.add(btnExport);
             additionalOptionspanel.add(btnImport);
             additionalOptionspanel.add(quickSearch);
+            setUpButtonListeners(optionsPanel);
             
             descriptor.setAdditionalOptions(new Object[] {additionalOptionspanel});
             descriptor.setHelpCtx(optionsPanel.getHelpCtx());
-            OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK, bClassic, btnExport, btnImport);
+            OptionsPanelListener listener = new OptionsPanelListener(descriptor, optionsPanel, bOK);
             descriptor.setButtonListener(listener);
             optionsPanel.addPropertyChangeListener(listener);
             synchronized(lookupListener) {
@@ -219,6 +220,60 @@ public class OptionsDisplayerImpl {
         }
         log.fine("setting Options Dialog visible");
         dialog.setVisible (true);     
+    }
+    
+    private void setUpButtonListeners(OptionsPanel optionsPanel) {
+        btnExport.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OptionsChooserPanel.showExportDialog();
+            }
+        });
+        btnImport.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OptionsChooserPanel.showImportDialog();
+            }
+        });
+        final OptionsPanel finalOptionsPanel = optionsPanel;
+        bClassic.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                log.fine("Options Dialog - Classic pressed."); //NOI18N
+                Dialog d = dialog;
+                dialog = null;
+                if (finalOptionsPanel.isChanged()) {
+                    Confirmation confirmationDescriptor = new Confirmation(
+                            loc("CTL_Some_values_changed"),
+                            NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE);
+                    Object result = DialogDisplayer.getDefault().
+                            notify(confirmationDescriptor);
+                    if (result == NotifyDescriptor.YES_OPTION) {
+                        finalOptionsPanel.save();
+                        d.dispose();
+                    } else if (result == NotifyDescriptor.NO_OPTION) {
+                        finalOptionsPanel.cancel();
+                        d.dispose();
+                    } else {
+                        dialog = d;
+                        return;
+                    }
+                } else {
+                    d.dispose();
+                    finalOptionsPanel.cancel();
+                }
+                try {
+                    CallableSystemAction a = SystemAction.get(OptionsAction.class);
+                    a.putValue("additionalActionName", loc("CTL_Modern"));
+                    a.putValue("optionsDialogTitle", loc("CTL_Classic_Title"));
+                    a.putValue("additionalActionListener", new OpenOptionsListener());
+                    a.performAction();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 
     /** Set visibility of Advanced Options button (AKA classic) according to
@@ -316,25 +371,16 @@ public class OptionsDisplayerImpl {
         private DialogDescriptor    descriptor;
         private OptionsPanel        optionsPanel;
         private JButton             bOK;
-        private JButton             bClassic;
-        private JButton             btnExport;
-        private JButton             btnImport;
         
         
         OptionsPanelListener (
             DialogDescriptor    descriptor, 
             OptionsPanel        optionsPanel,
-            JButton             bOK,
-            JButton             bClassic,
-            JButton             btnExport,
-            JButton             btnImport
+            JButton             bOK
         ) {
             this.descriptor = descriptor;
             this.optionsPanel = optionsPanel;
             this.bOK = bOK;
-            this.bClassic = bClassic;
-            this.btnExport = btnExport;
-            this.btnImport = btnImport;
         }
         
         public void propertyChange (PropertyChangeEvent ev) {
@@ -367,49 +413,6 @@ public class OptionsDisplayerImpl {
                 optionsPanel.cancel ();
                 bOK.setEnabled(true);
                 d.dispose ();                
-            } else
-            if (e.getSource () == bClassic) {
-                log.fine("Options Dialog - Classic pressed."); //NOI18N
-                Dialog d = dialog;
-                dialog = null;
-                if (optionsPanel.isChanged ()) {
-                    Confirmation confirmationDescriptor = new Confirmation (
-                        loc ("CTL_Some_values_changed"), 
-                        NotifyDescriptor.YES_NO_CANCEL_OPTION,
-                        NotifyDescriptor.QUESTION_MESSAGE
-                    );
-                    Object result = DialogDisplayer.getDefault ().
-                        notify (confirmationDescriptor);
-                    if (result == NotifyDescriptor.YES_OPTION) {
-                        optionsPanel.save ();
-                        d.dispose ();                        
-                    } else
-                    if (result == NotifyDescriptor.NO_OPTION) {
-                        optionsPanel.cancel ();
-                        d.dispose ();                        
-                    } else {
-                        dialog = d;
-                        return;
-                    }
-                } else {
-                    d.dispose ();
-                    optionsPanel.cancel ();
-                }
-                try {
-                    CallableSystemAction a = SystemAction.get(OptionsAction.class);
-                    a.putValue ("additionalActionName", loc ("CTL_Modern"));
-                    a.putValue ("optionsDialogTitle", loc ("CTL_Classic_Title"));
-                    a.putValue ("additionalActionListener", new OpenOptionsListener ()
-                    );
-                    a.performAction ();
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } // classic
-            else if (e.getSource() == btnExport) {
-                OptionsChooserPanel.showExportDialog();
-            } else if (e.getSource() == btnImport) {
-                OptionsChooserPanel.showImportDialog();
             }
         }
     }
