@@ -98,9 +98,11 @@ public class FXMLCompletion implements CompletionProvider {
 
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
+        /*
         if (queryType == COMPLETION_QUERY_TYPE) {
             return new AsyncCompletionTask(new Query(), component);
         }
+        */
 
         return null;
     }
