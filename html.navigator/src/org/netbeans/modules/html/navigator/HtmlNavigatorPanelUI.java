@@ -146,38 +146,40 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     //Set a new PageModel. It will install a new PropertyChangeListener for the PageModel changes
     private void setPageModel(PageModel model) {
-        if(model == null) {
+        PageModel old = this.pageModel;
+        this.pageModel = model;
+        
+        if (model == null) {
             //the new model is null model, disable
-            pageModel.removePropertyChangeListener(pageModelListener);
-            
+            old.removePropertyChangeListener(pageModelListener);
+
             stateLabel.setEnabled(false);
             stateLabel.setText(NOT_CONNECTED);
             setStatusText("Disconnected");
-            
+
             //we need to explicitly call pageModelDocumentChanged() since
             //no change event from PageModel will come and we need to refresh
             //the nodes dom status
             pageModelDocumentChanged();
-            
+
         } else {
             //new model
-            
+
             //possibly remove the old listener
-            if(this.pageModel != null) {
-                pageModel.removePropertyChangeListener(pageModelListener);
+            if (old != null) {
+                old.removePropertyChangeListener(pageModelListener);
             }
             //add new listener to the pagemodel
             model.addPropertyChangeListener(pageModelListener);
-            
+
             stateLabel.setEnabled(true);
             stateLabel.setText(CONNECTED);
             setStatusText("Connected");
-            
+
             //no need to explicitly call pageModelDocumentChanged() as the
             //PageModel fill fire change event
         }
 
-        this.pageModel = model;
     }
 
     private void pageModelDocumentChanged() {
@@ -192,21 +194,21 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         //try to find corresponding FileObject for the inspected document
         FileObject current = getInspectedFile();
         if (inspectedFileObject == null) {
-            if(current != null) {
+            if (current != null) {
                 inspectedFileObject = current;
                 inspectedFileChanged();
             }
         } else {
-            if(!inspectedFileObject.equals(current)) {
+            if (!inspectedFileObject.equals(current)) {
                 //changed
                 inspectedFileObject = current;
                 inspectedFileChanged();
             }
         }
     }
-    
+
     private void inspectedFileChanged() {
-        if(inspectedFileObject == null) {
+        if (inspectedFileObject == null) {
             LOGGER.log(Level.INFO, "inspectedFileObject set to null");
             setStatusText("No Inspected File");
             stateLabel.setText("No File");
@@ -219,7 +221,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     private FileObject getInspectedFile() {
         //try to find corresponding FileObject for the inspected document
-        if(pageModel == null) {
+        if (pageModel == null) {
             return null;
         }
         String inspectedURL = pageModel.getDocumentURL();
@@ -310,6 +312,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == match)) {
                     try {
                         manager.setSelectedNodes(new Node[]{match});
+                        LOGGER.log(Level.INFO, "Selected node set to {0}", match.getDisplayName());
                     } catch (PropertyVetoException propertyVetoException) {
                         Exceptions.printStackTrace(propertyVetoException);
                     }
@@ -325,12 +328,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      * @param result
      * @param offset
      */
-    public void refresh(HtmlParserResult result, int offset) {
+    public void setParserResult(HtmlParserResult result) {
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        refresh(new HtmlElementDescription(result.root(), file), offset);
+        refresh(new HtmlElementDescription(result.root(), file));
     }
 
-    private void refresh(final HtmlElementDescription description, final int offset) {
+    private void refresh(final HtmlElementDescription description) {
         final FileObject fileObject = description.getFileObject();
         final HtmlElementNode rootNode = getRootNode();
 
@@ -344,6 +347,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Merge",
                             new Object[]{fileObject, endTime - startTime});
+
+                    LOGGER.info("refresh() - same file, descriptions updated");
                 }
             };
             RP.post(r);
@@ -355,6 +360,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                     view.setRootVisible(false);
                     view.setAutoWaitCursor(false);
                     manager.setRootContext(new HtmlElementNode(description, HtmlNavigatorPanelUI.this, fileObject));
+                    LOGGER.info("refresh() - new file, set new explorer root node");
 
                     int expandDepth = -1;
 
@@ -373,6 +379,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             RP.post(r);
         }
 
+    }
+
+    public void setCaretOffset(final int offset) {
         if (offset != -1) {
             RP.post(new Runnable() {
                 @Override

@@ -41,66 +41,36 @@
  */
 package org.netbeans.modules.html.navigator;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import org.openide.nodes.Node;
-
 /**
+ * Allows to use the non-starndard hashCodes and equals in from the wrapped descriptions.
  *
  * @author marekfukala
  */
-public abstract class Description {
+public class DescriptionSetWrapper {
+    
+    private Description peer;
 
-    public static final int STATIC_NODE = 1;
-    public static final int DYNAMIC_NODE = 2;
-
-    public abstract int getType();
-
-    protected abstract String getElementPath();
-
-    protected abstract Map<String, String> getAttributes();
-
-    protected final int getAttributesHash() {
-        int hash = 11;
-        for (Entry<String, String> a : getAttributes().entrySet()) {
-            hash = 37 * hash + a.getKey().hashCode();
-            CharSequence value = a.getValue();
-            hash = 37 * hash + (value != null ? value.hashCode() : 0);
-        }
-        return hash;
+    public DescriptionSetWrapper(Description peer) {
+        this.peer = peer;
     }
 
-    final int hashCode2() {
-        int hash = 7;
-        hash = 41 * hash + getElementPath().hashCode();
-        hash = 41 * hash + getAttributesHash();
-        return hash;
-    }
-
-    final boolean equals2(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Description)) {
-            return false;
-        }
-        final Description other = (Description) obj;
-        if (!getElementPath().equals(other.getElementPath())) {
-            return false;
-        }
-        if ((getAttributesHash() != other.getAttributesHash())) {
-            return false;
-        }
-        return true;
+    public Description getPeer() {
+        return peer;
     }
 
     @Override
-    public String toString() {
-        return new StringBuilder()
-                .append(getClass().getSimpleName())
-                .append(getElementPath())
-                .append('/')
-                .append(getAttributesHash())
-                .toString();
+    public int hashCode() {
+        return peer.hashCode2();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof DescriptionSetWrapper)) {
+            return false;
+        }
+        DescriptionSetWrapper dsw = (DescriptionSetWrapper)obj;
+        return peer.equals2(dsw.getPeer());
+    }
+    
+    
 }
