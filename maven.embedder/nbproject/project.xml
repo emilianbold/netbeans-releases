@@ -200,6 +200,7 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.model</package>
                 <package>org.apache.maven.model.building</package>
                 <package>org.apache.maven.model.io</package>
+                <package>org.apache.maven.model.io.xpp3</package>
                 <package>org.apache.maven.model.resolution</package>
                 <package>org.apache.maven.plugin</package>
                 <package>org.apache.maven.profiles</package>
