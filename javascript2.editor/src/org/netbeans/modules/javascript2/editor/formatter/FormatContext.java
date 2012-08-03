@@ -79,11 +79,13 @@ public final class FormatContext {
 
     private final boolean embedded;
 
-    private final List<LineWrap> currentLineWraps = new ArrayList<LineWrap>();
+    private LineWrap lastLineWrap;
 
     private int indentationLevel;
 
     private int offsetDiff;
+
+    private int currentLineStart;
 
     public FormatContext(Context context, Snapshot snapshot) {
         this.context = context;
@@ -147,16 +149,21 @@ public final class FormatContext {
         }
     }
 
-    public void addLineWrap(FormatToken token, int segmentLength) {
-        currentLineWraps.add(new LineWrap(token, offsetDiff, segmentLength));
+
+    public void setLastLineWrap(LineWrap lineWrap) {
+        this.lastLineWrap = lineWrap;
     }
 
-    public List<LineWrap> getLineWraps() {
-        return currentLineWraps;
+    public LineWrap getLastLineWrap() {
+        return lastLineWrap;
     }
 
-    public void clearLineWraps() {
-        currentLineWraps.clear();
+    public int getCurrentLineStart() {
+        return currentLineStart;
+    }
+
+    public void setCurrentLineStart(int currentLineStart) {
+        this.currentLineStart = currentLineStart;
     }
 
     public int getIndentationLevel() {
@@ -368,7 +375,7 @@ public final class FormatContext {
 
         private final int segmentLength;
 
-        private LineWrap(FormatToken token, int offsetDiff, int segmentLength) {
+        public LineWrap(FormatToken token, int offsetDiff, int segmentLength) {
             this.token = token;
             this.offsetDiff = offsetDiff;
             this.segmentLength = segmentLength;
