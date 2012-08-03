@@ -44,6 +44,7 @@ package org.netbeans.modules.ods.ui.dashboard;
 
 import org.netbeans.modules.ods.ui.project.DetailsAction;
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,7 +80,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
              return Utilities.getMyProjects(uiServer, force);
         } catch (ODSException ex) {
             Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.WARNING, uiServer.getUrl().toString(), ex);
-            return null;
+            return Collections.<ProjectHandle<ODSProject>>emptyList();
         }
     }
 
