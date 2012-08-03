@@ -81,6 +81,8 @@ import javax.swing.text.JTextComponent;
 import org.codehaus.plexus.util.StringUtils;
 import org.jdom.Verifier;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.TestChecker;
@@ -102,6 +104,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
@@ -235,6 +239,7 @@ public class ActionMappings extends javax.swing.JPanel {
         menu.add(new SkipTestsAction(area));
         menu.add(new DebugMavenAction(area));
         menu.add(new EnvVarAction(area));
+        menu.add(createJdkSubmenu(area));
         menu.add(createGlobalVarSubmenu(area));
         if (project != null) {
             menu.add(new PluginPropertyAction(area, goalsField, project));
@@ -1110,6 +1115,49 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
         return menu;
     }
+    
+    @Messages("ActionMappings.jdkVar=Use JDK for Maven build")
+    private static JMenu createJdkSubmenu(JTextComponent area) {
+        JMenu menu = new JMenu();
+        menu.setText(ActionMappings_jdkVar());
+        boolean hasAny = false;
+        for (JavaPlatform platform : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
+            hasAny = true;
+            if (platform.getInstallFolders().size() > 0) {
+                menu.add(new JdkAction(area, platform.getDisplayName(), platform.getInstallFolders().iterator().next()));
+            }
+        }
+        if (!hasAny) {
+            menu.setEnabled(false);
+        }
+        return menu;
+    }
+    
+    static class JdkAction extends AbstractAction {
+        private JTextComponent area;
+        private final String value;
+
+        JdkAction(JTextComponent area, String displayName, FileObject value) {
+            putValue(Action.NAME, displayName); //NOI18N
+            this.area = area;
+            this.value = FileUtil.toFile(value).getAbsolutePath();
+        }
+
+        @Override public void actionPerformed(ActionEvent e) {
+            String props = area.getText();
+            String sep = "\n";//NOI18N
+            if (props.endsWith("\n") || props.trim().length() == 0) {//NOI18N
+                sep = "";//NOI18N
+            }
+            String val = "Env.JAVA_HOME=" + value;
+            props = props + sep + val;
+            area.setText(props);
+            area.setSelectionStart(props.length() - val.length()); //NOI18N
+            area.setSelectionEnd(props.length());
+            area.requestFocusInWindow();
+        }
+    }    
+    
 
     @Messages("ActionMappings.fileExpressions=IDE Selection Expressions")
     private static JMenu createFileSelectionSubmenu(JTextComponent area) {

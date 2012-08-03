@@ -129,6 +129,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             }
             return NameCache.getManager().getString(sb.toString());
         }
+        
+        public CharSequence getLastNamePart() {
+            return nameParts.get(nameParts.size() - 1);
+        }        
     }
     
     ////////////////////////////////////////////////////////////////////////////

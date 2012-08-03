@@ -39,28 +39,55 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc;
+package org.netbeans.modules.maven.problems;
 
-import java.util.Map;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.parsing.api.Snapshot;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * enable project loading with custom build participation
+ * 
+ * @author mkleint
  */
-public class SDocDocumentationHolder extends JsDocumentationHolder {
 
-    private final Map<Integer, SDocComment> blocks;
+//NOT used, executing build participants is fairly dangerous
+class EnableParticipantsBuildAction extends AbstractAction {
+    
+    public static final String NAMESPACE = "http://www.netbeans.org/ns/maven-build-participants/1"; 
+    public static final String ROOT = "participants";
+    public static final String ENABLED = "enabled";
+    
+    private final NbMavenProjectImpl project;
 
-    public SDocDocumentationHolder(Snapshot snapshot) {
-        super(snapshot);
-        blocks = SDocParser.parse(snapshot);
+    public EnableParticipantsBuildAction(NbMavenProjectImpl nbproject) {
+        super("Enable Build Participants");
+        this.project = nbproject;
     }
 
     @Override
-    public Map getCommentBlocks() {
-        return blocks;
+    public void actionPerformed(ActionEvent e) {
+        
+        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        Element el = XMLUtil.createDocument(ROOT, NAMESPACE, null, null).getDocumentElement();
+        el.appendChild(el.getOwnerDocument().createElementNS(NAMESPACE, ENABLED));
+        aux.putConfigurationFragment(el, true);
     }
+    
+    public static boolean isEnabled(AuxiliaryConfiguration aux) {
+        Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, true);
+        if (el != null) {
+            NodeList nl = el.getElementsByTagNameNS(NAMESPACE, ENABLED);
+            if (nl != null) {
+                return nl.getLength() == 1;
+            }
+        }
+        return false;
 
+    }
+    
 }
