@@ -68,7 +68,8 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Nickolay Dalmatov
  * @author Vladimir Kvashin
  */
-public final class MemoryCache {    
+public final class MemoryCache {
+    private static final boolean WEAK_REF = false && CndTraceFlags.WEAK_REFS_HOLDERS;
     private static final boolean STATISTIC = false;
     private static final int DEFAULT_SLICE_CAPACITY;
     private static final int SLICE_SIZE;
@@ -167,7 +168,7 @@ public final class MemoryCache {
     public void put(Key key, Persistent obj) {
         Slice s = cache.getSilce(key);
         Reference<Persistent> value;
-        if (false && CndTraceFlags.WEAK_REFS_HOLDERS && key.getBehavior() != Key.Behavior.LargeAndMutable) {
+        if (WEAK_REF && key.getBehavior() != Key.Behavior.LargeAndMutable) {
             value = new WeakValue<Persistent>(obj, key, refQueue);
         } else {
             value = new SoftValue<Persistent>(obj, key, refQueue);
@@ -205,7 +206,7 @@ public final class MemoryCache {
             }
             if (prevPersistent == null) {
                 Reference<Persistent> value;
-                if (CndTraceFlags.WEAK_REFS_HOLDERS && key.getBehavior() != Key.Behavior.LargeAndMutable) {
+                if (WEAK_REF && key.getBehavior() != Key.Behavior.LargeAndMutable) {
                     value = new WeakValue<Persistent>(obj, key, refQueue);
                 } else {
                     value = new SoftValue<Persistent>(obj, key, refQueue);
