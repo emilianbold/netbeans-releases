@@ -53,7 +53,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=WebBrowserImplProvider.JFXRuntimePathProvider.class, position=10000)
 public class DefaultJFXRuntimeProvider implements WebBrowserImplProvider.JFXRuntimePathProvider {
 
-    private static final String KEY = "jfxruntimepah"; //NOI18N
+    private static final String KEY = "jfxruntimepath"; //NOI18N
     @Override
     public String getJFXRuntimePath() {
         return getPreferences().get( KEY, null );
