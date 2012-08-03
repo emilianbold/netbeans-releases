@@ -44,6 +44,7 @@ package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
+import java.util.Random;
 
 import org.netbeans.modules.netserver.SocketFramework;
 

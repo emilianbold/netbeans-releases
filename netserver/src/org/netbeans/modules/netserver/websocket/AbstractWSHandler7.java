@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.util.Random;
 
 import org.netbeans.modules.netserver.SocketFramework;
 
@@ -87,6 +88,7 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
     
     AbstractWSHandler7(T t){
         super( t );
+        myRandom = new Random( hashCode() );
     }
     
     /* (non-Javadoc)
@@ -180,6 +182,16 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
         else {
             return maskedMessage;
         }
+    }
+    
+    /*
+     * Method could be used in {@link #createTextFrame(String)} for setting 
+     * mask ( currently trivial static mask is used ) instead of {@link #isClient()}
+     * method usage and for 16 bit sec-websocket key in initial WS client request   
+     * 
+     */
+    protected Random getRandom(){
+        return myRandom;
     }
     
     private boolean readFinalFrame( ByteBuffer byteBuffer,
@@ -338,5 +350,7 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
     protected abstract void readDelegate( byte[] bytes , int dataType ) ;
     
     protected abstract boolean verifyMask( boolean hasMask ) throws IOException ;
+    
+    private Random myRandom;
     
 }
