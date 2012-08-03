@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.extdoc;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
+import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocDescriptionElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElement;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
 
@@ -70,32 +72,50 @@ public class ExtDocComment extends JsComment {
 
    @Override
     public List<String> getSummary() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<String> summaries = new LinkedList<String>();
+        for (ExtDocElement sDocElement : getTagsForType(ExtDocElementType.DESCRIPTION)) {
+            summaries.add(((ExtDocDescriptionElement) sDocElement).getDescription());
+        }
+        return summaries;
     }
 
     @Override
     public List<String> getSyntax() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return Collections.<String>emptyList();
     }
 
     @Override
     public DocParameter getReturnType() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        for (ExtDocElement sDocElement : getTagsForTypes(
+                new ExtDocElementType[]{ExtDocElementType.TYPE, ExtDocElementType.RETURN})) {
+            return (DocParameter) sDocElement;
+        }
+        return null;
     }
 
     @Override
     public List<DocParameter> getParameters() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<DocParameter> params = new LinkedList<DocParameter>();
+        for (ExtDocElement extDocElement : getTagsForTypes(
+                new ExtDocElementType[]{ExtDocElementType.CFG, ExtDocElementType.PARAM})) {
+            params.add((DocParameter) extDocElement);
+        }
+        return params;
     }
 
     @Override
     public boolean isDeprecated() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return false;
     }
 
     @Override
     public Set<JsModifier> getModifiers() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        Set<JsModifier> modifiers = EnumSet.noneOf(JsModifier.class);
+        for (ExtDocElement extDocElement : getTagsForTypes(new ExtDocElementType[]{
+                ExtDocElementType.PRIVATE, ExtDocElementType.STATIC})) {
+            modifiers.add(JsModifier.fromString(extDocElement.getType().toString().substring(1)));
+        }
+        return modifiers;
     }
 
     private void initComment(List<ExtDocElement> elements) {
@@ -133,9 +153,9 @@ public class ExtDocComment extends JsComment {
     }
 
     /**
-     * Gets list of {@code JsDocTag}s of given types.
+     * Gets list of {@code ExtDocTag}s of given types.
      *
-     * @return list of {@code JsDocTag}s
+     * @return list of {@code ExtDocTag}s
      */
     public List<? extends ExtDocElement> getTagsForTypes(ExtDocElementType[] types) {
         List<ExtDocElement> list = new LinkedList<ExtDocElement>();
