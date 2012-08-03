@@ -110,7 +110,7 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx("NetbeansDebuggerBreakpointLineJavaScript"); // NOI18N
+        return new org.openide.util.HelpCtx("NetbeansDebuggerLineBreakpointJavaScript"); // NOI18N
     }
     
     private class CustomizerController implements Controller {
