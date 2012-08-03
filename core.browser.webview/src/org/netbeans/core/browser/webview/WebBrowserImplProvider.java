@@ -88,9 +88,9 @@ public class WebBrowserImplProvider {
             }
         } catch(Throwable ex)  {
             log.log(Level.INFO, "JavaFX runtime is too old - "
-                    + "minimum version required is 2.2.0b08", ex);            
+                    + "minimum version required is 2.2.0b20", ex);
             return new NoWebBrowserImpl("JavaFX runtime is too old - "
-                    + "minimum version required is 2.2.0b08");
+                    + "minimum version required is 2.2.0b20");
         }
         try {
             if (cl != null) {

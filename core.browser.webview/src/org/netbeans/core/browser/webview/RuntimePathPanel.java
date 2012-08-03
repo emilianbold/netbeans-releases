@@ -133,7 +133,7 @@ class RuntimePathPanel extends javax.swing.JPanel {
                 appendRT[0] = false;
                 WebBrowser browser = WebBrowserImplProvider.createBrowser( selection[0] );
                 if( null == browser || browser instanceof NoWebBrowserImpl ) {
-                    selection[0] = new File( selection[0], "rt" ); //NOI18N
+                    selection[0] = new File( selection[0], "jre" ); //NOI18N
                     browser = WebBrowserImplProvider.createBrowser( selection[0] );
                     appendRT[0] = true;
                 }
@@ -152,7 +152,7 @@ class RuntimePathPanel extends javax.swing.JPanel {
             return null;
         File runtimePath = chooser.getSelectedFile();
         if( appendRT[0] )
-            runtimePath = new File( runtimePath, "rt" ); //NOI18N
+            runtimePath = new File( runtimePath, "jre" ); //NOI18N
         return runtimePath;
     }
 
