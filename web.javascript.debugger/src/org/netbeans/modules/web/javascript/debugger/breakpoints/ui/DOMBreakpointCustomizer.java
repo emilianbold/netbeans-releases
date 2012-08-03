@@ -61,9 +61,9 @@ import org.openide.util.Utilities;
  */
 public class DOMBreakpointCustomizer extends javax.swing.JPanel implements ControllerProvider, HelpCtx.Provider {
 
-    private DOMBreakpoint db;
+    private final DOMBreakpoint db;
     private boolean createBreakpoint;
-    private CustomizerController controller;
+    private final CustomizerController controller;
     
     private static DOMBreakpoint createBreakpoint() {
         Node node = Utilities.actionsGlobalContext().lookup(Node.class);
@@ -235,7 +235,7 @@ public class DOMBreakpointCustomizer extends javax.swing.JPanel implements Contr
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx("NetbeansDebuggerBreakpointLineJavaScript"); // NOI18N
+        return new org.openide.util.HelpCtx("NetbeansDebuggerDOMBreakpointJavaScript"); // NOI18N
     }
     
     private class CustomizerController implements Controller {
