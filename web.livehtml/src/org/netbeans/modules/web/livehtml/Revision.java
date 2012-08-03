@@ -62,15 +62,21 @@ public final class Revision {
     private List<Change> changes;
     private List<Change> reformattedChanges;
     
+    private StringBuilder previewContent;
+    private StringBuilder reformattedPreviewContent;
+        
     private JSONArray stacktrace;
     private StringBuilder data;
-
+    
     @Deprecated
     public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data, String timeStamp, int index) {
         this.content = content;
         
         if (stacktrace != null) {
-            this.stacktrace = (JSONArray) JSONValue.parse(stacktrace.toString());
+            final Object object = JSONValue.parse(stacktrace.toString());
+            if (object instanceof JSONArray) {
+                this.stacktrace = (JSONArray) object;
+            }
         }
         
         this.changes = changes;
@@ -173,6 +179,34 @@ public final class Revision {
             }
         }
         return true;
+    }
+
+    public StringBuilder getPreviewContent() {
+        return previewContent;
+    }
+
+    public void setPreviewContent(StringBuilder previewContent) {
+        this.previewContent = previewContent;
+    }
+
+    public StringBuilder getReformattedPreviewContent() {
+        return reformattedPreviewContent;
+    }
+
+    public void setReformattedPreviewContent(StringBuilder reformattedPreviewContent) {
+        this.reformattedPreviewContent = reformattedPreviewContent;
+    }
+    
+    public StringBuilder resolvePreviewContent(boolean reformat) {
+        return reformat ? getReformattedPreviewContent() : getPreviewContent();
+    }
+
+    public void updatePreviewContent(StringBuilder previewContent, boolean reformat) {
+        if (reformat) {
+            setReformattedPreviewContent(reformattedPreviewContent);
+        } else {
+            setPreviewContent(previewContent);
+        }
     }
 
     @Override

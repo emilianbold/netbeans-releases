@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.web.livehtml.filter.groupscripts;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.livehtml.StackTrace;
 import org.netbeans.modules.web.livehtml.filter.RevisionFilter;
@@ -51,77 +50,56 @@ import org.netbeans.modules.web.livehtml.filter.RevisionFilter;
  *
  * @author petr-podzimek
  */
-public class GroupScriptsRevisionFilter implements RevisionFilter {
+public class StackTraceRevisionFilter implements RevisionFilter<JSONArray> {
 
-    private final StackTraceFilter stackTraceFilter;
-    private final boolean groupRevisions;
-    private final boolean ignoreWhiteSpaces;
-
-    public GroupScriptsRevisionFilter(StackTraceFilter stackTraceFilter, boolean groupRevisions, boolean ignoreWhiteSpaces) {
-        this.stackTraceFilter = stackTraceFilter;
-        this.groupRevisions = groupRevisions;
-        this.ignoreWhiteSpaces = ignoreWhiteSpaces;
-    }
-
-    public StackTraceFilter getStackTraceFilter() {
-        return stackTraceFilter;
-    }
-
-    public boolean isGroupRevisions() {
-        return groupRevisions;
-    }
-
-    public boolean isIgnoreWhiteSpaces() {
-        return ignoreWhiteSpaces;
-    }
-    
     @Override
-    public List<Object> filter(List<Object> objects) {
-        List<Object> filteredObjects = new ArrayList<Object>();
-        
-        boolean addAll = false;
-        for (Object object : objects) {
-            if (!addAll && getStackTraceFilter().match(object)) {
-                addAll = true;
-            }
-            if (addAll) {
-                filteredObjects.add(object);
-            }
-        }
-        return filteredObjects;
+    public JSONArray filter(JSONArray jsonArray) {
+        return jsonArray;
     }
 
     @Override
-    public boolean match(List<Object> objects1, List<Object> objects2) {
-        if (objects1 == null || objects2 == null) {
+    public boolean match(JSONArray jsonArray1, JSONArray jsonArray2) {
+        if (jsonArray1 == null || jsonArray2 == null) {
             return false;
         }
         
-        if (objects1.size() != objects2.size()) {
+        if (jsonArray1.size() != jsonArray2.size()) {
             return false;
         }
         
-        for (int i = 0; i < objects1.size(); i++) {
-            Object object1 = objects1.get(i);
-            Object object2 = objects2.get(i);
+        for (int i = 0; i < jsonArray1.size(); i++) {
+            Object object1 = jsonArray1.get(i);
+            Object object2 = jsonArray2.get(i);
             
             if (object1 instanceof JSONObject && object2 instanceof JSONObject) {
                 JSONObject jSONObject1 = (JSONObject) object1;
                 JSONObject jSONObject2 = (JSONObject) object2;
                 final Object script1 = jSONObject1.get(StackTrace.SCRIPT);
                 final Object script2 = jSONObject2.get(StackTrace.SCRIPT);
+                final Object function1 = jSONObject1.get(StackTrace.FUNCTION);
+                final Object function2 = jSONObject2.get(StackTrace.FUNCTION);
+                final Object lineNumber1 = jSONObject1.get(StackTrace.LINE_NUMBER);
+                final Object lineNumber2 = jSONObject2.get(StackTrace.LINE_NUMBER);
+                final Object columnNumber1 = jSONObject1.get(StackTrace.COLUMN_NUMBER);
+                final Object columnNumber2 = jSONObject2.get(StackTrace.COLUMN_NUMBER);
                 
-                if (script1 == null || script2 == null) {
-                    return script1 == script2;
-                }
-                
-                if (!script1.equals(script2)) {
+                if (!equals(script1, script2) ||
+                        !equals(function1, function2) ||
+                        !equals(lineNumber1, lineNumber2) || 
+                        !equals(columnNumber1, columnNumber2)) {
                     return false;
                 }
             }
         }
         
         return true;
+    }
+    
+    private boolean equals(Object object1, Object object2) {
+        if (object1 == null || object2 == null) {
+            return object1 == object2;
+        }
+        return object1.equals(object2);
     }
     
 }

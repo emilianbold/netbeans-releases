@@ -734,7 +734,7 @@ public class Diff {
     private boolean findBestMatch(Match m, List<OpenTag> v2) {
         int singleOccurance = -1;
         for (int i2 = 0; i2 < v2.size(); i2++) {
-            OpenTag openTag = (OpenTag)v2.get(i2);
+            OpenTag openTag = v2.get(i2);
             if (!openTag.name().equals(m.getT1().name())) {
                 continue;
             }
@@ -756,7 +756,7 @@ public class Diff {
         }
         if (singleOccurance >= 0) {
             // there is only single tag of this name so there is some match:
-            m.matched((OpenTag)v2.get(singleOccurance), singleOccurance, Match.Type.WEAK);
+            m.matched(v2.get(singleOccurance), singleOccurance, Match.Type.WEAK);
             return true;
         }
         return false;

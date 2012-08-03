@@ -41,9 +41,10 @@
  */
 package org.netbeans.modules.web.livehtml.filter;
 
-import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceFilter;
 import java.util.ArrayList;
 import java.util.List;
+import org.json.simple.JSONObject;
+import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceFilter;
 
 /**
  *
@@ -62,9 +63,9 @@ public class OrStackTraceFilter implements StackTraceFilter {
     }
 
     @Override
-    public boolean match(Object object) {
+    public boolean match(JSONObject jsonObject) {
         for (StackTraceFilter stackTraceFilter : stackTraceFilters) {
-            if (stackTraceFilter.match(object)) {
+            if (stackTraceFilter.match(jsonObject)) {
                 return true;
             }
         }

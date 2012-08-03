@@ -41,15 +41,13 @@
  */
 package org.netbeans.modules.web.livehtml.filter;
 
-import java.util.List;
-
 /**
  *
  * @author petr-podzimek
  */
-public interface RevisionFilter {
+public interface RevisionFilter<T extends Object> {
     
-    List<Object> filter(List<Object> objects);
-    boolean match(List<Object> objects1, List<Object> objects2);
+    T filter(T t);
+    boolean match(T t1, T t2);
     
 }

@@ -39,45 +39,79 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.filter;
+package org.netbeans.modules.web.livehtml.filter.groupscripts;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceFilter;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.netbeans.modules.web.livehtml.StackTrace;
+import org.netbeans.modules.web.livehtml.filter.RevisionFilter;
 
 /**
  *
  * @author petr-podzimek
  */
-public class AndStackTraceFilter implements StackTraceFilter {
-    
-    private List<StackTraceFilter> stackTraceFilters = new ArrayList<StackTraceFilter>();
+public class ScriptRevisionFilter implements RevisionFilter<JSONArray> {
 
-    public AndStackTraceFilter(List<StackTraceFilter> stackTraceFilters) {
-        if (stackTraceFilters != null) {
-            for (StackTraceFilter stackTraceFilter : stackTraceFilters) {
-                this.stackTraceFilters.add(stackTraceFilter);
-            }
-        }
+    private final StackTraceFilter stackTraceFilter;
+
+    public ScriptRevisionFilter(StackTraceFilter stackTraceFilter) {
+        this.stackTraceFilter = stackTraceFilter;
+    }
+
+    public StackTraceFilter getStackTraceFilter() {
+        return stackTraceFilter;
     }
 
     @Override
-    public boolean match(Object object) {
-        if (stackTraceFilters.isEmpty()) {
-            return true;
-        }
-        for (StackTraceFilter stackTraceFilter : stackTraceFilters) {
-            if (!stackTraceFilter.match(object)) {
-                return false;
+    public JSONArray filter(JSONArray jsonArray) {
+        JSONArray filteredJSONArray = new JSONArray();
+        
+        boolean addAll = false;
+        for (Object object : jsonArray) {
+            if (object instanceof JSONObject) {
+                JSONObject jSONObject = (JSONObject) object;
+                if (!addAll && getStackTraceFilter().match(jSONObject)) {
+                    addAll = true;
+                }
+                if (addAll) {
+                    filteredJSONArray.add(object);
+                }
             }
         }
-        return true;
+        return filteredJSONArray;
     }
-    
-    public void addStackTraceFilter(StackTraceFilter stackTraceFilter) {
-        if (stackTraceFilter != null) {
-            stackTraceFilters.add(stackTraceFilter);
+
+    @Override
+    public boolean match(JSONArray jsonArray1, JSONArray jsonArray2) {
+        if (jsonArray1 == null || jsonArray2 == null) {
+            return false;
         }
+        
+        if (jsonArray1.size() != jsonArray2.size()) {
+            return false;
+        }
+        
+        for (int i = 0; i < jsonArray1.size(); i++) {
+            Object object1 = jsonArray1.get(i);
+            Object object2 = jsonArray2.get(i);
+            
+            if (object1 instanceof JSONObject && object2 instanceof JSONObject) {
+                JSONObject jSONObject1 = (JSONObject) object1;
+                JSONObject jSONObject2 = (JSONObject) object2;
+                final Object script1 = jSONObject1.get(StackTrace.SCRIPT);
+                final Object script2 = jSONObject2.get(StackTrace.SCRIPT);
+                
+                if (script1 == null || script2 == null) {
+                    return script1 == script2;
+                }
+                
+                if (!script1.equals(script2)) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
     }
     
 }

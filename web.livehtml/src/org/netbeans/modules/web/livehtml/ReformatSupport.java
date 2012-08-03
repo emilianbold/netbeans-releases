@@ -42,7 +42,14 @@
 package org.netbeans.modules.web.livehtml;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
@@ -54,6 +61,9 @@ import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
  * @author petr-podzimek
  */
 public class ReformatSupport {
+    public static final String SCRIPT_TAG = "script";
+    public static final String TEXT_JAVASCRIPT_MIME_TYPE = "text/javascript";
+    public static final String SPACE = " ";
     
     public static StringBuilder reformat(HtmlSource htmlSource, OpenTag openTag, List<Change> changes) {
         StringBuilder sb = new StringBuilder(htmlSource.getSourceCode());
@@ -127,5 +137,106 @@ public class ReformatSupport {
         }
         
     }
+    
+    /**
+     * Replaces source text with spaces. Position and length of spaces is defined by {@link Map> of indexes and lengths.
+     * @param indexesToReplace {@link Map} defines position and length of desired spaces. Key of map is begin index of space and value of map is length of space (number of spaces). Can be null.
+     * @param text source of text used to replace. Can be null.
+     * @return text replaced by spaces. Can be null when any parameter is null.
+     */
+    public static StringBuilder replaceBySpaces(Map<Integer, Integer> indexesToReplace, StringBuilder text) {
+        if (indexesToReplace == null || text == null) {
+            return null;
+        }
+        
+        for (Map.Entry<Integer, Integer> entry : indexesToReplace.entrySet()) {
+            final Integer start = entry.getKey();
+            final Integer length = entry.getValue();
 
+            String source = text.substring(start, start + length);
+            String spaces = source.replaceAll(".", SPACE);
+
+            text.replace(start, start + length, spaces);
+        }
+
+        return text;
+    }
+    
+    /**
+     * Gets indexes and lengths of JavaScript code in content of Document.<br>
+     * Locate of "script" tags and JavaScript call in tag attributes is implemented.
+     * @param document Document instance to process. Can be null.
+     * @return content of Document without JavaScript. Returns null when input parameter is null or any error occurs.
+     */
+    public static Map<Integer, Integer> getIndexesOfJavaScript(Document document) {
+        if (document == null) {
+            return null;
+        }
+        
+        final TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get(document);
+        final TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        
+        Map<Integer, Integer> indexesToReplace = new HashMap<Integer, Integer>();
+        
+        while (tokenSequence.moveNext()) {
+            final TokenSequence<?> embedded = tokenSequence.embedded();
+            if (embedded == null) { // Processing NON-EMBEDED tokens
+                final Token token = tokenSequence.token();
+                if (token != null) {
+                    final CharSequence text = token.text();
+                    if (SCRIPT_TAG.equals(text)) {
+                        int start = tokenSequence.offset() - 1; // tag begins 1 characer before "script"
+                        if (searchFor("</", tokenSequence) != null) {
+                            final Token script = searchFor(SCRIPT_TAG, tokenSequence);
+                            if (script != null) {
+                                int length = (tokenSequence.offset() + token.length() + 1) - start;
+                                indexesToReplace.put(start, length);
+                                continue;
+                            }
+                        }
+                    }
+                }
+                
+            } else { // Processing EMBEDED tokens
+                final Language<?> innerLanguage = embedded.languagePath().innerLanguage();
+                if (innerLanguage != null && TEXT_JAVASCRIPT_MIME_TYPE.equals(innerLanguage.mimeType())) {
+                    embedded.moveNext();
+                    int start = embedded.offset();
+                    for (int i = 0; i < embedded.tokenCount(); i++) {
+                        embedded.moveNext();
+                    }
+                    final Token<?> token = embedded.token();
+                    if (token != null) {
+                        int length = embedded.offset() + token.length() - start;
+                        indexesToReplace.put(start, length);
+                    }
+                }
+            }
+        }
+        
+        return indexesToReplace;
+    }
+    
+    private static Token searchFor(String tokenText, TokenSequence tokenSequence) {
+        if (tokenText == null || tokenText.isEmpty() || tokenSequence == null) {
+            return null;
+        }
+        
+        int i = 0;
+        
+        while (tokenSequence.moveNext() && i < 100) {
+            final Token token = tokenSequence.token();
+            if (token != null) {
+                final CharSequence text = token.text();
+                if (tokenText.equals(text)) {
+                    return token;
+                }
+            }
+            
+            i += 1;
+        }
+        
+        return null;
+    }
+    
 }

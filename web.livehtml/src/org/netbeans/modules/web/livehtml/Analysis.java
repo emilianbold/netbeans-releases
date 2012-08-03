@@ -81,12 +81,16 @@ public class Analysis implements Comparable<Analysis> {
     public static final String STACKTRACE = "stacktrace";
     public static final String DATA = "data";
     
+    public static final String NO_JS_CONTENT = "no_js_content";
+    public static final String FORMATTED_NO_JS_CONTENT = "formatted_no_js_content";
+    
     private URL sourceUrl;
     private Date created = new Date();
     private Date finished = null;
 
-    private File root;
+    private File rootDirectory;
     private List<String> timeStamps = new ArrayList<String>();
+    
     private String dataToStore = null;
     private Diff lastDiff;
     private boolean lastChangeWasNotReal = false;
@@ -97,12 +101,15 @@ public class Analysis implements Comparable<Analysis> {
         this(AnalysisStorage.getInstance().getChangesStorageRoot(AnalysisStorage.getInstance().getStorageRoot()));
     }
 
-    protected Analysis(File root) {
-        this.root = root;
+    protected Analysis(File rootDirectory) {
+        this.rootDirectory = rootDirectory;
     }
 
-    protected void store(String type, String timestamp, String content) {
-        File storeFile = new File(getRoot(), timestamp + "." + type);
+    public void store(String type, String timestamp, String content) {
+        if (content == null) {
+            return;
+        }
+        File storeFile = new File(getRootDirectory(), timestamp + "." + type);
         storeFile.deleteOnExit();
         try {
             assert !storeFile.exists() : "File should not exist yet! storeFile=" + storeFile;
@@ -131,6 +138,7 @@ public class Analysis implements Comparable<Analysis> {
         StringBuilder beautifiedDiff = read(BDIFF, timeStamp);
         StringBuilder beautifiedContent = read(BCONTENT, timeStamp);
         
+        //TODO: Rewrite this part of code to read data of current timesamp only!
         if (changeIndex > 0) {
             stacktrace = read(STACKTRACE, getTimeStamps().get(changeIndex - 1));
             data = read(DATA, getTimeStamps().get(changeIndex - 1));
@@ -145,12 +153,14 @@ public class Analysis implements Comparable<Analysis> {
                 Change.decodeFromJSON(beautifiedDiff == null ? null : beautifiedDiff.toString()), 
                 stacktrace,
                 data);
+        revision.setPreviewContent(read(NO_JS_CONTENT, timeStamp));
+        revision.setReformattedPreviewContent(read(FORMATTED_NO_JS_CONTENT, timeStamp));
         
         return revision;
     }
     
-    protected StringBuilder read(String type, String timestamp) {
-        File storeFile = new File(getRoot(), timestamp + "." + type);
+    public StringBuilder read(String type, String timestamp) {
+        File storeFile = new File(getRootDirectory(), timestamp + "." + type);
         if (!storeFile.exists()) {
             return null;
         }
@@ -185,7 +195,7 @@ public class Analysis implements Comparable<Analysis> {
         return finished;
     }
 
-    protected void makeFinished() {
+    public void makeFinished() {
         this.finished = new Date();
     }
 
@@ -264,8 +274,8 @@ public class Analysis implements Comparable<Analysis> {
         this.lastChangeWasNotReal = lastChangeWasNotReal;
     }
 
-    protected File getRoot() {
-        return root;
+    protected File getRootDirectory() {
+        return rootDirectory;
     }
 
     private Diff getLastDiff() {
@@ -295,6 +305,10 @@ public class Analysis implements Comparable<Analysis> {
     }
 
     protected void storeDocumentVersion(final String timestamp, final String content, final String stackTrace, final boolean realChange) {
+        storeDocumentVersion(timestamp, content, stackTrace, getDataToStore(), realChange);
+    }
+
+    protected void storeDocumentVersion(final String timestamp, final String content, final String stackTrace, final String data, final boolean realChange) {
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -304,7 +318,6 @@ public class Analysis implements Comparable<Analysis> {
                     getTimeStamps().remove(getTimeStamps().size() - 1);
                     setLastChangeWasNotReal(false);
                 }
-                String data = getDataToStore();
                 if (realChange) {
                     setDataToStore(null);
                 } else {
@@ -361,7 +374,7 @@ public class Analysis implements Comparable<Analysis> {
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         } catch (Throwable t) {
-            throw new RuntimeException("Cannot parse " + getRoot().getAbsolutePath() + " [" + timestamp + "," + previousTimestamp + "]", t);
+            throw new RuntimeException("Cannot parse " + getRootDirectory().getAbsolutePath() + " [" + timestamp + "," + previousTimestamp + "]", t);
         }
     }
     

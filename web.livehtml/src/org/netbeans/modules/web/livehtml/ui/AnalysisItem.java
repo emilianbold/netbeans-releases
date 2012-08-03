@@ -96,31 +96,11 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
         return revisionsLabel.toString();
     }
 
-    private int toParentAnalysisRevisionIndex(int revisionIndex) {
-        if (revisionIndex < 0 || getFilteredAnalysis().getTimeStampsCount() <= revisionIndex) {
-            return -1;
-        }
-        final String timeStamp = getFilteredAnalysis().getTimeStamps().get(revisionIndex);
-        
-        if (timeStamp == null) {
-            return -1;
-        }
-        
-        for (int i = 0; i < getAnalysis().getTimeStamps().size(); i++) {
-            final String parentTimeStamp = getAnalysis().getTimeStamps().get(i);
-            if (timeStamp.equals(parentTimeStamp)) {
-                return i;
-            }
-        }
-        
-        return -1;
-    }
-    
     public String getRevisionDetailLabel(int selectedRevisionIndex) {
         StringBuilder revisionsLabel = new StringBuilder();
         
         if (filteredAnalysis != null) {
-            revisionsLabel.append(filteredAnalysis.getFilteredRevisionLabel(selectedRevisionIndex));
+            revisionsLabel.append(filteredAnalysis.getRevisionDetailLabel(selectedRevisionIndex));
         }
         
         return revisionsLabel.toString();
@@ -162,4 +142,24 @@ public class AnalysisItem implements Comparable<AnalysisItem> {
         return -resolveAnalysis().compareTo(o.resolveAnalysis());
     }
 
+    private Integer toParentAnalysisRevisionIndex(int revisionIndex) {
+        if (revisionIndex < 0 || getFilteredAnalysis().getTimeStampsCount() <= revisionIndex) {
+            return null;
+        }
+        final String timeStamp = getFilteredAnalysis().getTimeStamps().get(revisionIndex);
+        
+        if (timeStamp == null) {
+            return null;
+        }
+        
+        for (int i = 0; i < getAnalysis().getTimeStamps().size(); i++) {
+            final String parentTimeStamp = getAnalysis().getTimeStamps().get(i);
+            if (timeStamp.equals(parentTimeStamp)) {
+                return i;
+            }
+        }
+        
+        return null;
+    }
+    
 }

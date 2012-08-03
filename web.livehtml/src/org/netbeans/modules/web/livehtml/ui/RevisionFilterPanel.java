@@ -68,7 +68,6 @@ public abstract class RevisionFilterPanel<FA extends FilteredAnalysis> extends j
     }
 
     public abstract FA createFilteredAnalysis();
-    public abstract boolean canProcess(FilteredAnalysis filteredAnalysis);
     public abstract void setFilteredAnalysis(FA filteredAnalysis);
     
     /**
