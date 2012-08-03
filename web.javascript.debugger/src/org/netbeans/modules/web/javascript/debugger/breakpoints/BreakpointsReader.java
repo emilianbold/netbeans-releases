@@ -46,11 +46,11 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Set;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -63,6 +63,8 @@ public class BreakpointsReader implements Properties.Reader {
     
     private static final String DOM_NODE_PATH   = "domNodePath";                // NOI18N
     
+    private static final String EVENTS          = "events";                     // NOI18N
+    
     private static final String ENABED          = "enabled";                    // NOI18N
     private static final String GROUP_NAME      = "groupName";                  // NOI18N
 
@@ -72,6 +74,7 @@ public class BreakpointsReader implements Properties.Reader {
         return new String[] {
             LineBreakpoint.class.getName(),
             DOMBreakpoint.class.getName(),
+            EventsBreakpoint.class.getName(),
         };
     }
 
@@ -112,6 +115,16 @@ public class BreakpointsReader implements Properties.Reader {
             readGeneralProperties(properties, db);
             return db;
         }
+        else if (typeID.equals(EventsBreakpoint.class.getName())) {
+            EventsBreakpoint eb = new EventsBreakpoint();
+            Object[] events = properties.getArray(EVENTS, null);
+            if (events != null) {
+                for (Object event : events) {
+                    eb.addEvent((String) event);
+                }
+            }
+            return eb;
+        }
         else {
             return null;
         }
@@ -142,6 +155,13 @@ public class BreakpointsReader implements Properties.Reader {
             properties.setBoolean(Debugger.DOM_BREAKPOINT_ATTRIBUTE, db.isOnAttributeModification());
             properties.setBoolean(Debugger.DOM_BREAKPOINT_NODE, db.isOnNodeRemoval());
             writeGeneralProperties(properties, db);
+        }
+        else if (object instanceof EventsBreakpoint) {
+            EventsBreakpoint eb = (EventsBreakpoint) object;
+            
+            Set<String> events = eb.getEvents();
+            properties.setArray(EVENTS, events.toArray());
+            writeGeneralProperties(properties, eb);
         }
     }
     

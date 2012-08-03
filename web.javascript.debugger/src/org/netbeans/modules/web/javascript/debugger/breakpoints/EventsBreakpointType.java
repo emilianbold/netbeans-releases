@@ -43,8 +43,10 @@
  */
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.JComponent;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.LineBreakpointCustomizer;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.ui.EventsBreakpointCustomizer;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
@@ -54,7 +56,7 @@ import org.openide.util.NbBundle;
 @BreakpointType.Registration(displayName="#EventBreakpointTypeName")
 public class EventsBreakpointType extends BreakpointType {
     
-    private LineBreakpointCustomizer cust;
+    private Reference<EventsBreakpointCustomizer> customizerRef = new WeakReference<EventsBreakpointCustomizer>(null);
     
     /* (non-Javadoc)
      * @see org.netbeans.spi.debugger.ui.BreakpointType#getCategoryDisplayName()
@@ -69,16 +71,19 @@ public class EventsBreakpointType extends BreakpointType {
      */
     @Override
     public JComponent getCustomizer() {
-        if (cust == null) {
-            cust = new LineBreakpointCustomizer();
-        }
+        EventsBreakpointCustomizer cust = new EventsBreakpointCustomizer();
+        customizerRef = new WeakReference<EventsBreakpointCustomizer>(cust);
         return cust;
     }
 
     @Override
     public Controller getController() {
-        getCustomizer();
-        return cust.getController();
+        EventsBreakpointCustomizer cust = customizerRef.get();
+        if (cust != null) {
+            return cust.getController();
+        } else {
+            return null;
+        }
     }
     
     /* (non-Javadoc)
@@ -94,15 +99,6 @@ public class EventsBreakpointType extends BreakpointType {
      */
     @Override
     public boolean isDefault() {
-//        JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
-//        if (lastFocusedComponent == null) {
-//            return false;
-//        }
-//        FileObject fileObject = NbEditorUtilities.getFileObject(lastFocusedComponent.getDocument());
-//        if (fileObject == null) {
-//            return false;
-//        }
-//        return FileUtils.isPhpFile(fileObject);
         return false;
     }
 

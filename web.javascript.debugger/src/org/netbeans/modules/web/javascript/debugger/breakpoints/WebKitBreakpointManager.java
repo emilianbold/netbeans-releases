@@ -44,7 +44,9 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -81,6 +83,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         return new WebKitDOMBreakpointManager(wd, db);
     }
 
+    public static WebKitBreakpointManager create(Debugger d, EventsBreakpoint eb) {
+        return new WebKitEventsBreakpointManager(d, eb);
+    }
+    
     public abstract void add();
 
     public abstract void remove();
@@ -259,6 +265,81 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 if (theNode != null) {
                     removeBreakpoints();
                     addTo(theNode);
+                }
+            } else {
+                super.propertyChange(event);
+            }
+        }
+        
+    }
+    
+    private static final class WebKitEventsBreakpointManager extends WebKitBreakpointManager {
+        
+        private EventsBreakpoint eb;
+        private Map<String, org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint> bps;
+
+        public WebKitEventsBreakpointManager(Debugger d, EventsBreakpoint eb) {
+            super(d, eb);
+            this.eb = eb;
+        }
+
+        @Override
+        public void add() {
+            Set<String> events = eb.getEvents();
+            bps = new HashMap<String, org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint>(events.size());
+            for (String event : events) {
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
+                        d.addEventBreakpoint(event);
+                if (b != null) {
+                    bps.put(event, b);
+                }
+            }
+            
+        }
+
+        @Override
+        public void remove() {
+            if (bps == null) {
+                return ;
+            }
+            for (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b : bps.values()) {
+                d.removeLineBreakpoint(b);
+            }
+            bps = null;
+        }
+
+        @Override
+        public void propertyChange(final PropertyChangeEvent event) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        propertyChange(event);
+                    }
+                });
+                return ;
+            }
+            String propertyName = event.getPropertyName();
+            if (EventsBreakpoint.PROP_EVENTS.equals(propertyName) && bps != null) {
+                Object newValue = event.getNewValue();
+                Object oldValue = event.getOldValue();
+                if (newValue != null) {
+                    String newEvent = (String) newValue;
+                    org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
+                            d.addEventBreakpoint(newEvent);
+                    if (b != null) {
+                        bps.put(newEvent, b);
+                    }
+                } else if (oldValue != null) {
+                    String oldEvent = (String) oldValue;
+                    org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b =
+                            bps.remove(oldEvent);
+                    if (b != null) {
+                        d.removeEventBreakpoint(oldEvent);
+                    }
+                } else { // total refresh
+                    remove();
+                    add();
                 }
             } else {
                 super.propertyChange(event);

@@ -325,10 +325,16 @@ public final class Debugger {
     public static final String DOM_BREAKPOINT_NODE = "node-removed";
 
     // TODO: this method is used only internally so far and it needs to be revisisted
-    public void addEventBreakpoint(String event) {
+    public Breakpoint addEventBreakpoint(String event) {
         JSONObject params = new JSONObject();
         params.put("eventName", event);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setEventListenerBreakpoint", params));
+        if (resp != null) {
+            Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
+            currentBreakpoints.add(b);
+            return b;
+        }
+        return null;
     }
     
     // TODO: this method is used only internally so far and it needs to be revisisted

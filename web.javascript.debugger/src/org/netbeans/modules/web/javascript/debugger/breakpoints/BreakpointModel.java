@@ -100,7 +100,9 @@ public class BreakpointModel extends ViewModelSupport
         "LBL_DOMBreakpoint_on=DOM \"{0}\" on modifications of: {1}",
         "LBL_DOM_Subtree=subtree",
         "LBL_DOM_Attributes=attributes",
-        "LBL_DOM_Removal=removal"
+        "LBL_DOM_Removal=removal",
+        "# {0} - A list of event names",
+        "LBL_EventsBreakpoint_on=Event listener on: {0}"
     })
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
@@ -131,6 +133,12 @@ public class BreakpointModel extends ViewModelSupport
                 modifications.append(Bundle.LBL_DOM_Removal());
             }
             return Bundle.LBL_DOMBreakpoint_on(nodeName, modifications);
+        }
+        if (node instanceof EventsBreakpoint) {
+            EventsBreakpoint eb = (EventsBreakpoint) node;
+            String eventsStr = eb.getEvents().toString();
+            eventsStr = eventsStr.substring(1, eventsStr.length() - 1);
+            return Bundle.LBL_EventsBreakpoint_on(eventsStr);
         }
         throw new UnknownTypeException(node);
     }
