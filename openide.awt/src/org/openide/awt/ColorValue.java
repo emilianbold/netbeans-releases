@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.options.colors;
+package org.openide.awt;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -53,13 +53,13 @@ import org.openide.util.NbBundle;
  * Represents one color with some text description.
  *
  * @author Administrator
+ * @author S. Aubrecht
  */
 class ColorValue {
 
-    public static final ColorValue  CUSTOM_COLOR =
-            new ColorValue (loc ("Custom"), null); //NOI18N
+    static final ColorValue  CUSTOM_COLOR = new ColorValue (loc ("Custom"), null, false); //NOI18N
 
-    private static Map<Color, String> colorMap = new HashMap<Color, String>();
+    private static final Map<Color, String> colorMap = new HashMap<Color, String>();
     static {
         colorMap.put (Color.BLACK,      loc ("Black"));         //NOI18N
         colorMap.put (Color.BLUE,       loc ("Blue"));          //NOI18N
@@ -76,27 +76,39 @@ class ColorValue {
         colorMap.put (Color.YELLOW,     loc ("Yellow"));        //NOI18N
     }
     
-    String text;
-    Color color;
+    final String text;
+    final Color color;
+    final boolean isCustom;
 
-    ColorValue (Color color) {
-        this.color = color;
-        text = colorMap.get (color);
-        if (text != null) return;
-        StringBuffer sb = new StringBuffer ();
-        sb.append ('[').append (color.getRed ()).
-            append (',').append (color.getGreen ()).
-            append (',').append (color.getBlue ()).
-            append (']');
-        text = sb.toString ();
+    static String toText( Color color ) {
+        String text = colorMap.get( color );
+        if( null == text && null != color ) {
+            StringBuffer sb = new StringBuffer ();
+            sb.append ('[').append (color.getRed ()).
+                append (',').append (color.getGreen ()).
+                append (',').append (color.getBlue ()).
+                append (']');
+            text = sb.toString ();
+        }
+        return text;
     }
 
-    ColorValue (String text, Color color) {
+    ColorValue (Color color, boolean custom) {
+        this(toText( color ), color, custom);
+    }
+
+    ColorValue (String text, Color color, boolean custom) {
         this.text = text;
         this.color = color;
+        this.isCustom = custom;
+    }
+
+    @Override
+    public String toString() {
+        return text;
     }
     
     private static String loc (String key) {
-        return NbBundle.getMessage (ColorComboBoxSupport.class, key);
+        return NbBundle.getMessage (ColorValue.class, key);
     }
 }

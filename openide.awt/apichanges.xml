@@ -50,6 +50,19 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="ColorComboBox">
+      <api name="awt"/>
+      <summary>ColorComboBox for color selection.</summary>
+      <version major="7" minor="50"/>
+      <date day="3" month="8" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          There's a new class ColorComboBox that can be used as color picker.
+      </description>
+      <class package="org.openide.awt" name="ColorComboBox"/>
+      <issue number="216013"/>
+    </change>
     <change id="QuickSearch.alwaysShown">
       <api name="awt"/>
       <summary>QuickSearch allows to customize of whether the quick search field should always be shown, or not.</summary>

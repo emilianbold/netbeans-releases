@@ -42,61 +42,52 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.options.colors;
+package org.openide.awt;
 
-import java.awt.Color;
-import java.util.HashMap;
-import java.util.Map;
-import org.openide.util.NbBundle;
+import java.awt.Component;
+import javax.swing.*;
+import javax.swing.plaf.UIResource;
+
 
 /**
- * Represents one color with some text description.
+ * Renderer for color JComboBox.
  *
- * @author Administrator
+ * @author S. Aubrecht
  */
-class ColorValue {
+class ColorComboBoxRendererWrapper implements ListCellRenderer, UIResource {
 
-    public static final ColorValue  CUSTOM_COLOR =
-            new ColorValue (loc ("Custom"), null); //NOI18N
+    private final ListCellRenderer renderer;
 
-    private static Map<Color, String> colorMap = new HashMap<Color, String>();
-    static {
-        colorMap.put (Color.BLACK,      loc ("Black"));         //NOI18N
-        colorMap.put (Color.BLUE,       loc ("Blue"));          //NOI18N
-        colorMap.put (Color.CYAN,       loc ("Cyan"));          //NOI18N
-        colorMap.put (Color.DARK_GRAY,  loc ("Dark_Gray"));     //NOI18N
-        colorMap.put (Color.GRAY,       loc ("Gray"));          //NOI18N
-        colorMap.put (Color.GREEN,      loc ("Green"));         //NOI18N
-        colorMap.put (Color.LIGHT_GRAY, loc ("Light_Gray"));    //NOI18N
-        colorMap.put (Color.MAGENTA,    loc ("Magenta"));       //NOI18N
-        colorMap.put (Color.ORANGE,     loc ("Orange"));        //NOI18N
-        colorMap.put (Color.PINK,       loc ("Pink"));          //NOI18N
-        colorMap.put (Color.RED,        loc ("Red"));           //NOI18N
-        colorMap.put (Color.WHITE,      loc ("White"));         //NOI18N
-        colorMap.put (Color.YELLOW,     loc ("Yellow"));        //NOI18N
-    }
-    
-    String text;
-    Color color;
-
-    ColorValue (Color color) {
-        this.color = color;
-        text = colorMap.get (color);
-        if (text != null) return;
-        StringBuffer sb = new StringBuffer ();
-        sb.append ('[').append (color.getRed ()).
-            append (',').append (color.getGreen ()).
-            append (',').append (color.getBlue ()).
-            append (']');
-        text = sb.toString ();
+    ColorComboBoxRendererWrapper (JComboBox comboBox) {
+        this.renderer = comboBox.getRenderer();
+        if( renderer instanceof ColorComboBoxRendererWrapper ) {
+            throw new IllegalStateException("Custom renderer is already initialized."); //NOI18N
+        }
+        comboBox.setRenderer( this );
     }
 
-    ColorValue (String text, Color color) {
-        this.text = text;
-        this.color = color;
+    @Override
+    public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
+        Component res = renderer.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
+        if( res instanceof JLabel ) {
+            JLabel label = ( JLabel ) res;
+            int height = Math.max( res.getPreferredSize().height - 4, 4 );
+            Icon icon = null;
+            if( value instanceof ColorValue ) {
+                ColorValue color = ( ColorValue ) value;
+                if( value == ColorValue.CUSTOM_COLOR ) {
+                    icon = null;
+                } else {
+                    icon = new ColorIcon( color.color, height );
+                }
+                label.setText( color.text );
+            } else {
+                icon = null;
+            }
+            label.setIcon( icon );
+        }
+        return res;
     }
-    
-    private static String loc (String key) {
-        return NbBundle.getMessage (ColorComboBoxSupport.class, key);
-    }
+
+
 }
