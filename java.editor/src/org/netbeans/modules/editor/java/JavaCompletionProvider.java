@@ -557,7 +557,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void resolveDocumentation(CompilationController controller) throws IOException {            
+        private void resolveDocumentation(CompilationController controller) throws IOException {
             controller.toPhase(Phase.RESOLVED);
             Element el = null;
             if (element != null) {
@@ -2749,7 +2749,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final boolean enclStatic = enclClass != null && enclClass.getModifiers().contains(Modifier.STATIC);
             final boolean ctxStatic = enclClass != null && (tu.isStaticContext(scope) || (env.getPath().getLeaf().getKind() == Tree.Kind.BLOCK && ((BlockTree)env.getPath().getLeaf()).isStatic()));
             final Collection<? extends Element> illegalForwardRefs = env.getForwardReferences();
-            final ExecutableElement method = scope.getEnclosingMethod();
+            final ExecutableElement method = scope.getEnclosingMethod() != null && scope.getEnclosingMethod().getEnclosingElement() == enclClass ? scope.getEnclosingMethod() : null;
             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
                     boolean isStatic = ctxStatic || (t != null && t.getKind() == TypeKind.DECLARED && ((DeclaredType)t).asElement() != enclClass && enclStatic);
