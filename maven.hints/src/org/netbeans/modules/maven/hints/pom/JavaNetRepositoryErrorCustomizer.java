@@ -93,15 +93,12 @@ public class JavaNetRepositoryErrorCustomizer extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jRadioButton1 = new JRadioButton();
         buttonGroup1 = new ButtonGroup();
         rbAny = new JRadioButton();
         rbSelected = new JRadioButton();
         jScrollPane1 = new JScrollPane();
         taSelected = new JTextArea();
         jLabel1 = new JLabel();
-
-        Mnemonics.setLocalizedText(jRadioButton1, NbBundle.getMessage(JavaNetRepositoryErrorCustomizer.class, "JavaNetRepositoryErrorCustomizer.jRadioButton1.text")); // NOI18N
 
         buttonGroup1.add(rbAny);
         Mnemonics.setLocalizedText(rbAny, NbBundle.getMessage(JavaNetRepositoryErrorCustomizer.class, "JavaNetRepositoryErrorCustomizer.rbAny.text")); // NOI18N
@@ -185,7 +182,6 @@ public class JavaNetRepositoryErrorCustomizer extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private ButtonGroup buttonGroup1;
     private JLabel jLabel1;
-    private JRadioButton jRadioButton1;
     private JScrollPane jScrollPane1;
     private JRadioButton rbAny;
     private JRadioButton rbSelected;
