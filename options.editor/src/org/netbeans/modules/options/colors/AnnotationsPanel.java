@@ -6,13 +6,12 @@
 
 package org.netbeans.modules.options.colors;
 
-import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +33,8 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
+import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -42,7 +43,7 @@ import org.openide.util.NbBundle;
  * @author  Jan Jancura
  */
 public class AnnotationsPanel extends JPanel implements ActionListener, 
-    PropertyChangeListener, FontsColorsController {
+    ItemListener, FontsColorsController {
     
     private ColorModel          colorModel;
     private boolean		listen = false;
@@ -67,9 +68,6 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         cbWaveUnderlined.getAccessibleContext ().setAccessibleDescription (loc ("AD_Wave_Underlined"));
         lCategories.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
         lCategories.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
-        ColorComboBox.init (cbForeground);
-        ColorComboBox.init (cbBackground);
-        ColorComboBox.init (cbWaveUnderlined);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
         lCategories.addListSelectionListener (new ListSelectionListener () {
@@ -79,12 +77,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             }
         });
 	lCategories.setCellRenderer (new CategoryRenderer ());
-        cbForeground.addPropertyChangeListener (this);
-        ((JComponent)cbForeground.getEditor()).addPropertyChangeListener (this);
-        cbBackground.addPropertyChangeListener (this);
-        ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
-        cbWaveUnderlined.addPropertyChangeListener (this);
-        ((JComponent)cbWaveUnderlined.getEditor()).addPropertyChangeListener (this);
+        cbForeground.addItemListener(this);
+        cbBackground.addItemListener(this);
+        cbWaveUnderlined.addItemListener(this);
         
         lCategory.setLabelFor (lCategories);
         loc(lCategory, "CTL_Category");
@@ -107,9 +102,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         lForeground = new javax.swing.JLabel();
         lbackground = new javax.swing.JLabel();
         lWaveUnderlined = new javax.swing.JLabel();
-        cbForeground = new javax.swing.JComboBox();
-        cbBackground = new javax.swing.JComboBox();
-        cbWaveUnderlined = new javax.swing.JComboBox();
+        cbForeground = new ColorComboBox();
+        cbBackground = new ColorComboBox();
+        cbWaveUnderlined = new ColorComboBox();
 
         lCategory.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Category")); // NOI18N
 
@@ -187,9 +182,11 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         changed = true;
     }
     
-    public void propertyChange (PropertyChangeEvent evt) {
+    @Override
+    public void itemStateChanged( ItemEvent e ) {
+        if( e.getStateChange() == ItemEvent.DESELECTED )
+            return;
         if (!listen) return;
-        if (evt.getPropertyName () != ColorComboBox.PROP_COLOR) return;
         updateData ();
     }
     
@@ -271,21 +268,21 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         Vector<AttributeSet> annotations = getAnnotations(currentScheme);
         SimpleAttributeSet c = (SimpleAttributeSet) annotations.get(lCategories.getSelectedIndex());
         
-        Color color = ColorComboBox.getColor(cbBackground);
+        Color color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbBackground );
         if (color != null) {
             c.addAttribute(StyleConstants.Background, color);
         } else {
             c.removeAttribute(StyleConstants.Background);
         }
         
-        color = ColorComboBox.getColor(cbForeground);
+        color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbForeground );
         if (color != null) {
             c.addAttribute(StyleConstants.Foreground, color);
         } else {
             c.removeAttribute(StyleConstants.Foreground);
         }
         
-        color = ColorComboBox.getColor(cbWaveUnderlined);
+        color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbWaveUnderlined );
         if (color != null) {
             c.addAttribute(EditorStyleConstants.WaveUnderlineColor, color);
         } else {
@@ -317,30 +314,21 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             if (inheritedForeground == null) {
                 inheritedForeground = Color.black;
             }
-            ColorComboBox.setInheritedColor(cbForeground, inheritedForeground);
+            ColorComboBoxSupport.setInheritedColor((ColorComboBox)cbForeground, inheritedForeground);
             
             Color inheritedBackground = (Color) defAs.getAttribute(StyleConstants.Background);
             if (inheritedBackground == null) {
                 inheritedBackground = Color.white;
             }
-            ColorComboBox.setInheritedColor(cbBackground, inheritedBackground);
+            ColorComboBoxSupport.setInheritedColor((ColorComboBox)cbBackground, inheritedBackground);
         }
 
         // set values
         Vector<AttributeSet> annotations = getAnnotations (currentScheme);
         AttributeSet c = annotations.get (index);
-        ColorComboBox.setColor (
-            cbForeground,
-            (Color) c.getAttribute (StyleConstants.Foreground)
-        );
-        ColorComboBox.setColor (
-            cbBackground,
-            (Color) c.getAttribute (StyleConstants.Background)
-        );
-        ColorComboBox.setColor (
-            cbWaveUnderlined,
-            (Color) c.getAttribute (EditorStyleConstants.WaveUnderlineColor)
-        );
+        ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbForeground, (Color) c.getAttribute (StyleConstants.Foreground));
+        ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbBackground, (Color) c.getAttribute (StyleConstants.Background));
+        ((ColorComboBox)cbWaveUnderlined).setSelectedColor((Color) c.getAttribute (EditorStyleConstants.WaveUnderlineColor));
         listen = true;
     }
     
