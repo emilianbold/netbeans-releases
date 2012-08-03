@@ -104,6 +104,9 @@ public class LineBreakpointType extends BreakpointType {
             return false;
         }
         FileObject mostRecentFile = EditorContextDispatcher.getDefault().getMostRecentFile();
+        if (mostRecentFile == null) {
+            return false;
+        }
         String mimeType = mostRecentFile.getMIMEType();
         return "text/javascript".equals(mimeType) || "text/html".equals(mimeType);  // NOI18N
     }
