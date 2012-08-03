@@ -46,7 +46,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Random;
+import java.util.logging.Level;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.netbeans.modules.netserver.SocketFramework;
 
@@ -182,6 +187,20 @@ abstract class AbstractWSHandler7<T extends SocketFramework> extends AbstractWSH
         else {
             return maskedMessage;
         }
+    }
+    
+    protected String generateAcceptKey(String key ){
+        StringBuilder builder = new StringBuilder( key );
+        builder.append(SALT);
+        try {
+            return DatatypeConverter.printBase64Binary( MessageDigest.getInstance(
+                    "SHA").digest(builder.toString().getBytes(  // NOI18N
+                            Charset.forName(Utils.UTF_8))));
+        }
+        catch (NoSuchAlgorithmException e) {
+            WebSocketServer.LOG.log(Level.WARNING, null , e);
+            return null;
+        } 
     }
     
     /*

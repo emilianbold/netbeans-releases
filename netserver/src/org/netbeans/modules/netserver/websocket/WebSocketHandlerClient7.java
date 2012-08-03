@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
 import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
@@ -111,7 +112,7 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7<WebSocketClient> {
         
         builder.append( Utils.KEY);
         builder.append(": ");
-        builder.append( generateKey());
+        builder.append( getSecKey());
         
         builder.append( Utils.CRLF );
         builder.append( Utils.CRLF );
@@ -178,13 +179,19 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7<WebSocketClient> {
                 acceptKey = header.substring(accept.length()).trim();
             }
         }
-        // TODO : check acceptKey against provided generatedKey at initial handshake 
         if ( acceptKey == null ){
             throw new IOException("Wrong accept key on handshake received");    // NOI18N
         }
+        else {
+            String requiredKey = generateAcceptKey(getSecKey());
+            if ( !acceptKey.equals(requiredKey)){
+                throw new IOException("Wrong accept key on handshake received: "+    
+                            requiredKey+" while expected is :"+requiredKey);    // NOI18N
+            }
+        }
     }
     
-    private String generateKey() {
+    private String getSecKey() {
         if ( myGeneratedKey == null ){
             byte[] bytes = new byte[ 16 ];
             getRandom().nextBytes(bytes);
