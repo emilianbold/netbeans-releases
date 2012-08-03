@@ -162,7 +162,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private void pageModelDocumentChanged() {
         setStatusText("Fresh DOM obtained.");
         
-        HtmlNode root = getRootNode();
+        HtmlElementNode root = getRootNode();
         if(root != null) {
             root.refreshDOMStatus();
         }
@@ -211,13 +211,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         });
     }
 
-    public HtmlNode getRootNode() {
+    public HtmlElementNode getRootNode() {
         Node node = manager.getRootContext();   
-        return  node instanceof HtmlNode ? (HtmlNode) node : null;
+        return  node instanceof HtmlElementNode ? (HtmlElementNode) node : null;
     }
     
     public void selectElementNode(final int offset) {
-        HtmlNode root = getRootNode();
+        HtmlElementNode root = getRootNode();
         if(root == null) {
             return ;
         }
@@ -248,7 +248,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
     private void refresh(final HtmlElementDescription description, final int offset) {
         final FileObject fileObject = description.getFileObject();
-        final HtmlNode rootNode = getRootNode();
+        final HtmlElementNode rootNode = getRootNode();
 
         if (rootNode != null && rootNode.getFileObject().equals(fileObject)) {
             //same file, just update the content
@@ -269,7 +269,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 public void run() {
                     view.setRootVisible(false);
                     view.setAutoWaitCursor(false);
-                    manager.setRootContext(new HtmlNode(description, HtmlNavigatorPanelUI.this, fileObject));
+                    manager.setRootContext(new HtmlElementNode(description, HtmlNavigatorPanelUI.this, fileObject));
 
                     int expandDepth = -1;
 
