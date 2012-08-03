@@ -39,32 +39,55 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.hints.pom;
+package org.netbeans.modules.maven.problems;
 
-import org.netbeans.modules.xml.xam.Model;
-import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
- *
- * @author sdedic
+ * enable project loading with custom build participation
+ * 
+ * @author mkleint
  */
-public final class PomModelUtils {
-    public static boolean implementInTransaction(Model m, Runnable r) {
-        m.startTransaction();
-        try {
-            r.run();
-        } finally {
-            try {
-                m.endTransaction();
-            } catch (IllegalStateException ex) {
-                StatusDisplayer.getDefault().setStatusText(
-                        NbBundle.getMessage(PomModelUtils.class, "ERR_UpdatePomModel",
-                        Exceptions.findLocalizedMessage(ex)));
-                return false;
+
+//NOT used, executing build participants is fairly dangerous
+class EnableParticipantsBuildAction extends AbstractAction {
+    
+    public static final String NAMESPACE = "http://www.netbeans.org/ns/maven-build-participants/1"; 
+    public static final String ROOT = "participants";
+    public static final String ENABLED = "enabled";
+    
+    private final NbMavenProjectImpl project;
+
+    public EnableParticipantsBuildAction(NbMavenProjectImpl nbproject) {
+        super("Enable Build Participants");
+        this.project = nbproject;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        
+        AuxiliaryConfiguration aux = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        Element el = XMLUtil.createDocument(ROOT, NAMESPACE, null, null).getDocumentElement();
+        el.appendChild(el.getOwnerDocument().createElementNS(NAMESPACE, ENABLED));
+        aux.putConfigurationFragment(el, true);
+    }
+    
+    public static boolean isEnabled(AuxiliaryConfiguration aux) {
+        Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, true);
+        if (el != null) {
+            NodeList nl = el.getElementsByTagNameNS(NAMESPACE, ENABLED);
+            if (nl != null) {
+                return nl.getLength() == 1;
             }
         }
-        return true;
+        return false;
+
     }
+    
 }
