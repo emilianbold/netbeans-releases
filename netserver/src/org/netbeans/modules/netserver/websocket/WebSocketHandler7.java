@@ -45,11 +45,7 @@ package org.netbeans.modules.netserver.websocket;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
-
-import javax.xml.bind.DatatypeConverter;
 
 
 /**
@@ -106,24 +102,6 @@ class WebSocketHandler7 extends AbstractWSHandler7<WebSocketServer> {
         return false;
     }
     
-    private String createAcceptKey(SelectionKey key ){
-        String originalKey = getWebSocketPoint().getContext(key).getHeaders().get(Utils.KEY);
-        if ( originalKey == null ){
-            return null;
-        }
-        StringBuilder builder = new StringBuilder( originalKey );
-        builder.append(SALT);
-        try {
-            return DatatypeConverter.printBase64Binary( MessageDigest.getInstance(
-                    "SHA").digest(builder.toString().getBytes(  // NOI18N
-                            Charset.forName(Utils.UTF_8))));
-        }
-        catch (NoSuchAlgorithmException e) {
-            WebSocketServer.LOG.log(Level.WARNING, null , e);
-            return null;
-        } 
-    }
-    
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler7#getKey()
      */
@@ -152,6 +130,14 @@ class WebSocketHandler7 extends AbstractWSHandler7<WebSocketServer> {
             return false;
         }
         return true;
+    }
+    
+    private String createAcceptKey(SelectionKey key ){
+        String originalKey = getWebSocketPoint().getContext(key).getHeaders().get(Utils.KEY);
+        if ( originalKey == null ){
+            return null;
+        }
+        return generateAcceptKey(originalKey);
     }
     
     private SelectionKey myKey;
