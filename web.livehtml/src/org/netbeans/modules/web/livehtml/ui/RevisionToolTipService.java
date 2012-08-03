@@ -41,33 +41,42 @@
  */
 package org.netbeans.modules.web.livehtml.ui;
 
-import java.awt.Component;
 import org.netbeans.modules.web.livehtml.Revision;
 
 /**
- *
+ * 
  * @author petr-podzimek
  */
-public abstract class RevisionToolTipService<C extends Component> implements Comparable<RevisionToolTipService> {
+public abstract class RevisionToolTipService extends javax.swing.JPanel {
     
-    protected abstract C createComponent(Revision revision);
-    protected abstract void updateComponent(C component, Revision revision, boolean reformatContent);
-    protected abstract boolean canProcess(Revision revision);
+    /**
+     * This method is called to update content of ToolTip by instance of {@link Revision}.
+     * @param revision {@link Revision} instance to update this ToolTip. Can not be null.
+     * @param reformatContent true when reformatted content of {@link Revision} must be used. False when not.
+     */
+    protected abstract void setRevision(Revision revision, boolean reformatContent);
+    
+    /**
+     * This method is called to clear content of ToolTip when 
+     * {@link #setRevision(org.netbeans.modules.web.livehtml.Revision, boolean) method can not be called.
+     * @param revision {@link Revision} instance to update this ToolTip. Can not be null.
+     * @param reformatContent true when reformatted content of {@link Revision} must be used. False when not.
+     * @see #canProcess(org.netbeans.modules.web.livehtml.Revision, boolean) 
+     */
+    protected abstract void clearRevision();
+    
+    /**
+     * Method to check instance of {@link Revision} can be processed.
+     * @param revision {@link Revision} instance to check. Can not be null.
+     * @param reformatContent true when reformatted content of {@link Revision} must be used. False when not.
+     * @return true when {@link #setRevision(org.netbeans.modules.web.livehtml.Revision, boolean) can be called. False when not.
+     */
+    protected abstract boolean canProcess(Revision revision, boolean reformatContent);
+    
+    /**
+     * Method to get localized name of this service.
+     * @return 
+     */
     protected abstract String getDisplayName();
-    protected abstract int getOrder();
-    
-    public final C createToolTip(Revision revision, boolean reformatContent) {
-        C c = createComponent(revision);
-        updateComponent(c, revision, reformatContent);
-        return c;
-    }
-
-    @Override
-    public int compareTo(RevisionToolTipService o) {
-        if (o == null) {
-            return 1;
-        }
-        return Integer.valueOf(getOrder()).compareTo(Integer.valueOf(o.getOrder()));
-    }
     
 }
