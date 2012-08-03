@@ -48,6 +48,8 @@ import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import javax.xml.bind.DatatypeConverter;
+
 
 /**
  * @author ads
@@ -183,11 +185,16 @@ class WebSocketHandlerClient7 extends AbstractWSHandler7<WebSocketClient> {
     }
     
     private String generateKey() {
-        // TODO write generation of random key 
-        return "dGhlIHNhbXBsZSBub25jZQ==";
+        if ( myGeneratedKey == null ){
+            byte[] bytes = new byte[ 16 ];
+            getRandom().nextBytes(bytes);
+            myGeneratedKey =  DatatypeConverter.printBase64Binary(bytes);
+        }
+        return myGeneratedKey;
     }
     
     private boolean handshakeRed;
     private int version;
+    private String myGeneratedKey;
 
 }
