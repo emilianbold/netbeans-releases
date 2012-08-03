@@ -94,7 +94,7 @@ import org.openide.util.RequestProcessor;
     "CTL_StartAnalysisButton_ToolTip=Start analysis of selected URL or file",
     "CTL_ReformatRevisionsButton_ToolTip=Revision is reformated when pressed",
     "CTL_AnalysisComboBox_ToolTip=Select existing analysis of enter URL for analysis",
-    "CTL_PreviewRevisionButton_ToolTip=Preview selected Revision in browser when pressed",})
+    "CTL_PreviewRevisionButton_ToolTip=Preview selected Revision in browser when pressed"})
 public class AnalysisPanel extends javax.swing.JPanel {
     
     private static final String PROP_SHORT_DESCRIPTION = "shortDescription"; // NOI18N
