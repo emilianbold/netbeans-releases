@@ -45,6 +45,10 @@ package org.netbeans.modules.javascript2.editor.extdoc.model;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocComment {
+public class ExtDocDescriptionElement {
+
+    public static ExtDocElement create(ExtDocElementType extDocElementType, String trim) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 
 }

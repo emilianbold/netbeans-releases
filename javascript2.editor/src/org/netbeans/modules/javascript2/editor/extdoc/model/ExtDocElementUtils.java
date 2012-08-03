@@ -39,28 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.extdoc;
-
-import java.util.Map;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.parsing.api.Snapshot;
+package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class ExtDocDocumentationHolder extends JsDocumentationHolder {
+public class ExtDocElementUtils {
 
-    private final Map<Integer, ExtDocComment> blocks;
-
-    public ExtDocDocumentationHolder(Snapshot snapshot) {
-        super(snapshot);
-        blocks = ExtDocParser.parse(snapshot);
-    }
-
-    @Override
-    public Map getCommentBlocks() {
-        return blocks;
+    public static ExtDocElement createElementForType(ExtDocElementType lastType, String string, int i) {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
 }
