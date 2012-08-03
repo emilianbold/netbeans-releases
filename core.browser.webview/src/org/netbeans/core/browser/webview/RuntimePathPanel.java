@@ -121,6 +121,7 @@ class RuntimePathPanel extends javax.swing.JPanel {
         fcb.setDirectoriesOnly( true );
         fcb.setTitle( NbBundle.getMessage(RuntimePathPanel.class, "Title_BrowserRuntime") );
         final boolean[] appendRT = new boolean[1];
+        final boolean[] appendJRE = new boolean[1];
         fcb.setSelectionApprover( new FileChooserBuilder.SelectionApprover() {
 
             @Override
@@ -131,11 +132,16 @@ class RuntimePathPanel extends javax.swing.JPanel {
                 }
 
                 appendRT[0] = false;
+                appendJRE[0] = false;
                 WebBrowser browser = WebBrowserImplProvider.createBrowser( selection[0] );
                 if( null == browser || browser instanceof NoWebBrowserImpl ) {
-                    selection[0] = new File( selection[0], "jre" ); //NOI18N
-                    browser = WebBrowserImplProvider.createBrowser( selection[0] );
+                    browser = WebBrowserImplProvider.createBrowser( new File( selection[0], "rt" ) ); //NOI18N
                     appendRT[0] = true;
+                }
+                if( null == browser || browser instanceof NoWebBrowserImpl ) {
+                    appendRT[0] = false;
+                    browser = WebBrowserImplProvider.createBrowser( new File( selection[0], "jre" ) ); //NOI18N
+                    appendJRE[0] = true;
                 }
                 if( null == browser || browser instanceof NoWebBrowserImpl ) {
                     DialogDisplayer.getDefault().notifyLater( new NotifyDescriptor.Message( NbBundle.getMessage(RuntimePathPanel.class, "Err_NoRuntimeFolder")) );
@@ -151,8 +157,11 @@ class RuntimePathPanel extends javax.swing.JPanel {
         if( res != JFileChooser.APPROVE_OPTION )
             return null;
         File runtimePath = chooser.getSelectedFile();
-        if( appendRT[0] )
+        if( appendRT[0] ) {
+            runtimePath = new File( runtimePath, "rt" ); //NOI18N
+        } else if( appendJRE[0] ) {
             runtimePath = new File( runtimePath, "jre" ); //NOI18N
+        }
         return runtimePath;
     }
 
