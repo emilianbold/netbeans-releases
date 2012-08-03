@@ -499,16 +499,13 @@ public class JsFormatter implements Formatter {
             int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
                     - formatContext.getCurrentLineStart() + lastOffsetDiff;
 
-            System.out.println("XXXXXXX: " + formatContext.getCurrentLineStart() + ":" + segmentLength);
             if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
                 FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
                 if (lastWrap != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
-                    // TODO do wrap on previous position
-                    // store this wrap and update line start
                     // we dont have to remove trailing spaces as indentation will fix it
-                    // insert eol
-                    int current = formatContext.getOffsetDiff();
+                    int offsetBeforeChanges = formatContext.getOffsetDiff();
                     formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
+                    // there is + 1 for eol
                     formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
                             + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
                     // do the indentation
@@ -520,7 +517,7 @@ public class JsFormatter implements Formatter {
                             indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
                     // we need to mark the current wrap
                     formatContext.setLastLineWrap(new FormatContext.LineWrap(
-                            tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - current)));
+                            tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - offsetBeforeChanges)));
                     return i;
                 }
                 // we proceed with wrapping if there is no wrap other than current
@@ -544,7 +541,7 @@ public class JsFormatter implements Formatter {
         }
 
         // statement like wrap is a bit special at least for now
-        // we dont remove redundant eols
+        // we dont remove redundant eols for them
         if (tokenAfterEol != null
                 // there is no eol
                 && (tokenAfterEol.getKind() != FormatToken.Kind.EOL
@@ -557,8 +554,8 @@ public class JsFormatter implements Formatter {
             if (style != CodeStyle.WrapStyle.WRAP_NEVER) {
                 if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
                     // we dont have to remove trailing spaces as indentation will fix it
-                    // insert eol
                     formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
+                    // there is + 1 for eol
                     formatContext.setCurrentLineStart(tokenBeforeEol.getOffset()
                             + tokenBeforeEol.getText().length() + 1);
                     formatContext.setLastLineWrap(null);
@@ -668,6 +665,10 @@ public class JsFormatter implements Formatter {
                             end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
             }
+            // we have done everything needed so move forward
+            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+                return moveForward(token, index, end, formatContext);
+            }
         }
         return index;
     }
@@ -719,6 +720,10 @@ public class JsFormatter implements Formatter {
                     formatContext.replace(start.getOffset(),
                             theToken.getOffset() - start.getOffset(), " "); // NOI18N
                 }
+            }
+            // we have done everything needed so move forward
+            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+                return moveForward(token, index, theToken, formatContext);
             }
         }
         return index;

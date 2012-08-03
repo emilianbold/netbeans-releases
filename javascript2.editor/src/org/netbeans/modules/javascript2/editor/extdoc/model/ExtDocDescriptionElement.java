@@ -39,27 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 /**
- * Represents simple sDoc elements without any additional type or description etc.
+ * Represents extDoc elements with any description.
  * <p>
- * <i>Examples:</i> @private, @method, @internal, ...
+ * <i>Examples:</i> any comment at the beginning of the comment block
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocSimpleElement extends SDocBaseElement {
+public class ExtDocDescriptionElement extends ExtDocBaseElement {
 
-    private SDocSimpleElement(SDocElementType type) {
+    private final String description;
+
+    private ExtDocDescriptionElement(ExtDocElementType type, String description) {
         super(type);
+        this.description = description;
     }
 
     /**
-     * Creates new {@code SDocSimpleElement}.
-     * @param type simple type (tag), never {@code null}
+     * Creates new {@code ExtDocDescriptionElement}.
+     *
+     * @param type element type (tag), never null
+     * @param description description of the element, never null
      */
-    public static SDocSimpleElement create(SDocElementType type) {
-        return new SDocSimpleElement(type);
+    public static ExtDocDescriptionElement create(ExtDocElementType type, String description) {
+        return new ExtDocDescriptionElement(type, description);
+    }
+
+    /**
+     * Gets description of the element.
+     * @return description
+     */
+    public String getDescription() {
+        return description;
     }
 
 }
