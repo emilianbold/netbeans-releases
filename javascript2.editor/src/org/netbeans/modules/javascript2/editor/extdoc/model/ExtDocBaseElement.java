@@ -42,37 +42,29 @@
 package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 /**
- * Represents extDoc elements with any description.
- * <p>
- * <i>Examples:</i> any comment at the beginning of the comment block
+ * Base element from which inherits all extDoc elements.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDescriptionElement extends ExtDocBaseElement {
+public class ExtDocBaseElement implements ExtDocElement {
 
-    private final String description;
+    private final ExtDocElementType type;
 
-    private ExtDocDescriptionElement(ExtDocElementType type, String description) {
-        super(type);
-        this.description = description;
+    /**
+     * Creates new element.
+     * @param type type of the element to create
+     */
+    public ExtDocBaseElement(ExtDocElementType type) {
+        this.type = type;
     }
 
     /**
-     * Creates new {@code ExtDocDescriptionElement}.
-     *
-     * @param type element type (tag), never null
-     * @param description description of the element, never null
+     * Gets element type.
+     * @return element type
      */
-    public static ExtDocDescriptionElement create(ExtDocElementType type, String description) {
-        return new ExtDocDescriptionElement(type, description);
-    }
-
-    /**
-     * Gets description of the element.
-     * @return description
-     */
-    public String getDescription() {
-        return description;
+    @Override
+    public ExtDocElementType getType() {
+        return type;
     }
 
 }

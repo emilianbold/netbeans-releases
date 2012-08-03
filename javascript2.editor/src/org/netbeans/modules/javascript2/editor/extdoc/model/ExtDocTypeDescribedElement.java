@@ -41,38 +41,66 @@
  */
 package org.netbeans.modules.javascript2.editor.extdoc.model;
 
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.model.Type;
+
 /**
- * Represents extDoc elements with any description.
+ * Represents parameter element which does not need any parameter name.
  * <p>
- * <i>Examples:</i> any comment at the beginning of the comment block
+ * <i>Examples:</i> @return {String} whole string, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDescriptionElement extends ExtDocBaseElement {
+public class ExtDocTypeDescribedElement extends ExtDocTypeSimpleElement {
 
-    private final String description;
+    protected final String typeDescription;
 
-    private ExtDocDescriptionElement(ExtDocElementType type, String description) {
-        super(type);
-        this.description = description;
+    protected ExtDocTypeDescribedElement(ExtDocElementType type, List<Type>declaredTypes, String description) {
+        super(type, declaredTypes);
+        this.typeDescription = description;
+    }
+
+    /** Creates type described element.
+     * @param type type of the element
+     * @param paramTypes type of the parameter
+     * @param description description of the parameter
+     */
+    public static ExtDocTypeDescribedElement create(ExtDocElementType type, List<Type> declaredTypes, String description) {
+        return new ExtDocTypeDescribedElement(type, declaredTypes, description);
     }
 
     /**
-     * Creates new {@code ExtDocDescriptionElement}.
-     *
-     * @param type element type (tag), never null
-     * @param description description of the element, never null
+     * Gets the description of the parameter.
+     * @return parameter description
      */
-    public static ExtDocDescriptionElement create(ExtDocElementType type, String description) {
-        return new ExtDocDescriptionElement(type, description);
+    public String getTypeDescription() {
+        return typeDescription;
     }
 
-    /**
-     * Gets description of the element.
-     * @return description
-     */
-    public String getDescription() {
-        return description;
+    @Override
+    public DocIdentifier getParamName() {
+        return null;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return false;
+    }
+
+    @Override
+    public String getParamDescription() {
+        return typeDescription;
+    }
+
+    @Override
+    public List<Type> getParamTypes() {
+        return declaredTypes;
     }
 
 }

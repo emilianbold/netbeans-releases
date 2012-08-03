@@ -41,38 +41,65 @@
  */
 package org.netbeans.modules.javascript2.editor.extdoc.model;
 
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.model.Type;
+
 /**
- * Represents extDoc elements with any description.
+ * Represents extDoc elements with type declaration purpose.
  * <p>
- * <i>Examples:</i> any comment at the beginning of the comment block
+ * <i>Examples:</i> @type {String}
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDescriptionElement extends ExtDocBaseElement {
+public class ExtDocTypeSimpleElement extends ExtDocBaseElement implements DocParameter {
 
-    private final String description;
+    protected final List<Type> declaredTypes;
 
-    private ExtDocDescriptionElement(ExtDocElementType type, String description) {
+    protected ExtDocTypeSimpleElement(ExtDocElementType type, List<Type> declaredTypes) {
         super(type);
-        this.description = description;
+        this.declaredTypes = declaredTypes;
     }
 
     /**
-     * Creates new {@code ExtDocDescriptionElement}.
-     *
-     * @param type element type (tag), never null
-     * @param description description of the element, never null
+     * Creates new {@code ExtDocTypeSimpleElement}.
      */
-    public static ExtDocDescriptionElement create(ExtDocElementType type, String description) {
-        return new ExtDocDescriptionElement(type, description);
+    public static ExtDocTypeSimpleElement create(ExtDocElementType type, List<Type> declaredTypes) {
+        return new ExtDocTypeSimpleElement(type, declaredTypes);
     }
 
     /**
-     * Gets description of the element.
-     * @return description
+     * Gets the type declared by this element.
+     * @return declared type
      */
-    public String getDescription() {
-        return description;
+    public List<Type> getDeclaredTypes() {
+        return declaredTypes;
     }
 
+
+    @Override
+    public DocIdentifier getParamName() {
+        return null;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return false;
+    }
+
+    @Override
+    public String getParamDescription() {
+        return "";
+    }
+
+    @Override
+    public List<Type> getParamTypes() {
+        return declaredTypes;
+    }
 }

@@ -42,37 +42,37 @@
 package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 /**
- * Represents extDoc elements with any description.
+ * Represents extDoc elements with any identifier (like namespace, member etc.).
  * <p>
- * <i>Examples:</i> any comment at the beginning of the comment block
+ * <i>Examples:</i> @member MyClass, @namespace empty.space, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDescriptionElement extends ExtDocBaseElement {
+public class ExtDocIdentSimpleElement extends ExtDocBaseElement {
 
-    private final String description;
+    protected final String identifier;
 
-    private ExtDocDescriptionElement(ExtDocElementType type, String description) {
+    protected ExtDocIdentSimpleElement(ExtDocElementType type, String identifier) {
         super(type);
-        this.description = description;
+        this.identifier = identifier;
     }
 
     /**
-     * Creates new {@code ExtDocDescriptionElement}.
+     * Creates new {@code ExtDocIdentSimpleElement}.
      *
-     * @param type element type (tag), never null
-     * @param description description of the element, never null
+     * @param type element type (tag), never {@code null}
+     * @param identifier identifier of the element, never {@code null}
      */
-    public static ExtDocDescriptionElement create(ExtDocElementType type, String description) {
-        return new ExtDocDescriptionElement(type, description);
+    public static ExtDocIdentSimpleElement create(ExtDocElementType type, String identifier) {
+        return new ExtDocIdentSimpleElement(type, identifier);
     }
 
     /**
-     * Gets description of the element.
-     * @return description
+     * Gets identifier of the element.
+     * @return identifier
      */
-    public String getDescription() {
-        return description;
+    public String getIdentifier() {
+        return identifier;
     }
 
 }
