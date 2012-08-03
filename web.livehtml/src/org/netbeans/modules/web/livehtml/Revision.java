@@ -44,7 +44,6 @@ package org.netbeans.modules.web.livehtml;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -63,12 +62,12 @@ public final class Revision {
     private List<Change> changes;
     private List<Change> reformattedChanges;
     
-    private JSONArray stacktrace;
-    private StringBuilder data;
-    
     private StringBuilder previewContent;
     private StringBuilder reformattedPreviewContent;
         
+    private JSONArray stacktrace;
+    private StringBuilder data;
+    
     @Deprecated
     public Revision(StringBuilder content, StringBuilder stacktrace, List<Change> changes, StringBuilder data, String timeStamp, int index) {
         this.content = content;

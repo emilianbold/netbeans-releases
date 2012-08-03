@@ -39,44 +39,36 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.filter;
+package org.netbeans.modules.web.livehtml;
 
-import org.netbeans.modules.web.livehtml.Analysis;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
- * This abstract class provides support for filtering content of {@link Analysis}.
- * This class add reference to parent {@link Analysis} and 1 abstract method.
- * Method {@link #applyFilter()} is used 
+ *
  * @author petr-podzimek
  */
-public abstract class FilteredAnalysis extends Analysis {
+public class TestUtilities {
     
-    private final Analysis parentAnalysis;
-    
-    /**
-     * Default constructor with required parentAnalysis parameter.
-     * Application logic to apply filtering can be done in constructor call.
-     * @param parentAnalysis Parent {@link Analysis} new instance of filtered analysis. Can not be null.
-     */
-    public FilteredAnalysis(Analysis parentAnalysis) {
-        super();
-        assert parentAnalysis != null : "Parent analysis could not be null";
-        this.parentAnalysis = parentAnalysis;
-    }
+    public static String getContent(File dataDir, String relFilePath) throws FileNotFoundException, IOException {
+        File file = new File(dataDir, relFilePath);
+        StringBuilder content = new StringBuilder();
+        
+        FileReader fileReader = new FileReader(file);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
 
-    /**
-     * Reference to source {@link Analysis} for this filtered analysis.
-     * @return Source {@link Analysis}. Can not be null.
-     */
-    public Analysis getParentAnalysis() {
-        return parentAnalysis;
+        String line;
+        do {
+            line = bufferedReader.readLine();
+            if (line != null) {
+                content.append(line);
+            }
+        } while (line != null);
+        
+        return content.toString();
     }
-    
-    /**
-     * Method to get detail information about specified revision for UI.
-     * @param revisionIndex index of revision to process.
-     * @return Specified revision detail information.
-     */
-    public abstract String getRevisionDetailLabel(int revisionIndex);
     
 }

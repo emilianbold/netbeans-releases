@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.livehtml.filter;
 
+import org.json.simple.JSONObject;
 import org.netbeans.modules.web.livehtml.filter.groupscripts.StackTraceFilter;
 
 /**
@@ -56,8 +57,8 @@ public class NotStackTraceFilter implements StackTraceFilter {
     }
 
     @Override
-    public boolean match(Object object) {
-        return !stackTraceFilter.match(object);
+    public boolean match(JSONObject jsonObject) {
+        return !stackTraceFilter.match(jsonObject);
     }
 
     public StackTraceFilter getStackTraceFilter() {

@@ -209,7 +209,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
             revisionLabel.setText(selectedAnalysisItem.getRevisionLabel(index));
             if (selectedAnalysisItem.getFilteredAnalysis() != null) {
                 final GroupScriptsFilteredAnalysis filteredAnalysis = (GroupScriptsFilteredAnalysis) selectedAnalysisItem.getFilteredAnalysis();
-                revisionLabel.setToolTipText(filteredAnalysis.getGroupedRevision().toString());
+//                revisionLabel.setToolTipText(filteredAnalysis.getGroupedRevision().toString());
             }
             
             revisionSlider.setEnabled(selectedAnalysis.getRevisionsCount() > 1);
@@ -237,14 +237,14 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
                 if (documentText != null) {
                     final StringBuilder replaceBySpaces = ReformatSupport.replaceBySpaces(indexesOfJavaScript, documentText);
-                    revision.updatePreviewContent(replaceBySpaces, reformatRevisionButton.isSelected());
                     
-                    final Analysis analysis = selectedAnalysisItem.getAnalysis();
+                    final Analysis analysis = selectedAnalysisItem.resolveAnalysis();
                     if (reformatRevisionButton.isSelected()) {
                         analysis.store(Analysis.FORMATTED_NO_JS_CONTENT, revision.getTimeStamp(), replaceBySpaces.toString());
                     } else {
                         analysis.store(Analysis.NO_JS_CONTENT, revision.getTimeStamp(), replaceBySpaces.toString());
                     }
+                    revision.updatePreviewContent(replaceBySpaces, reformatRevisionButton.isSelected());
 
                 }
             }
@@ -653,9 +653,17 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_revisionEditorPaneMouseMoved
 
     private void startAnalysisButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startAnalysisButtonActionPerformed
+        final AnalysisItem selectedAnalysisItem = getSelectedAnalysisItem();
+        Analysis selectedAnalysis = null;
+        if (selectedAnalysisItem != null) {
+            selectedAnalysisItem.setFilteredAnalysis(null);
+            selectedAnalysis = selectedAnalysisItem.getAnalysis();
+        }
         
-        if (getSelectedAnalysis() == null) {
+        if (selectedAnalysis == null) {
             analysisComboBox.actionPerformed(evt);
+        } else {
+            selectedAnalysis.makeFinished();
         }
         
         URL url_;
@@ -664,7 +672,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
         if (analysisModel.getSourceUrl() == null) {
             String selectedUrl = getSelectedUrl();
             if (selectedUrl == null || selectedUrl.isEmpty()) {
-                Analysis selectedAnalysis = getSelectedAnalysis();
                 if (selectedAnalysis == null) {
                     selectedUrl = "http://www.netbeans.org/";
                 } else {
@@ -748,7 +755,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
             selectedAnalysisItem.setFilteredAnalysis(null);
             updateAnalysis(getSelectedAnalysis());
         } else {
-            filteredAnalysis.applyFilter();
             AnalysisStorage.getInstance().addFilteredAnalysis(filteredAnalysis);
         }
         

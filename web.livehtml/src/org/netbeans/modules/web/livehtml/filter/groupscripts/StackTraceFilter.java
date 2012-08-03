@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.web.livehtml.filter.groupscripts;
 
+import org.json.simple.JSONObject;
+
 /**
  *
  * @author petr-podzimek
  */
 public interface StackTraceFilter {
 
-    boolean match(Object object);
+    boolean match(JSONObject jsonObject);
     
 }

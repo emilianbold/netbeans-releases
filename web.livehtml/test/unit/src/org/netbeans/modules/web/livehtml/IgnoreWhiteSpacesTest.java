@@ -43,76 +43,85 @@ package org.netbeans.modules.web.livehtml;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.web.livehtml.diff.DiffTest;
 import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsFilteredAnalysis;
-import org.netbeans.modules.web.livehtml.filter.groupscripts.GroupScriptsRevisionFilter;
-import org.netbeans.modules.web.livehtml.filter.TrueStackTraceFilter;
 
 /**
  *
  * @author petr-podzimek
  */
-public class StackTraceFilterTest extends NbTestCase {
-    
+public class IgnoreWhiteSpacesTest extends NbTestCase {
+
     private Analysis analysis;
     private GroupScriptsFilteredAnalysis filteredAnalysis;
-    
-    public StackTraceFilterTest() {
-        super(StackTraceFilterTest.class.getName());
+
+    public IgnoreWhiteSpacesTest() {
+        super(IgnoreWhiteSpacesTest.class.getName());
     }
-    
+
+    @Test
+    public void test() {
+        assertEquals(11, analysis.getTimeStampsCount());
+
+        assertEquals(4, filteredAnalysis.getTimeStampsCount());
+
+        assertNull(filteredAnalysis.getWhiteSpaceGroupedRevisions(0));
+
+        final Set<Integer> whiteSpaceGroupedRevisions1 = filteredAnalysis.getWhiteSpaceGroupedRevisions(1);
+        assertNotNull(whiteSpaceGroupedRevisions1);
+        assertEquals(4, whiteSpaceGroupedRevisions1.size());
+        assertTrue(whiteSpaceGroupedRevisions1.contains(2));
+        assertTrue(whiteSpaceGroupedRevisions1.contains(3));
+        assertTrue(whiteSpaceGroupedRevisions1.contains(4));
+        assertTrue(whiteSpaceGroupedRevisions1.contains(5));
+
+        final Set<Integer> whiteSpaceGroupedRevisions2 = filteredAnalysis.getWhiteSpaceGroupedRevisions(2);
+        assertNotNull(whiteSpaceGroupedRevisions2);
+        assertEquals(1, whiteSpaceGroupedRevisions2.size());
+        assertTrue(whiteSpaceGroupedRevisions2.contains(7));
+
+        final Set<Integer> whiteSpaceGroupedRevisions3 = filteredAnalysis.getWhiteSpaceGroupedRevisions(3);
+        assertNotNull(whiteSpaceGroupedRevisions3);
+        assertEquals(2, whiteSpaceGroupedRevisions3.size());
+        assertTrue(whiteSpaceGroupedRevisions3.contains(9));
+        assertTrue(whiteSpaceGroupedRevisions3.contains(10));
+
+    }
+
     @Before
     @Override
     public void setUp() throws IOException {
         AnalysisStorage.isUnitTesting = true;
-        
-        File f = new File(getWorkDir(), ""+System.currentTimeMillis());
-        f.mkdir();
-        analysis = new Analysis(f); 
-        HtmlSource source1 = DiffTest.getHtmlSource(getDataDir(), "diff/test006-v1.html"); 
+
+        File f = new File(getWorkDir(), String.valueOf(System.currentTimeMillis()));
+        f.mkdirs();
+        analysis = new Analysis(f);
+
+        // Test is based on hand made changes in golden files - see comments
+        HtmlSource source1 = DiffTest.getHtmlSource(getDataDir(), "filter/test003-r01.content");
         analysis.storeDocumentVersion("0", source1.getSourceCode().toString(), "[{}]", true); // initial Revision
         analysis.storeDocumentVersion("1", source1.getSourceCode().toString(), "[{}]", true); // first Revision
-        HtmlSource source2 = DiffTest.getHtmlSource(getDataDir(), "diff/test006-v2.html");
+        HtmlSource source2 = DiffTest.getHtmlSource(getDataDir(), "filter/test003-r02.content");
         analysis.storeDocumentVersion("2", source2.getSourceCode().toString(), "[{}]", true); // second Revision + white space detected
         analysis.storeDocumentVersion("3", source2.getSourceCode().toString(), "[{}]", true); // white space detected
         analysis.storeDocumentVersion("4", source2.getSourceCode().toString(), "[{}]", true); // white space detected
         analysis.storeDocumentVersion("5", source2.getSourceCode().toString(), "[{}]", true); // white space detected
-        HtmlSource source3 = DiffTest.getHtmlSource(getDataDir(), "diff/test006-v3.html");
+        HtmlSource source3 = DiffTest.getHtmlSource(getDataDir(), "filter/test003-r03.content");
         analysis.storeDocumentVersion("6", source3.getSourceCode().toString(), "[{}]", true); // trird Revision
-        HtmlSource source4 = DiffTest.getHtmlSource(getDataDir(), "diff/test006-v4.html");
+        HtmlSource source4 = DiffTest.getHtmlSource(getDataDir(), "filter/test003-r04.content");
         analysis.storeDocumentVersion("7", source4.getSourceCode().toString(), "[{}]", true); // white space detected
-        HtmlSource source5 = DiffTest.getHtmlSource(getDataDir(), "diff/test006-v5.html");
+        HtmlSource source5 = DiffTest.getHtmlSource(getDataDir(), "filter/test003-r05.content");
         analysis.storeDocumentVersion("8", source5.getSourceCode().toString(), "[{}]", true); // fourth Revision
-        HtmlSource source6 = DiffTest.getHtmlSource(getDataDir(), "diff/test006-v6.html");
+        HtmlSource source6 = DiffTest.getHtmlSource(getDataDir(), "filter/test003-r06.content");
         analysis.storeDocumentVersion("9", source6.getSourceCode().toString(), "[{}]", true); // white space detected
         analysis.storeDocumentVersion("10", source6.getSourceCode().toString(), "[{}]", true); // white space detected
-        
-        GroupScriptsRevisionFilter revisionFilter = new GroupScriptsRevisionFilter(new TrueStackTraceFilter(), false, true);
-        
-        filteredAnalysis = new GroupScriptsFilteredAnalysis(revisionFilter, analysis);
-        filteredAnalysis.applyFilter();
+
+        filteredAnalysis = new GroupScriptsFilteredAnalysis(null, null, true, analysis);
     }
-    
-    @Test
-    public void test() {
-        assertEquals(11, analysis.getTimeStampsCount());
-        
-        assertEquals(4, filteredAnalysis.getTimeStampsCount());
-        
-        assertEquals(null, filteredAnalysis.getRevisionCountForGroup(0));
-        assertEquals(Integer.valueOf(4), filteredAnalysis.getRevisionCountForGroup(1));
-        assertEquals(Integer.valueOf(1), filteredAnalysis.getRevisionCountForGroup(2));
-        assertEquals(Integer.valueOf(2), filteredAnalysis.getRevisionCountForGroup(3));
-        
-        assertFalse(filteredAnalysis.isWhiteSpacedRevision(0));
-        assertTrue(filteredAnalysis.isWhiteSpacedRevision(1));
-        assertTrue(filteredAnalysis.isWhiteSpacedRevision(2));
-        assertTrue(filteredAnalysis.isWhiteSpacedRevision(3));
-        
-    }
-    
+
 }

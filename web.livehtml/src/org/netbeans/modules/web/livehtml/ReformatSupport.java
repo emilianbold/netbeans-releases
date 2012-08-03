@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -56,7 +55,6 @@ import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -171,7 +169,6 @@ public class ReformatSupport {
      * @return content of Document without JavaScript. Returns null when input parameter is null or any error occurs.
      */
     public static Map<Integer, Integer> getIndexesOfJavaScript(Document document) {
-        System.out.println("getIndexesOfJavaScript");
         if (document == null) {
             return null;
         }

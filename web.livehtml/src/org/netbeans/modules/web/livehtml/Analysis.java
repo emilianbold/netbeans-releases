@@ -106,6 +106,9 @@ public class Analysis implements Comparable<Analysis> {
     }
 
     public void store(String type, String timestamp, String content) {
+        if (content == null) {
+            return;
+        }
         File storeFile = new File(getRootDirectory(), timestamp + "." + type);
         storeFile.deleteOnExit();
         try {
@@ -135,6 +138,7 @@ public class Analysis implements Comparable<Analysis> {
         StringBuilder beautifiedDiff = read(BDIFF, timeStamp);
         StringBuilder beautifiedContent = read(BCONTENT, timeStamp);
         
+        //TODO: Rewrite this part of code to read data of current timesamp only!
         if (changeIndex > 0) {
             stacktrace = read(STACKTRACE, getTimeStamps().get(changeIndex - 1));
             data = read(DATA, getTimeStamps().get(changeIndex - 1));
@@ -151,10 +155,11 @@ public class Analysis implements Comparable<Analysis> {
                 data);
         revision.setPreviewContent(read(NO_JS_CONTENT, timeStamp));
         revision.setReformattedPreviewContent(read(FORMATTED_NO_JS_CONTENT, timeStamp));
+        
         return revision;
     }
     
-    protected StringBuilder read(String type, String timestamp) {
+    public StringBuilder read(String type, String timestamp) {
         File storeFile = new File(getRootDirectory(), timestamp + "." + type);
         if (!storeFile.exists()) {
             return null;
@@ -190,7 +195,7 @@ public class Analysis implements Comparable<Analysis> {
         return finished;
     }
 
-    protected void makeFinished() {
+    public void makeFinished() {
         this.finished = new Date();
     }
 
@@ -300,6 +305,10 @@ public class Analysis implements Comparable<Analysis> {
     }
 
     protected void storeDocumentVersion(final String timestamp, final String content, final String stackTrace, final boolean realChange) {
+        storeDocumentVersion(timestamp, content, stackTrace, getDataToStore(), realChange);
+    }
+
+    protected void storeDocumentVersion(final String timestamp, final String content, final String stackTrace, final String data, final boolean realChange) {
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -309,7 +318,6 @@ public class Analysis implements Comparable<Analysis> {
                     getTimeStamps().remove(getTimeStamps().size() - 1);
                     setLastChangeWasNotReal(false);
                 }
-                String data = getDataToStore();
                 if (realChange) {
                     setDataToStore(null);
                 } else {
