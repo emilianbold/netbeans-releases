@@ -664,9 +664,10 @@ public class JsFormatter implements Formatter {
                     formatContext.replace(start.getOffset(),
                             end.getOffset() - start.getOffset(), " "); // NOI18N
                 }
-                if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                    return moveForward(token, index, end, formatContext);
-                }
+            }
+            // we have done everything needed so move forward
+            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+                return moveForward(token, index, end, formatContext);
             }
         }
         return index;
@@ -719,9 +720,10 @@ public class JsFormatter implements Formatter {
                     formatContext.replace(start.getOffset(),
                             theToken.getOffset() - start.getOffset(), " "); // NOI18N
                 }
-                if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                    return moveForward(token, index, theToken, formatContext);
-                }
+            }
+            // we have done everything needed so move forward
+            if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
+                return moveForward(token, index, theToken, formatContext);
             }
         }
         return index;
