@@ -296,6 +296,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     List<ProjectHandle<ODSProject>> openedProjects = getOpenProjects();
+                    if (openedProjects != null) {
                         for (final ProjectHandle<ODSProject> prjHandle : openedProjects) {
                             if(prjHandle == null) {
                                 continue;
@@ -328,6 +329,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                             } catch (ODSException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
+                        }
                     }
                 }
 

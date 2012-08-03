@@ -80,7 +80,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODSProje
              return Utilities.getMyProjects(uiServer, force);
         } catch (ODSException ex) {
             Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.WARNING, uiServer.getUrl().toString(), ex);
-            return Collections.<ProjectHandle<ODSProject>>emptyList();
+            return null;
         }
     }
 

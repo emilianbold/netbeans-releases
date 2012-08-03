@@ -889,15 +889,16 @@ public final class DefaultDashboard<S extends TeamServer, P> {
                 public void run() {
                     ArrayList<ProjectHandle> projects = new ArrayList<ProjectHandle>(projectIds.size());
                     ProjectAccessor<S, P> accessor = dashboardProvider.getProjectAccessor();
+                    boolean err = false;
                     for( String id : projectIds ) {
                         ProjectHandle handle = accessor.getNonMemberProject(server, id, forceRefresh);
                         if (handle!=null) {
                             projects.add(handle);
                         } else {
-                            //projects=null;
+                            err = true;
                         }
                     }
-                    res[0] = projects;
+                    res[0] = err && projects.isEmpty() ? null : projects;
                 }
             };
             t = new Thread( r );
@@ -953,7 +954,8 @@ public final class DefaultDashboard<S extends TeamServer, P> {
                 @Override
                 public void run() {
                     ProjectAccessor<S, P> accessor = dashboardProvider.getProjectAccessor();
-                    res[0] = new ArrayList( accessor.getMemberProjects(server, user, forceRefresh) );
+                    List<ProjectHandle<P>> l = accessor.getMemberProjects(server, user, forceRefresh);
+                    res[0] = l == null ? null : new ArrayList<ProjectHandle<P>>( l );
                 }
             };
             t = new Thread( r );
