@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.browser.api;
 
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.loaders.DataObject;

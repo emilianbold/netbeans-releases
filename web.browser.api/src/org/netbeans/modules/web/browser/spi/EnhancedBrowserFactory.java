@@ -40,7 +40,9 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.browser.api;
+package org.netbeans.modules.web.browser.spi;
+
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 
 /**
  *

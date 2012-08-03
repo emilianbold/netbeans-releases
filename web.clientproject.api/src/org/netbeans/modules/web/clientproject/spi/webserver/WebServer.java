@@ -258,10 +258,7 @@ public final class WebServer {
                         fis = fo.getInputStream();
                         out = new DataOutputStream(outputStream);
                         String mime = fo.getMIMEType();
-                        // #216136 - temporary hotfix
-                        if ("text/x-css".equals(mime)) {
-                            mime = "text/css";
-                        } else if ("content/unknown".equals(mime)) {
+                        if ("content/unknown".equals(mime)) {
                             mime = "text/plain";
                         }
                         out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n"

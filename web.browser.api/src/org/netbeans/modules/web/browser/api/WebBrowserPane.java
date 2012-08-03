@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.browser.api;
 
+import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -132,7 +133,7 @@ public final class WebBrowserPane {
         }
     }
     
-    public void enablePageInspector() {
+    public void enableLiveHTML() {
         assert impl instanceof EnhancedBrowser;
         if ( impl instanceof EnhancedBrowser ){
             ((EnhancedBrowser) impl).enableLiveHTML();
@@ -162,11 +163,7 @@ public final class WebBrowserPane {
      * Is this embedded or external browser.
      */
     public boolean isEmbedded() {
-        /*
-         *  XXX : that's handle only WebView case in a hacky way. But there is 
-         *  no currently API to determine embedded browser in appropriate way. 
-         */
-        return descriptor.getId()!= null && descriptor.getId().contains("webviewBrowser");  // NOI18N
+        return descriptor.getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW;  // NOI18N
     }
 
     /**
