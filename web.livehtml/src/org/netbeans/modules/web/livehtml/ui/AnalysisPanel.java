@@ -94,13 +94,13 @@ import org.openide.util.RequestProcessor;
     "CTL_StartAnalysisButton_ToolTip=Start analysis of selected URL or file",
     "CTL_ReformatRevisionsButton_ToolTip=Revision is reformated when pressed",
     "CTL_AnalysisComboBox_ToolTip=Select existing analysis of enter URL for analysis",
-    "CTL_PreviewRevisionButton_ToolTip=Preview selected Revision in browser when pressed"})
+    "CTL_PreviewRevisionButton_ToolTip=Preview selected Revision in browser when pressed",})
 public class AnalysisPanel extends javax.swing.JPanel {
     
     private static final String PROP_SHORT_DESCRIPTION = "shortDescription"; // NOI18N
     
     private static final boolean SHOW_FILTER_BUTTON = true;
-    private static final boolean SHOW_PREVIEW_BUTTON = false;
+    private static final boolean SHOW_PREVIEW_BUTTON = true;
     
     private AnalysisModel analysisModel = new AnalysisModel();
     private RevisionToolTipPanel revisionToolTipPanel = null;
@@ -113,6 +113,8 @@ public class AnalysisPanel extends javax.swing.JPanel {
     private AnalysisModelListener analysisModelListener = new PrivateAnalysisModelListener();
     private AnalysisListener analysisListener = new PrivateAnalysisListener();
     
+    private static BrowserSupport previewBrowserSupport = null;
+
     /**
      * Creates new form AnalysisPanel
      */
@@ -441,13 +443,22 @@ public class AnalysisPanel extends javax.swing.JPanel {
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
                     
                     //TODO: This part of code must be changed - now it will open Chrome Tab for every "file". 
-                    getPrivateBrowserSupport().disablePageInspector();
-                    getPrivateBrowserSupport().load(fo.toURL(), fo);
+//                    getPreviewBrowserSupport().disablePageInspector();
+                    getPreviewBrowserSupport().load(fo.toURL(), fo);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         });
+    }
+    
+    private synchronized BrowserSupport getPreviewBrowserSupport() {
+        if (previewBrowserSupport == null) {
+            previewBrowserSupport = BrowserSupport.create();
+            previewBrowserSupport.disablePageInspector();
+            previewBrowserSupport.enabledLiveHTML();
+        }
+        return previewBrowserSupport;
     }
     
     /**
@@ -507,7 +518,10 @@ public class AnalysisPanel extends javax.swing.JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(previewRevisionToggleButton, org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.previewRevisionToggleButton.text")); // NOI18N
+        previewRevisionToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/preview.png"))); // NOI18N
+        previewRevisionToggleButton.setToolTipText(Bundle.CTL_PreviewRevisionButton_ToolTip());
+        previewRevisionToggleButton.setBorderPainted(false);
+        previewRevisionToggleButton.setFocusable(false);
         previewRevisionToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 previewRevisionToggleButtonActionPerformed(evt);
@@ -527,8 +541,7 @@ public class AnalysisPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filterButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(previewRevisionToggleButton)
-                .addContainerGap())
+                .addComponent(previewRevisionToggleButton))
         );
         toolBarPanelLayout.setVerticalGroup(
             toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -761,7 +774,12 @@ public class AnalysisPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_filterButtonActionPerformed
 
     private void previewRevisionToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewRevisionToggleButtonActionPerformed
-        previewRevision(getSelectedRevision());
+        if (previewRevisionToggleButton.isSelected()) {
+            previewRevision(getSelectedRevision());
+        } else {
+            previewRevision(null);
+        }
+        
     }//GEN-LAST:event_previewRevisionToggleButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
