@@ -109,6 +109,32 @@ public class HtmlElementDescription extends  Description {
     }
 
     @Override
+    public int hashCode() {
+        int hash = 13;
+        hash = 41 * hash + getElementPath().hashCode();
+        hash = 41 * hash + getAttributesHash();
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof HtmlElementDescription)) {
+            return false;
+        }
+        final HtmlElementDescription other = (HtmlElementDescription) obj;
+        if (!getElementPath().equals(other.getElementPath())) {
+            return false;
+        }
+        if ((getAttributesHash() != other.getAttributesHash())) {
+            return false;
+        }
+        return true;
+    }
+    
+    @Override
     public int getType() {
         return STATIC_NODE;
     }

@@ -91,6 +91,33 @@ public class WebKitNodeDescription extends Description {
 
     }
     
+     @Override
+    public int hashCode() {
+        int hash = 19;
+        hash = 41 * hash + getElementPath().hashCode();
+        hash = 41 * hash + getAttributesHash();
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof WebKitNodeDescription)) {
+            return false;
+        }
+        final WebKitNodeDescription other = (WebKitNodeDescription) obj;
+        if (!getElementPath().equals(other.getElementPath())) {
+            return false;
+        }
+        if ((getAttributesHash() != other.getAttributesHash())) {
+            return false;
+        }
+        return true;
+    }
+    
+    
     public String getName() {
         return Utils.getWebKitNodeName(webKitNode);
     }

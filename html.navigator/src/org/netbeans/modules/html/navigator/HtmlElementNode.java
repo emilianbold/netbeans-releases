@@ -44,15 +44,15 @@
 package org.netbeans.modules.html.navigator;
 
 import java.awt.Image;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -66,15 +66,16 @@ import org.netbeans.modules.html.navigator.actions.OpenAction;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 
 public class HtmlElementNode extends AbstractNode {
 
+    private static final Logger LOGGER = Logger.getLogger(HtmlElementNode.class.getSimpleName());
     private static final Image ICON = ImageUtilities.loadImage("org/netbeans/modules/html/navigator/resources/html_element.png"); //NOI18N
     private HtmlNavigatorPanelUI ui;
     private FileObject fileObject;
@@ -100,6 +101,9 @@ public class HtmlElementNode extends AbstractNode {
         //creates initialy empty children
         super(new ElementChildren(ui, fileObject));
 
+        //hack:
+        getElementChildren().peer = this;
+
         this.element = element;
         this.ui = ui;
         this.fileObject = fileObject;
@@ -113,11 +117,11 @@ public class HtmlElementNode extends AbstractNode {
 
         //set all the data related to the webkit "connection" of this source element node
         refreshWebkitCounterpartState(false);
-      
+
         //finally set the children keys to the node
         getElementChildren().resetKeys();
     }
-    
+
     private PageModel getPageModel() {
         return ui.getPageModel();
     }
@@ -132,25 +136,25 @@ public class HtmlElementNode extends AbstractNode {
     private Node findWebKitNode() {
         //check if the inspected fileobject matches our fileobject
         FileObject inspectedFile = ui.getInspectedFileObject();
-        if(inspectedFile == null) {
+        if (inspectedFile == null) {
             return null;
         }
-        if(!inspectedFile.equals(fileObject)) {
+        if (!inspectedFile.equals(fileObject)) {
             //foreign fileobject, someone likely switched the inspector do different file
             return null;
         }
-        
+
         PageModel pageModel = getPageModel();
-        if(pageModel == null) {
+        if (pageModel == null) {
             return null;
         }
         Node domDocumentNode = pageModel.getDocumentNode();
-        if(domDocumentNode == null) {
+        if (domDocumentNode == null) {
             return null;
         }
         return Utils.findNode(domDocumentNode, element);
     }
-    
+
     /**
      * Refreshes all the data related to the webkit DOM node corresponding to
      * this source element node
@@ -192,12 +196,14 @@ public class HtmlElementNode extends AbstractNode {
             }
 
         }
+
+        LOGGER.log(Level.INFO, "{0}: refreshWebkitCounterpartState() called.", getDisplayName());
     }
-    
+
     //recursively refreshes the DOM counterpart status
     void refreshDOMStatus() {
         refreshWebkitCounterpartState(true);
-        
+
         for (Node child : getChildren().getNodes(true)) {
             if (child instanceof HtmlElementNode) {
                 ((HtmlElementNode) child).refreshDOMStatus();
@@ -207,9 +213,9 @@ public class HtmlElementNode extends AbstractNode {
 
     private void webkitNodeDescriptionChanged(WebKitNodeDescription oldDescription, WebKitNodeDescription newDescription) {
         //update the "connected" status 
-        fireDisplayNameChange(getHtmlDisplayName(oldDescription != null), 
+        fireDisplayNameChange(getHtmlDisplayName(oldDescription != null),
                 getHtmlDisplayName(newDescription != null));
-        
+
         //refresh the "connection" sensitive actions state
         highlightInBrowserAction.setEnabled(newDescription != null);
     }
@@ -376,6 +382,8 @@ public class HtmlElementNode extends AbstractNode {
     }
 
     private void updateRecursively(HtmlElementDescription newDescription, List<Node> nodesToExpand, List<Node> nodesToExpandRec) {
+        LOGGER.log(Level.INFO, "{0}: entering updateRecursively()", getDisplayName());
+
         ElementChildren ch = getElementChildren();
 
 //        //If a node that was a LEAF now has children the child type has to be changed from Children.LEAF
@@ -384,7 +392,6 @@ public class HtmlElementNode extends AbstractNode {
 //            ch = new ElementChildren(ui, fileObject);
 //            setChildren(ch);
 //        }
-
 
         Set<HtmlElementDescription> oldSubs = new HashSet<HtmlElementDescription>(element.getChildren());
 
@@ -401,7 +408,7 @@ public class HtmlElementNode extends AbstractNode {
 
         List<HtmlElementDescription> newDescriptionChildren = newDescription.getChildren();
         // Now refresh keys
-        ch.setStaticKeys(newDescription.getChildren());
+        ch.setStaticKeys(newDescriptionChildren);
         ch.resetKeys();
 
         // Reread nodes
@@ -453,8 +460,10 @@ public class HtmlElementNode extends AbstractNode {
 
         private HtmlNavigatorPanelUI ui;
         private FileObject fileObject;
-        private Collection<? extends Description> staticKeys = new HashSet<Description>();
-        private Collection<? extends Description> dynamicKeys = new HashSet<Description>();
+        private Collection<? extends Description> staticKeys = Collections.emptyList();
+        private Collection<? extends Description> dynamicKeys = Collections.emptyList();
+        
+        private HtmlElementNode peer;
 
         public ElementChildren(HtmlNavigatorPanelUI ui, FileObject fileObject) {
             this.ui = ui;
@@ -474,23 +483,35 @@ public class HtmlElementNode extends AbstractNode {
         }
 
         void setStaticKeys(Collection<? extends Description> staticDescriptions) {
-            staticKeys = staticDescriptions;
+            staticKeys = Collections.<Description>unmodifiableCollection(staticDescriptions);
         }
 
         void setDynamicKeys(Collection<? extends Description> dynamicDescriptions, boolean forceKeysReset) {
-            dynamicKeys = dynamicDescriptions;
-            if(forceKeysReset) {
+            dynamicKeys = Collections.<Description>unmodifiableCollection(dynamicDescriptions);
+            if (forceKeysReset) {
                 resetKeys();
             }
         }
 
         void resetKeys() {
-            Set<Description> set = new HashSet<Description>();
-            //static keys have precendence
-            set.addAll(staticKeys);
-            set.addAll(dynamicKeys);
+            final Set<DescriptionSetWrapper> wrappers = new LinkedHashSet<DescriptionSetWrapper>();
+            
+            //static keys have precedence
+            for(Description d : staticKeys) {
+                wrappers.add(new DescriptionSetWrapper(d));
+            }
+            for(Description d : dynamicKeys) {
+                wrappers.add(new DescriptionSetWrapper(d));
+            }
+            
+            Collection<Description> result = new ArrayList<Description>();
+            for(DescriptionSetWrapper w : wrappers) {
+                result.add(w.getPeer());
+            }
+            
+            setKeys(result);
 
-            setKeys(set);
+            LOGGER.log(Level.INFO, "{0}: children keys set", peer.getDisplayName());
         }
     }
 }

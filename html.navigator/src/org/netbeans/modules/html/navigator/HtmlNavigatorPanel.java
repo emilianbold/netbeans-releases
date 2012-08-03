@@ -93,7 +93,7 @@ public class HtmlNavigatorPanel implements NavigatorPanel {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
-                    ui.refresh((HtmlParserResult)resultIterator.getParserResult(), -1);
+                    ui.setParserResult((HtmlParserResult)resultIterator.getParserResult());
                 }
             });
         } catch (ParseException ex) {
