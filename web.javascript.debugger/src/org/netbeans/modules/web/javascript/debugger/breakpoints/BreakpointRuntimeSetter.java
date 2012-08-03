@@ -118,6 +118,9 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         if (ab instanceof EventsBreakpoint) {
             return WebKitBreakpointManager.create(d, (EventsBreakpoint) ab);
         }
+        if (ab instanceof XHRBreakpoint) {
+            return WebKitBreakpointManager.create(d, (XHRBreakpoint) ab);
+        }
         throw new IllegalArgumentException("Unknown breakpoint: "+ab);
     }
     

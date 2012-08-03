@@ -314,10 +314,16 @@ public final class Debugger {
     }
     
     // TODO: this method is used only internally so far and it needs to be revisisted
-    public void addXHRBreakpoint(String urlSubstring) {
+    public Breakpoint addXHRBreakpoint(String urlSubstring) {
         JSONObject params = new JSONObject();
         params.put("url", urlSubstring);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setXHRBreakpoint", params));
+        if (resp != null) {
+            Breakpoint b = APIFactory.createBreakpoint((JSONObject)resp.getResponse().get("result"), webkit);
+            currentBreakpoints.add(b);
+            return b;
+        }
+        return null;
     }
     
     public static final String DOM_BREAKPOINT_SUBTREE = "subtree-modified";

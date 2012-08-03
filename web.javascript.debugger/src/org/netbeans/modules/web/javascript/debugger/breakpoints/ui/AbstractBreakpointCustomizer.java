@@ -51,6 +51,7 @@ import org.netbeans.modules.web.javascript.debugger.breakpoints.AbstractBreakpoi
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.EventsBreakpoint;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
+import org.netbeans.modules.web.javascript.debugger.breakpoints.XHRBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.util.NbBundle;
 
@@ -94,6 +95,8 @@ public class AbstractBreakpointCustomizer extends JPanel implements Customizer, 
             c = new DOMBreakpointCustomizer((DOMBreakpoint) ab);
         } else if (ab instanceof EventsBreakpoint) {
             c = new EventsBreakpointCustomizer((EventsBreakpoint) ab);
+        } else if (ab instanceof XHRBreakpoint) {
+            c = new XHRBreakpointCustomizer((XHRBreakpoint) ab);
         } else {
             throw new IllegalArgumentException("Unknown breakpoint " + ab);
         }

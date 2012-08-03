@@ -87,6 +87,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         return new WebKitEventsBreakpointManager(d, eb);
     }
     
+    public static WebKitBreakpointManager create(Debugger d, XHRBreakpoint xb) {
+        return new WebKitXHRBreakpointManager(d, xb);
+    }
+    
     public abstract void add();
 
     public abstract void remove();
@@ -344,6 +348,36 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             } else {
                 super.propertyChange(event);
             }
+        }
+        
+    }
+    
+    private static final class WebKitXHRBreakpointManager extends WebKitBreakpointManager {
+
+        private final XHRBreakpoint xb;
+        private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+        
+        public WebKitXHRBreakpointManager(Debugger d, XHRBreakpoint xb) {
+            super(d, xb);
+            this.xb = xb;
+        }
+
+        @Override
+        public void add() {
+            if (b != null) {
+                return ;
+            }
+            String urlSubstring = xb.getUrlSubstring();
+            b = d.addXHRBreakpoint(urlSubstring);
+        }
+
+        @Override
+        public void remove() {
+            if (b == null) {
+                return ;
+            }
+            d.removeLineBreakpoint(b);
+            b = null;
         }
         
     }

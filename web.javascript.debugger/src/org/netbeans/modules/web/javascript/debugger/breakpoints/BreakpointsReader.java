@@ -65,6 +65,8 @@ public class BreakpointsReader implements Properties.Reader {
     
     private static final String EVENTS          = "events";                     // NOI18N
     
+    private static final String URL_SUBSTRING   = "urlSubstring";               // NOI18N
+    
     private static final String ENABED          = "enabled";                    // NOI18N
     private static final String GROUP_NAME      = "groupName";                  // NOI18N
 
@@ -75,6 +77,7 @@ public class BreakpointsReader implements Properties.Reader {
             LineBreakpoint.class.getName(),
             DOMBreakpoint.class.getName(),
             EventsBreakpoint.class.getName(),
+            XHRBreakpoint.class.getName(),
         };
     }
 
@@ -125,6 +128,12 @@ public class BreakpointsReader implements Properties.Reader {
             }
             return eb;
         }
+        else if (typeID.equals(XHRBreakpoint.class.getName())) {
+            String urlSubstring = properties.getString(URL_SUBSTRING, "");
+            XHRBreakpoint xb = new XHRBreakpoint(urlSubstring);
+            readGeneralProperties(properties, xb);
+            return xb;
+        }
         else {
             return null;
         }
@@ -162,6 +171,13 @@ public class BreakpointsReader implements Properties.Reader {
             Set<String> events = eb.getEvents();
             properties.setArray(EVENTS, events.toArray());
             writeGeneralProperties(properties, eb);
+        }
+        else if (object instanceof XHRBreakpoint) {
+            XHRBreakpoint xb = (XHRBreakpoint) object;
+            
+            String urlSubstring = xb.getUrlSubstring();
+            properties.setString(URL_SUBSTRING, urlSubstring);
+            writeGeneralProperties(properties, xb);
         }
     }
     

@@ -102,7 +102,9 @@ public class BreakpointModel extends ViewModelSupport
         "LBL_DOM_Attributes=attributes",
         "LBL_DOM_Removal=removal",
         "# {0} - A list of event names",
-        "LBL_EventsBreakpoint_on=Event listener on: {0}"
+        "LBL_EventsBreakpoint_on=Event listener on: {0}",
+        "# {0} - A part of an URL. Do not translate \"XMLHttpRequest\", which is a name of the API on which the breakpoint acts.",
+        "LBL_XHRBreakpoint_on=XMLHttpRequest URL containing \"{0}\""
     })
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
@@ -139,6 +141,11 @@ public class BreakpointModel extends ViewModelSupport
             String eventsStr = eb.getEvents().toString();
             eventsStr = eventsStr.substring(1, eventsStr.length() - 1);
             return Bundle.LBL_EventsBreakpoint_on(eventsStr);
+        }
+        if (node instanceof XHRBreakpoint) {
+            XHRBreakpoint xb = (XHRBreakpoint) node;
+            String urlSubstring = xb.getUrlSubstring();
+            return Bundle.LBL_XHRBreakpoint_on(urlSubstring);
         }
         throw new UnknownTypeException(node);
     }
