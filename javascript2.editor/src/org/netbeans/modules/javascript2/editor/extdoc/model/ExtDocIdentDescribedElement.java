@@ -39,27 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 /**
- * Represents simple sDoc elements without any additional type or description etc.
+ * Represents extDoc elements with any described identifier (like class, link etc.).
  * <p>
- * <i>Examples:</i> @private, @method, @internal, ...
+ * <i>Examples:</i> @class MyClass any description, @link Here link which links to Here, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocSimpleElement extends SDocBaseElement {
+public class ExtDocIdentDescribedElement extends ExtDocIdentSimpleElement {
 
-    private SDocSimpleElement(SDocElementType type) {
-        super(type);
+    private final String description;
+
+    private ExtDocIdentDescribedElement(ExtDocElementType type, String identifier, String description) {
+        super(type, identifier);
+        this.description = description;
     }
 
     /**
-     * Creates new {@code SDocSimpleElement}.
-     * @param type simple type (tag), never {@code null}
+     * Creates new {@code ExtDocIdentDescribedElement}.
+     *
+     * @param type element type (tag), never {@code null}
+     * @param identifier identifier of the element, never {@code null}
+     * @param description description of the element, can be {@code null}
      */
-    public static SDocSimpleElement create(SDocElementType type) {
-        return new SDocSimpleElement(type);
+    public static ExtDocIdentDescribedElement create(ExtDocElementType type, String identifier, String description) {
+        return new ExtDocIdentDescribedElement(type, identifier, description);
+    }
+
+    /**
+     * Gets description of the identifier element.
+     * @return description
+     */
+    public String getDescription() {
+        return description;
     }
 
 }

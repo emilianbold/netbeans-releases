@@ -39,27 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.javascript2.editor.extdoc;
+
+import java.util.Map;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Represents simple sDoc elements without any additional type or description etc.
- * <p>
- * <i>Examples:</i> @private, @method, @internal, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocSimpleElement extends SDocBaseElement {
+class ExtDocDocumentationHolder extends JsDocumentationHolder {
 
-    private SDocSimpleElement(SDocElementType type) {
-        super(type);
+    private final Map<Integer, ExtDocComment> blocks;
+
+    public ExtDocDocumentationHolder(Snapshot snapshot) {
+        super(snapshot);
+        blocks = ExtDocParser.parse(snapshot);
     }
 
-    /**
-     * Creates new {@code SDocSimpleElement}.
-     * @param type simple type (tag), never {@code null}
-     */
-    public static SDocSimpleElement create(SDocElementType type) {
-        return new SDocSimpleElement(type);
+    @Override
+    public Map getCommentBlocks() {
+        return blocks;
     }
 
 }

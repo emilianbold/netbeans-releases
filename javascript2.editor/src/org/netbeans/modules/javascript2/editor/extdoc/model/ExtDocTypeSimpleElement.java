@@ -39,27 +39,67 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.javascript2.editor.extdoc.model;
+
+import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
- * Represents simple sDoc elements without any additional type or description etc.
+ * Represents extDoc elements with type declaration purpose.
  * <p>
- * <i>Examples:</i> @private, @method, @internal, ...
+ * <i>Examples:</i> @type {String}
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocSimpleElement extends SDocBaseElement {
+public class ExtDocTypeSimpleElement extends ExtDocBaseElement implements DocParameter {
 
-    private SDocSimpleElement(SDocElementType type) {
+    protected final List<Type> declaredTypes;
+
+    protected ExtDocTypeSimpleElement(ExtDocElementType type, List<Type> declaredTypes) {
         super(type);
+        this.declaredTypes = declaredTypes;
     }
 
     /**
-     * Creates new {@code SDocSimpleElement}.
-     * @param type simple type (tag), never {@code null}
+     * Creates new {@code ExtDocTypeSimpleElement}.
      */
-    public static SDocSimpleElement create(SDocElementType type) {
-        return new SDocSimpleElement(type);
+    public static ExtDocTypeSimpleElement create(ExtDocElementType type, List<Type> declaredTypes) {
+        return new ExtDocTypeSimpleElement(type, declaredTypes);
     }
 
+    /**
+     * Gets the type declared by this element.
+     * @return declared type
+     */
+    public List<Type> getDeclaredTypes() {
+        return declaredTypes;
+    }
+
+
+    @Override
+    public DocIdentifier getParamName() {
+        return null;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return false;
+    }
+
+    @Override
+    public String getParamDescription() {
+        return "";
+    }
+
+    @Override
+    public List<Type> getParamTypes() {
+        return declaredTypes;
+    }
 }

@@ -39,27 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.javascript2.editor.extdoc;
+
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Represents simple sDoc elements without any additional type or description etc.
- * <p>
- * <i>Examples:</i> @private, @method, @internal, ...
+ * Provider for the ExtDoc documentations.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocSimpleElement extends SDocBaseElement {
+public class ExtDocDocumentationProvider implements JsDocumentationProvider {
 
-    private SDocSimpleElement(SDocElementType type) {
-        super(type);
+    private static Set<String> supportedTags;
+
+    @Override
+    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
+        return new ExtDocDocumentationHolder(snapshot);
     }
 
-    /**
-     * Creates new {@code SDocSimpleElement}.
-     * @param type simple type (tag), never {@code null}
-     */
-    public static SDocSimpleElement create(SDocElementType type) {
-        return new SDocSimpleElement(type);
+    @Override
+    public synchronized Set getSupportedTags() {
+        if (supportedTags == null) {
+            supportedTags = new HashSet<String>(ExtDocElementType.values().length);
+            for (ExtDocElementType type : ExtDocElementType.values()) {
+                supportedTags.add(type.toString());
+            }
+            supportedTags.remove("unknown");
+            supportedTags.remove("description");
+        }
+        return supportedTags;
     }
-
 }
