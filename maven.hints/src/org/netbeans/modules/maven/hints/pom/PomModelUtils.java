@@ -50,8 +50,8 @@ import org.openide.util.NbBundle;
  *
  * @author sdedic
  */
-final class PomModelUtils {
-    static boolean implementInTransaction(Model m, Runnable r) {
+public final class PomModelUtils {
+    public static boolean implementInTransaction(Model m, Runnable r) {
         m.startTransaction();
         try {
             r.run();
