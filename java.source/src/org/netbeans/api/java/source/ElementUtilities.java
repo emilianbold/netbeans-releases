@@ -255,13 +255,14 @@ public final class ElementUtilities {
         ArrayList<Element> members = new ArrayList<Element>();
         if (type != null) {
             Elements elements = JavacElements.instance(ctx);
+            Types types = JavacTypes.instance(ctx);
             switch (type.getKind()) {
                 case DECLARED:
                 case UNION:
                     TypeElement te = (TypeElement)((DeclaredType)type).asElement();
                     for (Element member : elements.getAllMembers(te)) {
                         if (acceptor == null || acceptor.accept(member, type)) {
-                            if (!isHidden(member, members, elements))
+                            if (!isHidden(member, members, elements, types))
                                 members.add(member);
                         }
                     }
@@ -317,12 +318,13 @@ public final class ElementUtilities {
     public Iterable<? extends Element> getLocalMembersAndVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         Elements elements = JavacElements.instance(ctx);
+        Types types = JavacTypes.instance(ctx);
         TypeElement cls;
         while(scope != null) {
             if ((cls = scope.getEnclosingClass()) != null) {
                 for (Element local : scope.getLocalElements()) {
                     if (acceptor == null || acceptor.accept(local, null)) {
-                        if (!isHidden(local, members, elements)) {
+                        if (!isHidden(local, members, elements, types)) {
                             members.add(local);
                         }
                     }
@@ -330,7 +332,7 @@ public final class ElementUtilities {
                 TypeMirror type = cls.asType();
                 for (Element member : elements.getAllMembers(cls)) {
                     if (acceptor == null || acceptor.accept(member, type)) {
-                        if (!isHidden(member, members, elements)) {
+                        if (!isHidden(member, members, elements, types)) {
                             members.add(member);
                         }
                     }
@@ -339,7 +341,7 @@ public final class ElementUtilities {
                 for (Element local : scope.getLocalElements()) {
                     if (!local.getKind().isClass() && !local.getKind().isInterface() &&
                         (acceptor == null || acceptor.accept(local, local.getEnclosingElement().asType()))) {
-                        if (!isHidden(local, members, elements)) {
+                        if (!isHidden(local, members, elements, types)) {
                             members.add(local);
                         }
                     }
@@ -355,10 +357,11 @@ public final class ElementUtilities {
     public Iterable<? extends Element> getLocalVars(Scope scope, ElementAcceptor acceptor) {
         ArrayList<Element> members = new ArrayList<Element>();
         Elements elements = JavacElements.instance(ctx);
+        Types types = JavacTypes.instance(ctx);
         while(scope != null && scope.getEnclosingClass() != null) {
             for (Element local : scope.getLocalElements()) {
                 if (acceptor == null || acceptor.accept(local, null)) {
-                    if (!isHidden(local, members, elements)) {
+                    if (!isHidden(local, members, elements, types)) {
                         members.add(local);
                     }
                 }
@@ -379,13 +382,14 @@ public final class ElementUtilities {
         ArrayList<TypeElement> members = new ArrayList<TypeElement>();
         Trees trees = JavacTrees.instance(ctx);
         Elements elements = JavacElements.instance(ctx);
+        Types types = JavacTypes.instance(ctx);
         for (CompilationUnitTree unit : Collections.singletonList(info.getCompilationUnit())) {
             TreePath path = new TreePath(unit);
             Scope scope = trees.getScope(path);
             while (scope != null && scope instanceof JavacScope && !((JavacScope)scope).isStarImportScope()) {
                 for (Element local : scope.getLocalElements()) {
                     if (local.getKind().isClass() || local.getKind().isInterface()) {
-                        if (!isHidden(local, members, elements)) {
+                        if (!isHidden(local, members, elements, types)) {
                             if (acceptor == null || acceptor.accept(local, null))
                                 members.add((TypeElement)local);
                         }
@@ -396,7 +400,7 @@ public final class ElementUtilities {
             Element element = trees.getElement(path);
             if (element != null && element.getKind() == ElementKind.PACKAGE) {
                 for (Element member : element.getEnclosedElements()) {
-                    if (!isHidden(member, members, elements)) {
+                    if (!isHidden(member, members, elements, types)) {
                         if (acceptor == null || acceptor.accept(member, null))
                             members.add((TypeElement) member);
                     }
@@ -405,7 +409,7 @@ public final class ElementUtilities {
             while (scope != null) {
                 for (Element local : scope.getLocalElements()) {
                     if (local.getKind().isClass() || local.getKind().isInterface()) {
-                        if (!isHidden(local, members, elements)) {
+                        if (!isHidden(local, members, elements, types)) {
                             if (acceptor == null || acceptor.accept(local, null))
                                 members.add((TypeElement)local);
                         }
@@ -429,16 +433,24 @@ public final class ElementUtilities {
         boolean accept(Element e, TypeMirror type);
     }
 
-    private boolean isHidden(Element member, List<? extends Element> members, Elements elements) {
+    private boolean isHidden(Element member, List<? extends Element> members, Elements elements, Types types) {
         for (ListIterator<? extends Element> it = members.listIterator(); it.hasNext();) {
             Element hider = it.next();
             if (hider == member)
                 return true;
             if (hider.getSimpleName() == member.getSimpleName()) {
-                if (elements.hides(hider, member))
-                    return true;
-                if (elements.hides(member, hider))
+                if (elements.hides(member, hider)) {
                     it.remove();
+                } else {
+                    TypeMirror memberType = member.asType();
+                    TypeMirror hiderType = hider.asType();
+                    if (memberType.getKind() == TypeKind.EXECUTABLE && hiderType.getKind() == TypeKind.EXECUTABLE) {
+                        if (types.isSubsignature((ExecutableType)hiderType, (ExecutableType)memberType))
+                            return true;
+                    } else {
+                        return true;
+                    }
+                }
             }
         }
         return false;
