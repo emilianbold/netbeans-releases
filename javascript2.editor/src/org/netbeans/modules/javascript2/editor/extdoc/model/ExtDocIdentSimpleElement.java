@@ -39,27 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 /**
- * Represents simple sDoc elements without any additional type or description etc.
+ * Represents extDoc elements with any identifier (like namespace, member etc.).
  * <p>
- * <i>Examples:</i> @private, @method, @internal, ...
+ * <i>Examples:</i> @member MyClass, @namespace empty.space, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocSimpleElement extends SDocBaseElement {
+public class ExtDocIdentSimpleElement extends ExtDocBaseElement {
 
-    private SDocSimpleElement(SDocElementType type) {
+    protected final String identifier;
+
+    protected ExtDocIdentSimpleElement(ExtDocElementType type, String identifier) {
         super(type);
+        this.identifier = identifier;
     }
 
     /**
-     * Creates new {@code SDocSimpleElement}.
-     * @param type simple type (tag), never {@code null}
+     * Creates new {@code ExtDocIdentSimpleElement}.
+     *
+     * @param type element type (tag), never {@code null}
+     * @param identifier identifier of the element, never {@code null}
      */
-    public static SDocSimpleElement create(SDocElementType type) {
-        return new SDocSimpleElement(type);
+    public static ExtDocIdentSimpleElement create(ExtDocElementType type, String identifier) {
+        return new ExtDocIdentSimpleElement(type, identifier);
+    }
+
+    /**
+     * Gets identifier of the element.
+     * @return identifier
+     */
+    public String getIdentifier() {
+        return identifier;
     }
 
 }

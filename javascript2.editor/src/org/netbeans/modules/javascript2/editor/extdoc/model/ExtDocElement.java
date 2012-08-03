@@ -39,27 +39,18 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 /**
- * Represents simple sDoc elements without any additional type or description etc.
- * <p>
- * <i>Examples:</i> @private, @method, @internal, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SDocSimpleElement extends SDocBaseElement {
-
-    private SDocSimpleElement(SDocElementType type) {
-        super(type);
-    }
+public interface ExtDocElement {
 
     /**
-     * Creates new {@code SDocSimpleElement}.
-     * @param type simple type (tag), never {@code null}
+     * Gets extDoc element type.
+     * @return extDoc element type
      */
-    public static SDocSimpleElement create(SDocElementType type) {
-        return new SDocSimpleElement(type);
-    }
+    public ExtDocElementType getType();
 
 }

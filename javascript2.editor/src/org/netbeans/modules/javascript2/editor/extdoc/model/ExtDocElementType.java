@@ -39,44 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.sdoc.elements;
+package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 /**
- * Contains ScriptDoc element types.
+ * Contains ExtDoc element types.
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public enum SDocElementType {
+public enum ExtDocElementType {
+
     // description type - at the start of comments
     DESCRIPTION("description", Category.DESCRIPTION), //NOI18N
     // unknow type
     UNKNOWN("unknown", Category.UNKNOWN), //NOI18N
-    // common ScriptDoc tags
-    ALIAS("@alias", Category.IDENT), //NOI18N
-    AUTHOR("@author", Category.DESCRIPTION), //NOI18N
-    CLASS_DESCRIPTION("@classDescription", Category.DESCRIPTION), //NOI18N
+    
+    // common ExtDoc tags
+    CFG("@cfg", Category.TYPE_NAMED), //NOI18N
+    CLASS("@class", Category.IDENT_DESCRIBED), //NOI18N
     CONSTRUCTOR("@constructor", Category.SIMPLE), //NOI18N
-    DEPRECATED("@deprecated", Category.SIMPLE), //NOI18N
-    EXAMPLE("@example", Category.DESCRIPTION), //NOI18N
-    EXCEPTION("@exception", Category.TYPE_DESCRIBED), //NOI18N
-    ID("@id", Category.DESCRIPTION), //NOI18N
-    INHERITS("@inherits", Category.IDENT), //NOI18N
-    INTERNAL("@internal", Category.SIMPLE), //NOI18N
-    MEMBER_OF("@memberOf", Category.IDENT), //NOI18N
+    EVENT("@event", Category.IDENT_SIMPLE), //NOI18N
+    EXTENDS("@extends", Category.IDENT_SIMPLE), //NOI18N
+    HIDE("@hide", Category.SIMPLE), //NOI18N
+    IGNORE("@ignore", Category.SIMPLE), //NOI18N
+    LINK("@link", Category.IDENT_DESCRIBED), //NOI18N
+    MEMBER("@member", Category.IDENT_SIMPLE), //NOI18N
     METHOD("@method", Category.SIMPLE), //NOI18N
-    NAMESPACE("@namespace", Category.IDENT), //NOI18N
+    NAMESPACE("@namespace", Category.IDENT_SIMPLE), //NOI18N
     PARAM("@param", Category.TYPE_NAMED), //NOI18N
     PRIVATE("@private", Category.SIMPLE), //NOI18N
-    PROJECT_DESCRIPTION("@projectDescription", Category.DESCRIPTION), //NOI18N
-    PROPERTY("@property", Category.TYPE_SIMPLE), //NOI18N
+    PROPERTY("@property", Category.SIMPLE), //NOI18N
     RETURN("@return", Category.TYPE_DESCRIBED), //NOI18N
-    SEE("@see", Category.DESCRIPTION), //NOI18N
-    SINCE("@since", Category.DESCRIPTION), //NOI18N
-    TYPE("@type", Category.TYPE_SIMPLE), //NOI18N
-    VERSION("@version", Category.DESCRIPTION);
-    //NOI18N
+    SINGLETON("@singleton", Category.SIMPLE), //NOI18N
+    STATIC("@static", Category.SIMPLE), //NOI18N
+    TYPE("@type", Category.TYPE_SIMPLE); //NOI18N
+
     private final String value;
     private final Category category;
 
-    private SDocElementType(String textValue, Category category) {
+    private ExtDocElementType(String textValue, Category category) {
         this.value = textValue;
         this.category = category;
     }
@@ -99,9 +99,9 @@ public enum SDocElementType {
      * @param value {@code String} value of the {@code Type}
      * @return {@code Type}
      */
-    public static SDocElementType fromString(String value) {
+    public static ExtDocElementType fromString(String value) {
         if (value != null) {
-            for (SDocElementType type : SDocElementType.values()) {
+            for (ExtDocElementType type : ExtDocElementType.values()) {
                 if (value.equalsIgnoreCase(type.toString())) {
                     return type;
                 }
@@ -114,10 +114,11 @@ public enum SDocElementType {
      * Contains information about element kind.
      */
     public enum Category {
-        DESCRIPTION, // @author description with spaces etc.
-        IDENT, // @namespace ident
+        DESCRIPTION, // description at the beggining of the comment
+        IDENT_SIMPLE, // @extends MyClass
+        IDENT_DESCRIBED, // @class MyClass this is Chuck Noris's class
         SIMPLE, // @private
-        UNKNOWN,
+        UNKNOWN, // @unknownTag anything here
 
         TYPE_SIMPLE, // @type {type}
         TYPE_NAMED, // @return {type} name
