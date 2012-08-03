@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -56,8 +57,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
-import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
+import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
@@ -84,6 +85,7 @@ public class ConfigurationDescriptorProvider {
     private String relativeOffset = null;
     private List<FileObject> trackedFiles;
     private volatile boolean needReload;
+    private Delta delta;
 
     // for unit tests only
     public ConfigurationDescriptorProvider(FileObject projectDirectory) {
@@ -159,6 +161,7 @@ public class ConfigurationDescriptorProvider {
                     //                            // return null;
                     //                        }
                     try {
+                        stratModifications();
                         MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
@@ -175,9 +178,8 @@ public class ConfigurationDescriptorProvider {
                             if (newDescriptor != null) {
                                 newDescriptor.setProject(project);
                                 newDescriptor.waitInitTask();
-                                Delta delta = getDelta(newDescriptor);
                                 projectDescriptor.assign(newDescriptor);
-                                projectDescriptor.checkForChangedItems(delta);
+                                endModifications(true, LOGGER);
                                 LOGGER.log(Level.FINE, "Reassigned project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", // NOI18N
                                         new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)});
                             } else {
@@ -200,46 +202,23 @@ public class ConfigurationDescriptorProvider {
         return projectDescriptor;
     }
 
-    private Delta getDelta(MakeConfigurationDescriptor newDescriptor) {
-        Item[] oldItems = projectDescriptor.getProjectItems();
-        Map<String, Item> oldMap = new HashMap<String, Item>();
-        Set<Item> oldSet = new HashSet<Item>();
-        for (Item item : oldItems) {
-            oldMap.put(item.getAbsolutePath(), item);
-            oldSet.add(item);
+    public void stratModifications() {
+        if (projectDescriptor != null) {
+            delta = new Delta(projectDescriptor);
         }
-        Delta delta = new Delta();
-        Item[] newItems = newDescriptor.getProjectItems();
-        for (Item item : newItems) {
-            Item oldItem = oldMap.get(item.getAbsolutePath());
-            if (oldItem == null) {
-                delta.added.add(item);
-            } else {
-                oldSet.remove(oldItem);
-                if (item.isExcluded() && oldItem.isExcluded()) {
-                    // no changes
-                    delta.replaced.add(item);
-                } else if (item.isExcluded() && !oldItem.isExcluded()) {
-                    delta.exluded.add(item);
-                } else if (!item.isExcluded() && oldItem.isExcluded()) {
-                    delta.included.add(item);
-                } else {
-                    // compare item properties
-                    if (!(item.getUserIncludePaths().equals(oldItem.getUserIncludePaths())
-                            && item.getUserMacroDefinitions().equals(oldItem.getUserMacroDefinitions()))) {
-                        delta.changed.add(item);
-                    } else {
-                        delta.replaced.add(item);
-                    }
-                }
-            }
-        }
-        for (Item item : oldSet) {
-            delta.deleted.add(item);
-        }
-        return delta;
     }
 
+    public void endModifications(boolean sendChangeEvent, Logger logger) {
+        if (sendChangeEvent && delta != null) {
+            delta.computeDelta(projectDescriptor);
+            if (logger != null) {
+                delta.printStatistic(logger);
+            }
+            projectDescriptor.checkForChangedItems(delta);
+        }
+        delta = null;
+    }
+    
     public boolean gotDescriptor() {
         return projectDescriptor != null && projectDescriptor.getState() != State.READING;
     }
@@ -501,15 +480,121 @@ public class ConfigurationDescriptorProvider {
 
     public static final class Delta {
 
-        public List<Item> included = new ArrayList<Item>(); // marked as included
-        public List<Item> added = new ArrayList<Item>(); // added in project
-        public List<Item> exluded = new ArrayList<Item>(); // marked as excluded
-        public List<Item> deleted = new ArrayList<Item>(); // deleted from project items
-        public List<Item> changed = new ArrayList<Item>(); // changed properties
-        public List<Item> replaced = new ArrayList<Item>(); // properties were not changed (from code model point of view) but instance was replaced
+        private final Map<String, Pair> oldState = new HashMap<String, Pair>();
+        private final List<Item> included = new ArrayList<Item>();
+        private final List<Item> added = new ArrayList<Item>(); 
+        private final List<Item> excluded = new ArrayList<Item>(); 
+        private final List<Item> deleted = new ArrayList<Item>(); 
+        private final List<Item> changed = new ArrayList<Item>(); 
+        private final List<Item> replaced = new ArrayList<Item>(); 
 
+        private Delta(MakeConfigurationDescriptor oldDescriptor) {
+            if (oldDescriptor != null) {
+                for(Item item : oldDescriptor.getProjectItems()) {
+                    oldState.put(item.getAbsolutePath(), new Pair(item, item.getCRC(), item.isExcluded()));
+                }
+            }
+        }
+        
+        private void computeDelta(MakeConfigurationDescriptor newDescriptor) {
+            Set<Item> oldSet = new HashSet<Item>();
+            for (Map.Entry<String, Delta.Pair> entry : oldState.entrySet()) {
+                oldSet.add(entry.getValue().item);
+            }
+            Item[] newItems = newDescriptor.getProjectItems();
+            for (Item item : newItems) {
+                Delta.Pair pair = oldState.get(item.getAbsolutePath());
+                if (pair == null) {
+                    added.add(item);
+                } else {
+                    oldSet.remove(pair.item);
+                    if (item.isExcluded() && pair.excluded) {
+                        // no changes
+                        replaced.add(item);
+                    } else if (item.isExcluded() && !pair.excluded) {
+                        excluded.add(item);
+                    } else if (!item.isExcluded() && pair.excluded) {
+                        included.add(item);
+                    } else {
+                        // compare item properties
+                        if (item.getCRC() != pair.crc) {
+                            changed.add(item);
+                        } else {
+                            if (pair.item != item) {
+                                replaced.add(item);
+                            }
+                        }
+                    }
+                }
+            }
+            for (Item item : oldSet) {
+                deleted.add(item);
+            }
+            oldState.clear();
+        }
+        
+        public void printStatistic(Logger logger) {
+            if (logger.isLoggable(Level.INFO)) {
+                logger.log(Level.INFO, "Configuration updated:\n\t{0} deleted items\n\t{1} added items\n\t{2} changed items",
+                        new Object[]{deleted.size()+excluded.size(), added.size()+included.size(), changed.size()});
+            }
+        }
+        
         public boolean isEmpty() {
-            return included.isEmpty() && added.isEmpty() && exluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();
+            return included.isEmpty() && added.isEmpty() && excluded.isEmpty() && deleted.isEmpty() && changed.isEmpty();
+        }
+
+        /**
+         * marked as included items
+         */
+        public List<Item> getIncluded() {
+            return Collections.unmodifiableList(included);
+        }
+
+        /**
+         * added in project items
+         */
+        public List<Item> getAdded() {
+            return Collections.unmodifiableList(added);
+        }
+
+        /**
+         * marked as excluded items
+         */
+        public List<Item> getExcluded() {
+            return Collections.unmodifiableList(excluded);
+        }
+
+        /**
+         * deleted from project items
+         */
+        public List<Item> getDeleted() {
+            return Collections.unmodifiableList(deleted);
+        }
+
+        /**
+         * items with changed properties
+         */
+        public List<Item> getChanged() {
+            return Collections.unmodifiableList(changed);
+        }
+
+        /**
+         * Items which properties were not changed (from code model point of view) but instances were replaced
+         */
+        public List<Item> getReplaced() {
+            return Collections.unmodifiableList(replaced);
+        }
+        
+        private static final class Pair {
+            final int crc;
+            final boolean excluded;
+            final Item item;
+            private Pair(Item item, int crc, boolean excluded) {
+                this.crc = crc;
+                this.excluded = excluded;
+                this.item = item;
+            }
         }
     }
 }

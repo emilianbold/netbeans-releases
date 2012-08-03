@@ -1303,9 +1303,13 @@ decl_namespace
 namespace_alias_definition
 	{String qid; String name = "";}
 	:
-		LITERAL_namespace
+		lns:LITERAL_namespace
 		ns2:IDENT{_td = true;name=ns2.getText();declaratorID((name),qiType);}
-		ASSIGNEQUAL qid = qualified_id SEMICOLON!
+		lae:ASSIGNEQUAL 
+                {action.namespace_alias_definition(lns, ns2, lae);}
+                qid = qualified_id 
+                {action.end_namespace_alias_definition(LT(1));}
+                SEMICOLON!
 		{#namespace_alias_definition = #(#[CSM_NAMESPACE_ALIAS, name], #namespace_alias_definition);}
 	;
 
@@ -2127,7 +2131,8 @@ qualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
-                {action.using_directive(action.USING_DIRECTIVE__IDENT, id);}
+                {action.simple_template_id_or_ident(id);}
+                //{action.using_directive(action.USING_DIRECTIVE__IDENT, id);}
 		{qitem.append(id.getText());}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
@@ -2155,6 +2160,7 @@ unqualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
+                {action.simple_template_id_or_ident(id);}
 		{qitem.append(id.getText());}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
@@ -3607,13 +3613,16 @@ using_declaration
                     {action.using_directive(u, ns);}
                     {if(LA(1) == SCOPE) {action.using_directive(action.USING_DIRECTIVE__SCOPE, LT(1));}} 
                     qid = qualified_id	// Using-directive
-
+                    {action.end_using_directive(LT(0));}
 		    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
 		|
+                    {action.using_declaration(u);}
+                    {if(LA(1) == SCOPE) {action.using_declaration(action.USING_DECLARATION__SCOPE, LT(1));}} 
                     qid = unqualified_id				// Using-declaration
+                    {action.end_using_declaration(LT(1));}
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
-                {action.end_using_directive(LT(0));}
+                
 		SEMICOLON! //{end_of_stmt();}
 	;
 

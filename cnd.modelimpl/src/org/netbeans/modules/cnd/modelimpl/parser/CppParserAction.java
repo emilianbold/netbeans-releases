@@ -78,6 +78,11 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     public static int USING_DIRECTIVE__SCOPE = 0;
     public static int USING_DIRECTIVE__IDENT = 1;
     
+    public static int USING_DECLARATION__TYPENAME = 0;
+    public static int USING_DECLARATION__SCOPE = 1;
+    
+    public static int QUALIFIED_NAMESPACE_SPECIFIER__SCOPE = 0;
+    public static int QUALIFIED_NAMESPACE_SPECIFIER__IDENT = 1;
     
     boolean type_specifier_already_present(TokenStream input);
     
@@ -139,7 +144,9 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     
     void elaborated_type_specifier(Token token);
     
-    void using_declaration(Token token);
+    void using_declaration(Token usingToken);
+    void using_declaration(int kind, Token token);
+    void end_using_declaration(Token semicolonToken);    
     
     void parameter_declaration_list();
     void end_parameter_declaration_list();
@@ -151,4 +158,10 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void using_directive(Token usingToken, Token namespaceToken);
     void using_directive(int kind, Token token);
     void end_using_directive(Token semicolonToken);
+    
+    
+    void namespace_alias_definition(Token namespaceToken, Token identToken, Token assignequalToken);
+    void end_namespace_alias_definition(Token semicolonToken);
+    void qualified_namespace_specifier(int kind, Token token);
+        
 }

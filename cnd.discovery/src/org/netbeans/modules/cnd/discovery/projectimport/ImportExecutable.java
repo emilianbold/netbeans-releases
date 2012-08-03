@@ -73,11 +73,10 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
-import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
-import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -101,7 +100,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.PathUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -299,9 +297,9 @@ public class ImportExecutable implements PropertyChangeListener {
                                 try {
                                     extension.apply(map, lastSelectedProject);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
-                                    DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
+                                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, false);
                                     if (createProjectMode) {
-                                        DiscoveryManagerImpl.writeDefaultVersionedConfigurations(lastSelectedProject);
+                                        DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(lastSelectedProject);
                                     }
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                         cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
@@ -616,9 +614,9 @@ public class ImportExecutable implements PropertyChangeListener {
                                 break;
                             }
                         }
-                        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
+                        DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
                         if (createProjectMode) {
-                            DiscoveryManagerImpl.writeDefaultVersionedConfigurations(lastSelectedProject);
+                            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(lastSelectedProject);
                         }
                         if (cd != null) {
                             cd.create();

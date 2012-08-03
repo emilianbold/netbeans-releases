@@ -63,9 +63,9 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
-import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
@@ -231,7 +231,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         addReqProject(aProject);
                     }
                 }
-                DiscoveryManagerImpl.saveMakeConfigurationDescriptor(mainProject);
+                DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(mainProject, false);
                 for(Project aProject : projects) {
                     String executable;
                     if (createdProjects.containsKey(aProject)){
@@ -280,7 +280,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         if (extension.canApply(map, lastSelectedProject)) {
                             try {
                                 extension.apply(map, lastSelectedProject);
-                                DiscoveryManagerImpl.saveMakeConfigurationDescriptor(lastSelectedProject);
+                                DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, false);
                             } catch (IOException ex) {
                                 ex.printStackTrace(System.err);
                             }
@@ -308,7 +308,7 @@ public class CreateDependencies implements PropertyChangeListener {
                     if (project.getPlatformProject().equals(np)) {
                         CsmListeners.getDefault().removeProgressListener(this);
                         listeners.remove(this);
-                        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
+                        DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
                     }
                 }
             };

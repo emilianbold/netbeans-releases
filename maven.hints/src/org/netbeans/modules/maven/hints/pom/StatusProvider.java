@@ -264,7 +264,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                             final int selectionStart = panes[0].getSelectionStart();
                             final int selectionEnd = panes[0].getSelectionEnd();
                             refreshLinkAnnotations(document, model, selectionStart, selectionEnd);
-                            if (selectionStart != selectionEnd) {
+                            if (selectionStart != selectionEnd) { //maybe we want to remove the condition?
                                 RP.post(new Runnable() {
                                     @Override public void run() {
                                         //this condition is important in order not to break any running hints
