@@ -43,9 +43,6 @@ package org.netbeans.modules.html.navigator;
 
 import java.awt.Image;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -66,6 +63,11 @@ public class WebKitNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
+        return ICON;
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
         return ICON;
     }
     

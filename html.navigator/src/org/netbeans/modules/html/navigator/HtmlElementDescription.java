@@ -71,7 +71,6 @@ public class HtmlElementDescription extends  Description {
     private List<HtmlElementDescription> children;
     private final boolean isLeaf;
     private final String name;
-    private String idAttr, classAttr;
 
     public HtmlElementDescription(Element element, FileObject file) {
         this.file = file;
