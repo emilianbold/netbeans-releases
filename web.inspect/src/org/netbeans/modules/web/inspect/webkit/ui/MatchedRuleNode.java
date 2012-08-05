@@ -41,38 +41,70 @@
  */
 package org.netbeans.modules.web.inspect.webkit.ui;
 
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToRuleSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
- * A node representing a CSS rule.
+ * Node representing a rule that matches a node.
  *
  * @author Jan Stola
  */
-public class RuleNode extends AbstractNode {
-    /** Icon base of the node. */
-    static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
+public class MatchedRuleNode extends AbstractNode {
+    /** Name of the "node" property. */
+    public static final String PROPERTY_NODE = "node"; // NOI18N
+    /** Property sets of this node. */
+    private PropertySet[] propertySets;
+    /** Node that was matched by the represented rule. */
+    Node node;
 
     /**
-     * Creates a new {@code RuleNode}.
+     * Creates a new {@code MatchedRuleNode}.
      *
-     * @param rule rule represented by the node.
-     * @param styleSheetSourceURL URL of the stylesheet the rule belongs to.
+     * @param node node that was matched by the rule to represent.
+     * @param rule rule to represent.
      */
-    RuleNode(Rule rule, String styleSheetSourceURL) {
+    MatchedRuleNode(Node node, Rule rule) {
         super(Children.LEAF, Lookups.fixed(rule));
+        this.node = node;
         setDisplayName(rule.getSelector());
-        setIconBaseWithExtension(ICON_BASE);
     }
 
     @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GoToRuleSourceAction.class);
+    public synchronized PropertySet[] getPropertySets() {
+        if (propertySets == null) {
+            propertySets = createPropertySets();
+        }
+        return propertySets;
+    }
+
+    /**
+     * Creates property sets of this node.
+     *
+     * @return property sets of this node.
+     */
+    private PropertySet[] createPropertySets() {
+        PropertySet set = new PropertySet() {
+            private Property<?> nodeProperty = new PropertySupport.ReadOnly<String>(
+                    PROPERTY_NODE, String.class, null, null) {
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    return node.getDisplayName();
+                }
+            };
+            @Override
+            public Property<?>[] getProperties() {
+                return new Property[] { nodeProperty };
+            }
+        };
+        return new PropertySet[] { set };
     }
 
     @Override
@@ -80,6 +112,11 @@ public class RuleNode extends AbstractNode {
         return new Action[] {
             SystemAction.get(GoToRuleSourceAction.class)
         };
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return SystemAction.get(GoToRuleSourceAction.class);
     }
 
 }

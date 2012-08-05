@@ -41,45 +41,71 @@
  */
 package org.netbeans.modules.web.inspect.webkit.ui;
 
-import javax.swing.Action;
-import org.netbeans.modules.web.inspect.webkit.actions.GoToRuleSourceAction;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
+import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
- * A node representing a CSS rule.
+ * Root node of Style Cascade section of CSS Styles view.
  *
  * @author Jan Stola
  */
-public class RuleNode extends AbstractNode {
-    /** Icon base of the node. */
-    static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
+public class MatchedRulesNode extends AbstractNode {
+    /** Node that was matched by the displayed rules. */
+    private Node node;
+    /** Rules matching the selected element. */
+    private MatchedStyles matchedStyles;
 
     /**
-     * Creates a new {@code RuleNode}.
+     * Creates a new {@code MatchedRulesNode}.
      *
-     * @param rule rule represented by the node.
-     * @param styleSheetSourceURL URL of the stylesheet the rule belongs to.
+     * @param node node that was matched by the displayed rules.
+     * @param matchedStyles rules matching the selected element.
      */
-    RuleNode(Rule rule, String styleSheetSourceURL) {
-        super(Children.LEAF, Lookups.fixed(rule));
-        setDisplayName(rule.getSelector());
-        setIconBaseWithExtension(ICON_BASE);
+    MatchedRulesNode(Node node, MatchedStyles matchedStyles) {
+        super(new Children.Array());
+        this.node = node;
+        this.matchedStyles = matchedStyles;
+        if (matchedStyles != null) {
+            initChildren();
+        }
+        setDisplayName(NbBundle.getMessage(MatchedRulesNode.class, "MatchedRulesNode.displayName")); // NOI18N
     }
 
-    @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GoToRuleSourceAction.class);
+    /**
+     * Initializes the children of this node.
+     */
+    private void initChildren() {
+        Children.Array children = (Children.Array)getChildren();
+        List<MatchedRuleNode> nodes = new ArrayList<MatchedRuleNode>();
+        for (Rule rule : matchedStyles.getMatchedRules()) {
+            nodes.add(createMatchedRuleNode(node, rule));
+        }
+        Node currentNode = node;
+        for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
+            currentNode = currentNode.getParentNode();
+            for (Rule rule : entry.getMatchedRules()) {
+                nodes.add(createMatchedRuleNode(currentNode, rule));
+            }
+        }
+        children.add(nodes.toArray(new MatchedRuleNode[nodes.size()]));
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(GoToRuleSourceAction.class)
-        };
+    /**
+     * Creates a child for the specified matched rule.
+     *
+     * @param node node matched by the rule.
+     * @param rule rule matching the node.
+     * @return child for the specified matched rule.
+     */
+    private MatchedRuleNode createMatchedRuleNode(Node node, Rule rule) {
+        return new MatchedRuleNode(node, rule);
     }
 
 }
