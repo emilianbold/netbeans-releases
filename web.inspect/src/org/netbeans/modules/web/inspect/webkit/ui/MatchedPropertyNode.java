@@ -41,44 +41,80 @@
  */
 package org.netbeans.modules.web.inspect.webkit.ui;
 
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
-import org.netbeans.modules.web.inspect.webkit.actions.GoToRuleSourceAction;
+import org.netbeans.modules.web.inspect.webkit.actions.GoToPropertySourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
- * A node representing a CSS rule.
+ * Node that represents a property of a rule that matches a node.
  *
  * @author Jan Stola
  */
-public class RuleNode extends AbstractNode {
-    /** Icon base of the node. */
-    static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
+public class MatchedPropertyNode extends AbstractNode {
+    /** Name of the "value" property. */
+    public static final String PROPERTY_VALUE = "value"; // NOI18N
+    /** Property sets of this node. */
+    private PropertySet[] propertySets;
+    /** Property represented by this node. */
+    org.netbeans.modules.web.webkit.debugging.api.css.Property property;
 
     /**
-     * Creates a new {@code RuleNode}.
+     * Creates a new {@code MatchedPropertyNode}.
      *
-     * @param rule rule represented by the node.
-     * @param styleSheetSourceURL URL of the stylesheet the rule belongs to.
+     * @param rule owning rule of the property to represent.
+     * @param property property to represent.
      */
-    RuleNode(Rule rule, String styleSheetSourceURL) {
-        super(Children.LEAF, Lookups.fixed(rule));
-        setDisplayName(rule.getSelector());
-        setIconBaseWithExtension(ICON_BASE);
+    MatchedPropertyNode(Rule rule, org.netbeans.modules.web.webkit.debugging.api.css.Property property) {
+        super(Children.LEAF, Lookups.fixed(rule, property));
+        this.property = property;
+        setDisplayName(property.getName());
+    }
+
+    @Override
+    public synchronized PropertySet[] getPropertySets() {
+        if (propertySets == null) {
+            propertySets = createPropertySets();
+        }
+        return propertySets;
+    }
+
+    /**
+     * Creates property sets of this node.
+     *
+     * @return property sets of this node.
+     */
+    private PropertySet[] createPropertySets() {
+        PropertySet set = new PropertySet() {
+            private Property<?> valueProperty = new PropertySupport.ReadOnly<String>(
+                    PROPERTY_VALUE, String.class, null, null) {
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    return property.getValue();
+                }
+            };
+            @Override
+            public Property<?>[] getProperties() {
+                return new Property[] { valueProperty };
+            }
+        };
+        return new PropertySet[] { set };
     }
 
     @Override
     public Action getPreferredAction() {
-        return SystemAction.get(GoToRuleSourceAction.class);
+        return SystemAction.get(GoToPropertySourceAction.class);
     }
 
     @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
-            SystemAction.get(GoToRuleSourceAction.class)
+            SystemAction.get(GoToPropertySourceAction.class)
         };
     }
 

@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
@@ -57,6 +58,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
+import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -65,22 +67,23 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 
 /**
- * Go to rule action.
+ * Go to property (of a rule) source action.
  *
  * @author Jan Stola
  */
-public class GoToRuleSourceAction extends NodeAction {
+public class GoToPropertySourceAction extends NodeAction {
 
     @Override
     protected void performAction(Node[] activatedNodes) {
         Lookup lookup = activatedNodes[0].getLookup();
         org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                 lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
+        Property property = lookup.lookup(Property.class);
         Resource resource = new Resource(rule.getSourceURL());
         FileObject fob = resource.toFileObject();
         try {
             Source source = Source.create(fob);
-            ParserManager.parse(Collections.singleton(source), new GoToRuleTask(rule, fob));
+            ParserManager.parse(Collections.singleton(source), new GoToPropertySourceAction.GoToPropertyTask(fob, rule, property));
         } catch (ParseException ex) {
             Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
         }
@@ -93,7 +96,8 @@ public class GoToRuleSourceAction extends NodeAction {
             Lookup lookup = activatedNodes[0].getLookup();
             org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                     lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
-            if (rule != null) {
+            Property property = lookup.lookup(Property.class);
+            if ((rule != null) && (property != null)) {
                 Resource resource = new Resource(rule.getSourceURL());
                 enabled = (resource.toFileObject() != null);
             }
@@ -108,7 +112,7 @@ public class GoToRuleSourceAction extends NodeAction {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(GoToRuleSourceAction.class, "GoToRuleSourceAction.displayName"); // NOI18N
+        return NbBundle.getMessage(GoToPropertySourceAction.class, "GoToPropertySourceAction.displayName"); // NOI18N
     }
 
     @Override
@@ -117,24 +121,28 @@ public class GoToRuleSourceAction extends NodeAction {
     }
 
     /**
-     * Task that jumps on the declaration of the given rule
-     * in the specified file.
+     * Task that jumps into the declaration of the given property
+     * of a rule in the given file.
      */
-    static class GoToRuleTask extends UserTask {
-        /** Rule to jump to. */
-        private org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
+    static class GoToPropertyTask extends UserTask {
         /** File to jump into. */
         private FileObject fob;
+        /** Rule to jump into. */
+        private org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
+        /** Property to jump to. */
+        private Property property;
 
         /**
-         * Creates a new {@code GoToRuleTask}.
-         * 
-         * @param rule rule to jump to.
+         * Creates a new {@code GoToPropertyTask}.
+         *
          * @param fob file to jump into.
+         * @param rule rule to jump into.
+         * @param property property to jump to.
          */
-        GoToRuleTask(org.netbeans.modules.web.webkit.debugging.api.css.Rule rule, FileObject fob) {
-            this.rule = rule;
+        GoToPropertyTask(FileObject fob, org.netbeans.modules.web.webkit.debugging.api.css.Rule rule, Property property) {
             this.fob = fob;
+            this.rule = rule;
+            this.property = property;
         }
 
         @Override
@@ -146,7 +154,18 @@ public class GoToRuleSourceAction extends NodeAction {
                 public void run(StyleSheet styleSheet) {
                     Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
                     if (modelRule != null) {
-                        final int offset = modelRule.getStartOffset();
+                        String propertyName = property.getName().trim();
+                        org.netbeans.modules.css.model.api.Property modelProperty =
+                                findProperty(modelRule, propertyName);
+                        if (modelProperty == null) {
+                            String shorthandName = property.getShorthandName();
+                            if (shorthandName != null) {
+                                modelProperty = findProperty(modelRule, shorthandName);
+                            }
+                        }
+
+                        final int offset = (modelProperty == null) ?
+                                modelRule.getStartOffset() : modelProperty.getStartOffset();
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -154,6 +173,25 @@ public class GoToRuleSourceAction extends NodeAction {
                             }
                         });
                     }
+                }
+
+                /**
+                 * Returns a property of the given name in the specified rule.
+                 *
+                 * @param rule rule where to search for the property.
+                 * @param propertyName name of the property to find.
+                 * @return property of the given name in the specified rule
+                 * or {@code null} if such property cannot be found.
+                 */
+                private org.netbeans.modules.css.model.api.Property findProperty(Rule rule, String propertyName) {
+                    for (Declaration declaration : rule.getDeclarations().getDeclarations()) {
+                        org.netbeans.modules.css.model.api.Property modelProperty = declaration.getProperty();
+                        String modelPropertyName = modelProperty.getContent().toString().trim();
+                        if (propertyName.equals(modelPropertyName)) {
+                            return modelProperty;
+                        }
+                    }
+                    return null;
                 }
             });
         }

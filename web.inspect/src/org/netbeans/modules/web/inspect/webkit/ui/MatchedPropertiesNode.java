@@ -41,45 +41,73 @@
  */
 package org.netbeans.modules.web.inspect.webkit.ui;
 
-import javax.swing.Action;
-import org.netbeans.modules.web.inspect.webkit.actions.GoToRuleSourceAction;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
+import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.NbBundle;
 
 /**
- * A node representing a CSS rule.
+ * Root node of Property Summary section of CSS Styles view.
  *
  * @author Jan Stola
  */
-public class RuleNode extends AbstractNode {
-    /** Icon base of the node. */
-    static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
+public class MatchedPropertiesNode extends AbstractNode {
+    /** Rules matching a node. */
+    private MatchedStyles matchedStyles;
 
     /**
-     * Creates a new {@code RuleNode}.
+     * Creates a new {@code MatchedPropertiesNode}.
      *
-     * @param rule rule represented by the node.
-     * @param styleSheetSourceURL URL of the stylesheet the rule belongs to.
+     * @param matchedStyles rules matching a node.
      */
-    RuleNode(Rule rule, String styleSheetSourceURL) {
-        super(Children.LEAF, Lookups.fixed(rule));
-        setDisplayName(rule.getSelector());
-        setIconBaseWithExtension(ICON_BASE);
+    MatchedPropertiesNode(MatchedStyles matchedStyles) {
+        super(new Children.Array());
+        this.matchedStyles = matchedStyles;
+        if (matchedStyles != null) {
+            initChildren();
+        }
+        setDisplayName(NbBundle.getMessage(MatchedPropertiesNode.class, "MatchedPropertiesNode.displayName")); // NOI18N
     }
 
-    @Override
-    public Action getPreferredAction() {
-        return SystemAction.get(GoToRuleSourceAction.class);
+    /**
+     * Initializes the children of this node.
+     */
+    private void initChildren() {
+        Set<String> properties = new HashSet<String>();
+        Children.Array children = (Children.Array)getChildren();
+        List<MatchedPropertyNode> nodes = new ArrayList<MatchedPropertyNode>();
+        for (Rule rule : matchedStyles.getMatchedRules()) {
+            addChildrenFor(rule, nodes, properties);
+        }
+        for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
+            for (Rule rule : entry.getMatchedRules()) {
+                addChildrenFor(rule, nodes, properties);
+            }
+        }
+        children.add(nodes.toArray(new MatchedPropertyNode[nodes.size()]));
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(GoToRuleSourceAction.class)
-        };
+    /**
+     * Creates subnodes of this node.
+     *
+     * @param rule rule for which the children should be created.
+     * @param toPopulate list where the newly created children should be appended.
+     * @param properties names of properties for which there are children already created.
+     */
+    private void addChildrenFor(Rule rule, List<MatchedPropertyNode> toPopulate, Set<String> properties) {
+        for (org.netbeans.modules.web.webkit.debugging.api.css.Property property : rule.getStyle().getProperties()) {
+            String name = property.getName();
+            if (!properties.contains(name)) {
+                properties.add(name);
+                toPopulate.add(new MatchedPropertyNode(rule, property));
+            }
+        }
     }
 
 }
