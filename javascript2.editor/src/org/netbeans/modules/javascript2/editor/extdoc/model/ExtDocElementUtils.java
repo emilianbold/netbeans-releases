@@ -95,7 +95,7 @@ public class ExtDocElementUtils {
         if (parts.length == 1) {
             return new String[]{parts[0], ""};
         } else {
-            return new String[]{parts[0], elementText.substring(parts[0].length())};
+            return new String[]{parts[0], elementText.substring(parts[0].length()).trim()};
         }
     }
 
