@@ -20,11 +20,11 @@
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
-                <dependency>
+                <!--dependency>
                     <code-name-base>org.aopalliance</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>
+                </dependency-->
                 <dependency>
                     <code-name-base>org.springframework.context</code-name-base>
                     <compile-dependency/>
@@ -35,11 +35,11 @@
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
-                <dependency>
+                <!--dependency>
                     <code-name-base>org.springframework.aop</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>
+                </dependency-->
             </module-dependencies>
             <public-packages/>
             <class-path-extension>

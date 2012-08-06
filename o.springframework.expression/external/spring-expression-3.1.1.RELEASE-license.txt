@@ -1,10 +1,8 @@
-Name: Springframework Web
+Name: Springframework Expression
 Version: 3.1.1
 License: Apache-2.0
-OSR: XXX
 Origin: http://www.springsource.org/
 Description: Springframework is an application development framework for enterprise Java
-
 
 
                                  Apache License
@@ -208,4 +206,3 @@ Description: Springframework is an application development framework for enterpr
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-
