@@ -51,7 +51,8 @@ FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=44, text=1}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text=,}
-FormattingToken{kind=VAR_AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_VAR_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=46, text= }
 FormattingToken{kind=TEXT, offset=47, text=d}
 FormattingToken{kind=WHITESPACE, offset=48, text= }
@@ -77,7 +78,8 @@ FormattingToken{kind=INDENTATION_DEC, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=74, text=}}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=75, text=,}
-FormattingToken{kind=VAR_AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_VAR_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=76, text= }
 FormattingToken{kind=TEXT, offset=77, text=c}
 FormattingToken{kind=WHITESPACE, offset=78, text= }
@@ -87,7 +89,8 @@ FormattingToken{kind=AFTER_ASSIGNMENT_OPERATOR, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=80, text=1}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=81, text=,}
-FormattingToken{kind=VAR_AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_VAR_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=82, text= }
 FormattingToken{kind=TEXT, offset=83, text=d}
 FormattingToken{kind=WHITESPACE, offset=84, text= }
