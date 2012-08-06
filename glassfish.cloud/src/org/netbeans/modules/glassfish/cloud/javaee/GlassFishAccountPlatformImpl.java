@@ -44,6 +44,7 @@ package org.netbeans.modules.glassfish.cloud.javaee;
 import java.awt.Image;
 import java.io.File;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 /**
  * Java EE platform SPI interface implementation for Java EE platform registered
@@ -90,7 +91,7 @@ public class GlassFishAccountPlatformImpl extends GlassFishPlatformImpl {
     }
 
     @Override
-    public org.netbeans.spi.project.libraries.LibraryImplementation[] getLibraries() {
+    public LibraryImplementation[] getLibraries() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
