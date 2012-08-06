@@ -117,7 +117,7 @@ public class GroovyRefactoringElement extends ASTElement {
             builder.append("("); // NOI18N
             if (params.length > 0) {
                 for (Parameter param : params) {
-                    builder.append(ElementUtils.getTypeNameWithoutPackage(param.getType()));
+                    builder.append(ElementUtils.getType(param.getType()).getNameWithoutPackage());
                     builder.append(" "); // NOI18N
                     builder.append(param.getName());
                     builder.append(","); // NOI18N

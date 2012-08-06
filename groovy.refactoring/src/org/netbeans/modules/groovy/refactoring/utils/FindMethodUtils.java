@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.groovy.refactoring.utils;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Variable;
@@ -50,6 +52,7 @@ import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.Methods;
 
 /**
  *
@@ -86,9 +89,30 @@ public final class FindMethodUtils {
 
     // Situations like: "this.destroyWorldMethod()" or only "destroyWorldMethod()"
     private static MethodNode getThisMethodNode(AstPath path, MethodCallExpression methodCall) {
+        String findingMethod = methodCall.getMethodAsString();
+        Expression arguments = methodCall.getArguments();
         ClassNode owningClass = AstUtilities.getOwningClass(path);
+
         if (owningClass != null) {
-            return owningClass.tryFindPossibleMethod(methodCall.getMethodAsString(), methodCall.getArguments());
+            MethodNode findedMethod = owningClass.tryFindPossibleMethod(findingMethod, arguments);
+            if (findedMethod != null) {
+                return findedMethod;
+            }
+
+            List<MethodNode> possibleMethods = new ArrayList<MethodNode>();
+            for (MethodNode method : owningClass.getMethods()) {
+                if (Methods.isSameMethod(method, methodCall)) {
+                    possibleMethods.add(method);
+                }
+            }
+            if (possibleMethods.size() > 1) {
+                // In the future we should distinguish between 'size == 1' and 'size > 1'
+                // If the size is more than 1, it means we are dealing with more methods
+                // with the same name and the same number of parameters. In that case we
+                // should either try to interfere parameter types or show some user dialog
+                // with selection box and let the user to choose what he want to find
+                return possibleMethods.get(0);
+            }
         }
         return null;
     }
