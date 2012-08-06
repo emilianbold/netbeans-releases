@@ -41,41 +41,46 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.Collection;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private JavaScriptLibrarySelection component;
+    private final Object javaScriptLibrarySelectionLock = new Object();
+
+    // @GuardedBy("javaScriptLibrarySelectionLock")
+    private JavaScriptLibrarySelection javaScriptLibrarySelection;
     private WizardDescriptor wizardDescriptor;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
     @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new JavaScriptLibrarySelection(this);
-            component.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_JavaScriptLibrarySelectionStep")); // NOI18N
+    public JavaScriptLibrarySelection getComponent() {
+        synchronized (javaScriptLibrarySelectionLock) {
+            if (javaScriptLibrarySelection == null) {
+                javaScriptLibrarySelection = new JavaScriptLibrarySelection();
+                javaScriptLibrarySelection.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_JavaScriptLibrarySelectionStep")); // NOI18N
+            }
+            return javaScriptLibrarySelection;
         }
-        return component;
     }
 
     public void updateDefaults(Collection<String> defaultLibs) {
-        component.updateDefaults(defaultLibs);
+        synchronized (javaScriptLibrarySelectionLock) {
+            getComponent().updateDefaults(defaultLibs);
+        }
     }
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.SiteTemplateWizard"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel"); // NOI18N
     }
 
     @Override
@@ -87,29 +92,47 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     public void storeSettings(WizardDescriptor settings) {
     }
 
-    public void setErrorMessage(String message) {
-        if (wizardDescriptor != null) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+    @Override
+    public boolean isValid() {
+        // error
+        String error;
+        synchronized (javaScriptLibrarySelectionLock) {
+            error = getComponent().getErrorMessage();
+        }
+        if (error != null && !error.isEmpty()) {
+            setErrorMessage(error);
+            return false;
+        }
+        // warning
+        String warning;
+        synchronized (javaScriptLibrarySelectionLock) {
+            warning = getComponent().getWarningMessage();
+        }
+        if (warning != null && !warning.isEmpty()) {
+            setErrorMessage(warning);
+            return true;
+        }
+        // everything ok
+        setErrorMessage(""); // NOI18N
+        return true;
+    }
+
+    private void setErrorMessage(String message) {
+        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        synchronized (javaScriptLibrarySelectionLock) {
+            getComponent().addChangeListener(listener);
         }
     }
 
     @Override
-    public boolean isValid() {
-        return true;
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
-    }
-
-    protected final void fireChangeEvent() {
-        changeSupport.fireChange();
+    public void removeChangeListener(ChangeListener listener) {
+        synchronized (javaScriptLibrarySelectionLock) {
+            getComponent().removeChangeListener(listener);
+        }
     }
 
     @Override
@@ -118,8 +141,12 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     }
 
     public void apply(FileObject p, ProgressHandle handle) throws IOException {
-        if (component != null) {
-            component.apply(p, handle);
+        assert !EventQueue.isDispatchThread();
+        synchronized (javaScriptLibrarySelectionLock) {
+            if (javaScriptLibrarySelection != null) {
+                javaScriptLibrarySelection.apply(p, handle);
+            }
         }
     }
+
 }

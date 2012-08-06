@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
+import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,12 +54,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressHandle;
@@ -69,78 +75,154 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-public class JavaScriptLibrarySelection extends javax.swing.JPanel {
+public class JavaScriptLibrarySelection extends JPanel {
 
-    private static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelection.class.getName());
+    private static final long serialVersionUID = -468734354571212312L;
 
-    private JavaScriptLibrarySelectionPanel wp;
-    private LibrariesModel model;
+    static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelection.class.getName());
 
-    /**
-     * Creates new form JavaScriptLibrarySelection
-     */
-    public JavaScriptLibrarySelection(JavaScriptLibrarySelectionPanel wp) {
-        this.wp = wp;
+    private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w/-]+$", Pattern.CASE_INSENSITIVE); // NOI18N
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    // selected items are accessed outside of EDT thread
+    //final List<ModelItem> selectedLibraries = new CopyOnWriteArrayList<ModelItem>();
+
+    // folder path is accessed outside of EDT thread
+    private volatile String librariesFolder = null;
+
+
+    public JavaScriptLibrarySelection() {
+        assert EventQueue.isDispatchThread();
+
         initComponents();
-        model = new LibrariesModel();
-        librariesTable.setModel(model);
-        librariesTable.setRowSelectionAllowed(true);
-        //librariesTable.setTableHeader(null);
-        //librariesTable.setShowHorizontalLines(false);
-        //librariesTable.setShowVerticalLines(false);
-        librariesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                updateDescription();
-            }
-        });
+
+        initInfo();
+        initLibraries();
+        initLibrariesFolder();
     }
 
     @NbBundle.Messages("JavaScriptLibrarySelection.info=<html>Choose a library version and shuttle it to the Selected list to add it to your project. "
             + "Libraries added by your template are already selected.")
-    private void init() {
+    private void initInfo() {
         infoLabel.setText(Bundle.JavaScriptLibrarySelection_info());
     }
 
-    @Override
-    public void addNotify() {
-        SwingUtilities.invokeLater(new Runnable() {
+    private void initLibraries() {
+        initLibrariesTable();
+        initLibrariesList();
+    }
+
+    private void initLibrariesTable() {
+        final LibrariesModel model = new LibrariesModel();
+        librariesTable.setModel(model);
+        // tooltip
+        librariesTable.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
-            public void run() {
-                updateDescription();
+            public void mouseMoved(MouseEvent e) {
+                Point point = e.getPoint();
+                int row = librariesTable.rowAtPoint(point);
+                librariesTable.setToolTipText(model.getItems().get(row).getDescription());
             }
         });
-        super.addNotify();
     }
 
-    @Override
-    public void removeNotify() {
-        // if descriptionTextPane is too long and user goes to previous
-        // and next page the wizard panel might resize too much; as worarkound
-        // the descriptionTextPane will be emptied here
-        //descriptionTextPane.setText(""); // NOI18N
-        super.removeNotify();
+    private void initLibrariesList() {
     }
 
-    private void updateDescription() {
-        int i = librariesTable.getSelectedRow();
-        if (i == -1) {
-            return;
-        }
-        ModelItem mi = model.l.get(i);
-        if (mi.getDescription() != null) {
-//            descriptionTextPane.setText(mi.getDescription());
-        } else {
-//            descriptionTextPane.setText("");
-        }
+    private void initLibrariesFolder() {
+        librariesFolder = librariesFolderTextField.getText();
+        librariesFolderTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                librariesFolder = librariesFolderTextField.getText();
+                fireChangeEvent();
+            }
+        });
     }
 
     @NbBundle.Messages("JavaScriptLibrarySelection.name=JavaScript Libraries to install into project")
     @Override
     public String getName() {
         return Bundle.JavaScriptLibrarySelection_name();
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    final void fireChangeEvent() {
+        changeSupport.fireChange();
+    }
+
+    public String getErrorMessage() {
+        return validateLibrariesFolder();
+    }
+
+    public String getWarningMessage() {
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "JavaScriptLibrarySelection.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\" and \"/\"."
+    })
+    private String validateLibrariesFolder() {
+        if (!LIBRARIES_FOLDER_PATTERN.matcher(librariesFolder).matches()) {
+            return Bundle.JavaScriptLibrarySelection_error_librariesFolder_invalid();
+        }
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "JavaScriptLibrarySelection.error.copying=Some of the library files could not be retrieved.",
+        "# {0} - library name",
+        "JavaScriptLibrarySelection.msg.downloading=Downloading {0}"
+    })
+    void apply(FileObject projectDir, ProgressHandle handle) throws IOException {
+        assert !EventQueue.isDispatchThread();
+        FileObject librariesRoot = FileUtil.createFolder(projectDir, librariesFolderTextField.getText());
+        boolean someFilesAreMissing = false;
+        for (ModelItem mi : ((LibrariesModel) librariesTable.getModel()).items) {
+            if (!mi.selected) {
+                continue;
+            }
+            Library l = mi.getChosenLibrary();
+            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+            try {
+                WebClientLibraryManager.addLibraries(new Library[]{l}, librariesRoot,
+                        mi.getChosenLibraryVolume());
+            } catch (MissingLibResourceException e) {
+                someFilesAreMissing = true;
+            }
+        }
+        if (someFilesAreMissing) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.JavaScriptLibrarySelection_error_copying(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
+
+    void updateDefaults(Collection<String> defaultLibs) {
+        assert EventQueue.isDispatchThread();
+        // XXX remove default libraries from list and add there defaultLibs (in the beginning of the list)
+        //selectedLibraries.addAll(defaultLibs);
+        // XXX fire list change
     }
 
     /**
@@ -156,7 +238,7 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
         librariesLabel = new javax.swing.JLabel();
         librariesFilterTextField = new javax.swing.JTextField();
         librariesScrollPane = new javax.swing.JScrollPane();
-        librariesTable = new MyTable();
+        librariesTable = new LibrariesTable();
         selectAllButton = new javax.swing.JButton();
         selectOneButton = new javax.swing.JButton();
         deselectOneButton = new javax.swing.JButton();
@@ -272,43 +354,36 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
     private javax.swing.JScrollPane selectedScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    @NbBundle.Messages({
-        "JavaScriptLibrarySelection.error.copying=Some of the library files could not be retrieved.",
-        "# {0} - library name",
-        "JavaScriptLibrarySelection.msg.downloading=Downloading {0}"
-    })
-    void apply(FileObject p, ProgressHandle handle) throws IOException {
-        FileObject librariesRoot = FileUtil.createFolder(p, librariesFolderTextField.getText());
-        boolean someFilesAreMissing = false;
-        for (ModelItem mi : ((LibrariesModel) librariesTable.getModel()).l) {
-            if (!mi.selected) {
-                continue;
+    //~ Inner classes
+
+    private static final class LibrariesTable extends JTable {
+
+        private static final long serialVersionUID = 1578314546784244L;
+
+
+        @Override
+        public TableCellEditor getCellEditor(int row, int column) {
+            if (column != 1) {
+                return super.getCellEditor(row, column);
             }
-            Library l = mi.getChosenLibrary();
-            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
-            try {
-                WebClientLibraryManager.addLibraries(new Library[]{l}, librariesRoot,
-                        mi.getChosenLibraryVolume());
-            } catch (MissingLibResourceException e) {
-                someFilesAreMissing = true;
-            }
+            LibrariesModel model = (LibrariesModel)getModel();
+            JComboBox jc = new JComboBox(model.getItems().get(row).getVersions());
+            return new DefaultCellEditor(jc);
         }
-        if (someFilesAreMissing) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.JavaScriptLibrarySelection_error_copying(), NotifyDescriptor.ERROR_MESSAGE));
-        }
+
     }
 
-    void updateDefaults(Collection<String> defaultLibs) {
-        model.setSelected(defaultLibs);
-        model.fireTableDataChanged();
-    }
+    private static final class LibrariesModel extends AbstractTableModel {
 
-    private static class LibrariesModel extends AbstractTableModel {
+        private static final long serialVersionUID = 8732134781780336L;
 
-        private List<ModelItem> l = new ArrayList<ModelItem>();
+        // @GuardedBy("EDT")
+        private final List<ModelItem> items = new ArrayList<ModelItem>();
+
 
         public LibrariesModel() {
-            Map<String,List<Library>> map = new HashMap<String, List<Library>>();
+            assert EventQueue.isDispatchThread();
+            Map<String, List<Library>> map = new HashMap<String, List<Library>>();
             for (Library lib : LibraryManager.getDefault().getLibraries()) {
                 if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
@@ -322,10 +397,10 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
                 }
             }
             for (String libName : map.keySet()) {
-                l.add(new ModelItem(map.get(libName)));
+                items.add(new ModelItem(map.get(libName)));
             }
             // sort libraries according their name:
-            Collections.sort(l, new Comparator<ModelItem>() {
+            Collections.sort(items, new Comparator<ModelItem>() {
                 @Override
                 public int compare(ModelItem o1, ModelItem o2) {
                     return o1.getSimpleDisplayName().toLowerCase().compareTo(
@@ -335,7 +410,8 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
         }
 
         void setSelected(Collection<String> preSelected) {
-            for (ModelItem mi : l) {
+            assert EventQueue.isDispatchThread();
+            for (ModelItem mi : items) {
                 if (preSelected.contains(mi.getLibrary().getName())) {
                     mi.selected = true;
                 }
@@ -345,7 +421,8 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
 
         @Override
         public int getRowCount() {
-            return l.size();
+            assert EventQueue.isDispatchThread();
+            return items.size();
         }
 
         @Override
@@ -381,7 +458,8 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            ModelItem m = l.get(rowIndex);
+            assert EventQueue.isDispatchThread();
+            ModelItem m = items.get(rowIndex);
             if (columnIndex == 0) {
                 return m.getSimpleDisplayName();
             }
@@ -394,7 +472,8 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            ModelItem m = l.get(rowIndex);
+            assert EventQueue.isDispatchThread();
+            ModelItem m = items.get(rowIndex);
             if (columnIndex == 1) {
                 m.selectedVersion = (String) aValue;
                 return;
@@ -402,9 +481,15 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             assert false : "Unknown column index: " + columnIndex;
         }
 
+        private List<ModelItem> getItems() {
+            assert EventQueue.isDispatchThread();
+            return items;
+        }
+
     }
 
     private static class ModelItem {
+
         private boolean selected;
         private String selectedVersion;
         // this list represents single library in several different versions:
@@ -447,6 +532,7 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             if (!getLibrary().getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
                 this.selectedVersion += VER_DOCUMENTED;
             } else if (!getLibrary().getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                // noop
             } else if (!getLibrary().getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
                 this.selectedVersion += VER_MINIFIED;
             }
@@ -515,17 +601,4 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
 
     }
 
-    private static class MyTable extends JTable {
-
-        @Override
-        public TableCellEditor getCellEditor(int row, int column) {
-            if (column != 1) {
-                return super.getCellEditor(row, column);
-            }
-            LibrariesModel model = (LibrariesModel)getModel();
-            JComboBox jc = new JComboBox(model.l.get(row).getVersions());
-            return new DefaultCellEditor(jc);
-        }
-
-    }
 }

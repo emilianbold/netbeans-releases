@@ -117,7 +117,7 @@
       <SubComponents>
         <Component class="javax.swing.JTable" name="librariesTable">
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new MyTable()"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new LibrariesTable()"/>
           </AuxValues>
         </Component>
       </SubComponents>
