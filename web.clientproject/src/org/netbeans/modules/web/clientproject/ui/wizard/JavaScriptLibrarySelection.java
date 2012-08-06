@@ -101,7 +101,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     // selected items are accessed outside of EDT thread
-    final List<Pair<String, Library>> selectedLibraries = Collections.synchronizedList(new LinkedList<Pair<String, Library>>());
+    final List<Pair<String, LibraryVersion>> selectedLibraries = Collections.synchronizedList(new LinkedList<Pair<String, LibraryVersion>>());
     // @GuardedBy("EDT")
     final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
     // @GuardedBy("EDT")
@@ -291,19 +291,19 @@ public class JavaScriptLibrarySelection extends JPanel {
         assert !EventQueue.isDispatchThread();
         FileObject librariesRoot = null;
         boolean someFilesAreMissing = false;
-        for (Pair<String, Library> selectedLibrary : selectedLibraries) {
+        for (Pair<String, LibraryVersion> selectedLibrary : selectedLibraries) {
             if (librariesRoot == null) {
                 librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
             }
-            Library library = selectedLibrary.getB();
-            if (library == null) {
+            LibraryVersion libraryVersion = selectedLibrary.getB();
+            if (libraryVersion == null) {
                 // happens for js files from selected site template
                 continue;
             }
+            Library library = libraryVersion.getLibrary();
             handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
             try {
-                // XXX use proper volume
-                WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, WebClientLibraryManager.VOL_DOCUMENTED);
+                WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
             } catch (MissingLibResourceException e) {
                 someFilesAreMissing = true;
             }
@@ -608,7 +608,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             assert false : "Unknown column index: " + columnIndex;
         }
 
-        private List<ModelItem> getItems() {
+        List<ModelItem> getItems() {
             assert EventQueue.isDispatchThread();
             return items;
         }
@@ -619,10 +619,10 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         private static final long serialVersionUID = -57683546574861110L;
 
-        private final List<Pair<String, Library>> libraries;
+        private final List<Pair<String, LibraryVersion>> libraries;
 
 
-        public LibrariesListModel(List<Pair<String, Library>> libraries) {
+        public LibrariesListModel(List<Pair<String, LibraryVersion>> libraries) {
             this.libraries = libraries;
         }
 
@@ -632,7 +632,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
 
         @Override
-        public Pair<String, Library> getElementAt(int index) {
+        public Pair<String, LibraryVersion> getElementAt(int index) {
             return libraries.get(index);
         }
 
@@ -740,9 +740,10 @@ public class JavaScriptLibrarySelection extends JPanel {
         private final Library library;
         private final String type;
 
+
         public LibraryVersion(Library library, String type) {
             assert library != null;
-            assert type != null;
+            assert type != null && !type.isEmpty();
             this.library = library;
             this.type = type;
         }
