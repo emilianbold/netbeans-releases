@@ -83,7 +83,7 @@ public class ExtDocElementUtils {
                 return ExtDocTypeDescribedElement.create(elementType, descInfo.getType(), descInfo.getDescription());
             case TYPE_NAMED:
                 TypeInformation namedInfo = parseTypeInformation(elementType, elementText, elementTextStartOffset);
-                return ExtDocTypeNamedElement.create(elementType, namedInfo.getType(), namedInfo.getDescription(), namedInfo.getName(), namedInfo.isOptional());
+                return ExtDocTypeNamedElement.create(elementType, namedInfo.getType(), namedInfo.getDescription(), namedInfo.getName(), namedInfo.isOptional(), namedInfo.getDefaultValue());
             default:
                 // unknown extDoc element type
                 return ExtDocDescriptionElement.create(elementType, elementText);
