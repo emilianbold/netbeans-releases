@@ -287,6 +287,15 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         return lookup;
     }
 
+    @Override
+    public void activated() {
+        updateRulesEditor(ruleLookupResult.allInstances());
+    }
+
+    @Override
+    public void deactivated() {
+    }
+
     /**
      * Listener for various events important for {@code CSSStylesPanel}.
      */
