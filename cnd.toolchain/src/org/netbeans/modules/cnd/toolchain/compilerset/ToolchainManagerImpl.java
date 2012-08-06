@@ -296,7 +296,7 @@ public final class ToolchainManagerImpl {
     private boolean read(InputStream inputStream, CompilerVendor v, Map<String, String> cache) {
         SAXParserFactory spf = SAXParserFactory.newInstance();
         spf.setValidating(false);
-        XMLReader xmlReader = null;
+        XMLReader xmlReader;
         try {
             SAXParser saxParser = spf.newSAXParser();
             xmlReader = saxParser.getXMLReader();
@@ -367,6 +367,9 @@ public final class ToolchainManagerImpl {
         }
         if (!descriptor.isAutoDetected()) {
             element.setAttribute("auto_detected", "false"); // NOI18N
+        }
+        if (descriptor.getAliases().length > 0) {
+            element.setAttribute("aliases", unsplit(descriptor.getAliases())); // NOI18N
         }
         root.appendChild(element);
         if (descriptor.getUpdateCenterUrl() != null && descriptor.getModuleID() != null) {
@@ -1030,7 +1033,7 @@ public final class ToolchainManagerImpl {
     }
 
     /**
-     * class package-local for testin only
+     * class package-local for testing only
      */
     static final class CompilerVendor {
 
@@ -1045,6 +1048,7 @@ public final class ToolchainManagerImpl {
         String ucName;
         String upgrage;
         String module;
+        String aliases;
         boolean isAbstract;
         boolean isAutoDetected;
         String driveLetterPrefix;
@@ -1515,6 +1519,7 @@ public final class ToolchainManagerImpl {
                 v.qmakespec = getValue(attributes, "qmakespec"); // NOI18N
                 v.isAbstract = "true".equals(getValue(attributes, "abstract"));// NOI18N
                 v.isAutoDetected = !"false".equals(getValue(attributes, "auto_detected"));// NOI18N
+                v.aliases = getValue(attributes, "aliases"); // NOI18N
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = getValue(attributes, "stringvalue"); // NOI18N
@@ -2084,6 +2089,14 @@ public final class ToolchainManagerImpl {
         @Override
         public boolean isAutoDetected() {
             return v.isAutoDetected;
+        }
+
+        @Override
+        public String[] getAliases() {
+            if (v.aliases != null && v.aliases.length() > 0) {
+                return v.aliases.split(","); // NOI18N
+            }
+            return new String[]{};
         }
 
         @Override

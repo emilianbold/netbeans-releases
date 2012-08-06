@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="OracleSolarisStudio_12.3" display="Oracle Solaris Studio 12.3 Compiler Collection" family="SunStudio"/>
+    <toolchain name="OracleSolarisStudio_12.3" display="Oracle Solaris Studio 12.3 Compiler Collection" family="SunStudio" aliases="SunStudio,OracleSolarisStudio"/>
     <platforms stringvalue="sun_intel,linux"/>
     <default_locations>
         <platform os="linux" directory="/opt/oracle/solarisstudio12.3/bin"/>
