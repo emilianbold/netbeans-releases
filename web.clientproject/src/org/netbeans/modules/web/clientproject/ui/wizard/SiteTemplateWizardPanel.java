@@ -41,35 +41,33 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.io.File;
+import java.awt.EventQueue;
 import java.util.Collection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-/**
- *
- */
 public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-    private SiteTemplateWizard component;
+    private final Object siteTemplateWizardLock = new Object();
+    // @GuardedBy("siteTemplateWizardLock")
+    private SiteTemplateWizard siteTemplateWizard;
     private WizardDescriptor wizardDescriptor;
 
 
     @Override
     public SiteTemplateWizard getComponent() {
-        if (component == null) {
-            component = new SiteTemplateWizard();
-            component.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
+        synchronized (siteTemplateWizardLock) {
+            if (siteTemplateWizard == null) {
+                siteTemplateWizard = new SiteTemplateWizard();
+                siteTemplateWizard.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
+            }
+            return siteTemplateWizard;
         }
-        return component;
     }
 
     @Override
@@ -84,23 +82,33 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        component.prepareTemplate();
+        synchronized (siteTemplateWizardLock) {
+            getComponent().prepareTemplate();
+        }
     }
 
     public Collection<String> getSupportedLibraries() {
-        return component.getSupportedLibraries();
+        synchronized (siteTemplateWizardLock) {
+            return getComponent().getSupportedLibraries();
+        }
     }
 
     @Override
     public boolean isValid() {
         // error
-        String error = getComponent().getErrorMessage();
+        String error;
+        synchronized (siteTemplateWizardLock) {
+            error = getComponent().getErrorMessage();
+        }
         if (error != null && !error.isEmpty()) {
             setErrorMessage(error);
             return false;
         }
         // warning
-        String warning = getComponent().getWarningMessage();
+        String warning;
+        synchronized (siteTemplateWizardLock) {
+            warning = getComponent().getWarningMessage();
+        }
         if (warning != null && !warning.isEmpty()) {
             setErrorMessage(warning);
             return true;
@@ -116,12 +124,16 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
 
     @Override
     public void addChangeListener(ChangeListener l) {
-        getComponent().addChangeListener(l);
+        synchronized (siteTemplateWizardLock) {
+            getComponent().addChangeListener(l);
+        }
     }
 
     @Override
     public void removeChangeListener(ChangeListener l) {
-        getComponent().removeChangeListener(l);
+        synchronized (siteTemplateWizardLock) {
+            getComponent().removeChangeListener(l);
+        }
     }
 
     @Override
@@ -130,7 +142,10 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     }
 
     public void apply(FileObject p, ProgressHandle handle) {
-        component.apply(p, handle);
+        assert !EventQueue.isDispatchThread();
+        synchronized (siteTemplateWizardLock) {
+            getComponent().apply(p, handle);
+        }
     }
 
 }

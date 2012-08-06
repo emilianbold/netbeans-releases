@@ -41,111 +41,306 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.io.FileNotFoundException;
+import java.awt.Component;
+import java.awt.EventQueue;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.*;
-import java.util.logging.Level;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import javax.swing.AbstractListModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.ListCellRenderer;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
 import org.netbeans.modules.web.common.api.Version;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
-@NbBundle.Messages({"JavaScriptLibrarySelection_Label=JavaScript Libraries to install into project",
-    "ERR_SomeErrorDuringCopying=Some of the library files could not be retrieved.",
-    "MSG_DownloadingLibraries=Downloading {0}",
-    "JSColumn1=Name",
-    "JSColumn2=Version"
-})
-public class JavaScriptLibrarySelection extends javax.swing.JPanel {
+public class JavaScriptLibrarySelection extends JPanel {
 
-    private static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelection.class.getName());
+    private static final long serialVersionUID = -468734354571212312L;
 
-    private JavaScriptLibrarySelectionPanel wp;
-    private LibrariesModel model;
-    
-    /**
-     * Creates new form JavaScriptLibrarySelection
-     */
-    public JavaScriptLibrarySelection(JavaScriptLibrarySelectionPanel wp) {
-        this.wp = wp;
+    static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelection.class.getName());
+
+    private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w/-]+$", Pattern.CASE_INSENSITIVE); // NOI18N
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    // selected items are accessed outside of EDT thread
+    final List<SelectedLibrary> selectedLibraries = Collections.synchronizedList(new LinkedList<SelectedLibrary>());
+    // @GuardedBy("EDT")
+    final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
+    // @GuardedBy("EDT")
+    final LibrariesListModel librariesListModel = new LibrariesListModel(selectedLibraries);
+
+    // folder path is accessed outside of EDT thread
+    private volatile String librariesFolder = null;
+
+
+    public JavaScriptLibrarySelection() {
+        assert EventQueue.isDispatchThread();
+
         initComponents();
-        model = new LibrariesModel();
-        librariesTable.setModel(model);
-        librariesTable.setRowSelectionAllowed(true);
-        //librariesTable.setTableHeader(null);
-        //librariesTable.setShowHorizontalLines(false);
-        //librariesTable.setShowVerticalLines(false);
-        librariesTable.getColumnModel().getColumn(0).setMaxWidth(30);
-        librariesTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+        initInfo();
+        initLibraries();
+        initLibrariesFolder();
+    }
+
+    @NbBundle.Messages("JavaScriptLibrarySelection.info=<html>Choose a library version and shuttle it to the Selected list to add it to your project. "
+            + "Libraries added by your template are already selected.")
+    private void initInfo() {
+        infoLabel.setText(Bundle.JavaScriptLibrarySelection_info());
+    }
+
+    private void initLibraries() {
+        initLibrariesTable();
+        initLibrariesList();
+        initLibrariesButtons();
+    }
+
+    private void initLibrariesTable() {
+        assert EventQueue.isDispatchThread();
+        librariesTable.setModel(librariesTableModel);
+        // tooltip
+        librariesTable.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                assert EventQueue.isDispatchThread();
+                Point point = e.getPoint();
+                int row = librariesTable.rowAtPoint(point);
+                librariesTable.setToolTipText(librariesTableModel.getItems().get(row).getDescription());
+            }
+        });
+    }
+
+    private void initLibrariesList() {
+        assert EventQueue.isDispatchThread();
+        selectedLibrariesList.setModel(librariesListModel);
+    }
+
+    private void initLibrariesButtons() {
+        // listen on table and list
+        ListSelectionListener selectionListener = new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                updateDescription();
+                enableLibraryButtons();
+            }
+        };
+        librariesTable.getSelectionModel().addListSelectionListener(selectionListener);
+        selectedLibrariesList.getSelectionModel().addListSelectionListener(selectionListener);
+        // action listeners
+        selectAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectAllLibraries();
+            }
+        });
+        selectSelectedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectSelectedLibraries();
+            }
+        });
+        deselectSelectedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deselectSelectedLibraries();
+            }
+        });
+        deselectAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deselectAllLibraries();
+            }
+        });
+        // set correct state
+        enableLibraryButtons();
+    }
+
+    private void initLibrariesFolder() {
+        librariesFolder = librariesFolderTextField.getText();
+        librariesFolderTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                librariesFolder = librariesFolderTextField.getText();
+                fireChangeEvent();
             }
         });
     }
 
-    @Override
-    public void addNotify() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                updateDescription();
-            }
-        });
-        super.addNotify();
-    }
-    
-    @Override
-    public void removeNotify() {
-        // if descriptionTextPane is too long and user goes to previous
-        // and next page the wizard panel might resize too much; as worarkound
-        // the descriptionTextPane will be emptied here
-        descriptionTextPane.setText(""); // NOI18N
-        super.removeNotify();
-    }
-    
-    private void updateDescription() {
-        int i = librariesTable.getSelectedRow();
-        if (i == -1) {
-            return;
-        }
-        ModelItem mi = model.l.get(i);
-        if (mi.getDescription() != null) {
-            descriptionTextPane.setText(mi.getDescription());
-        } else {
-            descriptionTextPane.setText("");
-        }
-    }
-    
+    @NbBundle.Messages("JavaScriptLibrarySelection.name=JavaScript Libraries to install into project")
     @Override
     public String getName() {
-        return Bundle.JavaScriptLibrarySelection_Label();
+        return Bundle.JavaScriptLibrarySelection_name();
     }
-    
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    final void fireChangeEvent() {
+        changeSupport.fireChange();
+    }
+
+    public String getErrorMessage() {
+        return validateLibrariesFolder();
+    }
+
+    public String getWarningMessage() {
+        return null;
+    }
+
+    void enableLibraryButtons() {
+        // select
+        selectAllButton.setEnabled(librariesTableModel.getRowCount() > 0);
+        selectSelectedButton.setEnabled(librariesTable.getSelectedRows().length > 0);
+        // deselect
+        // XXX do not allow to remove files from the selected site template
+        deselectSelectedButton.setEnabled(selectedLibrariesList.getSelectedIndices().length > 0);
+        // XXX do not count files from the selected site template
+        deselectAllButton.setEnabled(selectedLibraries.size() > 0);
+    }
+
+    void selectAllLibraries() {
+        assert EventQueue.isDispatchThread();
+        for (int i = 0; i < librariesTable.getRowCount(); ++i) {
+            selectLibrary(i);
+        }
+        sanitizeSelectedLibraries();
+        librariesListModel.fireContentsChanged();
+    }
+
+    void selectSelectedLibraries() {
+        assert EventQueue.isDispatchThread();
+        for (int i : librariesTable.getSelectedRows()) {
+            selectLibrary(i);
+        }
+        sanitizeSelectedLibraries();
+        librariesListModel.fireContentsChanged();
+    }
+
+    private void selectLibrary(int libraryIndex) {
+        ModelItem modelItem = librariesTableModel.getItems().get(libraryIndex);
+        LibraryVersion libraryVersion = modelItem.getSelectedVersion();
+        selectedLibraries.add(new SelectedLibrary(modelItem.getSimpleDisplayName(), libraryVersion));
+    }
+
+    // XXX should be improved, later
+    /**
+     * Make selected libraries unique.
+     */
+    private void sanitizeSelectedLibraries() {
+        Set<SelectedLibrary> set = new LinkedHashSet<SelectedLibrary>(selectedLibraries);
+        selectedLibraries.clear();
+        selectedLibraries.addAll(set);
+    }
+
+    void deselectAllLibraries() {
+    }
+
+    void deselectSelectedLibraries() {
+    }
+
+    private void deselectLibrary(Library library) {
+    }
+
+    @NbBundle.Messages({
+        "JavaScriptLibrarySelection.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\" and \"/\"."
+    })
+    private String validateLibrariesFolder() {
+        if (!LIBRARIES_FOLDER_PATTERN.matcher(librariesFolder).matches()) {
+            return Bundle.JavaScriptLibrarySelection_error_librariesFolder_invalid();
+        }
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "JavaScriptLibrarySelection.error.copying=Some of the library files could not be retrieved.",
+        "# {0} - library name",
+        "JavaScriptLibrarySelection.msg.downloading=Downloading {0}"
+    })
+    void apply(FileObject projectDir, ProgressHandle handle) throws IOException {
+        assert !EventQueue.isDispatchThread();
+        FileObject librariesRoot = null;
+        boolean someFilesAreMissing = false;
+        for (SelectedLibrary selectedLibrary : selectedLibraries) {
+            LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
+            if (libraryVersion == null) {
+                // happens for js files from selected site template
+                continue;
+            }
+            if (librariesRoot == null) {
+                librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
+            }
+            Library library = libraryVersion.getLibrary();
+            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+            try {
+                WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());
+            } catch (MissingLibResourceException e) {
+                someFilesAreMissing = true;
+            }
+        }
+        if (someFilesAreMissing) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.JavaScriptLibrarySelection_error_copying(), NotifyDescriptor.ERROR_MESSAGE));
+        }
+    }
+
+    void updateDefaults(Collection<String> defaultLibs) {
+        assert EventQueue.isDispatchThread();
+        // XXX remove default libraries from list and add there defaultLibs (in the beginning of the list)
+        //selectedLibraries.addAll(defaultLibs);
+        // XXX fire list change
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -155,107 +350,198 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        librariesFolder = new javax.swing.JTextField();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        librariesTable = new MyTable();
-        descriptionLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        descriptionTextPane = new javax.swing.JTextPane();
+        infoLabel = new javax.swing.JLabel();
+        librariesLabel = new javax.swing.JLabel();
+        librariesFilterTextField = new javax.swing.JTextField();
+        librariesScrollPane = new javax.swing.JScrollPane();
+        librariesTable = new LibrariesTable();
+        selectAllButton = new javax.swing.JButton();
+        selectSelectedButton = new javax.swing.JButton();
+        deselectSelectedButton = new javax.swing.JButton();
+        deselectAllButton = new javax.swing.JButton();
+        selectedLabel = new javax.swing.JLabel();
+        selectedLibrariesScrollPane = new javax.swing.JScrollPane();
+        selectedLibrariesList = new javax.swing.JList();
+        librariesFolderLabel = new javax.swing.JLabel();
+        librariesFolderTextField = new javax.swing.JTextField();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.jLabel1.text")); // NOI18N
+        infoLabel.setLabelFor(this);
+        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, "INFO"); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.jLabel2.text")); // NOI18N
+        librariesLabel.setLabelFor(librariesTable);
+        org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.librariesLabel.text")); // NOI18N
 
-        librariesFolder.setText(org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.librariesFolder.text")); // NOI18N
+        librariesScrollPane.setViewportView(librariesTable);
 
-        jScrollPane2.setViewportView(librariesTable);
+        org.openide.awt.Mnemonics.setLocalizedText(selectAllButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectAllButton.text")); // NOI18N
 
-        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.descriptionLabel.text")); // NOI18N
-        descriptionLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        org.openide.awt.Mnemonics.setLocalizedText(selectSelectedButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectSelectedButton.text")); // NOI18N
 
-        descriptionTextPane.setEditable(false);
-        jScrollPane1.setViewportView(descriptionTextPane);
+        org.openide.awt.Mnemonics.setLocalizedText(deselectSelectedButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.deselectSelectedButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(deselectAllButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.deselectAllButton.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(selectedLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectedLabel.text")); // NOI18N
+
+        selectedLibrariesScrollPane.setViewportView(selectedLibrariesList);
+
+        librariesFolderLabel.setLabelFor(librariesFolderTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(librariesFolderLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.librariesFolderLabel.text")); // NOI18N
+
+        librariesFolderTextField.setText("js/libs"); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
-            .addComponent(jScrollPane1)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(librariesFolderLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(librariesFolderTextField))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(descriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(librariesFolder))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(infoLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(librariesLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(librariesFilterTextField))
+                            .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(selectAllButton)
+                            .addComponent(selectSelectedButton)
+                            .addComponent(deselectSelectedButton)
+                            .addComponent(deselectAllButton))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(selectedLabel)
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});
+
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
+                .addComponent(infoLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(librariesLabel)
+                    .addComponent(selectedLabel)
+                    .addComponent(librariesFilterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(descriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(selectAllButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(selectSelectedButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deselectSelectedButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(deselectAllButton)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(librariesFolder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, 0))
+                    .addComponent(librariesFolderLabel)
+                    .addComponent(librariesFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel descriptionLabel;
-    private javax.swing.JTextPane descriptionTextPane;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField librariesFolder;
+    private javax.swing.JButton deselectAllButton;
+    private javax.swing.JButton deselectSelectedButton;
+    private javax.swing.JLabel infoLabel;
+    private javax.swing.JTextField librariesFilterTextField;
+    private javax.swing.JLabel librariesFolderLabel;
+    private javax.swing.JTextField librariesFolderTextField;
+    private javax.swing.JLabel librariesLabel;
+    private javax.swing.JScrollPane librariesScrollPane;
     private javax.swing.JTable librariesTable;
+    private javax.swing.JButton selectAllButton;
+    private javax.swing.JButton selectSelectedButton;
+    private javax.swing.JLabel selectedLabel;
+    private javax.swing.JList selectedLibrariesList;
+    private javax.swing.JScrollPane selectedLibrariesScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    void apply(FileObject p, ProgressHandle handle) throws IOException {
-        FileObject librariesRoot = FileUtil.createFolder(p, librariesFolder.getText());
-        boolean someFilesAreMissing = false;
-        for (ModelItem mi : ((LibrariesModel)librariesTable.getModel()).l) {
-            if (!mi.selected) {
-                continue;
+    //~ Inner classes
+
+    private static final class LibrariesTable extends JTable {
+
+        private static final long serialVersionUID = 1578314546784244L;
+
+
+        @Override
+        public TableCellEditor getCellEditor(int row, int column) {
+            if (column != 1) {
+                return super.getCellEditor(row, column);
             }
-            Library l = mi.getChosenLibrary();
-            handle.progress(Bundle.MSG_DownloadingLibraries(
-                    l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
-            try {
-                WebClientLibraryManager.addLibraries(new Library[]{l}, librariesRoot, 
-                        mi.getChosenLibraryVolume());
-            }
-            catch(MissingLibResourceException e ) {
-                someFilesAreMissing = true;
-            }
+            LibrariesTableModel model = (LibrariesTableModel) getModel();
+            JComboBox versionsComboBox = new JComboBox(model.getItems().get(row).getVersions());
+            versionsComboBox.setRenderer(new VersionsRenderer(versionsComboBox.getRenderer()));
+            return new DefaultCellEditor(versionsComboBox);
         }
-        if (someFilesAreMissing) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_SomeErrorDuringCopying()));
-        }
+
     }
 
-    void updateDefaults(Collection<String> defaultLibs) {
-        model.setSelected(defaultLibs);
-        model.fireTableDataChanged();
+    private static final class VersionsRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer defaultRenderer;
+
+
+        public VersionsRenderer(ListCellRenderer defaultRenderer) {
+            this.defaultRenderer = defaultRenderer;
+        }
+
+        @NbBundle.Messages({
+            "# {0} - library version",
+            "# {1} - library type",
+            "VersionsRenderer.label={0} {1}",
+            "VersionsRenderer.type.minified=minified",
+            "VersionsRenderer.type.documented=documented"
+        })
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            return defaultRenderer.getListCellRendererComponent(list, getLabel((LibraryVersion) value), index, isSelected, cellHasFocus);
+        }
+
+        public static String getLabel(LibraryVersion libraryVersion) {
+            String version = libraryVersion.getLibraryVersion();
+            String rawType = libraryVersion.getType();
+            String type;
+            if (WebClientLibraryManager.VOL_DOCUMENTED.equals(rawType)) {
+                type = Bundle.VersionsRenderer_type_documented();
+            } else if (WebClientLibraryManager.VOL_MINIFIED.equals(rawType)) {
+                type = Bundle.VersionsRenderer_type_minified();
+            } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
+                type = ""; // NOI18N
+            } else {
+                assert false : "Unknown library type: " + libraryVersion;
+                // fallback
+                type = ""; // NOI18N
+            }
+            return Bundle.VersionsRenderer_label(version, type).trim();
+        }
+
     }
 
-    private static class LibrariesModel extends AbstractTableModel {
+    private static final class LibrariesTableModel extends AbstractTableModel {
 
-        private List<ModelItem> l = new ArrayList<ModelItem>();
+        private static final long serialVersionUID = 8732134781780336L;
 
-        public LibrariesModel() {
-            Map<String,List<Library>> map = new HashMap<String, List<Library>>();
+        // @GuardedBy("EDT")
+        private final List<ModelItem> items = new ArrayList<ModelItem>();
+
+
+        public LibrariesTableModel() {
+            assert EventQueue.isDispatchThread();
+            Map<String, List<Library>> map = new HashMap<String, List<Library>>();
             for (Library lib : LibraryManager.getDefault().getLibraries()) {
                 if (WebClientLibraryManager.TYPE.equals(lib.getType())) {
                     String name = lib.getProperties().get(
@@ -269,10 +555,10 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
                 }
             }
             for (String libName : map.keySet()) {
-                l.add(new ModelItem(map.get(libName)));
+                items.add(new ModelItem(map.get(libName)));
             }
             // sort libraries according their name:
-            Collections.sort(l, new Comparator<ModelItem>() {
+            Collections.sort(items, new Comparator<ModelItem>() {
                 @Override
                 public int compare(ModelItem o1, ModelItem o2) {
                     return o1.getSimpleDisplayName().toLowerCase().compareTo(
@@ -280,196 +566,312 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
                 }
             });
         }
-        
-        void setSelected(Collection<String> preSelected) {
-            for (ModelItem mi : l) {
-                if (preSelected.contains(mi.getLibrary().getName())) {
-                    mi.selected = true;
-                }
-            }
-            
-        }
-        
+
         @Override
         public int getRowCount() {
-            return l.size();
+            assert EventQueue.isDispatchThread();
+            return items.size();
         }
 
         @Override
         public int getColumnCount() {
-            return 3;
-        }
-        
-        public String getColumnName(int columnIndex) {
-            if (columnIndex == 0) {
-                return "";
-            } else if (columnIndex == 1) {
-                return Bundle.JSColumn1();
-            } else {
-                return Bundle.JSColumn2();
-            }
+            return 2;
         }
 
-        public Class<?> getColumnClass(int columnIndex) {
+        @NbBundle.Messages({
+            "JavaScriptLibrarySelection.column.library=Library",
+            "JavaScriptLibrarySelection.column.version=Version"
+        })
+        @Override
+        public String getColumnName(int columnIndex) {
             if (columnIndex == 0) {
-                return Boolean.class;
-            } else {
-                return String.class;
+                return Bundle.JavaScriptLibrarySelection_column_library();
             }
+            if (columnIndex == 1) {
+                return Bundle.JavaScriptLibrarySelection_column_version();
+            }
+            assert false : "Unknown column index: " + columnIndex;
+            return null;
         }
-        
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return String.class;
+        }
+
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return columnIndex == 0 || columnIndex == 2;
+            return columnIndex == 1;
         }
-        
+
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            ModelItem m = l.get(rowIndex);
+            assert EventQueue.isDispatchThread();
+            ModelItem modelItem = items.get(rowIndex);
             if (columnIndex == 0) {
-                return Boolean.valueOf(m.selected);
-            } else if (columnIndex == 1) {
-                return m.getSimpleDisplayName();
-            } else {
-                return m.selectedVersion;
+                return modelItem.getSimpleDisplayName();
             }
+            if (columnIndex == 1) {
+                return VersionsRenderer.getLabel(modelItem.getSelectedVersion());
+            }
+            assert false : "Unknown column index: " + columnIndex;
+            return null;
         }
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            ModelItem m = l.get(rowIndex);
-            if (columnIndex == 0) {
-                m.selected = ((Boolean)aValue).booleanValue();
-            } else if (columnIndex == 2) {
-                m.selectedVersion = (String)aValue;
-            } else {
-                assert false : columnIndex;
+            assert EventQueue.isDispatchThread();
+            ModelItem modelItem = items.get(rowIndex);
+            if (columnIndex == 1) {
+                modelItem.setSelectedVersion((LibraryVersion) aValue);
+                return;
             }
+            assert false : "Unknown column index: " + columnIndex;
         }
-        
+
+        List<ModelItem> getItems() {
+            assert EventQueue.isDispatchThread();
+            return items;
+        }
+
     }
 
-    private static class ModelItem {
-        private boolean selected;
-        private String selectedVersion;
-        // this list represents single library in several different versions:
-        private List<Library> libraries;
+    private static final class LibrariesListModel extends AbstractListModel {
 
-        private static final String VER_DOCUMENTED = " [documented]"; // NOI18N
-        private static final String VER_MINIFIED = " [minified]"; // NOI18N
-        
-        public ModelItem(List<Library> libraries) {
-            // sort libraries from latest to oldest; if the same version of library is comming
-            // from different CDNs then put higher in the list one which has documentation or
-            // regular version of JS files
-            Collections.sort(libraries, new Comparator<Library>() {
-                @Override
-                public int compare(Library o1, Library o2) {
-                    Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
-                    Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
-                    if (ver1.equals(ver2)) {
-                        if (!o1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                            return -1;
-                        }
-                        if (!o2.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                            return 1;
-                        }
-                        if (!o1.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                            return -1;
-                        }
-                        if (!o2.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                            return 1;
-                        }
-                        return 0;
-                    } else {
-                        return ver1.isBelowOrEqual(ver2) ? 1 : -1;
-                    }
-                }
-            });
+        private static final long serialVersionUID = -57683546574861110L;
+
+        private final List<SelectedLibrary> libraries;
+
+
+        public LibrariesListModel(List<SelectedLibrary> libraries) {
             this.libraries = libraries;
-            this.selected = false;
-            this.selectedVersion = getLibrary().getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
-            if (!getLibrary().getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                this.selectedVersion += VER_DOCUMENTED;
-            } else if (!getLibrary().getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-            } else if (!getLibrary().getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
-                this.selectedVersion += VER_MINIFIED;
-            }
         }
-        
+
+        @Override
+        public int getSize() {
+            return libraries.size();
+        }
+
+        @Override
+        public SelectedLibrary getElementAt(int index) {
+            return libraries.get(index);
+        }
+
+        public void fireContentsChanged() {
+            fireContentsChanged(this, 0, libraries.size() - 1);
+        }
+
+    }
+
+    private static final class ModelItem {
+
+        // sort libraries from latest to oldest; if the same version of library is comming
+        // from different CDNs then put higher in the list one which has documentation or
+        // regular version of JS files
+        private static final Comparator<Library> LIBRARY_COMPARATOR = new Comparator<Library>() {
+            @Override
+            public int compare(Library o1, Library o2) {
+                Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
+                Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
+                if (ver1.equals(ver2)) {
+                    if (!o1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                        return -1;
+                    }
+                    if (!o2.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                        return 1;
+                    }
+                    if (!o1.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                        return -1;
+                    }
+                    if (!o2.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                        return 1;
+                    }
+                    return 0;
+                }
+                return ver1.isBelowOrEqual(ver2) ? 1 : -1;
+            }
+        };
+
+        // @GuardedBy("EDT")
+        private final Set<LibraryVersion> versions;
+
+        // @GuardedBy("EDT")
+        private LibraryVersion selectedVersion;
+
+
+        public ModelItem(List<Library> libraries) {
+            assert EventQueue.isDispatchThread();
+            Collections.sort(libraries, LIBRARY_COMPARATOR);
+            versions = createVersions(libraries);
+            selectedVersion = versions.iterator().next();
+        }
+
         public String getSimpleDisplayName() {
             return getLibrary().getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME);
         }
-        
+
         public String getDescription() {
             return getLibrary().getDescription();
         }
-        
+
+        public LibraryVersion[] getVersions() {
+            assert EventQueue.isDispatchThread();
+            return versions.toArray(new LibraryVersion[versions.size()]);
+        }
+
+        public LibraryVersion getSelectedVersion() {
+            assert EventQueue.isDispatchThread();
+            return selectedVersion;
+        }
+
+        public void setSelectedVersion(LibraryVersion selectedVersion) {
+            assert EventQueue.isDispatchThread();
+            assert selectedVersion != null;
+            this.selectedVersion = selectedVersion;
+        }
+
+        private Set<LibraryVersion> createVersions(List<Library> libraries) {
+            Set<LibraryVersion> libraryVersions = new LinkedHashSet<LibraryVersion>();
+            for (Library library : libraries) {
+                LibraryVersion libraryVersion = null;
+                if (!library.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                    libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_DOCUMENTED);
+                    libraryVersions.add(libraryVersion);
+                }
+                if (!library.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                    libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_REGULAR);
+                    libraryVersions.add(libraryVersion);
+                }
+                if (!library.getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
+                    libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_MINIFIED);
+                    libraryVersions.add(libraryVersion);
+                }
+                if (libraryVersion == null) {
+                    assert false : "Unknown library version: " + library.getName();
+                }
+            }
+            return libraryVersions;
+        }
+
         private Library getLibrary() {
-            return libraries.get(0);
-        }
-        
-        public Library getChosenLibrary() {
-            String selVersion = selectedVersion;
-            if (selVersion.endsWith(VER_DOCUMENTED)) {
-                selVersion = selVersion.substring(0, selVersion.length()-VER_DOCUMENTED.length());
-            } else if (selVersion.endsWith(VER_MINIFIED)) {
-                selVersion = selVersion.substring(0, selVersion.length()-VER_MINIFIED.length());
-            }
-            for (Library l : libraries) {
-                if (selVersion.equals(l.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION))) {
-                    return l;
-                }
-            }
-            assert false;
-            return null;
-        }
-        
-        private String getChosenLibraryVolume() {
-            if (selectedVersion.endsWith(VER_DOCUMENTED)) {
-                return WebClientLibraryManager.VOL_DOCUMENTED;
-            } else if (selectedVersion.endsWith(VER_MINIFIED)) {
-                return WebClientLibraryManager.VOL_MINIFIED;
-            } else {
-                return WebClientLibraryManager.VOL_REGULAR;
-            }
-        }
-        
-        public String[] getVersions() {
-            List<String> vers = new ArrayList<String>();
-            for (Library l : libraries) {
-                String version = l.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
-                if (!l.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                    if (!vers.contains(version + VER_DOCUMENTED)) {
-                        vers.add(version + VER_DOCUMENTED);
-                    }
-                }
-                if (!l.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                    if (!vers.contains(version)) {
-                        vers.add(version);
-                    }
-                }
-                if (!l.getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
-                    if (!vers.contains(version + VER_MINIFIED)) {
-                        vers.add(version + VER_MINIFIED);
-                    }
-                }
-            }
-            return vers.toArray(new String[vers.size()]);
+            assert EventQueue.isDispatchThread();
+            return versions.iterator().next().getLibrary();
         }
 
     }
 
-    private static class MyTable extends JTable {
-        
+    private static final class LibraryVersion {
+
+        private final Library library;
+        private final String type;
+
+
+        public LibraryVersion(Library library, String type) {
+            assert library != null;
+            assert type != null && !type.isEmpty();
+            this.library = library;
+            this.type = type;
+        }
+
+        public Library getLibrary() {
+            return library;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getLibraryVersion() {
+            return library.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
+        }
+
         @Override
-        public TableCellEditor getCellEditor(int row, int column) {
-            if (column != 2) {
-                return super.getCellEditor(row, column);
-            }
-            LibrariesModel model = (LibrariesModel)getModel();
-            JComboBox jc = new JComboBox(model.l.get(row).getVersions());
-            return new DefaultCellEditor(jc);
+        public int hashCode() {
+            int hash = 5;
+            hash = 41 * hash + getLibraryVersion().hashCode();
+            hash = 41 * hash + (this.type != null ? this.type.hashCode() : 0);
+            return hash;
         }
-    
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final LibraryVersion other = (LibraryVersion) obj;
+            if (this.library != other.library && (this.library == null || !this.getLibraryVersion().equals(other.getLibraryVersion()))) {
+                return false;
+            }
+            if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; // NOI18N
+        }
+
     }
+
+    private static final class SelectedLibrary {
+
+        private final String filename;
+        private final LibraryVersion libraryVersion;
+
+        /**
+         * @param filename file name
+         * @param libraryVersion library, can be {@code null} for files from selected site template
+         */
+        public SelectedLibrary(String filename, LibraryVersion libraryVersion) {
+            assert filename != null;
+            this.filename = filename;
+            this.libraryVersion = libraryVersion;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public LibraryVersion getLibraryVersion() {
+            return libraryVersion;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 31 * hash + (this.filename != null ? this.filename.hashCode() : 0);
+            hash = 31 * hash + (this.libraryVersion != null ? this.libraryVersion.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SelectedLibrary other = (SelectedLibrary) obj;
+            if ((this.filename == null) ? (other.filename != null) : !this.filename.equals(other.filename)) {
+                return false;
+            }
+            if (this.libraryVersion != other.libraryVersion && (this.libraryVersion == null || !this.libraryVersion.equals(other.libraryVersion))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "SelectedLibrary{" + "filename=" + filename + ", libraryVersion=" + libraryVersion + '}'; // NOI18N
+        }
+
+    }
+
 }
