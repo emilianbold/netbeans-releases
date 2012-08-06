@@ -52,8 +52,9 @@ import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
-import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 
 /**
  *
@@ -68,6 +69,11 @@ public class FindTypeUsages extends AbstractFindUsages {
     @Override
     protected AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String findingFqn) {
         return new FindAllTypeUsagesVisitor(moduleNode, findingFqn);
+    }
+
+    @Override
+    protected ElementKind getElementKind() {
+        return ElementKind.CLASS;
     }
 
     /**

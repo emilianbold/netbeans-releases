@@ -2,4 +2,24 @@
 <project basedir="." default="netbeans" name="uihandler.interactive">
     <description>Builds, tests, and runs the project org.netbeans.modules.uihandler.interactive</description>
     <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <!-- make sure sample server is running -->
+    <target name="run" depends="-run-server,projectized.run"/>
+    <target name="reload" depends="-run-server,projectized.reload"/>
+    <target name="debug" depends="-run-server,projectized.debug"/>
+    
+    
+    <target name="-run-server">
+        <tempfile deleteonexit="true" property="url.file"/>
+        <subant target="run-server">
+            <property name="url.file" value="${url.file}"/>
+            <property name="skip.checkout" value="true"/>
+            <dirset dir="../misc/logger/">
+                <include name="uihandlerserver"/>
+            </dirset>
+        </subant>
+        <loadfile property="client.url" srcfile="${url.file}" failonerror="true"/>
+        <delete file="${url.file}" failonerror="true"/>
+        <property name="tryme.arg.submiturl" value="-J-Dorg.netbeans.modules.uihandler.Submit=${client.url}/analytics//upload.jsp"/>
+    </target>
 </project>

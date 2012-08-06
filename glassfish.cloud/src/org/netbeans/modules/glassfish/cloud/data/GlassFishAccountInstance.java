@@ -44,6 +44,7 @@ package org.netbeans.modules.glassfish.cloud.data;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.cloud.GlassFishAccountEntity;
 import org.glassfish.tools.ide.data.cloud.GlassFishCloud;
 import org.netbeans.api.keyring.Keyring;
@@ -51,7 +52,6 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.glassfish.cloud.wizards.GlassFishAccountWizardUserComponent;
 import org.netbeans.spi.server.ServerInstanceFactory;
-import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 import static org.openide.util.NbBundle.getMessage;
 
@@ -65,7 +65,7 @@ import static org.openide.util.NbBundle.getMessage;
  * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishAccountInstance extends GlassFishAccountEntity
-    implements ServerInstanceImplementation {
+    implements GlassFishInstance {
     
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -255,6 +255,19 @@ public class GlassFishAccountInstance extends GlassFishAccountEntity
         return true;
     }
     
+    /**
+     * Get GlassFish local server registered with cloud.
+     * <p/>
+     * @return GlassFish cloud local server.
+     */
+    @Override
+    public GlassFishServer getLocalServer() {
+        GlassFishCloud cloud = getCloudEntity();
+        return cloud != null
+                ? cloud.getLocalServer()
+                : null;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Persistency methods                                                    //
     ////////////////////////////////////////////////////////////////////////////
