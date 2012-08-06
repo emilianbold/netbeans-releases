@@ -167,12 +167,14 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         synchronized (breakpointImpls) {
             bm = breakpointImpls.remove(ab);
         }
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                bm.destroy();
-            }
-        });
+        if (bm != null) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    bm.destroy();
+                }
+            });
+        }
     }
 
     @Override
