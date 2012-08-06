@@ -69,7 +69,7 @@ public class FindTypeUtils {
     }
 
 
-    public static boolean isCurrentClassNode(AstPath path, BaseDocument doc, FileObject fo, int carret) {
+    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, FileObject fo, int carret) {
         if (findCurrentNode(path, doc, fo, carret) instanceof ClassNode) {
             return true;
         }
@@ -182,7 +182,7 @@ public class FindTypeUtils {
         return OffsetRange.NONE;
     }
 
-    public static boolean isCaretOnVariableType(VariableExpression expression, BaseDocument doc, int cursorOffset) {
+    private static boolean isCaretOnVariableType(VariableExpression expression, BaseDocument doc, int cursorOffset) {
         if (getVariableRange(expression, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
         }

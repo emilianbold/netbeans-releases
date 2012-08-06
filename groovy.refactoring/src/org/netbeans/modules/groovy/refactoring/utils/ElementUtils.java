@@ -74,7 +74,7 @@ public final class ElementUtils {
 
         if ((node instanceof ClassNode) ||
             (node instanceof ClassExpression) ||
-            FindTypeUtils.isCurrentClassNode(path, doc, fo, caret)) {
+            FindTypeUtils.isCaretOnClassNode(path, doc, fo, caret)) {
             return ElementKind.CLASS;
         } else if ((node instanceof MethodNode) ||
                   ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression))) {
