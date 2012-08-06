@@ -129,7 +129,7 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                 if (value instanceof GroovyRefactoringElement) {
                     GroovyRefactoringElement element = ((GroovyRefactoringElement) value);
 
-                    setText(element.getDeclaratingClassName());
+                    setText(element.getDeclaringClassNameWithoutPackage());
                     if (element.getDeclaringClass().isDerivedFromGroovyObject()) {
                         setIcon(UiUtils.getElementIcon(ElementKind.CLASS, element.getModifiers()));
                     } else if (element.getDeclaringClass().isInterface()) {

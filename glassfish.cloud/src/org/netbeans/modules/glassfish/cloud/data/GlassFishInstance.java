@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.glassfish.cloud.data;
 
-package org.netbeans.modules.groovy.editor.hints.infrastructure;
-
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.Rule.AstRule;
-import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.groovy.editor.api.NodeType;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.netbeans.spi.server.ServerInstanceImplementation;
 
 /**
- * Represents a rule to be run on the source file, passing in some
- * compilation context to aid the rule. (Similar to TreeRule for java/hints).
- *
- * @author Tor Norbye
+ * GlassFish instance interface extended to contain NetBeans related attributes.
+ * <p/>
+ * Contains common method to access both CPAS interface and user account
+ * attributes.
+ * <p/>
+ * @author Tomas Kraus, Peter Benedikovic
  */
-public abstract class GroovyAstRule implements AstRule {
+public interface GlassFishInstance extends ServerInstanceImplementation {
     
-    /** 
-     * Get the ElementKinds this rule should run on.
-     */
-    public abstract Set<NodeType> getKinds();
-
     /**
-     * Run the test on given CompilationUnit and return list of Errors or
-     * warrnings to be shown in the editor.
+     * Get GlassFish local server registered with cloud.
+     * <p/>
+     * @return GlassFish cloud local server.
      */
-    public abstract void run(GroovyRuleContext context, List<Hint> result);
+    public GlassFishServer getLocalServer();
 
-    public final void run(RuleContext context, List<Hint> result) {
-        run((GroovyRuleContext) context, result);
-    }
 }

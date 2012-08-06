@@ -203,7 +203,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
     private void setupScope() {
         final FileObject fo = element.getFileObject();
-        final String packageName = element.getDeclaratingClassName();
+        final String packageName = element.getDeclaringClassNameWithoutPackage();
         final Project p = FileOwnerQuery.getOwner(fo);
 
         if(packageName == null) {
