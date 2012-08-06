@@ -39,8 +39,8 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="selectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="selectOneButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="deselectOneButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="selectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                          <Component id="deselectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
                           <Component id="deselectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -48,7 +48,7 @@
               </Group>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="selectedLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="selectedScrollPane" pref="0" max="32767" attributes="0"/>
+                  <Component id="selectedLibrariesScrollPane" pref="0" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -65,14 +65,14 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="selectedScrollPane" pref="0" max="32767" attributes="0"/>
+                  <Component id="selectedLibrariesScrollPane" pref="0" max="32767" attributes="0"/>
                   <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Component id="selectAllButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="selectOneButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="selectSelectedButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="deselectOneButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="deselectSelectedButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="deselectAllButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
@@ -129,17 +129,17 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="selectOneButton">
+    <Component class="javax.swing.JButton" name="selectSelectedButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="JavaScriptLibrarySelection.selectOneButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="JavaScriptLibrarySelection.selectSelectedButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="deselectOneButton">
+    <Component class="javax.swing.JButton" name="deselectSelectedButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="JavaScriptLibrarySelection.deselectOneButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="JavaScriptLibrarySelection.deselectSelectedButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
@@ -157,14 +157,14 @@
         </Property>
       </Properties>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="selectedScrollPane">
+    <Container class="javax.swing.JScrollPane" name="selectedLibrariesScrollPane">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JList" name="selectedList">
+        <Component class="javax.swing.JList" name="selectedLibrariesList">
         </Component>
       </SubComponents>
     </Container>

@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.io.IOException;
@@ -51,17 +54,25 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.AbstractListModel;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressHandle;
@@ -70,6 +81,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
+import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -89,7 +101,11 @@ public class JavaScriptLibrarySelection extends JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     // selected items are accessed outside of EDT thread
-    //final List<ModelItem> selectedLibraries = new CopyOnWriteArrayList<ModelItem>();
+    final List<Pair<String, Library>> selectedLibraries = Collections.synchronizedList(new LinkedList<Pair<String, Library>>());
+    // @GuardedBy("EDT")
+    final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
+    // @GuardedBy("EDT")
+    final LibrariesListModel librariesListModel = new LibrariesListModel(selectedLibraries);
 
     // folder path is accessed outside of EDT thread
     private volatile String librariesFolder = null;
@@ -114,23 +130,65 @@ public class JavaScriptLibrarySelection extends JPanel {
     private void initLibraries() {
         initLibrariesTable();
         initLibrariesList();
+        initLibrariesButtons();
     }
 
     private void initLibrariesTable() {
-        final LibrariesModel model = new LibrariesModel();
-        librariesTable.setModel(model);
+        assert EventQueue.isDispatchThread();
+        librariesTable.setModel(librariesTableModel);
         // tooltip
         librariesTable.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
+                assert EventQueue.isDispatchThread();
                 Point point = e.getPoint();
                 int row = librariesTable.rowAtPoint(point);
-                librariesTable.setToolTipText(model.getItems().get(row).getDescription());
+                librariesTable.setToolTipText(librariesTableModel.getItems().get(row).getDescription());
             }
         });
     }
 
     private void initLibrariesList() {
+        selectedLibrariesList.setModel(librariesListModel);
+    }
+
+    private void initLibrariesButtons() {
+        // listen on table and list
+        ListSelectionListener selectionListener = new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                enableLibraryButtons();
+            }
+        };
+        librariesTable.getSelectionModel().addListSelectionListener(selectionListener);
+        selectedLibrariesList.getSelectionModel().addListSelectionListener(selectionListener);
+        // action listeners
+        selectAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectAllLibraries();
+            }
+        });
+        selectSelectedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectSelectedLibraries();
+            }
+        });
+        deselectSelectedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deselectSelectedLibraries();
+            }
+        });
+        deselectAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deselectAllLibraries();
+            }
+        });
+        // set correct state
+        enableLibraryButtons();
     }
 
     private void initLibrariesFolder() {
@@ -181,6 +239,39 @@ public class JavaScriptLibrarySelection extends JPanel {
         return null;
     }
 
+    void enableLibraryButtons() {
+        // select
+        selectAllButton.setEnabled(librariesTableModel.getRowCount() > 0);
+        selectSelectedButton.setEnabled(librariesTable.getSelectedRows().length > 0);
+        // deselect
+        // XXX do not allow to remove files from the selected site template
+        deselectSelectedButton.setEnabled(selectedLibrariesList.getSelectedIndices().length > 0);
+        // XXX do not count files from the selected site template
+        deselectAllButton.setEnabled(selectedLibraries.size() > 0);
+    }
+
+    void selectAllLibraries() {
+        assert EventQueue.isDispatchThread();
+        //for ()
+    }
+
+    void selectSelectedLibraries() {
+        assert EventQueue.isDispatchThread();
+        //for ()
+    }
+
+    private void selectLibrary(Library library) {
+    }
+
+    void deselectAllLibraries() {
+    }
+
+    void deselectSelectedLibraries() {
+    }
+
+    private void deselectLibrary(Library library) {
+    }
+
     @NbBundle.Messages({
         "JavaScriptLibrarySelection.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\" and \"/\"."
     })
@@ -198,17 +289,21 @@ public class JavaScriptLibrarySelection extends JPanel {
     })
     void apply(FileObject projectDir, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
-        FileObject librariesRoot = FileUtil.createFolder(projectDir, librariesFolderTextField.getText());
+        FileObject librariesRoot = null;
         boolean someFilesAreMissing = false;
-        for (ModelItem mi : ((LibrariesModel) librariesTable.getModel()).items) {
-            if (!mi.selected) {
+        for (Pair<String, Library> selectedLibrary : selectedLibraries) {
+            if (librariesRoot == null) {
+                librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
+            }
+            Library library = selectedLibrary.getB();
+            if (library == null) {
+                // happens for js files from selected site template
                 continue;
             }
-            Library l = mi.getChosenLibrary();
-            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+            handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
             try {
-                WebClientLibraryManager.addLibraries(new Library[]{l}, librariesRoot,
-                        mi.getChosenLibraryVolume());
+                // XXX use proper volume
+                WebClientLibraryManager.addLibraries(new Library[]{library}, librariesRoot, WebClientLibraryManager.VOL_DOCUMENTED);
             } catch (MissingLibResourceException e) {
                 someFilesAreMissing = true;
             }
@@ -240,12 +335,12 @@ public class JavaScriptLibrarySelection extends JPanel {
         librariesScrollPane = new javax.swing.JScrollPane();
         librariesTable = new LibrariesTable();
         selectAllButton = new javax.swing.JButton();
-        selectOneButton = new javax.swing.JButton();
-        deselectOneButton = new javax.swing.JButton();
+        selectSelectedButton = new javax.swing.JButton();
+        deselectSelectedButton = new javax.swing.JButton();
         deselectAllButton = new javax.swing.JButton();
         selectedLabel = new javax.swing.JLabel();
-        selectedScrollPane = new javax.swing.JScrollPane();
-        selectedList = new javax.swing.JList();
+        selectedLibrariesScrollPane = new javax.swing.JScrollPane();
+        selectedLibrariesList = new javax.swing.JList();
         librariesFolderLabel = new javax.swing.JLabel();
         librariesFolderTextField = new javax.swing.JTextField();
 
@@ -259,15 +354,15 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(selectAllButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectAllButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(selectOneButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectOneButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(selectSelectedButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectSelectedButton.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(deselectOneButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.deselectOneButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(deselectSelectedButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.deselectSelectedButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(deselectAllButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.deselectAllButton.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(selectedLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.selectedLabel.text")); // NOI18N
 
-        selectedScrollPane.setViewportView(selectedList);
+        selectedLibrariesScrollPane.setViewportView(selectedLibrariesList);
 
         librariesFolderLabel.setLabelFor(librariesFolderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(librariesFolderLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.librariesFolderLabel.text")); // NOI18N
@@ -297,16 +392,16 @@ public class JavaScriptLibrarySelection extends JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(selectAllButton)
-                            .addComponent(selectOneButton)
-                            .addComponent(deselectOneButton)
+                            .addComponent(selectSelectedButton)
+                            .addComponent(deselectSelectedButton)
                             .addComponent(deselectAllButton))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
-                    .addComponent(selectedScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectOneButton, selectAllButton, selectOneButton});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -319,14 +414,14 @@ public class JavaScriptLibrarySelection extends JPanel {
                     .addComponent(librariesFilterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(selectedScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(selectAllButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(selectOneButton)
+                        .addComponent(selectSelectedButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deselectOneButton)
+                        .addComponent(deselectSelectedButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deselectAllButton)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -339,7 +434,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton deselectAllButton;
-    private javax.swing.JButton deselectOneButton;
+    private javax.swing.JButton deselectSelectedButton;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JTextField librariesFilterTextField;
     private javax.swing.JLabel librariesFolderLabel;
@@ -348,10 +443,10 @@ public class JavaScriptLibrarySelection extends JPanel {
     private javax.swing.JScrollPane librariesScrollPane;
     private javax.swing.JTable librariesTable;
     private javax.swing.JButton selectAllButton;
-    private javax.swing.JButton selectOneButton;
+    private javax.swing.JButton selectSelectedButton;
     private javax.swing.JLabel selectedLabel;
-    private javax.swing.JList selectedList;
-    private javax.swing.JScrollPane selectedScrollPane;
+    private javax.swing.JList selectedLibrariesList;
+    private javax.swing.JScrollPane selectedLibrariesScrollPane;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -366,14 +461,56 @@ public class JavaScriptLibrarySelection extends JPanel {
             if (column != 1) {
                 return super.getCellEditor(row, column);
             }
-            LibrariesModel model = (LibrariesModel)getModel();
-            JComboBox jc = new JComboBox(model.getItems().get(row).getVersions());
-            return new DefaultCellEditor(jc);
+            LibrariesTableModel model = (LibrariesTableModel) getModel();
+            JComboBox versionsComboBox = new JComboBox(model.getItems().get(row).getVersions());
+            versionsComboBox.setRenderer(new VersionsRenderer(versionsComboBox.getRenderer()));
+            return new DefaultCellEditor(versionsComboBox);
         }
 
     }
 
-    private static final class LibrariesModel extends AbstractTableModel {
+    private static final class VersionsRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer defaultRenderer;
+
+
+        public VersionsRenderer(ListCellRenderer defaultRenderer) {
+            this.defaultRenderer = defaultRenderer;
+        }
+
+        @NbBundle.Messages({
+            "# {0} - library version",
+            "# {1} - library type",
+            "VersionsRenderer.label={0} {1}",
+            "VersionsRenderer.type.minified=minified",
+            "VersionsRenderer.type.documented=documented"
+        })
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            return defaultRenderer.getListCellRendererComponent(list, getLabel((LibraryVersion) value), index, isSelected, cellHasFocus);
+        }
+
+        public static String getLabel(LibraryVersion libraryVersion) {
+            String version = libraryVersion.getLibraryVersion();
+            String rawType = libraryVersion.getType();
+            String type;
+            if (WebClientLibraryManager.VOL_DOCUMENTED.equals(rawType)) {
+                type = Bundle.VersionsRenderer_type_documented();
+            } else if (WebClientLibraryManager.VOL_MINIFIED.equals(rawType)) {
+                type = Bundle.VersionsRenderer_type_minified();
+            } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
+                type = ""; // NOI18N
+            } else {
+                assert false : "Unknown library type: " + libraryVersion.getLibrary().getName();
+                // fallback
+                type = ""; // NOI18N
+            }
+            return Bundle.VersionsRenderer_label(version, type).trim();
+        }
+
+    }
+
+    private static final class LibrariesTableModel extends AbstractTableModel {
 
         private static final long serialVersionUID = 8732134781780336L;
 
@@ -381,7 +518,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         private final List<ModelItem> items = new ArrayList<ModelItem>();
 
 
-        public LibrariesModel() {
+        public LibrariesTableModel() {
             assert EventQueue.isDispatchThread();
             Map<String, List<Library>> map = new HashMap<String, List<Library>>();
             for (Library lib : LibraryManager.getDefault().getLibraries()) {
@@ -407,16 +544,6 @@ public class JavaScriptLibrarySelection extends JPanel {
                             o2.getSimpleDisplayName().toLowerCase());
                 }
             });
-        }
-
-        void setSelected(Collection<String> preSelected) {
-            assert EventQueue.isDispatchThread();
-            for (ModelItem mi : items) {
-                if (preSelected.contains(mi.getLibrary().getName())) {
-                    mi.selected = true;
-                }
-            }
-
         }
 
         @Override
@@ -464,18 +591,19 @@ public class JavaScriptLibrarySelection extends JPanel {
                 return m.getSimpleDisplayName();
             }
             if (columnIndex == 1) {
-                return m.selectedVersion;
+                return VersionsRenderer.getLabel(m.selectedVersion);
             }
             assert false : "Unknown column index: " + columnIndex;
             return null;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             assert EventQueue.isDispatchThread();
             ModelItem m = items.get(rowIndex);
             if (columnIndex == 1) {
-                m.selectedVersion = (String) aValue;
+                m.selectedVersion = (LibraryVersion) aValue;
                 return;
             }
             assert false : "Unknown column index: " + columnIndex;
@@ -488,54 +616,78 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     }
 
-    private static class ModelItem {
+    private static final class LibrariesListModel extends AbstractListModel {
 
-        private boolean selected;
-        private String selectedVersion;
+        private static final long serialVersionUID = -57683546574861110L;
+
+        private final List<Pair<String, Library>> libraries;
+
+
+        public LibrariesListModel(List<Pair<String, Library>> libraries) {
+            this.libraries = libraries;
+        }
+
+        @Override
+        public int getSize() {
+            return libraries.size();
+        }
+
+        @Override
+        public Pair<String, Library> getElementAt(int index) {
+            return libraries.get(index);
+        }
+
+    }
+
+    private static final class ModelItem {
+
+        // sort libraries from latest to oldest; if the same version of library is comming
+        // from different CDNs then put higher in the list one which has documentation or
+        // regular version of JS files
+        private static final Comparator<Library> LIBRARY_COMPARATOR = new Comparator<Library>() {
+            @Override
+            public int compare(Library o1, Library o2) {
+                Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
+                Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
+                if (ver1.equals(ver2)) {
+                    if (!o1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                        return -1;
+                    }
+                    if (!o2.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                        return 1;
+                    }
+                    if (!o1.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                        return -1;
+                    }
+                    if (!o2.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                        return 1;
+                    }
+                    return 0;
+                }
+                return ver1.isBelowOrEqual(ver2) ? 1 : -1;
+            }
+        };
+
+        private LibraryVersion selectedVersion;
         // this list represents single library in several different versions:
         private List<Library> libraries;
 
-        private static final String VER_DOCUMENTED = " documented"; // NOI18N
-        private static final String VER_MINIFIED = " minified"; // NOI18N
-
         public ModelItem(List<Library> libraries) {
-            // sort libraries from latest to oldest; if the same version of library is comming
-            // from different CDNs then put higher in the list one which has documentation or
-            // regular version of JS files
-            Collections.sort(libraries, new Comparator<Library>() {
-                @Override
-                public int compare(Library o1, Library o2) {
-                    Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
-                    Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION));
-                    if (ver1.equals(ver2)) {
-                        if (!o1.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                            return -1;
-                        }
-                        if (!o2.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                            return 1;
-                        }
-                        if (!o1.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                            return -1;
-                        }
-                        if (!o2.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                            return 1;
-                        }
-                        return 0;
-                    } else {
-                        return ver1.isBelowOrEqual(ver2) ? 1 : -1;
-                    }
-                }
-            });
+            Collections.sort(libraries, LIBRARY_COMPARATOR);
             this.libraries = libraries;
-            this.selected = false;
-            this.selectedVersion = getLibrary().getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
-            if (!getLibrary().getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                this.selectedVersion += VER_DOCUMENTED;
-            } else if (!getLibrary().getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                // noop
-            } else if (!getLibrary().getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
-                this.selectedVersion += VER_MINIFIED;
+            Library firstLibrary = getLibrary();
+            String type;
+            if (!firstLibrary.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                type = WebClientLibraryManager.VOL_DOCUMENTED;
+            } else if (!firstLibrary.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                type = WebClientLibraryManager.VOL_REGULAR;
+            } else if (!firstLibrary.getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
+                type = WebClientLibraryManager.VOL_MINIFIED;
+            } else {
+                assert false : "Unknown js library type: " + firstLibrary.getName();
+                type = WebClientLibraryManager.VOL_REGULAR;
             }
+            selectedVersion = new LibraryVersion(firstLibrary, type);
         }
 
         public String getSimpleDisplayName() {
@@ -550,53 +702,84 @@ public class JavaScriptLibrarySelection extends JPanel {
             return libraries.get(0);
         }
 
-        public Library getChosenLibrary() {
-            String selVersion = selectedVersion;
-            if (selVersion.endsWith(VER_DOCUMENTED)) {
-                selVersion = selVersion.substring(0, selVersion.length()-VER_DOCUMENTED.length());
-            } else if (selVersion.endsWith(VER_MINIFIED)) {
-                selVersion = selVersion.substring(0, selVersion.length()-VER_MINIFIED.length());
-            }
-            for (Library l : libraries) {
-                if (selVersion.equals(l.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION))) {
-                    return l;
+        public LibraryVersion[] getVersions() {
+            Set<LibraryVersion> versions = new LinkedHashSet<LibraryVersion>();
+            for (Library library : libraries) {
+                LibraryVersion libraryVersion = null;
+                if (!library.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
+                    libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_DOCUMENTED);
+                    versions.add(libraryVersion);
+                }
+                if (!library.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
+                    libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_REGULAR);
+                    versions.add(libraryVersion);
+                }
+                if (!library.getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
+                    libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_MINIFIED);
+                    versions.add(libraryVersion);
+                }
+                if (libraryVersion == null) {
+                    assert false : "Unknown library version: " + library.getName();
                 }
             }
-            assert false;
-            return null;
+            return versions.toArray(new LibraryVersion[versions.size()]);
         }
 
-        private String getChosenLibraryVolume() {
-            if (selectedVersion.endsWith(VER_DOCUMENTED)) {
-                return WebClientLibraryManager.VOL_DOCUMENTED;
-            } else if (selectedVersion.endsWith(VER_MINIFIED)) {
-                return WebClientLibraryManager.VOL_MINIFIED;
-            } else {
-                return WebClientLibraryManager.VOL_REGULAR;
-            }
+    }
+
+    private static final class LibraryVersion {
+
+        private final Library library;
+        private final String type;
+
+        public LibraryVersion(Library library, String type) {
+            assert library != null;
+            assert type != null;
+            this.library = library;
+            this.type = type;
         }
 
-        public String[] getVersions() {
-            List<String> vers = new ArrayList<String>();
-            for (Library l : libraries) {
-                String version = l.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
-                if (!l.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                    if (!vers.contains(version + VER_DOCUMENTED)) {
-                        vers.add(version + VER_DOCUMENTED);
-                    }
-                }
-                if (!l.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                    if (!vers.contains(version)) {
-                        vers.add(version);
-                    }
-                }
-                if (!l.getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
-                    if (!vers.contains(version + VER_MINIFIED)) {
-                        vers.add(version + VER_MINIFIED);
-                    }
-                }
+        public Library getLibrary() {
+            return library;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public String getLibraryVersion() {
+            return library.getProperties().get(WebClientLibraryManager.PROPERTY_VERSION);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 41 * hash + getLibraryVersion().hashCode();
+            hash = 41 * hash + (this.type != null ? this.type.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
             }
-            return vers.toArray(new String[vers.size()]);
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final LibraryVersion other = (LibraryVersion) obj;
+            if (this.library != other.library && (this.library == null || !this.getLibraryVersion().equals(other.getLibraryVersion()))) {
+                return false;
+            }
+            if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; // NOI18N
         }
 
     }
