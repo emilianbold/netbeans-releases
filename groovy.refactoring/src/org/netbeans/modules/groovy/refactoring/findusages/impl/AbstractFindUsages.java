@@ -44,11 +44,11 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
@@ -80,6 +80,8 @@ public abstract class AbstractFindUsages {
     }
 
     protected abstract AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String defClass);
+
+    protected abstract ElementKind getElementKind();
 
 
     /**
@@ -128,7 +130,7 @@ public abstract class AbstractFindUsages {
 
             for (ASTNode node : getVisitor(moduleNode, defClass).findUsages()) {
                 if (node.getLineNumber() != -1 && node.getColumnNumber() != -1) {
-                    usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, moduleNode, node, fo), doc));
+                    usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, moduleNode, node, fo, getElementKind()), doc));
                 }
             }
             Collections.sort(usages);

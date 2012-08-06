@@ -46,12 +46,13 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 
 /**
  *
@@ -68,6 +69,11 @@ public class FindMethodUsages extends AbstractFindUsages {
         return new FindMethodUsagesVisitor(moduleNode);
     }
 
+    @Override
+    protected ElementKind getElementKind() {
+        return ElementKind.METHOD;
+    }
+
     private class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
 
         private final String declaringClassName;
@@ -80,76 +86,74 @@ public class FindMethodUsages extends AbstractFindUsages {
         }
 
         @Override
+        public void visitMethod(MethodNode node) {
+            String className = ElementUtils.getDeclaringClassName(node);
+            if (declaringClassName.equals(className) && findingMethod.equals(node.getName())) {
+                usages.add(node);
+            }
+            super.visitMethod(node);
+        }
+
+        @Override
         public void visitMethodCallExpression(MethodCallExpression methodCall) {
             Expression expression = methodCall.getObjectExpression();
 
             if (expression instanceof VariableExpression) {
-                Variable variable = ((VariableExpression) expression).getAccessedVariable();
+                VariableExpression variableExpression = ((VariableExpression) expression);
+                Variable variable = variableExpression.getAccessedVariable();
 
-                // Most frequent situations like:
-                // 1. String whatever = "Oops!"
-                // 2. whatever.concat("")
                 if (variable != null) {
-                    ClassNode methodCallType = variable.getType();
-                    if (!declaringClassName.equals(methodCallType.getName())) {
-                        return;
-                    }
-
-                    List<MethodNode> methods;
-                    if (methodCallType.isResolved()) {
-                        methods = methodCallType.getMethods(findingMethod);
-                    } else {
-                        methods = methodCallType.redirect().getMethods(findingMethod);
-                    }
-                    for (MethodNode method : methods) {
-                        usages.add(methodCall);
-                    }
+                    addVariableUsages(methodCall, variable);
                 } else {
-                    if (!declaringClassName.equals(methodCall.getType().getName())) {
-                        return;
-                    }
-                    ClassNode declaringClass = element.getDeclaringClass();
-                    List<MethodNode> methods;
-                    if (declaringClass.isResolved()) {
-                        methods = declaringClass.getMethods(findingMethod);
-                    } else {
-                        methods = declaringClass.redirect().getMethods(findingMethod);
-                    }
-                    for (MethodNode method : methods) {
-                        usages.add(methodCall);
-                    }
+                    addThisUsages(methodCall);
                 }
+
+            } else if (expression instanceof ConstructorCallExpression) {
+                addConstructorUsages(methodCall, (ConstructorCallExpression) expression);
             }
             super.visitMethodCallExpression(methodCall);
         }
 
-        @Override
-        public void visitConstructorCallExpression(ConstructorCallExpression constructorCall) {
-            ClassNode constructorCallType = constructorCall.getType();
-
-            // Situations like: "new SomeClass().destroyWorldMethod()"
-            if (constructorCallType != null) {
-                List<MethodNode> methods;
-                if (constructorCallType.isResolved()) {
-                    methods = constructorCallType.getMethods(findingMethod);
-                } else {
-                    methods = constructorCallType.redirect().getMethods(findingMethod);
-                }
-                for (MethodNode method : methods) {
-                    usages.add(constructorCall);
-                }
+        private void addVariableUsages(MethodCallExpression methodCall, Variable variable) {
+            if (declaringClassName.equals(variable.getType().getName())) {
+                findAndAdd(variable.getType(), methodCall);
             }
-            super.visitConstructorCallExpression(constructorCall);
         }
 
-        @Override
-        public void visitConstantExpression(ConstantExpression expression) {
-            // Method calls on this object without specifying any variable type
-            // For example: "this.destroyWorldMethod()" or just "destroyWorldMethod()"
-            if (findingMethod.equals(expression.getConstantName())) {
-                usages.add(expression);
+        private void addThisUsages(MethodCallExpression methodCall) {
+            List<ClassNode> classes = moduleNode.getClasses(); //classes declared in current file
+            for (ClassNode classNode : classes) {
+                if (declaringClassName.equals(classNode.getName())) {
+                    findAndAdd(element.getDeclaringClass(), methodCall);
+                    break;
+                }
             }
-            super.visitConstantExpression(expression);
+        }
+
+        private void addConstructorUsages(MethodCallExpression methodCall, ConstructorCallExpression constructorCallExpression) {
+            ClassNode type = constructorCallExpression.getType();
+            if (declaringClassName.equals(ElementUtils.getDeclaringClassName(type))) {
+                findAndAdd(type, methodCall);
+            }
+        }
+
+        /**
+         * Tries to find exact MethodNode in the given ClassNode. The MethodNode
+         * is based on MethodCallExpresion. If there is an exact match, the methodCall
+         * is added into the usages list.
+         *
+         * @param type
+         * @param methodCall
+         */
+        private void findAndAdd(ClassNode type, MethodCallExpression methodCall) {
+            Expression arguments = methodCall.getArguments();
+
+            if (!type.isResolved()) {
+                type = type.redirect();
+            }
+            if (type.tryFindPossibleMethod(findingMethod, arguments) != null) {
+                usages.add(methodCall);
+            }
         }
     }
 }

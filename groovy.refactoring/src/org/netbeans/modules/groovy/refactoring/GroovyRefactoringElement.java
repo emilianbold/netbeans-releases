@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.groovy.refactoring;
 
-import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 import org.codehaus.groovy.ast.*;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,12 +58,14 @@ public class GroovyRefactoringElement extends ASTElement {
 
     private final FileObject fileObject;
     private final AstPath path;
+    private final ElementKind refactoringKind;
 
     
-    public GroovyRefactoringElement(GroovyParserResult info, ModuleNode root, ASTNode node, FileObject fileObject) {
+    public GroovyRefactoringElement(GroovyParserResult info, ModuleNode root, ASTNode node, FileObject fileObject, ElementKind kind) {
         super(info, node);
         this.fileObject = fileObject;
         this.path = new AstPath(root, node.getLineNumber(), node.getColumnNumber());
+        this.refactoringKind = kind;
     }
 
     @Override
@@ -73,15 +75,27 @@ public class GroovyRefactoringElement extends ASTElement {
 
     @Override
     public ElementKind getKind() {
-        return ElementUtils.getKind(node);
+        return refactoringKind;
     }
 
+    /**
+     * Returns the name of the refactoring element. (e.g. for field declaration
+     * "private GalacticMaster master" the method return "master")
+     *
+     * @return name of the refactoring element
+     */
     @Override
     public String getName() {
         return ElementUtils.getNameWithoutPackage(node);
     }
 
-    public final String getType() {
+    /**
+     * Returns type of the refactoring element. (e.g. for field declaration 
+     * "private GalacticMaster master" the method return "GalacticMaster")
+     * 
+     * @return type of the refactoring element
+     */
+    public final String getTypeName() {
         return ElementUtils.getTypeNameWithoutPackage(node);
     }
 
@@ -94,7 +108,7 @@ public class GroovyRefactoringElement extends ASTElement {
     }
 
     public final String getDeclaratingClassName() {
-        return ElementUtils.getDeclaratingClassName(node);
+        return ElementUtils.getDeclaringClassNameWithoutPackage(node);
     }
 
     @Override
