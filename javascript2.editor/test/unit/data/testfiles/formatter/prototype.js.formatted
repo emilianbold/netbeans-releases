@@ -1851,7 +1851,8 @@ Selector.prototype = {
         if (this.expression == '')
             abort('empty expression');
 
-        var params = this.params, expr = this.expression, match, modifier, clause, rest;
+        var params = this.params, expr = this.expression, match, modifier,
+        clause, rest;
         while (match = expr.match(/^(.*)\[([a-z0-9_:-]+?)(?:([~\|!]?=)(?:"([^"]*)"|([^\]\s]*)))?\]$/i)) {
             params.attributes = params.attributes || [];
             params.attributes.push({name: match[2], operator: match[3], value: match[4] || match[5] || ''});
