@@ -55,13 +55,10 @@ import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.QueryAccessor;
-import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
@@ -72,7 +69,7 @@ import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -254,12 +251,6 @@ public final class DefaultDashboard<S extends TeamServer, P> {
 
     private void setServer(S server) {
         this.server = server;
-        final PasswordAuthentication newValue = server!=null?server.getPasswordAuthentication():null;
-        if (newValue == null) {
-            setUser(null);
-        } else {
-            setUser(new LoginHandleImpl(newValue.getUserName()));
-        }
         refreshNonMemberProjects();
         if (server==null) {
             return;
@@ -270,12 +261,17 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             public void propertyChange(PropertyChangeEvent pce) {
                 if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName())) {
                     final PasswordAuthentication newValue = (PasswordAuthentication) pce.getNewValue();
-                    if (newValue == null) {
-                        setUser(null);
-                    } else {
-                        setUser(new LoginHandleImpl(newValue.getUserName()));
-                    }
-                    loggingFinished();
+                    Mutex.EVENT.readAccess(new Runnable() {
+                        @Override
+                        public void run () {
+                            if (newValue == null) {
+                                setUser(null);
+                            } else {
+                                setUser(new LoginHandleImpl(newValue.getUserName()));
+                            }
+                            loggingFinished();
+                        }
+                    });
                 } else if (TeamServer.PROP_LOGIN_STARTED.equals(pce.getPropertyName())) {
                     loggingStarted();
                 } else if (TeamServer.PROP_LOGIN_FAILED.equals(pce.getPropertyName())) {
@@ -285,6 +281,12 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         };
 
         server.addPropertyChangeListener(WeakListeners.propertyChange(serverListener, server));
+        final PasswordAuthentication newValue = server!=null?server.getPasswordAuthentication():null;
+        if (newValue == null) {
+            setUser(null);
+        } else {
+            setUser(new LoginHandleImpl(newValue.getUserName()));
+        }
         
         final PasswordAuthentication pa = server.getPasswordAuthentication();
         this.login = pa==null ? null : new LoginHandleImpl(pa.getUserName());
