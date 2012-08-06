@@ -47,8 +47,11 @@ import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 
 
 /**
@@ -209,6 +212,37 @@ final class Utils {
         else {
             return uri.getScheme()+"://"+uri.getHost();
         }
+    }
+    
+    static byte[] produceChallenge76( String key1, String key2, byte[] byteContent ) {
+        ByteBuffer buffer = ByteBuffer.allocate(16).putInt(decodeNumber(key1))
+                .putInt(decodeNumber(key2)).put(byteContent);
+        buffer.flip();
+        byte[] bytes = new byte[buffer.capacity()];
+        buffer.get(bytes);
+        try {
+            return MessageDigest.getInstance("MD5").digest(bytes); // NOI18N
+        }
+        catch (NoSuchAlgorithmException e) {
+            WebSocketServer.LOG.log(Level.WARNING, null, e);
+            return null;
+        }
+    }
+    
+    private static int decodeNumber(String code) {
+        long number = 0;
+        int spaces = 0;
+        for (int i=0; i<code.length(); i++) {
+            char c = code.charAt(i);
+            if (c >= '0' && c <= '9') {
+                number *= 10;
+                number += (c-'0');
+            }
+            if (c == ' ') {
+                spaces++;
+            }
+        }
+        return (int)(number/spaces);
     }
 
 }
