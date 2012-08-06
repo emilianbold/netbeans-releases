@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
@@ -83,11 +84,15 @@ public class MatchedPropertiesNode extends AbstractNode {
         Children.Array children = (Children.Array)getChildren();
         List<MatchedPropertyNode> nodes = new ArrayList<MatchedPropertyNode>();
         for (Rule rule : matchedStyles.getMatchedRules()) {
-            addChildrenFor(rule, nodes, properties);
+            if (Utilities.showInCSSStyles(rule)) {
+                addChildrenFor(rule, nodes, properties);
+            }
         }
         for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
             for (Rule rule : entry.getMatchedRules()) {
-                addChildrenFor(rule, nodes, properties);
+                if (Utilities.showInCSSStyles(rule)) {
+                    addChildrenFor(rule, nodes, properties);
+                }
             }
         }
         children.add(nodes.toArray(new MatchedPropertyNode[nodes.size()]));
