@@ -49,6 +49,7 @@ import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -145,7 +146,7 @@ public class FileBufferFile extends AbstractFileBuffer {
                 reader.close();
                 is.close();
             }
-            if (MIMENames.isCppOrCOrFortran(fo.getMIMEType())) {
+            if (CndTraceFlags.WEAK_REFS_HOLDERS || MIMENames.isCppOrCOrFortran(fo.getMIMEType())) {
                 cachedArray = new WeakReference<char[]>(readChars);
             } else {
                 cachedArray = new SoftReference<char[]>(readChars);

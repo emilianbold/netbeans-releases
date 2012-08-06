@@ -90,13 +90,13 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProviderFactory;
 import org.netbeans.modules.cnd.discovery.buildsupport.BuildTraceSupport;
-import org.netbeans.modules.cnd.discovery.services.DiscoveryManagerImpl;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.SelectConfigurationPanel;
 import org.netbeans.modules.cnd.discovery.wizard.api.ConsolidationStrategy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.DiscoveryProjectGenerator;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
@@ -112,7 +112,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.remote.api.RfsListener;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -1083,6 +1082,9 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void fixMacros(List<ProjectConfiguration> confs) {
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        pdp.stratModifications();
+        boolean changed = false;
         for (ProjectConfiguration conf : confs) {
             List<FileConfiguration> files = conf.getFiles();
             for (FileConfiguration fileConf : files) {
@@ -1092,36 +1094,20 @@ public class ImportProject implements PropertyChangeListener {
                         if (TRACE) {
                             logger.log(Level.FINE, "#fix macros for file {0}", fileConf.getFilePath()); // NOI18N
                         }
-                        ProjectBridge.setSourceStandard(item, fileConf.getLanguageStandard(), false);
-                        ProjectBridge.fixFileMacros(fileConf.getUserMacros(), item);
+                        changed |= ProjectBridge.setSourceStandard(item, fileConf.getLanguageStandard(), false);
+                        changed |= ProjectBridge.fixFileMacros(fileConf.getUserMacros(), item);
                     }
                 }
             }
         }
-        saveMakeConfigurationDescriptor(null);
-        DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
+        if (changed) {
+            DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, true);
+            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
+        } else {
+            pdp.endModifications(false, null);
+        }
     }
 
-    private void saveMakeConfigurationDescriptor(final ProjectBase p) {
-        if (p != null) {
-            p.enableProjectListeners(false);
-        }
-        try {
-            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-            makeConfigurationDescriptor.setModified();
-            makeConfigurationDescriptor.save();
-            makeConfigurationDescriptor.checkForChangedItems(makeProject, null, null);
-        } finally {
-            if (p != null) {
-                p.enableProjectListeners(true);
-            }
-        }
-        if (TRACE) {
-            logger.log(Level.INFO, "#save configuration descriptor"); // NOI18N
-        }
-    }
-    
     private void postModelDiscovery(final boolean isFull) {
         if (!isProjectOpened()) {
             isFinished = true;
@@ -1230,15 +1216,16 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
         }
-        DiscoveryManagerImpl.fixExcludedHeaderFiles(makeProject, logger);
-        DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
+        if (DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, logger)) {
+            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
+        }
         importResult.put(Step.FixExcluded, State.Successful);
     }
 
     private Map<String,Item> normalizedItems;
     private Item findByNormalizedName(File file){
         if (normalizedItems == null) {
-            normalizedItems = DiscoveryManagerImpl.initNormalizedNames(makeProject);
+            normalizedItems = DiscoveryProjectGenerator.initNormalizedNames(makeProject);
         }
         String path = CndFileUtils.normalizeFile(file).getAbsolutePath();
         return normalizedItems.get(path);
@@ -1307,7 +1294,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
+                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -1342,7 +1329,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
+                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                         importResult.put(Step.DiscoveryLog, State.Successful);
                     } else {
@@ -1374,7 +1361,7 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryManagerImpl.writeDefaultVersionedConfigurations(makeProject);
+                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);

@@ -47,9 +47,7 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -59,7 +57,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.font.FontRenderContext;
-import java.awt.font.LineMetrics;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeEvent;
@@ -197,13 +194,9 @@ public final class DocumentViewOp
     /**
      * Default row height computed as height of the defaultFont.
      */
-    private float defaultRowHeight;
+    private int defaultRowHeightInt;
 
-    private float defaultAscent;
-
-    private float defaultDescent;
-    
-    private float defaultLeading;
+    private int defaultAscentInt;
 
     private float defaultCharWidth;
 
@@ -237,6 +230,10 @@ public final class DocumentViewOp
     
     private Map<Font,FontInfo> fontInfos = new HashMap<Font, FontInfo>(4);
     
+    private Font defaultFont;
+    
+    private boolean fontRenderContextFromPaint;
+
     /**
      * Constant retrieved from preferences settings that allows the user to increase/decrease
      * paragraph view's height (which may help for problematic fonts that do not report its height
@@ -245,7 +242,7 @@ public final class DocumentViewOp
      * By default it's 1.0. All the ascents, descent and leadings of all fonts
      * are multiplied by the constant.
      */
-    private float lineHeightCorrection = 1.0f;
+    private float rowHeightCorrection = 1.0f;
     
     private MouseWheelListener origMouseWheelListener;
     
@@ -257,7 +254,7 @@ public final class DocumentViewOp
     private float extraVirtualHeight;
     
     boolean asTextField;
-
+    
     public DocumentViewOp(DocumentView docView) {
         this.docView = docView;
         textLayoutCache = new TextLayoutCache();
@@ -558,19 +555,31 @@ public final class DocumentViewOp
         if (fontRenderContext == null) {
             JTextComponent textComponent = docView.getTextComponent();
             Graphics graphics = (textComponent != null) ? textComponent.getGraphics() : null;
-            if (graphics != null) {
-                assert (graphics instanceof Graphics2D) : "Not Graphics2D";
-                // Use rendering hints (antialiasing etc.)
-                if (renderingHints != null) {
-                    ((Graphics2D) graphics).addRenderingHints(renderingHints);
-                }
-                fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
-                if (fontRenderContext != null) {
-                    return true; // Updated
-                }
-            }
+            assert (graphics instanceof Graphics2D) : "Not Graphics2D";
+            updateFontRenderContext((Graphics2D)graphics, false);
+            return (fontRenderContext != null);
         }
         return false;
+    }
+    
+    void updateFontRenderContext(Graphics2D g, boolean paint) {
+        if (g != null) {
+            // Use rendering hints (antialiasing etc.)
+            if (renderingHints != null) {
+                g.addRenderingHints(renderingHints);
+            }
+            if (paint) {
+                if (!fontRenderContextFromPaint) {
+                    fontRenderContextFromPaint = true;
+                    fontRenderContext = g.getFontRenderContext();
+                    // Release children since the original non-painting graphics does not have
+                    // proper AA set.
+                    releaseChildrenNeedsLock(); // Already locked in DV.paint()
+                }
+            } else {
+                fontRenderContext = g.getFontRenderContext();
+            }
+        }
     }
     
     void releaseChildrenNeedsLock() { // It should be called with acquired mutex
@@ -791,12 +800,12 @@ public final class DocumentViewOp
                 SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE, false));
         updateStatusBits(NON_PRINTABLE_CHARACTERS_VISIBLE, nonPrintableCharactersVisible);
         // Line height correction
-        float lineHeightCorrectionOrig = lineHeightCorrection;
-        lineHeightCorrection = prefs.getFloat(SimpleValueNames.LINE_HEIGHT_CORRECTION, 1.0f);
-        boolean updateMetrics = (lineHeightCorrection != lineHeightCorrectionOrig);
+        float lineHeightCorrectionOrig = rowHeightCorrection;
+        rowHeightCorrection = prefs.getFloat(SimpleValueNames.LINE_HEIGHT_CORRECTION, 1.0f);
+        boolean updateMetrics = (rowHeightCorrection != lineHeightCorrectionOrig);
         boolean releaseChildren = nonInitialUpdate && 
                 ((nonPrintableCharactersVisible != nonPrintableCharactersVisibleOrig) ||
-                 (lineHeightCorrection != lineHeightCorrectionOrig)); 
+                 (rowHeightCorrection != lineHeightCorrectionOrig)); 
         if (updateMetrics) {
             updateCharMetrics();
         }
@@ -905,7 +914,7 @@ public final class DocumentViewOp
         clearStatusBits(AVAILABLE_WIDTH_VALID);
     }
 
-    private void updateCharMetrics() { // Update default line height and other params
+    private void updateCharMetrics() { // Update default row height and other params
         checkFontRenderContext(); // Possibly get FRC created; ignore ret value since now actually updating the metrics
         FontRenderContext frc = getFontRenderContext();
         JTextComponent textComponent = docView.getTextComponent();
@@ -914,13 +923,11 @@ public final class DocumentViewOp
             // Reset all the measurements to adhere just to default font.
             // Possible other fonts in fontInfos get eliminated.
             fontInfos.clear();
-            FontInfo defaultFontInfo = new FontInfo(font, textComponent, frc, lineHeightCorrection, textZoom);
+            FontInfo defaultFontInfo = new FontInfo(font, textComponent, frc, rowHeightCorrection, textZoom);
             fontInfos.put(font, defaultFontInfo);
             fontInfos.put(null, defaultFontInfo); // Alternative way to find default font info
-            defaultAscent = defaultFontInfo.ascent;
-            defaultDescent = defaultFontInfo.descent;
-            defaultLeading = defaultFontInfo.leading;
-            updateRowHeight();
+            updateRowHeight(defaultFontInfo, true);
+            defaultFont = font;
             defaultCharWidth = defaultFontInfo.charWidth;
             
             tabTextLayout = null;
@@ -937,43 +944,23 @@ public final class DocumentViewOp
         }
     }
     
-    private void updateRowHeight() {
-        defaultRowHeight = (float) Math.ceil(defaultAscent + defaultDescent + defaultLeading);
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("updateRowHeight(): rowHeight=" + defaultRowHeight + // NOI18N
-                    ", ascent=" + defaultAscent + // NOI18N
-                    ", descent=" + defaultDescent + // NOI18N
-                    ", leading=" + defaultLeading + '\n' // NOI18N
-            );
+    private void updateRowHeight(FontInfo fontInfo, boolean force) {
+        if (force || defaultAscentInt < fontInfo.ascentInt) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("DV.updateRowHeight()" + (force ? "-forced" : "") + // NOI18N
+                        ": defaultAscentInt from " + defaultAscentInt + " to " + fontInfo.ascentInt + "\n"); // NOI18N
+            }
+            defaultAscentInt = fontInfo.ascentInt;
+        }
+        if (force || defaultRowHeightInt < fontInfo.rowHeightInt) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("DV.updateRowHeight()" + (force ? "-forced" : "") + // NOI18N
+                        ": defaultRowHeightInt from " + defaultRowHeightInt + " to " + fontInfo.rowHeightInt + "\n"); // NOI18N
+            }
+            defaultRowHeightInt = fontInfo.rowHeightInt;
         }
     }
     
-    Font getRealFont(Font font) {
-        FontInfo fontInfo = fontInfos.get(font);
-        if (fontInfo == null) {
-            fontInfo = new FontInfo(font, docView.getTextComponent(), getFontRenderContext(), lineHeightCorrection, textZoom);
-            fontInfos.put(font, fontInfo);
-            boolean change = false;
-            if (fontInfo.ascent > defaultAscent) {
-                defaultAscent = fontInfo.ascent;
-                change = true;
-            }
-            if (fontInfo.descent > defaultDescent) {
-                defaultDescent = fontInfo.descent;
-                change = true;
-            }
-            if (fontInfo.leading > defaultLeading) {
-                defaultLeading = fontInfo.leading;
-                change = true;
-            }
-            if (change) {
-                updateRowHeight();
-                releaseChildrenNeedsLock();
-            }
-        }
-        return fontInfo.realFont;
-    }
-
     void markIncomingModification() {
         setStatusBits(INCOMING_MODIFICATION);
     }
@@ -1071,17 +1058,17 @@ public final class DocumentViewOp
     }
 
     public Font getDefaultFont() {
-        return fontInfos.get(null).realFont;
+        return defaultFont;
     }
 
     public float getDefaultRowHeight() {
         checkSettingsInfo();
-        return defaultRowHeight;
+        return defaultRowHeightInt;
     }
 
     public float getDefaultAscent() {
         checkSettingsInfo();
-        return defaultAscent;
+        return defaultAscentInt;
     }
 
     /**
@@ -1128,7 +1115,6 @@ public final class DocumentViewOp
 
     TextLayout getNewlineCharTextLayout() {
         if (newlineTextLayout == null) {
-            Font defaultFont = fontInfos.get(null).realFont;
             newlineTextLayout = createTextLayout(String.valueOf(PRINTING_NEWLINE), defaultFont);
         }
         return newlineTextLayout;
@@ -1136,13 +1122,11 @@ public final class DocumentViewOp
 
     TextLayout getTabCharTextLayout(double availableWidth) {
         if (tabTextLayout == null) {
-            Font defaultFont = fontInfos.get(null).realFont;
             tabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB), defaultFont);
         }
         TextLayout ret = tabTextLayout;
         if (tabTextLayout != null && availableWidth > 0 && tabTextLayout.getAdvance() > availableWidth) {
             if (singleCharTabTextLayout == null) {
-                Font defaultFont = fontInfos.get(null).realFont;
                 for (int i = defaultFont.getSize() - 1; i >= 0; i--) {
                     Font font = new Font(defaultFont.getName(), defaultFont.getStyle(), i);
                     singleCharTabTextLayout = createTextLayout(String.valueOf(PRINTING_TAB), font);
@@ -1163,7 +1147,6 @@ public final class DocumentViewOp
 
     TextLayout getLineContinuationCharTextLayout() {
         if (lineContinuationTextLayout == null) {
-            Font defaultFont = fontInfos.get(null).realFont;
             char lineContinuationChar = LINE_CONTINUATION;
             if (!defaultFont.canDisplay(lineContinuationChar)) {
                 lineContinuationChar = LINE_CONTINUATION_ALTERNATE;
@@ -1173,12 +1156,27 @@ public final class DocumentViewOp
         return lineContinuationTextLayout;
     }
 
+    public FontInfo getFontInfo(Font font) {
+        FontInfo fontInfo = fontInfos.get(font);
+        if (fontInfo == null) {
+            fontInfo = new FontInfo(font, docView.getTextComponent(), getFontRenderContext(), rowHeightCorrection, textZoom);
+            fontInfos.put(font, fontInfo);
+        }
+        return fontInfo;
+    }
+
     TextLayout createTextLayout(String text, Font font) {
         checkSettingsInfo();
         if (fontRenderContext != null && font != null) {
-            Font realFont = getRealFont(font);
             ViewStats.incrementTextLayoutCreated(text.length());
-            return new TextLayout(text, realFont, fontRenderContext);
+            FontInfo fontInfo = getFontInfo(font);
+            TextLayout textLayout = new TextLayout(text, fontInfo.renderFont, fontRenderContext);
+            if (fontInfo.updateRowHeight(textLayout, rowHeightCorrection)) {
+                updateRowHeight(fontInfo, false);
+                LOG.fine("RowHeight Updated -> release children");
+                releaseChildren(false);
+            }
+            return textLayout;
         }
         return null;
     }
@@ -1305,14 +1303,17 @@ public final class DocumentViewOp
         sb.append(", lengthyAE=").append(lengthyAtomicEdit); // NOI18N
         sb.append('\n');
         sb.append(viewUpdates);
-        sb.append(", ChgFlags:");
+        sb.append(", ChgFlags:"); // NOI18N
         int len = sb.length();
         if (isWidthChange()) sb.append(" W");
         if (isHeightChange()) sb.append(" H");
         if (sb.length() == len) {
             sb.append(" <NONE>");
         }
-        sb.append("; visWidth:").append(getVisibleRect().width); // visibleRect always non-null
+        sb.append("; visWidth:").append(getVisibleRect().width); // NOI18N
+        sb.append(", rowHeight=").append(getDefaultRowHeight()); // NOI18N
+        sb.append(", ascent=").append(getDefaultAscent()); // NOI18N
+        sb.append(", charWidth=").append(getDefaultCharWidth()); // NOI18N
         return sb;
     }
 
@@ -1320,65 +1321,5 @@ public final class DocumentViewOp
     public String toString() {
         return appendInfo(new StringBuilder(200)).toString();
     }
-    
-    private static final class FontInfo {
-        
-        final Font realFont;
-        
-        final float ascent;
-        
-        final float descent;
-        
-        final float leading;
-        
-        final float charWidth;
 
-        /**
-         * Array of
-         * <ol>
-         *     <li>Underline offset.</li>
-         *     <li>Underline thickness.</li>
-         *     <li>Strike-through offset.</li>
-         *     <li>Strike-through thickness.</li>
-         * </ol>
-         */
-        final float[] underlineAndStrike = new float[4];
-        
-        FontInfo(Font font, JTextComponent textComponent, FontRenderContext frc, float lineHeightCorrection, int textZoom) {
-            realFont = (textZoom != 0)
-                    ? new Font(font.getName(), font.getStyle(), Math.max(font.getSize() + textZoom, 1))
-                    : font;
-            char defaultChar = 'A';
-            String defaultCharText = String.valueOf(defaultChar);
-            TextLayout defaultCharTextLayout = new TextLayout(defaultCharText, realFont, frc); // NOI18N
-            TextLayout lineHeightTextLayout = new TextLayout("A_|B", realFont, frc);
-            // Round the ascent to eliminate long mantissa without any visible effect on rendering.
-            ascent = lineHeightTextLayout.getAscent() * lineHeightCorrection;
-            descent = lineHeightTextLayout.getDescent() * lineHeightCorrection;
-            leading = lineHeightTextLayout.getLeading() * lineHeightCorrection;
-            // Ceil fractions to whole numbers since this measure may be used for background rendering
-            charWidth = (float) Math.ceil(defaultCharTextLayout.getAdvance());
-
-            LineMetrics lineMetrics = font.getLineMetrics(defaultCharText, frc);
-            underlineAndStrike[0] = lineMetrics.getUnderlineOffset() * lineHeightCorrection;
-            underlineAndStrike[1] = lineMetrics.getUnderlineThickness();
-            underlineAndStrike[2] = lineMetrics.getStrikethroughOffset() * lineHeightCorrection;
-            underlineAndStrike[3] = lineMetrics.getStrikethroughThickness();
-
-            if (LOG.isLoggable(Level.FINE)) {
-                FontMetrics fm = textComponent.getFontMetrics(font);
-                LOG.fine("Font: " + font + "\nSize2D: " + font.getSize2D() + // NOI18N
-                        ", Real-font: " + realFont + "\nSize2D: " + realFont.getSize2D() + // NOI18N
-                        ", lineHeightCorrection(applied to subsequent measures)=" + lineHeightCorrection + // NOI18N
-                        "\nascent=" + ascent + ", descent=" + descent + // NOI18N
-                        ", leading=" + leading + "\nChar-width=" + charWidth + // NOI18N
-                        ", underlineO/T=" + underlineAndStrike[0] + "/" + underlineAndStrike[1] + // NOI18N
-                        ", strikethroughO/T=" + underlineAndStrike[2] + "/" + underlineAndStrike[3] + // NOI18N
-                        "\nFontMetrics (for comparison; without-LHC): fm-line-height=" + // NOI18N
-                        fm.getHeight() + ", fm-ascent=" + fm.getAscent() + // NOI18N
-                        ", fm-descent=" + fm.getDescent() + "\n");
-            }
-        }
-        
-    }
 }

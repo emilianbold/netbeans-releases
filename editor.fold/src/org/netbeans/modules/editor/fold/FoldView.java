@@ -71,6 +71,7 @@ import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib2.view.EditorView;
+import org.netbeans.modules.editor.lib2.view.ViewRenderContext;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
 
 /**
@@ -121,11 +122,13 @@ public class FoldView extends EditorView {
             return 0f;
         }
         String desc = fold.getDescription(); // For empty desc a single-space text layout is returned
-        float span = (axis == View.X_AXIS)
-            ? ((desc.length() > 0) ? textLayout.getAdvance() : 0) 
-                + (2 * EXTRA_MARGIN_WIDTH)
-            : textLayout.getAscent() + textLayout.getDescent() + textLayout.getLeading();
-        return span;
+        if (axis == View.X_AXIS) {
+            return ((desc.length() > 0) ? textLayout.getAdvance() : 0) 
+                + (2 * EXTRA_MARGIN_WIDTH);
+        } else {
+            EditorView.Parent parent = (EditorView.Parent) getParent();
+            return (parent != null) ? parent.getViewRenderContext().getDefaultRowHeight() : 0f;
+        }
     }
 
     @Override
@@ -168,9 +171,10 @@ public class FoldView extends EditorView {
     private TextLayout getTextLayout() {
         if (collapsedTextLayout == null) {
             EditorView.Parent parent = (EditorView.Parent) getParent();
-            FontRenderContext frc = parent.getFontRenderContext();
+            ViewRenderContext context = parent.getViewRenderContext();
+            FontRenderContext frc = context.getFontRenderContext();
             assert (frc != null) : "Null FontRenderContext"; // NOI18N
-            Font font = textComponent.getFont();
+            Font font = context.getRenderFont(textComponent.getFont());
             String text = fold.getDescription();
             if (text.length() == 0) {
                 text = " "; // Use single space (mainly for height measurement etc.
@@ -307,6 +311,7 @@ public class FoldView extends EditorView {
             Font origFont = g.getFont();
             Color origColor = g.getColor();
             Color origBkColor = g.getBackground();
+            Shape origClip = g.getClip();
             try {
                 // Leave component font
                 g.setColor(getForegroundColor());
@@ -318,16 +323,21 @@ public class FoldView extends EditorView {
                 int endYInt = (int) (allocBounds.getY() + allocBounds.getHeight() - 1);
                 g.drawRect(xInt, yInt, endXInt - xInt, endYInt - yInt);
                 g.clearRect(xInt + 1, yInt + 1, endXInt - xInt - 1, endYInt - yInt - 1);
+                g.setClip(alloc);
                 TextLayout textLayout = getTextLayout();
                 if (textLayout != null) {
+                    EditorView.Parent parent = (EditorView.Parent) getParent();
+                    float ascent = parent.getViewRenderContext().getDefaultAscent();
                     String desc = fold.getDescription(); // For empty desc a single-space text layout is returned
                     float x = (float) (allocBounds.getX() + EXTRA_MARGIN_WIDTH);
                     float y = (float) allocBounds.getY();
                     if (desc.length() > 0) {
-                        textLayout.draw(g, x, y + textLayout.getAscent());
+                        
+                        textLayout.draw(g, x, y + ascent);
                     }
                 }
             } finally {
+                g.setClip(origClip);
                 g.setBackground(origBkColor);
                 g.setColor(origColor);
                 g.setFont(origFont);

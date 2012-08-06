@@ -79,6 +79,7 @@ NetBeans.initNextSelection = function() {
 // Initializes/clears the next highlight
 NetBeans.initNextHighlight = function() {
     this.nextHighlight = [];
+    this.lastHighlighted = null;
 }
 
 // Adds an element into the next selection
@@ -92,6 +93,7 @@ NetBeans.addElementToNextSelection = function(element) {
 NetBeans.addElementToNextHighlight = function(element) {
     if (this.nextHighlight.indexOf(element) == -1) {
         this.nextHighlight.push(element);
+        this.lastHighlighted = element;
     }
 }
 
@@ -106,6 +108,9 @@ NetBeans.finishNextHighlight = function() {
     this.highlight = this.nextHighlight;
     this.repaintGlassPane();
 }
+
+// The last element the mouse was hovering over
+NetBeans.lastHighlighted = null;
 
 // Inserts a glass-pane into the inspected page
 NetBeans.insertGlassPane = function() {
@@ -141,11 +146,10 @@ NetBeans.insertGlassPane = function() {
     });
 
     // Mouse-over highlight
-    var lastHighlighted = null;
     canvas.addEventListener('mousemove', function(event) {
         var element = getElementForEvent(event);
-        if (lastHighlighted !== element) {
-            lastHighlighted = element;
+        if (self.lastHighlighted !== element) {
+            self.lastHighlighted = element;
             // HACK: notify NetBeans
             element.setAttribute(self.ATTR_HIGHLIGHTED, 'true');
             element.removeAttribute(self.ATTR_HIGHLIGHTED);
@@ -155,7 +159,7 @@ NetBeans.insertGlassPane = function() {
     // Clear highlight when the mouse leaves the window
     canvas.addEventListener('mouseout', function(e) {
         if (e.toElement === null) {
-            lastHighlighted = null;
+            self.lastHighlighted = null;
             // HACK notify NetBeans
             canvas.setAttribute(self.ATTR_HIGHLIGHTED, 'false');
             canvas.removeAttribute(self.ATTR_HIGHLIGHTED);
@@ -193,6 +197,7 @@ NetBeans.setSelectionMode = function(selectionMode) {
     var value = selectionMode ? 'auto' : 'none';
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
     canvas.style.pointerEvents = value;
+    this.lastHighlighted = null;
 }
 
 // Repaints the glass-pane

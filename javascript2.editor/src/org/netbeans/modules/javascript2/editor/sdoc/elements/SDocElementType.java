@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 /**
- * Represents ScriptDoc element type.
+ * Contains ScriptDoc element types.
  */
 public enum SDocElementType {
     // description type - at the start of comments

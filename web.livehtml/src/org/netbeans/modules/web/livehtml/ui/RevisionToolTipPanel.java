@@ -43,12 +43,10 @@ package org.netbeans.modules.web.livehtml.ui;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import javax.swing.JLabel;
 import org.netbeans.modules.web.livehtml.Revision;
-import org.openide.util.Lookup;
+import org.netbeans.modules.web.livehtml.ui.data.DataToolTipProvider;
+import org.netbeans.modules.web.livehtml.ui.stacktrace.StackTraceToolTipProvider;
 
 /**
  *
@@ -56,56 +54,47 @@ import org.openide.util.Lookup;
  */
 public class RevisionToolTipPanel extends javax.swing.JPanel {
     
-    private Revision revision = null;
+    private List<RevisionToolTipService> revisionToolTipServices = new ArrayList<RevisionToolTipService>();
 
     /**
      * Creates new form RevisionToolTipPanel
      */
     public RevisionToolTipPanel() {
         initComponents();
+        
+        revisionToolTipServices.add(new StackTraceToolTipProvider());
+//        revisionToolTipServices.add(new ChangesToolTipProvider());
+        revisionToolTipServices.add(new DataToolTipProvider());
+
+        for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
+            toolTipTabbedPane.addTab(revisionToolTipService.getDisplayName(), revisionToolTipService);
+        }
     }
 
     public void setRevision(Revision revision, String toolTipTitle, boolean reformatContent) {
-        this.revision = revision;
         
         titleLabel.setText(toolTipTitle);
-        final int tabCount = toolTipTabbedPane.getTabCount();
+        titleLabel.setToolTipText(toolTipTitle);
         
-        final List<? extends RevisionToolTipService> revisionToolTipServices = 
-                new ArrayList<RevisionToolTipService>(Lookup.getDefault().lookupAll(RevisionToolTipService.class));
-        Collections.sort(revisionToolTipServices);
-        
-        if (tabCount == 0) {
-            int i = 0;
-            for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
-                Component component = revisionToolTipService.createToolTip(revision, reformatContent);
-                if (component == null) {
-                    component = new JLabel();
-                    component.setEnabled(revisionToolTipService.canProcess(revision));
-                }
-                
-                toolTipTabbedPane.addTab(revisionToolTipService.getDisplayName(), component);
-                toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
-                
-                i += 1;
-            }
-        } else {
-            for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
-                for (int i = 0; i < tabCount; i++) {
-                    Component component = toolTipTabbedPane.getComponentAt(i);
-                    if (revisionToolTipService.getDisplayName().equals(toolTipTabbedPane.getTitleAt(i))) {
-                        revisionToolTipService.updateComponent(component, revision, reformatContent);
-                        toolTipTabbedPane.setEnabledAt(i, revisionToolTipService.canProcess(revision));
-                    }
-                }
-            }
+        if (revision == null) {
+            return;
         }
         
-        toolTipTabbedPane.revalidate();
-        toolTipTabbedPane.repaint();
+        int i = 0;
+        for (RevisionToolTipService revisionToolTipService : revisionToolTipServices) {
+            final boolean canProcess = revisionToolTipService.canProcess(revision, reformatContent);
+            
+            if (canProcess) {
+                revisionToolTipService.setRevision(revision, reformatContent);
+            } else {
+                revisionToolTipService.clearRevision();
+            }
+            
+            toolTipTabbedPane.setEnabledAt(i, canProcess);
+            
+            i += 1;
+        }
         
-        revalidate();
-        repaint();
     }
         
     /**

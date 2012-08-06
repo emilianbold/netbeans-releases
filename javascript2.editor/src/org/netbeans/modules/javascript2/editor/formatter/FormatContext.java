@@ -79,9 +79,13 @@ public final class FormatContext {
 
     private final boolean embedded;
 
+    private LineWrap lastLineWrap;
+
     private int indentationLevel;
 
     private int offsetDiff;
+
+    private int currentLineStart;
 
     public FormatContext(Context context, Snapshot snapshot) {
         this.context = context;
@@ -143,6 +147,23 @@ public final class FormatContext {
             LOGGER.log(Level.FINE, "Tuned regions");
             dumpRegions();
         }
+    }
+
+
+    public void setLastLineWrap(LineWrap lineWrap) {
+        this.lastLineWrap = lineWrap;
+    }
+
+    public LineWrap getLastLineWrap() {
+        return lastLineWrap;
+    }
+
+    public int getCurrentLineStart() {
+        return currentLineStart;
+    }
+
+    public void setCurrentLineStart(int currentLineStart) {
+        this.currentLineStart = currentLineStart;
     }
 
     public int getIndentationLevel() {
@@ -264,6 +285,12 @@ public final class FormatContext {
     public void indentLine(int voffset, int indentationSize,
             JsFormatter.Indentation indentationCheck) {
 
+        indentLineWithOffsetDiff(voffset, indentationSize, indentationCheck, offsetDiff);
+    }
+
+    public void indentLineWithOffsetDiff(int voffset, int indentationSize,
+            JsFormatter.Indentation indentationCheck, int realOffsetDiff) {
+
         if (!indentationCheck.isAllowed()) {
             return;
         }
@@ -275,7 +302,7 @@ public final class FormatContext {
 
         try {
             int diff = GsfUtilities.setLineIndentation(getDocument(),
-                    offset + offsetDiff, indentationSize);
+                    offset + realOffsetDiff, indentationSize);
             setOffsetDiff(offsetDiff + diff);
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -283,6 +310,10 @@ public final class FormatContext {
     }
 
     public void insert(int voffset, String newString) {
+        insertWithOffsetDiff(voffset, newString, offsetDiff);
+    }
+
+    public void insertWithOffsetDiff(int voffset, String newString, int realOffsetDiff) {
         int offset = getDocumentOffset(voffset);
         if (offset < 0) {
             return;
@@ -290,7 +321,7 @@ public final class FormatContext {
 
         BaseDocument doc = getDocument();
         try {
-            doc.insertString(offset + offsetDiff, newString, null);
+            doc.insertString(offset + realOffsetDiff, newString, null);
             setOffsetDiff(offsetDiff + newString.length());
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -343,6 +374,26 @@ public final class FormatContext {
             }
         } catch (BadLocationException ex) {
             LOGGER.log(Level.INFO, null, ex);
+        }
+    }
+
+    public static class LineWrap {
+
+        private final FormatToken token;
+
+        private final int offsetDiff;
+
+        public LineWrap(FormatToken token, int offsetDiff) {
+            this.token = token;
+            this.offsetDiff = offsetDiff;
+        }
+
+        public FormatToken getToken() {
+            return token;
+        }
+
+        public int getOffsetDiff() {
+            return offsetDiff;
         }
     }
 

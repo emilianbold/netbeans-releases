@@ -53,10 +53,10 @@ import java.nio.charset.Charset;
  * @author ads
  *
  */
-class WebSocketHandlerClient75 extends AbstractWSHandler75 {
+class WebSocketHandlerClient75 extends AbstractWSHandler75<WebSocketClient> {
 
     WebSocketHandlerClient75( WebSocketClient webSocketClient ) {
-        client = webSocketClient;
+        super(webSocketClient);
     }
     
     /* (non-Javadoc)
@@ -70,7 +70,7 @@ class WebSocketHandlerClient75 extends AbstractWSHandler75 {
         else {
             readHandshakeResponse( byteBuffer );
             handshakeRed = true;
-            getClient().getWebSocketReadHandler().accepted(getKey());
+            getWebSocketPoint().getWebSocketReadHandler().accepted(getKey());
         }
     }
 
@@ -81,7 +81,7 @@ class WebSocketHandlerClient75 extends AbstractWSHandler75 {
     public void sendHandshake() {
         StringBuilder builder = new StringBuilder(Utils.GET);
         builder.append(' ');
-        builder.append(getClient().getUri().getPath());
+        builder.append(getWebSocketPoint().getUri().getPath());
         builder.append(' ');
         builder.append( Utils.HTTP_11);
         builder.append(Utils.CRLF);
@@ -91,11 +91,11 @@ class WebSocketHandlerClient75 extends AbstractWSHandler75 {
         
         builder.append(Utils.HOST);
         builder.append(": ");                               // NOI18N
-        builder.append(getClient().getUri().getHost());
+        builder.append(getWebSocketPoint().getUri().getHost());
         builder.append(Utils.CRLF);
         
         builder.append("Origin: ");
-        builder.append( Utils.getOrigin(getClient().getUri()));
+        builder.append( Utils.getOrigin(getWebSocketPoint().getUri()));
         builder.append(Utils.CRLF);
         
         builder.append(Utils.WS_PROTOCOL);
@@ -104,12 +104,12 @@ class WebSocketHandlerClient75 extends AbstractWSHandler75 {
         builder.append( Utils.CRLF );
         builder.append( Utils.CRLF );
         
-        getClient().send(builder.toString().getBytes( 
+        getWebSocketPoint().send(builder.toString().getBytes( 
                 Charset.forName(Utils.UTF_8)), getKey() );
     }
     
     protected void readHandshakeResponse( ByteBuffer buffer) throws IOException {
-        Utils.readHttpRequest(getClient().getChannel(), buffer);
+        Utils.readHttpRequest(getWebSocketPoint().getChannel(), buffer);
     }
     
     /* (non-Javadoc)
@@ -117,15 +117,7 @@ class WebSocketHandlerClient75 extends AbstractWSHandler75 {
      */
     @Override
     protected SelectionKey getKey() {
-        return getClient().getKey();
-    }
-
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#close()
-     */
-    @Override
-    protected void close() throws IOException {
-        getClient().close(getKey());
+        return getWebSocketPoint().getKey();
     }
 
     /* (non-Javadoc)
@@ -133,21 +125,8 @@ class WebSocketHandlerClient75 extends AbstractWSHandler75 {
      */
     @Override
     protected void readDelegate( byte[] bytes ) {
-        client.getWebSocketReadHandler().read(getKey(), bytes, null); 
+        getWebSocketPoint().getWebSocketReadHandler().read(getKey(), bytes, null); 
     }
     
-    protected WebSocketClient getClient(){
-        return client;
-    }
-    
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.netserver.websocket.AbstractWSHandler75#isStopped()
-     */
-    @Override
-    protected boolean isStopped() {
-        return getClient().isStopped();
-    }
-
     private boolean handshakeRed;
-    private WebSocketClient client;
 }

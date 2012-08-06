@@ -44,13 +44,14 @@
 
 package org.netbeans.modules.options.colors;
 
-import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
@@ -83,8 +84,10 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.options.colors.ColorModel.Preview;
+import org.netbeans.modules.options.colors.spi.FontsColorsController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ColorComboBox;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -95,7 +98,7 @@ import org.openide.util.RequestProcessor.Task;
  * @author  Jan Jancura
  */
 public class SyntaxColoringPanel extends JPanel implements ActionListener, 
-    PropertyChangeListener, FontsColorsController {
+    PropertyChangeListener, FontsColorsController, ItemListener {
     
     
     private Preview             preview;
@@ -131,9 +134,6 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Efects_Color_Chooser"));
         cbEffectColor.getAccessibleContext ().setAccessibleName (loc ("AN_Efects_Color"));
         cbEffectColor.getAccessibleContext ().setAccessibleDescription (loc ("AD_Efects_Color"));
-        ColorComboBox.init (cbBackground);
-        ColorComboBox.init (cbForeground);
-        ColorComboBox.init (cbEffectColor);
         cbLanguage.addActionListener (this);
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         lCategories.setVisibleRowCount (3);
@@ -149,11 +149,8 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         tfFont.setEditable (false);
         bFont.addActionListener (this);
         bFont.setMargin (new Insets (0, 0, 0, 0));
-        cbForeground.addActionListener (this);
-        ((JComponent)cbForeground.getEditor()).addPropertyChangeListener (this);
-
-        cbBackground.addActionListener (this);
-        ((JComponent)cbBackground.getEditor()).addPropertyChangeListener (this);
+        cbForeground.addItemListener(this);
+        cbBackground.addItemListener(this);
         
         cbEffects.addItem (loc ("CTL_Effects_None"));
         cbEffects.addItem (loc ("CTL_Effects_Underlined"));
@@ -162,8 +159,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Effects"));
         cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Effects"));
         cbEffects.addActionListener (this);
-        ((JComponent)cbEffectColor.getEditor()).addPropertyChangeListener (this);
-        cbEffectColor.addActionListener (this);
+        cbEffectColor.addItemListener(this);
         
         loc(bFont, "CTL_Font_button");
         loc(lBackground, "CTL_Background_label");
@@ -208,10 +204,10 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         lBackground = new javax.swing.JLabel();
         lEffects = new javax.swing.JLabel();
         lEffectColor = new javax.swing.JLabel();
-        cbForeground = new javax.swing.JComboBox();
-        cbBackground = new javax.swing.JComboBox();
+        cbForeground = new org.openide.awt.ColorComboBox();
+        cbBackground = new ColorComboBox();
         cbEffects = new javax.swing.JComboBox();
-        cbEffectColor = new javax.swing.JComboBox();
+        cbEffectColor = new ColorComboBox();
         tfFont = new javax.swing.JTextField();
         bFont = new javax.swing.JButton();
 
@@ -355,9 +351,9 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
 	if (evt.getSource () == cbEffects) {
-	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
             if (cbEffects.getSelectedIndex () == 0)
-                ColorComboBox.setColor (cbEffectColor, null);
+                cbEffectColor.setSelectedItem( null );
+	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
             updateData ();
 	} else
 	if (evt.getSource () == cbLanguage) {
@@ -438,8 +434,6 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                     break;
                 }
             }
-        } else if (ColorComboBox.PROP_COLOR.equals(evt.getPropertyName())) {
-            updateData();
         }
     }
     
@@ -610,22 +604,22 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
               wave = null, 
               strikethrough = null;
         if (cbEffects.getSelectedIndex () == 1)
-            underline = ColorComboBox.getColor(cbEffectColor);
+            underline = ((ColorComboBox)cbEffectColor).getSelectedColor();
         if (cbEffects.getSelectedIndex () == 2)
-            wave = ColorComboBox.getColor(cbEffectColor);
+            wave = ((ColorComboBox)cbEffectColor).getSelectedColor();
         if (cbEffects.getSelectedIndex () == 3)
-            strikethrough = ColorComboBox.getColor(cbEffectColor);
+            strikethrough = ((ColorComboBox)cbEffectColor).getSelectedColor();
         
         SimpleAttributeSet c = category != null ? new SimpleAttributeSet(category) : new SimpleAttributeSet();
         
-        Color color = ColorComboBox.getColor(cbBackground);
+        Color color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbBackground );
         if (color != null) {
             c.addAttribute(StyleConstants.Background, color);
         } else {
             c.removeAttribute(StyleConstants.Background);
         }
         
-        color = ColorComboBox.getColor(cbForeground);
+        color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbForeground );
         if (color != null) {
             c.addAttribute(StyleConstants.Foreground, color);
         } else {
@@ -724,7 +718,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             bFont.setEnabled (false);
             cbEffects.setEnabled (false);
             cbForeground.setEnabled (false);
-            cbForeground.setSelectedItem (new ColorValue (null, null));
+            ((org.openide.awt.ColorComboBox)cbForeground).setSelectedColor( null );
             cbBackground.setEnabled (false);
             cbBackground.setSelectedItem (new ColorValue (null, null));
             cbEffectColor.setEnabled (false);
@@ -741,70 +735,46 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         Color inheritedForeground = (Color) getDefault 
             (currentLanguage, category, StyleConstants.Foreground);
         if (inheritedForeground == null) inheritedForeground = Color.black;
-        ColorComboBox.setInheritedColor (cbForeground, inheritedForeground);
+        ColorComboBoxSupport.setInheritedColor ((ColorComboBox)cbForeground, inheritedForeground);
         Color inheritedBackground = (Color) getDefault 
             (currentLanguage, category, StyleConstants.Background);
         if (inheritedBackground == null) inheritedBackground = Color.white;
-        ColorComboBox.setInheritedColor (cbBackground, inheritedBackground);
+        ColorComboBoxSupport.setInheritedColor ((ColorComboBox)cbBackground, inheritedBackground);
         
         String font = fontToString (category);
         tfFont.setText (font);
-        ColorComboBox.setColor (
-            cbForeground,
-            (Color) category.getAttribute (StyleConstants.Foreground)
-        );
-        ColorComboBox.setColor (
-            cbBackground,
-            (Color) category.getAttribute (StyleConstants.Background)
-        );
+        ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbForeground, (Color) category.getAttribute (StyleConstants.Foreground));
+        ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbBackground, (Color) category.getAttribute (StyleConstants.Background));
         
         if (category.getAttribute (StyleConstants.Underline) != null) {
             cbEffects.setSelectedIndex (1);
             cbEffectColor.setEnabled (true);
-            ColorComboBox.setColor (
-                cbEffectColor,
-                (Color) category.getAttribute (StyleConstants.Underline)
-            );
+            ((ColorComboBox)cbEffectColor).setSelectedColor((Color) category.getAttribute (StyleConstants.Underline));
         } else
         if (category.getAttribute (EditorStyleConstants.WaveUnderlineColor) != null) {
             cbEffects.setSelectedIndex (2);
             cbEffectColor.setEnabled (true);
-            ColorComboBox.setColor (
-                cbEffectColor,
-                (Color) category.getAttribute (EditorStyleConstants.WaveUnderlineColor)
-            );
+            ((ColorComboBox)cbEffectColor).setSelectedColor((Color) category.getAttribute (EditorStyleConstants.WaveUnderlineColor));
         } else
         if (category.getAttribute (StyleConstants.StrikeThrough) != null) {
             cbEffects.setSelectedIndex (3);
             cbEffectColor.setEnabled (true);
-            ColorComboBox.setColor (
-                cbEffectColor,
-                (Color) category.getAttribute (StyleConstants.StrikeThrough)
-            );
+            ((ColorComboBox)cbEffectColor).setSelectedColor((Color) category.getAttribute (StyleConstants.StrikeThrough));
         } else
         if (getDefault (currentLanguage, category, StyleConstants.Underline) != null) {
             cbEffects.setSelectedIndex (1);
             cbEffectColor.setEnabled (true);
-            ColorComboBox.setColor (
-                cbEffectColor,
-                (Color) getDefault (currentLanguage, category, StyleConstants.Underline)
-            );
+            ((ColorComboBox)cbEffectColor).setSelectedColor((Color) getDefault (currentLanguage, category, StyleConstants.Underline));
         } else
         if (getDefault (currentLanguage, category, EditorStyleConstants.WaveUnderlineColor) != null) {
             cbEffects.setSelectedIndex (2);
             cbEffectColor.setEnabled (true);
-            ColorComboBox.setColor (
-                cbEffectColor,
-                (Color) getDefault (currentLanguage, category, EditorStyleConstants.WaveUnderlineColor)
-            );
+            ((ColorComboBox)cbEffectColor).setSelectedColor((Color) getDefault (currentLanguage, category, EditorStyleConstants.WaveUnderlineColor));
         } else
         if (getDefault (currentLanguage, category, StyleConstants.StrikeThrough) != null) {
             cbEffects.setSelectedIndex (3);
             cbEffectColor.setEnabled (true);
-            ColorComboBox.setColor (
-                cbEffectColor,
-                (Color) getDefault (currentLanguage, category, StyleConstants.StrikeThrough)
-            );
+            ((ColorComboBox)cbEffectColor).setSelectedColor((Color) getDefault (currentLanguage, category, StyleConstants.StrikeThrough));
         } else {
             cbEffects.setSelectedIndex (0);
             cbEffectColor.setEnabled (false);
@@ -1057,6 +1027,13 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         convertALC.put("errors", "error"); //NOI18N
         convertALC.put("literal", "keyword"); //NOI18N
         convertALC.put("keyword-directive", "keyword"); //NOI18N
+    }
+
+    @Override
+    public void itemStateChanged( ItemEvent e ) {
+        if( e.getStateChange() == ItemEvent.DESELECTED )
+            return;
+        updateData();
     }
     
     private static final class LanguagesComparator implements Comparator<String> {

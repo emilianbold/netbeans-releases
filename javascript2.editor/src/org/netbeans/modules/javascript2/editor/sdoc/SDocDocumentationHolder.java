@@ -49,7 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class SDocDocumentationHolder extends JsDocumentationHolder {
+public class SDocDocumentationHolder extends JsDocumentationHolder {
 
     private final Map<Integer, SDocComment> blocks;
 

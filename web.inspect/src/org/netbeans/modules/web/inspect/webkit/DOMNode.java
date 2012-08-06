@@ -72,6 +72,8 @@ public class DOMNode extends AbstractNode {
     private PropertySet[] propertySets;
     /** Determines whether nodeId should be appended to display name. */
     private boolean nodeIdInDisplayName = Boolean.getBoolean("org.netbeans.modules.web.inspect.nodeIdInDisplayName"); // NOI18N
+    /** Page model this node belongs to. */
+    private WebKitPageModel model;
 
     /**
      * Creates a new {@code DOMNode}.
@@ -80,9 +82,11 @@ public class DOMNode extends AbstractNode {
      * @param node WebKit node represented by the node.
      */
     public DOMNode(WebKitPageModel model, Node node) {
-        super(new DOMChildren(model), Lookups.fixed(node));
+        super(shouldBeLeaf(node) ? Children.LEAF : new DOMChildren(model), Lookups.fixed(node));
         this.node = node;
+        this.model = model;
         setIconBaseWithExtension(ICON_BASE);
+        setName(node.getNodeName());
         updateDisplayName();
     }
 
@@ -193,8 +197,37 @@ public class DOMNode extends AbstractNode {
      */
     void updateChildren(Node node) {
         this.node = node;
-        DOMChildren children = (DOMChildren)getChildren();
-        children.updateKeys(node);
+        boolean shouldBeLeaf = shouldBeLeaf(node);
+        if (shouldBeLeaf != isLeaf()) {
+            setChildren(shouldBeLeaf ? Children.LEAF : new DOMChildren(model));
+        }
+        if (!shouldBeLeaf) {
+            DOMChildren children = (DOMChildren)getChildren();
+            children.updateKeys(node);
+        }
+    }
+
+    /**
+     * Determines whether {@code DOMNode} that corresponds to the given
+     * WebKit node should be a leaf node.
+     * 
+     * @param node WebKit node to evaluate.
+     * @return {@code true} if it should be a leaf node, {@code false} otherwise.
+     */
+    private static boolean shouldBeLeaf(Node node) {
+        if (node.getContentDocument() != null) {
+            return false;
+        }
+        List<Node> subNodes = node.getChildren();
+        if (subNodes != null) {
+            for (Node subNode : subNodes) {
+                boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
+                if (isElement && !subNode.isInjectedByNetBeans()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override

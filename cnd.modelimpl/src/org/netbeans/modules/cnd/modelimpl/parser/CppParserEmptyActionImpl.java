@@ -265,5 +265,25 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override
     public void end_using_directive(Token semicolonToken) {
     }
+
+    @Override
+    public void using_declaration(int kind, Token token) {
+    }
+
+    @Override
+    public void end_using_declaration(Token semicolonToken) {
+    }
+
+    @Override
+    public void namespace_alias_definition(Token namespaceToken, Token identToken, Token assignequalToken) {
+    }
+
+    @Override
+    public void end_namespace_alias_definition(Token semicolonToken) {
+    }
+
+    @Override
+    public void qualified_namespace_specifier(int kind, Token token) {
+    }
     
 }

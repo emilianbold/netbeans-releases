@@ -128,7 +128,7 @@ public final class BrowserSupport {
     }
     
     public void enabledLiveHTML() {
-        getWebBrowserPane().enablePageInspector();
+        getWebBrowserPane().enableLiveHTML();
     }
     
     private synchronized WebBrowserPane getWebBrowserPane() {
