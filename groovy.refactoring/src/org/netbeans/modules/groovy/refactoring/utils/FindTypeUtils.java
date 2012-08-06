@@ -48,60 +48,81 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Janicek
  */
-public class OccurrencesUtil {
+public class FindTypeUtils {
 
-    private OccurrencesUtil() {
+    private FindTypeUtils() {
     }
 
 
-    public static ASTNode findCurrentNode(ASTNode leaf, BaseDocument doc, int caret) {
+    public static boolean isCurrentClassNode(AstPath path, BaseDocument doc, FileObject fo, int carret) {
+        if (findCurrentNode(path, doc, fo, carret) instanceof ClassNode) {
+            return true;
+        }
+        return false;
+    }
+
+    public static ASTNode findCurrentNode(AstPath path, BaseDocument doc, FileObject fo, int caret) {
+        ASTNode leaf = path.leaf();
+        ASTNode leafParent = path.leafParent();
+
         if (leaf instanceof FieldNode) {
-            if (!OccurrencesUtil.isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
+            if (!FindTypeUtils.isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof PropertyNode) {
-            if (!OccurrencesUtil.isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
+            if (!FindTypeUtils.isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof MethodNode) {
             MethodNode method = ((MethodNode) leaf);
-            if (!OccurrencesUtil.isCaretOnReturnType(method, doc, caret)) {
+            if (!FindTypeUtils.isCaretOnReturnType(method, doc, caret)) {
                 return leaf;
             }
 
             for (Parameter param : method.getParameters()) {
-                if (!OccurrencesUtil.isCaretOnParamType(param, doc, caret)) {
+                if (!FindTypeUtils.isCaretOnParamType(param, doc, caret)) {
                     return param;
                 }
             }
         } else if (leaf instanceof Parameter) {
-            if (!OccurrencesUtil.isCaretOnParamType(((Parameter) leaf), doc, caret)) {
+            if (!FindTypeUtils.isCaretOnParamType(((Parameter) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof DeclarationExpression) {
-            if (!OccurrencesUtil.isCaretOnDeclarationType(((DeclarationExpression) leaf), doc, caret)) {
+            if (!FindTypeUtils.isCaretOnDeclarationType(((DeclarationExpression) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof VariableExpression) {
-            if (!OccurrencesUtil.isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
+            if (!FindTypeUtils.isCaretOnVariableType(((VariableExpression) leaf), doc, caret)) {
                 return leaf;
             }
         } else if (leaf instanceof ForStatement) {
-            if (!OccurrencesUtil.isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
+            if (!FindTypeUtils.isCaretOnForStatementType(((ForStatement) leaf), doc, caret)) {
                 return ((ForStatement) leaf).getVariable();
             } else {
                 return ((ForStatement) leaf).getVariableType();
+            }
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
+            MethodNode method = FindMethodUtils.findMethod(path, (MethodCallExpression) leafParent);
+            if (method != null) {
+                return method;
+            } else {
+                return AstUtilities.getOwningClass(path);
             }
         }
 
