@@ -171,7 +171,6 @@ public class JsFormatter implements Formatter {
                                     !CodeStyle.get(formatContext).spaceBeforeComma());
                             break;
                         case AFTER_COMMA:
-                        case VAR_AFTER_COMMA:
                             i = handleSpaceAfter(tokens, i, formatContext,
                                     !CodeStyle.get(formatContext).spaceAfterComma());
                             break;
@@ -382,6 +381,9 @@ public class JsFormatter implements Formatter {
                         case AFTER_STATEMENT:
                             i = handleLineWrap(tokens, i, formatContext, initialIndent);
                             break;
+                        case AFTER_VAR_DECLARATION:
+                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces
@@ -573,7 +575,7 @@ public class JsFormatter implements Formatter {
                         formatContext.remove(tokenAfterEol.getOffset(),
                                 extendedTokenAfterEol.getOffset() - tokenAfterEol.getOffset());
                         // move to eol to do indentation in next cycle
-                        // it is safe because we need the token to which we move is eol
+                        // it is safe because we know the token to which we move is eol
                         i--;
                     } else {
                         FormatToken last = tokens.get(tokens.size() - 1);
@@ -874,7 +876,6 @@ public class JsFormatter implements Formatter {
 
     private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
         if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
-            // XXX option
             return CodeStyle.get(context).wrapStatement();
         }
         if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
@@ -891,6 +892,9 @@ public class JsFormatter implements Formatter {
             }
             // XXX option
             return CodeStyle.WrapStyle.WRAP_ALWAYS;
+        }
+        if (token.getKind() == FormatToken.Kind.AFTER_VAR_DECLARATION) {
+            return CodeStyle.get(context).wrapVariables();
         }
         return null;
     }
@@ -913,7 +917,13 @@ public class JsFormatter implements Formatter {
             assert current.isVirtual()
                     || current.getKind() == FormatToken.Kind.WHITESPACE
                     || current.getKind() == FormatToken.Kind.EOL : current;
+
             updateIndentationLevel(current, formatContext);
+            if (current.getKind() == FormatToken.Kind.EOL) {
+                formatContext.setCurrentLineStart(current.getOffset()
+                        + 1 + formatContext.getOffsetDiff());
+                formatContext.setLastLineWrap(null);
+            }
             i++;
         }
         return i;

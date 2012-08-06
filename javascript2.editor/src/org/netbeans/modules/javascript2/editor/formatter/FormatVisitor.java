@@ -559,8 +559,7 @@ public class FormatVisitor extends NodeVisitor {
                 if (formatToken != null) {
                     FormatToken next = formatToken.next();
                     assert next.getKind() == FormatToken.Kind.AFTER_COMMA : next.getKind();
-                    tokenStream.removeToken(next);
-                    appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.VAR_AFTER_COMMA));
+                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_VAR_DECLARATION));
                 }
             }
         }

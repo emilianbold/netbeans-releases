@@ -170,6 +170,8 @@ public final class FormatToken {
         AFTER_STATEMENT,
         AFTER_PROPERTY,
         AFTER_CASE,
+
+        AFTER_VAR_DECLARATION,
         
         AFTER_BLOCK_START,
         ELSE_IF_AFTER_BLOCK_START,
@@ -187,7 +189,6 @@ public final class FormatToken {
         // around comma
         BEFORE_COMMA,
         AFTER_COMMA,
-        VAR_AFTER_COMMA,
 
         // keywords with possible space before parentheses
         AFTER_IF_KEYWORD,
