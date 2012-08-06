@@ -667,26 +667,18 @@ public class JavaScriptLibrarySelection extends JPanel {
             }
         };
 
+        // @GuardedBy("EDT")
+        private final Set<LibraryVersion> versions;
+
+        // @GuardedBy("EDT")
         private LibraryVersion selectedVersion;
-        // this list represents single library in several different versions:
-        private List<Library> libraries;
+
 
         public ModelItem(List<Library> libraries) {
+            assert EventQueue.isDispatchThread();
             Collections.sort(libraries, LIBRARY_COMPARATOR);
-            this.libraries = libraries;
-            Library firstLibrary = getLibrary();
-            String type;
-            if (!firstLibrary.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
-                type = WebClientLibraryManager.VOL_DOCUMENTED;
-            } else if (!firstLibrary.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
-                type = WebClientLibraryManager.VOL_REGULAR;
-            } else if (!firstLibrary.getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
-                type = WebClientLibraryManager.VOL_MINIFIED;
-            } else {
-                assert false : "Unknown js library type: " + firstLibrary.getName();
-                type = WebClientLibraryManager.VOL_REGULAR;
-            }
-            selectedVersion = new LibraryVersion(firstLibrary, type);
+            versions = createVersions(libraries);
+            selectedVersion = versions.iterator().next();
         }
 
         public String getSimpleDisplayName() {
@@ -698,39 +690,47 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
 
         public LibraryVersion[] getVersions() {
-            Set<LibraryVersion> versions = new LinkedHashSet<LibraryVersion>();
+            assert EventQueue.isDispatchThread();
+            return versions.toArray(new LibraryVersion[versions.size()]);
+        }
+
+        public LibraryVersion getSelectedVersion() {
+            assert EventQueue.isDispatchThread();
+            return selectedVersion;
+        }
+
+        public void setSelectedVersion(LibraryVersion selectedVersion) {
+            assert EventQueue.isDispatchThread();
+            assert selectedVersion != null;
+            this.selectedVersion = selectedVersion;
+        }
+
+        private Set<LibraryVersion> createVersions(List<Library> libraries) {
+            Set<LibraryVersion> libraryVersions = new LinkedHashSet<LibraryVersion>();
             for (Library library : libraries) {
                 LibraryVersion libraryVersion = null;
                 if (!library.getContent(WebClientLibraryManager.VOL_DOCUMENTED).isEmpty()) {
                     libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_DOCUMENTED);
-                    versions.add(libraryVersion);
+                    libraryVersions.add(libraryVersion);
                 }
                 if (!library.getContent(WebClientLibraryManager.VOL_REGULAR).isEmpty()) {
                     libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_REGULAR);
-                    versions.add(libraryVersion);
+                    libraryVersions.add(libraryVersion);
                 }
                 if (!library.getContent(WebClientLibraryManager.VOL_MINIFIED).isEmpty()) {
                     libraryVersion = new LibraryVersion(library, WebClientLibraryManager.VOL_MINIFIED);
-                    versions.add(libraryVersion);
+                    libraryVersions.add(libraryVersion);
                 }
                 if (libraryVersion == null) {
                     assert false : "Unknown library version: " + library.getName();
                 }
             }
-            return versions.toArray(new LibraryVersion[versions.size()]);
-        }
-
-        public LibraryVersion getSelectedVersion() {
-            return selectedVersion;
-        }
-
-        public void setSelectedVersion(LibraryVersion selectedVersion) {
-            assert selectedVersion != null;
-            this.selectedVersion = selectedVersion;
+            return libraryVersions;
         }
 
         private Library getLibrary() {
-            return libraries.get(0);
+            assert EventQueue.isDispatchThread();
+            return versions.iterator().next().getLibrary();
         }
 
     }
