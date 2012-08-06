@@ -586,24 +586,23 @@ public class JavaScriptLibrarySelection extends JPanel {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             assert EventQueue.isDispatchThread();
-            ModelItem m = items.get(rowIndex);
+            ModelItem modelItem = items.get(rowIndex);
             if (columnIndex == 0) {
-                return m.getSimpleDisplayName();
+                return modelItem.getSimpleDisplayName();
             }
             if (columnIndex == 1) {
-                return VersionsRenderer.getLabel(m.selectedVersion);
+                return VersionsRenderer.getLabel(modelItem.getSelectedVersion());
             }
             assert false : "Unknown column index: " + columnIndex;
             return null;
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             assert EventQueue.isDispatchThread();
-            ModelItem m = items.get(rowIndex);
+            ModelItem modelItem = items.get(rowIndex);
             if (columnIndex == 1) {
-                m.selectedVersion = (LibraryVersion) aValue;
+                modelItem.setSelectedVersion((LibraryVersion) aValue);
                 return;
             }
             assert false : "Unknown column index: " + columnIndex;
@@ -698,10 +697,6 @@ public class JavaScriptLibrarySelection extends JPanel {
             return getLibrary().getDescription();
         }
 
-        private Library getLibrary() {
-            return libraries.get(0);
-        }
-
         public LibraryVersion[] getVersions() {
             Set<LibraryVersion> versions = new LinkedHashSet<LibraryVersion>();
             for (Library library : libraries) {
@@ -723,6 +718,19 @@ public class JavaScriptLibrarySelection extends JPanel {
                 }
             }
             return versions.toArray(new LibraryVersion[versions.size()]);
+        }
+
+        public LibraryVersion getSelectedVersion() {
+            return selectedVersion;
+        }
+
+        public void setSelectedVersion(LibraryVersion selectedVersion) {
+            assert selectedVersion != null;
+            this.selectedVersion = selectedVersion;
+        }
+
+        private Library getLibrary() {
+            return libraries.get(0);
         }
 
     }
