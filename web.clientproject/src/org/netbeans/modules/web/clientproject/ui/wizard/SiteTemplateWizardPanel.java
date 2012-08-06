@@ -144,9 +144,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     public void apply(FileObject p, ProgressHandle handle) {
         assert !EventQueue.isDispatchThread();
         synchronized (siteTemplateWizardLock) {
-            if (siteTemplateWizard != null) {
-                siteTemplateWizard.apply(p, handle);
-            }
+            getComponent().apply(p, handle);
         }
     }
 

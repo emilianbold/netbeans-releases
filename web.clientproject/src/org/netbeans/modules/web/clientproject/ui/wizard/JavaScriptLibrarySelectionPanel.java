@@ -143,9 +143,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     public void apply(FileObject p, ProgressHandle handle) throws IOException {
         assert !EventQueue.isDispatchThread();
         synchronized (javaScriptLibrarySelectionLock) {
-            if (javaScriptLibrarySelection != null) {
-                javaScriptLibrarySelection.apply(p, handle);
-            }
+            getComponent().apply(p, handle);
         }
     }
 
