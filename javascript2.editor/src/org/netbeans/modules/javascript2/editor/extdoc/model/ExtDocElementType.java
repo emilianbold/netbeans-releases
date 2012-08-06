@@ -57,7 +57,7 @@ public enum ExtDocElementType {
     CFG("@cfg", Category.TYPE_NAMED), //NOI18N
     CLASS("@class", Category.IDENT_DESCRIBED), //NOI18N
     CONSTRUCTOR("@constructor", Category.SIMPLE), //NOI18N
-    EVENT("@event", Category.IDENT_SIMPLE), //NOI18N
+    EVENT("@event", Category.IDENT_DESCRIBED), //NOI18N
     EXTENDS("@extends", Category.IDENT_SIMPLE), //NOI18N
     HIDE("@hide", Category.SIMPLE), //NOI18N
     IGNORE("@ignore", Category.SIMPLE), //NOI18N
