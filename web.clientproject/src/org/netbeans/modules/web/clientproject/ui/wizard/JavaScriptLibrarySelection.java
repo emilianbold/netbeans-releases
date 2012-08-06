@@ -81,7 +81,6 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.clientproject.api.MissingLibResourceException;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider;
-import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -101,7 +100,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     // selected items are accessed outside of EDT thread
-    final List<Pair<String, LibraryVersion>> selectedLibraries = Collections.synchronizedList(new LinkedList<Pair<String, LibraryVersion>>());
+    final List<SelectedLibrary> selectedLibraries = Collections.synchronizedList(new LinkedList<SelectedLibrary>());
     // @GuardedBy("EDT")
     final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
     // @GuardedBy("EDT")
@@ -149,6 +148,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     }
 
     private void initLibrariesList() {
+        assert EventQueue.isDispatchThread();
         selectedLibrariesList.setModel(librariesListModel);
     }
 
@@ -255,6 +255,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         for (int i = 0; i < librariesTable.getRowCount(); ++i) {
             selectLibrary(i);
         }
+        sanitizeSelectedLibraries();
         librariesListModel.fireContentsChanged();
     }
 
@@ -263,13 +264,24 @@ public class JavaScriptLibrarySelection extends JPanel {
         for (int i : librariesTable.getSelectedRows()) {
             selectLibrary(i);
         }
+        sanitizeSelectedLibraries();
         librariesListModel.fireContentsChanged();
     }
 
     private void selectLibrary(int libraryIndex) {
         ModelItem modelItem = librariesTableModel.getItems().get(libraryIndex);
         LibraryVersion libraryVersion = modelItem.getSelectedVersion();
-        selectedLibraries.add(Pair.of(modelItem.getSimpleDisplayName(), libraryVersion));
+        selectedLibraries.add(new SelectedLibrary(modelItem.getSimpleDisplayName(), libraryVersion));
+    }
+
+    // XXX should be improved, later
+    /**
+     * Make selected libraries unique.
+     */
+    private void sanitizeSelectedLibraries() {
+        Set<SelectedLibrary> set = new LinkedHashSet<SelectedLibrary>(selectedLibraries);
+        selectedLibraries.clear();
+        selectedLibraries.addAll(set);
     }
 
     void deselectAllLibraries() {
@@ -300,14 +312,14 @@ public class JavaScriptLibrarySelection extends JPanel {
         assert !EventQueue.isDispatchThread();
         FileObject librariesRoot = null;
         boolean someFilesAreMissing = false;
-        for (Pair<String, LibraryVersion> selectedLibrary : selectedLibraries) {
-            if (librariesRoot == null) {
-                librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
-            }
-            LibraryVersion libraryVersion = selectedLibrary.getB();
+        for (SelectedLibrary selectedLibrary : selectedLibraries) {
+            LibraryVersion libraryVersion = selectedLibrary.getLibraryVersion();
             if (libraryVersion == null) {
                 // happens for js files from selected site template
                 continue;
+            }
+            if (librariesRoot == null) {
+                librariesRoot = FileUtil.createFolder(projectDir, librariesFolder);
             }
             Library library = libraryVersion.getLibrary();
             handle.progress(Bundle.JavaScriptLibrarySelection_msg_downloading(library.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
@@ -628,10 +640,10 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         private static final long serialVersionUID = -57683546574861110L;
 
-        private final List<Pair<String, LibraryVersion>> libraries;
+        private final List<SelectedLibrary> libraries;
 
 
-        public LibrariesListModel(List<Pair<String, LibraryVersion>> libraries) {
+        public LibrariesListModel(List<SelectedLibrary> libraries) {
             this.libraries = libraries;
         }
 
@@ -641,7 +653,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
 
         @Override
-        public Pair<String, LibraryVersion> getElementAt(int index) {
+        public SelectedLibrary getElementAt(int index) {
             return libraries.get(index);
         }
 
@@ -802,6 +814,62 @@ public class JavaScriptLibrarySelection extends JPanel {
         @Override
         public String toString() {
             return "LibraryVersion{" + "library=" + library.getName() + ", type=" + type + '}'; // NOI18N
+        }
+
+    }
+
+    private static final class SelectedLibrary {
+
+        private final String filename;
+        private final LibraryVersion libraryVersion;
+
+        /**
+         * @param filename file name
+         * @param libraryVersion library, can be {@code null} for files from selected site template
+         */
+        public SelectedLibrary(String filename, LibraryVersion libraryVersion) {
+            assert filename != null;
+            this.filename = filename;
+            this.libraryVersion = libraryVersion;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public LibraryVersion getLibraryVersion() {
+            return libraryVersion;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 31 * hash + (this.filename != null ? this.filename.hashCode() : 0);
+            hash = 31 * hash + (this.libraryVersion != null ? this.libraryVersion.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SelectedLibrary other = (SelectedLibrary) obj;
+            if ((this.filename == null) ? (other.filename != null) : !this.filename.equals(other.filename)) {
+                return false;
+            }
+            if (this.libraryVersion != other.libraryVersion && (this.libraryVersion == null || !this.libraryVersion.equals(other.libraryVersion))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return "SelectedLibrary{" + "filename=" + filename + ", libraryVersion=" + libraryVersion + '}'; // NOI18N
         }
 
     }
