@@ -77,13 +77,13 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 
-@ActionID(
-    category = "Versioning",
-id = "org.netbeans.modules.c2c.tasks.CreateCloudedIssueAction")
-@ActionRegistration(
-    displayName = "#CTL_CreateClouded")
-@ActionReference(path = "Menu/Versioning", position = -10, separatorBefore = -60, separatorAfter = 40)
-@Messages("CTL_CreateClouded=Create Clouded Issue")
+//@ActionID(
+//    category = "Versioning",
+//id = "org.netbeans.modules.c2c.tasks.CreateCloudedIssueAction")
+//@ActionRegistration(
+//    displayName = "#CTL_CreateClouded")
+//@ActionReference(path = "Menu/Versioning", position = -10, separatorBefore = -60, separatorAfter = 40)
+//@Messages("CTL_CreateClouded=Create Clouded Issue")
 public final class CreateCloudedIssueAction implements ActionListener {
     
     private NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
