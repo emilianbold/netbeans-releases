@@ -45,6 +45,7 @@ package org.netbeans.modules.netserver.websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Random;
 
 
 /**
@@ -52,9 +53,12 @@ import java.nio.charset.Charset;
  *
  */
 class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
+    
+    private long MAX = 4294967295L;
 
     WebSocketHandlerClient76( WebSocketClient webSocketClient ) {
         super(webSocketClient);
+        myRandom = new Random(hashCode());
     }
     
     /* (non-Javadoc)
@@ -86,12 +90,12 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         
         builder.append(Utils.KEY1);
         builder.append(": ");                               // NOI18N
-        builder.append( generateKey());
+        builder.append( getKey1());
         builder.append(Utils.CRLF);
         
         builder.append(Utils.KEY2);
         builder.append(": ");                               // NOI18N
-        builder.append( generateKey());
+        builder.append( getKey2());
         builder.append(Utils.CRLF);
         
         builder.append(Utils.WS_PROTOCOL);
@@ -109,15 +113,6 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         getWebSocketPoint().send( toSend, getKey() );
     }
     
-    private String generateKey() {
-        // TODO : random challenge code generation should be used
-        if ( tempKey ){
-            return "4 @1  46546xW%0l 1 5";
-        }
-        tempKey = true;
-        return "12998 5 Y3 1  .P00";
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.websocket.WebSocketHandlerClient75#readHandshakeResponse(java.nio.ByteBuffer)
      */
@@ -146,6 +141,55 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         }
     }
     
+    private Random getRandom(){
+        return myRandom;
+    }
+    
+    private String getKey1(){
+        if ( myKey1 == null ){
+            myKey1 = generateKey();
+        }
+        return myKey1;
+    }
+    
+    private String getKey2(){
+        if ( myKey2 == null ){
+            myKey2 = generateKey();
+        }
+        return myKey2;
+    }
+    
+    private String generateKey(){
+        int spaces = getRandom().nextInt( 12 ) + 1;
+        int max = (int)(MAX/spaces);
+        max = Math.abs(max);
+        if ( max == Integer.MIN_VALUE){
+            max = Integer.MAX_VALUE;
+        }
+        int num = getRandom().nextInt(max)+1;
+        long prod = num * spaces;
+        StringBuilder key = new StringBuilder( );
+        key.append(prod);
+        int randomCount = getRandom().nextInt( 12 ) + 1;
+        for (int i=0; i<randomCount ; i++){
+            int index = getRandom().nextInt(key.length());
+            key.insert(index , getNoNumberChar());
+        }
+        for( int i=0; i<spaces; i++){
+            int index = getRandom().nextInt(key.length()-1)+1;
+            key.insert(index, ' ');
+        }
+        return key.toString();
+    }
+    
+    private char getNoNumberChar(){
+        char ch = (char)(getRandom().nextInt(0x7e-0x21+1)+0x21);
+        if ( ch > 0x2f && ch< 0x3a){
+            return getNoNumberChar();
+        }
+        return ch;
+    }
+    
     private byte[] generateContent(){
         byte[] bytes = new byte[8];
         // TODO : random bytes challenge code generation should be used
@@ -160,7 +204,7 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         return bytes;
     }
     
-    // TODO: delete
-    private boolean tempKey;
-
+    private Random myRandom;
+    private String myKey1;
+    private String myKey2;
 }
