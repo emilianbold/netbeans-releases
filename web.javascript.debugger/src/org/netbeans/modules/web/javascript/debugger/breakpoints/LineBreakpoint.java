@@ -57,7 +57,9 @@ import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 
 
-public class LineBreakpoint extends AbstractBreakpoint {    
+public class LineBreakpoint extends AbstractBreakpoint {
+    
+    public static final String PROP_LINE = "line";      // NOI18N
 
     private Line myLine;
     private FileRemoveListener myListener;
@@ -85,6 +87,19 @@ public class LineBreakpoint extends AbstractBreakpoint {
 
     public Line getLine() {
         return myLine;
+    }
+    
+    public void setLine(Line line) {
+        removed();
+        Line oldLine = myLine;
+        myLine = line;
+        FileObject fileObject = line.getLookup().lookup(FileObject.class);
+        if (fileObject != null) {
+            myWeakListener = WeakListeners.create(
+                    FileChangeListener.class, myListener, fileObject);
+            fileObject.addFileChangeListener(myWeakListener);
+        }
+        firePropertyChange(PROP_LINE, oldLine, line);
     }
     
 //    @Override
@@ -136,7 +151,7 @@ public class LineBreakpoint extends AbstractBreakpoint {
         }
         return url;
     }
-    
+
     private class FileRemoveListener extends FileChangeAdapter {
 
         /* (non-Javadoc)

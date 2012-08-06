@@ -42,8 +42,14 @@
 package org.netbeans.modules.web.javascript.debugger.breakpoints.ui;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.text.Line;
 import org.openide.util.HelpCtx;
 
 /**
@@ -52,21 +58,46 @@ import org.openide.util.HelpCtx;
  */
 public class LineBreakpointCustomizer extends javax.swing.JPanel implements ControllerProvider, HelpCtx.Provider {
 
-    private CustomizerController controller;
+    private final CustomizerController controller;
+    private final LineBreakpoint lb;
+    private boolean createBreakpoint;
+    
+    private static LineBreakpoint createBreakpoint() {
+        Line line = MiscEditorUtil.getCurrentLine();
+        if (line == null) {
+            return null;
+        }
+        return new LineBreakpoint(line);
+    }
     
     /**
      * Creates new form LineBreakpointCustomizer
      */
     public LineBreakpointCustomizer() {
-        
+        this(createBreakpoint());
+        createBreakpoint = true;
     }
     
     /**
      * Creates new form LineBreakpointCustomizer
      */
     public LineBreakpointCustomizer(LineBreakpoint lb) {
+        this.lb = lb;
         initComponents();
         controller = new CustomizerController();
+        if (lb != null) {
+            Line line = lb.getLine();
+            FileObject fo = line.getLookup().lookup(FileObject.class);
+            if (fo != null) {
+                File file = FileUtil.toFile(fo);
+                if (file != null) {
+                    fileTextField.setText(file.getAbsolutePath());
+                } else {
+                    fileTextField.setText(fo.toURL().toExternalForm());
+                }
+            }
+            lineTextField.setText(Integer.toString(line.getLineNumber() + 1));
+        }
     }
     
     @Override
@@ -83,9 +114,18 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        fileLabel = new javax.swing.JLabel();
+        fileTextField = new javax.swing.JTextField();
+        lineLabel = new javax.swing.JLabel();
+        lineTextField = new javax.swing.JTextField();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.jLabel1.text")); // NOI18N
+        fileLabel.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.fileLabel.text")); // NOI18N
+
+        fileTextField.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.fileTextField.text")); // NOI18N
+
+        lineLabel.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.lineLabel.text")); // NOI18N
+
+        lineTextField.setText(org.openide.util.NbBundle.getMessage(LineBreakpointCustomizer.class, "LineBreakpointCustomizer.lineTextField.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -93,19 +133,34 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(119, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lineLabel)
+                    .addComponent(fileLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(fileTextField)
+                    .addComponent(lineTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
-                .addContainerGap(270, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(fileLabel)
+                    .addComponent(fileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lineLabel)
+                    .addComponent(lineTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel fileLabel;
+    private javax.swing.JTextField fileTextField;
+    private javax.swing.JLabel lineLabel;
+    private javax.swing.JTextField lineTextField;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -117,6 +172,27 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
 
         @Override
         public boolean ok() {
+            LineBreakpoint lb = LineBreakpointCustomizer.this.lb;
+            String fileStr = fileTextField.getText();
+            int lineNumber;
+            try {
+                lineNumber = Integer.parseInt(lineTextField.getText());
+            } catch (NumberFormatException nfex) {
+                return false;
+            }
+            lineNumber--;
+            Line line = MiscEditorUtil.getLine(fileStr, lineNumber);
+            if (line == null) {
+                return false;
+            }
+            if (lb != null) {
+                lb.setLine(line);
+            } else {
+                lb = new LineBreakpoint(line);
+            }
+            if (createBreakpoint) {
+                DebuggerManager.getDebuggerManager().addBreakpoint(lb);
+            }
             return true;
         }
 
