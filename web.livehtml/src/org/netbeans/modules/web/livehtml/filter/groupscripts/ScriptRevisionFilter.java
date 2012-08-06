@@ -100,18 +100,30 @@ public class ScriptRevisionFilter implements RevisionFilter<JSONArray> {
                 JSONObject jSONObject2 = (JSONObject) object2;
                 final Object script1 = jSONObject1.get(StackTrace.SCRIPT);
                 final Object script2 = jSONObject2.get(StackTrace.SCRIPT);
+                final Object function1 = jSONObject1.get(StackTrace.FUNCTION);
+                final Object function2 = jSONObject2.get(StackTrace.FUNCTION);
+                final Object lineNumber1 = jSONObject1.get(StackTrace.LINE_NUMBER);
+                final Object lineNumber2 = jSONObject2.get(StackTrace.LINE_NUMBER);
+                final Object columnNumber1 = jSONObject1.get(StackTrace.COLUMN_NUMBER);
+                final Object columnNumber2 = jSONObject2.get(StackTrace.COLUMN_NUMBER);
                 
-                if (script1 == null || script2 == null) {
-                    return script1 == script2;
-                }
-                
-                if (!script1.equals(script2)) {
+                if (!equals(script1, script2) ||
+                        !equals(function1, function2) ||
+                        !equals(lineNumber1, lineNumber2) || 
+                        !equals(columnNumber1, columnNumber2)) {
                     return false;
                 }
             }
         }
         
         return true;
+    }
+    
+    private boolean equals(Object object1, Object object2) {
+        if (object1 == null || object2 == null) {
+            return object1 == object2;
+        }
+        return object1.equals(object2);
     }
     
 }
