@@ -60,16 +60,23 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.ods.api.ODSProject;
@@ -88,7 +95,10 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.ods.versioning.Bundle.*;
+import org.netbeans.modules.ods.versioning.spi.ApiProvider;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -102,6 +112,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     private DefaultComboBoxModel comboModel;
     private CloudUiServer server;
     private PropertyChangeListener listener;
+    private ArrayList<ApiProvider> providerList;
 
     public GetSourcesFromCloudPanel(ProjectAndRepository prjFtr) {
         this.prjAndRepository = prjFtr;
@@ -115,6 +126,8 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
 
         refreshUsername();
 
+        initializeProviders();
+        
         comboModel = new CloudRepositoriesComboModel();
         cloudRepoComboBox.setModel(comboModel);
         cloudRepoComboBox.setRenderer(new CloudServiceCellRenderer());
@@ -144,6 +157,10 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         
     }
 
+    ApiProvider getProvider () {
+        return (ApiProvider) cmbProvider.getSelectedItem();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -153,6 +170,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel1 = new JLabel();
         loggedInLabel = new JLabel();
         usernameLabel = new JLabel();
         loginButton = new JButton();
@@ -160,6 +178,10 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         cloudRepoComboBox = new JComboBox();
         projectPreviewLabel = new JLabel();
         cloudCombo = OdsUIUtil.createTeamCombo();
+        jLabel2 = new JLabel();
+        lblError = new JLabel();
+
+        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.jLabel1.text")); // NOI18N
 
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
         setMinimumSize(new Dimension(600, 100));
@@ -193,6 +215,34 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
             }
         });
 
+        cmbProvider.setToolTipText(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.cmbProvider.toolTipText")); // NOI18N
+
+        Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.jLabel2.text")); // NOI18N
+
+        GroupLayout panelProviderLayout = new GroupLayout(panelProvider);
+        panelProvider.setLayout(panelProviderLayout);
+        panelProviderLayout.setHorizontalGroup(
+            panelProviderLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(panelProviderLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(jLabel2)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(cmbProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+        panelProviderLayout.setVerticalGroup(
+            panelProviderLayout.createParallelGroup(Alignment.LEADING)
+            .addGroup(panelProviderLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(panelProviderLayout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(cmbProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        lblError.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/ods/versioning/resources/error.png"))); // NOI18N
+        Mnemonics.setLocalizedText(lblError, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.lblError.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -202,7 +252,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(loggedInLabel)
                         .addGap(33, 33, 33)
-                        .addComponent(cloudCombo, 0, 254, Short.MAX_VALUE)
+                        .addComponent(cloudCombo, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(usernameLabel)
                         .addGap(4, 4, 4)
@@ -214,7 +264,12 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(projectPreviewLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGap(104, 104, 104))
-                            .addComponent(cloudRepoComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(cloudRepoComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(lblError)
+                                    .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                                .addGap(0, 123, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -239,7 +294,12 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                         .addGap(13, 13, 13)
                         .addComponent(cloudRepoComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGap(7, 7, 7)
-                .addComponent(projectPreviewLabel, GroupLayout.PREFERRED_SIZE, 17, GroupLayout.PREFERRED_SIZE))
+                .addComponent(projectPreviewLabel, GroupLayout.PREFERRED_SIZE, 17, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(lblError)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -284,6 +344,61 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
             }
         });
     }//GEN-LAST:event_cloudComboActionPerformed
+
+    private void initializeProviders () {
+        cmbProvider.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                if (value instanceof ApiProvider) {
+                    value = ((ApiProvider) value).getName();
+                }
+                return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            }
+
+        });
+        Collection<? extends ApiProvider> providers = Lookup.getDefault().lookupAll(ApiProvider.class);
+        providerList = new ArrayList<ApiProvider>(providers);
+        Collections.sort(providerList, new Comparator<ApiProvider>() {
+            @Override
+            public int compare (ApiProvider p1, ApiProvider p2) {
+                return p1.getName().compareToIgnoreCase(p2.getName());
+            }
+        });
+        lblError.setVisible(false);
+    }
+
+    private void updateProviders (ScmRepository repository) {
+        List<ApiProvider> providers = new ArrayList<ApiProvider>(providerList.size());
+        ApiProvider preferredProvider = null, gitProvider = null;
+        Preferences prefs = NbPreferences.forModule(GetSourcesFromCloudPanel.class);
+        String className = prefs.get("repository.scm.provider." + repository.getUrl(), ""); //NOI18N
+        for (ApiProvider p : providerList) {
+            if (repository.getScmLocation() != ScmLocation.CODE2CLOUD || p.accepts(repository.getType().name())) {
+                providers.add(p);
+                if (className.equals(p.getClass().getName())) {
+                    preferredProvider = p;
+                }
+                if (p.accepts(ScmType.GIT.name())) {
+                    gitProvider = p;
+                }
+            }
+        }
+        if (gitProvider != null) {
+            preferredProvider = gitProvider;
+        }
+        
+        cmbProvider.setModel(new DefaultComboBoxModel(providers.toArray(new ApiProvider[providers.size()])));
+        lblError.setVisible(false);
+        panelProvider.setVisible(false);
+        if (providers.isEmpty()) {
+            lblError.setVisible(true);
+        } else if (providers.size() > 1) {
+            if (preferredProvider != null) {
+                cmbProvider.setSelectedItem(preferredProvider);
+            }
+            panelProvider.setVisible(true);
+        }
+    }
 
     private class CloudRepositoriesComboModel extends DefaultComboBoxModel  {
 
@@ -418,6 +533,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     repositoryType = LBL_GetSourceFromCloudPanel_repository_svn();
                 }
             }
+            updateProviders(item.repository);
             if (repositoryType == null) {
                 repositoryType = LBL_GetSourceFromCloudPanel_repository_external();
             }
@@ -437,8 +553,13 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     private JComboBox cloudCombo;
     private JComboBox cloudRepoComboBox;
     private JLabel cloudRepoLabel;
+    final JComboBox cmbProvider = new JComboBox();
+    private JLabel jLabel1;
+    private JLabel jLabel2;
+    private JLabel lblError;
     private JLabel loggedInLabel;
     private JButton loginButton;
+    final JPanel panelProvider = new JPanel();
     private JLabel projectPreviewLabel;
     private JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables

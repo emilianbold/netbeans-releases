@@ -43,18 +43,11 @@ package org.netbeans.modules.ods.versioning;
 
 import com.tasktop.c2c.server.scm.domain.ScmLocation;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.PasswordAuthentication;
-import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
 import org.netbeans.modules.ods.ui.api.CloudUiServer;
-import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.ods.versioning.GetSourcesFromCloudPanel.GetSourcesInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -63,9 +56,6 @@ import org.netbeans.modules.ods.versioning.SourceAccessorImpl.ProjectAndReposito
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import static org.netbeans.modules.ods.versioning.Bundle.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle.Messages;
 
 public final class GetSourcesFromCloudAction extends AbstractAction {
 
@@ -100,84 +90,29 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
         if (options[0].equals(option)) {
             
             final GetSourcesInfo sourcesInfo = getSourcesPanel.getSelectedSourcesInfo();
+            final ApiProvider prov = getSourcesPanel.getProvider();
             
-            if (sourcesInfo == null) {
+            if (sourcesInfo == null || prov == null) {
                 return;
             }
 
-                final ScmRepository repository = sourcesInfo.repository;
-                final PasswordAuthentication passwdAuth = repository.getScmLocation() == ScmLocation.CODE2CLOUD
-                        ? CloudUiServer.forServer(sourcesInfo.projectHandle.getTeamProject().getServer()).getPasswordAuthentication()
-                        : null;
-                // XXX   UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        ApiProvider prov = getProvider(repository);
-                        if (prov != null) {
-                            File cloneDest = prov.getSources(repository.getUrl(), passwdAuth);
-                            if (cloneDest != null && srcHandle != null) {
-                                srcHandle.setWorkingDirectory(repository.getUrl(), cloneDest.getAbsolutePath());
-                                srcHandle.refresh();
-                            }
-                        }
-                    }
-                });
-            // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
-        }
-
-    }
-
-    @Messages("LBL_SelectProviderPanel.title=Select Repository Type")
-    private ApiProvider getProvider (ScmRepository repository) {
-        ApiProvider[] providers = SourceAccessorImpl.getProvidersFor(
-                repository.getScmLocation() == ScmLocation.CODE2CLOUD
-                ? repository.getType()
-                : null);
-        if (providers.length == 0) {
-            return null;
-        } else if (providers.length == 1) {
-            return providers[0];
-        } else {
-            SelectProviderPanel panel = new SelectProviderPanel();
-            panel.cmbProvider.setModel(new DefaultComboBoxModel(providers));
-            panel.txtRepositoryUrl.setText(repository.getUrl());
-            Preferences prefs = NbPreferences.forModule(GetSourcesFromCloudAction.class);
-            String className = prefs.get("repository.scm.provider." + repository.getUrl(), null); //NOI18N
-            if (className != null) {
-                for (ApiProvider p : providers) {
-                    if (className.equals(p.getClass().getName())) {
-                        panel.cmbProvider.setSelectedItem(p);
-                    }
-                }
-            }
-            panel.cmbProvider.setRenderer(new DefaultListCellRenderer() {
-
+            final ScmRepository repository = sourcesInfo.repository;
+            final PasswordAuthentication passwdAuth = repository.getScmLocation() == ScmLocation.CODE2CLOUD
+                    ? CloudUiServer.forServer(sourcesInfo.projectHandle.getTeamProject().getServer()).getPasswordAuthentication()
+                    : null;
+            // XXX   UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
+            RequestProcessor.getDefault().post(new Runnable() {
                 @Override
-                public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                    if (value instanceof ApiProvider) {
-                        value = ((ApiProvider) value).getName();
+                public void run() {
+                    NbPreferences.forModule(GetSourcesFromCloudAction.class).put("repository.scm.provider." + repository.getUrl(), prov.getClass().getName()); //NOI18N
+                    File cloneDest = prov.getSources(repository.getUrl(), passwdAuth);
+                    if (cloneDest != null && srcHandle != null) {
+                        srcHandle.setWorkingDirectory(repository.getUrl(), cloneDest);
+                        srcHandle.refresh();
                     }
-                    return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 }
-                
             });
-            DialogDescriptor dd = new DialogDescriptor(panel,
-                    LBL_SelectProviderPanel_title(),
-                    true,
-                    new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
-                    DialogDescriptor.OK_OPTION,
-                    DialogDescriptor.DEFAULT_ALIGN,
-                    new HelpCtx("org.netbeans.modules.ods.versioning.SelectProviderPanel"), //NOI18N
-                    null);
-            Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
-            dlg.setVisible(true);
-            ApiProvider p = null;
-            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                p = (ApiProvider) panel.cmbProvider.getSelectedItem();
-                prefs.put("repository.scm.provider." + repository.getUrl(), p.getClass().getName()); //NOI18N
-            }
-            return p;
+            // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
         }
     }
     

@@ -72,6 +72,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -135,7 +136,7 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
             String uriString = prefs.get(WORKINGDIR + repository.getUrl(), null); // NOI18N
             if (uriString!=null) {
                 URI uri = new URI(uriString);
-                final File file = new File(uri);
+                final File file = Utilities.toFile(uri);
                 FileObject f = FileUtil.toFileObject(file);
                 if (f==null || !f.isValid())
                     return null;
@@ -171,8 +172,8 @@ public class SourceHandleImpl extends SourceHandle implements PropertyChangeList
         }
     }
 
-    void setWorkingDirectory (String url, String absolutePath) {
-        prefs.put(WORKINGDIR + url, absolutePath); //NOI18N
+    void setWorkingDirectory (String url, File dest) {
+        prefs.put(WORKINGDIR + url, Utilities.toURI(dest).toString()); //NOI18N
     }
 
     private synchronized void addToRecentProjects(List<Project> newProjects, boolean fireChanges) {
