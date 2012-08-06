@@ -542,8 +542,8 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
-    public WrapStyle wrapExtendsImplementsList() {
-        String wrap = preferences.get(wrapExtendsImplementsList, getDefaultAsString(wrapExtendsImplementsList));
+    public WrapStyle wrapVariables() {
+        String wrap = preferences.get(wrapVariables, getDefaultAsString(wrapVariables));
         return WrapStyle.valueOf(wrap);
     }
 

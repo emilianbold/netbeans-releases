@@ -49,7 +49,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class ExtDocDocumentationHolder extends JsDocumentationHolder {
+public class ExtDocDocumentationHolder extends JsDocumentationHolder {
 
     private final Map<Integer, ExtDocComment> blocks;
 
