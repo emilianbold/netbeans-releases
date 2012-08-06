@@ -63,6 +63,7 @@ import javax.ws.rs.ext.ContextResolver;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
@@ -141,8 +142,8 @@ final class NbRepositoryConnector extends AbstractRepositoryConnector {
         QuerySpec qs = new QuerySpec(r, si, true);
         
         NaryCriteria c = new NaryCriteria(Criteria.Operator.AND);
-        addColumnCriteria(c, irq.getAttribute(TaskAttribute.SUMMARY), "summary"); // NOI18N
         addColumnCriteria(c, irq.getAttribute(TaskAttribute.DESCRIPTION), "description"); // NOI18N
+        addColumnCriteria(c, irq.getAttribute(TaskAttribute.SUMMARY), "summary"); // NOI18N
         addColumnCriteria(c, irq.getAttribute(C2CData.ATTR_TASK_TYPE), "tasktype"); // NOI18N
         
         CriteriaQueryArguments args = new CriteriaQueryArguments(c, qs);
@@ -158,7 +159,7 @@ final class NbRepositoryConnector extends AbstractRepositoryConnector {
             d.getRoot().createMappedAttribute(TaskAttribute.SUMMARY).setValue(t.getDescription());
             tdc.accept(d);
         }
-        return null;
+        return Status.OK_STATUS;
     }
 
     private void addColumnCriteria(NaryCriteria c, String value, String name) {
