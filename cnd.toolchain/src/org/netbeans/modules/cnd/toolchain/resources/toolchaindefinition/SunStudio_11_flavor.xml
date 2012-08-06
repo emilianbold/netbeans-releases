@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
-    <toolchain name="SunStudio_11" display="Sun Studio 11 Compiler Collection" family="SunStudio"/>
+    <toolchain name="SunStudio_11" display="Sun Studio 11 Compiler Collection" family="SunStudio" aliases="SunStudio,OracleSolarisStudio"/>
     <platforms stringvalue="sun_intel,sun_sparc"/>
     <default_locations>
         <platform os="sun_intel" directory="/opt/SUNWspro/bin"/>

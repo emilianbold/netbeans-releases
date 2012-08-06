@@ -750,6 +750,7 @@
             <xs:attribute name="qmakespec" type="xs:string" use="optional" />
             <xs:attribute name="abstract" type="xs:string" use="optional" />
             <xs:attribute name="auto_detected" type="xs:string" use="optional" />
+            <xs:attribute name="aliases" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 
