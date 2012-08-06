@@ -70,6 +70,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
 
 /**
  * Selection section of CSS Styles view.
@@ -201,16 +202,21 @@ public class CSSStylesSelectionPanel extends JPanel {
                 setDummyRoots();
                 showLabel("CSSStylesSelectionPanel.multipleElementsSelected"); // NOI18N
             } else {
-                showLabel(null);
                 Node selectedNode = selection.get(0);
                 org.netbeans.modules.web.webkit.debugging.api.dom.Node node =
                     selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
-                WebKitDebugging webKit = pageModel.getWebKit();
-                CSS css = webKit.getCSS();
-                MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
-                if (matchedStyles != null) {
-                    rulePaneManager.setRootContext(new MatchedRulesNode(selectedNode, matchedStyles));
-                    propertyPaneManager.setRootContext(new MatchedPropertiesNode(matchedStyles));
+                if (node.getNodeType() == Document.ELEMENT_NODE) {
+                    showLabel(null);
+                    WebKitDebugging webKit = pageModel.getWebKit();
+                    CSS css = webKit.getCSS();
+                    MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
+                    if (matchedStyles != null) {
+                        rulePaneManager.setRootContext(new MatchedRulesNode(selectedNode, matchedStyles));
+                        propertyPaneManager.setRootContext(new MatchedPropertiesNode(matchedStyles));
+                    }
+                } else {
+                    setDummyRoots();
+                    showLabel("CSSStylesSelectionPanel.noElementSelected"); // NOI18N
                 }
             }
         }
