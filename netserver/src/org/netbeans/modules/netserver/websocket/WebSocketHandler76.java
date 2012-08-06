@@ -126,18 +126,7 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
         Map<String, String> headers = getWebSocketPoint().getContext(key).getHeaders();
         String key1 = headers.get(Utils.KEY1);
         String key2 = headers.get(Utils.KEY2);
-        ByteBuffer buffer = ByteBuffer.allocate(16).putInt(decodeNumber(key1)).
-            putInt(decodeNumber(key2)).put(lastEightBytes);
-        buffer.flip();
-        byte[] bytes = new byte[ buffer.capacity()];
-        buffer.get( bytes );
-        try {
-            return  MessageDigest.getInstance("MD5").digest(bytes);     // NOI18N
-        }
-        catch( NoSuchAlgorithmException e ){
-            WebSocketServer.LOG.log(Level.WARNING , null , e);
-            return null;
-        }
+        return Utils.produceChallenge76(key1, key2, lastEightBytes);
     }
 
     private byte[] readRequestContent(  ) throws IOException {
@@ -155,22 +144,6 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
         else {
             return readRequestContent( 8 );
         }
-    }
-    
-    private int decodeNumber(String code) {
-        long number = 0;
-        int spaces = 0;
-        for (int i=0; i<code.length(); i++) {
-            char c = code.charAt(i);
-            if (c >= '0' && c <= '9') {
-                number *= 10;
-                number += (c-'0');
-            }
-            if (c == ' ') {
-                spaces++;
-            }
-        }
-        return (int)(number/spaces);
     }
 
 }

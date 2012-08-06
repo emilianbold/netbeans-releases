@@ -45,6 +45,7 @@ package org.netbeans.modules.netserver.websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Random;
 
 
@@ -106,7 +107,7 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         
         byte[] bytes = builder.toString().getBytes( 
                 Charset.forName(Utils.UTF_8));
-        byte[] generated = generateContent();
+        byte[] generated = getContent();
         byte[] toSend = new byte[ bytes.length +generated.length];
         System.arraycopy(bytes, 0, toSend, 0, bytes.length);
         System.arraycopy(generated, 0, toSend, bytes.length, generated.length);
@@ -132,12 +133,17 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         if ( !md5red ){
             md5Challenge = readRequestContent(16);
         }
-        /*
-         *  TODO : check md5Challenge against initial data in the handshake
-         *  
-         */
         if ( md5Challenge == null ){
             throw new IOException("Invalid handshake. Cannot read handshake content."); // NOI18N
+        }
+        else {
+            byte[] challenge = Utils.produceChallenge76(getKey1(), 
+                    getKey2(), getContent());
+            if ( !Arrays.equals(md5Challenge, challenge)) {
+                throw new IOException("Invalid handshake. Expected challenge :" + 
+                        Arrays.toString(challenge)+
+                		" differs from recieved : "+Arrays.toString( md5Challenge)); // NOI18N
+            }
         }
     }
     
@@ -190,21 +196,16 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         return ch;
     }
     
-    private byte[] generateContent(){
-        byte[] bytes = new byte[8];
-        // TODO : random bytes challenge code generation should be used
-        bytes[0]=0x47;
-        bytes[1]=0x30;
-        bytes[2]=0x22;
-        bytes[3]=0x2D;
-        bytes[4]=0x5A;
-        bytes[5]=0x3F;
-        bytes[6]=0x47;
-        bytes[7]=0x58;
-        return bytes;
+    private byte[] getContent(){
+        if ( myContent == null ){
+            myContent = new byte[8];
+            getRandom().nextBytes(myContent);
+        }
+        return myContent;
     }
     
     private Random myRandom;
     private String myKey1;
     private String myKey2;
+    private byte[] myContent;
 }
