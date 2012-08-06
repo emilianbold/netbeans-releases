@@ -588,6 +588,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         protected void populateCredentials(PasswordAuthentication pa) {
             settingsPanel.userTextField.setText(pa.getUserName());
             settingsPanel.userPasswordField.setText(new String(pa.getPassword()));
+            settingsPanel.savePasswordCheckBox.setSelected(true);
             settingsPanel.savePasswordCheckBox.setEnabled(false);
         }
         
