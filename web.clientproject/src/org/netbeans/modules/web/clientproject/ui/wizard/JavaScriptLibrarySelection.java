@@ -501,7 +501,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
                 type = ""; // NOI18N
             } else {
-                assert false : "Unknown library type: " + libraryVersion.getLibrary().getName();
+                assert false : "Unknown library type: " + libraryVersion;
                 // fallback
                 type = ""; // NOI18N
             }
