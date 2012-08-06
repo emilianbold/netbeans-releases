@@ -500,6 +500,12 @@ public class WebKitPageModel extends PageModel {
                 public Lookup getLookup() {
                     return Lookup.EMPTY;
                 }
+                @Override
+                public void activated() {
+                }
+                @Override
+                public void deactivated() {
+                }
             };
         }
         return CSSStylesPanel.getDefault();

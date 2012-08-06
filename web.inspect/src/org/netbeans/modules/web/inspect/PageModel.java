@@ -182,6 +182,16 @@ public abstract class PageModel {
          */
         Lookup getLookup();
 
+        /**
+         * The enclosing {@code TopComponent} has been activated.
+         */
+        void activated();
+
+        /**
+         * The enclosing {@code TopComponent} has been deactivated.
+         */
+        void deactivated();
+
     }
 
 }

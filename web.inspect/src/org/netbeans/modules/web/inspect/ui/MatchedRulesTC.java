@@ -90,6 +90,8 @@ public final class MatchedRulesTC extends TopComponent {
     public static final String ID = "MatchedRulesTC"; // NOI18N
     /** Label shown when no styles information is available. */
     private JLabel noStylesLabel;
+    /** Current view shown in this {@code TopComponent}.  */
+    private PageModel.CSSStylesView currentView;
 
     /**
      * Creates a new {@code MatchedRulesTC}.
@@ -128,10 +130,12 @@ public final class MatchedRulesTC extends TopComponent {
             removeAll();
             if (noPage) {
                 add(noStylesLabel, BorderLayout.CENTER);
+                currentView = null;
             } else {
                 PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
                 ((MatchedRulesLookup)getLookup()).setView(stylesView);
                 add(stylesView.getView(), BorderLayout.CENTER);
+                currentView = stylesView;
             }
         }
         revalidate();
@@ -153,6 +157,22 @@ public final class MatchedRulesTC extends TopComponent {
                 }
             }
         };
+    }
+
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+        if (currentView != null) {
+            currentView.activated();
+        }
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        if (currentView != null) {
+            currentView.deactivated();
+        }
     }
 
     /**
