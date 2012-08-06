@@ -50,6 +50,7 @@ import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.SourceRange;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
+import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetOrigin;
 
 /**
  * WebKit-related utility methods that don't fit well anywhere else.
@@ -126,6 +127,17 @@ public class Utilities {
         });
 
         return result[0];
+    }
+
+    /**
+     * Determines whether the specified rule should be shown in CSS Styles view.
+     * 
+     * @param rule rule to check.
+     * @return {@code true} when the rule should be shown in CSS Styles view,
+     * returns {@code false} otherwise.
+     */
+    public static boolean showInCSSStyles(Rule rule) {
+        return (rule.getOrigin() != StyleSheetOrigin.USER_AGENT);
     }
 
 }

@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
@@ -85,13 +86,17 @@ public class MatchedRulesNode extends AbstractNode {
         Children.Array children = (Children.Array)getChildren();
         List<MatchedRuleNode> nodes = new ArrayList<MatchedRuleNode>();
         for (Rule rule : matchedStyles.getMatchedRules()) {
-            nodes.add(createMatchedRuleNode(node, rule));
+            if (Utilities.showInCSSStyles(rule)) {
+                nodes.add(createMatchedRuleNode(node, rule));
+            }
         }
         Node currentNode = node;
         for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
             currentNode = currentNode.getParentNode();
             for (Rule rule : entry.getMatchedRules()) {
-                nodes.add(createMatchedRuleNode(currentNode, rule));
+                if (Utilities.showInCSSStyles(rule)) {
+                    nodes.add(createMatchedRuleNode(currentNode, rule));
+                }
             }
         }
         children.add(nodes.toArray(new MatchedRuleNode[nodes.size()]));
