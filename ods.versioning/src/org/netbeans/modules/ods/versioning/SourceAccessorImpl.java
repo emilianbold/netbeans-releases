@@ -108,9 +108,6 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
                     boolean supported;
                     if (repository.getScmLocation() == ScmLocation.CODE2CLOUD) {
                         supported = isSupported(repository.getType());
-                        if (supported) {
-                            addRecentUrl(repository);
-                        }
                     } else {
                         supported = isSupported(null);
                     }
@@ -285,12 +282,5 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
             }
         }
         return providers.toArray(new ApiProvider[providers.size()]);
-    }
-
-    private void addRecentUrl (ScmRepository repository) {
-        if (repository.getType() == ScmType.GIT) {
-            ApiProvider prov = Lookup.getDefault().lookup(ApiProvider.class);
-            prov.addRecentUrl(repository.getUrl());
-        }
     }
 }

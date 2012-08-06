@@ -44,8 +44,6 @@ package org.netbeans.modules.ods.mercurial;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
 import org.openide.util.Exceptions;
@@ -57,15 +55,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ApiProvider.class)
 public class HgApiProviderImpl implements ApiProvider {
-
-    @Override
-    public void addRecentUrl (String repositoryUrl) {
-        try {
-            Mercurial.addRecentUrl(repositoryUrl);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(HgApiProviderImpl.class.getName()).log(Level.INFO, repositoryUrl, ex);
-        }
-    }
 
     @Override
     public boolean accepts (String type) {

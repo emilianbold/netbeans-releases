@@ -50,8 +50,6 @@ import java.net.PasswordAuthentication;
  */
 public interface ApiProvider {
 
-    public void addRecentUrl (String repositoryUrl);
-
     public boolean accepts (String type);
 
     public File getSources (String repositoryUrl, PasswordAuthentication passwdAuth);

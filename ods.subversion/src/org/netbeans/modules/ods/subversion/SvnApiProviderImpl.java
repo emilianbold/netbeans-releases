@@ -46,8 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.util.Exceptions;
@@ -59,15 +57,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ApiProvider.class)
 public class SvnApiProviderImpl implements ApiProvider {
-
-    @Override
-    public void addRecentUrl (String repositoryUrl) {
-        try {
-            Subversion.addRecentUrl(repositoryUrl);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(SvnApiProviderImpl.class.getName()).log(Level.INFO, repositoryUrl, ex);
-        }
-    }
 
     @Override
     public boolean accepts (String type) {

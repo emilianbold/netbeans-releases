@@ -45,8 +45,6 @@ import com.tasktop.c2c.server.scm.domain.ScmType;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.git.api.Git;
 import org.netbeans.modules.ods.versioning.spi.ApiProvider;
 import org.openide.util.Exceptions;
@@ -58,15 +56,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ApiProvider.class)
 public class GitApiProviderImpl implements ApiProvider {
-
-    @Override
-    public void addRecentUrl (String repositoryUrl) {
-        try {
-            Git.addRecentUrl(repositoryUrl);
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(GitApiProviderImpl.class.getName()).log(Level.INFO, repositoryUrl, ex);
-        }
-    }
 
     @Override
     public boolean accepts (String type) {
