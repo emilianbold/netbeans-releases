@@ -81,7 +81,7 @@ public class FindMethodUsages extends AbstractFindUsages {
 
         public FindMethodUsagesVisitor(ModuleNode moduleNode) {
             super(moduleNode);
-            this.declaringClassName = element.getFQN();
+            this.declaringClassName = element.getDeclaringClassName();
             this.findingMethod = element.getName();
         }
 
