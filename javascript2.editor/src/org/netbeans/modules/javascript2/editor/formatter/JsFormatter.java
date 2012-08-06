@@ -386,6 +386,37 @@ public class JsFormatter implements Formatter {
                             break;
                         case SOURCE_START:
                         case EOL:
+                            // XXX refactor eol token WRAP_IF_LONG handling
+                            if (token.getKind() != FormatToken.Kind.SOURCE_START) {
+                                // search for token which will be present just before eol
+                                FormatToken tokenBeforeEol = null;
+                                for (int j = i - 1; j >= 0; j--) {
+                                    tokenBeforeEol = tokens.get(j);
+                                    if (!tokenBeforeEol.isVirtual()) {
+                                        break;
+                                    }
+                                }
+                                if (tokenBeforeEol.getKind() != FormatToken.Kind.SOURCE_START) {
+                                    int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
+                                            - formatContext.getCurrentLineStart() + lastOffsetDiff;
+
+                                    if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
+                                        FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
+                                        if (lastWrap != null) {
+                                            // we dont have to remove trailing spaces as indentation will fix it
+                                            formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
+                                            // do the indentation
+                                            // FIXME continuation, initialIndent and level - check it is ok
+                                            int indentationSize = initialIndent
+                                                    + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                                            formatContext.indentLineWithOffsetDiff(
+                                                    lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
+                                                    indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                                        }
+                                    }
+                                }
+                            }
+
                             // remove trailing spaces
                             removeTrailingSpaces(tokens, i, formatContext, token);
 
