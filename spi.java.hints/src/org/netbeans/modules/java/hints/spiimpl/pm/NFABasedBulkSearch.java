@@ -135,6 +135,16 @@ public class NFABasedBulkSearch extends BulkSearch {
                 return null;
             }
 
+            @Override
+            public Void scan(Iterable<? extends Tree> nodes, TreePath p) {
+                active = nfa.transition(active, new Input(Kind.IDENTIFIER, "(", false));
+                try {
+                    return super.scan(nodes, p);
+                } finally {
+                    active = nfa.transition(active, UP);
+                }
+            }
+            
             private void addOccurrence(Res r, TreePath currentPath) {
                 Collection<TreePath> occurrences = occurringPatterns.get(r);
                 if (occurrences == null) {
@@ -242,11 +252,13 @@ public class NFABasedBulkSearch extends BulkSearch {
                             int target = currentState[0];
 
                             setBit(transitionTable, NFA.Key.create(backup, new Input(Kind.BLOCK, null, false)), currentState[0] = nextState[0]++);
+                            setBit(transitionTable, NFA.Key.create(currentState[0], new Input(Kind.IDENTIFIER, "(", false)), currentState[0] = nextState[0]++);
 
                             for (StatementTree st : bt.getStatements()) {
                                 scan(st, null);
                             }
 
+                            setBit(transitionTable, NFA.Key.create(currentState[0], UP), currentState[0] = nextState[0]++);
                             setBit(transitionTable, NFA.Key.create(currentState[0], UP), target);
                             currentState[0] = target;
 
@@ -287,7 +299,9 @@ public class NFABasedBulkSearch extends BulkSearch {
                         int target = currentState[0];
 
                         setBit(transitionTable, NFA.Key.create(backup, new Input(Kind.BLOCK, null, false)), currentState[0] = nextState[0]++);
+                        setBit(transitionTable, NFA.Key.create(currentState[0], new Input(Kind.IDENTIFIER, "(", false)), currentState[0] = nextState[0]++);
                         handleTree(i, goDeeper, t, bypass);
+                        setBit(transitionTable, NFA.Key.create(currentState[0], UP), currentState[0] = nextState[0]++);
                         setBit(transitionTable, NFA.Key.create(currentState[0], UP), target);
                         currentState[0] = target;
                     }
@@ -295,6 +309,16 @@ public class NFABasedBulkSearch extends BulkSearch {
                     auxPath = oldAuxPath;
 
                     return null;
+                }
+
+                @Override
+                public Void scan(Iterable<? extends Tree> nodes, Void p) {
+                    setBit(transitionTable, NFA.Key.create(currentState[0], new Input(Kind.IDENTIFIER, "(", false)), currentState[0] = nextState[0]++);
+                    try {
+                        return super.scan(nodes, p);
+                    } finally {
+                        setBit(transitionTable, NFA.Key.create(currentState[0], UP), currentState[0] = nextState[0]++);
+                    }
                 }
 
                 private void handleTree(Input i, boolean[] goDeeper, Tree t, Input[] bypass) {
@@ -466,6 +490,22 @@ public class NFABasedBulkSearch extends BulkSearch {
                     Exceptions.printStackTrace(ex);
                 }
 
+                return null;
+            }
+            @Override
+            public Void scan(Iterable<? extends Tree> nodes, Void p) {
+                try {
+                    ctx.getOut().write('(');
+                    ctx.getOut().write(kind2Encoded.get(Kind.IDENTIFIER));
+                    ctx.getOut().write('$');
+                    ctx.getOut().write('(');
+                    ctx.getOut().write(';');
+                    super.scan(nodes, p);
+                    ctx.getOut().write(')');
+                } catch (IOException ex) {
+                    //XXX
+                    Exceptions.printStackTrace(ex);
+                }
                 return null;
             }
         }.scan(tree, null);
