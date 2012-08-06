@@ -876,7 +876,6 @@ public class JsFormatter implements Formatter {
 
     private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
         if (token.getKind() == FormatToken.Kind.AFTER_STATEMENT) {
-            // XXX option
             return CodeStyle.get(context).wrapStatement();
         }
         if (token.getKind() == FormatToken.Kind.AFTER_BLOCK_START) {
@@ -895,8 +894,7 @@ public class JsFormatter implements Formatter {
             return CodeStyle.WrapStyle.WRAP_ALWAYS;
         }
         if (token.getKind() == FormatToken.Kind.AFTER_VAR_DECLARATION) {
-            // XXX option
-            return CodeStyle.WrapStyle.WRAP_IF_LONG;
+            return CodeStyle.get(context).wrapVariables();
         }
         return null;
     }
