@@ -192,6 +192,7 @@ public class SourceAccessorImpl extends SourceAccessor<ODSProject> {
             public void actionPerformed(ActionEvent e) {
                 ProjectChooser.setProjectsFolder(src.getWorkingDirectory());
                 JFileChooser chooser = ProjectChooser.projectChooser();
+                chooser.setCurrentDirectory(src.getWorkingDirectory());
                 chooser.setMultiSelectionEnabled(true);
 
                 int option = chooser.showOpenDialog(WindowManager.getDefault().getMainWindow()); // Sow the chooser
