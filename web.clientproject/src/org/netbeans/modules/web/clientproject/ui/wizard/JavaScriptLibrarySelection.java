@@ -252,15 +252,24 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     void selectAllLibraries() {
         assert EventQueue.isDispatchThread();
-        //for ()
+        for (int i = 0; i < librariesTable.getRowCount(); ++i) {
+            selectLibrary(i);
+        }
+        librariesListModel.fireContentsChanged();
     }
 
     void selectSelectedLibraries() {
         assert EventQueue.isDispatchThread();
-        //for ()
+        for (int i : librariesTable.getSelectedRows()) {
+            selectLibrary(i);
+        }
+        librariesListModel.fireContentsChanged();
     }
 
-    private void selectLibrary(Library library) {
+    private void selectLibrary(int libraryIndex) {
+        ModelItem modelItem = librariesTableModel.getItems().get(libraryIndex);
+        LibraryVersion libraryVersion = modelItem.getSelectedVersion();
+        selectedLibraries.add(Pair.of(modelItem.getSimpleDisplayName(), libraryVersion));
     }
 
     void deselectAllLibraries() {
@@ -634,6 +643,10 @@ public class JavaScriptLibrarySelection extends JPanel {
         @Override
         public Pair<String, LibraryVersion> getElementAt(int index) {
             return libraries.get(index);
+        }
+
+        public void fireContentsChanged() {
+            fireContentsChanged(this, 0, libraries.size() - 1);
         }
 
     }
