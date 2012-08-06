@@ -46,6 +46,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import javax.swing.JComponent;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 
 /**
  * Model of an inspected web-page.
@@ -122,13 +123,11 @@ public abstract class PageModel {
     public abstract List<? extends Node> getHighlightedNodes();
 
     /**
-     * Returns CSS Styles view for this page. If the view needs to affect
-     * the lookup of the enclosing {@code TopComponent} it may do so using
-     * the value of its {@code "lookup"} client property.
+     * Returns CSS Styles view for this page.
      *
      * @return CSS Styles view for this page.
      */
-    public abstract JComponent getCSSStylesView();
+    public abstract CSSStylesView getCSSStylesView();
 
     /**
      * Disposes this page model.
@@ -162,6 +161,27 @@ public abstract class PageModel {
      */
     protected void firePropertyChange(String propName, Object oldValue, Object newValue) {
         propChangeSupport.firePropertyChange(propName, oldValue, newValue);
+    }
+
+    /**
+     * CSS Styles view.
+     */
+    public static interface CSSStylesView {
+
+        /**
+         * Returns the visual representation of CSS Styles.
+         *
+         * @return visual representation of CSS Styles.
+         */
+        JComponent getView();
+
+        /**
+         * Lookup of the view (to include in the enclosing {@code TopComponent}).
+         *
+         * @return lookup of the view.
+         */
+        Lookup getLookup();
+
     }
 
 }

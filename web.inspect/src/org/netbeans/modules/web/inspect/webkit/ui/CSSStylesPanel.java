@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -87,7 +88,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Jan Stola
  */
-public class CSSStylesPanel extends JPanel {
+public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /** Action command for switching to document view. */
     static final String DOCUMENT_ACTION_COMMAND = "document"; // NOI18N
     /** Action command for switching to selection view. */
@@ -117,7 +118,6 @@ public class CSSStylesPanel extends JPanel {
         updatePageModel();
         add(documentPanel, BorderLayout.CENTER);
         updateVisiblePanel(false);
-        putClientProperty("lookup", lookup); // NOI18N
         ruleLookupResult = lookup.lookupResult(Rule.class);
         ruleLookupResult.addLookupListener(getListener());
     }
@@ -275,6 +275,16 @@ public class CSSStylesPanel extends JPanel {
                 });
             }
         });
+    }
+
+    @Override
+    public JComponent getView() {
+        return this;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
     }
 
     /**

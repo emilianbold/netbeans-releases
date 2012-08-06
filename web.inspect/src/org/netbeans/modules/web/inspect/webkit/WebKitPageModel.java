@@ -483,15 +483,24 @@ public class WebKitPageModel extends PageModel {
     }
 
     @Override
-    public JComponent getCSSStylesView() {
+    public CSSStylesView getCSSStylesView() {
         if (!Boolean.getBoolean("org.netbeans.modules.web.inspect.showCSSStyles")) {
-            javax.swing.JLabel label = new javax.swing.JLabel("Coming soon ...");
+            final javax.swing.JLabel label = new javax.swing.JLabel("Coming soon ...");
             label.setBackground(java.awt.Color.WHITE);
             label.setEnabled(false);
             label.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
             label.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
             label.setOpaque(true);
-            return label;
+            return new CSSStylesView() {
+                @Override
+                public JComponent getView() {
+                    return label;
+                }
+                @Override
+                public Lookup getLookup() {
+                    return Lookup.EMPTY;
+                }
+            };
         }
         return CSSStylesPanel.getDefault();
     }
