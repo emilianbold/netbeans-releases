@@ -142,6 +142,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.ods.git</friend>
                 <friend>org.netbeans.modules.ods.mercurial</friend>
+                <friend>org.netbeans.modules.ods.subversion</friend>
                 <package>org.netbeans.modules.ods.versioning.spi</package>
             </friend-packages>
         </data>
