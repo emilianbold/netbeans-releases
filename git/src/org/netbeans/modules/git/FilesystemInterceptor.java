@@ -334,11 +334,11 @@ class FilesystemInterceptor extends VCSInterceptor {
             for (GitRemoteConfig rc : remotes.values()) {
                 List<String> uris = rc.getUris();
                 for (int i = 0; i < uris.size(); i++) {
-                    sb.append(uris.get(i));
-                    if(i < uris.size() - 1) {
-                        sb.append(';'); 
-                    }
+                    sb.append(uris.get(i)).append(';');
                 }
+            }
+            if (sb.length() > 0) {
+                sb.deleteCharAt(sb.length() - 1);
             }
             return sb.toString();
         } else {
