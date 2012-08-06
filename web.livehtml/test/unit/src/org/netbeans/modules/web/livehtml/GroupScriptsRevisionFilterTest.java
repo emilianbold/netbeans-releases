@@ -70,30 +70,33 @@ public class GroupScriptsRevisionFilterTest extends NbTestCase {
     public void test() {
         assertEquals(11, analysis.getTimeStampsCount());
 
-        assertEquals(4, groupScriptsFilteredAnalysis.getTimeStampsCount());
+        assertEquals(5, groupScriptsFilteredAnalysis.getTimeStampsCount());
 
         assertNull(groupScriptsFilteredAnalysis.getScriptGroupedRevisions(0));
 
         assertNull(groupScriptsFilteredAnalysis.getScriptGroupedRevisions(1));
 
         final Set<Integer> scriptGroupedRevisions2 = groupScriptsFilteredAnalysis.getScriptGroupedRevisions(2);
-        assertNotNull(scriptGroupedRevisions2);
-        assertEquals(5, scriptGroupedRevisions2.size());
-        assertTrue(scriptGroupedRevisions2.contains(3));
-        assertTrue(scriptGroupedRevisions2.contains(4));
-        assertTrue(scriptGroupedRevisions2.contains(5));
-        assertTrue(scriptGroupedRevisions2.contains(6));
-        assertTrue(scriptGroupedRevisions2.contains(7));
+        assertNull(scriptGroupedRevisions2);
 
         final Set<Integer> whiteSpaceGroupedRevisions2 = groupScriptsFilteredAnalysis.getWhiteSpaceGroupedRevisions(2);
-        assertNotNull(whiteSpaceGroupedRevisions2);
-        assertEquals(2, whiteSpaceGroupedRevisions2.size());
-        assertFalse(whiteSpaceGroupedRevisions2.contains(7));
-        assertTrue(whiteSpaceGroupedRevisions2.contains(8));
-        assertTrue(whiteSpaceGroupedRevisions2.contains(9));
+        assertNull(whiteSpaceGroupedRevisions2);
+        
+        final Set<Integer> scriptGroupedRevisions3 = groupScriptsFilteredAnalysis.getScriptGroupedRevisions(3);
+        final Set<Integer> whiteSpaceGroupedRevisions3 = groupScriptsFilteredAnalysis.getWhiteSpaceGroupedRevisions(3);
+        assertNotNull(scriptGroupedRevisions3);
+        
+        assertEquals(4, scriptGroupedRevisions3.size());
+        assertTrue(scriptGroupedRevisions3.contains(4));
+        assertTrue(scriptGroupedRevisions3.contains(5));
+        assertTrue(scriptGroupedRevisions3.contains(6));
+        assertTrue(scriptGroupedRevisions3.contains(7));
 
-        assertNull(groupScriptsFilteredAnalysis.getScriptGroupedRevisions(3));
-
+        assertNotNull(whiteSpaceGroupedRevisions3);
+        assertEquals(2, whiteSpaceGroupedRevisions3.size());
+        assertFalse(whiteSpaceGroupedRevisions3.contains(7));
+        assertTrue(whiteSpaceGroupedRevisions3.contains(8));
+        assertTrue(whiteSpaceGroupedRevisions3.contains(9));
     }
     
     @Before
