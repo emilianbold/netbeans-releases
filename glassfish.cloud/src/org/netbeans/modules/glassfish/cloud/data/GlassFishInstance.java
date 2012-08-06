@@ -39,29 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.glassfish.cloud.javaee;
+package org.netbeans.modules.glassfish.cloud.data;
 
-import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.netbeans.spi.server.ServerInstanceImplementation;
 
 /**
- * Java EE platform SPI interface implementation for Java EE platform registered
- * with GlassFish cloud.
+ * GlassFish instance interface extended to contain NetBeans related attributes.
+ * <p/>
+ * Contains common method to access both CPAS interface and user account
+ * attributes.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudPlatformImpl extends GlassFishPlatformImpl {
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Constructors                                                           //
-    ////////////////////////////////////////////////////////////////////////////
-
+public interface GlassFishInstance extends ServerInstanceImplementation {
+    
     /**
-     * Creates an instance of Java EE platform registered with GlassFish cloud.
+     * Get GlassFish local server registered with cloud.
      * <p/>
-     * @param url GlassFish cloud URL.
+     * @return GlassFish cloud local server.
      */
-    GlassFishCloudPlatformImpl(GlassFishUrl url) {
-        super(url);        
-    }
+    public GlassFishServer getLocalServer();
 
 }

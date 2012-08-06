@@ -41,11 +41,16 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
+import java.awt.Image;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
+import org.netbeans.modules.glassfish.cloud.data.GlassFishInstance;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 /**
  * Common Java EE platform SPI interface implementation for Java EE platform
@@ -74,6 +79,9 @@ public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
     /** GlassFish cloud URL. */
     final GlassFishUrl url;
 
+    /** GlassFish cloud local instance. */
+    final GlassFishInstance instance;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -88,6 +96,12 @@ public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
      */
     GlassFishPlatformImpl(GlassFishUrl url) {
         this.url = url;
+        instance = GlassFishCloudInstanceProvider
+                .getCloudInstance(url.getName());
+        if (instance == null || instance.getLocalServer() == null) {
+            throw new NullPointerException("GlassFish local server instance "
+                    + url.getName() + "does not exist.");
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -109,6 +123,93 @@ public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
     }
 
     /**
+     * Returns the GlassFish cloud local server installation directory
+     * or <code>null</code> if not specified or unknown.
+     * <p/>
+     * @return The server installation directory or <code>null</code> if not
+     *         specified or unknown
+     */
+    @Override
+    public File getServerHome() {        
+        return instance.getLocalServer().getServerHome() != null
+                ? new File(instance.getLocalServer().getServerHome())
+                : null;
+    }
+
+    /**
+     * Returns the GlassFish cloud local domain directory or <code>null</code>
+     * if not specified or unknown.
+     * <p/>
+     * There is no domain registered with local GlassFish server now.
+     * Internal </code>donainsFolder</code> is always set to <code>null</code>.
+     * <p/>
+     * @return The domain directory or <code>null</code> if not specified
+     *         or unknown.
+     */    
+    @Override
+    public File getDomainHome() {
+        return instance.getLocalServer().getDomainsFolder() != null
+                ? new File(instance.getLocalServer().getDomainsFolder())
+                : null;
+    }
+
+    /**
+     * Returns the middleware directory or <code>null</code> if not specified
+     * or unknown.
+     * <p/>
+     * Middleware directory is not recognized in GlassFish cloud local server
+     * registration. this method always returns <code>null</code>.
+     * <p/>
+     * @return The middleware directory or <code>null</code> if not
+     *         specified or unknown
+     */
+    @Override
+    public File getMiddlewareHome() {
+        return null;
+    }
+
+    @Override
+    public LibraryImplementation[] getLibraries() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Return GlassFish cloud platform display name.
+     * <p/>
+     * @return GlassFish cloud platform display name.
+     */
+    @Override
+    public String getDisplayName() {
+        return instance.getServerDisplayName();
+    }
+
+    /**
+     * Return an icon describing GlassFish cloud local server platform.
+     * <p/>
+     * @return An icon describing GlassFish cloud platform.
+     */
+    @Override
+    public Image getIcon() {
+        return instance.getBasicNode().getIcon(1);
+    }
+
+    /**
+     * Return GlassFish cloud platform root directories.
+     * <p/>
+     * Returns <code>File[1]</code> array containing GlassFish cloud local
+     * server home directory.
+     * <p/>
+     * @return GlassFish cloud platform root directories.
+     */
+    @Override
+    public File[] getPlatformRoots() {
+        return instance.getLocalServer().getServerHome() != null
+                ? new File[] {
+                    new File(instance.getLocalServer().getServerHome()) }
+                : new File[0];
+    }
+
+    /**
      * Return GlassFish cloud J2SE platform.
      * <p/>
      * Now this method returns default J2SE platform set in NEtBeans. In the
@@ -120,6 +221,39 @@ public abstract class GlassFishPlatformImpl extends J2eePlatformImpl2 {
     @Override
     public org.netbeans.api.java.platform.JavaPlatform getJavaPlatform() {
         return JavaPlatformManager.getDefault().getDefaultPlatform();
+    }
+
+    /**
+     * Return class path for the specified tool.
+     * <p/>
+     * GlassFish cloud platform does not support tools at this moment. Will
+     * always return zero length <code>File</code> array.
+     * </p>
+     * @param  toolName Tool name, for example
+     *         {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
+     * @return Class path for the specified tool.
+     */
+    @Override
+    public File[] getToolClasspathEntries(String toolName) {
+        return new File[0];
+    }
+
+    /**
+     * Specifies whether a tool of the given name is supported by GlassFish
+     * cloud.
+     * <p/>
+     * GlassFish cloud platform does not support tools at this moment. Will
+     * always return <code>false</code>.
+     * <p/>
+     * @param toolName Tool name, for example
+     *        {@link org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform#TOOL_APP_CLIENT_RUNTIME}.
+     * @return Always returns <code>false</code>. This method is not supported.
+     * @deprecated
+     */
+    @Deprecated
+    @Override    
+    public boolean isToolSupported(String toolName) {
+        return false;
     }
 
 }
