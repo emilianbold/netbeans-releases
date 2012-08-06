@@ -174,13 +174,13 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetReturnTypeAtFunction() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "function martion () {^");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 8583)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 8569)));
     }
 
     public void testGetReturnTypeAtObjectFunction() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
         final int caretOffset = getCaretOffset(testSource, "getVersion: function() {^");
-        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 8877)));
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 8863)));
     }
 
     public void testGetReturnTypeAtType() throws Exception {

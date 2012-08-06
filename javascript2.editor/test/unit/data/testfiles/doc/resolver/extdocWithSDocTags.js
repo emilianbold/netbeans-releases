@@ -249,7 +249,7 @@ Square.prototype.setHeight = function(height){
 
 /**
  * Create a new Circle instance based on a radius.
- * @param {int} radius The optional radius of this Circle 
+ * @param {int} radius The optional radius of this Circle
  */
 function Circle(radius){
    if (radius) {
@@ -272,6 +272,7 @@ Circle.prototype.radius = 0;
  * A very simple class (static) field that is also a constant
  * @static
  * @type {float}
+ * @singleton
  */
 Circle.PI = 3.14;
 
@@ -286,6 +287,8 @@ Circle.prototype.getRadius = function(){
 /**
  * Set the radius value for this Circle
  * @param {int} radius The Circle#radius value to set
+ * @example circle.setRadius(5);
+ * @hide
  */
 Circle.prototype.setRadius = function(radius){
    this.radius = radius;
@@ -407,6 +410,7 @@ MySingletonShapeFactory = function(){
 /**
  * Create a new Foo instance.
  * @constructor
+ * @extends Anyclass
  */
 function Foo(){}
 
