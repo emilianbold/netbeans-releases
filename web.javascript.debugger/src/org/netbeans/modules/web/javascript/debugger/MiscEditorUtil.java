@@ -137,7 +137,6 @@ public final class MiscEditorUtil {
         }
 
         LineCookie lineCookie = getLineCookie(fileObject);
-        assert lineCookie != null : "no line for: "+fileObject;
         if (lineCookie == null) {
             LOG.log(Level.INFO, "No line cookie for \"{0}\"", fileObject);
             return null;
