@@ -102,7 +102,7 @@ public class DependenciesNode extends AbstractNode {
         "LBL_non_cp_libraries=Non-classpath Dependencies"
     })
     DependenciesNode(DependenciesSet dependencies) {
-        super(Children.create(new DependenciesChildren(dependencies), true), Lookups.fixed(dependencies.project));
+        super(Children.create(new DependenciesChildren(dependencies), true), Lookups.fixed(dependencies.project, PathFinders.createPathFinder()));
         this.dependencies = dependencies;
         setName("Dependencies" + dependencies.type); //NOI18N
         switch (dependencies.type) {
@@ -444,6 +444,6 @@ public class DependenciesNode extends AbstractNode {
     
     static Preferences prefs() {
         return NbPreferences.root().node(PREF_DEPENDENCIES_UI);
-    }
+    }    
 
 }
