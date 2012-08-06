@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.doc;
 import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.extdoc.ExtDocDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.javascript2.editor.sdoc.SDocDocumentationHolder;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -87,6 +88,12 @@ public class JsDocumentationSupportTest extends JsDocumentationTestBase {
         assertTrue(documentationHolder instanceof SDocDocumentationHolder);
     }
 
+    public void testResolverForExtDocCompleteFile() throws ParseException {
+        parseSource(getTestSource(getTestFile("testfiles/extdoc/classWithExtDoc.js")));
+        JsDocumentationHolder documentationHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
+        assertTrue(documentationHolder instanceof ExtDocDocumentationHolder);
+    }
+
     public void testResolverForJsDocWithSeveralSDocTags() throws ParseException {
         parseSource(getTestSource(getTestFile("testfiles/doc/resolver/jsdocWithSDocTags.js")));
         JsDocumentationHolder documentationHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
@@ -97,6 +104,12 @@ public class JsDocumentationSupportTest extends JsDocumentationTestBase {
         parseSource(getTestSource(getTestFile("testfiles/doc/resolver/sdocWithJsDocTags.js")));
         JsDocumentationHolder documentationHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
         assertTrue(documentationHolder instanceof SDocDocumentationHolder);
+    }
+
+    public void testResolverForExtDocWithSeveralSDocTags() throws ParseException {
+        parseSource(getTestSource(getTestFile("testfiles/doc/resolver/extdocWithSDocTags.js")));
+        JsDocumentationHolder documentationHolder = JsDocumentationSupport.getDocumentationHolder(parserResult);
+        assertTrue(documentationHolder instanceof ExtDocDocumentationHolder);
     }
 
 }
