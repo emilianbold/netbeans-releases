@@ -86,7 +86,24 @@ public class TypeRepository implements ITypeRepository {
     public IType getEnumType(String fqn) {
         IType[] ret = types.get(fqn);
         if(ret == null){
-            fillTypeElement(fqn);
+            //get main type
+            int lastPoint = fqn.lastIndexOf('.');
+            String mainPart = lastPoint > 0 ? fqn.substring(0, lastPoint) : null;
+            if(mainPart != null){
+                IType[] mainType = types.get(mainPart);
+                if(mainType == null){
+                    fillTypeElement(mainPart);
+                }
+                mainType = types.get(mainPart);
+                if(mainType[0] != null){
+                    fillTypeElement(fqn);
+                } else {
+                    types.put(fqn, new Type[]{null});
+                }
+            } else {
+                //shouldn't happens
+                fillTypeElement(fqn);
+            }
             ret = types.get(fqn);
         }
         return ret[0];
