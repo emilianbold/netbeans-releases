@@ -60,8 +60,8 @@ public class SDocIdentifierElement extends SDocBaseElement {
     /**
      * Creates new {@code SDocDescriptionElement}.
      *
-     * @param type element type (tag), never null
-     * @param description identifier of the element, never null
+     * @param type element type (tag), never {@code null}
+     * @param identifier identifier of the element, never {@code null}
      */
     public static SDocIdentifierElement create(SDocElementType type, String identifier) {
         return new SDocIdentifierElement(type, identifier);

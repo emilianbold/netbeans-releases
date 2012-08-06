@@ -301,9 +301,35 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             } else {
                 manager.setRootContext(documentNode);
                 replace(noDomLabel, treeView);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        expandNodes();
+                    }
+                });
             }
         } finally {
             updatingView = false;
+        }
+    }
+
+    /**
+     * Expands {@code HTML} and {@code BODY} nodes.
+     */
+    private void expandNodes() {
+        Node root = manager.getRootContext();
+        treeView.expandNode(root);
+        for (Node node : root.getChildren().getNodes()) {
+            String nodeName = node.getName();
+            if (nodeName != null && nodeName.trim().toLowerCase().equals("html")) { // NOI18N
+                treeView.expandNode(node);
+                for (Node subNode : node.getChildren().getNodes()) {
+                    nodeName = subNode.getName();
+                    if (nodeName != null && nodeName.trim().toLowerCase().equals("body")) { // NOI18N
+                        treeView.expandNode(subNode);
+                    }
+                }
+            }
         }
     }
 

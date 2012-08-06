@@ -65,8 +65,8 @@ import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.web.WebHistory.Entry;
 import javafx.scene.web.*;
+import javafx.scene.web.WebHistory.Entry;
 import javafx.util.Callback;
 import javax.swing.*;
 import org.netbeans.core.HtmlBrowserComponent;
@@ -101,6 +101,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private WebView browser;
     private String status;
     private boolean initialized;
+    private Color defaultPanelColor = Color.LIGHT_GRAY;
     /** Lookup of this web-browser tab. */
     private Lookup lookup;
     private String currentLocation = null;
@@ -144,6 +145,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
         synchronized( LOCK ) {
             if( null == container ) {
                 container = new JFXPanel();
+                defaultPanelColor = new JPanel().getBackground();
                 javafx.application.Platform.runLater( new Runnable() {
                     @Override
                     public void run() {
@@ -713,7 +715,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
     private javafx.scene.paint.Color getSceneFillColor() {
         javafx.scene.paint.Color res = javafx.scene.paint.Color.LIGHTGRAY;
-        Color c = new JPanel().getBackground();
+        Color c = defaultPanelColor;
         if( null != c ) {
             res = javafx.scene.paint.Color.rgb( c.getRed(), c.getGreen(), c.getBlue() );
         }

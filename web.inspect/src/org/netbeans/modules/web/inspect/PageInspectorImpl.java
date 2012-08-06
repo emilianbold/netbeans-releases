@@ -41,17 +41,23 @@
  */
 package org.netbeans.modules.web.inspect;
 
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -74,6 +80,8 @@ import org.openide.util.lookup.ServiceProvider;
 public class PageInspectorImpl extends PageInspector {
     /** Name of the property that is fired when the page model changes. */
     public static final String PROP_MODEL = "model"; // NOI18N
+    /** Name of the toolbar component responsible for selection mode switching. */
+    private static final String SELECTION_MODE_COMPONENT_NAME = "selectionModeSwitch"; // NOI18N
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     /** Current inspected page. */
@@ -116,7 +124,7 @@ public class PageInspectorImpl extends PageInspector {
                 pageModel = new WebKitPageModel(pageContext);
                 messageDispatcher = pageContext.lookup(MessageDispatcher.class);
                 if (messageDispatcher != null) {
-                    messageListener = new InspectionMessageListener(pageModel);
+                    messageListener = new InspectionMessageListener(pageModel, pageContext);
                     messageDispatcher.addMessageListener(messageListener);
                 }
                 initSelectionMode(pageContext.lookup(JToolBar.class), pageModel);
@@ -139,9 +147,13 @@ public class PageInspectorImpl extends PageInspector {
         if (toolBar != null) {
             String selectionModeTxt = NbBundle.getMessage(PageInspectorImpl.class, "PageInspectorImpl.selectionMode"); // NOI18N
             final JToggleButton selectionModeButton = new JToggleButton(selectionModeTxt);
-            selectionModeButton.addActionListener(new ActionListener() {
+            //hardcoded shortcut for Selection Mode
+            KeyStroke ks = KeyStroke.getKeyStroke( KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK+KeyEvent.SHIFT_DOWN_MASK );
+            selectionModeButton.putClientProperty( Action.ACCELERATOR_KEY, ks );
+            selectionModeButton.setName(SELECTION_MODE_COMPONENT_NAME);
+            selectionModeButton.addItemListener( new ItemListener() {
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void itemStateChanged( ItemEvent e ) {
                     final boolean selectionMode = selectionModeButton.isSelected();
                     RequestProcessor.getDefault().post(new Runnable() {
                         @Override
@@ -171,6 +183,23 @@ public class PageInspectorImpl extends PageInspector {
                 }
             });
             toolBar.add(selectionModeButton);
+        }
+    }
+
+    /**
+     * Uninitializes the selection mode (removes the page inspection
+     * component/s from the toolbar).
+     * 
+     * @param toolBar toolBar to remove the buttons from.
+     */
+    void uninitSelectionMode(JToolBar toolBar) {
+        if (toolBar != null) {
+            for (Component component : toolBar.getComponents()) {
+                if (SELECTION_MODE_COMPONENT_NAME.equals(component.getName())) {
+                    toolBar.remove(component);
+                    break;
+                }
+            }
         }
     }
 
@@ -228,14 +257,18 @@ public class PageInspectorImpl extends PageInspector {
         private RequestProcessor RP = new RequestProcessor(InspectionMessageListener.class.getName(), 5);
         /** Page model this message listener is related to. */
         private PageModel pageModel;
+        /** Context of the page this listener is related to. */
+        private Lookup pageContext;
 
         /**
          * Creates a new {@code InspectionMessageListener}.
          * 
          * @param pageModel page model the listener is related to.
+         * @param pageContext context of the page.
          */
-        InspectionMessageListener(PageModel pageModel) {
+        InspectionMessageListener(PageModel pageModel, Lookup pageContext) {
             this.pageModel = pageModel;
+            this.pageContext = pageContext;
         }
         
         @Override
@@ -263,6 +296,7 @@ public class PageInspectorImpl extends PageInspector {
         private void processMessage(final String messageTxt) {
             if (messageTxt == null) {
                 synchronized (LOCK) {
+                    uninitSelectionMode(pageContext.lookup(JToolBar.class));
                     if (pageModel == PageInspectorImpl.this.pageModel) {
                         inspectPage(Lookup.EMPTY);
                     }

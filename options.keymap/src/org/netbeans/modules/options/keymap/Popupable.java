@@ -56,4 +56,6 @@ public interface Popupable {
      * @return popup of this parent component
      */
     public Popup getPopup();
+    
+    public void hidePopup();
 }

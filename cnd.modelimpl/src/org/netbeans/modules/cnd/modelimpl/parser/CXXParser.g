@@ -849,11 +849,17 @@ namespace_alias:
     ;
 
 namespace_alias_definition:
-        LITERAL_namespace IDENT ASSIGNEQUAL qualified_namespace_specifier SEMICOLON
+        LITERAL_namespace IDENT ASSIGNEQUAL                                     {action.namespace_alias_definition($LITERAL_namespace, $IDENT, $ASSIGNEQUAL);}
+        qualified_namespace_specifier 
+        SEMICOLON                                                               {action.end_namespace_alias_definition($SEMICOLON);}
     ;
 
 qualified_namespace_specifier:
-        SCOPE? nested_name_specifier? IDENT
+        (
+            SCOPE                                                               {action.qualified_namespace_specifier(action.QUALIFIED_NAMESPACE_SPECIFIER__SCOPE, $SCOPE);}
+        )? 
+        nested_name_specifier? 
+        IDENT                                                                   {action.qualified_namespace_specifier(action.QUALIFIED_NAMESPACE_SPECIFIER__IDENT, $IDENT);}
     ;
 
 /*
@@ -871,11 +877,17 @@ using-declaration:
  */
 using_declaration
      : 
-        LITERAL_using LITERAL_typename? SCOPE? 
+        LITERAL_using                                                           {action.using_declaration($LITERAL_using);}
+        (
+            LITERAL_typename                                                    {action.using_declaration(action.USING_DECLARATION__TYPENAME, $LITERAL_typename);}
+        )?
+        (
+            SCOPE                                                               {action.using_declaration(action.USING_DECLARATION__SCOPE, $SCOPE);}
+        )?
         // TODO: review temp predicate
         ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)? 
-        unqualified_id                                                          {action.using_declaration(input.LT(0));}
-        SEMICOLON
+        unqualified_id
+        SEMICOLON                                                               {action.end_using_declaration($SEMICOLON);}
     ;
 
 using_directive:

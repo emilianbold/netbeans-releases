@@ -47,6 +47,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
+import org.openide.windows.WindowManager;
 
 @ActionID(
     category = "View",
@@ -59,7 +60,8 @@ public final class ShowLiveHTML implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        LiveHTMLTopComponent liveHTMLTopComponent = LiveHTMLTopComponent.getInstance();
+        LiveHTMLTopComponent liveHTMLTopComponent = 
+                (LiveHTMLTopComponent) WindowManager.getDefault().findTopComponent(LiveHTMLTopComponent.PREFERRED_ID);
         liveHTMLTopComponent.open();
         liveHTMLTopComponent.requestActive();
     }

@@ -384,32 +384,35 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
      * @return array of Y coordinates of outline start/end/branching.
      */
     private int[] findLinePoints(int[] origin, int[] matches) throws BadLocationException {
+        boolean lineDown = false;
+        
         if (editorPane != null) {
             Object o = editorPane.getClientProperty(MATCHED_BRACES);
             if (o instanceof int[]) {
                 origin = (int[])o;
                 matches = null;
+                lineDown = true;
             }
         }
-        if (baseUI == null || origin == null) {
+        if (baseUI == null || origin == null || (matches == null && !lineDown)) {
             return null;
         }
         int minOffset = origin[0];
         int maxOffset = origin[1];
         
-        if (matches != null) {
+        int maxY;
+        
+        if (lineDown) {
+            maxY = getSize().height;
+        } else {
             for (int i = 0; i < matches.length; i += 2) {
                 minOffset = Math.min(minOffset, matches[i]);
                 maxOffset = Math.max(maxOffset, matches[i + 1]);
             }
+            maxY = baseUI.getYFromPos(maxOffset);
         }
-        
+
         int minY = baseUI.getYFromPos(minOffset);
-        int maxY = baseUI.getYFromPos(maxOffset);
-        
-        if (matches == null) {
-            maxY = getSize().height;
-        }
         
         // do not paint ranges for a single-line brace
         if (minY == maxY) {

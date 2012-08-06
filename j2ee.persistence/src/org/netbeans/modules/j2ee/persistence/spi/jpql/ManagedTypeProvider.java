@@ -41,13 +41,10 @@
  */
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IJPAVersion;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
@@ -56,15 +53,9 @@ import org.eclipse.persistence.jpa.jpql.spi.IPlatform;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
-import org.netbeans.modules.j2ee.persistence.wizard.EntityClosure;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -76,6 +67,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     private Map<String, IManagedType> managedTypes;
     private ITypeRepository typeRepository;
     private final EntityMappings mappings;
+    private boolean valid = true;//used to conrol long tasks, if not valid long tasks should be either terminated or goes short way
 
     public ManagedTypeProvider(Project project, EntityMappingsMetadata metaData) {
         this.project = project;
@@ -124,7 +116,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public ITypeRepository getTypeRepository() {
         if (typeRepository == null) {
-            typeRepository = new TypeRepository(project);
+            typeRepository = new TypeRepository(project, this);
         }
         return typeRepository;
     }
@@ -140,6 +132,19 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     public Iterable<IManagedType> managedTypes() {
         initializeManagedTypes();
         return Collections.unmodifiableCollection(managedTypes.values());
+    }
+    
+    public boolean isValid() {
+        return valid;
+    }
+    
+    /**
+     * make model invalid and it shoul case processing to stop, minimize etc.
+     * results with SPI may not be consider valid if provider isn't valid
+     */
+    public void invalidate() {
+        valid = false;
+        //TODO: may have sense to clean stored data
     }
 
     private void initializeManagedTypes() {

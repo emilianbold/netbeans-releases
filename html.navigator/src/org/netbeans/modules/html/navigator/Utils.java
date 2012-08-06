@@ -54,10 +54,28 @@ public class Utils {
 
     private static final char ELEMENT_PATH_ELEMENTS_DELIMITER = '/';
     private static final char ELEMENT_PATH_INDEX_DELIMITER = '|';
+    
+    private static final String STRIPPED_TEXT_POSTFIX = "..."; //NOI18N
+    private static final int STRIPPED_TEXT_LEN = 30; //NOI18N
+    
 
     private Utils() {
     }
 
+    /**
+     * Tries to find (to resolve) a corresponding  node to the given 
+     * base node and the {@link HtmlElementDescription}. 
+     * 
+     * The passed {@link Node} must contain instance of web kit node in its lookup.
+     * 
+     * To do this it uses a path from the root 
+     * node the represented element held by each {@link Description}.
+     * 
+     * @param base Base node, typically the root node
+     * @param description The element description to resolve 
+     * 
+     * @return corresponding node or null if no matching element found.
+     */
     public static Node findNode(Node base, HtmlElementDescription description) {
         String path = description.getElementPath();
         StringTokenizer st = new StringTokenizer(path, Character.toString(ELEMENT_PATH_ELEMENTS_DELIMITER));
@@ -99,10 +117,22 @@ public class Utils {
         return null;
     }
     
+    /**
+     * Finds an instance of webkit Node in the given openide {@link Node}. 
+     * It tries to get it from the given {@link Node} lookup.
+     
+     * @param node
+     * @return instance of web kit Node or null if the given node doesn't contain it in its lookup.
+     */
     public static org.netbeans.modules.web.webkit.debugging.api.dom.Node getWebKitNode(Node node) {
         return node.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
     }
     
+    /**
+     * Returns a system name for given web kit Node.
+     * 
+     * @param node webkit node
+     */
     public static String getWebKitNodeName(org.netbeans.modules.web.webkit.debugging.api.dom.Node node) {
         switch(node.getNodeType()) {
             case org.w3c.dom.Node.ELEMENT_NODE:
@@ -110,7 +140,14 @@ public class Utils {
             case org.w3c.dom.Node.DOCUMENT_NODE:
                 return "html";
             default:
-                return "???";
+                return strip(node.getNodeValue().trim(), STRIPPED_TEXT_LEN);
         }
+    }
+    
+    private static String strip(String text, int maxLen) {
+        if(text.length() <= maxLen) {
+            return text;
+        }
+        return new StringBuilder(text.substring(0, maxLen).trim()).append(STRIPPED_TEXT_POSTFIX).toString();
     }
 }

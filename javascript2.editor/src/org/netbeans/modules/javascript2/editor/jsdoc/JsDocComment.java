@@ -43,7 +43,6 @@ package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.JsDocumentationPrinter;
 import org.netbeans.modules.javascript2.editor.doc.api.JsModifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;

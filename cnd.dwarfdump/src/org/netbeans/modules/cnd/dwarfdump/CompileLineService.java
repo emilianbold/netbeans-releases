@@ -221,8 +221,10 @@ public class CompileLineService {
         private SourceFile(CompilationUnit cu) throws IOException, Exception {
             String s = cu.getCommandLine();
             if (s == null) {
-                throw new Exception("Dwarf information does not contain compile line");  // NOI18N
-            }
+                // client may be interested in compilation units also
+                s = "";  // NOI18N
+                //throw new Exception("Dwarf information does not contain compile line");  // NOI18N
+            } 
             compileLine = s.trim();
             compileDir = cu.getCompilationDir();
             if (compileDir == null) {

@@ -48,7 +48,7 @@ import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.browser.api.EnhancedBrowserFactory;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;

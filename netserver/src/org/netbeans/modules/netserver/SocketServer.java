@@ -89,6 +89,7 @@ public class SocketServer extends SocketFramework {
         }
     }
     
+    @Override
     protected SocketAddress getAddress(){
         return serverChannel.socket().getLocalSocketAddress();
     }
@@ -106,6 +107,7 @@ public class SocketServer extends SocketFramework {
         }
     }
     
+    @Override
     protected Queue<ByteBuffer> getWriteQueue( SelectionKey key ){
         Object attachment = key.attachment();
         return (Queue<ByteBuffer>) attachment;

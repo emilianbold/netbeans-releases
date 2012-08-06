@@ -232,6 +232,8 @@ public class WebKitPageModel extends PageModel {
                     nodes.clear();
                     contentDocumentMap.clear();
                     documentNode = null;
+                    selectedNodes = Collections.EMPTY_LIST;
+                    highlightedNodes = Collections.EMPTY_LIST;
                     RP.post(new Runnable() {
                         @Override
                         public void run() {

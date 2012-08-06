@@ -313,6 +313,7 @@ public class RuleEditorPanel extends JPanel {
     
     public void setNoRuleState() {
         this.rule = null;
+        titleLabel.setText(null);
         addPropertyButton.setEnabled(false);
         node.fireContextChanged();
     }

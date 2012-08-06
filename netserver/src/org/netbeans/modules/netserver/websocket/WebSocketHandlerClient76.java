@@ -45,6 +45,8 @@ package org.netbeans.modules.netserver.websocket;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Random;
 
 
 /**
@@ -52,9 +54,12 @@ import java.nio.charset.Charset;
  *
  */
 class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
+    
+    private long MAX = 4294967295L;
 
     WebSocketHandlerClient76( WebSocketClient webSocketClient ) {
         super(webSocketClient);
+        myRandom = new Random(hashCode());
     }
     
     /* (non-Javadoc)
@@ -64,14 +69,14 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
     public void sendHandshake() {
         StringBuilder builder = new StringBuilder(Utils.GET);
         builder.append(' ');
-        builder.append(getClient().getUri().getPath());
+        builder.append(getWebSocketPoint().getUri().getPath());
         builder.append(' ');
         builder.append( Utils.HTTP_11);
         builder.append(Utils.CRLF);
         
         builder.append(Utils.HOST);
         builder.append(": ");                               // NOI18N
-        builder.append(getClient().getUri().getHost());
+        builder.append(getWebSocketPoint().getUri().getHost());
         builder.append(Utils.CRLF);
         
         builder.append(Utils.CONN_UPGRADE);
@@ -81,17 +86,17 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         builder.append(Utils.CRLF);
         
         builder.append("Origin: ");
-        builder.append( Utils.getOrigin(getClient().getUri()));
+        builder.append( Utils.getOrigin(getWebSocketPoint().getUri()));
         builder.append(Utils.CRLF);
         
         builder.append(Utils.KEY1);
         builder.append(": ");                               // NOI18N
-        builder.append( generateKey());
+        builder.append( getKey1());
         builder.append(Utils.CRLF);
         
         builder.append(Utils.KEY2);
         builder.append(": ");                               // NOI18N
-        builder.append( generateKey());
+        builder.append( getKey2());
         builder.append(Utils.CRLF);
         
         builder.append(Utils.WS_PROTOCOL);
@@ -102,22 +107,13 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         
         byte[] bytes = builder.toString().getBytes( 
                 Charset.forName(Utils.UTF_8));
-        byte[] generated = generateContent();
+        byte[] generated = getContent();
         byte[] toSend = new byte[ bytes.length +generated.length];
         System.arraycopy(bytes, 0, toSend, 0, bytes.length);
         System.arraycopy(generated, 0, toSend, bytes.length, generated.length);
-        getClient().send( toSend, getKey() );
+        getWebSocketPoint().send( toSend, getKey() );
     }
     
-    private String generateKey() {
-        // TODO : random challenge code generation should be used
-        if ( tempKey ){
-            return "4 @1  46546xW%0l 1 5";
-        }
-        tempKey = true;
-        return "12998 5 Y3 1  .P00";
-    }
-
     /* (non-Javadoc)
      * @see org.netbeans.modules.netserver.websocket.WebSocketHandlerClient75#readHandshakeResponse(java.nio.ByteBuffer)
      */
@@ -126,7 +122,7 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
             throws IOException
     {
         byte[] md5Challenge = new byte[16];
-        Utils.readHttpRequest(getClient().getChannel(), buffer, md5Challenge);
+        Utils.readHttpRequest(getWebSocketPoint().getChannel(), buffer, md5Challenge);
         boolean md5red = false;
         for( byte b: md5Challenge ){
             if ( b!= 0){
@@ -137,30 +133,79 @@ class WebSocketHandlerClient76 extends WebSocketHandlerClient75 {
         if ( !md5red ){
             md5Challenge = readRequestContent(16);
         }
-        /*
-         *  TODO : check md5Challenge against initial data in the handshake
-         *  
-         */
         if ( md5Challenge == null ){
             throw new IOException("Invalid handshake. Cannot read handshake content."); // NOI18N
         }
+        else {
+            byte[] challenge = Utils.produceChallenge76(getKey1(), 
+                    getKey2(), getContent());
+            if ( !Arrays.equals(md5Challenge, challenge)) {
+                throw new IOException("Invalid handshake. Expected challenge :" + 
+                        Arrays.toString(challenge)+
+                		" differs from recieved : "+Arrays.toString( md5Challenge)); // NOI18N
+            }
+        }
     }
     
-    private byte[] generateContent(){
-        byte[] bytes = new byte[8];
-        // TODO : random bytes challenge code generation should be used
-        bytes[0]=0x47;
-        bytes[1]=0x30;
-        bytes[2]=0x22;
-        bytes[3]=0x2D;
-        bytes[4]=0x5A;
-        bytes[5]=0x3F;
-        bytes[6]=0x47;
-        bytes[7]=0x58;
-        return bytes;
+    private Random getRandom(){
+        return myRandom;
     }
     
-    // TODO: delete
-    private boolean tempKey;
-
+    private String getKey1(){
+        if ( myKey1 == null ){
+            myKey1 = generateKey();
+        }
+        return myKey1;
+    }
+    
+    private String getKey2(){
+        if ( myKey2 == null ){
+            myKey2 = generateKey();
+        }
+        return myKey2;
+    }
+    
+    private String generateKey(){
+        int spaces = getRandom().nextInt( 12 ) + 1;
+        int max = (int)(MAX/spaces);
+        max = Math.abs(max);
+        if ( max == Integer.MIN_VALUE){
+            max = Integer.MAX_VALUE;
+        }
+        int num = getRandom().nextInt(max)+1;
+        long prod = num * spaces;
+        StringBuilder key = new StringBuilder( );
+        key.append(prod);
+        int randomCount = getRandom().nextInt( 12 ) + 1;
+        for (int i=0; i<randomCount ; i++){
+            int index = getRandom().nextInt(key.length());
+            key.insert(index , getNoNumberChar());
+        }
+        for( int i=0; i<spaces; i++){
+            int index = getRandom().nextInt(key.length()-1)+1;
+            key.insert(index, ' ');
+        }
+        return key.toString();
+    }
+    
+    private char getNoNumberChar(){
+        char ch = (char)(getRandom().nextInt(0x7e-0x21+1)+0x21);
+        if ( ch > 0x2f && ch< 0x3a){
+            return getNoNumberChar();
+        }
+        return ch;
+    }
+    
+    private byte[] getContent(){
+        if ( myContent == null ){
+            myContent = new byte[8];
+            getRandom().nextBytes(myContent);
+        }
+        return myContent;
+    }
+    
+    private Random myRandom;
+    private String myKey1;
+    private String myKey2;
+    private byte[] myContent;
 }

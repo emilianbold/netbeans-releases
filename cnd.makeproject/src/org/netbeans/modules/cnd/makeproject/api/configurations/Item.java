@@ -51,7 +51,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -905,6 +904,25 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return true;
     }
 
+    /*package*/ int getCRC() {
+        int res = 0;
+        for(FSPath aPath : getUserIncludePaths()) {
+            res += 37 * aPath.getPath().hashCode();
+        }
+        for(String macro: getUserMacroDefinitions()) {
+            res += 37 * macro.hashCode();
+        }
+        for(FSPath aPath : getSystemIncludePaths()) {
+            res += 37 * aPath.getPath().hashCode();
+        }
+        for(String macro: getSystemMacroDefinitions()) {
+            res += 37 * macro.hashCode();
+        }
+        res += 37 * getLanguage().hashCode();
+        res += 37 * getLanguageFlavor().hashCode();
+        return res;
+    }
+    
     @Override
     public String toString() {
         return path;

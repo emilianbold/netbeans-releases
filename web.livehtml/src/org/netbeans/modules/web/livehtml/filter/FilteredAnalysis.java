@@ -44,22 +44,39 @@ package org.netbeans.modules.web.livehtml.filter;
 import org.netbeans.modules.web.livehtml.Analysis;
 
 /**
- *
+ * This abstract class provides support for filtering content of {@link Analysis}.
+ * This class add reference to parent {@link Analysis} and 1 abstract method.
+ * Method {@link #applyFilter()} is used 
  * @author petr-podzimek
  */
 public abstract class FilteredAnalysis extends Analysis {
     
     private final Analysis parentAnalysis;
     
+    /**
+     * Default constructor with required parentAnalysis parameter.
+     * Application logic to apply filtering can be done in constructor call.
+     * @param parentAnalysis Parent {@link Analysis} new instance of filtered analysis. Can not be null.
+     */
     public FilteredAnalysis(Analysis parentAnalysis) {
+        super();
+        assert parentAnalysis != null : "Parent analysis could not be null";
         this.parentAnalysis = parentAnalysis;
     }
 
+    /**
+     * Reference to source {@link Analysis} for this filtered analysis.
+     * @return Source {@link Analysis}. Can not be null.
+     */
     public Analysis getParentAnalysis() {
         return parentAnalysis;
     }
     
-    public abstract void applyFilter();
-    public abstract String getFilteredRevisionLabel(int selectedRevisionIndex);
+    /**
+     * Method to get detail information about specified revision for UI.
+     * @param revisionIndex index of revision to process.
+     * @return Specified revision detail information.
+     */
+    public abstract String getRevisionDetailLabel(int revisionIndex);
     
 }

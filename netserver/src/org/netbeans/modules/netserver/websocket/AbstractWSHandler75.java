@@ -44,19 +44,25 @@ package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.netbeans.modules.netserver.SocketFramework;
+
 
 /**
  * @author ads
  *
  */
-abstract class AbstractWSHandler75 implements WebSocketChanelHandler {
+abstract class AbstractWSHandler75<T extends SocketFramework> extends AbstractWSHandler<T> 
+    implements WebSocketChanelHandler 
+{
+    AbstractWSHandler75( T framework ){
+        super(framework);
+    }
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.common.websocket.WebSocketChanelHandler#read(java.nio.ByteBuffer)
@@ -151,11 +157,6 @@ abstract class AbstractWSHandler75 implements WebSocketChanelHandler {
         return null;
     }
     
-    protected abstract SelectionKey getKey();
-    
-    protected abstract void close() throws IOException;
-    
     protected abstract void readDelegate( byte[] bytes );
     
-    protected abstract boolean isStopped();
 }

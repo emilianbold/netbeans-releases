@@ -79,21 +79,21 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
         builder.append(Utils.CONN_UPGRADE);
         builder.append(Utils.CRLF);
         builder.append("Sec-WebSocket-Origin: ");           // NOI18N
-        String origin = getServer().getContext(getKey()).getHeaders().get("Origin");  // NOI18N
+        String origin = getWebSocketPoint().getContext(getKey()).getHeaders().get("Origin");  // NOI18N
         if ( origin != null ){
             builder.append( origin);
         }
         builder.append(Utils.CRLF);
         builder.append("Sec-WebSocket-Location: ws://");    // NOI18N
-        String host = getServer().getContext(getKey()).getHeaders().get(Utils.HOST);                
+        String host = getWebSocketPoint().getContext(getKey()).getHeaders().get(Utils.HOST);                
         if ( host != null) {
             builder.append( host );
         }
         else {
             builder.append("127.0.0.1:");                   // NOI18N
-            builder.append( ((InetSocketAddress)getServer().getAddress()).getPort());
+            builder.append( ((InetSocketAddress)getWebSocketPoint().getAddress()).getPort());
         }
-        String request = getServer().getContext(getKey()).getRequestString();
+        String request = getWebSocketPoint().getContext(getKey()).getRequestString();
         int index = request.indexOf(' ');
         String url = null;
         if ( index != -1 ){
@@ -119,29 +119,18 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
         System.arraycopy(headers, 0, response, 0, headers.length);
         System.arraycopy(responseContent, 0, response, headers.length, 
                 responseContent.length);
-        getServer().send(response , getKey() );
+        getWebSocketPoint().send(response , getKey() );
     }
 
     private byte[] createResponseContent(SelectionKey key,  byte[] lastEightBytes ) {
-        Map<String, String> headers = getServer().getContext(key).getHeaders();
+        Map<String, String> headers = getWebSocketPoint().getContext(key).getHeaders();
         String key1 = headers.get(Utils.KEY1);
         String key2 = headers.get(Utils.KEY2);
-        ByteBuffer buffer = ByteBuffer.allocate(16).putInt(decodeNumber(key1)).
-            putInt(decodeNumber(key2)).put(lastEightBytes);
-        buffer.flip();
-        byte[] bytes = new byte[ buffer.capacity()];
-        buffer.get( bytes );
-        try {
-            return  MessageDigest.getInstance("MD5").digest(bytes);     // NOI18N
-        }
-        catch( NoSuchAlgorithmException e ){
-            WebSocketServer.LOG.log(Level.WARNING , null , e);
-            return null;
-        }
+        return Utils.produceChallenge76(key1, key2, lastEightBytes);
     }
 
     private byte[] readRequestContent(  ) throws IOException {
-        byte[] content = getServer().getContext( getKey()).getContent();
+        byte[] content = getWebSocketPoint().getContext( getKey()).getContent();
         boolean red = false;
         for( byte b : content ){
             if ( b!= 0){
@@ -155,22 +144,6 @@ class WebSocketHandler76 extends WebSocketHandler75 implements WebSocketChanelHa
         else {
             return readRequestContent( 8 );
         }
-    }
-    
-    private int decodeNumber(String code) {
-        long number = 0;
-        int spaces = 0;
-        for (int i=0; i<code.length(); i++) {
-            char c = code.charAt(i);
-            if (c >= '0' && c <= '9') {
-                number *= 10;
-                number += (c-'0');
-            }
-            if (c == ' ') {
-                spaces++;
-            }
-        }
-        return (int)(number/spaces);
     }
 
 }

@@ -57,13 +57,9 @@ class ScriptStackTraceFilter implements StackTraceFilter {
     }
 
     @Override
-    public boolean match(Object object) {
-        if (object instanceof JSONObject) {
-            JSONObject jSONObject = (JSONObject) object;
-            final Object script = jSONObject.get(StackTrace.SCRIPT);
-            return script != null && script.equals(scriptUrl);
-        }
-        return false;
+    public boolean match(JSONObject jsonObject) {
+        final Object script = jsonObject.get(StackTrace.SCRIPT);
+        return script != null && script.equals(scriptUrl);
     }
 
     public String getScriptUrl() {

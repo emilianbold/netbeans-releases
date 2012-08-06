@@ -52,15 +52,18 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -88,13 +91,21 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
     private final CsmVisibility visibility;
     
     private UsingDeclarationImpl(AST ast, CsmFile file, CsmScope scope, CsmVisibility visibility) {
-        super(file, getUsingDeclarationStartOffset(ast), getEndOffset(ast));
-        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-        name = NameCache.getManager().getString(AstUtil.getText(ast));
-        rawName = AstUtil.getRawNameInChildren(ast);
-        this.visibility = visibility;
+        this(NameCache.getManager().getString(AstUtil.getText(ast)), 
+                AstUtil.getRawNameInChildren(ast), 
+                scope, 
+                visibility, 
+                file, getUsingDeclarationStartOffset(ast), getEndOffset(ast));
     }
 
+    private UsingDeclarationImpl(CharSequence name, CharSequence rawName, CsmScope scope, CsmVisibility visibility, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.scopeUID = UIDCsmConverter.scopeToUID(scope);
+        this.name = name;
+        this.rawName = rawName;
+        this.visibility = visibility;
+    }
+    
     public static UsingDeclarationImpl create(AST ast, CsmFile file, CsmScope scope, boolean global, CsmVisibility visibility) {
         UsingDeclarationImpl usingDeclarationImpl = new UsingDeclarationImpl(ast, file, scope, visibility);
         if (!global) {
@@ -334,6 +345,130 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             ((MutableDeclarationsContainer) scope).removeDeclaration(this);
         }
     }
+    
+    public static class UsingDeclarationBuilder implements CsmObjectBuilder {
+        
+        private CharSequence name;// = CharSequences.empty();
+        private int nameStartOffset;
+        private int nameEndOffset;
+        private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
+        private CsmFile file;
+        private final FileContent fileContent;
+        private int startOffset;
+        private int endOffset;
+        CsmVisibility visibility;
+        private CsmObjectBuilder parent;
+
+        private CsmScope scope;
+        private UsingDeclarationImpl instance;
+        private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
+
+        public UsingDeclarationBuilder(FileContent fileContent) {
+            assert fileContent != null;
+            this.fileContent = fileContent;
+        }
+        
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+        
+        public void setName(CharSequence name, int startOffset, int endOffset) {
+            if(this.name == null) {
+                this.name = name;
+                this.nameStartOffset = startOffset;
+                this.nameEndOffset = endOffset;
+            }
+        }
+
+        public void setVisibility(CsmVisibility visibility) {
+            this.visibility = visibility;
+        }
+        
+        public CharSequence getName() {
+            return name;
+        }
+        
+        public CharSequence getRawName() {
+            return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
+        }
+        
+        public void setFile(CsmFile file) {
+            this.file = file;
+        }
+        
+        public void setEndOffset(int endOffset) {
+            this.endOffset = endOffset;
+        }
+
+        public void setStartOffset(int startOffset) {
+            this.startOffset = startOffset;
+        }
+
+        public void setParent(CsmObjectBuilder parent) {
+            this.parent = parent;
+        }
+
+        public void addDeclaration(CsmOffsetableDeclaration decl) {
+            this.declarations.add(decl);
+        }
+        
+        private UsingDeclarationImpl getUsingDeclarationInstance() {
+            if(instance != null) {
+                return instance;
+            }
+            MutableDeclarationsContainer container = null;
+            if (parent == null) {
+                container = fileContent;
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespaceDefinitionInstance();
+                }
+            }
+            if(container != null && name != null) {
+                CsmOffsetableDeclaration decl = container.findExistingDeclaration(startOffset, name, kind);
+                if (decl != null && UsingDeclarationImpl.class.equals(decl.getClass())) {
+                    instance = (UsingDeclarationImpl) decl;
+                }
+            }
+            return instance;
+        }
+        
+        public void setScope(CsmScope scope) {
+            assert scope != null;
+            this.scope = scope;
+        }
+        
+        public CsmScope getScope() {
+            if(scope != null) {
+                return scope;
+            }
+            if (parent == null) {
+                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
+            } else {
+                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
+                }
+            }
+            return scope;
+        }
+        
+        public UsingDeclarationImpl create() {
+            UsingDeclarationImpl using = getUsingDeclarationInstance();
+            CsmScope s = getScope();
+            if (using == null && s != null && name != null && getScope() != null) {
+                using = new UsingDeclarationImpl(name, getRawName(), scope, visibility, file, startOffset, endOffset);
+                if(parent != null) {
+                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(using);
+                } else {
+                    fileContent.addDeclaration(using);
+                }
+            }
+            if(getScope() instanceof CsmNamespace) {
+                ((NamespaceImpl)getScope()).addDeclaration(using);
+            }
+            return using;
+        }
+    }        
 
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
