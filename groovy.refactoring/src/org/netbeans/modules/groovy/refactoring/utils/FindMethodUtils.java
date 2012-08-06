@@ -105,12 +105,13 @@ public final class FindMethodUtils {
                     possibleMethods.add(method);
                 }
             }
-            if (possibleMethods.size() == 1) {
-                return possibleMethods.get(0);
-            } else {
-                // More methods with the same name and the same number of parameters
-                // Either try to interfere parameter types or show some user dialog
+            if (possibleMethods.size() > 1) {
+                // In the future we should distinguish between 'size == 1' and 'size > 1'
+                // If the size is more than 1, it means we are dealing with more methods
+                // with the same name and the same number of parameters. In that case we
+                // should either try to interfere parameter types or show some user dialog
                 // with selection box and let the user to choose what he want to find
+                return possibleMethods.get(0);
             }
         }
         return null;
