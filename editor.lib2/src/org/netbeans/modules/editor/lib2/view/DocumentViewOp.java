@@ -555,9 +555,10 @@ public final class DocumentViewOp
         if (fontRenderContext == null) {
             JTextComponent textComponent = docView.getTextComponent();
             Graphics graphics = (textComponent != null) ? textComponent.getGraphics() : null;
-            assert (graphics instanceof Graphics2D) : "Not Graphics2D";
-            updateFontRenderContext((Graphics2D)graphics, false);
-            return (fontRenderContext != null);
+            if (graphics instanceof Graphics2D) {
+                updateFontRenderContext((Graphics2D)graphics, false);
+                return (fontRenderContext != null);
+            }
         }
         return false;
     }
