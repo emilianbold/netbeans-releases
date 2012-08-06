@@ -237,6 +237,7 @@
                 <friend>com.sun.tools.ide.analysis.previse</friend>
                 <friend>com.sun.tools.ide.analysis.tha</friend>
                 <friend>com.sun.tools.ide.remote.projectui</friend>
+                <friend>com.sun.tools.ide.toolcollection</friend>
                 <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
