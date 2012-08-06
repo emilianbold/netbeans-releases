@@ -151,7 +151,7 @@ public class FindMethodUsages extends AbstractFindUsages {
             if (!type.isResolved()) {
                 type = type.redirect();
             }
-            if (type.tryFindPossibleMethod(findingMethod, arguments) != null) {
+            if (type.hasPossibleMethod(findingMethod, arguments)) {
                 usages.add(methodCall);
             }
         }
