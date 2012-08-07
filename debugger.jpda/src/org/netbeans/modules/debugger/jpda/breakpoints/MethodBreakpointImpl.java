@@ -94,6 +94,7 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodEntryRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.MethodExitRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -115,13 +116,20 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     
     @Override
     protected void setRequests () {
+        ClassNames classNames = getClassFilter().filterClassNames(
+                new ClassNames(
+                    breakpoint.getClassFilters(),
+                    breakpoint.getClassExclusionFilters()),
+                breakpoint);
+        String[] names = classNames.getClassNames();
+        String[] excludedNames = classNames.getExcludedClassNames();
         setClassRequests (
-            breakpoint.getClassFilters (), 
-            breakpoint.getClassExclusionFilters (), 
+            names,
+            excludedNames,
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        for(String filter : breakpoint.getClassFilters()) {
-            checkLoadedClasses (filter, breakpoint.getClassExclusionFilters());
+        for(String filter : names) {
+            checkLoadedClasses (filter, excludedNames);
         }
     }
     
