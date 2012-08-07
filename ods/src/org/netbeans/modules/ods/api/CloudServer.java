@@ -67,25 +67,21 @@ import org.openide.util.ImageUtilities;
  * @author Ondrej Vrabec
  */
 public final class CloudServer {
-    
+
     /**
-     * fired when user logs in/out
-     * getOldValue() returns old PasswordAuthentication or null
-     * getNewValue() returns new PasswordAuthentication or null
+     * fired when user logs in/out getOldValue() returns old
+     * PasswordAuthentication or null getNewValue() returns new
+     * PasswordAuthentication or null
      */
     public static final String PROP_LOGIN = "login";
-    
     /**
      * fired when user login started
      */
     public static final String PROP_LOGIN_STARTED = "login_started";
-
     /**
      * fired when user login failed
      */
     public static final String PROP_LOGIN_FAILED = "login_failed";
-    
-    
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private final URL url;
     private final String displayName;
@@ -95,7 +91,7 @@ public final class CloudServer {
     private final Map<String, ODSProject> projectsCache = new HashMap<String, ODSProject>();
     private final Map<String, List<ODSProject>> myProjectCache = new WeakHashMap<String, List<ODSProject>>();
 
-    private CloudServer (String displayName, String url) throws MalformedURLException {
+    private CloudServer(String displayName, String url) throws MalformedURLException {
         while (url.endsWith("/")) { //NOI18N
             url = url.substring(0, url.length() - 1);
         }
@@ -103,12 +99,13 @@ public final class CloudServer {
         this.url = new URL(url);
     }
 
-    static CloudServer createInstance (String displayName, String url) throws MalformedURLException {
+    static CloudServer createInstance(String displayName, String url) throws MalformedURLException {
         return new CloudServer(displayName, url);
     }
-    
+
     /**
      * Adds listener to the server instance
+     *
      * @param l
      */
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -117,15 +114,17 @@ public final class CloudServer {
 
     /**
      * Adds listener to the server instance
-     * @param name 
+     *
+     * @param name
      * @param l
      */
     public void addPropertyChangeListener(String name, PropertyChangeListener l) {
-        propertyChangeSupport.addPropertyChangeListener(name,l);
+        propertyChangeSupport.addPropertyChangeListener(name, l);
     }
 
     /**
      * Removes listener from the server instance
+     *
      * @param l
      */
     public void removePropertyChangeListener(PropertyChangeListener l) {
@@ -134,6 +133,7 @@ public final class CloudServer {
 
     /**
      * Removes listener from the server instance
+     *
      * @param name
      * @param l
      */
@@ -141,24 +141,24 @@ public final class CloudServer {
         propertyChangeSupport.removePropertyChangeListener(name, l);
     }
 
-    public URL getUrl () {
+    public URL getUrl() {
         return url;
     }
 
-    public String getDisplayName () {
+    public String getDisplayName() {
         return displayName;
     }
 
-    public Icon getIcon () {
+    public Icon getIcon() {
         if (icon == null) {
-            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/resources/server.png", false); //NOI18N
+            icon = ImageUtilities.loadImageIcon("org/netbeans/modules/ods/ui/resources/ods.png", false); //NOI18N
         }
         return icon;
     }
 
-    public void logout () {
+    public void logout() {
         PasswordAuthentication old = auth;
-        synchronized(this) {
+        synchronized (this) {
             auth = null;
             currentProfile = null;
             projectsCache.clear();
@@ -167,15 +167,15 @@ public final class CloudServer {
         firePropertyChange(propertyChangeEvent);
     }
 
-    public boolean isLoggedIn () {
+    public boolean isLoggedIn() {
         return auth != null;
     }
 
-    public PasswordAuthentication getPasswordAuthentication () {
+    public PasswordAuthentication getPasswordAuthentication() {
         return auth;
     }
 
-    public void login (String username, char[] password) throws ODSException {
+    public void login(String username, char[] password) throws ODSException {
         PasswordAuthentication old = auth;
         firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_STARTED, null, username));
         ODSClient createClient = null;
@@ -188,19 +188,19 @@ public final class CloudServer {
             Arrays.fill(password, '\0');
         }
         // XXX ts - need perhaps a different way how to determine if failed or not
-        if(currentProfile == null) {
+        if (currentProfile == null) {
             firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN_FAILED, null, null));
         } else {
             firePropertyChange(new PropertyChangeEvent(this, PROP_LOGIN, old, auth));
-        }    
+        }
     }
 
-    public ODSProject getProject (String projectId, boolean refresh) throws ODSException {
-        if(!isLoggedIn()) {
+    public ODSProject getProject(String projectId, boolean refresh) throws ODSException {
+        if (!isLoggedIn()) {
             return null;
         }
         ODSProject odsProj;
-        synchronized(projectsCache) {
+        synchronized (projectsCache) {
             odsProj = projectsCache.get(projectId);
         }
         if (refresh || odsProj == null) {
@@ -212,25 +212,25 @@ public final class CloudServer {
         return odsProj;
     }
 
-    private void firePropertyChange (PropertyChangeEvent event) {
+    private void firePropertyChange(PropertyChangeEvent event) {
         propertyChangeSupport.firePropertyChange(event);
         CloudServerManager.getDefault().propertyChangeSupport.firePropertyChange(event);
     }
 
     public void refresh(ODSProject odsProject) throws ODSException {
-        if(!isLoggedIn()) {
+        if (!isLoggedIn()) {
             return;
         }
         Project p = getProject(odsProject.getId());
         odsProject.setProject(p);
     }
-    
+
     public Collection<ODSProject> getMyProjects(boolean force) throws ODSException {
-        if(!isLoggedIn()) {
+        if (!isLoggedIn()) {
             return Collections.EMPTY_LIST;
         }
         String username = auth.getUserName();
-        synchronized(myProjectCache) {
+        synchronized (myProjectCache) {
             List<ODSProject> myProjs = myProjectCache.get(username);
             if (myProjs != null && !force) {
                 return new ArrayList<ODSProject>(myProjs);
@@ -256,10 +256,10 @@ public final class CloudServer {
     }
 
     public Collection<ODSProject> getMyProjects() throws ODSException {
-        if(!isLoggedIn()) {
+        if (!isLoggedIn()) {
             return Collections.EMPTY_LIST;
         }
-        synchronized(myProjectCache) {
+        synchronized (myProjectCache) {
             List<ODSProject> myProjs = myProjectCache.get(auth.getUserName());
             if (myProjs != null) {
                 return new ArrayList<ODSProject>(myProjs);
@@ -268,13 +268,13 @@ public final class CloudServer {
         return getMyProjects(true);
     }
 
-    private Project getProject (String projectId) throws ODSException {
+    private Project getProject(String projectId) throws ODSException {
         ODSClient client = ODSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
         Project p = client.getProjectById(projectId);
         return p;
     }
 
-    private ODSProject setOdsProjectData (String projectId, Project proj) {
+    private ODSProject setOdsProjectData(String projectId, Project proj) {
         ODSProject odsProj;
         synchronized (projectsCache) {
             odsProj = projectsCache.get(projectId);
@@ -286,5 +286,4 @@ public final class CloudServer {
         }
         return odsProj;
     }
-    
 }
