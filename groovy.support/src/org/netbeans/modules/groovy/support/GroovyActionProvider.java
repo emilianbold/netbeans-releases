@@ -134,6 +134,19 @@ public class GroovyActionProvider implements ActionProvider {
 
     @Override
     public String[] getSupportedActions() {
+        FileObject destDirFO = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        if (destDirFO != null) {
+            FileObject groovyBuild = destDirFO.getFileObject("groovy-build.xml"); // NOI18N
+            if (groovyBuild == null) {
+                supportedActions.remove(COMMAND_TEST);
+            } else {
+                if (!supportedActions.containsKey(COMMAND_TEST)) {
+                    supportedActions.put(COMMAND_TEST, new GroovyAntAction(new String[] {"test"}, true)); // NOI18N
+                }
+            }
+        } else {
+            supportedActions.remove(COMMAND_TEST);
+        }
         return supportedActions.keySet().toArray(new String[0]);
     }
 
