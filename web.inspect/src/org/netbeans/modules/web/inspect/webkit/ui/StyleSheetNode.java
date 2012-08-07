@@ -49,6 +49,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.OpenResourceAction;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
@@ -195,8 +196,14 @@ public class StyleSheetNode extends AbstractNode {
          * returns {@code false} otherwise.
          */
         private boolean includeKey(Rule rule) {
+            boolean include = true;
             String pattern = filter.getPattern();
-            return (pattern == null) || rule.getSelector().startsWith(pattern);
+            if (pattern != null) {
+                pattern = CSSUtils.normalizeSelector(pattern);
+                String selector = CSSUtils.normalizeSelector(rule.getSelector());
+                include = (selector.indexOf(pattern) != -1);
+            }
+            return include;
         }
 
         @Override
