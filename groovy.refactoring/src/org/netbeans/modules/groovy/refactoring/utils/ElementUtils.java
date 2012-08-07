@@ -50,13 +50,16 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,6 +86,8 @@ public final class ElementUtils {
             return ElementKind.METHOD;
         } else if ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression)) {
             return ElementKind.METHOD;
+        } else if (node instanceof ConstructorCallExpression) {
+            return ElementKind.CONSTRUCTOR;
         } else if (node instanceof FieldNode) {
             return ElementKind.FIELD;
         } else if (node instanceof PropertyNode) {
@@ -136,6 +141,8 @@ public final class ElementUtils {
             } else {
                 return declaration.getVariableExpression().getType();
             }
+        } else if (node instanceof ConstructorCallExpression) {
+            return ((ConstructorCallExpression) node).getType();
         }
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!"); // NOI18N
     }
@@ -170,6 +177,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstantExpression) {
             name = ((ConstantExpression) node).getText();
+        } else if (node instanceof ConstructorCallExpression) {
+            name = ((ConstructorCallExpression) node).getType().getNameWithoutPackage();
         }
 
 
@@ -205,6 +214,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstantExpression) {
             return ((ConstantExpression) node).getDeclaringClass();
+        } else if (node instanceof ConstructorCallExpression) {
+            return ((ConstructorCallExpression) node).getType();
         }
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + " isn't handled at the moment!"); // NOI18N
     }
