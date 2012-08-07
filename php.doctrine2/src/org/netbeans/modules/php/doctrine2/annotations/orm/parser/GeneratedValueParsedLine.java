@@ -39,42 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.annotation;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.Collections;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LinkParsedLine implements AnnotationParsedLine {
-    private final String description;
+public class GeneratedValueParsedLine extends BaseParsedLine {
 
-    public LinkParsedLine(final String description) {
-        this.description = description;
+    public GeneratedValueParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
     @Override
     public String getName() {
-        return LinkLineParser.ANNOTATION_NAME;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return Collections.EMPTY_MAP;
-    }
-
-    @Override
-    public boolean startsWithAnnotation() {
-        return true;
+        return GeneratedValueLineParser.ANNOTATION_NAME;
     }
 
 }

@@ -85,4 +85,9 @@ public class UnknownAnnotationLine implements AnnotationParsedLine {
         return Collections.EMPTY_MAP;
     }
 
+    @Override
+    public boolean startsWithAnnotation() {
+        return true;
+    }
+
 }

@@ -39,42 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.annotation;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LinkParsedLine implements AnnotationParsedLine {
-    private final String description;
+class TableLineParser implements AnnotationLineParser {
 
-    public LinkParsedLine(final String description) {
-        this.description = description;
+    static final String ANNOTATION_NAME = "Table"; //NOI18N
+
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
+    static {
+        INLINE_ANNOTATIONS.add("Index"); //NOI18N
+        INLINE_ANNOTATIONS.add("UniqueConstraint"); //NOI18N
     }
 
     @Override
-    public String getName() {
-        return LinkLineParser.ANNOTATION_NAME;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return Collections.EMPTY_MAP;
-    }
-
-    @Override
-    public boolean startsWithAnnotation() {
-        return true;
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            types.putAll(AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS));
+            result = new TableParsedLine(description, types);
+        }
+        return result;
     }
 
 }

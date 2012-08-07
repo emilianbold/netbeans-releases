@@ -39,42 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.parser.annotation;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
 import java.util.Collections;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LinkParsedLine implements AnnotationParsedLine {
-    private final String description;
+public class TableParsedLineTest extends NbTestCase {
 
-    public LinkParsedLine(final String description) {
-        this.description = description;
+    public TableParsedLineTest(String name) {
+        super(name);
     }
 
-    @Override
-    public String getName() {
-        return LinkLineParser.ANNOTATION_NAME;
+    public void testNonNullDescription() throws Exception {
+        try {
+            new TableParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (AssertionError ex) {
+        }
     }
 
-    @Override
-    public String getDescription() {
-        return description;
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new TableParsedLine("", null);
+            fail();
+        } catch (AssertionError ex) {
+        }
     }
 
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return Collections.EMPTY_MAP;
-    }
-
-    @Override
-    public boolean startsWithAnnotation() {
-        return true;
+    public void testCorrectName() throws Exception {
+        TableParsedLine parsedLine = new TableParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(TableLineParser.ANNOTATION_NAME, parsedLine.getName());
     }
 
 }

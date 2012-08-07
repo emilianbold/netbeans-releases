@@ -77,4 +77,9 @@ public class SeeParsedLine implements AnnotationParsedLine {
         return new HashMap<OffsetRange, String>(types);
     }
 
+    @Override
+    public boolean startsWithAnnotation() {
+        return true;
+    }
+
 }

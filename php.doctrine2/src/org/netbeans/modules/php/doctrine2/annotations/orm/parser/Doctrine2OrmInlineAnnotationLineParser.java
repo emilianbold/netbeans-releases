@@ -39,69 +39,66 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.openide.util.Parameters;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AnnotationUtils {
+public class Doctrine2OrmInlineAnnotationLineParser implements AnnotationLineParser {
 
-    private static final Pattern PARAM_TYPE_PATTERN = Pattern.compile("=\\s*\\\"\\s*([\\w\\\\]+)\\s*\\\""); //NOI18N
+    private static final AnnotationLineParser INSTANCE = new Doctrine2OrmInlineAnnotationLineParser();
 
-    private static final Pattern INLINE_TYPE_PATTERN = Pattern.compile("@([\\w\\\\]+)"); //NOI18N
-
-    private AnnotationUtils() {
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
+    static {
+        INLINE_ANNOTATIONS.add("Index"); //NOI18N
+        INLINE_ANNOTATIONS.add("UniqueConstraint"); //NOI18N
+        INLINE_ANNOTATIONS.add("JoinColumn"); //NOI18N
     }
 
-    public static boolean isTypeAnnotation(final String lineToCheck, final String annotationName) {
-        Parameters.notNull("lineToCheck", lineToCheck); //NOI18N
-        Parameters.notNull("annotationName", annotationName); //NOI18N
-        return lineToCheck.toLowerCase().matches("\\\\?(\\w+\\\\)*" + annotationName.toLowerCase() + "\\s*"); //NOI18N
+    private Doctrine2OrmInlineAnnotationLineParser() {
     }
 
-    public static Map<OffsetRange, String> extractTypesFromParameters(final String line) {
-        Parameters.notNull("line", line); //NOI18N
-        final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
-        final Matcher matcher = PARAM_TYPE_PATTERN.matcher(line);
-        while (matcher.find()) {
-            result.put(new OffsetRange(matcher.start(1), matcher.end(1)), matcher.group(1));
+    @AnnotationLineParser.Registration(position=501)
+    public static AnnotationLineParser getDefault() {
+        return INSTANCE;
+    }
+
+    @Override
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        final Map<OffsetRange, String> extractInlineTypes = AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS);
+        if (!extractInlineTypes.isEmpty()) {
+            result = new InlineAnnotationParsedLine(line.trim(), extractInlineTypes);
         }
         return result;
     }
 
-    public static Map<OffsetRange, String> extractInlineAnnotations(final String line, final Set<String> expectedTypes) {
-        Parameters.notNull("line", line); //NOI18N
-        Parameters.notNull("expectedTypes", expectedTypes); //NOI18N
-        final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
-        final Matcher matcher = INLINE_TYPE_PATTERN.matcher(line);
-        while (matcher.find()) {
-            if (isExpectedType(matcher.group(1), expectedTypes)) {
-                result.put(new OffsetRange(matcher.start(1), matcher.end(1)), matcher.group(1));
-            }
-        }
-        return result;
-    }
+    private class InlineAnnotationParsedLine extends BaseParsedLine {
 
-    private static boolean isExpectedType(final String typeName, final Set<String> expectedTypes) {
-        Parameters.notNull("typeName", typeName); //NOI18N
-        Parameters.notNull("expectedTypes", expectedTypes); //NOI18N
-        boolean result = false;
-        for (String annotation : expectedTypes) {
-            if (typeName.toLowerCase().endsWith(annotation.toLowerCase())) {
-                result = true;
-                break;
-            }
+        public InlineAnnotationParsedLine(String description, Map<OffsetRange, String> types) {
+            super(description, types);
         }
-        return result;
+
+        @Override
+        public String getName() {
+            return "";
+        }
+
+        @Override
+        public boolean startsWithAnnotation() {
+            return false;
+        }
+
     }
 
 }
