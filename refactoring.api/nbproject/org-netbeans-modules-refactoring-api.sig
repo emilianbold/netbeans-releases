@@ -1,10 +1,15 @@
 #Signature file v4.1
-#Version 1.19
+#Version 1.26.1
 
 CLSS public abstract interface java.io.Serializable
 
 CLSS public abstract interface java.lang.Comparable<%0 extends java.lang.Object>
 meth public abstract int compareTo({java.lang.Comparable%0})
+
+CLSS public abstract interface !annotation java.lang.Deprecated
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+intf java.lang.annotation.Annotation
 
 CLSS public abstract java.lang.Enum<%0 extends java.lang.Enum<{java.lang.Enum%0}>>
 cons protected init(java.lang.String,int)
@@ -36,6 +41,32 @@ meth public final void wait(long) throws java.lang.InterruptedException
 meth public final void wait(long,int) throws java.lang.InterruptedException
 meth public int hashCode()
 meth public java.lang.String toString()
+
+CLSS public abstract interface java.lang.annotation.Annotation
+meth public abstract boolean equals(java.lang.Object)
+meth public abstract int hashCode()
+meth public abstract java.lang.Class<? extends java.lang.annotation.Annotation> annotationType()
+meth public abstract java.lang.String toString()
+
+CLSS public abstract interface !annotation java.lang.annotation.Documented
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation java.lang.annotation.Retention
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.RetentionPolicy value()
+
+CLSS public abstract interface !annotation java.lang.annotation.Target
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract java.lang.annotation.ElementType[] value()
 
 CLSS public abstract interface java.util.EventListener
 
@@ -81,8 +112,20 @@ meth public <%0 extends java.lang.Object> org.openide.util.Lookup$Result<{%%0}> 
 meth public <%0 extends java.lang.Object> {%%0} lookup(java.lang.Class<{%%0}>)
 meth public void add(java.lang.Object)
  anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void remove(java.lang.Class<?>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 supr org.openide.util.Lookup
 hfds delegate,instanceContent
+
+CLSS public final org.netbeans.modules.refactoring.api.CopyRefactoring
+cons public init(org.openide.util.Lookup)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public org.openide.util.Lookup getTarget()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public void setTarget(org.openide.util.Lookup)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr org.netbeans.modules.refactoring.api.AbstractRefactoring
+hfds target
 
 CLSS public final org.netbeans.modules.refactoring.api.MoveRefactoring
 cons public init(org.openide.util.Lookup)
@@ -191,7 +234,7 @@ meth public void addProgressListener(org.netbeans.modules.refactoring.api.Progre
 meth public void removeProgressListener(org.netbeans.modules.refactoring.api.ProgressListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds bag,description,internalList,progressSupport,realcommit,refactoringElements,undoManager
+hfds bag,description,finished,internalList,prepareStarted,progressSupport,realcommit,refactoringElements,undoManager
 hcls ElementsCollection
 
 CLSS public final org.netbeans.modules.refactoring.api.RenameRefactoring
@@ -282,6 +325,7 @@ meth public static org.openide.util.ContextAwareAction whereUsedAction()
 supr java.lang.Object
 
 CLSS public abstract org.netbeans.modules.refactoring.spi.BackupFacility
+ anno 0 java.lang.Deprecated()
 innr public abstract interface static Handle
 meth public abstract !varargs org.netbeans.modules.refactoring.spi.BackupFacility$Handle backup(org.openide.filesystems.FileObject[]) throws java.io.IOException
 meth public abstract void clear()
@@ -300,6 +344,12 @@ meth public abstract org.netbeans.modules.refactoring.api.Problem handleChange(o
 
 CLSS public abstract interface org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory
 meth public abstract org.netbeans.modules.refactoring.spi.GuardedBlockHandler createInstance(org.netbeans.modules.refactoring.api.AbstractRefactoring)
+
+CLSS public abstract interface org.netbeans.modules.refactoring.spi.ModificationResult
+meth public abstract java.lang.String getResultingSource(org.openide.filesystems.FileObject) throws java.io.IOException
+meth public abstract java.util.Collection<? extends java.io.File> getNewFiles()
+meth public abstract java.util.Collection<? extends org.openide.filesystems.FileObject> getModifiedFileObjects()
+meth public abstract void commit() throws java.io.IOException
 
 CLSS public org.netbeans.modules.refactoring.spi.ProblemDetailsFactory
 meth public static org.netbeans.modules.refactoring.api.ProblemDetails createProblemDetails(org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation)
@@ -327,6 +377,14 @@ hfds progressSupport
 
 CLSS public abstract interface org.netbeans.modules.refactoring.spi.ReadOnlyFilesHandler
 meth public abstract org.netbeans.modules.refactoring.api.Problem createProblem(org.netbeans.modules.refactoring.api.RefactoringSession,java.util.Collection)
+
+CLSS public final org.netbeans.modules.refactoring.spi.RefactoringCommit
+cons public init(java.util.Collection<? extends org.netbeans.modules.refactoring.spi.ModificationResult>)
+intf org.netbeans.modules.refactoring.spi.Transaction
+meth public void commit()
+meth public void rollback()
+supr java.lang.Object
+hfds LOG,commited,ids,newFilesStored,results
 
 CLSS public abstract interface org.netbeans.modules.refactoring.spi.RefactoringElementImplementation
 fld public final static int GUARDED = 2
