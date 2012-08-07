@@ -414,6 +414,9 @@ public class JsFormatter implements Formatter {
                                             // FIXME continuation, initialIndent and level - check it is ok
                                             int indentationSize = initialIndent
                                                     + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                                            if (isContinuation(lastWrap.getToken(), true)) {
+                                                indentationSize += continuationIndent;
+                                            }
                                             formatContext.indentLineWithOffsetDiff(
                                                     lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
                                                     indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
