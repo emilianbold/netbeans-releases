@@ -142,6 +142,9 @@ public final class ElementUtils {
             name = ((ClassNode) node).getNameWithoutPackage();
         } else if (node instanceof MethodNode) {
             name = ((MethodNode) node).getName();
+            if ("<init>".equals(name)) { // NOI18N
+                name = getDeclaringClassNameWithoutPackage(node);
+            }
         } else if (node instanceof FieldNode) {
             name = ((FieldNode) node).getName();
         } else if (node instanceof PropertyNode) {

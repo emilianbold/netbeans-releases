@@ -45,8 +45,10 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import javax.lang.model.element.ExecutableElement;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -86,9 +88,16 @@ public class Methods {
 
     public static boolean isSameMethod(MethodNode methodNode1, MethodNode methodNode2) {
         if (methodNode1.getName().equals(methodNode2.getName())) {
-            // not comparing parameter types for now, only their count
-            // is it even possible to make some check for parameter types?
-            if (methodNode1.getParameters().length == methodNode2.getParameters().length) {
+            Parameter[] params1 = methodNode1.getParameters();
+            Parameter[] params2 = methodNode2.getParameters();
+            if (params1.length == params2.length) {
+                for (int i = 0; i < params1.length; i++) {
+                    ClassNode type1 = params1[i].getType();
+                    ClassNode type2 = params2[i].getType();
+                    if (!type1.equals(type2)) {
+                        return false;
+                    }
+                }
                 return true;
             }
         }

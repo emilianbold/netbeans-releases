@@ -45,11 +45,12 @@
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
 import java.io.File;
+import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 
 /**
  *
@@ -93,12 +94,13 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
         npb.setExecutable(path);
         npb.setArguments(getVersionFlags());
         npb.redirectError();
-
         try {
-            ExitStatus result = ProcessUtils.execute(npb);
-            String data = result.output.trim().concat(result.error.trim());
-            int br = data.indexOf('\n');
-            version = br < 0 ? data : data.substring(0, br).trim();
+            NativeProcess p = npb.call();
+            p.getOutputStream().close();
+            final List<String> processOutput = ProcessUtils.readProcessOutput(p);
+            if (processOutput != null && processOutput.size() > 0) {
+                version = processOutput.get(0);
+            }
         } catch (Exception ex) {
             // silently drop
         }
