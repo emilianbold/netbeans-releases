@@ -84,6 +84,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.WatchpointEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.WatchpointRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 import org.openide.util.Exceptions;
 
 import org.openide.util.NbBundle;
@@ -107,6 +108,16 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     
     @Override
     protected void setRequests () {
+        ClassNames classNames = getClassFilter().filterClassNames(
+                new ClassNames(
+                    new String[] {
+                        breakpoint.getClassName()
+                    },
+                    new String [0]),
+                breakpoint);
+        String[] names = classNames.getClassNames();
+        String[] excludedNames = classNames.getExcludedClassNames();
+        
         boolean access = (breakpoint.getBreakpointType () & 
                           FieldBreakpoint.TYPE_ACCESS) != 0;
         try {
@@ -123,11 +134,13 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
                 return ;
             }
             setClassRequests (
-                new String[] {breakpoint.getClassName ()},
-                new String[0],
+                names,
+                excludedNames,
                 ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
             );
-            checkLoadedClasses (breakpoint.getClassName (), null);
+            for (String cn : names) {
+                checkLoadedClasses (cn, excludedNames);
+            }
         } catch (InternalExceptionWrapper e) {
         } catch (VMDisconnectedExceptionWrapper e) {
         }

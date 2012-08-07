@@ -110,6 +110,7 @@ import org.netbeans.modules.debugger.jpda.jdi.event.LocatableEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.BreakpointRequestWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
+import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -267,14 +268,23 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             return ;
         }
         logger.fine("LineBreakpoint "+breakpoint+" - setting request for "+className);
+        ClassNames classNames = getClassFilter().filterClassNames(
+                new ClassNames(
+                    new String[] {
+                        className // The class name is correct even for inner classes now
+                    },
+                    new String [0]),
+                breakpoint);
+        String[] names = classNames.getClassNames();
+        String[] excludedNames = classNames.getExcludedClassNames();
         setClassRequests (
-            new String[] {
-                className // The class name is correct even for inner classes now
-            }, 
-            new String [0],
+            names,
+            excludedNames,
             ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED
         );
-        checkLoadedClasses (className, null);
+        for (String cn : names) {
+            checkLoadedClasses (cn, excludedNames);
+        }
     }
 
     private void setInvalid(String reason) {
