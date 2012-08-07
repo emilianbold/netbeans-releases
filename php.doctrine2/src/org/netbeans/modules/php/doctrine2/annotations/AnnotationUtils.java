@@ -77,7 +77,7 @@ public class AnnotationUtils {
         return result;
     }
 
-    public static Map<? extends OffsetRange, ? extends String> extractInlineTypes(final String line) {
+    public static Map<OffsetRange, String> extractInlineTypes(final String line) {
         Parameters.notNull("line", line); //NOI18N
         final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
         final Matcher matcher = INLINE_TYPE_PATTERN.matcher(line);
