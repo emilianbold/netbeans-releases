@@ -85,4 +85,8 @@ public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("GeneratedValue"));
     }
 
+    public void testHasLifecycleCallbacksParser() {
+        assertNotNull(parser.parse("HasLifecycleCallbacks"));
+    }
+
 }

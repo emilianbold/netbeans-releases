@@ -41,48 +41,23 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
+public class HasLifecycleCallbacksParsedLine extends BaseParsedLine {
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OrmAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
-    static {
-        PARSERS.add(new ColumnLineParser());
-        PARSERS.add(new ChangeTrackingPolicyLineParser());
-        PARSERS.add(new DiscriminatorColumnLineParser());
-        PARSERS.add(new DiscriminatorMapLineParser());
-        PARSERS.add(new EntityLineParser());
-        PARSERS.add(new GeneratedValueLineParser());
-        PARSERS.add(new HasLifecycleCallbacksLineParser());
-    }
-
-    private Doctrine2OrmAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=500)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+    public HasLifecycleCallbacksParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
     @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
-                break;
-            }
-        }
-        return result;
+    public String getName() {
+        return HasLifecycleCallbacksLineParser.ANNOTATION_NAME;
     }
 
 }
