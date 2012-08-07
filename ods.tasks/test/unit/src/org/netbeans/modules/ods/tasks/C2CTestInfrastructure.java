@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.c2c.tasks.nb;
+package org.netbeans.modules.ods.tasks;
 
 /** Methods to support test execution on own or proprietary connector.
  *
@@ -48,4 +48,8 @@ package org.netbeans.modules.c2c.tasks.nb;
 public abstract class C2CTestInfrastructure {
     /** @return the URL for the repository that is initialized for the test */
     protected abstract String initializeRepository();
+
+    /** Describe how the next query to the server will look like.
+     */
+    protected abstract void expectQuery(String url, Appendable response, String reply);
 }

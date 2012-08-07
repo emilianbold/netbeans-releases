@@ -39,31 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.c2c.tasks.nb;
+package org.netbeans.modules.ods.tasks;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLStreamHandlerFactory;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
-import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
-import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.util.Lookup;
 
@@ -75,10 +60,11 @@ public class C2CTestBase extends NbTestCase {
     protected final AbstractRepositoryConnector rc;
     protected final TaskRepository repository;
     private final String url;
+    private final C2CTestInfrastructure infra;
     
     public C2CTestBase(String n) {
         super(n);
-        C2CTestInfrastructure infra = Lookup.getDefault().lookup(C2CTestInfrastructure.class);
+        infra = Lookup.getDefault().lookup(C2CTestInfrastructure.class);
         assertNotNull("An implementation of the C2CTestInfrastructure must be present", infra);
         url = infra.initializeRepository();
         rc = C2CExtender.create();
@@ -86,6 +72,10 @@ public class C2CTestBase extends NbTestCase {
         C2CExtender.assignTaskRepositoryLocationFactory(rc, new TaskRepositoryLocationFactory());
     }
 
+    protected final void expectQuery(String url, Appendable response, String reply) {
+        infra.expectQuery(url, response, reply);
+    }
+    
     protected final AbstractRepositoryConnector repositoryConnector() {
         return rc;
     }

@@ -61,13 +61,13 @@ import org.openide.util.URLStreamHandlerRegistration;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@URLStreamHandlerRegistration(protocol="http")
+@URLStreamHandlerRegistration(protocol="test")
 public final class TSHandler extends URLStreamHandler {
     private static String assertURL;
     private static Appendable assertRequest;
     private static String assertResponse;
     
-    public static synchronized void expectQuery(
+    static synchronized void expectQuery(
         String url, Appendable request, String response
     ) {
         Assert.assertNotNull("Expected url can't be null", url);

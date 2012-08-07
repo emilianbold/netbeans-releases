@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.c2c.tasks.nb;
+package org.netbeans.modules.ods.tasks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +76,7 @@ public class QueryTst extends C2CTestBase {
         String serverRequest = "{\"querySpec\":" + "{\"sortInfo\":null," + "\"thin\":true," + "\"region\":{" + "\"size\":50," + "\"offset\":0" + "}" + "}," + "\"criteria\":{" + "\"@class\":\".NaryCriteria\"," + "\"subCriteria\":[" + "{" + "\"@class\":\".ColumnCriteria\"," + "\"columnValue\":\"test\"," + "\"columnName\":\"description\"," + "\"operator\":\"STRING_CONTAINS\"" + "},{" + "\"@class\":\".ColumnCriteria\"," + "\"columnValue\":\"test\"," + "\"columnName\":\"summary\"," + "\"operator\":\"STRING_CONTAINS\"" + "},{" + "\"@class\":\".NaryCriteria\"," + "\"subCriteria\":[" + "{" + "\"@class\":\".ColumnCriteria\"," + "\"columnValue\":\"Defect\"," + "\"columnName\":\"tasktype\"," + "\"operator\":\"STRING_CONTAINS\"" + "},{" + "\"@class\":\".ColumnCriteria\"," + "\"columnValue\":\"Feature\"," + "\"columnName\":\"tasktype\"," + "\"operator\":\"STRING_CONTAINS\"" + "}" + "]," + "\"operator\":\"OR\"" + "}" + "]," + "\"operator\":\"AND\"" + "}" + "}";
         String serverReply = "{\"queryResult\":{\"offset\":0,\"pageSize\":50,\"totalResultSize\":1," + "\"resultPage\":[{\"priority\":{\"active\":false,\"value\":" + "\"Normal\",\"sortkey\":300,\"id\":3},\"status\":{\"open\":true," + "\"active\":true,\"value\":\"UNCONFIRMED\",\"sortkey\":100,\"id\":1}," + "\"description\":\"test feature\",\"reporter\":{" + "\"loginName\":\"tstupka\",\"realname\":\"Tomas Stupka\",\"gravatarHash\":" + "\"eb3b1d3818c31fd5b61a9e58da70f685\",\"id\":2},\"component\":{\"name\":" + "\"Default\",\"description\":\"default component\",\"initialOwner\":{" + "\"loginName\":\"ovrabec\",\"realname\":\"Ondrej Vrabec\"," + "\"gravatarHash\":\"063a55b94edfbc51aab5d9b8b3316207\",\"id\":1},\"id\":1}," + "\"creationDate\":1339668370000,\"shortDescription\":\"this is a test feature\"," + "\"modificationDate\":1339668370000,\"url\":\"https://q.tasktop.com/alm/#projects/anagramgame/task/15\"," + "\"product\":{\"name\":\"Default\",\"description\":\"default product\",\"isActive\":true,\"id\":1}," + "\"remainingTime\":0.00,\"taskType\":\"Feature\",\"externalTaskRelations\":[]," + "\"commits\":[],\"severity\":{\"value\":\"normal\",\"sortkey\":400,\"id\":4}," + "\"resolution\":{\"value\":\"\",\"sortkey\":100,\"id\":1}," + "\"milestone\":{\"product\":{\"id\":1},\"value\":\"---\",\"sortkey\":0,\"id\":1}," + "\"assignee\":{\"loginName\":\"ovrabec\",\"realname\":\"Ondrej Vrabec\",\"gravatarHash\":" + "\"063a55b94edfbc51aab5d9b8b3316207\",\"id\":1},\"comments\":[],\"customFields\":{" + "\"cf1\":null},\"iteration\":{\"value\":\"---\"},\"keywords\":[],\"watchers\":[],\"workLogs\":[]," + "\"wikiRenderedDescription\":\"<p>test feature</p>\",\"sumOfSubtasksEstimatedTime\":0," + "\"sumOfSubtasksTimeSpent\":0,\"version\":\"1339668370000\",\"id\":15}]}}";
         StringBuilder sb = new StringBuilder();
-        TSHandler.expectQuery(repositoryURL() + "/findTasksWithCriteria", sb, serverReply);
+        expectQuery(repositoryURL() + "/findTasksWithCriteria", sb, serverReply);
         IStatus status = rc.performQuery(repository, query, collector, null, new NullProgressMonitor());
         assertEquals("Status is OK", status.getCode(), IStatus.OK);
         assertJSON("The server query is as expected", serverRequest, sb.toString());
