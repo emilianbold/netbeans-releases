@@ -53,10 +53,10 @@ import org.netbeans.api.annotations.common.NonNull;
  */
 public final class FormatToken {
 
-    private static final Set<Kind> BEFORE_MARKERS = EnumSet.noneOf(Kind.class);
+    private static final Set<Kind> SPACE_BEFORE_MARKERS = EnumSet.noneOf(Kind.class);
 
     static {
-        Collections.addAll(BEFORE_MARKERS, Kind.BEFORE_BINARY_OPERATOR,
+        Collections.addAll(SPACE_BEFORE_MARKERS, Kind.BEFORE_BINARY_OPERATOR,
                 Kind.BEFORE_ASSIGNMENT_OPERATOR, Kind.BEFORE_COMMA,
                 Kind.BEFORE_WHILE_KEYWORD, Kind.BEFORE_ELSE_KEYWORD,
                 Kind.BEFORE_CATCH_KEYWORD, Kind.BEFORE_FINALLY_KEYWORD,
@@ -130,8 +130,8 @@ public final class FormatToken {
         return offset < 0;
     }
 
-    public boolean isBeforeMarker() {
-        return BEFORE_MARKERS.contains(kind);
+    public boolean isSpaceBeforeMarker() {
+        return SPACE_BEFORE_MARKERS.contains(kind);
     }
 
     public boolean isIndentationMarker() {
@@ -172,6 +172,7 @@ public final class FormatToken {
         AFTER_CASE,
 
         AFTER_VAR_DECLARATION,
+        BEFORE_FUNCTION_DECLARATION_PARAMETER,
         
         AFTER_BLOCK_START,
         ELSE_IF_AFTER_BLOCK_START,
