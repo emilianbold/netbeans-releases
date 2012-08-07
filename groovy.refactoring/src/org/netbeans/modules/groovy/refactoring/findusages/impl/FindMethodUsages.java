@@ -99,6 +99,17 @@ public class FindMethodUsages extends AbstractFindUsages {
         }
 
         @Override
+        public void visitConstructorCallExpression(ConstructorCallExpression constructorCall) {
+            String typeName = constructorCall.getType().getNameWithoutPackage();
+
+            if (findingMethod.equals(typeName)) {
+                usages.add(constructorCall);
+            }
+
+            super.visitConstructorCallExpression(constructorCall);
+        }
+
+        @Override
         public void visitMethodCallExpression(MethodCallExpression methodCall) {
             Expression expression = methodCall.getObjectExpression();
 
@@ -158,17 +169,6 @@ public class FindMethodUsages extends AbstractFindUsages {
             if (type.hasPossibleMethod(findingMethod, arguments)) {
                 usages.add(methodCall);
             }
-        }
-
-        @Override
-        public void visitConstructorCallExpression(ConstructorCallExpression constructorCall) {
-            String typeName = constructorCall.getType().getNameWithoutPackage();
-
-            if (findingMethod.equals(typeName)) {
-                usages.add(constructorCall);
-            }
-
-            super.visitConstructorCallExpression(constructorCall);
         }
     }
 }
