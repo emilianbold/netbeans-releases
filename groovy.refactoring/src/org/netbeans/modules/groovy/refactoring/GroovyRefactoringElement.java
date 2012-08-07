@@ -58,9 +58,9 @@ public class GroovyRefactoringElement extends ASTElement {
     private final ElementKind refactoringKind;
 
     
-    public GroovyRefactoringElement(GroovyParserResult info, ModuleNode root, ASTNode node, FileObject fileObject, ElementKind kind) {
+    public GroovyRefactoringElement(GroovyParserResult info, ASTNode node, FileObject fo, ElementKind kind) {
         super(info, node);
-        this.fileObject = fileObject;
+        this.fileObject = fo;
         this.refactoringKind = kind;
     }
 
