@@ -52,14 +52,12 @@ import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.openide.filesystems.FileObject;
 
 /**
