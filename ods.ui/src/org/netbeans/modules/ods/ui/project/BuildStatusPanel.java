@@ -53,6 +53,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.ods.api.ODSProject;
+import org.netbeans.modules.ods.ui.api.CloudUiServer;
 import org.netbeans.modules.team.ui.spi.BuildAccessor;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -66,14 +67,12 @@ import org.openide.util.RequestProcessor;
 public class BuildStatusPanel extends javax.swing.JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(BuildStatusPanel.class);
-    private final BuildAccessor<ODSProject> buildAccessor;
     private final ProjectHandle<ODSProject> projectHandle;
 
     /**
      * Creates new form BuildStatusPanel
      */
-    public BuildStatusPanel(BuildAccessor<ODSProject> buildAccessor, ProjectHandle<ODSProject> projectHandle) {
-        this.buildAccessor = buildAccessor;
+    public BuildStatusPanel(ProjectHandle<ODSProject> projectHandle) {
         this.projectHandle = projectHandle;
         initComponents();
         loadBuildStatuses();
@@ -87,6 +86,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         lblError = new javax.swing.JLabel();
         lblEmptyContent = new javax.swing.JLabel();
@@ -131,7 +131,12 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         jLabel1.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(102, 102, 102));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(BuildStatusPanel.class, "BuildStatusPanel.jLabel1.text")); // NOI18N
-        pnlStatuses.add(jLabel1, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(100, 0, 0, 0);
+        pnlStatuses.add(jLabel1, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -161,6 +166,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
+                BuildAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
                 final List<BuildHandle> builds = buildAccessor.getBuilds(projectHandle);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
