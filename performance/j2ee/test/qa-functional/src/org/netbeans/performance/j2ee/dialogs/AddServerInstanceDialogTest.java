@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,85 +42,74 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.performance.j2se.dialogs;
+package org.netbeans.performance.j2ee.dialogs;
 
-import org.netbeans.jellytools.DocumentsDialogOperator;
-import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.RuntimeTabOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.j2se.setup.J2SESetup;
+import org.netbeans.performance.j2ee.setup.J2EEBaseSetup;
 
 /**
- * Test of Documents dialog
+ * Test of Add Server Instance dialog
  *
- * @author  anebuzelsky@netbeans.org, mmirilovic@netbeans.org
+ * @author  cyhelsky@netbeans.org
  */
-public class DocumentsDialogTest extends PerformanceTestCase {
+public class AddServerInstanceDialogTest extends PerformanceTestCase {
 
-    private static EditorOperator editor;
+    private String MENU, TITLE;
+    private Node thenode;
 
-    /** Creates a new instance of DocumentsDialog */
-    public DocumentsDialogTest(String testName) {
+    /** Creates a new instance of AddServerInstanceDialog */
+    public AddServerInstanceDialogTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
     }
     
-    /** Creates a new instance of DocumentsDialog */
-    public DocumentsDialogTest(String testName, String performanceDataName) {
+    /** Creates a new instance of AddServerInstanceDialog */
+    public AddServerInstanceDialogTest(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
     }
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.createConfiguration(J2SESetup.class)
-                .addTest(DocumentsDialogTest.class)
-                .enableModules(".*").clusters("ide|java|apisupport").suite());
+        suite.addTest(NbModuleSuite.createConfiguration(J2EEBaseSetup.class)
+                .addTest(AddServerInstanceDialogTest.class)
+                .enableModules(".*").clusters("enterprise|webcommon|websvccommon").suite());
         return suite;
     }
 
-    public void testDocumentsDialog() {
+    public void testAddServerInstanceDialog() {
         doMeasurement();
     }
-    
+            
     @Override
-    public void initialize(){
-        CommonUtilities.openFiles("PerformanceTestFoldersData", getTenSelectedFiles());
-        CommonUtilities.waitProjectTasksFinished();
+    public void initialize() {
+        MENU = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); //"Add Server..."
+        TITLE = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title"); //"Add Server Instance"
+        
+        String path = Bundle.getStringTrimmed("org.netbeans.modules.server.ui.manager.Bundle", "ACSN_ServerList"); //"Servers"
+        JMenuBarOperator jmbo = new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar());
+        jmbo.pushMenu("window"); //NOI18N
+        jmbo.closeSubmenus();
+        jmbo.pushMenuNoBlock("window|&Services"); //NOI18N
+        thenode = new Node (RuntimeTabOperator.invoke().getRootNode(), path);
+        thenode.select();
     }
     
     public void prepare() {
-        editor = new EditorOperator("OptionsTest.java");
-   }
+    }
     
     public ComponentOperator open() {
-        editor.pushKey(java.awt.event.KeyEvent.VK_F4, java.awt.event.KeyEvent.SHIFT_MASK);
-        return new DocumentsDialogOperator();
+        thenode.callPopup().pushMenu(MENU);
+        return new NbDialogOperator(TITLE);
     }
 
-    @Override
-    public void shutdown(){
-        EditorOperator.closeDiscardAll();
-    }
-    
-    private static String[][] getTenSelectedFiles(){
-        String[][] files_path = {
-            {"folders.javaFolder100","AboutDialogTest.java"},
-            {"folders.javaFolder100","AttachDialogTest.java"},
-            {"folders.javaFolder100","CreateTestsDialogTest.java"},
-            {"folders.javaFolder100","DeleteFileDialogTest.java"},
-            {"folders.javaFolder100","FilesWindowTest.java"},
-            {"folders.javaFolder50","ServerManagerTest.java"},
-            {"folders.javaFolder50","RuntimeWindowTest.java"},
-            {"folders.javaFolder50","PluginManagerTest.java"},
-            {"folders.javaFolder50","OptionsTest.java"},
-            {"folders.javaFolder50","ProfilerWindowsTest.java"},
-            {"folders.javaFolder50","NewFileDialogTest.java"}
-        };
-        return files_path;
-    }
-    
 }
