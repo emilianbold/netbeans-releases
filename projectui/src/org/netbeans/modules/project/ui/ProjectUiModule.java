@@ -47,6 +47,7 @@ package org.netbeans.modules.project.ui;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.project.ui.problems.BrokenProjectNotifier;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 
@@ -56,12 +57,15 @@ import org.openide.modules.ModuleInstall;
  */
 public class ProjectUiModule extends ModuleInstall {
 
+    @Override
     public void restored() {
         if (!GraphicsEnvironment.isHeadless()) {
             Hacks.keepCurrentProjectNameUpdated();
         }
+        BrokenProjectNotifier.getInstnace().start();
     }
 
+    @Override
     public void close() {
         OpenProjectList.shutdown();
         // Just in case something was modified outside the usual customizer dialog:
@@ -70,6 +74,7 @@ public class ProjectUiModule extends ModuleInstall {
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
+        BrokenProjectNotifier.getInstnace().stop();
     }
     
 }
