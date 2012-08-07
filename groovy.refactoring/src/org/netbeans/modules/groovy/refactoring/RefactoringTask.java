@@ -125,7 +125,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, fileObject, caret);;
             ElementKind kind = ElementUtils.getKind(path, fileObject, doc, caret);
 
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, (ModuleNode) root, findingNode, fileObject, kind);
+            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, findingNode, fileObject, kind);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, start, end, parserResult);
             }
@@ -166,7 +166,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
                 return;
             }
             
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, (ModuleNode) root, root, fileObject, ElementKind.CLASS);
+            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, root, fileObject, ElementKind.CLASS);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, parserResult);
             }

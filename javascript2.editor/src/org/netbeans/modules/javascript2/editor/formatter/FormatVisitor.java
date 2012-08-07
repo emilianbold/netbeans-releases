@@ -291,6 +291,18 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
+                // place function parameters marks
+                for (IdentNode param : functionNode.getParameters()) {
+                    FormatToken ident = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
+                    if (ident != null) {
+                        FormatToken beforeIdent = ident.previous();
+                        if (beforeIdent != null) {
+                            appendToken(beforeIdent,
+                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));
+                        }
+                    }
+                }
+
                 if (functionNode.isStatement()) {
                     FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
                             JsTokenId.BRACKET_RIGHT_CURLY, leftBrace.getOffset());

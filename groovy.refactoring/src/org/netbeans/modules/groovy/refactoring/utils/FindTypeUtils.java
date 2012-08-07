@@ -49,6 +49,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -124,6 +125,8 @@ public class FindTypeUtils {
             } else {
                 return AstUtilities.getOwningClass(path);
             }
+        } else if (leaf instanceof ConstructorCallExpression) {
+            return leaf;
         }
 
         ClassNode currentType = ElementUtils.getType(leaf);

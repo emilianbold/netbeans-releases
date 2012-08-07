@@ -42,6 +42,9 @@
 package org.netbeans.modules.groovy.refactoring;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
@@ -58,9 +61,9 @@ public class GroovyRefactoringElement extends ASTElement {
     private final ElementKind refactoringKind;
 
     
-    public GroovyRefactoringElement(GroovyParserResult info, ModuleNode root, ASTNode node, FileObject fileObject, ElementKind kind) {
+    public GroovyRefactoringElement(GroovyParserResult info, ASTNode node, FileObject fo, ElementKind kind) {
         super(info, node);
-        this.fileObject = fileObject;
+        this.fileObject = fo;
         this.refactoringKind = kind;
     }
 
@@ -110,31 +113,61 @@ public class GroovyRefactoringElement extends ASTElement {
     @Override
     public String getSignature() {
         if (node instanceof MethodNode) {
-            MethodNode method = ((MethodNode) node);
-            StringBuilder builder = new StringBuilder(super.getSignature());
-            Parameter[] params = method.getParameters();
+            return getMethodSignature(((MethodNode) node));
+        } else if (node instanceof ConstructorCallExpression) {
+            return getConstructorSignature(((ConstructorCallExpression) node));
+        }
+        return super.getSignature();
+    }
 
-            builder.append("("); // NOI18N
-            if (params.length > 0) {
-                for (Parameter param : params) {
-                    builder.append(ElementUtils.getType(param.getType()).getNameWithoutPackage());
+    private String getMethodSignature(MethodNode method) {
+        StringBuilder builder = new StringBuilder(super.getSignature());
+        Parameter[] params = method.getParameters();
+
+        builder.append("("); // NOI18N
+        if (params.length > 0) {
+            for (Parameter param : params) {
+                builder.append(ElementUtils.getType(param.getType()).getNameWithoutPackage());
+                builder.append(" "); // NOI18N
+                builder.append(param.getName());
+                builder.append(","); // NOI18N
+            }
+            builder.setLength(builder.length() - 1);
+        }
+        builder.append(")"); // NOI18N
+
+        // No return type for constructors
+        if (!"<init>".equals(method.getName())) { // NOI18N
+            String returnType = method.getReturnType().getNameWithoutPackage();
+            builder.append(" : "); // NOI18N
+            builder.append(returnType);
+        }
+
+        return builder.toString();
+    }
+
+    private String getConstructorSignature(ConstructorCallExpression constructorCall) {
+        StringBuilder builder = new StringBuilder();
+        ClassNode type = constructorCall.getType();
+        Expression arguments = constructorCall.getArguments();
+
+        builder.append(type.getNameWithoutPackage());
+        builder.append("("); // NOI18N
+
+        if (arguments instanceof ArgumentListExpression) {
+            ArgumentListExpression argumentList = ((ArgumentListExpression) arguments);
+            if (argumentList.getExpressions().size() > 0) {
+                for (Expression argument : argumentList.getExpressions()) {
+                    builder.append(ElementUtils.getTypeNameWithoutPackage(argument.getType()));
                     builder.append(" "); // NOI18N
-                    builder.append(param.getName());
+                    builder.append(argument.getText());
                     builder.append(","); // NOI18N
                 }
                 builder.setLength(builder.length() - 1);
             }
-            builder.append(")"); // NOI18N
-
-            // No return type for constructors
-            if (!"<init>".equals(method.getName())) { // NOI18N
-                String returnType = method.getReturnType().getNameWithoutPackage();
-                builder.append(" : "); // NOI18N
-                builder.append(returnType);
-            }
-            
-            return builder.toString();
         }
-        return super.getSignature();
+        builder.append(")"); // NOI18N
+
+        return builder.toString();
     }
 }

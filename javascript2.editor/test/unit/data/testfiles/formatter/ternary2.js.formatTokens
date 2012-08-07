@@ -7,10 +7,12 @@ FormattingToken{kind=TEXT, offset=2, text=function}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=10, text=(}
 FormattingToken{kind=AFTER_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=11, text=a}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=12, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=13, text=c}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=14, text=)}
