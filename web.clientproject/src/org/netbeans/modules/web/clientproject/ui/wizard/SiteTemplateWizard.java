@@ -289,26 +289,6 @@ public class SiteTemplateWizard extends JPanel {
         }
     }
 
-    @NbBundle.Messages({
-        "# {0} - template name",
-        "SiteTemplateWizard.error.applying=Cannot apply template \"{0}\"..."
-    })
-    public void apply(final FileObject p, final ProgressHandle handle) {
-        assert !EventQueue.isDispatchThread();
-        final String templateName;
-        synchronized (siteTemplateLock) {
-            templateName = siteTemplate.getName();
-        }
-        try {
-            synchronized (siteTemplateLock) {
-                siteTemplate.apply(p, handle);
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.INFO, null, ex);
-            errorOccured(Bundle.SiteTemplateWizard_error_applying(templateName));
-        }
-    }
-
     void errorOccured(String message) {
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
@@ -317,9 +297,9 @@ public class SiteTemplateWizard extends JPanel {
         changeSupport.fireChange();
     }
 
-    Collection<String> getSupportedLibraries() {
+    public SiteTemplateImplementation getSiteTemplate() {
         synchronized (siteTemplateLock) {
-            return siteTemplate.supportedLibraries();
+            return siteTemplate;
         }
     }
 

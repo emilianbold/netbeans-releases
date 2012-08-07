@@ -253,6 +253,14 @@ public class JavaScriptLibrarySelection extends JPanel {
         return Bundle.JavaScriptLibrarySelection_name();
     }
 
+    public List<SelectedLibrary> getSelectedLibraries() {
+        return selectedLibraries;
+    }
+
+    public String getLibrariesFolder() {
+        return librariesFolder;
+    }
+
     public void addChangeListener(ChangeListener listener) {
         changeSupport.addChangeListener(listener);
     }
@@ -829,7 +837,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     }
 
-    private static final class LibraryVersion {
+    public static final class LibraryVersion {
 
         private final Library library;
         private final String type;
@@ -887,7 +895,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     }
 
-    private static final class SelectedLibrary {
+    public static final class SelectedLibrary {
 
         private final String filename;
         private final LibraryVersion libraryVersion;
