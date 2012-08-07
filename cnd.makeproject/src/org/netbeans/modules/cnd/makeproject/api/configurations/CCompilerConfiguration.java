@@ -248,16 +248,20 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration implements 
     public String getPreprocessorOptions(CompilerSet cs) {
         CCompilerConfiguration master = (CCompilerConfiguration)getMaster();
         OptionToString visitor = new OptionToString(null, getUserMacroFlag(cs));
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().toString(visitor));
-        options.append(' '); // NOI18N
+        List<CCompilerConfiguration> list = new ArrayList<CCompilerConfiguration>();
+        list.add(this);
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().toString(visitor));
-            options.append(' '); // NOI18N
+            list.add(master);
             if (master.getInheritPreprocessor().getValue()) {
                 master = (CCompilerConfiguration) master.getMaster();
             } else {
                 master = null;
             }
+        }
+        StringBuilder options = new StringBuilder();
+        for(int i = list.size() - 1; i >= 0; i--) {
+            options.append(list.get(i).getPreprocessorConfiguration().toString(visitor));
+            options.append(' '); // NOI18N
         }
         return options.toString();
     }
