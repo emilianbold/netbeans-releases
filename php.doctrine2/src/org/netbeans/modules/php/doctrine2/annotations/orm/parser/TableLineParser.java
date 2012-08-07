@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
@@ -56,6 +58,12 @@ class TableLineParser implements AnnotationLineParser {
 
     static final String ANNOTATION_NAME = "Table"; //NOI18N
 
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
+    static {
+        INLINE_ANNOTATIONS.add("Index"); //NOI18N
+        INLINE_ANNOTATIONS.add("UniqueConstraint"); //NOI18N
+    }
+
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
@@ -65,7 +73,7 @@ class TableLineParser implements AnnotationLineParser {
             String description = line.substring(annotation.length()).trim();
             Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
             types.put(new OffsetRange(0, annotation.length()), annotation);
-            types.putAll(AnnotationUtils.extractInlineTypes(line));
+            types.putAll(AnnotationUtils.extractInlineTypes(line, INLINE_ANNOTATIONS));
             result = new TableParsedLine(description, types);
         }
         return result;
