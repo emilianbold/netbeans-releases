@@ -383,9 +383,12 @@ public final class FormatContext {
 
         private final int offsetDiff;
 
-        public LineWrap(FormatToken token, int offsetDiff) {
+        private final int indentationLevel;
+
+        public LineWrap(FormatToken token, int offsetDiff, int indentationLevel) {
             this.token = token;
             this.offsetDiff = offsetDiff;
+            this.indentationLevel = indentationLevel;
         }
 
         public FormatToken getToken() {
@@ -394,6 +397,10 @@ public final class FormatContext {
 
         public int getOffsetDiff() {
             return offsetDiff;
+        }
+
+        public int getIndentationLevel() {
+            return indentationLevel;
         }
     }
 
