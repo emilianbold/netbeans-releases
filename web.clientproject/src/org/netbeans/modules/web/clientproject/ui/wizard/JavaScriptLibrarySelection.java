@@ -126,7 +126,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         initLibrariesFolder();
     }
 
-    @NbBundle.Messages("JavaScriptLibrarySelection.info=<html>Choose a library version and shuttle it to the Selected list to add it to your project. "
+    @NbBundle.Messages("JavaScriptLibrarySelection.info=<html>Choose a library version and shuttle it to the Selected list to add it to your project.<br>"
             + "Libraries added by your template are already selected.")
     private void initInfo() {
         infoLabel.setText(Bundle.JavaScriptLibrarySelection_info());
@@ -429,25 +429,21 @@ public class JavaScriptLibrarySelection extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(infoLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(librariesLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(librariesFilterTextField))
-                            .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                        .addComponent(librariesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(selectAllButton)
-                            .addComponent(selectSelectedButton)
-                            .addComponent(deselectSelectedButton)
-                            .addComponent(deselectAllButton))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                        .addComponent(librariesFilterTextField))
+                    .addComponent(librariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(selectAllButton)
+                    .addComponent(selectSelectedButton)
+                    .addComponent(deselectSelectedButton)
+                    .addComponent(deselectAllButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
                     .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
+            .addComponent(infoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});

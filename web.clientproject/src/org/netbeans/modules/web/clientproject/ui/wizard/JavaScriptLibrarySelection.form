@@ -23,34 +23,27 @@
           </Group>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="infoLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  </Group>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="librariesFilterTextField" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="selectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="selectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="deselectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="deselectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="librariesFilterTextField" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
               </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="selectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="selectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="deselectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="deselectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="selectedLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="selectedLibrariesScrollPane" pref="0" max="32767" attributes="0"/>
               </Group>
           </Group>
+          <Component id="infoLabel" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
