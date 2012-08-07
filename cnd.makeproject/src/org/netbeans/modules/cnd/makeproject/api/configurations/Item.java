@@ -769,7 +769,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             } else {
                 key = macro;
                 value = null;
-                res.put(macro,null);
             }
             if (!res.containsKey(key) || override) {
                 res.put(key, value);
