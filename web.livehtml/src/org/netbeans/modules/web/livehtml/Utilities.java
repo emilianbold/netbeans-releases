@@ -167,6 +167,7 @@ public class Utilities {
     }
 
     private static void fixRemovedRevisions(List<Integer> indexes, Map<Integer, Set<Integer>> source, Map<Integer, Set<Integer>> target) {
+        Set<Integer> indexesToRemove = new HashSet<Integer>();
         for (Map.Entry<Integer, Set<Integer>> entry : target.entrySet()) {
             final Integer key = entry.getKey();
             if (!indexes.contains(key)) {
@@ -176,9 +177,12 @@ public class Utilities {
                     for (Integer value : values) {
                         putRevision(target, indexReplacement, value);
                     }
-                    target.remove(key);
+                    indexesToRemove.add(key);
                 }
             }
+        }
+        for (Integer index : indexesToRemove) {
+            target.remove(index);
         }
     }
 
