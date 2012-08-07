@@ -105,7 +105,35 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
      * Initializes the tree view.
      */
     private void initTreeView() {
-        treeView = new BeanTreeView();
+        treeView = new BeanTreeView() {
+            @Override
+            public void expandAll() {
+                // The original expandAll() doesn't work for us as it doesn't
+                // seem to wait for the calculation of sub-nodes.
+                Node root = manager.getRootContext();
+                expandAll(root);
+                // The view attempts to scroll to the expanded node
+                // and it does it with a delay. Hence, simple calls like
+                // tree.scrollRowToVisible(0) have no effect (are overriden
+                // later) => the dummy collapse and expansion attempts
+                // to work around that and keep the root node visible.
+                collapseNode(root);
+                expandNode(root);
+            }
+            /**
+             * Expands the whole sub-tree under the specified node.
+             *
+             * @param node root node of the sub-tree that should be expanded.
+             */
+            private void expandAll(Node node) {
+                treeView.expandNode(node);
+                for (Node subNode : node.getChildren().getNodes(true)) {
+                    if (!subNode.isLeaf()) {
+                        expandAll(subNode);
+                    }
+                }
+            }
+        };
         treeView.setAllowedDragActions(DnDConstants.ACTION_NONE);
         treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
         treeView.setRootVisible(false);
@@ -194,6 +222,7 @@ public class CSSStylesDocumentPanel extends JPanel implements ExplorerManager.Pr
                             new Action[] { new RefreshAction() });
                 }
                 manager.setRootContext(root);
+                treeView.expandAll();
             }
         });
     }
