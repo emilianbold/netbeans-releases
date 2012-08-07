@@ -56,6 +56,8 @@ public class AnnotationUtils {
 
     private static final Pattern PARAM_TYPE_PATTERN = Pattern.compile("=\\s*\\\"\\s*([\\w\\\\]+)\\s*\\\""); //NOI18N
 
+    private static final Pattern INLINE_TYPE_PATTERN = Pattern.compile("@([\\w\\\\]+)"); //NOI18N
+
     private AnnotationUtils() {
     }
 
@@ -69,6 +71,16 @@ public class AnnotationUtils {
         Parameters.notNull("line", line); //NOI18N
         final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
         final Matcher matcher = PARAM_TYPE_PATTERN.matcher(line);
+        while (matcher.find()) {
+            result.put(new OffsetRange(matcher.start(1), matcher.end(1)), matcher.group(1));
+        }
+        return result;
+    }
+
+    public static Map<? extends OffsetRange, ? extends String> extractInlineTypes(final String line) {
+        Parameters.notNull("line", line); //NOI18N
+        final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
+        final Matcher matcher = INLINE_TYPE_PATTERN.matcher(line);
         while (matcher.find()) {
             result.put(new OffsetRange(matcher.start(1), matcher.end(1)), matcher.group(1));
         }

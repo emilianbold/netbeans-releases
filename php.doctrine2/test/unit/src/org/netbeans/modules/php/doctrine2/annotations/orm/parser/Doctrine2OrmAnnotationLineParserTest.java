@@ -89,4 +89,8 @@ public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("HasLifecycleCallbacks"));
     }
 
+    public void testTableParser() {
+        assertNotNull(parser.parse("Table"));
+    }
+
 }
