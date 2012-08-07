@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectPanel;
+import org.netbeans.modules.web.clientproject.ui.SourcesPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -54,24 +55,49 @@ import org.openide.util.Lookup;
  */
 public class ClientSideProjectPanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
+    private enum Mode { Sources, Run};
+    private Mode mode;
+
+    public ClientSideProjectPanelProvider(Mode mode) {
+        this.mode = mode;
+    }
+    
     @Override
     public Category createCategory(Lookup context) {
+        if (mode == Mode.Run) {
             return ProjectCustomizer.Category.create(
                     "buildConfig",
                     "Run",
                     null);
+        } else {
+            return ProjectCustomizer.Category.create(
+                    "sources",
+                    "Sources",
+                    null);
+        }
     }
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        return new ClientSideProjectPanel((ClientSideProject)context.lookup(Project.class));
+        if (mode == Mode.Run) {
+            return new ClientSideProjectPanel((ClientSideProject)context.lookup(Project.class));
+        } else {
+            return new SourcesPanel(category, (ClientSideProject)context.lookup(Project.class));
+        }
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
             position = 100)
     public static ClientSideProjectPanelProvider createRunConfigs() {
-        return new ClientSideProjectPanelProvider();
+        return new ClientSideProjectPanelProvider(Mode.Run);
     }
+    
+//    @ XXXX ProjectCustomizer.CompositeCategoryProvider.Registration(
+//            projectType = ClientSideProjectType.TYPE,
+//            position = 77)
+//    public static ClientSideProjectPanelProvider createSources() {
+//        return new ClientSideProjectPanelProvider(Mode.Sources);
+//    }
     
 }
