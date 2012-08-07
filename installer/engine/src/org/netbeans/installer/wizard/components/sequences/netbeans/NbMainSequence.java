@@ -399,8 +399,14 @@ public class NbMainSequence extends WizardSequence {
         if (toInstall.size() > 0) {
             addChild(downloadInstallationDataAction);
             addChild(installAction);
-            Product nbBase = toInstall.get(0);
-            if ("nb-base".equals(nbBase.getUid())) { // NOI18N
+            Product nbBase = null;
+            for (Product p : toInstall) {
+                if ("nb-base".equals(p.getUid())) { // NOI18N
+                    nbBase = p;
+                    break;
+                }
+            }
+            if (nbBase != null) {
                 PopulateCacheAction pupolateCacheAction = new PopulateCacheAction(nbBase);
                 addChild(pupolateCacheAction);
                 pupolateCacheAction.setProperty(InstallAction.TITLE_PROPERTY, DEFAULT_IA_TITLE);
