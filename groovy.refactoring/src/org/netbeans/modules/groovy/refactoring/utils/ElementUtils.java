@@ -76,8 +76,12 @@ public final class ElementUtils {
             (node instanceof ClassExpression) ||
             FindTypeUtils.isCaretOnClassNode(path, doc, fo, caret)) {
             return ElementKind.CLASS;
-        } else if ((node instanceof MethodNode) ||
-                  ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression))) {
+        } else if ((node instanceof MethodNode)) {
+            if ("<init>".equals(((MethodNode) node).getName())) { // NOI18N
+                return ElementKind.CONSTRUCTOR;
+            }
+            return ElementKind.METHOD;
+        } else if ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression)) {
             return ElementKind.METHOD;
         } else if (node instanceof FieldNode) {
             return ElementKind.FIELD;
