@@ -76,7 +76,6 @@ public class NbExtenderTest extends NbTestCase {
     private AbstractRepositoryConnector rc;
     private TaskRepository repository;
     private Client client;
-    private ByteArrayOutputStream out;
     
     static {
         URLStreamHandlerFactory f = Lookup.getDefault().lookup(URLStreamHandlerFactory.class);
@@ -94,8 +93,6 @@ public class NbExtenderTest extends NbTestCase {
         repository = new TaskRepository(rc.getConnectorKind(), "test://q.tasktop.com/alm/s/anagramgame/tasks");
         C2CExtender.assignTaskRepositoryLocationFactory(rc, new TaskRepositoryLocationFactory());
 
-        out = new ByteArrayOutputStream();
-        
         ClientConfig cc = new DefaultClientConfig();
         client = Client.create(cc);
     }
