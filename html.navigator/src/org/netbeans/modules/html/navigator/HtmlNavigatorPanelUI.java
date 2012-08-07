@@ -160,7 +160,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             //we need to explicitly call pageModelDocumentChanged() since
             //no change event from PageModel will come and we need to refresh
             //the nodes dom status
-            pageModelDocumentChanged();
+            pageModelNotAvailable();
 
         } else {
             //new model
@@ -189,6 +189,16 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
         refreshNodeDOMStatus();
     }
+    
+    private void pageModelNotAvailable() {
+        refreshInspectedFile();
+        
+        //refresh DOM status
+        HtmlElementNode root = getRootNode();
+        if (root != null) {
+            root.setDescription(Description.EMPTY_DOM_DESCRIPTION);
+        }
+    }
 
     private void refreshInspectedFile() {
         //try to find corresponding FileObject for the inspected document
@@ -211,7 +221,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (inspectedFileObject == null) {
             LOGGER.log(Level.INFO, "inspectedFileObject set to null");
             setStatusText("No Inspected File");
-            stateLabel.setText("No File");
+            stateLabel.setText("No Inspected File");
         } else {
             LOGGER.log(Level.INFO, "inspectedFileObject set to {0}", inspectedFileObject.getPath());
             setStatusText("Inspecting " + inspectedFileObject.getNameExt());
@@ -238,7 +248,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         LOGGER.info("refreshNodeDOMStatus()");
         HtmlElementNode root = getRootNode();
         if (root != null) {
-            root.refreshDOMStatus();
+            
+            WebKitNodeDescription domDescription = new WebKitNodeDescription(Utils.getWebKitNode(pageModel.getDocumentNode()));
+            root.setDescription(domDescription);
+            
             LOGGER.info("root.refreshDOMStatus() called");
         }
     }
@@ -343,7 +356,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 @Override
                 public void run() {
                     long startTime = System.currentTimeMillis();
-                    rootNode.updateRecursively(description);
+                    rootNode.setDescription(description);
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Merge",
                             new Object[]{fileObject, endTime - startTime});
@@ -359,7 +372,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 public void run() {
                     view.setRootVisible(false);
                     view.setAutoWaitCursor(false);
-                    manager.setRootContext(new HtmlElementNode(description, HtmlNavigatorPanelUI.this, fileObject));
+                    
+                    HtmlElementNode root = new HtmlElementNode(description, HtmlNavigatorPanelUI.this, fileObject);
+                    manager.setRootContext(root);
+                    
                     LOGGER.info("refresh() - new file, set new explorer root node");
 
                     int expandDepth = -1;

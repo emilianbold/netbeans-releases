@@ -61,7 +61,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
-public class HtmlElementDescription extends  Description {
+public class HtmlElementDescription extends SourceDescription {
 
     private final String elementPath;
     private final Map<String, String> attributes;
@@ -77,7 +77,7 @@ public class HtmlElementDescription extends  Description {
         this.type = element.type();
         this.from = element.from();
         
-        this.elementPath = ElementUtils.encodeToString(new TreePath(element));
+        this.elementPath = encodeToString(new TreePath(element));
         
         //acceptable, not 100% correct - may say it is not leaf, but then there 
         //won't be children if all children are virtual with no non-virtual ancestors
@@ -107,6 +107,44 @@ public class HtmlElementDescription extends  Description {
         this.name = openTag != null ? openTag.name().toString() : null;
         
     }
+    
+    private static final char ELEMENT_PATH_ELEMENTS_DELIMITER = '/';
+    private static final char ELEMENT_PATH_INDEX_DELIMITER = '|';
+    
+    private static String encodeToString(TreePath treePath) {
+        StringBuilder sb = new StringBuilder();
+        List<Element> p = treePath.path();
+        for(int i = p.size() - 2; i >= 0; i-- ) { //do not include the root element
+            Element node = p.get(i);
+            Node parent = node.parent();
+            int myIndex = parent == null ? 0 : getIndexInSimilarNodes(node.parent(), node);
+            sb.append(node.id());
+//            if(myIndex > 0) {
+//                sb.append(ELEMENT_PATH_INDEX_DELIMITER);
+//                sb.append(myIndex);
+//            }
+            
+            if(i > 0) {
+                sb.append(ELEMENT_PATH_ELEMENTS_DELIMITER);
+            }
+        }
+        return sb.toString();
+    }
+    
+    private static int getIndexInSimilarNodes(Node parent, Element node) {
+        int index = -1;
+        for(Element child : parent.children()) {
+            if(node.id().equals(child.id()) && node.type() == child.type()) {
+                index++;
+            }
+            if(child == node) {
+                break;
+            }
+        }
+        return index;
+    }
+
+    
 
     @Override
     public int hashCode() {
@@ -135,27 +173,15 @@ public class HtmlElementDescription extends  Description {
     }
     
     @Override
-    public int getType() {
-        return STATIC_NODE;
-    }
-
-    @Override
     public String getElementPath() {
         return elementPath;
     }
     
-    public String getIdAttr() {
-        return attributes.get("id");
-    }
-
-    public String getClassAttr() {
-        return attributes.get("class");
-    }
-
     public FileObject getFileObject() {
         return file;
     }
     
+    @Override
     public String getName() {
         return name;
     }
@@ -168,10 +194,12 @@ public class HtmlElementDescription extends  Description {
         return type;
     }
 
+    @Override
     public int getFrom() {
         return from;
     }
 
+    @Override
     public int getTo() {
         return to;
     }
@@ -231,6 +259,7 @@ public class HtmlElementDescription extends  Description {
 
     }
 
+    @Override
     public synchronized List<HtmlElementDescription> getChildren() {
         if (children == null) {
             //lazy load the nested items

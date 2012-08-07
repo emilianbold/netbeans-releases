@@ -55,7 +55,7 @@ import org.openide.util.Parameters;
  *
  * @author marekfukala
  */
-public class WebKitNodeDescription extends Description {
+public class WebKitNodeDescription extends DOMNodeDescription {
 
     private Node webKitNode;
     private final String elementPath;
@@ -118,6 +118,7 @@ public class WebKitNodeDescription extends Description {
     }
     
     
+    @Override
     public String getName() {
         return Utils.getWebKitNodeName(webKitNode);
     }
@@ -132,6 +133,7 @@ public class WebKitNodeDescription extends Description {
         return attributes;
     }
 
+    @Override
     public Collection<WebKitNodeDescription> getChildren() {
         List<Node> wkChildren = webKitNode.getChildren();
         if(wkChildren == null || wkChildren.isEmpty()) {
@@ -139,14 +141,19 @@ public class WebKitNodeDescription extends Description {
         }
         Collection<WebKitNodeDescription> children = new ArrayList<WebKitNodeDescription>();
         for (Node child : wkChildren) {
-            children.add(new WebKitNodeDescription(child));
+            switch(child.getNodeType()) {
+                case org.w3c.dom.Node.ELEMENT_NODE:
+                case org.w3c.dom.Node.DOCUMENT_NODE:
+                    children.add(new WebKitNodeDescription(child));
+                    break;
+            }
         }
         return children;
     }
 
     @Override
     public int getType() {
-        return DYNAMIC_NODE;
+        return DOM;
     }
 
     public static class WebKitNodeTreePath {
@@ -210,10 +217,10 @@ public class WebKitNodeDescription extends Description {
                 Node parent = node.getParent();
                 int myIndex = parent == null ? 0 : getIndexInSimilarNodes(node.getParent(), node);
                 sb.append(getNodeId(node));
-                if (myIndex > 0) {
-                    sb.append(ELEMENT_PATH_INDEX_DELIMITER);
-                    sb.append(myIndex);
-                }
+//                if (myIndex > 0) {
+//                    sb.append(ELEMENT_PATH_INDEX_DELIMITER);
+//                    sb.append(myIndex);
+//                }
 
                 if (i > 0) {
                     sb.append(ELEMENT_PATH_ELEMENTS_DELIMITER);

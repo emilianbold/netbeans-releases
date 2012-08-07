@@ -41,24 +41,49 @@
  */
 package org.netbeans.modules.html.navigator;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.openide.nodes.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 
 /**
  *
  * @author marekfukala
  */
 public abstract class Description {
+    
+    public static Description empty(int type) {
+        switch(type) {
+            case SOURCE:
+                return EMPTY_SOURCE_DESCRIPTION;
+            case DOM:
+                return EMPTY_DOM_DESCRIPTION;
+            default:
+                throw new IllegalStateException();
+        }
+    }
+    
+    public static Description EMPTY_SOURCE_DESCRIPTION = new EmptySourceDescription();
+    
+    public static Description EMPTY_DOM_DESCRIPTION = new EmptyDOMNodeDescription();
+    
+    public static final int SOURCE = 1;
+    public static final int DOM = 2;
 
-    public static final int STATIC_NODE = 1;
-    public static final int DYNAMIC_NODE = 2;
-
+    public abstract Collection<? extends Description> getChildren();
+    
+    public abstract String getName();
+    
     public abstract int getType();
 
     protected abstract String getElementPath();
 
     protected abstract Map<String, String> getAttributes();
+    
+    public final String getAttributeValue(String attributeName) {
+        return getAttributes().get(attributeName);
+    }
 
     protected final int getAttributesHash() {
         int hash = 11;
@@ -103,4 +128,69 @@ public abstract class Description {
                 .append(getAttributesHash())
                 .toString();
     }
+    
+    
+    private final static class EmptySourceDescription extends SourceDescription {
+
+        @Override
+        public Collection<? extends Description> getChildren() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        protected String getElementPath() {
+            return "";
+        }
+
+        @Override
+        protected Map<String, String> getAttributes() {
+            return Collections.emptyMap();
+        }
+
+        public ElementType getElementType() {
+            return ElementType.ERROR;
+        }
+
+        @Override
+        public int getFrom() {
+            return 0;
+        }
+
+        @Override
+        public int getTo() {
+            return 0;
+        }
+        
+    }
+    
+    private final static class EmptyDOMNodeDescription extends DOMNodeDescription {
+
+        @Override
+        public Collection<? extends Description> getChildren() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        protected String getElementPath() {
+            return "";
+        }
+
+        @Override
+        protected Map<String, String> getAttributes() {
+            return Collections.emptyMap();
+        }
+        
+    }
+    
+        
 }
