@@ -65,7 +65,7 @@ import static org.openide.util.NbBundle.getMessage;
  * @author Tomas Kraus, Peter Benedikovic
  */
 public class GlassFishCloudInstance extends GlassFishCloudEntity
-        implements ServerInstanceImplementation {
+        implements GlassFishInstance {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //

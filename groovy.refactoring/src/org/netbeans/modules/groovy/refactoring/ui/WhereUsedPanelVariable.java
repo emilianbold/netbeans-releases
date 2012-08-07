@@ -65,7 +65,7 @@ public class WhereUsedPanelVariable extends WhereUsedPanel.WhereUsedInnerPanel {
             @Override
             public void run() {
                 Dimension preferredSize = label.getPreferredSize();
-                label.setText(element.getName() + " : " + element.getType()); // NOI18N
+                label.setText(element.getName() + " : " + element.getTypeName()); // NOI18N
                 label.setIcon(UiUtils.getElementIcon(element.getKind(), element.getModifiers()));
                 label.setPreferredSize(preferredSize);
                 label.setMinimumSize(preferredSize);

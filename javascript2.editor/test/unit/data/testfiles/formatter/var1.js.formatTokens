@@ -39,7 +39,8 @@ FormattingToken{kind=WHITESPACE, offset=35, text= }
 FormattingToken{kind=TEXT, offset=36, text=1}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=37, text=,}
-FormattingToken{kind=VAR_AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_VAR_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=38, text= }
 FormattingToken{kind=TEXT, offset=39, text=z}
 FormattingToken{kind=WHITESPACE, offset=40, text= }
@@ -66,7 +67,8 @@ FormattingToken{kind=WHITESPACE, offset=64, text= }
 FormattingToken{kind=TEXT, offset=65, text=}}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=66, text=,}
-FormattingToken{kind=VAR_AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=AFTER_VAR_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=67, text= }
 FormattingToken{kind=TEXT, offset=68, text=c}
 FormattingToken{kind=WHITESPACE, offset=69, text= }

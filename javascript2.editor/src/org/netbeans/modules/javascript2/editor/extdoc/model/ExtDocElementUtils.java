@@ -83,7 +83,7 @@ public class ExtDocElementUtils {
                 return ExtDocTypeDescribedElement.create(elementType, descInfo.getType(), descInfo.getDescription());
             case TYPE_NAMED:
                 TypeInformation namedInfo = parseTypeInformation(elementType, elementText, elementTextStartOffset);
-                return ExtDocTypeNamedElement.create(elementType, namedInfo.getType(), namedInfo.getDescription(), namedInfo.getName(), namedInfo.isOptional());
+                return ExtDocTypeNamedElement.create(elementType, namedInfo.getType(), namedInfo.getDescription(), namedInfo.getName(), namedInfo.isOptional(), namedInfo.getDefaultValue());
             default:
                 // unknown extDoc element type
                 return ExtDocDescriptionElement.create(elementType, elementText);
@@ -95,7 +95,7 @@ public class ExtDocElementUtils {
         if (parts.length == 1) {
             return new String[]{parts[0], ""};
         } else {
-            return new String[]{parts[0], elementText.substring(parts[0].length())};
+            return new String[]{parts[0], elementText.substring(parts[0].length()).trim()};
         }
     }
 

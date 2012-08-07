@@ -49,10 +49,16 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ForStatement;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -63,12 +69,23 @@ public final class ElementUtils {
     private ElementUtils() {
     }
 
-    public static ElementKind getKind(ASTNode node) {
+    public static ElementKind getKind(AstPath path, FileObject fo, BaseDocument doc, int caret) {
+        ASTNode node = path.leaf();
+        ASTNode leafParent = path.leafParent();
+
         if ((node instanceof ClassNode) ||
-            (node instanceof ClassExpression)) {
+            (node instanceof ClassExpression) ||
+            FindTypeUtils.isCaretOnClassNode(path, doc, fo, caret)) {
             return ElementKind.CLASS;
-        } else if (node instanceof MethodNode) {
+        } else if ((node instanceof MethodNode)) {
+            if ("<init>".equals(((MethodNode) node).getName())) { // NOI18N
+                return ElementKind.CONSTRUCTOR;
+            }
             return ElementKind.METHOD;
+        } else if ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression)) {
+            return ElementKind.METHOD;
+        } else if (node instanceof ConstructorCallExpression) {
+            return ElementKind.CONSTRUCTOR;
         } else if (node instanceof FieldNode) {
             return ElementKind.FIELD;
         } else if (node instanceof PropertyNode) {
@@ -91,7 +108,8 @@ public final class ElementUtils {
 
     /**
      * Returns type for the given ASTNode. For example if FieldNode is passed
-     * as a parameter, it returns type of the given field etc.
+     * as a parameter, it returns type of the given field etc. If the Method call
+     * is passed as a parameter, the method tried to interfere proper type and return it
      *
      * @param node where we want to know declared type
      * @return type of the given node
@@ -113,7 +131,7 @@ public final class ElementUtils {
         } else if (node instanceof ClassExpression) {
             return ((ClassExpression) node).getType();
         } else if (node instanceof VariableExpression) {
-           return ((VariableExpression) node).getType();
+            return ((VariableExpression) node).getType();
         } else if (node instanceof DeclarationExpression) {
             DeclarationExpression declaration = ((DeclarationExpression) node);
             if (declaration.isMultipleAssignmentDeclaration()) {
@@ -121,6 +139,8 @@ public final class ElementUtils {
             } else {
                 return declaration.getVariableExpression().getType();
             }
+        } else if (node instanceof ConstructorCallExpression) {
+            return ((ConstructorCallExpression) node).getType();
         }
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!"); // NOI18N
     }
@@ -131,6 +151,9 @@ public final class ElementUtils {
             name = ((ClassNode) node).getNameWithoutPackage();
         } else if (node instanceof MethodNode) {
             name = ((MethodNode) node).getName();
+            if ("<init>".equals(name)) { // NOI18N
+                name = getDeclaringClassNameWithoutPackage(node);
+            }
         } else if (node instanceof FieldNode) {
             name = ((FieldNode) node).getName();
         } else if (node instanceof PropertyNode) {
@@ -139,6 +162,8 @@ public final class ElementUtils {
             name = ((Parameter) node).getName();
         } else if (node instanceof ForStatement) {
             name = ((ForStatement) node).getVariableType().getNameWithoutPackage();
+        } else if (node instanceof ClassExpression) {
+            name = ((ClassExpression) node).getType().getNameWithoutPackage();
         } else if (node instanceof VariableExpression) {
             name = ((VariableExpression) node).getName();
         } else if (node instanceof DeclarationExpression) {
@@ -148,9 +173,12 @@ public final class ElementUtils {
             } else {
                 name = declaration.getVariableExpression().getType().getNameWithoutPackage();
             }
-        } else if (node instanceof ClassExpression) {
-            name = ((ClassExpression) node).getType().getNameWithoutPackage();
+        } else if (node instanceof ConstantExpression) {
+            name = ((ConstantExpression) node).getText();
+        } else if (node instanceof ConstructorCallExpression) {
+            name = ((ConstructorCallExpression) node).getType().getNameWithoutPackage();
         }
+
 
         if (name != null) {
             return normalizeTypeName(name, null);
@@ -159,7 +187,7 @@ public final class ElementUtils {
     }
 
     public static ClassNode getDeclaringClass(ASTNode node) {
-         if (node instanceof ClassNode) {
+        if (node instanceof ClassNode) {
             return (ClassNode) node;
         } else if (node instanceof MethodNode) {
             return ((MethodNode) node).getDeclaringClass();
@@ -182,17 +210,28 @@ public final class ElementUtils {
             } else {
                 return declaration.getVariableExpression().getDeclaringClass();
             }
+        } else if (node instanceof ConstantExpression) {
+            return ((ConstantExpression) node).getDeclaringClass();
+        } else if (node instanceof ConstructorCallExpression) {
+            return ((ConstructorCallExpression) node).getType();
         }
         throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + " isn't handled at the moment!"); // NOI18N
     }
 
-    public static String getDeclaratingClassName(ASTNode node) {
+    public static String getDeclaringClassName(ASTNode node) {
+        ClassNode declaringClass = getDeclaringClass(node);
+        if (declaringClass != null) {
+            return declaringClass.getName();
+        }
+        return "Dynamic type!";
+    }
+
+    public static String getDeclaringClassNameWithoutPackage(ASTNode node) {
         ClassNode declaringClass = getDeclaringClass(node);
         if (declaringClass != null) {
             return declaringClass.getNameWithoutPackage();
-        } else {
-            return "Dynamic type!";
         }
+        return "Dynamic type!";
     }
 
     public static String normalizeTypeName(String typeName, ClassNode type) {

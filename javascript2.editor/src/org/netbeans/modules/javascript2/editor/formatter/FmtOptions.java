@@ -207,7 +207,7 @@ public class FmtOptions {
     public static final String groupAlignmentArrayInit = "groupAlignmentArrayInit"; //NOI18N
 
     public static final String wrapStatement = "wrapStatement"; //NOI18N
-    public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
+    public static final String wrapVariables = "wrapVariables"; //NOI18N
     public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
     public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
@@ -379,7 +379,7 @@ public class FmtOptions {
             {groupAlignmentAssignment, FALSE},
 
 	    { wrapStatement, WRAP_ALWAYS}, //NOI18N
-            { wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
+            { wrapVariables, WRAP_NEVER}, //NOI18N
             { wrapMethodParams, WRAP_NEVER}, //NOI18N
             { wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N

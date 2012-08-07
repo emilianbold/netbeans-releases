@@ -43,6 +43,7 @@
 package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import org.codehaus.groovy.ast.ModuleNode;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 
 /**
@@ -58,5 +59,10 @@ public class FindOverridingMethods extends AbstractFindUsages {
     @Override
     protected AbstractFindUsagesVisitor getVisitor(ModuleNode moduleNode, String defClass) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    protected ElementKind getElementKind() {
+        return ElementKind.METHOD;
     }
 }
