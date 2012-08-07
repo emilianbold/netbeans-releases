@@ -86,12 +86,27 @@ public class FindMethodUsages extends AbstractFindUsages {
         }
 
         @Override
-        public void visitMethod(MethodNode node) {
+        protected void visitConstructorOrMethod(MethodNode node, boolean isConstructor) {
             String className = ElementUtils.getDeclaringClassName(node);
-            if (declaringClassName.equals(className) && findingMethod.equals(node.getName())) {
-                usages.add(node);
+            if (declaringClassName.equals(className)) {
+                if (isConstructor) {
+                    usages.add(node);
+                } else if (findingMethod.equals(node.getName())) {
+                    usages.add(node);
+                }
             }
-            super.visitMethod(node);
+            super.visitConstructorOrMethod(node, isConstructor);
+        }
+
+        @Override
+        public void visitConstructorCallExpression(ConstructorCallExpression constructorCall) {
+            String typeName = constructorCall.getType().getNameWithoutPackage();
+
+            if (findingMethod.equals(typeName)) {
+                usages.add(constructorCall);
+            }
+
+            super.visitConstructorCallExpression(constructorCall);
         }
 
         @Override
