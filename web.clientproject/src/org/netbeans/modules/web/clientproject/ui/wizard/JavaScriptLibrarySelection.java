@@ -54,9 +54,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -107,7 +107,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     // selected items are accessed outside of EDT thread
-    final List<SelectedLibrary> selectedLibraries = Collections.synchronizedList(new LinkedList<SelectedLibrary>());
+    final List<SelectedLibrary> selectedLibraries = Collections.synchronizedList(new ArrayList<SelectedLibrary>());
     // @GuardedBy("EDT")
     final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
     // @GuardedBy("EDT")
@@ -286,10 +286,32 @@ public class JavaScriptLibrarySelection extends JPanel {
         selectAllButton.setEnabled(librariesTableModel.getRowCount() > 0);
         selectSelectedButton.setEnabled(librariesTable.getSelectedRows().length > 0);
         // deselect
-        // XXX do not allow to remove files from the selected site template
-        deselectSelectedButton.setEnabled(selectedLibraries.size() > 0 && selectedLibrariesList.getSelectedIndices().length > 0);
-        // XXX do not count files from the selected site template
-        deselectAllButton.setEnabled(selectedLibraries.size() > 0);
+        deselectSelectedButton.setEnabled(canDeselectSelected());
+        deselectAllButton.setEnabled(canDeselectAll());
+    }
+
+    private boolean canDeselectSelected() {
+        if (selectedLibraries.isEmpty()) {
+            return false;
+        }
+        for (int index : selectedLibrariesList.getSelectedIndices()) {
+            if (!selectedLibraries.get(index).isFromTemplate()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean canDeselectAll() {
+        if (selectedLibraries.isEmpty()) {
+            return false;
+        }
+        for (SelectedLibrary library : selectedLibraries) {
+            if (!library.isFromTemplate()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     void selectAllLibraries() {
@@ -316,17 +338,32 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     void deselectAllLibraries() {
         assert EventQueue.isDispatchThread();
-        // XXX keep default files
-        selectedLibraries.clear();
+        Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
+        while (iterator.hasNext()) {
+            if (!iterator.next().isFromTemplate()) {
+                iterator.remove();
+            }
+        }
         selectedLibrariesListModel.fireContentsChanged();
     }
 
     void deselectSelectedLibraries() {
         assert EventQueue.isDispatchThread();
-        // XXX performance
-        for (int i : selectedLibrariesList.getSelectedIndices()) {
-            selectedLibraries.remove(i);
+        // get selected items
+        int[] selectedIndices = selectedLibrariesList.getSelectedIndices();
+        List<SelectedLibrary> selected = new ArrayList<SelectedLibrary>(selectedIndices.length);
+        for (int index : selectedIndices) {
+            SelectedLibrary library = selectedLibraries.get(index);
+            if (!library.isFromTemplate()) {
+                selected.add(library);
+            }
         }
+        // create set and remove selected items
+        Set<SelectedLibrary> set = new HashSet<SelectedLibrary>(selectedLibraries);
+        set.removeAll(selected);
+        // copy them back to set
+        selectedLibraries.clear();
+        selectedLibraries.addAll(set);
         selectedLibrariesListModel.fireContentsChanged();
     }
 
@@ -685,6 +722,12 @@ public class JavaScriptLibrarySelection extends JPanel {
         private static final Comparator<SelectedLibrary> SELECTED_LIBRARIES_COMPARATOR = new Comparator<SelectedLibrary>() {
             @Override
             public int compare(SelectedLibrary library1, SelectedLibrary library2) {
+                if (library1.isFromTemplate() && !library2.isFromTemplate()) {
+                    return -1;
+                }
+                if (!library1.isFromTemplate() && library2.isFromTemplate()) {
+                    return 1;
+                }
                 return library1.getFilename().compareToIgnoreCase(library2.getFilename());
             }
         };
@@ -735,7 +778,11 @@ public class JavaScriptLibrarySelection extends JPanel {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             SelectedLibrary selectedLibrary = (SelectedLibrary) value;
-            return defaultRenderer.getListCellRendererComponent(list, selectedLibrary.getFilename(), index, isSelected, cellHasFocus);
+            Component component = defaultRenderer.getListCellRendererComponent(list, selectedLibrary.getFilename(), index, isSelected, cellHasFocus);
+            if (selectedLibrary.isFromTemplate()) {
+                component.setEnabled(false);
+            }
+            return component;
         }
 
     }
