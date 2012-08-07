@@ -128,6 +128,7 @@ FormattingToken{kind=TEXT, offset=184, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=191, text=(}
 FormattingToken{kind=AFTER_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=192, text=text}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=196, text=)}
@@ -200,6 +201,7 @@ FormattingToken{kind=TEXT, offset=308, text=addSpace}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=316, text=(}
 FormattingToken{kind=AFTER_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=317, text=count}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=322, text=)}
@@ -311,11 +313,13 @@ FormattingToken{kind=TEXT, offset=442, text=Ridic}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=447, text=(}
 FormattingToken{kind=AFTER_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=448, text=name}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=452, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=453, text= }
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=454, text=surname}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=461, text=)}
