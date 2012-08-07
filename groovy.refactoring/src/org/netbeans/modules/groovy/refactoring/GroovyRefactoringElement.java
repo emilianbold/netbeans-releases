@@ -126,9 +126,12 @@ public class GroovyRefactoringElement extends ASTElement {
             }
             builder.append(")"); // NOI18N
 
-            String returnType = method.getReturnType().getNameWithoutPackage();
-            builder.append(" : "); // NOI18N
-            builder.append(returnType);
+            // No return type for constructors
+            if (!"<init>".equals(method.getName())) { // NOI18N
+                String returnType = method.getReturnType().getNameWithoutPackage();
+                builder.append(" : "); // NOI18N
+                builder.append(returnType);
+            }
             
             return builder.toString();
         }
