@@ -60,6 +60,7 @@ public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
         PARSERS.add(new ChangeTrackingPolicyLineParser());
         PARSERS.add(new DiscriminatorColumnLineParser());
         PARSERS.add(new DiscriminatorMapLineParser());
+        PARSERS.add(new EntityLineParser());
     }
 
     private Doctrine2OrmAnnotationLineParser() {

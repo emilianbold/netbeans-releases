@@ -41,44 +41,23 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class EntityParsedLine extends BaseParsedLine {
 
-    public Doctrine2OrmAnnotationLineParserTest(String name) {
-        super(name);
+    public EntityParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Doctrine2OrmAnnotationLineParser.getDefault();
-    }
-
-    public void testColumnParser() {
-        assertNotNull(parser.parse("Column"));
-    }
-
-    public void testChangeTrackingPolicyParser() {
-        assertNotNull(parser.parse("ChangeTrackingPolicy"));
-    }
-
-    public void testDiscriminatorColumnParser() {
-        assertNotNull(parser.parse("DiscriminatorColumn"));
-    }
-
-    public void testDiscriminatorMapParser() {
-        assertNotNull(parser.parse("DiscriminatorMap"));
-    }
-
-    public void testEntityParser() {
-        assertNotNull(parser.parse("Entity"));
+    public String getName() {
+        return EntityLineParser.ANNOTATION_NAME;
     }
 
 }
