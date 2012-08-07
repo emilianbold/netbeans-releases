@@ -77,9 +77,6 @@ import org.netbeans.modules.ods.api.ODSProject;
 import org.netbeans.modules.ods.client.api.ODSFactory;
 import org.netbeans.modules.ods.client.api.ODSClient;
 import org.netbeans.modules.ods.client.api.ODSException;
-import org.netbeans.modules.ods.ui.api.CloudUiServer;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
-import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -95,7 +92,7 @@ import org.openide.util.NbBundle.Messages;
 autostore = false)
 @TopComponent.Description(
     preferredID = "ProjectDetailsTopComponent",
-//iconBase="SET/PATH/TO/ICON/HERE", 
+iconBase="org/netbeans/modules/ods/ui/resources/ods.png",
 persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
 @ActionID(category = "Window", id = "org.netbeans.modules.ods.ui.project.ProjectDetailsTopComponent")
@@ -554,9 +551,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     }
 
     private void loadBuildStatus() {
-        BuildAccessor<ODSProject> buildAccessor = CloudUiServer.forServer(project.getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODSProject.class);
-        List<BuildHandle> builds = buildAccessor.getBuilds(projectHandle);
-        BuildStatusPanel buildStatusPanel = new BuildStatusPanel(buildAccessor, projectHandle);
+        BuildStatusPanel buildStatusPanel = new BuildStatusPanel(projectHandle);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 3, 0, 3);
         gbc.anchor = GridBagConstraints.NORTHWEST;
