@@ -81,8 +81,13 @@ public final class JsDocumentationSupport {
         //        }
         //        System.err.println("SIZE = " + providers.size());
         // XXX - complete caching of documentation tool provider
-        JsDocumentationProvider provider = JsDocumentationResolver.getDefault().getDocumentationProvider(result.getSnapshot());
+        JsDocumentationProvider provider = getDocumentationProvider(result);
         return provider.createDocumentationHolder(result.getSnapshot());
+    }
+
+    public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
+        // XXX - complete caching of documentation tool provider
+        return JsDocumentationResolver.getDefault().getDocumentationProvider(result.getSnapshot());
     }
 
 }

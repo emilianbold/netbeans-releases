@@ -62,6 +62,7 @@ public class CompletionContextFinder {
         EXPRESSION, // usually, we will offer everything what we know in the context
         OBJECT_PROPERTY, // object property that are visible outside the object
         OBJECT_MEMBERS, // usually after this.
+        DOCUMENTATION, // inside documentation blocks
         GLOBAL
     } 
    
@@ -116,6 +117,9 @@ public class CompletionContextFinder {
         }
         if (CHANGE_CONTEXT_TOKENS.contains(token.id())) {
             return CompletionContext.GLOBAL;
+        }
+        if (tokenId == JsTokenId.DOC_COMMENT) {
+            return CompletionContext.DOCUMENTATION;
         }
         return CompletionContext.EXPRESSION;
     }

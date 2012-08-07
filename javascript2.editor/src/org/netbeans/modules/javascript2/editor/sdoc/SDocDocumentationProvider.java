@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
@@ -73,5 +76,10 @@ public class SDocDocumentationProvider implements JsDocumentationProvider {
             supportedTags.remove("contextSensitive");
         }
         return supportedTags;
+    }
+
+    @Override
+    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
+        return Collections.<AnnotationCompletionTagProvider>emptyList();
     }
 }

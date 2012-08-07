@@ -90,10 +90,14 @@ public final class LexUtilities {
         return getTokenSequence(th, offset, JsTokenId.javascriptLanguage());
     }
 
+    public static TokenSequence<? extends JsDocumentationTokenId> getJsDocumentationTokenSequence(TokenHierarchy<?> th, int offset) {
+        return getTokenSequence(th, offset, JsDocumentationTokenId.language());
+    }
+
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
-    public static TokenSequence<? extends JsTokenId> getTokenSequence(TokenHierarchy<?> th,
-            int offset, Language<JsTokenId> language) {
-        TokenSequence<? extends JsTokenId> ts = th.tokenSequence(language);
+    public static <K> TokenSequence<? extends K> getTokenSequence(TokenHierarchy<?> th,
+            int offset, Language<? extends K> language) {
+        TokenSequence<? extends K> ts = th.tokenSequence(language);
 
         if (ts == null) {
             // Possibly an embedding scenario such as an HTML file

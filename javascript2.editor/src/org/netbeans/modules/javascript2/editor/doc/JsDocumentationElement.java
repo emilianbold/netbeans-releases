@@ -39,38 +39,69 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.editor.doc;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Set;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface JsDocumentationProvider {
+public class JsDocumentationElement implements ElementHandle {
 
-    /**
-     * Parses and gets {@code JsDocumentationHolder} with processed documentation comments.
-     *
-     * @param snapshot to be parsed and stored into holder
-     * @return JsDocumentationHolder
-     */
-    JsDocumentationHolder createDocumentationHolder(Snapshot snapshot);
+    private final String name;
+    private final String documentation;
 
-    /**
-     * Gets all tags supported by the documentation tool (like @author, @link, ...)
-     *
-     * @return set of all supported tags
-     */
-    Set<String> getSupportedTags();
+    JsDocumentationElement(String name, String documentation) {
+        this.name = name;
+        this.documentation = documentation;
+    }
 
-    /**
-     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this JS documentation tool.
-     *
-     * @return list of annotations providers, never {@code null}
-     */
-    List<? extends AnnotationCompletionTagProvider> getAnnotationsProvider();
+    @Override
+    public FileObject getFileObject() {
+        return null;
+    }
+
+    @Override
+    public String getMimeType() {
+        return "";
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getIn() {
+        return "";
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.TAG;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return Collections.<Modifier>emptySet();
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return OffsetRange.NONE;
+    }
 
 }
