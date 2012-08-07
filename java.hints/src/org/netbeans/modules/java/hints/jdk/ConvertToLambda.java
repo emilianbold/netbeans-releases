@@ -35,35 +35,25 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  *
- * Contributor(s):
+ * Contributor(s): Lyle Franklin <lylejfranklin@gmail.com>
  *
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.java.hints.errors;
+package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.LambdaExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.matching.Matcher;
-import org.netbeans.api.java.source.matching.Occurrence;
-import org.netbeans.api.java.source.matching.Pattern;
-import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -78,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(displayName="#DN_Javac_canUseLambda", description="#DESC_Javac_canUseLambda", id=ConvertToLambda.ID, category="rules15")
+@Hint(displayName = "#DN_Javac_canUseLambda", description = "#DESC_Javac_canUseLambda", id = ConvertToLambda.ID, category = "rules15")
 public class ConvertToLambda {
 
     public static final String ID = "Javac_canUseLambda";
@@ -91,16 +81,32 @@ public class ConvertToLambda {
         ClassTree clazz = ((NewClassTree) ctx.getPath().getLeaf()).getClassBody();
         long start = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), clazz);
 
-        OUTER: for (Diagnostic<?> d : ctx.getInfo().getDiagnostics()) {
-            if (start != d.getStartPosition()) continue;
-            if (!CODES.contains(d.getCode())) continue;
+        OUTER:
+        for (Diagnostic<?> d : ctx.getInfo().getDiagnostics()) {
+            if (start != d.getStartPosition()) {
+                continue;
+            }
+            if (!CODES.contains(d.getCode())) {
+                continue;
+            }
 
-            List<Fix> fixes = Arrays.asList(new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
+            FixImpl fix = new FixImpl(ctx.getInfo(), ctx.getPath());
 
+            if (cannotBeConverted(ctx.getInfo(), ctx.getPath())) {
+                return null;
+            }
+
+            List<Fix> fixes = Arrays.asList(fix.toEditorFix());
             return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
         }
-
         return null;
+    }
+
+    public static boolean cannotBeConverted(CompilationInfo info, TreePath path) {
+        ConvertToLambdaPreconditionChecker preconditionChecker =
+                new ConvertToLambdaPreconditionChecker(path, info);
+
+        return !preconditionChecker.passesFatalPreconditions();
     }
 
     private static final class FixImpl extends JavaFix {
@@ -109,38 +115,26 @@ public class ConvertToLambda {
             super(info, path);
         }
 
+        @Override
         public String getText() {
             return NbBundle.getMessage(ConvertToLambda.class, "FIX_ConvertToLambda");
         }
 
         @Override
-        protected void performRewrite(TransformationContext ctx) {
+        protected void performRewrite(TransformationContext ctx) throws IOException {
+
             WorkingCopy copy = ctx.getWorkingCopy();
+            copy.toPhase(Phase.RESOLVED);
+
             TreePath tp = ctx.getPath();
-            
+
             if (tp.getLeaf().getKind() != Kind.NEW_CLASS) {
                 //XXX: warning
-                return ;
+                return;
             }
 
-            TreeMaker make = copy.getTreeMaker();
-            TreePath clazz = new TreePath(tp, ((NewClassTree) tp.getLeaf()).getClassBody());
-            MethodTree method = (MethodTree) ((ClassTree) clazz.getLeaf()).getMembers().get(1);
-            Pattern p = PatternCompiler.compile(copy, "{ return $expression; }", Collections.<String, TypeMirror>emptyMap(), Collections.<String>emptyList());
-            Collection<? extends Occurrence> found = Matcher.create(copy).setSearchRoot(new TreePath(new TreePath(clazz, method), method.getBody())).setTreeTopSearch().match(p);
-            Tree lambdaBody;
-
-            if (found.isEmpty()) {
-                lambdaBody = method.getBody();
-            } else {
-                lambdaBody = found.iterator().next().getVariables().get("$expression").getLeaf();
-            }
-
-            LambdaExpressionTree nue = make.LambdaExpression(method.getParameters(), lambdaBody);
-
-            copy.rewrite(tp.getLeaf(), nue);
+            ConvertToLambdaConverter converter = new ConvertToLambdaConverter(tp, copy);
+            converter.performRewrite();
         }
-        
     }
-
 }

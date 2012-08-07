@@ -591,7 +591,7 @@ public class JavaCustomIndexer extends CustomIndexer {
 
     static void setErrors(Context context, CompileTuple active, DiagnosticListenerImpl errors) {
         if (!active.virtual) {
-            Iterable<Diagnostic<? extends JavaFileObject>> filteredErrorsList = Iterators.filter(errors.getDiagnostics(active.jfo), new FilterOutDiamondWarnings());
+            Iterable<Diagnostic<? extends JavaFileObject>> filteredErrorsList = Iterators.filter(errors.getDiagnostics(active.jfo), new FilterOutJDK7AndLaterWarnings());
             ErrorsCache.setErrors(context.getRootURI(), active.indexable, filteredErrorsList, active.aptGenerated ? ERROR_CONVERTOR_NO_BADGE : ERROR_CONVERTOR);
         }
     }
@@ -1141,11 +1141,14 @@ public class JavaCustomIndexer extends CustomIndexer {
         return result;
     }
 
-    private static final Set<String> DIAMOND_KINDS = new HashSet<String>(Arrays.asList("compiler.warn.diamond.redundant.args", "compiler.warn.diamond.redundant.args.1"));
+    private static final Set<String> JDK7AndLaterWarnings = new HashSet<String>(Arrays.asList(
+            "compiler.warn.diamond.redundant.args", 
+            "compiler.warn.diamond.redundant.args.1",
+            "compiler.note.potential.lambda.found"));
 
-    private static class FilterOutDiamondWarnings implements Comparable<Diagnostic<? extends JavaFileObject>> {
+    private static class FilterOutJDK7AndLaterWarnings implements Comparable<Diagnostic<? extends JavaFileObject>> {
         @Override public int compareTo(Diagnostic<? extends JavaFileObject> o) {
-            return DIAMOND_KINDS.contains(o.getCode()) ? 0 : -1;
+            return JDK7AndLaterWarnings.contains(o.getCode()) ? 0 : -1;
         }
     }
     

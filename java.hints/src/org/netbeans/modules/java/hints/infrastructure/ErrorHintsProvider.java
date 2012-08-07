@@ -44,45 +44,34 @@
 
 package org.netbeans.modules.java.hints.infrastructure;
 
-import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.lang.model.element.PackageElement;
-import javax.lang.model.type.TypeKind;
-import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
-import javax.tools.Diagnostic;
-import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.LazyFixList;
-import org.netbeans.spi.editor.hints.Severity;
-import org.openide.ErrorManager;
-import org.openide.loaders.DataObject;
-import org.openide.text.Line;
-import com.sun.source.util.TreePath;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
+import javax.swing.text.StyledDocument;
+import javax.tools.Diagnostic;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
@@ -94,13 +83,23 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint;
-import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
+import org.netbeans.modules.java.hints.jdk.ConvertToLambda;
+import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
+import org.netbeans.spi.editor.hints.LazyFixList;
+import org.netbeans.spi.editor.hints.Severity;
+import org.openide.ErrorManager;
 import org.openide.cookies.LineCookie;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -161,6 +160,10 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             if (ConvertToDiamondBulkHint.CODES.contains(d.getCode())) {
                 if (isJava) continue; //handled separatelly in the hint
                 if (!ConvertToDiamondBulkHint.isHintEnabled()) continue; //disabled
+            }
+            
+            if (ConvertToLambda.CODES.contains(d.getCode())) {
+                continue;
             }
             
             if (isCanceled())

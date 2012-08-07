@@ -1196,4 +1196,42 @@ public class Utilities {
             }
         }
     }
+    
+    public static boolean isVariableShadowedInScope(CharSequence variableName, Scope localScope) {
+        if (localScope == null) {
+            return false;
+        }
+
+        if (areAnyLocalVariablesShadowed(variableName, localScope)) {
+            return true;
+        }
+
+        if (areEnclosingMethodParamsShadowed(variableName, localScope)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean areAnyLocalVariablesShadowed(CharSequence variableName, Scope localScope) {
+        for (Element e : localScope.getLocalElements()) {
+            if (e.getKind() == ElementKind.LOCAL_VARIABLE
+                    && e.getSimpleName().contentEquals(variableName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean areEnclosingMethodParamsShadowed(CharSequence variableName, Scope localScope) {
+        if (localScope.getEnclosingMethod() != null) {
+            ExecutableElement enclMethod = localScope.getEnclosingMethod();
+            for (VariableElement varElement : enclMethod.getParameters()) {
+                if (varElement.getSimpleName().contentEquals(variableName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
