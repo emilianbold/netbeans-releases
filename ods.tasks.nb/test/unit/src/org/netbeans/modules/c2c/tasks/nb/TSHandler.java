@@ -61,7 +61,7 @@ import org.openide.util.URLStreamHandlerRegistration;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@URLStreamHandlerRegistration(protocol="test")
+@URLStreamHandlerRegistration(protocol="http")
 public final class TSHandler extends URLStreamHandler {
     private static String assertURL;
     private static Appendable assertRequest;
