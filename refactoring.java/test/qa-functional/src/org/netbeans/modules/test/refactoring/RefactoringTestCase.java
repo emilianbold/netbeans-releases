@@ -81,11 +81,9 @@ import org.openide.filesystems.FileObject;
 public abstract class RefactoringTestCase extends JellyTestCase {
 
     public static final char treeSeparator = '|';
-    
     /**
-     * The distance from the root of preview tree. Nodes located 
-     * closer to the root then this values will be sorted before dumping 
-     * to ref file
+     * The distance from the root of preview tree. Nodes located closer to the
+     * root then this values will be sorted before dumping to ref file
      */
     public static int sortLevel = 2;
     private PrintStream jemmyError;
@@ -94,22 +92,22 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     public RefactoringTestCase(String name) {
         super(name);
     }
-    
+
     @Override
     public void ref(String text) {
         getRef().print(text);
     }
-    
+
     public void ref(Object o) {
         getRef().println(o);
     }
 
     public void ref(File f) {
-        getRef().println("==>"+f.getName());
+        getRef().println("==>" + f.getName());
         try {
             BufferedReader br = new BufferedReader(new FileReader(f));
             String s = br.readLine();
-            while(s!=null) {
+            while (s != null) {
                 getRef().println(s);
                 s = br.readLine();
             }
@@ -139,7 +137,8 @@ public abstract class RefactoringTestCase extends JellyTestCase {
 
     /**
      * Dumps the tree structure into the ref file. The childs are sorted if they
-     * are closer to root than {@link #sortLevel} 
+     * are closer to root than {@link #sortLevel}
+     *
      * @param model Model of the dumped tree
      * @param parent Current root whose childs are recursively dumped
      * @param level Distance current root - tree root
@@ -153,38 +152,39 @@ public abstract class RefactoringTestCase extends JellyTestCase {
 
         int childs = model.getChildCount(parent);
         ArrayList<Object> al = new ArrayList<Object>(childs);  //storing childs for sorting        
-        
+
         for (int i = 0; i < childs; i++) {
             Object child = model.getChild(parent, i);
             al.add(child);
-        }        
-        if ((level+1) <= sortLevel) {
-            sortChilds(al);
-        }        
-
-        while(!al.isEmpty()) {            
-            Object child = al.remove(0);
-            browseChildren(model, child, level + 1);                    
         }
-        
+        if ((level + 1) <= sortLevel) {
+            sortChilds(al);
+        }
+
+        while (!al.isEmpty()) {
+            Object child = al.remove(0);
+            browseChildren(model, child, level + 1);
+        }
+
     }
 
     /**
      * Opens file in editor.
+     *
      * @param treeSubPackagePathToFile
      * @param fileName
      */
-    protected  void openFile(String treeSubPackagePathToFile, String fileName) {      
+    protected void openFile(String treeSubPackagePathToFile, String fileName) {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         pto.invoke();
         ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
-        prn.select();        
+        prn.select();
         StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, treeSeparator + "");
         String token = "";
         String oldtoken = "";
         if (st.countTokens() > 1) {
             token = st.nextToken();
-            
+
             String fullpath = token;
             while (st.hasMoreTokens()) {
                 token = st.nextToken();
@@ -203,8 +203,9 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     }
 
     /**
-     * Gets the file name form the selected path in the preview tree. Supposed is
-     * that the name of file in the second element in the path
+     * Gets the file name form the selected path in the preview tree. Supposed
+     * is that the name of file in the second element in the path
+     *
      * @param tree Preview tree
      * @return File name related to selected node
      */
@@ -215,18 +216,20 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     }
 
     /**
-     * Gets string label of tree item. Suppose that the object has metho {@code getLabel} which is called by reflection.
+     * Gets string label of tree item. Suppose that the object has metho
+     * {@code getLabel} which is called by reflection.
+     *
      * @param parent The tree item
      * @return Test label obtained by method {@code getLabel}
      */
-    protected Object getPreviewItemLabel(Object parent)  {
+    protected Object getPreviewItemLabel(Object parent) {
         try {
             Method method = parent.getClass().getDeclaredMethod("getLabel");
             method.setAccessible(true);
             Object invoke = method.invoke(parent);
             return invoke;
         } catch (IllegalAccessException ex) {
-            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);            
+            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalArgumentException ex) {
             Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvocationTargetException ex) {
@@ -239,15 +242,14 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         fail("Error in reflection");
         return null;
     }
-        
-    private void sortChilds(List<Object> al) {
-        final HashMap<Object,String> hashMap = new HashMap<Object, String>();
-        for (Object object : al) {
-            hashMap.put(object,(String) getPreviewItemLabel(object));
-        }
-                        
-        Collections.<Object>sort(al,new Comparator() {
 
+    private void sortChilds(List<Object> al) {
+        final HashMap<Object, String> hashMap = new HashMap<Object, String>();
+        for (Object object : al) {
+            hashMap.put(object, (String) getPreviewItemLabel(object));
+        }
+
+        Collections.<Object>sort(al, new Comparator() {
             @Override
             public int compare(Object o1, Object o2) {
                 return hashMap.get(o1).compareTo(hashMap.get(o2));
@@ -259,13 +261,12 @@ public abstract class RefactoringTestCase extends JellyTestCase {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
         prn.select();
-        Node parent = new Node(prn, parentPath);      
+        Node parent = new Node(prn, parentPath);
         final String finalFileName = childName;
         try {
             // wait for max. 3 seconds for the file node to appear
             JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 3000);
             new Waiter(new Waitable() {
-
                 @Override
                 public Object actionProduced(Object parent) {
                     return ((Node) parent).isChildPresent(finalFileName) ? Boolean.TRUE : null;
@@ -280,23 +281,23 @@ public abstract class RefactoringTestCase extends JellyTestCase {
             throw new JemmyException("Interrupted.", e);
         }
     }
-    
+
     protected void openSourceFile(String dir, String srcName) {
-        openFile(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir")+treeSeparator+dir, srcName);
+        openFile(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + treeSeparator + dir, srcName);
     }
-    
+
     @Override
-    protected void setUp() throws Exception {        
+    protected void setUp() throws Exception {
         jemmyOutput = new PrintStream(new File(getWorkDir(), getName() + ".jemmy"));
-        jemmyError = new PrintStream(new File(getWorkDir(), getName() + ".error"));        
+        jemmyError = new PrintStream(new File(getWorkDir(), getName() + ".error"));
         //JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , jemmyError));
         //JemmyProperties.setCurrentOutput(new TestOut(System.in, null , System.out));
-        System.out.println("Test "+getName()+" started");                
+        System.out.println("Test " + getName() + " started");
         openProject("RefactoringTest");
     }
-    
-    public void openProject(String projectName) {                
-        
+
+    public void openProject(String projectName) {
+
         /* 1. check if project is open  */
         ProjectsTabOperator pto = ProjectsTabOperator.invoke();
         boolean isOpen = true;
@@ -307,31 +308,32 @@ public abstract class RefactoringTestCase extends JellyTestCase {
             //ex.printStackTrace();
             isOpen = false;
         }
-        
-        if ( isOpen ) {
+
+        if (isOpen) {
             log("Project is open!");
             return;
         }
-      try {
-         /* 2. open project */
-         //retouche:
-         //Object prj= ProjectSupport.openProject(projectPath);
-         this.openDataProjects("projects/" + projectName);
-      } catch (IOException ex) {
-         fail("Project cannot be opened");
-      }
-        
+        try {
+            /* 2. open project */
+            //retouche:
+            //Object prj= ProjectSupport.openProject(projectPath);
+            this.openDataProjects("projects/" + projectName);
+        } catch (IOException ex) {
+            fail("Project cannot be opened");
+        }
+
     }
 
+   
     @Override
-    protected void tearDown() throws Exception {        
+    protected void tearDown() throws Exception {
         getRef().close();
         jemmyOutput.close();
         jemmyError.close();
         System.out.println();
-        assertFile("Golden file differs ", new File(getWorkDir(),getName()+".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
-        System.out.println("Test "+getName()+" finished");
-        
+        assertFile("Golden file differs ", new File(getWorkDir(), getName() + ".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
+        System.out.println("Test " + getName() + " finished");
+
     }
 
     public abstract String getProjectName();

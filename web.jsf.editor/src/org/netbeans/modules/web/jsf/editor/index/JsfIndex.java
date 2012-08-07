@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.index;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -63,36 +65,45 @@ import org.openide.util.Exceptions;
  */
 public class JsfIndex {
 
-    public static JsfIndex create(FileObject baseFile) {
-        return new JsfIndex(baseFile);
+    public static JsfIndex create(ClassPath sourceCp, ClassPath compileCp, ClassPath executeCp, ClassPath bootCp) {
+        return new JsfIndex(sourceCp, compileCp, executeCp, bootCp);
     }
-    private final FileObject[] sourceRoots;
+    private final FileObject[] roots;
     private final FileObject[] binaryRoots;
-    private final FileObject[] customRoots;
-    private final FileObject base;
 
-    /** Creates a new instance of JsfIndex */
-    private JsfIndex(FileObject baseFile) {
-        this.base = baseFile;
-        
+    /**
+     * Creates a new instance of JsfIndex
+     */
+    private JsfIndex(ClassPath sourceCp, ClassPath compileCp, ClassPath executeCp, ClassPath bootCp) {
         //#179930 - merge compile and execute classpath, remove once #180183 resolved
-        Collection<FileObject> roots = new HashSet<FileObject>();
-        ClassPath compileCp = ClassPath.getClassPath(base, ClassPath.COMPILE);
-        if(compileCp != null) {
-            roots.addAll(Arrays.asList(compileCp.getRoots()));
-        }
-        ClassPath executeCp = ClassPath.getClassPath(base, ClassPath.EXECUTE);
-        if(executeCp != null) {
-            roots.addAll(Arrays.asList(executeCp.getRoots()));
-        }
-        binaryRoots = roots.toArray(new FileObject[]{});
+        Collection<FileObject> cbRoots = new HashSet<FileObject>();
+        cbRoots.addAll(Arrays.asList(compileCp.getRoots()));
+        cbRoots.addAll(Arrays.asList(executeCp.getRoots()));
+        binaryRoots = cbRoots.toArray(new FileObject[]{});
 
-        Collection<FileObject> croots = QuerySupport.findRoots(base, null, null, null);
-        sourceRoots = customRoots = croots.toArray(new FileObject[]{});
+        Collection<FileObject> croots = new HashSet<FileObject>();
+        //add source roots
+        croots.addAll(Arrays.asList(sourceCp.getRoots()));
+        //add boot and compile roots (sources if available)
+        for(ClassPath cp : new ClassPath[]{compileCp, bootCp}) {
+            for(FileObject root : cp.getRoots()) {
+                URL rootUrl = root.toURL();
+                FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(rootUrl).getRoots();
+                if(sourceRoots.length == 0) {
+                    //add the binary root
+                    croots.add(root);
+                } else {
+                    //add the found source roots
+                    croots.addAll(Arrays.asList(sourceRoots));
+                }
+            }
+        }
+        
+        roots = croots.toArray(new FileObject[]{});
     }
 
     private QuerySupport createEmbeddingIndex() throws IOException {
-        return QuerySupport.forRoots(JsfIndexer.Factory.NAME, JsfIndexer.Factory.VERSION, sourceRoots);
+        return QuerySupport.forRoots(JsfIndexer.Factory.NAME, JsfIndexer.Factory.VERSION, roots);
     }
 
     private QuerySupport createBinaryIndex() throws IOException {
@@ -100,7 +111,7 @@ public class JsfIndex {
     }
 
     private QuerySupport createCustomIndex() throws IOException {
-        return QuerySupport.forRoots(JsfCustomIndexer.INDEXER_NAME, JsfCustomIndexer.INDEXER_VERSION, customRoots);
+        return QuerySupport.forRoots(JsfCustomIndexer.INDEXER_NAME, JsfCustomIndexer.INDEXER_VERSION, roots);
     }
 
     // --------------- BOTH EMBEDDING && BINARY INDEXES ------------------

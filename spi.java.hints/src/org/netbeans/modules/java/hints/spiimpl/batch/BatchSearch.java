@@ -45,13 +45,9 @@ import org.netbeans.spi.java.hints.HintContext.MessageKind;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.jvm.ClassReader;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Names;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,14 +78,12 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
-import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.Utilities;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch.BulkPattern;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.api.java.source.matching.Pattern;
@@ -271,21 +265,9 @@ public class BatchSearch {
                                 if (stop.get()) return;
                                 if (cancel.get()) return;
 
-                                //workaround for #192481:
-                                if (parameter.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
-                                    return ;
-
                                 boolean cont = true;
 
                                 try {
-                                    Context ctx = JavaSourceAccessor.getINSTANCE().getJavacTask(parameter).getContext();
-                                    ClassReader reader = ClassReader.instance(ctx);
-                                    Field attributeReaders = ClassReader.class.getDeclaredField("attributeReaders");
-
-                                    attributeReaders.setAccessible(true);
-                                    ((Map) attributeReaders.get(reader)).remove(Names.instance(ctx)._org_netbeans_ParameterNames);
-                                    //workaround for #192481 end
-
                                     if (parameter.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0)
                                         return ;
 

@@ -55,11 +55,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.swing.JButton;
@@ -69,7 +65,6 @@ import org.netbeans.modules.cnd.repository.util.IntToStringCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.modules.Places;
 import org.openide.util.CharSequences;
 import org.openide.util.NbBundle;
 
@@ -82,9 +77,10 @@ import org.openide.util.NbBundle;
  */
 final class UnitsCache {
     private final static String PROJECT_INDEX_FILE_NAME = "project-index"; //NOI18N
-    private final static File MASTER_INDEX_FILE = Places.getCacheSubfile("cnd/model/index"); // NOI18N
+    private final static File MASTER_INDEX_FILE = new File(StorageAllocator.getInstance().getCacheBaseDirectory(), "index"); // NOI18N
     private final List<CharSequence> cache = new ArrayList<CharSequence>();
     private final long timestamp;
+
     /**
      * A list of int/string tables for units a table per unit.
      * It is "parallel" to the super.cache array.
@@ -161,7 +157,10 @@ final class UnitsCache {
                     throw exception;
                 }
             }
-            loadMasterIndex(randomAccessFile);
+            IndexConverter converter = loadMasterIndex(randomAccessFile);
+            if (converter != null) {
+                convertIfNeed(converter);
+            }
             inited = true;
         } catch (FileNotFoundException e) {
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -190,11 +189,16 @@ final class UnitsCache {
      * Reads master index.
      * Fills fileNamesCaches with an empty int/string tables.
      */
-    private void loadMasterIndex(DataInput stream) throws IOException {
+    private IndexConverter loadMasterIndex(DataInput stream) throws IOException {
+        IndexConverter converter = null;
         cache.clear();
         fileNamesCaches.clear();
         stream.readInt();
         stream.readLong();
+        String oldIndexCanonicalPath = stream.readUTF();
+        if( ! oldIndexCanonicalPath.equals(MASTER_INDEX_FILE.getCanonicalPath())) {
+            converter = new IndexConverter(oldIndexCanonicalPath, MASTER_INDEX_FILE.getCanonicalPath());
+        }
         int size = stream.readInt();
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
             trace("Reading master index (%d) elements\n", size); // NOI18N
@@ -213,10 +217,74 @@ final class UnitsCache {
             // (with timestamps from master index)
             unit2requnint.put(value, readRequiredUnits(stream));
             // new dummy int/string cache (with the current (???!) timestamp
-            fileNamesCaches.add(new IntToStringCache(ts));
+            fileNamesCaches.add(new IntToStringCache(ts));            
+        }
+        return converter;
+    }
+
+    private void convertIfNeed(IndexConverter converter) {
+        // called from ctor => no sync needed
+        if (!converter.needsConversion()) {
+            return;
+        }
+        boolean changed = false;
+        for (int i = 0; i < cache.size(); i++) {
+            CharSequence value = cache.get(i);
+            CharSequence newValue = converter.convert(value);
+            if (newValue != value) {
+                changed = true;
+                cache.set(i, newValue);
+                Collection<RequiredUnit> reqUnits = unit2requnint.remove(value);
+                unit2requnint.put(newValue, reqUnits);
+                if (!StorageAllocator.getInstance().renameUnitDirectory(value, newValue)) {
+                    StorageAllocator.getInstance().deleteUnitFiles(newValue, true);
+                    StorageAllocator.getInstance().deleteUnitFiles(value, true);
+                }
+            }
+        }
+        if (changed) {
+            for (CharSequence unitName : cache) {
+                String unitIndexFileName = getUnitIndexName(unitName);
+                if (new File(unitIndexFileName).exists()) {
+                    DataInputStream is = null;
+                    DataOutputStream os = null;
+                    boolean success = false;
+                    try {
+                        is = new DataInputStream(new BufferedInputStream(new FileInputStream(unitIndexFileName)));
+                        IntToStringCache filesCache = new IntToStringCache(is);
+                        filesCache.convert(converter);
+                        os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(unitIndexFileName, false)));
+                        filesCache.write(os);
+                        success = true;
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace(System.err);
+                    } catch (IOException e) {
+                        e.printStackTrace(System.err);
+                    } finally {
+                        if (is != null) {
+                            try {
+                                is.close();
+                            } catch (IOException ex) {
+                                ex.printStackTrace(System.err);
+                            }
+                        }
+                        if (os != null) {
+                            try {
+                                os.close();
+                            } catch (IOException ex) {
+                                ex.printStackTrace(System.err);
+                            }
+                        }
+                        if (!success) {
+                            StorageAllocator.getInstance().deleteUnitFiles(unitName, true);
+                        }
+                    }
+                }
+
+            }
         }
     }
-    
+
     void storeMasterIndex() {
         try {
             if (randomAccessFile == null) {
@@ -378,7 +446,7 @@ final class UnitsCache {
         if (reqUnits != null) {
             for (CharSequence rUnitName : reqUnits) {
                 long ts = unit2timestamp.get(rUnitName).longValue();
-                RequiredUnit rU = new RequiredUnit(rUnitName, ts);
+                RequiredUnit rU = new RequiredUnit(getId(rUnitName), ts);
                 unitReqUnits.add(rU);
             }
         }
@@ -402,6 +470,9 @@ final class UnitsCache {
         antiLoop.add(unitName);
         boolean result = true;
         Collection<RequiredUnit> reqUnits = unit2requnint.get(unitName);
+        if (reqUnits == null) {
+            return false;
+        }
         for (RequiredUnit rU : reqUnits) {
             if (!isUnitIndexLoaded(rU.getName())) {
                 loadUnitIndex(rU.getName(), antiLoop);
@@ -472,7 +543,7 @@ final class UnitsCache {
             RequiredUnit unit = new RequiredUnit(stream);
             units.add(unit);
             if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
-                trace("\t\tRead req. unit %s ts=%d\n", unit.getName(), unit.getTimestamp()); // NOI18N
+                trace("\t\tRead req. unit %s ts=%d\n", unit.getUnitId(), unit.getTimestamp()); // NOI18N
             }
         }
         return units;
@@ -483,6 +554,7 @@ final class UnitsCache {
         assert stream != null;
         stream.writeInt(RepositoryTranslatorImpl.getVersion());
         stream.writeLong(timestamp);
+        stream.writeUTF(MASTER_INDEX_FILE.getCanonicalPath());
         int size = cache.size();
         stream.writeInt(size);
         if (Stats.TRACE_REPOSITORY_TRANSLATOR) {
@@ -622,33 +694,37 @@ final class UnitsCache {
         System.arraycopy(args, 0, newArgs, 1, args.length);
         System.err.printf("RepositoryTranslator [%d] " + format, newArgs);
     }
-    
+
     /**
      * Just a structure that holds name and timestamps
      * for required unit
      */
-    private static final class RequiredUnit {
+    private final class RequiredUnit {
 
-        private CharSequence unitName;
+        private int unitId;
         private long timestamp;
 
-        public RequiredUnit(CharSequence name, long time) {
-            unitName = name;
-            timestamp = time;
+        public RequiredUnit(int unitId, long time) {
+            this.unitId = unitId;
+            this.timestamp = time;
         }
 
         public RequiredUnit(DataInput stream) throws IOException {
-            unitName = CharSequences.create(stream.readUTF());
+            unitId = stream.readInt();
             timestamp = stream.readLong();
         }
 
         public void write(DataOutput stream) throws IOException {
-            stream.writeUTF(unitName.toString());
+            stream.writeInt(unitId);
             stream.writeLong(timestamp);
         }
 
         public CharSequence getName() {
-            return unitName;
+            return getValueById(unitId);
+        }
+
+        public int getUnitId() {
+            return unitId;
         }
 
         public long getTimestamp() {

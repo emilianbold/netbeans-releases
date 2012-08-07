@@ -241,6 +241,14 @@ public class RenameTest extends RefactoringTestBase {
                 new File("t/B.java", "class B extends A { public void bind(){ binding();}}"));
     }
     
+    public void test215139() throws Exception { // #215139 - [Rename] Method and Field rename incorrectly adds Type.super 
+        writeFilesAndWaitForScan(src, new File("t/A.java", "class A { public void bindSuper(){}}"),
+                new File("t/B.java", "class B { private A a = new A(); public void bind(){ a.bindSuper();}}"));
+        performRename(src.getFileObject("t/A.java"), 1, "bind", null);
+        verifyContent(src, new File("t/A.java", "class A { public void bind(){}}"),
+                new File("t/B.java", "class B { private A a = new A(); public void bind(){ a.bind();}}"));
+    }
+    
     public void test202251() throws Exception { // #202251 - Refactoring code might lead to uncompilable code
         writeFilesAndWaitForScan(src, new File("test/Tool.java", "package test;\n"
                 + "\n"

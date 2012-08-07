@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.openide.util.NbBundle;
 
@@ -55,7 +56,11 @@ import org.openide.util.NbBundle;
  */
 public class SelectModePanel extends javax.swing.JPanel {
     private boolean first = true;
-    private boolean lastApplicable;
+    // Last simple mode Applicable:
+    // 0 - not counted
+    // -1 - counted false
+    // 1 - counted true
+    private AtomicInteger simpleModeApplicable = new AtomicInteger(0);
     private SelectModeWizard wizard;
     
     /** Creates new form SelectModePanel */
@@ -165,22 +170,16 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
     
     void updateControls(){
-        if (!first) {
-            if (lastApplicable){
-                advancedMode.setEnabled(true);
-                simpleMode.setEnabled(true);
-                if (first) {
-                    simpleMode.setSelected(true);
-                }
-            } else {
-                advancedMode.setEnabled(true);
-                simpleMode.setEnabled(true);
+        advancedMode.setEnabled(true);
+        simpleMode.setEnabled(true);
+        if (first) {
+            simpleMode.setSelected(true);
+            first = false;
+        } else {
+            if (simpleModeApplicable.get() == -1) {
+                //simpleMode.setEnabled(false);
                 advancedMode.setSelected(true);
             }
-        } else {
-            advancedMode.setEnabled(true);
-            simpleMode.setEnabled(true);
-            simpleMode.setSelected(true);
         }
         updateInstruction();
     }
@@ -191,14 +190,21 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
 
     boolean isApplicable(final DiscoveryDescriptor wizardDescriptor){
-        if (first && simpleMode.isSelected()) {
-            lastApplicable = new DiscoveryExtension().isApplicable(wizardDescriptor, false).isApplicable();
-            if (!lastApplicable) {
-                wizardDescriptor.setSimpleMode(false);
+        boolean applicable = true;
+        if (simpleMode.isSelected()) {
+            if (simpleModeApplicable.get() == 0) {
+                if (new DiscoveryExtension().isApplicable(wizardDescriptor, false).isApplicable()) {
+                    simpleModeApplicable.set(1);
+                } else {
+                    simpleModeApplicable.set(-1);
+                }
             }
-            first = false;
+            if (simpleModeApplicable.get() == -1) {
+                wizardDescriptor.setSimpleMode(false);
+                applicable = false;
+            }
         }
-        return lastApplicable;
+        return applicable;
     }
     
     void store(DiscoveryDescriptor wizardDescriptor) {
@@ -206,11 +212,8 @@ public class SelectModePanel extends javax.swing.JPanel {
     }
     
     boolean valid(DiscoveryDescriptor wizardDescriptor) {
-        if (first) {
-            return true;
-        }
         if (simpleMode.isSelected()){
-            if (!lastApplicable){
+            if (simpleModeApplicable.get() == -1){
                 String selectedExecutable = wizardDescriptor.getBuildResult();
                 if (selectedExecutable == null || selectedExecutable.length()==0) {
                     wizardDescriptor.setMessage(getString("SimpleMode.Error.NoOutputResult")); // NOI18N

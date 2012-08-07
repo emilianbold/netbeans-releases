@@ -128,7 +128,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             parserContainer = object;
             CppParserActionEx cppCallback = (CppParserActionEx)callback;
             if (cppCallback == null) {
-                if(TraceFlags.CPP_PARSER_ACTION) {
+                if(TraceFlags.CPP_PARSER_ACTION && ((FileImpl)params.getMainFile()).getParsingFileContent() != null) {
                     cppCallback = new CppParserActionImpl(params);
                 } else {
                     cppCallback = new CppParserEmptyActionImpl(file);
@@ -344,8 +344,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
     }
 
     static Token convertToken(org.antlr.runtime.Token token) {
-        assert token instanceof Antlr3CXXParser.MyToken;
-        return ((Antlr3CXXParser.MyToken) token).t;
+        //assert token == null || token instanceof Antlr3CXXParser.MyToken;
+        return (token instanceof Antlr3CXXParser.MyToken) ? ((Antlr3CXXParser.MyToken) token).t : null;
     }
 
     private final static class Antlr3CXXParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {

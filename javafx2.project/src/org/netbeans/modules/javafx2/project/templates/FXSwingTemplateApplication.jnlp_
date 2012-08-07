@@ -3,13 +3,13 @@
     <information>
         <title>@TITLE@</title>
         <vendor>@VENDOR@</vendor>
-        <description>Swing application embedding JavaFX components.</description>@ICON@ @OFFLINE@
+        <description>@DESCRIPTION@</description>@ICON@ @OFFLINE@
     </information>@PERMISSIONS@
     <resources>
         <j2se @VMARGS@version="1.6+" href="http://java.sun.com/products/autodl/j2se"/>
         <jar href="@NAME@.jar" size="@FILESIZE@" download="eager" />
     </resources>
-    <resources os="Windows">
+    <resources>
         <jfx:javafx-runtime version="2.0+" 
             href="http://javadl.sun.com/webapps/download/GetFile/javafx-latest/windows-i586/javafx2.jnlp"/>
     </resources>

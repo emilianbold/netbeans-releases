@@ -1,0 +1,29 @@
+false
+Usages of <b>FUClass</b> [7 occurrences]
+    RefactoringTest
+        FUClass.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;13:&nbsp;&nbsp;</font><b>FUClass</b>&nbsp;<font color=#333333>field</font><font color=#333333>;</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;15:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<b>FUClass</b>&nbsp;<font color=#333333>retunType</font><font color=#333333>(</font><font color=#333333>FUClass</font>&nbsp;<font color=#333333>param</font><font color=#333333>)</font>&nbsp;<font color=#333333>{</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;15:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#333333>FUClass</font>&nbsp;<font color=#333333>retunType</font><font color=#333333>(</font><b>FUClass</b>&nbsp;<font color=#333333>param</font><font color=#333333>)</font>&nbsp;<font color=#333333>{</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;19:&nbsp;&nbsp;</font><font color=#333333>java</font><font color=#333333>.</font><font color=#333333>util</font><font color=#333333>.</font><font color=#333333>List</font><font color=#333333>&lt;</font><b>FUClass</b><font color=#333333>&gt;</font>&nbsp;<font color=#333333>list</font><font color=#333333>;</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;21:&nbsp;&nbsp;</font><font color=#0000e6>class</font>&nbsp;<font color=#333333>Inner</font><font color=#333333>&lt;</font><font color=#333333>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#333333>&gt;</font>&nbsp;<font color=#333333>{</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;26:&nbsp;&nbsp;</font><font color=#0000e6>this</font><font color=#333333>.</font><font color=#333333>&lt;</font><b>FUClass</b><font color=#333333>&gt;</font><font color=#333333>generics</font><font color=#333333>(</font><font color=#0000e6>this</font><font color=#333333>)</font><font color=#333333>;</font>
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;29:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#333333>&lt;</font><font color=#333333>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#333333>&gt;</font>&nbsp;<font color=#333333>T</font>&nbsp;<font color=#333333>generics</font><font color=#333333>(</font><font color=#333333>T</font>&nbsp;<font color=#333333>in</font><font color=#333333>)</font>&nbsp;<font color=#333333>{</font>
+true
+Usages of <b>FUClass</b> [7 occurrences]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    RefactoringTest
+        Source Packages
+            fu
+                FUClass.java
+                    FUClass
+                        <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;13:&nbsp;&nbsp;</font><b>FUClass</b>&nbsp;<font color=#333333>field</font><font color=#333333>;</font>
+                        retunType
+                            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;15:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<b>FUClass</b>&nbsp;<font color=#333333>retunType</font><font color=#333333>(</font><font color=#333333>FUClass</font>&nbsp;<font color=#333333>param</font><font color=#333333>)</font>&nbsp;<font color=#333333>{</font>
+                            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;15:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#333333>FUClass</font>&nbsp;<font color=#333333>retunType</font><font color=#333333>(</font><b>FUClass</b>&nbsp;<font color=#333333>param</font><font color=#333333>)</font>&nbsp;<font color=#333333>{</font>
+                        <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;19:&nbsp;&nbsp;</font><font color=#333333>java</font><font color=#333333>.</font><font color=#333333>util</font><font color=#333333>.</font><font color=#333333>List</font><font color=#333333>&lt;</font><b>FUClass</b><font color=#333333>&gt;</font>&nbsp;<font color=#333333>list</font><font color=#333333>;</font>
+                        Inner
+                            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;21:&nbsp;&nbsp;</font><font color=#0000e6>class</font>&nbsp;<font color=#333333>Inner</font><font color=#333333>&lt;</font><font color=#333333>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#333333>&gt;</font>&nbsp;<font color=#333333>{</font>
+                        method
+                            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;26:&nbsp;&nbsp;</font><font color=#0000e6>this</font><font color=#333333>.</font><font color=#333333>&lt;</font><b>FUClass</b><font color=#333333>&gt;</font><font color=#333333>generics</font><font color=#333333>(</font><font color=#0000e6>this</font><font color=#333333>)</font><font color=#333333>;</font>
+                        generics
+                            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;29:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#333333>&lt;</font><font color=#333333>T</font>&nbsp;<font color=#0000e6>extends</font>&nbsp;<b>FUClass</b><font color=#333333>&gt;</font>&nbsp;<font color=#333333>T</font>&nbsp;<font color=#333333>generics</font><font color=#333333>(</font><font color=#333333>T</font>&nbsp;<font color=#333333>in</font><font color=#333333>)</font>&nbsp;<font color=#333333>{</font>

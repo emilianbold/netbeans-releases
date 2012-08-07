@@ -1,0 +1,8 @@
+Usages of <b>Test</b> [3 occurrences]
+    RefactoringTest
+        SubClass.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;12:&nbsp;&nbsp;</font><b>super</b><font color=#333333>(</font><font color=#333333>)</font><font color=#333333>;</font>
+        Test.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;22:&nbsp;&nbsp;</font><b>this</b><font color=#333333>(</font><font color=#333333>)</font><font color=#333333>;</font>
+        User.java
+            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;12:&nbsp;&nbsp;</font><font color=#0000e6>new</font>&nbsp;<b>Test</b><font color=#333333>(</font><font color=#333333>)</font><font color=#333333>.</font><font color=#333333>method</font><font color=#333333>(</font><font color=#333333>)</font><font color=#333333>;</font>

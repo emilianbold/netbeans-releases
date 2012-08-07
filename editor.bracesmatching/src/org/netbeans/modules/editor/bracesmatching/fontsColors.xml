@@ -50,4 +50,5 @@ made subject to such option by the copyright holder.
     <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="FFD83636"/>
     <fontcolor name="nbeditor-bracesMatching-match-multichar" bgColor="FFF3FF0F"/>
     <fontcolor name="nbeditor-bracesMatching-mismatch-multichar" bgColor="FFD83636"/>
+    <fontcolor name="nbeditor-bracesMatching-sidebar" foreColor="6b8eb2"/>
 </fontscolors>

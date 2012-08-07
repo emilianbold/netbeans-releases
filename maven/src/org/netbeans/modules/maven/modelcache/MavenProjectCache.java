@@ -43,16 +43,21 @@ package org.netbeans.modules.maven.modelcache;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.execution.DefaultMavenExecutionResult;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.M2AuxilaryConfigImpl;
 import org.netbeans.modules.maven.configurations.M2Configuration;
@@ -75,6 +80,7 @@ public final class MavenProjectCache {
     
     private static final Logger LOG = Logger.getLogger(MavenProjectCache.class.getName());
     private static final String CONTEXT_EXECUTION_RESULT = "NB_Execution_Result";
+    private static final String CONTEXT_PARTICIPANTS = "NB_AbstractParticipant_Present";
     
     //FileObject is referenced during lifetime of the Project.
     private static final Map<FileObject, WeakReference<MavenProject>> file2Project = new WeakHashMap<FileObject, WeakReference<MavenProject>>();
@@ -116,8 +122,18 @@ public final class MavenProjectCache {
         return (MavenExecutionResult) project.getContextValue(CONTEXT_EXECUTION_RESULT);
     }
     
- 
+    public static boolean unknownBuildParticipantObserved(MavenProject project) {
+        return project.getContextValue(CONTEXT_PARTICIPANTS) != null;
+    }
     
+    /**
+     * list of class names of build participants in the project, null when none are present.
+     * @param project
+     * @return 
+     */
+    public static Collection<String> getUnknownBuildParticipantsClassNames(MavenProject project) {
+        return (Collection<String>) project.getContextValue(CONTEXT_PARTICIPANTS);
+    }
     
        @NbBundle.Messages({
         "TXT_RuntimeException=RuntimeException occurred in Apache Maven embedder while loading",
@@ -136,7 +152,7 @@ public final class MavenProjectCache {
         final File pomFile = new File(FileUtil.toFile(projectDirectory), "pom.xml");
         MavenExecutionResult res = null;
         try {
-           final  MavenExecutionRequest req = projectEmbedder.createMavenExecutionRequest();
+            final MavenExecutionRequest req = projectEmbedder.createMavenExecutionRequest();
             req.addActiveProfiles(active.getActivatedProfiles());
 
             req.setPom(pomFile);
@@ -152,6 +168,49 @@ public final class MavenProjectCache {
             req.setUserProperties(createSystemPropsForProjectLoading(active.getProperties()));
             res = projectEmbedder.readProjectWithDependencies(req, true);
             newproject = res.getProject();
+            
+            //#204898
+            if (newproject != null) {
+                ClassLoader projectRealm = newproject.getClassRealm();
+                if (projectRealm != null) {
+                    ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+                    Thread.currentThread().setContextClassLoader(projectRealm);
+                    try {
+                        //boolean execute = EnableParticipantsBuildAction.isEnabled(aux);
+                        List<AbstractMavenLifecycleParticipant> lookup = projectEmbedder.getPlexus().lookupList(AbstractMavenLifecycleParticipant.class);
+                        if (lookup.size() > 0) { //just in case..
+//                            if (execute) {
+//                                LOG.info("Executing External Build Participants...");
+//                                MavenSession session = new MavenSession( projectEmbedder.getPlexus(), newproject.getProjectBuildingRequest().getRepositorySession(), req, res );
+//                                session.setCurrentProject(newproject);
+//                                session.setProjects(Collections.singletonList(newproject));
+//                                projectEmbedder.setUpLegacySupport();
+//                                projectEmbedder.getPlexus().lookup(LegacySupport.class).setSession(session);
+//                                
+//                                for (AbstractMavenLifecycleParticipant part : lookup) {
+//                                    try {
+//                                        Thread.currentThread().setContextClassLoader( part.getClass().getClassLoader() );
+//                                        part.afterSessionStart(session);
+//                                        part.afterProjectsRead(session);
+//                                    } catch (MavenExecutionException ex) {
+//                                        Exceptions.printStackTrace(ex);
+//                                    }
+//                                }
+//                            } else {
+                                List<String> parts = new ArrayList<String>();
+                                for (AbstractMavenLifecycleParticipant part : lookup) {
+                                    parts.add(part.getClass().getName());
+                                }
+                                newproject.setContextValue(CONTEXT_PARTICIPANTS, parts);
+//                            }
+                        }
+                    } catch (ComponentLookupException e) {
+                        // this is just silly, lookupList should return an empty list!
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(originalClassLoader);
+                    }
+                }
+            }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
             //#136184 NumberFormatException
@@ -162,6 +221,10 @@ public final class MavenProjectCache {
             if (newproject == null) {
                 newproject = getFallbackProject(pomFile);
             }
+            //#215159 clear the project building request, it references multiple Maven Models via the RepositorySession cache
+            //is not used in maven itself, most likely used by m2e only..
+            newproject.setProjectBuildingRequest(null);
+            //TODO some exceptions in result contain various model caches as well..
             newproject.setContextValue(CONTEXT_EXECUTION_RESULT, res);
             long endLoading = System.currentTimeMillis();
             LOG.log(Level.FINE, "Loaded project in {0} msec at {1}", new Object[] {endLoading - startLoading, projectDirectory.getPath()});
@@ -169,7 +232,6 @@ public final class MavenProjectCache {
                 LOG.log(Level.FINE, "Project " + projectDirectory.getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
             }
         }
-        assert newproject != null;
         return newproject;
     }
     @NbBundle.Messages({
@@ -186,6 +248,13 @@ public final class MavenProjectCache {
         newproject.setDescription(Bundle.LBL_Incomplete_Project_Desc());
         newproject.setFile(projectFile);
         return newproject;
+    }
+    
+    public static boolean isFallbackproject(MavenProject prj) {
+        if ("error".equals(prj.getGroupId()) && "error".equals(prj.getArtifactId()) && Bundle.LBL_Incomplete_Project_Name().equals(prj.getName())) {
+            return true;
+        }
+        return false;
     }
     
     private static final Properties statics = new Properties();

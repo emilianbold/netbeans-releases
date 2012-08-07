@@ -110,10 +110,15 @@ public class HTMLDocView extends JEditorPane {
         addMouseMotionListener(new MouseMotionListener() {
             public void mouseDragged(MouseEvent e) {
                 try {
-                    if (selectionAnchor <= positionCaret(e))
+                    if (highlight == null) {
+                        getHighlighter().removeAllHighlights();
+                        selectionAnchor = positionCaret(e);
+                        highlight = getHighlighter().addHighlight(selectionAnchor, selectionAnchor, DefaultHighlighter.DefaultPainter);
+                    } else if (selectionAnchor <= positionCaret(e)) {
                         getHighlighter().changeHighlight(highlight, selectionAnchor, positionCaret(e));
-                    else
+                    } else {
                         getHighlighter().changeHighlight(highlight, positionCaret(e), selectionAnchor);
+                    }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }

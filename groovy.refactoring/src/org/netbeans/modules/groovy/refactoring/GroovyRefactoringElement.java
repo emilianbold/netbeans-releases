@@ -42,54 +42,26 @@
 package org.netbeans.modules.groovy.refactoring;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author martin
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
 public class GroovyRefactoringElement extends ASTElement {
 
-    private final ModuleNode root;
     private final FileObject fileObject;
-    private final AstPath path;
+    private final ElementKind refactoringKind;
 
-    public GroovyRefactoringElement(GroovyParserResult info, ModuleNode root, ASTNode node, FileObject fileObject) {
+    
+    public GroovyRefactoringElement(GroovyParserResult info, ModuleNode root, ASTNode node, FileObject fileObject, ElementKind kind) {
         super(info, node);
-        this.root = root;
         this.fileObject = fileObject;
-        this.path = new AstPath(root, node.getLineNumber(), node.getColumnNumber());
-    }
-
-    public String getFindName() {
-        if (node instanceof FieldNode) {
-            FieldNode field = (FieldNode) node;
-            return field.getType().getNameWithoutPackage();
-        } else if (node instanceof VariableExpression) {
-            VariableExpression variable = (VariableExpression) node;
-            return variable.getType().getNameWithoutPackage();
-        } else {
-            return this.getNode().getText();
-        }
-    }
-
-    @Override
-    public String getName() {
-        if (node instanceof FieldNode) {
-            FieldNode field = (FieldNode) node;
-            return field.getName();
-        } else if (node instanceof VariableExpression) {
-            VariableExpression variable = (VariableExpression) node;
-            return variable.getName();
-        } else {
-            return this.getNode().getText();
-        }
+        this.refactoringKind = kind;
     }
 
     @Override
@@ -97,31 +69,69 @@ public class GroovyRefactoringElement extends ASTElement {
         return fileObject;
     }
 
-    public Object getSimpleName() {
-        if (node instanceof FieldNode) {
-            return ((FieldNode) node).getName();
-        } else if (node instanceof MethodNode) {
-            return ((MethodNode) node).getName();
-        } else if (node instanceof ClassNode) {
-            return ((ClassNode) node).getNameWithoutPackage();
-        } else {
-            return getName();
-        }
+    @Override
+    public ElementKind getKind() {
+        return refactoringKind;
     }
 
-    public String getDefClass() {
-        return AstUtilities.getFqnName(path);
+    /**
+     * Returns the name of the refactoring element. (e.g. for field declaration
+     * "private GalacticMaster master" the method return "master")
+     *
+     * @return name of the refactoring element
+     */
+    @Override
+    public String getName() {
+        return ElementUtils.getNameWithoutPackage(node);
+    }
+
+    /**
+     * Returns type of the refactoring element. (e.g. for field declaration 
+     * "private GalacticMaster master" the method return "GalacticMaster")
+     * 
+     * @return type of the refactoring element
+     */
+    public final String getTypeName() {
+        return ElementUtils.getTypeNameWithoutPackage(node);
+    }
+
+    public final ClassNode getDeclaringClass() {
+        return ElementUtils.getDeclaringClass(node);
+    }
+
+    public final String getDeclaringClassName() {
+        return ElementUtils.getDeclaringClass(node).getName();
+    }
+
+    public final String getDeclaringClassNameWithoutPackage() {
+        return ElementUtils.getDeclaringClassNameWithoutPackage(node);
     }
 
     @Override
-    public ElementKind getKind() {
-        if (node instanceof FieldNode) {
-            return ElementKind.FIELD;
-        } else if (node instanceof MethodNode) {
-            return ElementKind.METHOD;
-        } else if (node instanceof ClassNode) {
-            return ElementKind.CLASS;
+    public String getSignature() {
+        if (node instanceof MethodNode) {
+            MethodNode method = ((MethodNode) node);
+            StringBuilder builder = new StringBuilder(super.getSignature());
+            Parameter[] params = method.getParameters();
+
+            builder.append("("); // NOI18N
+            if (params.length > 0) {
+                for (Parameter param : params) {
+                    builder.append(ElementUtils.getType(param.getType()).getNameWithoutPackage());
+                    builder.append(" "); // NOI18N
+                    builder.append(param.getName());
+                    builder.append(","); // NOI18N
+                }
+                builder.setLength(builder.length() - 1);
+            }
+            builder.append(")"); // NOI18N
+
+            String returnType = method.getReturnType().getNameWithoutPackage();
+            builder.append(" : "); // NOI18N
+            builder.append(returnType);
+            
+            return builder.toString();
         }
-        return super.getKind();
+        return super.getSignature();
     }
 }

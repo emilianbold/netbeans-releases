@@ -43,12 +43,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -102,6 +104,37 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         // this.uid = null;
     }
 
+    public static class NameBuilder implements CsmObjectBuilder {
+        
+        boolean global = false;
+        List<CharSequence> nameParts = new ArrayList<CharSequence>();
+        
+        public void addNamePart(CharSequence part) {
+            nameParts.add(part);
+        }
+
+        public void setGlobal() {
+            global = true;
+        }
+        
+        public CharSequence getName() {
+            StringBuilder sb = new StringBuilder();
+            boolean firstScope = !global;
+            for (CharSequence part : nameParts) {                
+                if(!firstScope) {
+                    sb.append("::"); // NOI18N
+                }
+                sb.append(part);
+                firstScope = false;
+            }
+            return NameCache.getManager().getString(sb.toString());
+        }
+        
+        public CharSequence getLastNamePart() {
+            return nameParts.get(nameParts.size() - 1);
+        }        
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override

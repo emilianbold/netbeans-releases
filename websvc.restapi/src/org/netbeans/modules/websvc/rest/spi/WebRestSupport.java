@@ -90,7 +90,10 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class WebRestSupport extends RestSupport {
 
-    
+    private static final String POJO_MAPPING_FEATURE = 
+            "com.sun.jersey.api.json.POJOMappingFeature";                   // NOI18N
+    private static final String JACKSON_JSON_PROVIDER = 
+            "org.codehaus.jackson.jaxrs.JacksonJsonProvider";               // NOI18N
     private static final String GET_REST_RESOURCE_CLASSES = "getRestResourceClasses";//NOI18N
     private static final String GET_CLASSES = "getClasses";                         //NOI18N
     
@@ -136,6 +139,14 @@ public abstract class WebRestSupport extends RestSupport {
                 break;
             case DD:
                 type = CONFIG_TYPE_DD;
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                boolean added = false;
+                if ( support != null ){
+                    added = support.extendsJerseyProjectClasspath(project);
+                }
+                if ( !added ){
+                    JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
+                }
                 break;
         }
         if ( type!= null ){
@@ -672,11 +683,20 @@ public abstract class WebRestSupport extends RestSupport {
     private InitParam createJerseyPackagesInitParam( Servlet adaptorServlet,
             String... packs ) throws ClassNotFoundException
     {
+        return createInitParam(adaptorServlet, JERSEY_PROP_PACKAGES, 
+                getPackagesList(packs), JERSEY_PROP_PACKAGES_DESC);
+    }
+    
+    private InitParam createInitParam( Servlet adaptorServlet, String name,  
+            String value , String description ) throws ClassNotFoundException
+    {
         InitParam initParam = (InitParam) adaptorServlet
                 .createBean("InitParam"); // NOI18N
-        initParam.setParamName(JERSEY_PROP_PACKAGES);
-        initParam.setParamValue(getPackagesList(packs));
-        initParam.setDescription(JERSEY_PROP_PACKAGES_DESC);
+        initParam.setParamName(name);
+        initParam.setParamValue(value);
+        if ( description != null ){
+            initParam.setDescription(description);
+        }
         return initParam;
     }
 
@@ -780,7 +800,7 @@ public abstract class WebRestSupport extends RestSupport {
                         modified = removeResourcesMethod( restResources,
                                 maker, modified);
                         modified = createMethods(getClasses, 
-                                maker, modified , restResources== null);
+                                maker, modified , restResources== null, workingCopy);
 
                         workingCopy.rewrite(classTree, modified);
                     }
@@ -822,7 +842,7 @@ public abstract class WebRestSupport extends RestSupport {
     
     private void configRestPackages( String... packs ) throws IOException {
         try {
-	    addResourceConfigToWebApp("/webresources/*");
+            addResourceConfigToWebApp("/webresources/*");           // NOI18N
             FileObject ddFO = getWebXml();
             WebApp webApp = getWebApp();
             if (webApp == null) {
@@ -833,14 +853,15 @@ public abstract class WebRestSupport extends RestSupport {
             }
             boolean needsSave = false;
             Servlet adaptorServlet = getRestServletAdaptor(webApp);
-	    if ( adaptorServlet == null ){
-		return;
-	    }
+            if ( adaptorServlet == null ){
+                return;
+            }
             InitParam[] initParams = adaptorServlet.getInitParam();
-            boolean initParamFound = false;
+            boolean jerseyParamFound = false;
+            boolean jacksonParamFound = false;
             for (InitParam initParam : initParams) {
                 if (initParam.getParamName().equals(JERSEY_PROP_PACKAGES)) {
-                    initParamFound = true;
+                    jerseyParamFound = true;
                     String paramValue = initParam.getParamValue();
                     if (paramValue != null) {
                         paramValue = paramValue.trim();
@@ -861,10 +882,27 @@ public abstract class WebRestSupport extends RestSupport {
                         needsSave = existed.length != set.size();
                     }
                 }
+                else if ( initParam.getParamName().equals( POJO_MAPPING_FEATURE)){
+                    jacksonParamFound = true;
+                    String paramValue = initParam.getParamValue();
+                    if (paramValue != null) {
+                        paramValue = paramValue.trim();
+                    }
+                    if ( !Boolean.TRUE.toString().equals(paramValue)){
+                        initParam.setParamValue(Boolean.TRUE.toString());
+                        needsSave = true;
+                    }
+                }
             }
-            if (!initParamFound) {
+            if (!jerseyParamFound) {
                 InitParam initParam = createJerseyPackagesInitParam(adaptorServlet,
                         packs);
+                adaptorServlet.addInitParam(initParam);
+                needsSave = true;
+            }
+            if ( !jacksonParamFound ){
+                InitParam initParam = createInitParam(adaptorServlet,
+                        POJO_MAPPING_FEATURE, Boolean.TRUE.toString(), null);
                 adaptorServlet.addInitParam(initParam);
                 needsSave = true;
             }
@@ -885,7 +923,8 @@ public abstract class WebRestSupport extends RestSupport {
     }
     
     private ClassTree createMethods( MethodTree getClasses,
-            TreeMaker maker,ClassTree modified, boolean addComment) throws IOException
+            TreeMaker maker,ClassTree modified, boolean addComment, 
+            CompilationController controller ) throws IOException
     {
         WildcardTree wildCard = maker.Wildcard(Kind.UNBOUNDED_WILDCARD, 
                 null);
@@ -897,7 +936,10 @@ public abstract class WebRestSupport extends RestSupport {
                 Collections.singletonList(wildClass));
         if ( getClasses == null ){
             ModifiersTree modifiersTree = maker.Modifiers(
-                    EnumSet.of(Modifier.PUBLIC));
+                    EnumSet.of(Modifier.PUBLIC), Collections.singletonList( 
+                            maker.Annotation( maker.QualIdent(
+                                    Override.class.getCanonicalName()), 
+                                    Collections.<ExpressionTree>emptyList())));
             MethodTree methodTree = maker.Method(modifiersTree, 
                     GET_CLASSES, wildSet, 
                     Collections.<TypeParameterTree>emptyList(), 
@@ -907,7 +949,7 @@ public abstract class WebRestSupport extends RestSupport {
             modified = maker.addClassMember(modified, methodTree);
         }
         StringBuilder builder = new StringBuilder();
-        collectRestResources(builder);
+        collectRestResources(builder, controller);
         ModifiersTree modifiersTree = maker.Modifiers(EnumSet
                 .of(Modifier.PRIVATE));
         MethodTree methodTree = maker.Method(modifiersTree,
@@ -927,7 +969,9 @@ public abstract class WebRestSupport extends RestSupport {
         return modified;
     }
 
-    private void collectRestResources( final StringBuilder builder ) throws IOException {
+    private void collectRestResources( final StringBuilder builder , 
+            final CompilationController controller ) throws IOException 
+    {
         builder.append('{');
         builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
         RestServicesModel model = getRestServicesModel();
@@ -944,10 +988,20 @@ public abstract class WebRestSupport extends RestSupport {
                         getRestServiceDescription();
                     for (RestServiceDescription description : descriptions){
                         String className = description.getClassName();
+                        // Fix for BZ#216168 
+                        TypeElement typeElement = controller.getElements().getTypeElement(className);
+                        if ( typeElement != null ){
+                            FileObject file = SourceUtils.getFile(ElementHandle.
+                                    create(typeElement), controller.getClasspathInfo());
+                            if ( file == null ){
+                                continue;
+                            }
+                        }
                         builder.append("resources.add(");       // NOI18N
                         builder.append( className );
                         builder.append(".class);");             // NOI18N
                     }
+                    builder.append(getJacksonProviderSnippet());
                     return null;
                 }
 
@@ -960,6 +1014,33 @@ public abstract class WebRestSupport extends RestSupport {
         finally{
             builder.append("return resources;");                // NOI18N
             builder.append('}');
+        }
+    }
+    
+    private String getJacksonProviderSnippet(){
+        boolean addJacksonProvider = hasResource(
+                "org/codehaus/jackson/jaxrs/JacksonJsonProvider.class");    // NOI18N
+        if( !addJacksonProvider) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                addJacksonProvider = support.isBundled(JACKSON_JSON_PROVIDER);    
+            }
+        }
+        StringBuilder builder = new StringBuilder();
+        if ( addJacksonProvider ){
+            builder.append("try {");
+            builder.append("Class<?> jacksonProvider = Class.forName(");
+            builder.append('"');
+            builder.append(JACKSON_JSON_PROVIDER);
+            builder.append("\");");
+            builder.append("resources.add(jacksonProvider);");
+            builder.append("} catch (ClassNotFoundException ex) {");
+            builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
+            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}");
+            return builder.toString();
+        }
+        else {
+            return builder.toString();
         }
     }
 }

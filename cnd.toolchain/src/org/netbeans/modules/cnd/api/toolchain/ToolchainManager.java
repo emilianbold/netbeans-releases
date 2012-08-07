@@ -73,6 +73,8 @@ public final class ToolchainManager {
 
         boolean isAutoDetected();
 
+        String[] getAliases();
+
         String getDriveLetterPrefix();
 
         List<BaseFolder> getBaseFolders();

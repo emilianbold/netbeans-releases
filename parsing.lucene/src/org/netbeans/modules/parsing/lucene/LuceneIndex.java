@@ -207,7 +207,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             final @NullAllowed Term seekTo,
             final @NonNull StoppableConvertor<Term,T> filter,
             final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
-        queryTermsImpl(result, seekTo, StoppableConvertorAdapter.forTerms(filter), cancel);
+        queryTermsImpl(result, seekTo, Convertors.newTermEnumToTermConvertor(filter), cancel);
     }
     
     @Override
@@ -216,14 +216,14 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
             final @NullAllowed Term seekTo,
             final @NonNull StoppableConvertor<Index.WithTermFrequencies.TermFreq,T> filter,
             final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
-        queryTermsImpl(result, seekTo, StoppableConvertorAdapter.forFreqs(filter), cancel);
+        queryTermsImpl(result, seekTo, Convertors.newTermEnumToFreqConvertor(filter), cancel);
     }
     
     //where
     private <T> void queryTermsImpl(
             final @NonNull Collection<? super T> result,
             final @NullAllowed Term seekTo,
-            final @NonNull StoppableConvertorAdapter<?,T> adapter,
+            final @NonNull StoppableConvertor<TermEnum,T> adapter,
             final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
         
         IndexReader in = null;
@@ -235,7 +235,9 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
 
             final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
             try {
-                adapter.setIndexReader(in);
+                if (adapter instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)adapter).setIndexReader(in);
+                }
                 try {
                     do {
                         if (cancel != null && cancel.get()) {
@@ -249,7 +251,9 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 } catch (StoppableConvertor.Stop stop) {
                     //Stop iteration of TermEnum finally {
                 } finally {
-                    adapter.setIndexReader(null);
+                    if (adapter instanceof IndexReaderInjection) {
+                        ((IndexReaderInjection)adapter).setIndexReader(null);
+                    }
                 }
             } finally {
                 terms.close();

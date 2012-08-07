@@ -60,10 +60,10 @@ import javax.lang.model.element.TypeElement;
 import org.eclipse.persistence.jpa.internal.jpql.JPQLQueryProblemResourceBundle;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
-import org.eclipse.persistence.jpa.jpql.spi.IQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.model.JPAAnnotations;
+import org.netbeans.modules.j2ee.jpa.verification.CancelListener;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule;
 import org.netbeans.modules.j2ee.jpa.verification.JPAClassRule.ClassConstraints;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
@@ -81,7 +81,9 @@ import org.netbeans.spi.editor.hints.Severity;
  * Verify content of @NamedQuery query
  * TODO: good to move warning to query level instead of class level
  */
-public class JPQLValidation extends JPAClassRule {
+public class JPQLValidation extends JPAClassRule implements CancelListener{
+    
+    private ManagedTypeProvider mtp;//need to store as jpql validation may be too long and need to be cancelled if required
     
     /** Creates a new instance of NonFinalClass */
     public JPQLValidation() {
@@ -91,6 +93,8 @@ public class JPQLValidation extends JPAClassRule {
     }
     
     @Override public ErrorDescription[] apply(TypeElement subject, ProblemContext ctx){
+        JPAProblemContext jpaCtx = (JPAProblemContext)ctx;
+        jpaCtx.addCancelListener(this);
         Object modEl = ctx.getModelElement();
         Entity entity = (Entity) (modEl instanceof Entity ? modEl : null);
         List<AnnotationMirror> first = Utilities.findAnnotations(subject, JPAAnnotations.NAMED_QUERY);
@@ -131,7 +135,8 @@ public class JPQLValidation extends JPAClassRule {
         JPQLQueryHelper helper = new JPQLQueryHelper();
         Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
         List<JPQLQueryProblem> problems = new ArrayList<JPQLQueryProblem>();
-        for(int index=0;index<values.size();index++){
+        mtp = new ManagedTypeProvider(project, jpaCtx.getMetaData());
+        for(int index=0;index<values.size() && !ctx.isCancelled();index++){
             String value = values.get(index);
             String qName = names.get(index);
             NamedQuery nq = null;
@@ -140,7 +145,7 @@ public class JPQLValidation extends JPAClassRule {
                 nq.setQuery(value);
                 nq.setName(qName);
             }
-            helper.setQuery(new Query(nq, value, new ManagedTypeProvider(project, ((JPAProblemContext)ctx).getMetaData())));
+            helper.setQuery(new Query(nq, value, mtp));
             List<JPQLQueryProblem> tmp = null;
             try{
                 tmp = helper.validate();
@@ -152,8 +157,9 @@ public class JPQLValidation extends JPAClassRule {
             if(tmp!=null && tmp.size()>0)problems.addAll(tmp);
             helper.dispose();
         }
-        if (problems != null && problems.size()>0){
-            ErrorDescription[] ret = new ErrorDescription[problems.size()];
+        ErrorDescription[] ret = null;
+        if (!ctx.isCancelled() && problems != null && problems.size()>0){
+            ret = new ErrorDescription[problems.size()];
             for(int i=0;i<ret.length;i++){
                 ListResourceBundle msgBundle = null;
                 try{
@@ -169,14 +175,20 @@ public class JPQLValidation extends JPAClassRule {
                 }
                 ret[i] = createProblem(subject, ctx, pos + ": " + message , Severity.WARNING);
             }
-            return ret;
         }
-        return null;
+        jpaCtx.removeCancelListener(this);
+        mtp = null;
+        return ret;
     }
     
     @Override protected boolean isApplicable(TypeElement subject, ProblemContext ctx) {
         JPAProblemContext jpaCtx = (JPAProblemContext)ctx;
         
         return (jpaCtx.isEntity() || jpaCtx.isMappedSuperClass());
+    }
+
+    @Override
+    public void cancelled() {
+        if(mtp != null)mtp.invalidate();
     }
 }

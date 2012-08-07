@@ -652,14 +652,6 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "* @return Om^g\\AliasedClassName", true);
     }
 
-    public void testIssue209308_06() throws Exception {
-        checkOccurrences(getTestPath(), "* @throws Om^g\\AliasedClassName", true);
-    }
-
-    public void testIssue209308_07() throws Exception {
-        checkOccurrences(getTestPath(), "* @throws Cl^s", true);
-    }
-
     public void testIssue209308_08() throws Exception {
         checkOccurrences(getTestPath(), "* @param Om^g\\AliasedClassName $p", true);
     }
@@ -694,10 +686,6 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
 
     public void testIssue209308_016() throws Exception {
         checkOccurrences(getTestPath(), "* @return Omg\\Aliased^ClassName", true);
-    }
-
-    public void testIssue209308_017() throws Exception {
-        checkOccurrences(getTestPath(), "* @throws Omg\\Aliased^ClassName", true);
     }
 
     public void testIssue209308_018() throws Exception {

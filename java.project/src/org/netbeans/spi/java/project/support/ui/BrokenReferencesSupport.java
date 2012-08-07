@@ -44,34 +44,26 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import java.awt.Dialog;
-import java.io.IOException;
 import java.util.concurrent.Callable;
-import javax.swing.JButton;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.java.project.BrokenReferencesAlertPanel;
-import org.netbeans.modules.java.project.BrokenReferencesCustomizer;
-import org.netbeans.modules.java.project.BrokenReferencesModel;
-import org.netbeans.modules.java.project.JavaProjectSettings;
+import org.netbeans.modules.java.project.ProjectProblemsProviders;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.WindowManager;
-import static org.netbeans.spi.java.project.support.ui.Bundle.*;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.netbeans.api.project.ui.ProjectProblems;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Support for managing broken project references. Project freshly checkout from
@@ -86,21 +78,10 @@ import static org.netbeans.spi.java.project.support.ui.Bundle.*;
  * customizer.
  * </div>
  * @author David Konecny
+ * @author Tomas Zezula
  */
 public class BrokenReferencesSupport {
-
-    private static final RequestProcessor RP = new RequestProcessor(BrokenReferencesSupport.class);
-
-    private static final boolean suppressBrokenRefAlert = Boolean.getBoolean("BrokenReferencesSupport.suppressBrokenRefAlert"); //NOI18N
-    
-    /** Is Broken References alert shown now? */
-    private static BrokenReferencesModel.Context context;
-
-    private static RequestProcessor.Task rpTask;
-
-    /** Timeout within which request to show alert will be ignored. */
-    private static int BROKEN_ALERT_TIMEOUT = 1000;
-    
+        
     private BrokenReferencesSupport() {}
 
     /**
@@ -118,15 +99,25 @@ public class BrokenReferencesSupport {
      *    always exists.
      * @return true if some problem was found and it is necessary to give
      *    user a chance to fix them
+     *
+     * @deprecated Add {@link ProjectProblemsProvider} into project lookup,
+     * use {@link BrokenReferencesSupport#createReferenceProblemsProvider} as default
+     * implementation, and use {@link ProjectProblems#isBroken}
      */
+    @Deprecated
     public static boolean isBroken(AntProjectHelper projectHelper, 
             ReferenceHelper referenceHelper, String[] properties, String[] platformProperties) {
         Parameters.notNull("projectHelper", projectHelper);             //NOI18N
         Parameters.notNull("referenceHelper", referenceHelper);         //NOI18N
         Parameters.notNull("properties", properties);                   //NOI18N
         Parameters.notNull("platformProperties", platformProperties);   //NOI18N
-        return BrokenReferencesModel.isBroken(projectHelper, referenceHelper,
-            projectHelper.getStandardPropertyEvaluator(), properties, platformProperties);
+        return ProjectProblems.isBroken(ProjectDecorator.create(
+                projectHelper,
+                referenceHelper,
+                projectHelper.getStandardPropertyEvaluator(),
+                properties,
+                platformProperties,
+                true));
     }
     
     /**
@@ -143,39 +134,21 @@ public class BrokenReferencesSupport {
      *    platform is expected to be "default_platform" and this platform
      *    always exists.
      * @see LibraryDefiner
+     *
+     * @deprecated Add {@link ProjectProblemsProvider} into project lookup,
+     * use {@link BrokenReferencesSupport#createReferenceProblemsProvider} as default
+     * implementation, and use {@link ProjectProblems#showCustomizer}
      */
-    @Messages({
-        "LBL_BrokenLinksCustomizer_Close=Close",
-        "ACSD_BrokenLinksCustomizer_Close=N/A",
-        "LBL_BrokenLinksCustomizer_Title=Resolve Reference Problems - \"{0}\" Project"
-    })
+    @Deprecated
     public static void showCustomizer(AntProjectHelper projectHelper, 
             ReferenceHelper referenceHelper, String[] properties, String[] platformProperties) {
-        BrokenReferencesModel model = new BrokenReferencesModel(projectHelper, referenceHelper, properties, platformProperties);
-        BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
-        JButton close = new JButton (LBL_BrokenLinksCustomizer_Close()); // NOI18N
-        close.getAccessibleContext ().setAccessibleDescription (ACSD_BrokenLinksCustomizer_Close()); // NOI18N
-        String projectDisplayName = "???"; // NOI18N
-        try {
-            Project project = ProjectManager.getDefault().findProject(projectHelper.getProjectDirectory());
-            if (project != null) {
-                projectDisplayName = ProjectUtils.getInformation(project).getDisplayName();
-            }
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-        DialogDescriptor dd = new DialogDescriptor(customizer, 
-            LBL_BrokenLinksCustomizer_Title(projectDisplayName), // NOI18N
-            true, new Object[] {close}, close, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog dlg = null;
-        try {
-            dlg = DialogDisplayer.getDefault().createDialog(dd);
-            dlg.setVisible(true);
-        } finally {
-            if (dlg != null) {
-                dlg.dispose();
-            }
-        }
+        ProjectProblems.showCustomizer(ProjectDecorator.create(
+                projectHelper,
+                referenceHelper,
+                projectHelper.getStandardPropertyEvaluator(),
+                properties,
+                platformProperties,
+                false));
     }
 
     /**
@@ -184,9 +157,14 @@ public class BrokenReferencesSupport {
      * the project opening, and it will take care about showing message box only
      * once for several subsequent calls during a timeout.
      * The alert box has also "show this warning again" check box.
+     *
+     * @deprecated Add {@link ProjectProblemsProvider} into project lookup,
+     * use {@link BrokenReferencesSupport#createReferenceProblemsProvider} as default
+     * implementation, and use {@link ProjectProblems#showAlert}
      */
+    @Deprecated
     public static void showAlert() {
-        showAlertImpl(null);
+        ProjectProblems.showCustomizer(ProjectDecorator.create());
     }
 
     /**
@@ -209,8 +187,12 @@ public class BrokenReferencesSupport {
      *    platform is expected to be "default_platform" and this platform
      *    always exists.
      * @since 1.37
+     *
+     * @deprecated Add {@link ProjectProblemsProvider} into project lookup,
+     * use {@link BrokenReferencesSupport#createReferenceProblemsProvider} as default
+     * implementation, and use {@link ProjectProblems#showAlert}
      */
-    
+    @Deprecated
     public static void showAlert(
             @NonNull final AntProjectHelper projectHelper,
             @NonNull final ReferenceHelper referenceHelper,
@@ -222,99 +204,90 @@ public class BrokenReferencesSupport {
         Parameters.notNull("evaluator", evaluator);                     //NOI18N
         Parameters.notNull("properties", properties);                   //NOI18N
         Parameters.notNull("platformProperties", platformProperties);   //NOI18N
-        showAlertImpl(new BrokenReferencesModel.BrokenProject(projectHelper, referenceHelper, evaluator, properties, platformProperties));
+        ProjectProblems.showAlert(ProjectDecorator.create(
+                projectHelper,
+                referenceHelper,
+                evaluator,
+                properties,
+                platformProperties,
+                false));
     }
 
+    /**
+     * Creates a {@link ProjectProblemsProvider} creating broken references
+     * problems.
+     * @param projectHelper AntProjectHelper associated with the project.
+     * @param referenceHelper ReferenceHelper associated with the project.
+     * @param evaluator the {@link PropertyEvaluator} used to resolve broken references
+     * @param properties array of property names which values hold
+     *    references which may be broken. For example for J2SE project
+     *    the property names will be: "javac.classpath", "run.classpath", etc.
+     * @param platformProperties array of property names which values hold
+     *    name of the platform(s) used by the project. These platforms will be
+     *    checked for existence. For example for J2SE project the property
+     *    name is one and it is "platform.active". The name of the default
+     *    platform is expected to be "default_platform" and this platform
+     *    always exists.
+     * @return the {@link ProjectProblemsProvider} to be laced into project lookup.
+     * @see ProjectProblemsProvider
+     * @since 1.48
+     */
+    public static ProjectProblemsProvider createReferenceProblemsProvider(
+            @NonNull final AntProjectHelper projectHelper,
+            @NonNull final ReferenceHelper referenceHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String[] properties,
+            @NonNull final String[] platformProperties) {
+        Parameters.notNull("projectHelper", projectHelper);             //NOI18N
+        Parameters.notNull("referenceHelper", referenceHelper);         //NOI18N
+        Parameters.notNull("evaluator", evaluator);                     //NOI18N
+        Parameters.notNull("properties", properties);                   //NOI18N
+        Parameters.notNull("platformProperties", platformProperties);   //NOI18N
+        return ProjectProblemsProviders.createReferenceProblemProvider(
+                projectHelper,
+                referenceHelper,
+                evaluator,
+                properties,
+                platformProperties);
+    }
 
-    @Messages({
-        "CTL_Broken_References_Resolve=Resolve Problems...",
-        "AD_Broken_References_Resolve=N/A",
-        "CTL_Broken_References_Close=Close",
-        "AD_Broken_References_Close=N/A",
-        "MSG_Broken_References_Title=Open Project",
-        "LBL_Broken_References_Resolve_Panel_Close=Close",
-        "AD_Broken_References_Resolve_Panel_Close=N/A",
-        "LBL_Broken_References_Resolve_Panel_Title=Resolve Reference Problems"
-    })
-    private static synchronized void showAlertImpl(@NullAllowed final BrokenReferencesModel.BrokenProject broken) {        
-        if (!JavaProjectSettings.isShowAgainBrokenRefAlert() || suppressBrokenRefAlert) {
-            return;
-        } else if (context == null) {
-            assert rpTask == null;
-
-            final Runnable task = new Runnable() {
-                public @Override void run() {
-                    final BrokenReferencesModel.Context ctx;
-                    synchronized (BrokenReferencesSupport.class) {
-                        rpTask = null;
-                        ctx = context;
-                    }
-                    if (ctx == null) {
-                        return;
-                    }
-                    try {
-                        final JButton resolveOption = new JButton(CTL_Broken_References_Resolve());
-                        resolveOption.getAccessibleContext().setAccessibleDescription(AD_Broken_References_Resolve());
-                        JButton closeOption = new JButton (CTL_Broken_References_Close());
-                        closeOption.getAccessibleContext().setAccessibleDescription(AD_Broken_References_Close());
-                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(),
-                            MSG_Broken_References_Title(),
-                            true,
-                            new Object[] {resolveOption, closeOption},
-                            closeOption,
-                            DialogDescriptor.DEFAULT_ALIGN,
-                            null,
-                            null);
-                        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-                        ctx.addChangeListener(new ChangeListener() {
-                            @Override
-                            public void stateChanged(ChangeEvent e) {
-                                resolveOption.setVisible(!ctx.isEmpty());
-                            }
-                        });
-                        resolveOption.setVisible(!ctx.isEmpty());
-                        if (DialogDisplayer.getDefault().notify(dd) == resolveOption) {
-                            final BrokenReferencesModel model = new BrokenReferencesModel(ctx, true);
-                            final BrokenReferencesCustomizer customizer = new BrokenReferencesCustomizer(model);
-                            JButton close = new JButton (Bundle.LBL_Broken_References_Resolve_Panel_Close());
-                            close.getAccessibleContext ().setAccessibleDescription (Bundle.AD_Broken_References_Resolve_Panel_Close());
-                            dd = new DialogDescriptor(customizer,
-                                Bundle.LBL_Broken_References_Resolve_Panel_Title(),
-                                true,
-                                new Object[] {closeOption},
-                                closeOption,
-                                DialogDescriptor.DEFAULT_ALIGN,
-                                null,
-                                null);
-                            DialogDisplayer.getDefault().notify(dd);
-                        }
-                    } finally {
-                        synchronized (BrokenReferencesSupport.class) {
-                            //Clean seen references and start from empty list
-                            context = null;
-                        }
-                    }
-                }
-            };
-
-            context = new BrokenReferencesModel.Context();
-            rpTask = RP.create(new Runnable() {
-                @Override
-                public void run() {
-                    WindowManager.getDefault().invokeWhenUIReady(task);
-                }
-            });
-        }
-
-        assert context != null;        
-        if (broken != null) {
-            context.offer(broken);
-        }
-        if (rpTask != null) {
-            //Not yet shown, move
-            rpTask.schedule(BROKEN_ALERT_TIMEOUT);
-        }
-    }            
+    /**
+     * Creates a {@link ProjectProblemsProvider} creating wrong Java platform
+     * version problems.
+     * @param projectHelper AntProjectHelper associated with the project.
+     * @param evaluator the {@link PropertyEvaluator} used to resolve broken references
+     * @param postPlatformSetHook called by problem resolution after the platform property has changed
+     * to a new platform. The project type can do project specific changes like updating project.xml file.
+     * The hook is called under {@link ProjectManager#mutex} write access before the project is saved.
+     * @param platformType the type of platform, for example j2se
+     * @param platformProperty a property holding the active platform id.
+     * @param versionProperties array of property names which values hold the source,
+     * target level.
+     * @return {@link ProjectProblemsProvider} to be laced into project lookup.
+     * 
+     * @see ProjectProblemsProvider
+     * @since 1.48
+     */
+    public static ProjectProblemsProvider createPlatformVersionProblemProvider(
+            @NonNull final AntProjectHelper projectHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NullAllowed final PlatformUpdatedCallBack postPlatformSetHook,
+            @NonNull final String platformType,
+            @NonNull final String platformProperty,
+            @NonNull final String... versionProperties) {
+        Parameters.notNull("projectHelper", projectHelper);             //NOI18N
+        Parameters.notNull("evaluator", evaluator);                     //NOI18N
+        Parameters.notNull("platformProperty", platformProperty);       //NOI18N
+        Parameters.notNull("versionProperties", versionProperties);     //NOI18N
+        return ProjectProblemsProviders.createPlatformVersionProblemProvider(
+                projectHelper,
+                evaluator,
+                postPlatformSetHook,
+                platformType,
+                platformProperty,
+                versionProperties);
+    }
+        
     /**
      * Service which may be {@linkplain ServiceProvider registered} to download remote libraries or otherwise define them.
      * @since org.netbeans.modules.java.project/1 1.35
@@ -329,5 +302,76 @@ public class BrokenReferencesSupport {
         @CheckForNull Callable<Library> missingLibrary(String name);
 
     }
-    
+
+    /**
+     * Callback called after the project platform has been updated.
+     * The implementor can do project specific changes required by platform change.
+     * @since 1.48
+     */
+    public interface PlatformUpdatedCallBack {
+        /**
+         * Called by resolution of project problem when platform was changed.
+         * @param platform the new platform
+         */
+        void platformPropertyUpdated(@NonNull final JavaPlatform platform);
+    }
+
+
+    private static final class ProjectDecorator implements Project {
+
+        private final Project delegate;
+        private final Lookup lookup;
+
+        private ProjectDecorator(
+                @NonNull final Project delegate,
+                @NonNull final ProjectProblemsProvider  provider) {
+            assert delegate != null;
+            this.delegate = delegate;
+            this.lookup = new ProxyLookup(delegate.getLookup(),Lookups.singleton(provider));
+        }
+
+        private ProjectDecorator() {
+            this.delegate = null;
+            this.lookup = Lookup.EMPTY;
+        }
+
+        @Override
+        public FileObject getProjectDirectory() {
+            return delegate != null?
+                delegate.getProjectDirectory():
+                null;
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return lookup;
+        }        
+
+        @NonNull
+        static ProjectDecorator create(
+            @NonNull final AntProjectHelper projectHelper,
+            @NonNull final ReferenceHelper referenceHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String[] properties,
+            @NonNull final String[] platformProperties,
+            final boolean abortAfterFirstProblem) {
+            final Project prj = FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
+            return prj != null?
+                new ProjectDecorator(
+                    prj,
+                    ProjectProblemsProviders.createReferenceProblemProvider(
+                        projectHelper,
+                        referenceHelper,
+                        evaluator,
+                        properties,
+                        platformProperties)):
+                new ProjectDecorator();
+        }
+
+        @NonNull
+        static ProjectDecorator create() {
+            return new ProjectDecorator();
+        }
+    }
+            
 }

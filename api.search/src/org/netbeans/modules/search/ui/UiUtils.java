@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.io.CharConversionException;
 import java.io.IOException;
 import javax.swing.AbstractButton;
 import javax.swing.JLabel;
@@ -55,6 +56,7 @@ import org.netbeans.modules.search.BasicSearchProvider;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -121,5 +123,20 @@ public class UiUtils {
      */
     public static void lclz(JLabel obj, String key) {
         Mnemonics.setLocalizedText(obj, getText(key));
+    }
+
+    /**
+     * Escape HTML special characters in string.
+     */
+    public static String escapeHtml(String s) {
+        if (s == null) {
+            return null;
+        } else {
+            try {
+                return XMLUtil.toElementContent(s);
+            } catch (CharConversionException cce) {
+                return s;
+            }
+        }
     }
 }

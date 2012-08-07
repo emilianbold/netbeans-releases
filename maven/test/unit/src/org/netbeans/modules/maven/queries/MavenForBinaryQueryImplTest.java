@@ -42,16 +42,22 @@
 
 package org.netbeans.modules.maven.queries;
 
+import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
+import org.openide.util.Utilities;
 
 public class MavenForBinaryQueryImplTest extends NbTestCase {
 
@@ -102,7 +108,17 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
                 "<version>0</version>" +
                 "</project>");
         FileObject src = FileUtil.createFolder(d, "a/src/main/java");
-        SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(new URL(d.toURL(), "a/target/classes/"));
+        
+        
+        File repo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
+        File art = new File(repo, "grp" + File.separator + "art" + File.separator + "0" + File.separator +  "art-0.jar");
+        URL root = FileUtil.getArchiveRoot(Utilities.toURI(art).toURL());
+        Project p = ProjectManager.getDefault().findProject(d.getFileObject("a"));
+        FileOwnerQuery.markExternalOwner(Utilities.toURI(art), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("grp", "art", "0", d.getFileObject("a").toURL());
+        
+        
+        SourceForBinaryQuery.Result2 r = SourceForBinaryQuery.findSourceRoots2(root);
         assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
         assertTrue(r.preferSources());
         TestFileUtils.writeFile(d,
@@ -115,15 +131,32 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
                 "<version>0</version>" +
                 "</project>");
         src = FileUtil.createFolder(d, "b/src/main/java");
-        r = SourceForBinaryQuery.findSourceRoots2(new URL(d.toURL(), "b/target/classes/"));
+        
+        art = new File(repo, "grp" + File.separator + "art" + File.separator + "0" + File.separator +  "art-0.jar");
+        FileOwnerQuery.markExternalOwner(Utilities.toURI(art), ProjectManager.getDefault().findProject(d.getFileObject("b")), FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        root = FileUtil.getArchiveRoot(Utilities.toURI(art).toURL());
+        p = ProjectManager.getDefault().findProject(d.getFileObject("b"));
+        FileOwnerQuery.markExternalOwner(Utilities.toURI(art), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        MavenFileOwnerQueryImpl.getInstance().registerCoordinates("grp", "art", "0", d.getFileObject("b").toURL());
+        
+        r = SourceForBinaryQuery.findSourceRoots2(root);
         assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
         assertFalse(r.preferSources());
+        
+        //215242 assert that output dir does prefer sources
+        r = SourceForBinaryQuery.findSourceRoots2(new URL(d.toURL(), "b/target/classes/"));
+        assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
+        assertTrue(r.preferSources());
     }
 
     @ProjectServiceProvider(service=ForeignClassBundler.class, projectType="org-netbeans-modules-maven/war")
     public static class ForeignClassBundlerMock implements ForeignClassBundler {
         @Override public boolean preferSources() {
             return false;
+        }
+
+        @Override
+        public void resetCachedValue() {
         }
     }
 

@@ -46,9 +46,13 @@ if [ -z ${RUNJAVAFX} ]; then
     export RUNJAVAFX=0
 fi
 
-#ML BUILD yes/no 1/0
+#ML_BUILD yes/no 1/0
 if [ -z ${ML_BUILD} ]; then
     export ML_BUILD=1
+fi
+#EN_BUILD yes/no 1/0
+if [ -z ${EN_BUILD} ]; then
+    export EN_BUILD=1
 fi
 if [ -z ${LOCALES} ]; then
     export LOCALES=ja,zh_CN,pt_BR,ru

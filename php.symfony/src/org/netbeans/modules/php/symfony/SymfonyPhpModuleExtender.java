@@ -48,11 +48,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.ui.wizards.NewProjectConfigurationPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -72,11 +72,10 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
         SymfonyScript symfonyScript = null;
         try {
             symfonyScript = SymfonyScript.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             // should not happen, must be handled in the wizard
             Exceptions.printStackTrace(ex);
         }
-        assert symfonyScript.isValid() : "Symfony script has to be valid!";
 
         if (!symfonyScript.initProject(phpModule, getPanel().getProjectParams())) {
             // can happen if symfony script was not chosen
@@ -146,12 +145,12 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
     public String getErrorMessage() {
         try {
             PhpInterpreter.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             return ex.getLocalizedMessage();
         }
         try {
             SymfonyScript.getDefault();
-        } catch (InvalidPhpProgramException ex) {
+        } catch (InvalidPhpExecutableException ex) {
             return NbBundle.getMessage(SymfonyPhpModuleExtender.class, "MSG_CannotExtend", ex.getMessage());
         }
         return getPanel().getErrorMessage();

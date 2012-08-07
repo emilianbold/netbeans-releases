@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -337,20 +338,26 @@ public class AstRenderer {
                     }
                     break;
                 case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                    NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
-                    container.addDeclaration(alias);
-                    currentNamespace.addDeclaration(alias);
+                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                        NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
+                        container.addDeclaration(alias);
+                        currentNamespace.addDeclaration(alias);
+                    }
                     break;
                 case CPPTokenTypes.CSM_USING_DIRECTIVE: {
-                    UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
-                    container.addDeclaration(using);
-                    currentNamespace.addDeclaration(using);
+                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                        UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
+                        container.addDeclaration(using);
+                        currentNamespace.addDeclaration(using);
+                    }
                     break;
                 }
                 case CPPTokenTypes.CSM_USING_DECLARATION: {
-                    UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
-                    container.addDeclaration(using);
-                    currentNamespace.addDeclaration(using);
+                    if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                        UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
+                        container.addDeclaration(using);
+                        currentNamespace.addDeclaration(using);
+                    }
                     break;
                 }
                 case CPPTokenTypes.CSM_TEMPL_FWD_CL_OR_STAT_MEM:
@@ -1924,20 +1931,26 @@ public class AstRenderer {
         }
         switch (token.getType()) {
             case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
-                container.addDeclaration(alias);
-                currentNamespace.addDeclaration(alias);
+                if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                    NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
+                    container.addDeclaration(alias);
+                    currentNamespace.addDeclaration(alias);
+                }
                 return true;
             case CPPTokenTypes.CSM_USING_DIRECTIVE: {
-                UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
-                container.addDeclaration(using);
-                currentNamespace.addDeclaration(using);
+                if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                    UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
+                }
                 return true;
             }
             case CPPTokenTypes.CSM_USING_DECLARATION: {
-                UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
-                container.addDeclaration(using);
-                currentNamespace.addDeclaration(using);
+                if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
+                    UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
+                    container.addDeclaration(using);
+                    currentNamespace.addDeclaration(using);
+                }
                 return true;
             }
         }

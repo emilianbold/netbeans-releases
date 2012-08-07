@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.symfony2.annotations.extra;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class ParamConverterTag extends PhpAnnotationTag {
+public class ParamConverterTag extends AnnotationCompletionTag {
 
     public ParamConverterTag() {
         super("ParamConverter", // NOI18N

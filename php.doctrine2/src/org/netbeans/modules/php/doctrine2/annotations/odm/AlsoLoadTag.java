@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.doctrine2.annotations.odm;
 
 import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
+import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.openide.util.NbBundle;
 
-public class AlsoLoadTag extends PhpAnnotationTag {
+public class AlsoLoadTag extends AnnotationCompletionTag {
 
     public AlsoLoadTag() {
         super("AlsoLoad", // NOI18N

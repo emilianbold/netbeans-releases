@@ -383,7 +383,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     
     /** If contained in the lookup can perform the search for a node
      */    
-    public static class PathFinder {
+    public static class PathFinder implements org.netbeans.spi.project.ui.PathFinder {
         
         private SourceGroup group;
         
@@ -391,6 +391,7 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             this.group = group;
         }
         
+        @Override
         public Node findPath( Node root, Object object ) {
             FileObject fo;
             if (object instanceof FileObject) {

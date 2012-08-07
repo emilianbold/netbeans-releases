@@ -40,6 +40,7 @@ METHOD     grep(Object)                               Collection
 METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     identity(Closure)                          Object
+METHOD     inject(Closure)                            Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
 METHOD     invokeMethod(String, Object)               Object
@@ -76,5 +77,4 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 FIELD      class                                      Class
-FIELD      metaClass                                  MetaClass
 FIELD      x                               [PRIVATE]  

@@ -162,7 +162,7 @@ public final class ShellValidationSupport {
 
     public static boolean confirm(final String header, final String footer, final ShellValidationStatus status) {
         if (status == null || status == NOSHELL) {
-            if (Boolean.getBoolean("nativeexecution.mode.unittest")) {
+            if (Boolean.getBoolean("nativeexecution.mode.unittest") || "true".equals(System.getProperty("cnd.command.line.utility"))) { // NOI18N
                 System.err.println(loc("ShellValidationSupport.ValidationError.NoShell"));
             } else {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(

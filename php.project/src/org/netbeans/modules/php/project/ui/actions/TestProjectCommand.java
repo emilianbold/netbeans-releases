@@ -63,12 +63,12 @@ public class TestProjectCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) {
+    public void invokeActionInternal(Lookup context) {
         getConfigAction().runProject();
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) {
+    public boolean isActionEnabledInternal(Lookup context) {
         return getConfigAction().isRunProjectEnabled();
     }
 

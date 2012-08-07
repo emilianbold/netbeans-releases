@@ -255,6 +255,27 @@ public class NbKeymapTest extends NbTestCase {
         assertTrue(km.waitFinished());
         assertEquals("three", km.getAction(controlA).getValue(Action.NAME));
     }
+    
+    public void testMaskForUndefinedShortcut214999() throws Exception {
+        make("Shortcuts/C-U S-B.instance").setAttribute("instanceCreate", new DummyAction("two"));
+        // single-key shortcut, which does not exist; bypasses the for cycle
+        make("Keymaps/NetBeans/C-A.removed");
+        // multi-key shortcut, 1 iteration through cycle, the last binding is not defined
+        make("Keymaps/NetBeans/C-U C-A.removed");
+        // multi-key shortcut, 1 iteration through cycle, which continues with next binding, 1st key undefined
+        make("Keymaps/NetBeans/C-E C-A.removed");
+        NbKeymap km = new NbKeymap();
+        KeyStroke controlU = KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyEvent.CTRL_MASK);
+        KeyStroke controlA = KeyStroke.getKeyStroke(KeyEvent.VK_A, KeyEvent.CTRL_MASK);
+        // should succeed, value unimportant
+        assertNull(km.getAction(controlA));
+        
+        Action a = km.getAction(controlU);
+        assertNotNull("Another action with the same prefix exists", a);
+        
+        // should succeed, nothing 
+        assertNull(km.getAction(controlA));
+    }
 
     public void testMultiKeyShortcuts() throws Exception {
         final AtomicReference<String> ran = new AtomicReference<String>();

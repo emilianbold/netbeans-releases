@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.configurations.*;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -123,13 +124,17 @@ final class ViewFolderPasteType  extends PasteType {
                 String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                 FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
                 String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, itemFO.getNameExt(), ""); // NOI18N
-                FileObject movedFileFO = itemFO.move(itemFO.lock(), toFolderFO, newName, ""); // NOI18N
-
-                Folder movedFolder = toFolder.findFolderByAbsolutePath(movedFileFO.getPath());
-                if (toFolder.getProject() == viewFolderNode.getFolder().getProject()) {
-                    if (movedFolder != null) {
-                        //copyItemConfigurations(movedItem.getItemConfigurations(), oldConfigurations);
+                final FileLock lock = itemFO.lock();
+                try {
+                    FileObject movedFileFO = itemFO.move(lock, toFolderFO, newName, ""); // NOI18N
+                    Folder movedFolder = toFolder.findFolderByAbsolutePath(movedFileFO.getPath());
+                    if (toFolder.getProject() == viewFolderNode.getFolder().getProject()) {
+                        if (movedFolder != null) {
+                            //copyItemConfigurations(movedItem.getItemConfigurations(), oldConfigurations);
+                        }
                     }
+                } finally {
+                    lock.releaseLock();
                 }
             }
         } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {

@@ -79,6 +79,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 import javax.swing.plaf.TextUI;
 import javax.swing.plaf.ToolBarUI;
 import javax.swing.text.DefaultEditorKit;
@@ -219,6 +220,16 @@ import org.openide.util.lookup.ProxyLookup;
         preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsTracker, preferences));
         
         refreshToolbarButtons();
+        setBorderPainted(true);
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // In GTK L&F the border of the toolbar looks raised. It does not help to set null border
+        // nor setting EmptyBorder helps. Curent solution is to set one-pixel LineBorder
+        // which overwrites the "raising line".
+        setBorder(new LineBorder(getBackground(), 1));
     }
 
     // issue #69642
@@ -273,7 +284,7 @@ import org.openide.util.lookup.ProxyLookup;
                 FileUtil.weakFileChangeListener(moduleRegListener, moduleRegistry));
         }
     }
-    
+
     public @Override String getUIClassID() {
         //For GTK and Aqua look and feels, we provide a custom toolbar UI -
         //but we cannot override this globally or it will cause problems for
@@ -590,12 +601,11 @@ import org.openide.util.lookup.ProxyLookup;
         Object icon = a.getValue(Action.SMALL_ICON);
         if (icon == null) {
             String resourceId = (String)a.getValue(BaseAction.ICON_RESOURCE_PROPERTY);
-            if (resourceId == null) { // use default icon
-                resourceId = "org/netbeans/modules/editor/resources/default.gif"; // NOI18N
-            }
-            Image img = ImageUtilities.loadImage(resourceId);
-            if (img != null) {
-                a.putValue(Action.SMALL_ICON, new ImageIcon(img));
+            if (resourceId != null) {
+                Image img = ImageUtilities.loadImage(resourceId);
+                if (img != null) {
+                    a.putValue(Action.SMALL_ICON, new ImageIcon(img));
+                }
             }
         }
     }

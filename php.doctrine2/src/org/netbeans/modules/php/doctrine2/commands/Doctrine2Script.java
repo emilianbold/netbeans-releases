@@ -41,66 +41,163 @@
  */
 package org.netbeans.modules.php.doctrine2.commands;
 
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
-import org.netbeans.modules.php.api.phpmodule.PhpProgram;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
+import org.netbeans.modules.php.api.executable.PhpExecutable;
+import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.doctrine2.options.Doctrine2Options;
+import org.netbeans.modules.php.doctrine2.ui.options.Doctrine2OptionsPanelController;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents <a href="http://doctrine-project.org/">doctrine</a> command line tool.
  */
-public final class Doctrine2Script extends PhpProgram {
+public final class Doctrine2Script {
+
+    private static final Logger LOGGER = Logger.getLogger(Doctrine2Script.class.getName());
 
     public static final String SCRIPT_NAME = "doctrine"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
-    public static final String LIST_COMMAND = "list"; // NOI18N
-    public static final String XML_PARAM = "--xml"; // NOI18N
+
+    private static final List<String> DEFAULT_PARAMS = Collections.singletonList("--ansi"); // NOI18N
+    private static final List<String> LIST_PARAMS = Arrays.asList(
+            "list", // NOI18N
+            "--xml"); // NOI18N
+
+    private final String doctrine2Path;
 
 
-    private Doctrine2Script(String command) {
-        super(command);
+    private Doctrine2Script(String doctrine2Path) {
+        this.doctrine2Path = doctrine2Path;
     }
 
     /**
      * Get the default, <b>valid only</b> Doctrine2 script.
      * @return the default, <b>valid only</b> Doctrine2 script.
-     * @throws InvalidPhpProgramException if Doctrine2 script is not valid.
+     * @throws InvalidPhpExecutableException if Doctrine2 script is not valid.
      */
-    public static Doctrine2Script getDefault() throws InvalidPhpProgramException {
-        String script = Doctrine2Options.getInstance().getScript();
-        String error = validate(script);
+    public static Doctrine2Script getDefault() throws InvalidPhpExecutableException {
+        String doctrine2Path = Doctrine2Options.getInstance().getScript();
+        String error = validate(doctrine2Path);
         if (error != null) {
-            throw new InvalidPhpProgramException(error);
+            throw new InvalidPhpExecutableException(error);
         }
-        return new Doctrine2Script(script);
-    }
-
-    public static String validate(String command) {
-        return new Doctrine2Script(command).validate();
+        return new Doctrine2Script(doctrine2Path);
     }
 
     @NbBundle.Messages("Doctrine2Script.script.label=Doctrine2 script")
-    @Override
-    public String validate() {
-        return FileUtils.validateFile(Bundle.Doctrine2Script_script_label(), getProgram(), false);
+    public static String validate(String command) {
+        return PhpExecutableValidator.validateCommand(command, Bundle.Doctrine2Script_script_label());
     }
 
-    @Override
-    public ExternalProcessBuilder getProcessBuilder() {
-        // XXX
-        if (getProgram().endsWith(".bat")) { // NOI18N
-            return super.getProcessBuilder();
-        }
-        // run file via php interpreter
+    public void runCommand(PhpModule phpModule, List<String> parameters, Runnable postExecution) {
+        new PhpExecutable(doctrine2Path)
+                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .additionalParameters(getAllParameters(parameters))
+                .run(getDescriptor(postExecution));
+    }
+
+    public List<Doctrine2CommandVO> getCommands(PhpModule phpModule) {
+        File tmpFile;
         try {
-            return PhpInterpreter.getDefault().getProcessBuilder()
-                    .addArgument(getProgram());
-        } catch (InvalidPhpProgramException ex) {
-            // ignored
+            tmpFile = File.createTempFile("nb-doctrine2-commands-", ".xml"); // NOI18N
+            tmpFile.deleteOnExit();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            return null;
         }
-        return super.getProcessBuilder();
+        Future<Integer> result = new PhpExecutable(doctrine2Path)
+                .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .fileOutput(tmpFile, true)
+                .additionalParameters(LIST_PARAMS)
+                .run(getSilentDescriptor());
+        try {
+            if (result == null || result.get() != 0) {
+                // error => rerun with output window
+                runCommand(phpModule, LIST_PARAMS);
+                return null;
+            }
+        } catch (CancellationException ex) {
+            // canceled
+            return null;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return null;
+        } catch (ExecutionException ex) {
+            UiUtils.processExecutionException(ex, Doctrine2OptionsPanelController.OPTIONS_SUBPATH);
+            return null;
+        }
+        List<Doctrine2CommandVO> commandsVO = new ArrayList<Doctrine2CommandVO>();
+        try {
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile)));
+            Doctrine2CommandsXmlParser.parse(reader, commandsVO);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        } finally {
+            tmpFile.delete();
+        }
+        if (commandsVO.isEmpty()) {
+            // error => rerun with output window
+            runCommand(phpModule, LIST_PARAMS);
+            return null;
+        }
+        return commandsVO;
+    }
+
+    private void runCommand(PhpModule phpModule, List<String> parameters) {
+        runCommand(phpModule, parameters, null);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "# {1} - command",
+        "Doctrine2Script.command.title={0} ({1})"
+    })
+    private String getDisplayName(PhpModule phpModule, String command) {
+        return Bundle.Doctrine2Script_command_title(phpModule.getDisplayName(), command);
+    }
+
+    private List<String> getAllParameters(List<String> params) {
+        List<String> allParams = new ArrayList<String>(DEFAULT_PARAMS.size() + params.size());
+        allParams.addAll(DEFAULT_PARAMS);
+        allParams.addAll(params);
+        return allParams;
+    }
+
+    private ExecutionDescriptor getDescriptor(Runnable postExecution) {
+        ExecutionDescriptor executionDescriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+                .optionsPath(Doctrine2OptionsPanelController.getOptionsPath())
+                .inputVisible(false);
+        if (postExecution != null) {
+            executionDescriptor = executionDescriptor.postExecution(postExecution);
+        }
+        return executionDescriptor;
+    }
+
+    private ExecutionDescriptor getSilentDescriptor() {
+        return new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL);
     }
 
 }

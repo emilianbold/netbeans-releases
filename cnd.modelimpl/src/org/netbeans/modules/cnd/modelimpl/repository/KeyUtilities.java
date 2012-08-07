@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -97,11 +98,24 @@ public class KeyUtilities {
         return new OffsetableDeclarationKey(obj);
     }
 
+    public static Key createOffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, CharSequence name) {
+        assert containingFile != null;
+        assert name != null;
+        assert kind != null;
+        return new OffsetableDeclarationKey(containingFile, startOffset, kind, name);
+    }
+    
     public static Key createUnnamedOffsetableDeclarationKey(OffsetableDeclarationBase<?> obj, int index) {
         assert obj != null;
         return new OffsetableDeclarationKey(obj, index);
     }
 
+    public static Key createUnnamedOffsetableDeclarationKey(FileImpl containingFile, int startOffset, String kind, int index) {
+        assert containingFile != null;
+        assert kind != null;
+        return new OffsetableDeclarationKey(containingFile, startOffset, kind, Integer.toString(index));
+    }
+    
     public static Key createMacroKey(CsmMacro macro) {
         assert macro != null;
         return new MacroKey(macro);
@@ -130,27 +144,27 @@ public class KeyUtilities {
     ////////////////////////////////////////////////////////////////////////////
 
     public static int getUnitId(CharSequence unitName) {
-        return RepositoryUtils.getUnitId(unitName);
+        return APTSerializeUtils.getUnitId(unitName);
     }
 
     public static CharSequence getUnitName(int unitIndex) {
-        return RepositoryUtils.getUnitName(unitIndex);
+        return APTSerializeUtils.getUnitName(unitIndex);
     }
 
     public static CharSequence getUnitNameSafe(int unitIndex) {
-        return RepositoryUtils.getUnitNameSafe(unitIndex);
+        return APTSerializeUtils.getUnitNameSafe(unitIndex);
     }
 
     public static int getFileIdByName(final int unitId, final CharSequence fileName) {
-        return RepositoryUtils.getFileIdByName(unitId, fileName);
+        return APTSerializeUtils.getFileIdByName(unitId, fileName);
     }
 
     public static CharSequence getFileNameById(final int unitId, final int fileId) {
-        return RepositoryUtils.getFileNameById(unitId, fileId);
+        return APTSerializeUtils.getFileNameById(unitId, fileId);
     }
 
     public static CharSequence getFileNameByIdSafe(final int unitId, final int fileId) {
-        return RepositoryUtils.getFileNameByIdSafe(unitId, fileId);
+        return APTSerializeUtils.getFileNameByIdSafe(unitId, fileId);
     }
 
     public static CsmDeclaration.Kind getKeyKind(Key key) {

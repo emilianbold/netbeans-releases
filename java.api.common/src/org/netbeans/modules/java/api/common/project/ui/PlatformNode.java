@@ -111,9 +111,9 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
     private PlatformNode(PlatformProvider pp, ClassPathSupport cs) {
         super (new PlatformContentChildren (cs), new ProxyLookup(new Lookup[]{
-            Lookups.fixed(new PlatformEditable(pp), new JavadocProvider(pp)),
-            new PlatformFolderLookup(new InstanceContent(), pp)
-        }));
+            Lookups.fixed(new PlatformEditable(pp), new JavadocProvider(pp),  new PathFinder()),
+                    new PlatformFolderLookup(new InstanceContent(), pp)
+            }));
         this.pp = pp;
         this.pp.addChangeListener(this);
         setIconBaseWithExtension(PLATFORM_ICON);
@@ -399,6 +399,30 @@ class PlatformNode extends AbstractNode implements ChangeListener {
                 }
                 content.set(toAdd, null);
             }
+        }
+
+    }
+
+    private static final class PathFinder implements org.netbeans.spi.project.ui.PathFinder {
+
+        PathFinder() {
+        }
+
+        @Override
+        public Node findPath(Node root, Object target) {
+            Node result = null;
+            for (Node node : root.getChildren().getNodes(true)) {
+                final org.netbeans.spi.project.ui.PathFinder pf =
+                    node.getLookup().lookup(org.netbeans.spi.project.ui.PathFinder.class);
+                if (pf == null) {
+                    continue;
+                }
+                result = pf.findPath(node, target);
+                if (result != null) {
+                    break;
+                }
+            }
+            return result;
         }
 
     }

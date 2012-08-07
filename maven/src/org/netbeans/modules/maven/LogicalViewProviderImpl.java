@@ -47,8 +47,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -107,8 +111,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
         if ( target instanceof FileObject ) {
             FileObject fo = (FileObject)target;
             
-            Project owner = FileOwnerQuery.getOwner( fo );
-            if ( !prj.equals( owner ) ) {
+            if (isOtherProjectSource(fo, prj) ) {
                 return null; // Don't waste time if project does not own the fo
             }
             Node[] nodes = node.getChildren().getNodes(true);
@@ -143,6 +146,24 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
         }
         
         return null;
+    }
+
+    private static boolean isOtherProjectSource(
+            @NonNull final FileObject fo,
+            @NonNull final Project me) {
+        final Project owner = FileOwnerQuery.getOwner(fo);
+        if (owner == null) {
+            return false;
+        }
+        if (me.equals(owner)) {
+            return false;
+        }
+        for (SourceGroup sg : ProjectUtils.getSources(owner).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            if (FileUtil.isParentOf(sg.getRootFolder(), fo)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Node findNodeByFileDataObject(Node node, FileObject fo) {

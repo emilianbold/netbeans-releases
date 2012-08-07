@@ -45,11 +45,12 @@
 package org.netbeans.core.output2;
 
 import java.io.IOException;
+import java.util.WeakHashMap;
 import javax.swing.Action;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.windows.IOProvider;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -59,7 +60,8 @@ import org.openide.windows.OutputWriter;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.windows.IOProvider.class, position=100)
 public final class NbIOProvider extends IOProvider {
-    private static final PairMap namesToIos = new PairMap();
+    private static final WeakHashMap<IOContainer, PairMap> containerPairMaps =
+            new WeakHashMap<IOContainer, PairMap>();
 
     private static final String STDOUT = NbBundle.getMessage(NbIOProvider.class,
         "LBL_STDOUT"); //NOI18N
@@ -110,15 +112,29 @@ public final class NbIOProvider extends IOProvider {
         return NAME;
     }
 
-    private InputOutput getIO(String name, boolean newIO, Action[] toolbarActions, IOContainer ioContainer) {
+    @Override
+    public InputOutput getIO(String name, boolean newIO,
+            Action[] toolbarActions, IOContainer ioContainer) {
         if (Controller.LOG) {
             Controller.log("GETIO: " + name + " new:" + newIO);
         }
-        NbIO result = namesToIos.get(name);
-
+        IOContainer realIoContainer = ioContainer == null
+                ? IOContainer.getDefault() : ioContainer;
+        NbIO result;
+        synchronized (containerPairMaps) {
+            PairMap namesToIos = containerPairMaps.get(realIoContainer);
+            result = namesToIos != null ? namesToIos.get(name) : null;
+        }
         if (result == null || newIO) {
-            result = new NbIO(name, toolbarActions, ioContainer);
-            namesToIos.add (name, result);
+            result = new NbIO(name, toolbarActions, realIoContainer);
+            synchronized (containerPairMaps) {
+                PairMap namesToIos = containerPairMaps.get(realIoContainer);
+                if (namesToIos == null) {
+                    namesToIos = new PairMap();
+                    containerPairMaps.put(realIoContainer, namesToIos);
+                }
+                namesToIos.add(name, result);
+            }
             NbIO.post(new IOEvent(result, IOEvent.CMD_CREATE, newIO));
         }
         return result;
@@ -126,16 +142,19 @@ public final class NbIOProvider extends IOProvider {
     
     
     static void dispose (NbIO io) {
-        namesToIos.remove (io);
-    }
-    
-    /**
-     * Called when the output window is hidden.  Switches the caching of IOs
-     * to weak references, so that only those still alive will be shown the 
-     * next time the output window is opened.
-     */
-    static void setWeak(boolean value) {
-        namesToIos.setWeak(value);
+        IOContainer ioContainer = io.getIOContainer();
+        if (ioContainer == null) {
+            ioContainer = IOContainer.getDefault();
+        }
+        synchronized (containerPairMaps) {
+            PairMap namesToIos = containerPairMaps.get(ioContainer);
+            if (namesToIos != null) {
+                namesToIos.remove(io);
+                if (namesToIos.isEmpty()) {
+                    containerPairMaps.remove(ioContainer);
+                }
+            }
+        }
     }
 }
 

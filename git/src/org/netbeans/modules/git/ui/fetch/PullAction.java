@@ -89,24 +89,35 @@ public class PullAction extends GetRemoteChangesAction {
         PullWizard wiz = new PullWizard(repository, remotes);
         if (wiz.show()) {
             Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
-            pull(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getBranchToMerge());
+            pull(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getBranchToMerge(), wiz.getRemoteToPersist());
         }
     }
     
-    public void pull (File repository, final String remote, final List<String> fetchRefSpecs, final String branchToMerge) {
+    public void pull (File repository, final String target, final List<String> fetchRefSpecs, final String branchToMerge, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
                 File repository = getRepositoryRoot();
-                LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, remote }); //NOI18N
+                LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, target }); //NOI18N
                 try {
                     boolean cont;
                     GitClient client = getClient();
+                    if (remoteNameToUpdate != null) {
+                        GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
+                        if (isCanceled()) {
+                            return;
+                        }
+                        config = FetchAction.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
+                        client.setRemote(config, getProgressMonitor());
+                        if (isCanceled()) {
+                            return;
+                        }
+                    }
                     MergeRevisionAction.MergeResultProcessor mrp = new MergeRevisionAction.MergeResultProcessor(client, repository, branchToMerge, getLogger(), getProgressMonitor());
                     do {
                         cont = false;
                         try {
-                            GitPullResult result = client.pull(remote, fetchRefSpecs, branchToMerge, getProgressMonitor());
+                            GitPullResult result = client.pull(target, fetchRefSpecs, branchToMerge, getProgressMonitor());
                             log(result.getFetchResult(), getLogger());
                             mrp.processResult(result.getMergeResult());
                         } catch (GitException.CheckoutConflictException ex) {

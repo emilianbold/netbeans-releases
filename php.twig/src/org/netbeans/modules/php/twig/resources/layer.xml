@@ -118,7 +118,7 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.GsfParserFactory.create"/>
                 </file>
 
-                <file name="org-netbeans-modules-javascript-editing-embedding-JsEmbeddingProvider$Factory.instance">
+                <file name="org-netbeans-modules-javascript2-editor-embedding-JsEmbeddingProvider$Factory.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.TaskFactory"/>
                 </file>
                 <file name="org-netbeans-modules-html-editor-gsf-embedding-CssEmbeddingProvider$Factory.instance">
@@ -135,7 +135,7 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-html-editor-HtmlBracesMatching.instance">
                         <attr name="position" intvalue="50"/>
                     </file>
-                    <file name="org-netbeans-modules-javascript-editing-JsBracesMatcherFactory.instance">
+                    <file name="org-netbeans-modules-javascript2-editor-JsBracesMatcher$JsBracesMatcherFactory.instance">
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
@@ -197,73 +197,8 @@ made subject to such option by the copyright holder.
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-twig">
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/twig/resources/icon.png"/>
-                <folder name="Actions">
-                    <file name="org-openide-actions-CopyAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
-                        <attr name="position" intvalue="400"/>
-                    </file>
-                    <file name="org-openide-actions-CutAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-                        <attr name="position" intvalue="300"/>
-                    </file>
-                    <file name="org-openide-actions-DeleteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-                        <attr name="position" intvalue="600"/>
-                    </file>
-                    <file name="org-openide-actions-FileSystemAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="1100"/>
-                    </file>
-                    <file name="org-openide-actions-OpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="org-openide-actions-PropertiesAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="org-openide-actions-RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="700"/>
-                    </file>
-                    <file name="org-openide-actions-SaveAsTemplateAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                    <file name="org-openide-actions-ToolsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="1300"/>
-                    </file>
-                    <file name="sep-1.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
-                    <file name="sep-2.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="500"/>
-                    </file>
-                    <file name="sep-3.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="800"/>
-                    </file>
-                    <file name="sep-4.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1000"/>
-                    </file>
-                    <file name="sep-5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                </folder>
-                <folder name="Factories">
-                    <file name="TwigDataLoader.instance">
-                        <attr name="dataObjectClass" stringvalue="org.netbeans.modules.php.twig.editor.TwigDataObject"/>
-                        <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
-                        <attr name="mimeType" stringvalue="text/x-twig"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/twig/resources/icon.png"/>
-                    </file>
-                </folder>
+                <!-- keep for language annotation-->
+                <attr name="iconBase" stringvalue="org/netbeans/modules/php/twig/resources/icon.png"/>
             </folder>
         </folder>
     </folder>

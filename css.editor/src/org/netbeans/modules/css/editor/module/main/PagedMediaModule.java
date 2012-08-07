@@ -184,7 +184,7 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
     }
 
     private static List<CompletionProposal> getPropertiesCompletionProposals(CompletionContext context) {
-        return Utilities.wrapProperties(CssModuleSupport.getProperties(), context.getAnchorOffset());
+        return Utilities.wrapProperties(CssModuleSupport.getProperties(context), context.getAnchorOffset());
     }
 
     @Override

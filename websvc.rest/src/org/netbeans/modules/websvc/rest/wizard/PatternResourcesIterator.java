@@ -94,6 +94,16 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
             String restAppPackage = null;
             String restAppClass = null;
             
+            final ProgressDialog dialog = new ProgressDialog(NbBundle.getMessage(
+                    PatternResourcesIterator.class, 
+                    "LBL_RestServicesFromPatternsProgress"));   // NOI18N
+            
+            final ProgressHandle pHandle = dialog.getProgressHandle();
+            pHandle.start();
+            
+            pHandle.progress(NbBundle.getMessage(PatternResourcesIterator.class,
+                    "MSG_EnableRestSupport"));                  // NOI18N     
+            
             if( restSupport instanceof WebRestSupport) {
                 Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
                 if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
@@ -124,8 +134,6 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
 
             final FileObject targetFolder = tmpTargetFolder;
             final GenericResourceBean[] resourceBeans = getResourceBeans(wizard);
-            final ProgressDialog dialog = new ProgressDialog(NbBundle.getMessage(
-                    PatternResourcesIterator.class, "LBL_RestServicesFromPatternsProgress"));
     
             // create application config class if required
             final FileObject restAppPack = restAppPackage == null ? null :  
@@ -134,14 +142,13 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
             
             generatorTask = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
-                    ProgressHandle pHandle = dialog.getProgressHandle();
-                    pHandle.start();
                     try {
                         if ( restAppPack != null && appClassName!= null ){
                             RestUtils.createApplicationConfigClass( restAppPack, appClassName);
                         }
                         for (GenericResourceBean bean : resourceBeans) {
-                            result.addAll(new GenericResourceGenerator(targetFolder, bean).generate(pHandle));
+                            result.addAll(new GenericResourceGenerator(targetFolder, 
+                                    bean).generate(pHandle));
                         }
                         restSupport.configure(
                                 wizard.getProperty(

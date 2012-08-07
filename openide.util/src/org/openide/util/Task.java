@@ -164,20 +164,24 @@ public class Task extends Object implements Runnable {
                     wait(milliseconds);
 
                     if (finished) {
+                        LOG.log(Level.FINER, "finished, return"); // NOI18N
                         return true;
                     }
                     
                     if (milliseconds == 0) {
+                        LOG.log(Level.FINER, "infinite wait, again"); // NOI18N
                         continue;
                     }
                     
                     long now = System.currentTimeMillis();
-
-                    if (expectedEnd <= now) {
+                    long remains = expectedEnd - now;
+                    LOG.log(Level.FINER, "remains {0} ms", remains);
+                    if (remains <= 0) {
+                        LOG.log(Level.FINER, "exit, timetout");
                         return false;
                     }
 
-                    milliseconds = expectedEnd - now;
+                    milliseconds = remains;
                 }
             }
         }

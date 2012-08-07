@@ -6,15 +6,6 @@
             <code-name-base>org.netbeans.modules.javafx2.scenebuilder</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.extexecution</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>1.27</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.javafx2.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

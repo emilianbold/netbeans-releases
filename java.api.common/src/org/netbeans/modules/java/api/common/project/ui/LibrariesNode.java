@@ -117,7 +117,7 @@ import org.openide.util.lookup.Lookups;
 */
 public final class LibrariesNode extends AbstractNode {
 
-    private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/java/api/common/project/ui/resources/libraries-badge.png");    //NOI18N
+    private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/java/api/common/project/ui/resources/libraries-badge.png");    //NOI18N    
     public static final RequestProcessor rp = new RequestProcessor ();
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;
@@ -147,7 +147,7 @@ public final class LibrariesNode extends AbstractNode {
         super (new LibrariesChildren (project, eval, helper, refHelper, classPathProperty,
                     classPathIgnoreRef, platformProperty,
                     webModuleElementName, cs, extraKeys),
-                Lookups.singleton(project));
+                Lookups.fixed(project, new PathFinder()));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
@@ -930,5 +930,32 @@ public final class LibrariesNode extends AbstractNode {
         /** Creates nodes for extra key. */
         Node[] createNodes(Key key);
     }
+
+    private static final class PathFinder implements org.netbeans.spi.project.ui.PathFinder {
+        
+
+        PathFinder() {
+        }
+
+        @Override
+        public Node findPath(Node root, Object target) {
+            Node result = null;
+            for (Node  node : root.getChildren().getNodes(true)) {
+                final org.netbeans.spi.project.ui.PathFinder pf =
+                    node.getLookup().lookup(org.netbeans.spi.project.ui.PathFinder.class);
+                if (pf == null) {
+                    continue;
+                }
+                result = pf.findPath(node, target);
+                if (result != null) {
+                    break;
+                }
+            }
+            return result;
+        }
+
+    }
+
+    
 
 }

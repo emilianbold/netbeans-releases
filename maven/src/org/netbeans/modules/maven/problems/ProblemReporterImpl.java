@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.problems;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -56,6 +57,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
@@ -70,7 +73,6 @@ import org.apache.maven.plugin.PluginArtifactsCache;
 import org.apache.maven.plugin.PluginResolutionException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.maven.NbArtifactFixer;
@@ -80,6 +82,8 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.modelcache.MavenProjectCache;
 import static org.netbeans.modules.maven.problems.Bundle.*;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -99,6 +103,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
     private static final String MISSING_J2EE = "MISSINGJ2EE"; //NOI18N
     private static final String MISSING_APISUPPORT = "MISSINGAPISUPPORT"; //NOI18N
     private static final String MISSING_DEPENDENCY = "MISSING_DEPENDENCY";//NOI18N
+    private static final String BUILD_PARTICIPANT = "BUILD_PARTICIPANT";//NOI18N
     private static final String MISSING_PARENT = "MISSING_PARENT";//NOI18N
     
     private static final Logger LOG = Logger.getLogger(ProblemReporterImpl.class.getName());
@@ -370,13 +375,29 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         "# {0} - list of artifacts", "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
             + "Code completion in the IDE will not include classes from these dependencies or their transitive dependencies (unless they are among the open projects).\n"
             + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
-            + "The artifacts are:\n {0}"
+            + "The artifacts are:\n {0}",
+        "ERR_Participant=Custom build participant(s) found",
+        "MSG_Participant=The IDE will not execute any 3rd party extension code during Maven project loading.\nThese can have significant influence on performance of the Maven model (re)loading or interfere with IDE's own codebase. "
+            + "On the other hand the model loaded can be incomplete without their participation. In this project "
+            + "we have discovered the following external build participants:\n{0}"
     })
     public void doArtifactChecks(@NonNull MavenProject project) {
-        MavenProject parent = project;
-        while (parent != null) {
-            parent = checkParent(parent);
+        
+        if (MavenProjectCache.unknownBuildParticipantObserved(project)) {
+            StringBuilder sb = new StringBuilder();
+            for (String s : MavenProjectCache.getUnknownBuildParticipantsClassNames(project)) {
+                sb.append(s).append("\n");
+            }
+            ProblemReport report = new ProblemReport(
+                    ProblemReport.SEVERITY_MEDIUM,
+                    ERR_Participant(),
+                    MSG_Participant(sb.toString()),
+                    null
+                    /**new EnableParticipantsBuildAction(nbproject)**/);
+            report.setId(BUILD_PARTICIPANT);
+            addReport(report);
         }
+        checkParents(project);
         
         boolean missingNonSibling = false;
         List<Artifact> missingJars = new ArrayList<Artifact>();
@@ -429,27 +450,27 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
             + "Please check that <relativePath> tag is present and correct, the version of parent POM in sources matches the version defined. \n"
             + "If parent is only available through a remote repository, please check that the repository hosting it is defined in the current POM."
     })
-    private @CheckForNull MavenProject checkParent(@NonNull MavenProject project) {
-        MavenProject parentDecl;
-        try {
-            parentDecl = project.getParent();
-        } catch (IllegalStateException x) { // #197994
-            parentDecl = null;
+    private void checkParents(@NonNull MavenProject project) {
+        List<MavenEmbedder.ModelDescription> mdls = MavenEmbedder.getModelDescriptors(project);
+        boolean first = true;
+        if (mdls == null) { //null means just about broken project..
+            return;
         }
-        if (parentDecl == null) {
-            return null;
+        for (MavenEmbedder.ModelDescription m : mdls) {
+            if (first) {
+                first = false;
+                continue;
+            }
+            if (NbArtifactFixer.FALLBACK_NAME.equals(m.getName())) {
+                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        ERR_NoParent(),
+                        MSG_NoParent(m.getId()),
+                        new SanityBuildAction(nbproject));
+                report.setId(MISSING_PARENT);
+                addReport(report);
+                addMissingArtifact(EmbedderFactory.getProjectEmbedder().createArtifact(m.getGroupId(), m.getArtifactId(), m.getVersion(), "pom"));
+            }
         }
-        Artifact art = project.getParentArtifact();
-        if (art != null && NbArtifactFixer.FALLBACK_NAME.equals(parentDecl.getName())) {
-            ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                    ERR_NoParent(),
-                    MSG_NoParent(art.getId()),
-                    new SanityBuildAction(nbproject));
-            report.setId(MISSING_PARENT);
-            addReport(report);
-            addMissingArtifact(art);
-        }
-        return parentDecl;
     }
 
     

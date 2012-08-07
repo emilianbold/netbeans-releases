@@ -66,18 +66,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -157,6 +148,29 @@ public class MavenProjectRestSupport extends WebRestSupport {
         }
         else {
             addSwdpLibrary( restConfig );
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.websvc.rest.spi.WebRestSupport#enableRestSupport(org.netbeans.modules.websvc.rest.spi.WebRestSupport.RestConfig)
+     */
+    @Override
+    public void enableRestSupport( final RestConfig config ) {
+        if ( SwingUtilities.isEventDispatchThread() ){
+            Runnable runnable = new Runnable() {
+                
+                @Override
+                public void run() {
+                    enableRestSupport(config);
+                }
+            };
+            AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread( runnable , 
+                    NbBundle.getMessage(MavenProjectRestSupport.class, 
+                    "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
+        }
+        else {
+            super.enableRestSupport(config);
         }
     }
 

@@ -44,8 +44,8 @@ package org.netbeans.modules.php.symfony2.ui.actions;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
-import org.netbeans.modules.php.spi.actions.RunCommandAction;
-import org.netbeans.modules.php.spi.phpmodule.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
+import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.openide.util.NbBundle.Messages;
 
 /**

@@ -161,7 +161,7 @@ public class PostFlowAnalysis extends TreeScanner {
         } else {
             super.visitMethodDef(tree);
         }
-        if (tree.sym == null || tree.type == null)
+        if (tree.sym == null || tree.sym.owner == null || tree.type == null)
             return;
         Type type = types.erasure(tree.type);
         for (Scope.Entry e = tree.sym.owner.members().lookup(tree.name);

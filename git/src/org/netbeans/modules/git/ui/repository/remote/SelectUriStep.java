@@ -120,8 +120,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         };
         this.mode = mode;
         if (mode == Mode.PUSH) {
-            panel.lblRemoteNames.setVisible(false);
-            panel.cmbRemoteNames.setVisible(false);
+            panel.remotesPanel.setVisible(false);
         }
         remoteNameEditTimer = new Timer(300, this);
         remoteNameEditTimer.setRepeats(false);
@@ -213,6 +212,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         panel.cmbConfiguredRepositories.setEnabled(panel.rbConfiguredUri.isSelected());
         panel.cmbRemoteNames.setEnabled(panel.rbCreateNew.isSelected());
         panel.lblRemoteNames.setEnabled(panel.rbCreateNew.isSelected());
+        panel.cbPersistRemote.setEnabled(panel.rbCreateNew.isSelected());
     }
 
     @Override
@@ -348,6 +348,16 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         return remoteTags;
     }
 
+    public boolean isPersistRemote () {
+        return !isConfiguredRemoteSelected() && panel.cbPersistRemote.isSelected() 
+                && panel.cbPersistRemote.isVisible()
+                && panel.cbPersistRemote.isEnabled();
+    }
+
+    public String getNewRemoteName () {
+        return (String) panel.cmbRemoteNames.getSelectedItem();
+    }
+
     @Override
     public void stateChanged(ChangeEvent ce) {
         validateBeforeNext();
@@ -377,7 +387,11 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
 
         @Override
         public int compareTo (RemoteUri other) {
-            return toString().compareTo(other.toString());
+            int comp = remoteName.compareToIgnoreCase(other.remoteName);
+            if (comp == 0) {
+                comp = uri.compareToIgnoreCase(other.uri);
+            }
+            return comp;
         }
     }
 }

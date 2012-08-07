@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes.visitors;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
@@ -52,32 +51,18 @@ import org.netbeans.modules.php.editor.parser.astnodes.*;
  */
 public class DefaultTreePathVisitor extends DefaultVisitor {
 
-    // @GuardedBy(unmodifiablePath)
-    private final List<ASTNode> path = Collections.synchronizedList(new LinkedList<ASTNode>());
-    private final List<ASTNode> unmodifiablePath;
-
-    public DefaultTreePathVisitor() {
-        unmodifiablePath = Collections.unmodifiableList(path);
-    }
+    // @GuardedBy(path)
+    private final List<ASTNode> path = new LinkedList<ASTNode>();
 
     /**
      * Reversed order.
-     * <br /><br />
-     * You have to <b>synchronize the block</b>, where the iteration is done over this
-     * collection. E.g.:
-     * <pre>
-     * List<ASTNode> path = getPath();
-     * synchronized (path) {
-     *     for (ASTNode node : path) {
-     *         ...
-     *     }
-     * }
-     * </pre>
      *
      * @return
      */
     public List<ASTNode> getPath() {
-        return unmodifiablePath;
+        synchronized (path) {
+            return new LinkedList<ASTNode>(path);
+        }
     }
 
     @Override
@@ -640,14 +625,14 @@ public class DefaultTreePathVisitor extends DefaultVisitor {
 
     protected void addToPath(ASTNode node) {
         if (node != null) {
-            synchronized (unmodifiablePath) {
+            synchronized (path) {
                 path.add(0, node);
             }
         }
     }
 
     protected void removeFromPath() {
-        synchronized (unmodifiablePath) {
+        synchronized (path) {
             path.remove(0);
         }
     }

@@ -610,16 +610,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
-            List<String> vec2 = new ArrayList<String>();
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
             CCCCompilerConfiguration master = (CCCCompilerConfiguration) cccCompilerConfiguration.getMaster();
+            List<List<String>> list = new ArrayList<List<String>>();
             while (master != null && cccCompilerConfiguration.getInheritIncludes().getValue()) {
-                vec2.addAll(master.getIncludeDirectories().getValue());
+                list.add(master.getIncludeDirectories().getValue());
                 if (master.getInheritIncludes().getValue()) {
                     master = (CCCCompilerConfiguration) master.getMaster();
                 } else {
                     master = null;
                 }
+            }
+            List<String> vec2 = new ArrayList<String>();
+            for(int i = list.size() - 1; i >= 0; i--) {
+                vec2.addAll(list.get(i));
             }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
@@ -900,6 +904,25 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return true;
     }
 
+    /*package*/ int getCRC() {
+        int res = 0;
+        for(FSPath aPath : getUserIncludePaths()) {
+            res += 37 * aPath.getPath().hashCode();
+        }
+        for(String macro: getUserMacroDefinitions()) {
+            res += 37 * macro.hashCode();
+        }
+        for(FSPath aPath : getSystemIncludePaths()) {
+            res += 37 * aPath.getPath().hashCode();
+        }
+        for(String macro: getSystemMacroDefinitions()) {
+            res += 37 * macro.hashCode();
+        }
+        res += 37 * getLanguage().hashCode();
+        res += 37 * getLanguageFlavor().hashCode();
+        return res;
+    }
+    
     @Override
     public String toString() {
         return path;

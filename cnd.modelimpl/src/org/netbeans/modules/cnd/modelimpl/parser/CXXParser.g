@@ -372,9 +372,10 @@ block_declaration:
 
 // IDs
 id_expression:
-        unqualified_id
+        // TODO: review temp predicate
+        ((simple_template_id_or_IDENT)? SCOPE) => qualified_id
     |
-        qualified_id
+        unqualified_id
     ;
 
 unqualified_id:
@@ -396,13 +397,17 @@ qualified_id:
         nested_name_specifier LITERAL_template? unqualified_id
     |
         SCOPE (
+            // TODO: review temp predicate
+            (simple_template_id_or_IDENT SCOPE) =>
             nested_name_specifier LITERAL_template? unqualified_id
+        |
+            // TODO: review temp predicate
+            (LITERAL_OPERATOR STRING_LITERAL IDENT) =>
+            literal_operator_id
         |
             operator_function_id
         |
             simple_template_id_or_IDENT
-        |
-            literal_operator_id
         )
     ;
 
@@ -424,10 +429,11 @@ nested_name_specifier:
 
 nested_name_specifier returns [ name_specifier_t namequal ]
     :
-        IDENT                   {action.nested_name_specifier(input.LT(0));}
+        simple_template_id_or_IDENT                                             {action.nested_name_specifier(input.LT(0));}
         SCOPE 
         (
-            (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> LITERAL_template simple_template_id_nocheck SCOPE
+            (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> 
+                LITERAL_template simple_template_id_nocheck SCOPE
         |
             (IDENT SCOPE) =>
                 IDENT           {action.nested_name_specifier(input.LT(0));}
@@ -440,13 +446,13 @@ nested_name_specifier returns [ name_specifier_t namequal ]
 
 lookup_nested_name_specifier:
         IDENT SCOPE
-        (
-            IDENT SCOPE
-        |
-            LITERAL_template lookup_simple_template_id SCOPE
-        |
-            lookup_simple_template_id SCOPE
-        )*
+//        (
+//            IDENT SCOPE
+//        |
+//            LITERAL_template lookup_simple_template_id SCOPE
+//        |
+//            lookup_simple_template_id SCOPE
+//        )*
     ;
 
 //[gram.dcl]
@@ -470,7 +476,9 @@ simple_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-        decl_specifier*
+                                                                                {action.simple_declaration(input.LT(1));}
+                                                                                {action.decl_specifiers();}
+        decl_specifier*                                                         {action.end_decl_specifiers();}
         (
             SEMICOLON
         |
@@ -481,7 +489,7 @@ scope Declaration;
             )
             // this is a continuation of init_declarator_list after constructor_declarator/init_declarator
             (COMMA init_declarator)* SEMICOLON
-        )
+        )                                                                       {action.end_simple_declaration(input.LT(0));}
     ;
 
 /*
@@ -494,8 +502,9 @@ simple_declaration_or_function_definition [decl_kind kind]
 //scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-        {action.simple_declaration(input.LT(1));}
-        decl_specifier*
+                                                                                {action.simple_declaration(input.LT(1));}
+                                                                                {action.decl_specifiers();}
+        decl_specifier*                                                         {action.end_decl_specifiers();}
         (
             SEMICOLON
         |
@@ -511,14 +520,13 @@ simple_declaration_or_function_definition [decl_kind kind]
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
-                { /*$greedy_declarator.type.is_function()*/ true }?
+                { /*$greedy_declarator.type.is_function()*/ input.LA(1) != ASSIGNEQUAL }?
                     function_definition_after_declarator
             |
                 // this is a continuation of init_declarator_list after greedy_declarator
                 initializer? ( COMMA init_declarator )* SEMICOLON
             )
-        )
-        {action.end_simple_declaration(input.LT(0));}
+        )                                                                       {action.end_simple_declaration(input.LT(0));}
     ;
 
 static_assert_declaration:
@@ -531,17 +539,17 @@ attribute_declaration:
 
 decl_specifier
     :
-        storage_class_specifier {action.decl_specifier(action.DECL_SPECIFIER__STORAGE_CLASS_SPECIFIER, null);}
+        storage_class_specifier                                                 {action.decl_specifier(action.DECL_SPECIFIER__STORAGE_CLASS_SPECIFIER, input.LT(0));}
     |
-        function_specifier      {action.decl_specifier(action.DECL_SPECIFIER__FUNCTION_SPECIFIER, null);}
+        function_specifier                                                      {action.decl_specifier(action.DECL_SPECIFIER__FUNCTION_SPECIFIER, input.LT(0));}
     |
-        LITERAL_friend          {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_FRIEND, $LITERAL_friend);}
+        LITERAL_friend                                                          {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_FRIEND, $LITERAL_friend);}
     |
-        LITERAL_typedef         {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_TYPEDEF, $LITERAL_typedef);}
+        LITERAL_typedef                                                         {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_TYPEDEF, $LITERAL_typedef);}
     |
-        type_specifier          {action.decl_specifier(action.DECL_SPECIFIER__TYPE_SPECIFIER, null);}
+        type_specifier                                                          {action.decl_specifier(action.DECL_SPECIFIER__TYPE_SPECIFIER, input.LT(0));}
     |
-        LITERAL_constexpr
+        LITERAL_constexpr                                                       {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_CONSTEXPR, $LITERAL_constexpr);}
     ;
 
 storage_class_specifier:
@@ -620,55 +628,56 @@ simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
 @init { qual_setup(); }
     :
-        LITERAL_char
+        LITERAL_char                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_wchar_t
+        LITERAL_wchar_t                                                         {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_char16_t
+        LITERAL_char16_t                                                        {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_char32_t
+        LITERAL_char32_t                                                        {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_bool
+        LITERAL_bool                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_short
+        LITERAL_short                                                           {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_int
+        LITERAL_int                                                             {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_long
+        LITERAL_long                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_signed
+        LITERAL_signed                                                          {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_unsigned
+        LITERAL_unsigned                                                        {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_float
+        LITERAL_float                                                           {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_double
+        LITERAL_double                                                          {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_void
+        LITERAL_void                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        LITERAL_auto
+        LITERAL_auto                                                            {action.simple_type_specifier(input.LT(0));}
     |
-        decltype_specifier
+        decltype_specifier                                                      {action.simple_type_specifier(input.LT(0));}
     |
         /*
          * "at most one type-specifier is allowed in the complete decl-specifier-seq of a declaration..."
          * In particular (qualified)type_name is allowed only once.
          */
-        { !type_specifier_already_present(CTX) }? =>
+        { action.type_specifier_already_present(input) }? =>
+//        { !type_specifier_already_present(CTX) }? =>
             (SCOPE {{ qual_add_colon2(); }} )?
             /* note that original rule does not allow empty nested_name_specifier for the LITERAL_template alternative */
             (
                 (lookup_nested_name_specifier)=>
                     nested_name_specifier 
-                    (IDENT      {action.simple_type_specifier(input.LT(0));}
+                    (simple_template_id_or_IDENT                                {action.simple_type_specifier(input.LT(0));}
                     | LITERAL_template simple_template_id)
             |
-                IDENT           {action.simple_type_specifier(input.LT(0));}
+                simple_template_id_or_IDENT                                     {action.simple_type_specifier(input.LT(0));}
             )
     ;
 
 lookup_type_name:
-        IDENT { identifier_is(IDT_CLASS_NAME|IDT_ENUM_NAME|IDT_TYPEDEF_NAME) }?
+        IDENT { action.identifier_is(IDT_CLASS_NAME|IDT_ENUM_NAME|IDT_TYPEDEF_NAME, $IDENT) }?
     ;
 
 /*
@@ -696,11 +705,16 @@ decltype_specifier:
     ;
 
 elaborated_type_specifier:
-        class_key SCOPE? (
+        class_key SCOPE?         
+        (
             (IDENT SCOPE) =>
                 nested_name_specifier (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
         |
-             (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
+            (
+                simple_template_id_or_IDENT                                     {action.elaborated_type_specifier(input.LT(0));}
+            | 
+                LITERAL_template simple_template_id_nocheck
+            )
         )
     |
         LITERAL_enum SCOPE? (
@@ -728,19 +742,25 @@ enum_name:
  */
 enum_specifier:
 //        LITERAL_enum IDENT? LCURLY enumerator_list? RCURLY
+                                                                                {action.enum_declaration(input.LT(1));}
         enum_head 
         (
-            LCURLY (enumerator_list COMMA?)? RCURLY
+            LCURLY                                                              {action.enum_body($LCURLY);}
+            (enumerator_list COMMA?)? 
+            RCURLY                                                              {action.end_enum_body($RCURLY);}
+                                                                                {action.end_enum_declaration($RCURLY);}
         |
-            SEMICOLON
+            SEMICOLON                                                           {action.end_enum_declaration($SEMICOLON);}
         )
     ;
 enum_head:
     enum_key 
     (
-        nested_name_specifier IDENT
+        nested_name_specifier IDENT                                             {action.enum_name(input.LT(0));}
     |
-        IDENT?
+        (   
+            IDENT                                                               {action.enum_name(input.LT(0));}
+        )?
     )
     enum_base?
     ;
@@ -763,7 +783,7 @@ enumerator_definition:
     ;
 
 enumerator:
-        IDENT 
+        IDENT                                                                   {action.enumerator($IDENT);}
     ;
 
 /*
@@ -810,14 +830,14 @@ unnamed_namespace_definition:
  */
 namespace_definition:
         LITERAL_inline?
-        LITERAL_namespace       {action.namespace_declaration($LITERAL_namespace);}
+        LITERAL_namespace                                                       {action.namespace_declaration($LITERAL_namespace);}
         (   
-            IDENT               {action.namespace_name($IDENT);}
+            IDENT                                                               {action.namespace_name($IDENT);}
         )? 
-        LCURLY                  {action.namespace_body($LCURLY);}
+        LCURLY                                                                  {action.namespace_body($LCURLY);}
         namespace_body 
-        RCURLY                  {action.end_namespace_body($RCURLY);} 
-                                {action.end_namespace_declaration($RCURLY);}
+        RCURLY                                                                  {action.end_namespace_body($RCURLY);} 
+                                                                                {action.end_namespace_declaration($RCURLY);} 
     ;
 
 namespace_body:
@@ -829,11 +849,17 @@ namespace_alias:
     ;
 
 namespace_alias_definition:
-        LITERAL_namespace IDENT ASSIGNEQUAL qualified_namespace_specifier SEMICOLON
+        LITERAL_namespace IDENT ASSIGNEQUAL                                     {action.namespace_alias_definition($LITERAL_namespace, $IDENT, $ASSIGNEQUAL);}
+        qualified_namespace_specifier 
+        SEMICOLON                                                               {action.end_namespace_alias_definition($SEMICOLON);}
     ;
 
 qualified_namespace_specifier:
-        SCOPE? nested_name_specifier? IDENT
+        (
+            SCOPE                                                               {action.qualified_namespace_specifier(action.QUALIFIED_NAMESPACE_SPECIFIER__SCOPE, $SCOPE);}
+        )? 
+        nested_name_specifier? 
+        IDENT                                                                   {action.qualified_namespace_specifier(action.QUALIFIED_NAMESPACE_SPECIFIER__IDENT, $IDENT);}
     ;
 
 /*
@@ -850,11 +876,28 @@ using-declaration:
  * It should be ruled out after the parsing.
  */
 using_declaration
-     : LITERAL_using LITERAL_typename? SCOPE? nested_name_specifier? unqualified_id SEMICOLON
+     : 
+        LITERAL_using                                                           {action.using_declaration($LITERAL_using);}
+        (
+            LITERAL_typename                                                    {action.using_declaration(action.USING_DECLARATION__TYPENAME, $LITERAL_typename);}
+        )?
+        (
+            SCOPE                                                               {action.using_declaration(action.USING_DECLARATION__SCOPE, $SCOPE);}
+        )?
+        // TODO: review temp predicate
+        ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)? 
+        unqualified_id
+        SEMICOLON                                                               {action.end_using_declaration($SEMICOLON);}
     ;
 
 using_directive:
-        LITERAL_using LITERAL_namespace SCOPE? nested_name_specifier? IDENT SEMICOLON
+        LITERAL_using LITERAL_namespace                                         {action.using_directive($LITERAL_using, $LITERAL_namespace);}
+        (
+            SCOPE                                                               {action.using_directive(action.USING_DIRECTIVE__SCOPE, $SCOPE);}
+        )? 
+        nested_name_specifier? 
+        IDENT                                                                   {action.using_directive(action.USING_DIRECTIVE__IDENT, $IDENT);}
+        SEMICOLON                                                               {action.end_using_directive($SEMICOLON);}
     ;
 
 
@@ -914,14 +957,14 @@ noptr_declarator:
 
 declarator returns [declarator_type_t type]
     :
-        noptr_declarator 
-//            {{ type = $noptr_declarator.type; }}
-    |
         (ptr_operator)=>
             ptr_operator nested=declarator
 //                {{ type = $nested.type;
 //                   type.apply_ptr($ptr_operator.type);
 //                }}
+    |
+        noptr_declarator 
+//            {{ type = $noptr_declarator.type; }}
     ;
 
 // is quite unpretty because of left recursion removed here
@@ -1160,7 +1203,7 @@ function_definition_after_declarator:
 function_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
-    :
+    :   
         decl_specifier* function_declarator
     ;
 
@@ -1196,7 +1239,7 @@ braced_init_list:
 
 //[gram.class] 
 class_name:
-        simple_template_id_or_IDENT 
+        simple_template_id_or_IDENT                                             {action.class_name(input.LT(0));}
     ;
 
 class_specifier:
@@ -1223,7 +1266,9 @@ class_head:
 */
 optionally_qualified_name
     :
-        nested_name_specifier? simple_template_id_or_IDENT
+        // TODO: review temp predicate
+        (((lookup_simple_template_id | IDENT) SCOPE) => nested_name_specifier)? 
+        simple_template_id_or_IDENT                                             {action.class_name(input.LT(0));}
     ;
 
 class_head:
@@ -1237,11 +1282,11 @@ class_virtual_specifier:
     ;
 
 class_key:
-        LITERAL_class           {action.class_kind($LITERAL_class);}
+        LITERAL_class                                                           {action.class_kind($LITERAL_class);}
     |
-        LITERAL_struct          {action.class_kind($LITERAL_struct);}
+        LITERAL_struct                                                          {action.class_kind($LITERAL_struct);}
     |
-        LITERAL_union           {action.class_kind($LITERAL_union);}
+        LITERAL_union                                                           {action.class_kind($LITERAL_union);}
     ;
 member_specification :
         member_declaration[field_decl] member_specification?
@@ -1281,7 +1326,10 @@ member_declaration [decl_kind kind]
 scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
-        decl_specifier*
+                                                                                {action.simple_declaration(input.LT(1));}
+    (
+                                                                                {action.decl_specifiers();}
+        decl_specifier*                                                         {action.end_decl_specifiers();}
         (
             (IDENT? COLON)=>
                 member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
@@ -1297,7 +1345,7 @@ scope Declaration;
         |
             declarator
             (
-                { /*$declarator.type.is_function()*/ true }?
+                { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
                     function_definition_after_declarator
             |
                 // this was member_declarator_list
@@ -1319,14 +1367,16 @@ scope Declaration;
         static_assert_declaration
     |
         alias_declaration
+    )
+                                                                                {action.end_simple_declaration(input.LT(0));}
     ;
 
 member_bitfield_declarator:
-        IDENT? virt_specifier+ COLON constant_expression
+        IDENT? virt_specifier* COLON constant_expression
     ;
 
 member_declarator:
-        declarator virt_specifier+ brace_or_equal_initializer
+        declarator virt_specifier* brace_or_equal_initializer
     |
         member_bitfield_declarator
     ;
@@ -1375,7 +1425,10 @@ base_specifier:
         access_specifier LITERAL_virtual? base_type_specifier
     ;
 class_or_decltype:
-        SCOPE? nested_name_specifier? class_name
+        SCOPE? 
+        // TODO: review temp predicate
+        ((simple_template_id_or_IDENT SCOPE) => nested_name_specifier)?
+        class_name
     |
         decltype_specifier
     ;
@@ -1412,7 +1465,8 @@ conversion_declarator:
  * Resolve by folding and adding a synpred.
  */
 conversion_type_id:
-        type_specifier+
+        type_specifier
+        (type_specifier)*
         ((ptr_operator)=> ptr_operator)*
     ;
 
@@ -1472,7 +1526,12 @@ literal_operator_id:
 
 // [gram.temp] 
 template_declaration [decl_kind kind]:
-        LITERAL_export? LITERAL_template LESSTHAN template_parameter_list GREATERTHAN declaration[kind]
+        LITERAL_export? 
+        LITERAL_template 
+        LESSTHAN                                                                {action.template_declaration(action.TEMPLATE_DECLARATION__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_parameter_list 
+        GREATERTHAN                                                             {action.template_declaration(action.TEMPLATE_DECLARATION__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+        declaration[kind]
     ;
 
 template_parameter_list:
@@ -1498,33 +1557,36 @@ template_parameter:
         parameter_declaration[tparm_decl]
     ;
 type_parameter:
-        LITERAL_class ELLIPSIS? IDENT? 
+        LITERAL_class ELLIPSIS? IDENT?                                          {action.type_parameter(action.TYPE_PARAMETER__CLASS, $LITERAL_class, $ELLIPSIS, $IDENT);}
     |
-        LITERAL_class IDENT? ASSIGNEQUAL type_id 
+        LITERAL_class IDENT? ASSIGNEQUAL type_id                                {action.type_parameter(action.TYPE_PARAMETER__CLASS_ASSIGNEQUAL, $LITERAL_class, $IDENT, $ASSIGNEQUAL);}
     |
-        LITERAL_typename ELLIPSIS? IDENT? 
+        LITERAL_typename ELLIPSIS? IDENT?                                       {action.type_parameter(action.TYPE_PARAMETER__TYPENAME, $LITERAL_typename, $ELLIPSIS, $IDENT);}
     |
-        LITERAL_typename IDENT? ASSIGNEQUAL type_id 
+        LITERAL_typename IDENT? ASSIGNEQUAL type_id                             {action.type_parameter(action.TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL, $LITERAL_typename, $IDENT, $ASSIGNEQUAL);}
     |
         LITERAL_template LESSTHAN template_parameter_list GREATERTHAN LITERAL_class ELLIPSIS? IDENT? (ASSIGNEQUAL id_expression)?
     ;
 
 simple_template_id
     :
-        IDENT                   {action.simple_template_id($IDENT);}
-        LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
-            template_argument_list? GREATERTHAN
+        IDENT                                                                   {action.simple_template_id($IDENT);}
+        LESSTHAN { (action.identifier_is(IDT_TEMPLATE_NAME, $IDENT)) }?         {action.simple_template_id(action.SIMPLE_TEMPLATE_ID__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_argument_list? 
+        GREATERTHAN                                                             {action.simple_template_id(action.SIMPLE_TEMPLATE_ID__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
     ;
 lookup_simple_template_id
     :
-        IDENT LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?
+        IDENT LESSTHAN { (action.identifier_is(IDT_TEMPLATE_NAME, $IDENT)) }?
             look_after_tmpl_args
     ;
 
 simple_template_id_nocheck
     :
-        IDENT                   {action.simple_template_id_nocheck($IDENT);}
-        LESSTHAN template_argument_list? GREATERTHAN 
+        IDENT                                                                   {action.simple_template_id_nocheck($IDENT);}
+        LESSTHAN                                                                {action.simple_template_id_nocheck(action.SIMPLE_TEMPLATE_ID_NOCHECK__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+        template_argument_list? 
+        GREATERTHAN                                                             {action.simple_template_id_nocheck(action.SIMPLE_TEMPLATE_ID_NOCHECK__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
     ;
 lookup_simple_template_id_nocheck
     :
@@ -1533,10 +1595,18 @@ lookup_simple_template_id_nocheck
 
 simple_template_id_or_IDENT
     :
-        IDENT                   {action.class_name($IDENT);}
-        ( (LESSTHAN { (identifier_is(IDT_TEMPLATE_NAME)) }?) =>
-            LESSTHAN template_argument_list? GREATERTHAN
-        )?
+        ( (IDENT LESSTHAN) => 
+                ( { action.identifier_is(IDT_TEMPLATE_NAME, input.LT(1)) }? =>
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+                LESSTHAN                                                        {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__TEMPLATE_ARGUMENT_LIST, $LESSTHAN);}
+                template_argument_list?
+                GREATERTHAN                                                     {action.simple_template_id_or_ident(action.SIMPLE_TEMPLATE_ID_OR_IDENT__END_TEMPLATE_ARGUMENT_LIST, $GREATERTHAN);}
+            |   
+                IDENT                                                           {action.simple_template_id_or_ident(input.LT(0));}
+            )
+        |   
+            IDENT                                                               {action.simple_template_id_or_ident(input.LT(0));}
+        )
     ;
 
 lookup_simple_template_id_or_IDENT
@@ -1560,7 +1630,7 @@ template_argument_list:
     ;
 template_argument:
         // id_exression is included into assignment_expression, thus we need to explicitly rule it up
-        (id_expression)=> id_expression
+        (id_expression ELLIPSIS? (COMMA | GREATERTHAN))=> id_expression
     |
         (type_id)=> type_id
     |
@@ -1568,7 +1638,7 @@ template_argument:
     ;
 
 explicit_instantiation [decl_kind kind]:
-        LITERAL_template declaration[kind]
+        (LITERAL_extern)? LITERAL_template declaration[kind]
     ;
 explicit_specialization [decl_kind kind]:
         LITERAL_template LESSTHAN GREATERTHAN declaration[kind]
@@ -1824,10 +1894,10 @@ unary_expression:
         unary_operator_but_not_TILDE cast_expression
     |
         LITERAL_sizeof (
-            unary_expression
-        |
             (LPAREN type_id RPAREN)=>
                 LPAREN type_id RPAREN
+        |
+            unary_expression
         )
     |
         noexcept_expression
@@ -1880,8 +1950,9 @@ new_placement:
  *  new (int(*p)) int; // new-placement expression
  */
 new_type_id:
-        type_specifier+
-        ((ptr_operator)=>
+        type_specifier
+        (type_specifier)*
+        ((LSQUARE | ptr_operator)=>
             new_declarator)?
     ;
 
@@ -1951,7 +2022,7 @@ shift_expression:
 relational_expression:
         shift_expression
         ( 
-            { !top_level_of_template_arguments() }?=>
+            { !action.top_level_of_template_arguments() }?=>
             GREATERTHAN shift_expression
           |
             LESSTHAN shift_expression
@@ -2054,7 +2125,7 @@ constant_expression returns [ expression_t expr ]
 // [gram.lex]
 
 literal:
-    DECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL
+    DECIMALINT|HEXADECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL|NUMBER|OCTALINT|LITERAL_true|LITERAL_false
     ;
 
 // lookahead stuff
@@ -2064,7 +2135,7 @@ literal:
 
 lookahead_tokenset_arg_syms
     :
-        IDENT|DECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL|
+        IDENT|DECIMALINT|HEXADECIMALINT|FLOATONE|CHAR_LITERAL|STRING_LITERAL|NUMBER|OCTALINT|
         PLUS|MINUS|STAR|AMPERSAND|LITERAL_sizeof|TILDE|
         NOT|PLUSPLUS|MINUSMINUS|LITERAL_OPERATOR|LITERAL_new|LITERAL_delete|
         LITERAL_this|

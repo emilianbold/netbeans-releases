@@ -70,48 +70,68 @@ import org.openide.util.Exceptions;
  */
 public class TypeRepository implements ITypeRepository {
     private final Project project;
-    private final Map<String, IType> types;
+    private final Map<String, IType[]> types;
     private PUDataObject dObj;
     private MetadataModelReadHelper<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>> readHelper;
+    private final ManagedTypeProvider mtp;
 
-    TypeRepository(Project project){
+
+    TypeRepository(Project project, ManagedTypeProvider mtp) {
         this.project = project;
-        types = new HashMap<String, IType>();
+        this.mtp = mtp;
+        types = new HashMap<String, IType[]>();
     }
     
     @Override
     public IType getEnumType(String fqn) {
-        IType ret = types.get(fqn);
+        IType[] ret = types.get(fqn);
         if(ret == null){
-            fillTypeElement(fqn);
+            //get main type
+            int lastPoint = fqn.lastIndexOf('.');
+            String mainPart = lastPoint > 0 ? fqn.substring(0, lastPoint) : null;
+            if(mainPart != null){
+                IType[] mainType = types.get(mainPart);
+                if(mainType == null){
+                    fillTypeElement(mainPart);
+                }
+                mainType = types.get(mainPart);
+                if(mainType[0] != null){
+                    fillTypeElement(fqn);
+                } else {
+                    types.put(fqn, new Type[]{null});
+                }
+            } else {
+                //shouldn't happens
+                fillTypeElement(fqn);
+            }
             ret = types.get(fqn);
         }
-        return ret;
+        return ret[0];
     }
 
     @Override
     public IType getType(Class<?> type) {
         String fqn = type.getCanonicalName();
-        IType ret = types.get(fqn);
+        IType[] ret = types.get(fqn);
         if(ret == null){
             fillTypeElement(type);
             ret = types.get(fqn);
         }
-        return ret;
+        return ret[0];
     }
 
     @Override
     public IType getType(String fqn) {
-        IType ret = types.get(fqn);
+        IType[] ret = types.get(fqn);
         if(ret == null){
             if(IType.UNRESOLVABLE_TYPE.equals(fqn)){
-                types.put(fqn, new Type(this, fqn));
+                types.put(fqn, new Type[] {new Type(this, fqn)});
             } else {
                 fillTypeElement(fqn);
             }
             ret = types.get(fqn);
         }
-        return ret;
+        return ret[0];
     }
 
     @Override
@@ -122,7 +142,8 @@ public class TypeRepository implements ITypeRepository {
     private void fillTypeElement(final String fqn){
         Sources sources=ProjectUtils.getSources(project);
         SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if(groups != null && groups.length>0){
+        types.put(fqn, new Type[]{null});
+        if(mtp.isValid() && groups != null && groups.length>0){
             SourceGroup firstGroup=groups[0];
             FileObject fo=firstGroup.getRootFolder();
             ClasspathInfo classpathInfo = ClasspathInfo.create(fo);
@@ -131,8 +152,12 @@ public class TypeRepository implements ITypeRepository {
                 javaSource.runModificationTask(new Task<WorkingCopy>() {
                     @Override
                     public void run(WorkingCopy wc) throws Exception {
-                        TypeElement te = wc.getElements().getTypeElement(fqn);
-                        if(te != null)types.put(fqn, new Type(TypeRepository.this, te));
+                        if(mtp.isValid()) {//model will be filled with nulls  after provider invalidation and with values only if valid provider
+                            TypeElement te = wc.getElements().getTypeElement(fqn);
+                            if(te!=null) {
+                                types.put(fqn, new Type[]{new Type(TypeRepository.this, te)});
+                            }
+                        }
                     }
                 });
             } catch (IOException ex) {
@@ -141,7 +166,7 @@ public class TypeRepository implements ITypeRepository {
         }
     }
     private void fillTypeElement(Class<?> type){
-        types.put(type.getName(), new Type(TypeRepository.this, type));
+        types.put(type.getName(), new Type[]{new Type(TypeRepository.this, type)});
     }
     
 }

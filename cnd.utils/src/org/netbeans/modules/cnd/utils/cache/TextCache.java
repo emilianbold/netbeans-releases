@@ -53,7 +53,7 @@ import org.openide.util.CharSequences;
 public class TextCache extends APTStringManager {
     private static final APTStringManager manager = new TextCache();
     private static final APTStringManager instance = 
-            APTStringManager.instance(APTStringManager.TEXT_MANAGER,APTStringManager.CacheKind.Sliced);
+            APTStringManager.instance("Shared Qualified Names",APTStringManager.CacheKind.Sliced); //NOI18N
     
     /** Creates a new instance of TextCache */
     private TextCache() {

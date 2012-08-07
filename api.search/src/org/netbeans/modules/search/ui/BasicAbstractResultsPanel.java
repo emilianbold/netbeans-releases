@@ -312,9 +312,9 @@ public abstract class BasicAbstractResultsPanel
             }
             if (args.length > 2) {
                 BasicSearchCriteria bsc = composition.getBasicSearchCriteria();
-                args[2] = bsc.getTextPatternExpr();
+                args[2] = UiUtils.escapeHtml(bsc.getTextPatternExpr());
                 if (args.length > 3) {
-                    args[3] = bsc.getReplaceExpr();
+                    args[3] = UiUtils.escapeHtml(bsc.getReplaceExpr());
                 }
             }
             baseMsg = NbBundle.getMessage(ResultView.class, bundleKey, args);
@@ -407,5 +407,9 @@ public abstract class BasicAbstractResultsPanel
         if (textDetail != null) {
             textDetail.showDetail(TextDetail.DH_GOTO);
         }
+    }
+
+    public void closed() {
+        resultsOutlineSupport.closed();
     }
 }

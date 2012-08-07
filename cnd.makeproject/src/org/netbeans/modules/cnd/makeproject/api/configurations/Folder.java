@@ -152,7 +152,9 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public void refreshDiskFolder(boolean setModified) {
-        refreshDiskFolder(new HashSet<String>(), setModified);
+        if (!UNCHANGED_PROJECT_MODE) {
+            refreshDiskFolder(new HashSet<String>(), setModified);
+        }
     }
     
     private void refreshDiskFolder(Set<String> antiLoop, boolean setModified) {
@@ -283,7 +285,8 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         return null;
     }
-    
+
+    private static final boolean UNCHANGED_PROJECT_MODE = Boolean.getBoolean("cnd.unchanged.project"); // NOI18N
     public void attachListeners() {
         if (configurationDescriptor == null) {
             CndUtils.assertTrueInConsole(false, "null configurationDescriptor for " + this.name);
@@ -313,7 +316,9 @@ public class Folder implements FileChangeListener, ChangeListener {
                 log.log(Level.FINER, "-----------attachFilterListener {0}", getPath()); // NOI18N
             }
             try {
-                FileSystemProvider.addRecursiveListener(this, fileSystem, absRootPath);
+                if (!UNCHANGED_PROJECT_MODE) {
+                    FileSystemProvider.addRecursiveListener(this, fileSystem, absRootPath);
+                }
                 listenerAttached = true;
                 if (log.isLoggable(Level.FINER)) {
                     log.log(Level.FINER, "-----------attachFileChangeListener {0}", getPath()); // NOI18N
@@ -351,7 +356,9 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileSystem fileSystem = configurationDescriptor.getBaseDirFileSystem();
         String absRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), rootPath);
 
-        FileSystemProvider.removeRecursiveListener(this, fileSystem, absRootPath);
+        if (!UNCHANGED_PROJECT_MODE) {
+            FileSystemProvider.removeRecursiveListener(this, fileSystem, absRootPath);
+        }
         listenerAttached = false;
         if (isDiskFolder() && getRoot() != null) {
             VisibilityQuery.getDefault().removeChangeListener(this);
@@ -569,14 +576,18 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public Item addItem(Item item) {
-        return addItem(item, true);
-    }
-
-    public Item addItem(Item item, boolean notify) {
-        return addItem(item, notify, true);
+        return addItem(item, true, true);
     }
 
     public Item addItem(Item item, boolean notify, boolean setModified) {
+        return addItem(item, notify, setModified, true);
+    }
+
+    public Item addItemWithoutConfiguration(Item item) {
+        return addItem(item, true, true, false);
+    }
+    
+    private Item addItem(Item item, boolean notify, boolean setModified, boolean createConfiguration) {
         if (item == null) {
             return null;
         }
@@ -615,9 +626,8 @@ public class Folder implements FileChangeListener, ChangeListener {
                 }
                 configurationDescriptor.setModified();
             }
-
             // Add configuration to all configurations
-            if (configurationDescriptor.getConfs() == null) {
+            if (!createConfiguration || configurationDescriptor.getConfs() == null) {
                 return item;
             }
             HashMap<Configuration, DeletedConfiguration> map = null;

@@ -399,6 +399,11 @@ public final class CompilerSetImpl extends CompilerSet {
         }
 
         @Override
+        public String[] getAliases() {
+            return new String[]{};
+        }
+
+        @Override
         public String getDriveLetterPrefix() {
             return "/"; // NOI18N
         }
@@ -533,6 +538,5 @@ public final class CompilerSetImpl extends CompilerSet {
         public CMakeDescriptor getCMake() {
             return null;
         }
-
     }
 }

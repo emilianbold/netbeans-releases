@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,154 +45,361 @@ package org.netbeans.modules.groovy.refactoring.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
-import java.util.HashSet;
+import java.awt.event.ActionEvent;
+import java.beans.BeanInfo;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
-import org.openide.awt.Mnemonics;
-import org.openide.util.NbBundle;
-import javax.swing.JPanel;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import javax.swing.*;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.UIResource;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.*;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.modules.refactoring.api.Scope;
+import org.netbeans.modules.refactoring.java.api.ui.JavaScopeBuilder;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
+
 
 /**
- * Based on the WhereUsedPanel in Java refactoring by Jan Becicka.
+ * Copied from Java Refactoring module and changed with respect to Groovy and
+ * CSL specifics.
+ *
  * @author Jan Becicka
- * @author  Tor Norbye
+ * @author Ralph Ruijs <ralphbenjamin@netbeans.org>
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
 public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
-
-    private final transient GroovyRefactoringElement element;
-    private  GroovyRefactoringElement newElement;
-    private final transient ChangeListener parent;
     
-    /** Creates new form WhereUsedPanel */
-    public WhereUsedPanel(String name, GroovyRefactoringElement e, ChangeListener parent) {
+    public static final String ELLIPSIS = "\u2026"; //NOI18N
+    private static final String PREF_SCOPE = "FindUsages-Scope";
+    private static final String PACKAGE = "org/netbeans/spi/java/project/support/ui/package.gif"; // NOI18N
+    private static final int SCOPE_COMBOBOX_COLUMNS = 14;
+    private final GroovyRefactoringElement element;
+    private boolean enableScope;
+    private Scope customScope;
+
+    private final WhereUsedInnerPanel panel;
+
+
+    private WhereUsedPanel(GroovyRefactoringElement element, WhereUsedInnerPanel panel) {
         setName(NbBundle.getMessage(WhereUsedPanel.class,"LBL_WhereUsed")); // NOI18N
-        this.element = e;
-        this.parent = parent;
+        this.element = element;
+        this.enableScope = true;
+        this.panel = panel;
         initComponents();
+        btnCustomScope.setAction(new ScopeAction(scope));
+    }
+    
+    public static WhereUsedPanel create(GroovyRefactoringElement element, ChangeListener parent) {
+        final WhereUsedInnerPanel panel;
+        switch (element.getKind()) {
+            case CONSTRUCTOR:
+            case METHOD: {
+                panel = new WhereUsedPanelMethod();
+                break;
+            }
+            case CLASS:
+            case MODULE:
+            case INTERFACE: {
+                panel = new WhereUsedPanelClass();
+                break;
+            }
+            case PACKAGE: {
+                panel = new WhereUsedPanelPackage();
+                break;
+            }
+            case FIELD:
+            case PROPERTY:
+            case PARAMETER:
+            default: {
+                panel = new WhereUsedPanelVariable();
+                break;
+            }
+        }
+        return new WhereUsedPanel(element, panel);
+    }
+    
+    public Scope getCustomScope() {
+        FileObject file = WhereUsedPanel.this.element.getFileObject();
+        Scope value = null;
+        
+        if(!enableScope) {
+            return Scope.create(null, null, Arrays.asList(file));
+        }
+
+        switch (scope.getSelectedIndex()) {
+            case 1:
+                value = Scope.create(projectSources, null, null);
+                break;
+            case 2:
+                NonRecursiveFolder nonRecursiveFolder = new NonRecursiveFolder() {
+            @Override
+                    public FileObject getFolder() {
+                        return packageFolder;
+                    }
+                };
+                value = Scope.create(null, Arrays.asList(nonRecursiveFolder), null);
+                break;
+            case 3:
+                value = Scope.create(null, null, Arrays.asList(file));
+                break;
+            case 4:
+                value = WhereUsedPanel.this.customScope;
+                break;
+        }
+        return value;
     }
 
     private boolean initialized = false;
-    private String methodDeclaringSuperClass = null;
-    private String methodDeclaringClass = null;
+    private FileObject packageFolder;
+    private List<FileObject> projectSources;
     
-    String getMethodDeclaringClass() {
-        return isMethodFromBaseClass() ? methodDeclaringSuperClass : methodDeclaringClass;
-    }
-    
+    @Override
     public void initialize() {
-        if (initialized) return;
-        UserTask task = new UserTask() {
-            
-            // TODO - handle methods in modules!!!!
-            private String getClassName(GroovyRefactoringElement element) {
-                return element.getDefClass();
-            }
+        if (initialized) {
+            return;
+        }
 
-            /**
-             * @todo For method calls, try to figure out the call type with the type analyzer
-             */
+        panel.initialize(element);
+        SwingUtilities.invokeLater(new Runnable() {
             @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                GroovyParserResult info = AstUtilities.getParseResult(resultIterator.getParserResult());
-
-                String m_isBaseClassText = null;
-                final String labelText;
-                Set<Modifier> modif = new HashSet<Modifier>();
-                // TODO - resolve elements against the current info?
-                if (element.getKind() == ElementKind.METHOD) {
-//                    modif = element.getModifiers();
-                    String methodName = element.getName();
-//                    String className = getClassName(element);
-                    String displayClassName = "&lt;Unknown&gt;"; // GroovyIndex.UNKNOWN_CLASS.equals(className) ? "&lt;Unknown&gt;" : className;
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_MethodUsages", methodName, displayClassName);
-//
-//                    methodDeclaringClass = className;
-//
-//                    IndexedMethod method = RetoucheUtils.getOverridingMethod(element, info);
-//                    if (method != null) {
-//                        m_isBaseClassText =
-//                                new MessageFormat(NbBundle.getMessage(WhereUsedPanel.class, "LBL_UsagesOfBaseClass")).format(
-//                                new Object[] {
-//                            methodDeclaringSuperClass = method.getIn()
-//                        }
-//                        );
-//                        newElement = new GroovyRefactoringElement(info.getRootElement().getModuleNode(), method, info.getInfo().getFileObject());
-//                    }
-                } else if (element.getKind() == ElementKind.CLASS || element.getKind() == ElementKind.MODULE) {
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ClassUsages", element.getName()); // NOI18N
-                } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                    String methodName = element.getName();
-                    String className = getClassName(element);
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_ConstructorUsages", methodName, className); // NOI18N
-                } else if (element.getKind() == ElementKind.FIELD) {
-                    String fieldName = element.getName();
-                    String className = getClassName(element);
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_FieldUsages", fieldName, className); // NOI18N
-                } else {
-                    labelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_VariableUsages", element.getName()); // NOI18N
-                }
+            public void run() {
                 
-                final Set<Modifier> modifiers = modif;
-                final String isBaseClassText = m_isBaseClassText;
-                
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        remove(classesPanel);
-                        remove(methodsPanel);
-                        // WARNING for now since this feature is not ready yet
-                        //label.setText(labelText);
-                        String combinedLabelText = NbBundle.getMessage(WhereUsedPanel.class, "DSC_WhereUsedWarningInDevelopment", labelText);
-                        label.setText(combinedLabelText);
-                        if (element.getKind() == ElementKind.METHOD) {
-                            add(methodsPanel, BorderLayout.CENTER);
-                            methodsPanel.setVisible(true);
-                            m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
-                            // TODO - worry about frozen?                            
-                            m_overriders.setVisible(/*!modifiers.contains(Modifier.FINAL) ||*/ modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE));
-                            if (methodDeclaringSuperClass != null ) {
-                                m_isBaseClass.setVisible(true);
-                                m_isBaseClass.setSelected(true);
-                                Mnemonics.setLocalizedText(m_isBaseClass, isBaseClassText);
-                            } else {
-                                m_isBaseClass.setVisible(false);
-                                m_isBaseClass.setSelected(false);
-                            }
-                        } else if ((element.getKind() == ElementKind.CLASS) || (element.getKind() == ElementKind.MODULE)) {
-                            add(classesPanel, BorderLayout.CENTER);
-                            classesPanel.setVisible(true);
-                        } else {
-                            remove(classesPanel);
-                            remove(methodsPanel);
-                            c_subclasses.setVisible(false);
-                            m_usages.setVisible(false);
-                            c_usages.setVisible(false);
-                            c_directOnly.setVisible(false);
-                        }
-                        validate();
-                    }
-                });
-            }};
-            try {
-                SourceUtils.runUserActionTask(element.getFileObject(), task);
-            } catch (Exception ioe) {
-                throw (RuntimeException) new RuntimeException().initCause(ioe);
+                setupProjectSources();
+                setupScope();
             }
-            initialized = true;
+        });
+        initialized = true;
     }
+
+    private void setupProjectSources() {
+        final Project project = FileOwnerQuery.getOwner(element.getFileObject());
+        final List<SourceGroup> sources = GroovySources.getGroovySourceGroups(ProjectUtils.getSources(project));
+
+        projectSources = new ArrayList<FileObject>(sources.size());
+        for (SourceGroup sourceGroup : sources) {
+            projectSources.add(sourceGroup.getRootFolder());
+        }
+    }
+
+    private void setupScope() {
+        final FileObject fo = element.getFileObject();
+        final String packageName = element.getDeclaringClassNameWithoutPackage();
+        final Project p = FileOwnerQuery.getOwner(fo);
+
+        if(packageName == null) {
+            packageFolder = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+        } else {
+            packageFolder = ClassPath.getClassPath(fo, ClassPath.SOURCE).findResource(packageName.replaceAll("\\.", "/")); //NOI18N
+        }
+
+        final JLabel customScope;
+        final JLabel currentFile;
+        final JLabel currentPackage;
+        final JLabel currentProject;
+        final JLabel allProjects;
+        if (p != null) {
+            ProjectInformation pi = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo));
+            DataObject currentFileDo = null;
+            try {
+                currentFileDo = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+            } // Not important, only for Icon.
+            customScope = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CustomScope"), pi.getIcon(), SwingConstants.LEFT); //NOI18N
+            currentFile = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentFile", fo.getNameExt()), currentFileDo != null ? new ImageIcon(currentFileDo.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16)) : pi.getIcon(), SwingConstants.LEFT); //NOI18N
+            currentPackage = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentPackage", packageName), ImageUtilities.loadImageIcon(PACKAGE, false), SwingConstants.LEFT); //NOI18N
+            currentProject = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_CurrentProject", pi.getDisplayName()), pi.getIcon(), SwingConstants.LEFT); //NOI18N
+            allProjects = new JLabel(NbBundle.getMessage(WhereUsedPanel.class, "LBL_AllProjects"), pi.getIcon(), SwingConstants.LEFT); //NOI18N
+        } else {
+            customScope = null;
+            currentFile = null;
+            currentPackage = null;
+            currentProject = null;
+            allProjects = null;
+        }
+
+        if ((element.getKind().equals(ElementKind.VARIABLE) ||
+             element.getKind().equals(ElementKind.PARAMETER)) ||
+             element.getModifiers().contains(Modifier.PRIVATE)) {
+            
+            enableScope = false;
+        }
+
+        innerPanel.removeAll();
+        innerPanel.add(panel, BorderLayout.CENTER);
+        panel.setVisible(true);
+
+        if(enableScope && currentProject != null) {
+            scope.setModel(new DefaultComboBoxModel(new Object[]{allProjects, currentProject, currentPackage, currentFile, customScope }));
+            int defaultItem = (Integer) RefactoringModule.getOption("whereUsed.scope", 0); // NOI18N
+            WhereUsedPanel.this.customScope = readScope();
+            if(defaultItem == 4 && WhereUsedPanel.this.customScope !=null &&
+                    WhereUsedPanel.this.customScope.getFiles().isEmpty() &&
+                    WhereUsedPanel.this.customScope.getFolders().isEmpty() &&
+                    WhereUsedPanel.this.customScope.getSourceRoots().isEmpty()) {
+                scope.setSelectedIndex(0);
+            } else {
+                scope.setSelectedIndex(defaultItem);
+            }
+            scope.setRenderer(new JLabelRenderer());
+        } else {
+            scopePanel.setVisible(false);
+        }
+    }
+
+    private static class JLabelRenderer extends JLabel implements ListCellRenderer, UIResource {
+        public JLabelRenderer () {
+            setOpaque(true);
+        }
+        @Override
+        public Component getListCellRendererComponent(
+                JList list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus) {
+            
+            setName("ComboBox.listRenderer"); // NOI18N
+            
+            if ( value != null ) {
+                setText(((JLabel)value).getText());
+                setIcon(((JLabel)value).getIcon());
+            }
+            
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+            
+            return this;
+        }
         
-    public GroovyRefactoringElement getBaseMethod() {
-        return newElement;
+        @Override
+        public String getName() {
+            String name = super.getName();
+            return name == null ? "ComboBox.renderer" : name;  // NOI18N
+        }
+    }
+
+    static abstract class WhereUsedInnerPanel extends JPanel {
+        abstract boolean isSearchInComments();
+        abstract void initialize(GroovyRefactoringElement element);
+    }
+
+    private class ScopeAction extends AbstractAction {
+        private final JComboBox scope;
+
+        private ScopeAction(JComboBox scope) {
+            this.scope = scope;
+            this.putValue(NAME, ELLIPSIS);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Scope customScope = getCustomScope();
+            
+            customScope = JavaScopeBuilder.open(NbBundle.getMessage(WhereUsedPanel.class, "DLG_CustomScope"), customScope); //NOI18N
+            if (customScope != null) {
+                WhereUsedPanel.this.customScope = customScope;
+                scope.setSelectedIndex(4);
+                storeScope(customScope);
+            }
+        }
+    }
+    
+    private void storeScope(Scope customScope) {
+        try {
+            storeFileList(customScope.getSourceRoots(), "sourceRoot" ); //NOI18N
+            storeFileList(customScope.getFolders(), "folder" ); //NOI18N
+            storeFileList(customScope.getFiles(), "file" ); //NOI18N
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private Scope readScope() {
+        try {
+            if (NbPreferences.forModule(JavaScopeBuilder.class).nodeExists(PREF_SCOPE)) { //NOI18N
+                return Scope.create(
+                        loadFileList("sourceRoot", FileObject.class), //NOI18N
+                        loadFileList("folder", NonRecursiveFolder.class), //NOI18N
+                        loadFileList("file", FileObject.class)); //NOI18N
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+    
+    private <T> List<T> loadFileList(String basekey, Class<T> type) throws BackingStoreException {
+        Preferences pref = NbPreferences.forModule(JavaScopeBuilder.class).node(PREF_SCOPE).node(basekey);
+        List<T> toRet = new LinkedList<T>();
+        for (String key : pref.keys()) {
+            final String url = pref.get(key, null);
+            if (url != null && !url.isEmpty()) {
+                try {
+                    final FileObject f = URLMapper.findFileObject(new URL(url));
+                    if (f != null && f.isValid()) {
+                        if (type.isAssignableFrom(FileObject.class)) {
+                            toRet.add((T) f);
+                        } else {
+                            toRet.add((T) new NonRecursiveFolder() {
+
+                                @Override
+                                public FileObject getFolder() {
+                                    return f;
+                                }
+                            });
+                        }
+                    }
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return toRet;
+    }
+    
+    private void storeFileList(Set files, String basekey) throws BackingStoreException {
+        Preferences pref = NbPreferences.forModule(WhereUsedPanel.class).node(PREF_SCOPE).node(basekey);
+        assert files != null;
+        pref.clear();
+        int count = 0;
+        for (Object next : files) {
+            if (next instanceof FileObject) {
+                pref.put(basekey + count++, ((FileObject) next).toURL().toExternalForm());
+            } else {
+                pref.put(basekey + count++, ((NonRecursiveFolder) next).getFolder().toURL().toExternalForm());
+            }
+        }
+        pref.flush();
+    }
+    
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
     }
     
     /** This method is called from within the constructor to
@@ -202,212 +409,139 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup = new javax.swing.ButtonGroup();
-        methodsPanel = new javax.swing.JPanel();
-        m_isBaseClass = new javax.swing.JCheckBox();
-        jPanel1 = new javax.swing.JPanel();
-        m_overriders = new javax.swing.JCheckBox();
-        m_usages = new javax.swing.JCheckBox();
-        classesPanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        c_subclasses = new javax.swing.JRadioButton();
-        c_usages = new javax.swing.JRadioButton();
-        c_directOnly = new javax.swing.JRadioButton();
-        jPanel3 = new javax.swing.JPanel();
-        label = new javax.swing.JLabel();
-        searchInComments = new javax.swing.JCheckBox();
+        scopePanel = new javax.swing.JPanel();
+        scopeLabel = new javax.swing.JLabel();
+        scope = new javax.swing.JComboBox();
+        btnCustomScope = new javax.swing.JButton();
+        innerPanel = new javax.swing.JPanel();
 
-        setLayout(new java.awt.BorderLayout());
+        scopeLabel.setLabelFor(scope);
+        org.openide.awt.Mnemonics.setLocalizedText(scopeLabel, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
 
-        methodsPanel.setLayout(new java.awt.GridBagLayout());
-
-        m_isBaseClass.setSelected(true);
-        m_isBaseClass.addActionListener(new java.awt.event.ActionListener() {
+        ((javax.swing.JTextField) scope.getEditor().getEditorComponent()).setColumns(SCOPE_COMBOBOX_COLUMNS);
+        scope.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_isBaseClassActionPerformed(evt);
+                scopeActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        methodsPanel.add(m_isBaseClass, gridBagConstraints);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/groovy/refactoring/ui/Bundle"); // NOI18N
-        m_isBaseClass.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_isBaseClass")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        methodsPanel.add(jPanel1, gridBagConstraints);
+        btnCustomScope.setText(ELLIPSIS);
 
-        org.openide.awt.Mnemonics.setLocalizedText(m_overriders, "null");
-        m_overriders.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_overridersActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        methodsPanel.add(m_overriders, gridBagConstraints);
-        m_overriders.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_overriders")); // NOI18N
+        javax.swing.GroupLayout scopePanelLayout = new javax.swing.GroupLayout(scopePanel);
+        scopePanel.setLayout(scopePanelLayout);
+        scopePanelLayout.setHorizontalGroup(
+            scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(scopePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(scopeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scope, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnCustomScope)
+                .addContainerGap())
+        );
+        scopePanelLayout.setVerticalGroup(
+            scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(scopePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(scopePanelLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addComponent(scopeLabel))
+                    .addGroup(scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(btnCustomScope)
+                        .addComponent(scope, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
 
-        m_usages.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(m_usages, "null");
-        m_usages.setMargin(new java.awt.Insets(10, 2, 2, 2));
-        m_usages.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                m_usagesActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        methodsPanel.add(m_usages, gridBagConstraints);
-        m_usages.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_usages")); // NOI18N
+        scope.getAccessibleContext().setAccessibleDescription("N/A");
 
-        add(methodsPanel, java.awt.BorderLayout.CENTER);
+        innerPanel.setLayout(new java.awt.BorderLayout());
 
-        classesPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        classesPanel.add(jPanel2, gridBagConstraints);
-
-        buttonGroup.add(c_subclasses);
-        org.openide.awt.Mnemonics.setLocalizedText(c_subclasses, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindAllSubtypes")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        classesPanel.add(c_subclasses, gridBagConstraints);
-        c_subclasses.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_subclasses")); // NOI18N
-
-        buttonGroup.add(c_usages);
-        c_usages.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(c_usages, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindUsages")); // NOI18N
-        c_usages.setMargin(new java.awt.Insets(4, 2, 2, 2));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        classesPanel.add(c_usages, gridBagConstraints);
-        c_usages.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_usages")); // NOI18N
-
-        buttonGroup.add(c_directOnly);
-        org.openide.awt.Mnemonics.setLocalizedText(c_directOnly, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_FindDirectSubtypesOnly")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
-        classesPanel.add(c_directOnly, gridBagConstraints);
-        c_directOnly.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_directOnly")); // NOI18N
-
-        add(classesPanel, java.awt.BorderLayout.CENTER);
-
-        jPanel3.setLayout(new java.awt.BorderLayout());
-        jPanel3.add(label, java.awt.BorderLayout.NORTH);
-
-        org.openide.awt.Mnemonics.setLocalizedText(searchInComments, org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("LBL_SearchInComents")); // NOI18N
-        searchInComments.setActionCommand(org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_SearchInComents")); // NOI18N
-        searchInComments.setMargin(new java.awt.Insets(10, 14, 2, 2));
-        searchInComments.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                searchInCommentsItemStateChanged(evt);
-            }
-        });
-        jPanel3.add(searchInComments, java.awt.BorderLayout.CENTER);
-        searchInComments.getAccessibleContext().setAccessibleDescription(searchInComments.getText());
-
-        add(jPanel3, java.awt.BorderLayout.NORTH);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(scopePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(innerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(innerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(scopePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void searchInCommentsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_searchInCommentsItemStateChanged
-        // used for change default value for searchInComments check-box.
-        // The value is persisted and then used as default in next IDE run.
-//        Boolean b = evt.getStateChange() == ItemEvent.SELECTED ? Boolean.TRUE : Boolean.FALSE;
-//        RefactoringModule.setOption("searchInComments.whereUsed", b);
-    }//GEN-LAST:event_searchInCommentsItemStateChanged
-
-    private void m_isBaseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_isBaseClassActionPerformed
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_isBaseClassActionPerformed
-
-    private void m_overridersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_overridersActionPerformed
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_overridersActionPerformed
-
-    private void m_usagesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_m_usagesActionPerformed
-        parent.stateChanged(null);
-    }//GEN-LAST:event_m_usagesActionPerformed
+private void scopeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeActionPerformed
+    RefactoringModule.setOption("whereUsed.scope", scope.getSelectedIndex()); // NOI18N
+}//GEN-LAST:event_scopeActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCustomScope;
     private javax.swing.ButtonGroup buttonGroup;
-    private javax.swing.JRadioButton c_directOnly;
-    private javax.swing.JRadioButton c_subclasses;
-    private javax.swing.JRadioButton c_usages;
-    private javax.swing.JPanel classesPanel;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JLabel label;
-    private javax.swing.JCheckBox m_isBaseClass;
-    private javax.swing.JCheckBox m_overriders;
-    private javax.swing.JCheckBox m_usages;
-    private javax.swing.JPanel methodsPanel;
-    private javax.swing.JCheckBox searchInComments;
+    private javax.swing.JPanel innerPanel;
+    private javax.swing.JComboBox scope;
+    private javax.swing.JLabel scopeLabel;
+    private javax.swing.JPanel scopePanel;
     // End of variables declaration//GEN-END:variables
 
     public boolean isMethodFromBaseClass() {
-        return m_isBaseClass.isSelected();
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod methodPanel = (WhereUsedPanelMethod) panel;
+            return methodPanel.isMethodFromBaseClass();
+        }
+        return false;
     }
     
     public boolean isMethodOverriders() {
-        return m_overriders.isSelected();
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod methodPanel = (WhereUsedPanelMethod) panel;
+            return methodPanel.isMethodOverriders();
+        }
+        return false;
     }
-    
+
+    public boolean isMethodFindUsages() {
+        if(panel instanceof WhereUsedPanelMethod) {
+            WhereUsedPanelMethod methodPanel = (WhereUsedPanelMethod) panel;
+            return methodPanel.isMethodFindUsages();
+        }
+        return false;
+    }
+
     public boolean isClassSubTypes() {
-        return c_subclasses.isSelected();
+        if(panel instanceof WhereUsedPanelClass) {
+            WhereUsedPanelClass classPanel = (WhereUsedPanelClass) panel;
+            return classPanel.isClassSubTypes();
+        }
+        return false;
     }
     
     public boolean isClassSubTypesDirectOnly() {
-        return c_directOnly.isSelected();
+        if(panel instanceof WhereUsedPanelClass) {
+            WhereUsedPanelClass classPanel = (WhereUsedPanelClass) panel;
+            return classPanel.isClassSubTypesDirectOnly();
+        }
+        return false;
     }
-    
-    public boolean isMethodFindUsages() {
-        return m_usages.isSelected();
-    }
-    
+
     public boolean isClassFindUsages() {
-        return c_usages.isSelected();
-    }
-    
-    public @Override Dimension getPreferredSize() {
-        Dimension orig = super.getPreferredSize();
-        return new Dimension(orig.width + 30 , orig.height + 80);
+        if(panel instanceof WhereUsedPanelClass) {
+            WhereUsedPanelClass classPanel = (WhereUsedPanelClass) panel;
+            return classPanel.isClassFindUsages();
+        }
+        return false;
     }
     
     public boolean isSearchInComments() {
-        return searchInComments.isSelected();
+        return panel.isSearchInComments();
     }
 
+    @Override
     public Component getComponent() {
         return this;
     }

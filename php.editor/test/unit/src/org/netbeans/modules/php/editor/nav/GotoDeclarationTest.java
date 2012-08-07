@@ -620,20 +620,12 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "* @return Om^g\\AliasedClassName", "use \\Foo\\Bar as ^Omg;");
     }
 
-    public void testIssue209308_03() throws Exception {
-        checkDeclaration(getTestPath(), "* @throws Om^g\\AliasedClassName", "use \\Foo\\Bar as ^Omg;");
-    }
-
     public void testIssue209308_04() throws Exception {
         checkDeclaration(getTestPath(), "* @param Om^g\\AliasedClassName $p", "use \\Foo\\Bar as ^Omg;");
     }
 
     public void testIssue209308_05() throws Exception {
         checkDeclaration(getTestPath(), "/** @var Cl^s */", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
-    }
-
-    public void testIssue209308_06() throws Exception {
-        checkDeclaration(getTestPath(), "* @throws Cl^s", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
     }
 
     public void testIssue209308_07() throws Exception {
@@ -650,10 +642,6 @@ public class GotoDeclarationTest extends PHPNavTestBase {
 
     public void testIssue209308_10() throws Exception {
         checkDeclaration(getTestPath(), "* @return Omg\\Aliased^ClassName", "class ^AliasedClassName {}");
-    }
-
-    public void testIssue209308_11() throws Exception {
-        checkDeclaration(getTestPath(), "* @throws Omg\\Aliased^ClassName", "class ^AliasedClassName {}");
     }
 
     public void testIssue209308_12() throws Exception {

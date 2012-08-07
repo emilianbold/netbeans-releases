@@ -199,6 +199,12 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         //TODO
         return "src/main/java"; //NOI18N
     }
+    
+    @Override
+    public String getTestSourceDirectoryPath() {
+        //TODO
+        return "src/test/java"; //NOI18N
+    }
 
     @Override
     public FileObject getSourceDirectory() {
@@ -242,16 +248,17 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     }
 
     @Override
-    public boolean addDependency(String codeNameBase, String releaseVersion,
-                                 SpecificationVersion version,
-                                 boolean useInCompiler) throws IOException {
+    public void addDependencies(NbModuleProvider.ModuleDependency[] dependencies) throws IOException {
+        for (NbModuleProvider.ModuleDependency mdep : dependencies) {
+        String codeNameBase = mdep.getCodeNameBase();
+        SpecificationVersion version = mdep.getVersion();
         String artifactId = codeNameBase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
         if (hasDependency(codeNameBase)) {
             //TODO
             //not sure we ought to check for spec or release version.
             // just ignore for now, not any easy way to upgrade anyway I guess.
-            return false;
+            continue;
         }
         Dependency dep = null;
         RepositoryInfo nbrepo = netbeansRepo();
@@ -296,8 +303,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             dep.setVersion("99.99"); // NOI18N
         }
         dependencyAdder.addDependency(dep);
-        tsk.schedule(200);
-        return true;
+        
+        }
+        dependencyAdder.run();
     }
 
     /**
@@ -400,9 +408,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 }
             };
             Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
-            //TODO is the manual reload necessary if pom.xml file is being saved?
-            NbMavenProject.fireMavenProjectReload(project);
-            project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+            project.getLookup().lookup(NbMavenProject.class).synchronousDependencyDownload();
         }
     }
             

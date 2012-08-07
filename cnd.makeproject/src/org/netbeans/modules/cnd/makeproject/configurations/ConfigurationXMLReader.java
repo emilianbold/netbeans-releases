@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -90,7 +91,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
         this.projectDirectory = projectDirectory;
         // LATER configurationDescriptor = new
     }
-
 
     /*
      * was: readFromDisk
@@ -149,22 +149,18 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         boolean success;
 
-        XMLDecoder decoder =
-                new ConfigurationXMLCodec(tag,
-                projectDirectory,
-                configurationDescriptor,
-                relativeOffset);
+        XMLDecoder decoder = new ConfigurationXMLCodec(tag, true, projectDirectory, configurationDescriptor, relativeOffset);
         registerXMLDecoder(decoder);
         InputStream inputStream = null;
         try {
             inputStream = xml.getInputStream();
             success = read(inputStream, xml.getPath());
         } finally {
+            deregisterXMLDecoder(decoder);
             if (inputStream != null) {
                 inputStream.close();
             }
         }
-        deregisterXMLDecoder(decoder);
 
         if (!success) {
             displayErrorDialog();
@@ -180,22 +176,42 @@ public class ConfigurationXMLReader extends XMLDocReader {
         if (xml != null) {
             // Don't post an error.
             // It's OK to sometimes not have a private config
-            XMLDecoder auxDecoder =
-                    new AuxConfigurationXMLCodec(tag, configurationDescriptor);
-            registerXMLDecoder(auxDecoder);
+            decoder = new ConfigurationXMLCodec(tag, false, projectDirectory, configurationDescriptor, relativeOffset);
+            registerXMLDecoder(decoder);
             inputStream = null;
             try {
                 inputStream = xml.getInputStream();
                 success = read(inputStream, projectDirectory.getName());
             } finally {
+                deregisterXMLDecoder(decoder);
                 if (inputStream != null) {
                     inputStream.close();
                 }
             }
-            deregisterXMLDecoder(auxDecoder);
 
             if (!success) {
                 return null;
+            }
+        } else {
+            xml = projectDirectory.getFileObject("nbproject/default_configurations.xml"); // NOI18N
+            if (xml != null) {
+                decoder = new ConfigurationXMLCodec(tag, false, projectDirectory, configurationDescriptor, relativeOffset);
+                registerXMLDecoder(decoder);
+                inputStream = null;
+                try {
+                    inputStream = xml.getInputStream();
+                    success = read(inputStream, projectDirectory.getName());
+                    SPIAccessor.get().setDefaultConfigurationsRestored(configurationDescriptor, true);
+                } finally {
+                    deregisterXMLDecoder(decoder);
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
+                }
+
+                //if (!success) {
+                //    return null;
+                //}
             }
         }
 
@@ -236,21 +252,27 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {
             final String message = NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING", projectDirectory.getPath()); // NOI18N
-            Runnable warning = new Runnable() {
+            if (CndUtils.isStandalone()) {
+                System.err.print(message);
+                System.err.println(NbBundle.getMessage(ConfigurationXMLReader.class, "OLD_VERSION_WARNING_AUTO"));
+                configurationDescriptor.setModified();
+            } else {
+                Runnable warning = new Runnable() {
 
-                @Override
-                public void run() {
-                    NotifyDescriptor nd = new NotifyDescriptor(message,
-                            NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
-                            NotifyDescriptor.QUESTION_MESSAGE,
-                            null, NotifyDescriptor.YES_OPTION);
-                    Object ret = DialogDisplayer.getDefault().notify(nd);
-                    if (ret == NotifyDescriptor.YES_OPTION) {
-                        configurationDescriptor.setModified();
+                    @Override
+                    public void run() {
+                        NotifyDescriptor nd = new NotifyDescriptor(message,
+                                NbBundle.getMessage(ConfigurationXMLReader.class, "CONVERT_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION, // NOI18N
+                                NotifyDescriptor.QUESTION_MESSAGE,
+                                null, NotifyDescriptor.YES_OPTION);
+                        Object ret = DialogDisplayer.getDefault().notify(nd);
+                        if (ret == NotifyDescriptor.YES_OPTION) {
+                            configurationDescriptor.setModified();
+                        }
                     }
-                }
-            };
-            SwingUtilities.invokeLater(warning);
+                };
+                SwingUtilities.invokeLater(warning);
+            }
         }
 
         if (configurationDescriptor.isModified()) {

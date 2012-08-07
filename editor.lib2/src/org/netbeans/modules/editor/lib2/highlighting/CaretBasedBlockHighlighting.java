@@ -56,9 +56,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.PlainDocument;
 import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -67,7 +65,6 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.editor.util.swing.BlockCompare;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.DocUtils;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.spi.editor.highlighting.HighlightsChangeEvent;
@@ -87,6 +84,7 @@ import org.openide.util.WeakListeners;
  */
 public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsContainer implements ChangeListener, PropertyChangeListener {
 
+    // -J-Dorg.netbeans.modules.editor.lib2.highlighting.CaretBasedBlockHighlighting.level=FINE
     private static final Logger LOG = Logger.getLogger(CaretBasedBlockHighlighting.class.getName());
     
     private boolean inited;
@@ -164,10 +162,10 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
             endOffset >= blockStart.getOffset() && startOffset <= blockEnd.getOffset())
         {
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Queried for highlights in [" //NOI18N
-                    + startOffset + ", " + endOffset + "], returning [" //NOI18N
-                    + positionToString(blockStart) + ", " + positionToString(blockEnd) + "]" //NOI18N
-                    + ", layer=" + s2s(this)); //NOI18N
+                LOG.fine("Queried for highlights in <" //NOI18N
+                    + startOffset + ", " + endOffset + ">, returning <" //NOI18N
+                    + positionToString(blockStart) + ", " + positionToString(blockEnd) + ">" //NOI18N
+                    + ", layer=" + s2s(this) + '\n'); //NOI18N
             }
 
             return new SimpleHighlightsSequence(
@@ -231,14 +229,22 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
                     newStart = newBlock[0];
                     newEnd = newBlock[1];
                     if (currentBlockStart == null) { // not valid yet
-                        changeStart = newStart;
-                        changeEnd = newEnd;
+                        if (newStart.getOffset() < newEnd.getOffset()) { // Valid non-empty block
+                            changeStart = newStart;
+                            changeEnd = newEnd;
+                        } else {
+                            changeStart = null; // Invalid or empty block => no change
+                            changeEnd = null;
+                        }
                     } else { // Valid current start and end blocks
                         // Compare new block to old one
                         BlockCompare compare = BlockCompare.get(
                                 newStart.getOffset(), newEnd.getOffset(),
                                 currentBlockStart.getOffset(), currentBlockEnd.getOffset());
-                        if (compare.equal()) { // Same blocks
+                        if (compare.invalidX()) { // newStart > newEnd
+                            changeStart = null; // No change
+                            changeEnd = null;
+                        } else if (compare.equal()) { // Same blocks
                             changeStart = null; // No firing
                             changeEnd = null;
                         } else if (compare.equalStart()) {
@@ -273,10 +279,10 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
                 }
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Current block changed from [" //NOI18N
+                    LOG.fine("Caret selection block changed from [" //NOI18N
                             + positionToString(currentBlockStart) + ", " + positionToString(currentBlockEnd) + "] to [" //NOI18N
                             + positionToString(newStart) + ", " + positionToString(newEnd) + "]" //NOI18N
-                            + ", layer=" + s2s(this)); //NOI18N
+                            + ", layer=" + s2s(this) + '\n'); //NOI18N
                 }
                 currentBlockStart = newStart;
                 currentBlockEnd = newEnd;
@@ -326,7 +332,7 @@ public abstract class CaretBasedBlockHighlighting extends AbstractHighlightsCont
     }
     
     private static String positionToString(Position p) {
-        return p == null ? "null" : Integer.toString(p.getOffset()); //NOI18N
+        return p == null ? "null" : p.toString(); //NOI18N
     }
 
     private static String s2s(Object o) {

@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.platform;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
@@ -100,10 +101,11 @@ public final class FallbackDefaultJavaPlatform extends JavaPlatform {
             }
             URL u;
             try {
-                u = Utilities.toURI(f).toURL();
+                File normf = FileUtil.normalizeFile(f);
+                u = Utilities.toURI(normf).toURL();
             } catch (MalformedURLException x) {
                 throw new AssertionError(x);
-            }
+            } 
             if (FileUtil.isArchiveFile(u)) {
                 u = FileUtil.getArchiveRoot(u);
             }

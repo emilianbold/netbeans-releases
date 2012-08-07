@@ -100,6 +100,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
@@ -167,7 +168,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected ProjectBase(ModelImpl model, FileSystem fs, Object platformProject, String name) {
         namespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
         this.uniqueName = getUniqueName(fs, platformProject);
-        RepositoryUtils.openUnit(createProjectKey(fs, platformProject));
+        Key key = createProjectKey(fs, platformProject);
+        RepositoryUtils.openUnit(key);
+        unitId = key.getUnitId();
         setStatus(Status.Initial);
         this.name = ProjectNameCache.getManager().getString(name);
         this.fileSystem = fs;
@@ -413,7 +416,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    
     public static CharSequence getUniqueName(FileSystem fs, Object platformProject) {
         Parameters.notNull("FileSystem", fs); //NOI18N
         String postfix = CndFileUtils.isLocalFileSystem(fs) ? "" : fs.getDisplayName();
@@ -1483,16 +1485,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     protected final APTPreprocHandler.State setChangedFileState(NativeFileItem nativeFile) {
         // TODO: do we need to change states in dependent projects' storages???
-        APTPreprocHandler.State state;
-        state = createPreprocHandler(nativeFile).getState();
         FileContainer fileContainer = getFileContainer();
         FileContainer.FileEntry entry = fileContainer.getEntry(nativeFile.getAbsolutePath());
-        synchronized (entry.getLock()) {
-            entry.invalidateStates();
-            entry.setState(state, FilePreprocessorConditionState.PARSING);
+        if (entry == null) {
+            return null;
+        } else {
+            APTPreprocHandler.State state = createPreprocHandler(nativeFile).getState();
+            synchronized (entry.getLock()) {
+                entry.invalidateStates();
+                entry.setState(state, FilePreprocessorConditionState.PARSING);
+            }
+            fileContainer.put();
+            return state;
         }
-        fileContainer.put();
-        return state;
     }
 
     protected final void invalidatePreprocState(CharSequence absPath) {
@@ -1517,10 +1522,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         fileContainer.put();
     }
 
-    protected final void markAsParsingPreprocStates(CharSequence absPath) {
+    protected final void markAsParsingPreprocStates(FileImpl fileImpl) {
+        CharSequence absPath = fileImpl.getAbsolutePath();
         // TODO: do we need to change states in dependent projects' storages???
         FileContainer fileContainer = getFileContainer();
         FileEntry fileEntry = fileContainer.getEntry(absPath);
+        if (fileEntry == null) {
+            CndUtils.assertTrue(!fileImpl.isValid(), "null entry for valid file ", fileImpl); //NOI18N
+            return;
+        }
         Object stateLock = fileEntry.getLock();
         Collection<ProjectBase> dependentProjects = getDependentProjects();
         synchronized (stateLock) {
@@ -1635,8 +1645,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 synchronized (entry.getLock()) {
                     PreprocessorStatePair newStatePair = new PreprocessorStatePair(newState, pcState);
-                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
-                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
+//                    Map<CsmUID<CsmProject>, Collection<PreprocessorStatePair>> includedStatesToDebug = startProject.getIncludedPreprocStatePairs(csmFile);
+//                    Collection<PreprocessorStatePair> statePairsToDebug = entry.getStatePairs();
                     // register included file and it's states in start project under current included file lock
                     startProjectUpdateResult = startProject.updateFileEntryForIncludedFile(entry, this, file, csmFile, newStatePair);
                     
@@ -3354,6 +3364,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private final AtomicBoolean disposing = new AtomicBoolean(false);
     private final ReadWriteLock disposeLock = new ReentrantReadWriteLock();
     private final CharSequence uniqueName;
+    private final int unitId;
     private final Map<CharSequence, CsmUID<CsmNamespace>> namespaces;
     private final Key classifierStorageKey;
 
@@ -3391,11 +3402,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     @Override
     public void write(RepositoryDataOutput aStream) throws IOException {
         assert aStream != null;
+        aStream.writeInt(unitId);
         PersistentUtils.writeFileSystem(fileSystem, aStream);
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null;
         assert this.name != null;
-        PersistentUtils.writeUTF(name, aStream);
+        APTSerializeUtils.writeFileNameIndex(name, aStream, unitId);
         //PersistentUtils.writeUTF(RepositoryUtils.getUnitName(getUID()), aStream);
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
@@ -3406,12 +3418,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         ProjectComponent.writeKey(classifierStorageKey, aStream);
         this.includedFileContainer.write(aStream);
 
-        PersistentUtils.writeUTF(this.uniqueName, aStream);
+        APTSerializeUtils.writeFileNameIndex(this.uniqueName, aStream, unitId);
         aStream.writeBoolean(hasFileSystemProblems);
     }
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {
-
+        unitId = aStream.readInt();
         fileSystem = PersistentUtils.readFileSystem(aStream);
         sysAPTData = APTSystemStorage.getInstance();
         userPathStorage = new APTIncludePathStorage();
@@ -3422,7 +3434,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         UIDObjectFactory aFactory = UIDObjectFactory.getDefaultFactory();
         assert aFactory != null : "default UID factory can not be bull";
 
-        this.name = PersistentUtils.readUTF(aStream, ProjectNameCache.getManager());
+        this.name = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
         assert this.name != null : "project name can not be null";
 
         //CharSequence unitName = PersistentUtils.readUTF(aStream, DefaultCache.getManager());
@@ -3456,13 +3468,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         includedFileContainer = new IncludedFileContainer(this, aStream);
         
-        uniqueName = PersistentUtils.readUTF(aStream, ProjectNameCache.getManager());
+        uniqueName = APTSerializeUtils.readFileNameIndex(aStream, ProjectNameCache.getManager(), unitId);
         assert uniqueName != null : "uniqueName can not be null";
 
         this.model = (ModelImpl) CsmModelAccessor.getModel();
 
         this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
         this.hasFileSystemProblems = aStream.readBoolean();
+    }
+
+    protected int getUnitId() {
+        return unitId;
     }
 
     private final WeakContainer<DeclarationContainerProject> weakDeclarationContainer;

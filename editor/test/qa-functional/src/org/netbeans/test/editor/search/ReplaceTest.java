@@ -125,24 +125,22 @@ public class ReplaceTest extends EditorTestCase {
             ReplaceBarOperator bar = ReplaceBarOperator.invoke(editor);            
             // check only selected checkboxes
             bar.uncheckAll();            
+            new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             bar.getSearchBar().findCombo().typeText("testReplaceSelectionRepeated");
             bar.replaceCombo().clearText();
             bar.replaceCombo().typeText("testReplaceSelectionRepeated2");            
-            new EventTool().waitNoEvent(REPLACE_TIMEOUT);
-            bar.replaceCombo().pressKey(KeyEvent.VK_ENTER);
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);            
-//            waitForLabel("'testReplaceSelectionRepeated' found at 15:35");            
-            // choose the "testReplaceSelectionRepeated" word
-            editor.setCaretPosition(12,1);            
-            //editor.select(15, 35, 62);
+            bar.replaceButton().doClick();            
+            new EventTool().waitNoEvent(REPLACE_TIMEOUT);            
+            editor.setCaretPosition(12,1);                        
+            bar.getSearchBar().findCombo().clearText();
             bar.getSearchBar().findCombo().typeText("testReplaceSelectionRepeated");            
+            bar.replaceCombo().clearText();
             bar.replaceCombo().typeText("testReplaceSelectionRepeated2");               
+            new EventTool().waitNoEvent(REPLACE_TIMEOUT);
+            bar.replaceButton().doClick();            
             bar.replaceButton().doClick();
-            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
-		bar.replaceButton().doClick();
-		new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
-            // check status bar		
-//            waitForLabel("'testReplaceSelectionRepeated' found at 16:12");                        
+            new EventTool().waitNoEvent(REPLACE_TIMEOUT);                       
             bar.closeButton().doClick();
             ref(editor.getText());
             compareReferenceFiles();            
@@ -154,78 +152,78 @@ public class ReplaceTest extends EditorTestCase {
     /**
      * TC3 - Replace Dialog Combo Box
      */
-    public void testReplaceDialogComboBox() {
-        openDefaultProject();
-        openDefaultSampleFile();
-        try {
-            EditorOperator editor = getDefaultSampleEditorOperator();
-            editor.setCaretPosition(1,1);
-            ReplaceBarOperator bar = ReplaceBarOperator.invoke(editor);
-            bar.uncheckAll();
-            SearchBarOperator search = bar.getSearchBar();            
-            //search.wrapAroundCheckBox().setSelected(true);            
-            search.findCombo().clearText();
-            search.findCombo().typeText("package");
-            bar.replaceCombo().clearText();
-            bar.replaceCombo().typeText("pakaz");
-            bar.replaceButton().doClick();
-            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
-            bar.replaceButton().doClick();
-            // check status bar
-//            waitForLabel("'package' not found");
-		
-            editor.setCaretPosition(1,1);
-            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
-            search.findCombo().clearText();
-            search.findCombo().typeText("class");
-            bar.replaceCombo().clearText();
-            bar.replaceCombo().typeText("klasa");
-            bar.replaceButton().doClick();
-            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
-            bar.replaceButton().doClick();
-            // check status bar
-//            waitForLabel("'class' not found");
-            
-            editor.setCaretPosition(1,1);
-            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
-            search.findCombo().clearText();
-            search.findCombo().typeText("testReplaceDialogComboBox");
-            bar.replaceCombo().clearText();
-            bar.replaceCombo().typeText("testReplaceDialogComboBox2");
-            bar.replaceButton().doClick();
-            // check status bar
-//            waitForLabel("'testReplaceDialogComboBox' found at 13:35");
-            
-		new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
-            boolean[] found = new boolean[3];
-            String[] etalon = {"testReplaceDialogComboBox","class","package"};
-            for (int i = 0; i<search.findCombo().getItemCount(); i++) {
-		    System.out.println(search.findCombo().getItemAt(i));
-		    if(i<found.length) 
-			  found[i] = etalon[i].equals((String)search.findCombo().getItemAt(i));
-            }
-            for (boolean b : found) {
-                assertTrue(b);
-            }                        
-            
-            String[] etalonReplace = {"testReplaceDialogComboBox2","klasa","pakaz"};
-            
-            for (int i = 0; i<bar.replaceCombo().getItemCount(); i++) {
-		    System.out.println(bar.replaceCombo().getItemAt(i));
-		    if(i<found.length)
-			  found[i] = etalonReplace[i].equals((String)bar.replaceCombo().getItemAt(i));                
-            }
-            for (boolean b : found) {
-                assertTrue(b);
-            }                                                
-            new EventTool().waitNoEvent(REPLACE_TIMEOUT);
-            bar.closeButton().doClick();            
-            ref(editor.getText());
-            compareReferenceFiles();            
-        } finally {
-            closeFileWithDiscard();
-        }
-    }
+//    public void testReplaceDialogComboBox() {
+//        openDefaultProject();
+//        openDefaultSampleFile();
+//        try {
+//            EditorOperator editor = getDefaultSampleEditorOperator();
+//            editor.setCaretPosition(1,1);
+//            ReplaceBarOperator bar = ReplaceBarOperator.invoke(editor);
+//            bar.uncheckAll();
+//            SearchBarOperator search = bar.getSearchBar();            
+//            //search.wrapAroundCheckBox().setSelected(true);            
+//            search.findCombo().clearText();
+//            search.findCombo().typeText("package");
+//            bar.replaceCombo().clearText();
+//            bar.replaceCombo().typeText("pakaz");
+//            bar.replaceButton().doClick();
+//            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
+//            bar.replaceButton().doClick();
+//            // check status bar
+////            waitForLabel("'package' not found");
+//		
+//            editor.setCaretPosition(1,1);
+//            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
+//            search.findCombo().clearText();
+//            search.findCombo().typeText("class");
+//            bar.replaceCombo().clearText();
+//            bar.replaceCombo().typeText("klasa");
+//            bar.replaceButton().doClick();
+//            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
+//            bar.replaceButton().doClick();
+//            // check status bar
+////            waitForLabel("'class' not found");
+//            
+//            editor.setCaretPosition(1,1);
+//            new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
+//            search.findCombo().clearText();
+//            search.findCombo().typeText("testReplaceDialogComboBox");
+//            bar.replaceCombo().clearText();
+//            bar.replaceCombo().typeText("testReplaceDialogComboBox2");
+//            bar.replaceButton().doClick();
+//            // check status bar
+////            waitForLabel("'testReplaceDialogComboBox' found at 13:35");
+//            
+//		new EventTool().waitNoEvent(REPLACE_TIMEOUT);           
+//            boolean[] found = new boolean[3];
+//            String[] etalon = {"testReplaceDialogComboBox","class","package"};
+//            for (int i = 0; i<search.findCombo().getItemCount(); i++) {
+//		    System.out.println(search.findCombo().getItemAt(i));
+//		    if(i<found.length) 
+//			  found[i] = etalon[i].equals((String)search.findCombo().getItemAt(i));
+//            }
+//            for (boolean b : found) {
+//                assertTrue(b);
+//            }                        
+//            
+//            String[] etalonReplace = {"testReplaceDialogComboBox2","klasa","pakaz"};
+//            
+//            for (int i = 0; i<bar.replaceCombo().getItemCount(); i++) {
+//		    System.out.println(bar.replaceCombo().getItemAt(i));
+//		    if(i<found.length)
+//			  found[i] = etalonReplace[i].equals((String)bar.replaceCombo().getItemAt(i));                
+//            }
+//            for (boolean b : found) {
+//                assertTrue(b);
+//            }                                                
+//            new EventTool().waitNoEvent(REPLACE_TIMEOUT);
+//            bar.closeButton().doClick();            
+//            ref(editor.getText());
+//            compareReferenceFiles();            
+//        } finally {
+//            closeFileWithDiscard();
+//        }
+//    }
     
     /**
      * TC4 - Replace Match Case

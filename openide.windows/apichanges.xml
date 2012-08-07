@@ -50,6 +50,25 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="minimize_and_float">
+    <api name="winsys"/>
+    <summary>New API to check/modify the floating and minimize state of a TopComponent.</summary>
+    <version major="6" minor="57"/>
+    <date day="4" month="7" year="2012"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>New methods in WindowManager class:
+        <br/>
+            isTopComponentMinimized()<br/>
+            setTopComponentMinimized()<br/>
+            isTopComponentFloating()<br/>
+            setTopComponentFloating()<br/>
+        </p>
+    </description>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <issue number="214854"/>
+</change>
 <change id="onshowing">
     <api name="winsys"/>
     <summary>Easy to use replacement for <code>invokeWhenUIReady</code></summary>

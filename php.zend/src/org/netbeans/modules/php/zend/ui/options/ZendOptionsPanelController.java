@@ -119,7 +119,7 @@ public class ZendOptionsPanelController extends OptionsPanelController implement
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ZendOptions.class);
+        return new HelpCtx("org.netbeans.modules.php.zend.ui.options.ZendOptions"); // NOI18N
     }
 
     @Override

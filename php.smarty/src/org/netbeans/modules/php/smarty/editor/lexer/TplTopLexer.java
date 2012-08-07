@@ -318,9 +318,12 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                     case IN_COMMENT:
                         if (cc == '*') {
                             int nextChar = input.read();
+                            while (input.readLength() <= getCloseDelimiterLength() && nextChar != LexerInput.EOF) {
+                                nextChar = input.read();
+                            }
                             if (nextChar != LexerInput.EOF) {
                                 if (isSmartyCloseDelimiter(input.readText())) {
-                                    input.backup(1);
+                                    input.backup(input.readLength() - 1);
                                     state = State.AFTER_SUBSTATE;
                                     return TplTopTokenId.T_COMMENT;
                                 } else {
@@ -328,7 +331,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                                     return TplTopTokenId.T_COMMENT;
                                 }
                             } else {
-                                input.backup(1);
+                                input.backup(input.readLength() - 1);
                             }
                         }
                         return TplTopTokenId.T_COMMENT;

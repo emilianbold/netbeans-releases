@@ -239,6 +239,9 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                         case '/':
                             state = State.INIT;
                             return factory.createToken(SQLTokenId.BLOCK_COMMENT);
+                        case '*':
+                            state = State.ISA_STAR_IN_BLOCK_COMMENT;
+                            break;
                         default:
                             state = State.ISI_BLOCK_COMMENT;
                             break;

@@ -74,6 +74,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.JavaProjectSettings;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
+import org.netbeans.spi.project.ui.PathFinder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
@@ -120,18 +121,11 @@ public class PackageView {
      */
     public static Node findPath(Node rootNode, Object object) {
         
-        PackageRootNode.PathFinder pf = rootNode.getLookup().lookup(PackageRootNode.PathFinder.class);
-        
+        final PathFinder pf = rootNode.getLookup().lookup(PathFinder.class);
         if ( pf != null ) {
             return pf.findPath( rootNode, object );
-        } else {
-            TreeRootNode.PathFinder pf2 = rootNode.getLookup().lookup(TreeRootNode.PathFinder.class);
-            if (pf2 != null) {
-                return pf2.findPath(rootNode, object);
-            } else {
-                return null;
-            }
         }
+        return null;
     }
     
     /**
