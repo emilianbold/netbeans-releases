@@ -45,7 +45,6 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
@@ -101,7 +100,7 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
     @Override
     public Collection<String> supportedLibraries() {
-        return Collections.emptyList();
+        return SiteHelper.listJsFilenamesFromZipFile(LIB_FILE);
     }
 
 }

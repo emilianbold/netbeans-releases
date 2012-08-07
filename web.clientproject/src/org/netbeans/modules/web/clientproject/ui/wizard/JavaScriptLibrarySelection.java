@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -364,9 +365,18 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     void updateDefaults(Collection<String> defaultLibs) {
         assert EventQueue.isDispatchThread();
-        // XXX remove default libraries from list and add there defaultLibs (in the beginning of the list)
-        //selectedLibraries.addAll(defaultLibs);
-        // XXX fire list change
+        // remove default libraries
+        Iterator<SelectedLibrary> iterator = selectedLibraries.iterator();
+        while (iterator.hasNext()) {
+            SelectedLibrary library = iterator.next();
+            if (library.isFromTemplate()) {
+                iterator.remove();
+            }
+        }
+        for (String lib : defaultLibs) {
+            selectedLibraries.add(new SelectedLibrary(lib));
+        }
+        selectedLibrariesListModel.fireContentsChanged();
     }
 
     /**
@@ -906,6 +916,10 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         public LibraryVersion getLibraryVersion() {
             return libraryVersion;
+        }
+
+        public boolean isFromTemplate() {
+            return libraryVersion == null;
         }
 
         private String getLibraryFilename() {
