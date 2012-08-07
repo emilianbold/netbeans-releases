@@ -406,7 +406,7 @@
             </and>
         </condition>
         <fail message="Error:${line.separator}JavaFX deployment library not found in active JDK.${line.separator}Please check that the JDK is correctly installed and its version is at least 7u4 on Mac or 7u6 on other systems." if="jfx-deployment-missing+jdk7u6"/>
-        <fail message="Error:${line.separator}JavaFX deployment library not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="jfx-deployment-missing+javafx.sdk.missing+default"/>
+        <fail message="Error:${line.separator}JavaFX deployment library not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new JavaFX Project." if="jfx-deployment-missing+javafx.sdk.missing+default"/>
         <fail message="Error:${line.separator}JavaFX deployment library not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file)." if="jfx-deployment-missing+javafx.sdk.missing-default"/>
         <fail message="Error:${line.separator}JavaFX deployment library not found." unless="jfx-deployment-available"/>
         <echo message="jfx-deployment-available = ${jfx-deployment-available}" level="verbose"/>
@@ -729,7 +729,7 @@
             </and>
         </condition>
         <fail message="Error:${line.separator}WebStart executable could not be found in active JDK.${line.separator}Please check that the JDK is correctly installed and its version is at least 7u6." if="jfx-webstart-missing+jdk7u6"/>
-        <fail message="Error:${line.separator}WebStart executable could not be found.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="jfx-webstart-missing+javafx.runtime.missing+default"/>
+        <fail message="Error:${line.separator}WebStart executable could not be found.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new JavaFX Project." if="jfx-webstart-missing+javafx.runtime.missing+default"/>
         <fail message="Error:${line.separator}WebStart executable could not be found.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file)." if="jfx-webstart-missing+javafx.runtime.missing-default"/>
         <fail message="Error:${line.separator}WebStart executable could not be found." unless="jfx-webstart-available"/>
         <echo message="jfx-webstart-available = ${jfx-webstart-available}" level="verbose"/>
@@ -2238,10 +2238,67 @@
         <echo message="project.state.profiling = ${project.state.profiling}" level="verbose"/>
     </target>
     
+    <!-- set property javafx.disable.concurrent.runs=true to disable runs from temporary directory -->
+    <target name="-check-concurrent-runs">
+        <condition property="disable-concurrent-runs">
+            <and>
+                <isset property="javafx.disable.concurrent.runs"/>
+                <equals arg1="${javafx.disable.concurrent.runs}" arg2="true" trim="true"/>
+            </and>
+        </condition>
+        <condition property="temp.run.jar" value="${jfx.deployment.dir}${file.separator}${jfx.deployment.jar}">
+            <isset property="disable-concurrent-runs"/>
+        </condition>
+        <condition property="temp.run.jnlp" value="${jfx.deployment.jnlp}">
+            <isset property="disable-concurrent-runs"/>
+        </condition>
+        <condition property="temp.run.html" value="${jfx.deployment.html}">
+            <isset property="disable-concurrent-runs"/>
+        </condition>
+    </target>
+    <target name="-create-temp-run-dir" depends="-check-concurrent-runs" unless="disable-concurrent-runs">
+        <echo message="Creating temp run dir" level="verbose"/>
+        <tempfile property="temp.run.dir" destDir="${basedir}${file.separator}${dist.dir}${file.separator}" prefix="run"/>
+        <echo message="temp.run.dir=${temp.run.dir}" level="verbose"/>
+        <copy todir="${temp.run.dir}" includeemptydirs="true" overwrite="true">
+            <fileset dir="${basedir}${file.separator}${dist.dir}">
+                <exclude name="**${file.separator}bundles${file.separator}**"/>
+                <exclude name="**${file.separator}run*${file.separator}**"/>
+            </fileset>
+        </copy>        
+        <property name="temp.run.jar" value="${temp.run.dir}${file.separator}${jfx.deployment.jar}"/>
+        <basename property="jfx.deployment.base" file="${jfx.deployment.jar}" suffix=".jar"/>
+        <property name="temp.run.jnlp" value="${temp.run.dir}${file.separator}${jfx.deployment.base}.jnlp"/>
+        <property name="temp.run.html" value="${temp.run.dir}${file.separator}${jfx.deployment.base}.html"/>
+    </target>
+    <target name="-remove-temp-run-dir" if="temp.run.dir">
+        <echo message="Removing temp run dir" level="verbose"/>
+        <delete dir="${temp.run.dir}" quiet="true" failonerror="false"/>
+    </target>
+    <target depends="init,compile,jar,-create-temp-run-dir" description="Run JavaFX project standalone." name="fx-project-run">
+        <echo message="Executing ${main.class} in ${temp.run.jar}"/>
+        <java classname="${main.class}" dir="${work.dir}" fork="true" jvm="${platform.java}">
+            <jvmarg line="${endorsed.classpath.cmd.line.arg}"/>
+            <jvmarg value="-Dfile.encoding=${runtime.encoding}"/>
+            <redirector errorencoding="${runtime.encoding}" inputencoding="${runtime.encoding}" outputencoding="${runtime.encoding}"/>
+            <jvmarg line="${run.jvmargs}"/>
+            <jvmarg line="${run.jvmargs.ide}"/>
+            <classpath>
+                <path path="${temp.run.jar}:${javac.classpath}"/>
+            </classpath>
+            <arg line="${application.args}"/>
+            <syspropertyset>
+                <propertyref prefix="run-sys-prop."/>
+                <mapper from="run-sys-prop.*" to="*" type="glob"/>
+            </syspropertyset>
+        </java>
+        <antcall target="-remove-temp-run-dir"/>
+    </target>
+
 
     <!-- Running/Debugging/Profiling Standalone -->
 
-    <target name="jfxsa-run" depends="-mark-project-state-running,-check-jfx-runtime,-warn-of-preloader,run"/>
+    <target name="jfxsa-run" depends="-mark-project-state-running,-check-jfx-runtime,-warn-of-preloader,fx-project-run"/>
 
     <target name="jfxsa-debug" depends="-mark-project-state-debugging,jar,-check-jfx-runtime,-warn-of-preloader,debug"/>
     
@@ -2299,18 +2356,37 @@
         <antcall target="-check-jnlp-file"/>
     </target>
 
-    <target name="jfxws-run" if="jnlp-file-exists" depends="-mark-project-state-running,
-            -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime" 
-            description="Start fx javaws execution">
-        <echo message="Executing ${jfx.deployment.jnlp} using ${active.webstart.executable}"/>
+    <!-- set property javafx.enable.concurrent.external.runs=true to enable multiple runs of the same WebStart or Run-in-Browser project -->
+    <target name="-check-concurrent-jnlp-runs" depends="-resolve-jnlp-file">
+        <condition property="disable-concurrent-runs">
+            <not>
+                <and>
+                    <isset property="javafx.enable.concurrent.external.runs"/>
+                    <equals arg1="${javafx.enable.concurrent.external.runs}" arg2="true" trim="true"/>
+                </and>
+            </not>
+        </condition>
+        <condition property="temp.run.jnlp" value="${jfx.deployment.jnlp}">
+            <isset property="disable-concurrent-runs"/>
+        </condition>
+    </target>
+    <target name="-warn-concurrent-jnlp-runs" unless="disable-concurrent-runs">
+        <echo message="Note: Concurrent Run as WebStart enabled.${line.separator}Temporary directory ${temp.run.dir}${line.separator}will remain unused when WebStart execution has finished. Use project Clean to delete unused directories."/>
+    </target>
+
+    <target name="jfxws-run" if="jnlp-file-exists" depends="-mark-project-state-running,-check-jdk-7u4or5-mac,jar,
+            -check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,-check-concurrent-jnlp-runs,-create-temp-run-dir" 
+            description="Start JavaFX javaws execution">
+        <echo message="Executing ${temp.run.jnlp} using ${active.webstart.executable}"/>
         <exec executable="${active.webstart.executable}">
-            <arg file="${jfx.deployment.jnlp}"/>
+            <arg file="${temp.run.jnlp}"/>
         </exec>
+        <antcall target="-warn-concurrent-jnlp-runs"/>
     </target>
     
     <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-mark-project-state-debugging,
             -check-jdk-7u4or5-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-check-jfx-runtime,
-            -debug-start-debugger,-debug-javaws-debuggee" description="Debug fx javaws project in IDE"/>
+            -debug-start-debugger,-debug-javaws-debuggee" description="Debug JavaFX javaws project in IDE"/>
         
     <target name="-debug-javaws-debuggee" depends="-init-debug-args">
         <echo message="Executing ${jfx.deployment.jnlp} in debug mode using ${active.webstart.executable}"/>
@@ -2346,7 +2422,7 @@
     
     <target name="jfxws-profile" if="profiler.configured" 
         depends="-profile-check-1"
-        description="Profile fx javaws project in IDE">
+        description="Profile JavaFX javaws project in IDE">
         <startprofiler/>
         
         <antcall target="-do-jfxws-profile"/>
@@ -2376,7 +2452,7 @@
         </condition>
         <fail message="Error:${line.separator}Browser selection not recognizable from ${config} run configuration.${line.separator}Please go to Project Properties dialog, category Run, to select a valid browser." unless="javafx.run.inbrowser.path"/>
         <fail message="Error:${line.separator}No browser defined in ${config} run configuration.${line.separator}Please verify in Tools->Options dialog that NetBeans recognizes a valid browser, then go to Project Properties dialog, category Run, to select a valid browser." if="javafx.run.inbrowser.undefined"/>
-        <fail message="Error:${line.separator}Browser ${javafx.run.inbrowser.path} referred from ${config} run configuration can not be found.${line.separator}(This can happen, e.g, when the FX Project is transferred to another system.)${line.separator}Please go to Project Properties dialog, category Run, to select a valid browser." unless="javafx.run.inbrowser.path-exists"/>
+        <fail message="Error:${line.separator}Browser ${javafx.run.inbrowser.path} referred from ${config} run configuration can not be found.${line.separator}(This can happen, e.g, when the JavaFX Project is transferred to another system.)${line.separator}Please go to Project Properties dialog, category Run, to select a valid browser." unless="javafx.run.inbrowser.path-exists"/>
     </target>
 
     <target name="-check-template-processed-html-file">
@@ -2406,14 +2482,39 @@
         </condition>
     </target>
 
-    <target name="jfxbe-run" if="html-file-exists" depends="-mark-project-state-running,
-            -check-jdk-7u4or5-mac,jar,-check-selected-browser-path,-set-html-file,-check-jfx-runtime" 
+    <!-- set property javafx.enable.concurrent.external.runs=true to enable multiple runs of the same WebStart or Run-in-Browser project -->
+    <target name="-check-concurrent-html-runs" depends="-set-html-file">
+        <condition property="disable-concurrent-runs">
+            <or>
+                <not>
+                    <and>
+                        <isset property="javafx.enable.concurrent.external.runs"/>
+                        <equals arg1="${javafx.enable.concurrent.external.runs}" arg2="true" trim="true"/>
+                    </and>
+                </not>
+                <and>
+                    <isset property="html-template-available"/>
+                    <available file="${javafx.run.htmltemplate.processed}"/>
+                </and>
+            </or>
+        </condition>
+        <condition property="temp.run.html" value="${jfx.deployment.html}">
+            <isset property="disable-concurrent-runs"/>
+        </condition>
+    </target>
+    <target name="-warn-concurrent-html-runs" unless="disable-concurrent-runs">
+        <echo message="Note: Concurrent Run in Browser enabled.${line.separator}Temporary directory ${temp.run.dir}${line.separator}will remain unused when execution in browser has finished. Use project Clean to delete unused directories."/>
+    </target>
+
+    <target name="jfxbe-run" if="html-file-exists" depends="-mark-project-state-running,-check-jdk-7u4or5-mac,jar,
+            -check-selected-browser-path,-set-html-file,-check-jfx-runtime,-check-concurrent-html-runs,-create-temp-run-dir"
             description="Start JavaFX execution in browser">
-        <echo message="Executing ${jfx.deployment.html} using ${javafx.run.inbrowser}"/>
+        <echo message="Executing ${temp.run.html} using ${javafx.run.inbrowser}"/>
         <echo message="(${javafx.run.inbrowser.path})"/>
         <exec executable="${javafx.run.inbrowser.path}">
-            <arg file="${jfx.deployment.html}"/>
+            <arg file="${temp.run.html}"/>
         </exec>
+        <antcall target="-warn-concurrent-html-runs"/>
     </target>
     
     <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-mark-project-state-debugging,
