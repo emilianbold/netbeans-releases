@@ -60,27 +60,40 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
-        /*Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-        if (nodes.size() != 1) {
-            return false;
-        }
-
-        Node node = nodes.iterator().next();
-        DataObject dob = node.getLookup().lookup(DataObject.class);
-        if (dob == null) {
-            return false;
-        }
-
-        FileObject fo = dob.getPrimaryFile();
-
-        if ((dob!=null) && GroovyProjectUtil.isGroovyFile(fo)) {
-            return true;
-        }*/
-        return false;
+        return isValid(lookup);
     }
 
     @Override
     public void doFindUsages(Lookup lookup) {
         RefactoringTask.createRefactoringTask(lookup).run();
+    }
+
+    @Override
+    public boolean canRename(Lookup lookup) {
+        return isValid(lookup);
+    }
+
+    @Override
+    public void doDelete(Lookup lookup) {
+        super.doDelete(lookup);
+    }
+
+    private boolean isValid(Lookup lookup) {
+        return false;
+//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+//        if (nodes.size() != 1) {
+//            return false;
+//        }
+//
+//        Node node = nodes.iterator().next();
+//        DataObject dataObject = node.getLookup().lookup(DataObject.class);
+//        if (dataObject == null) {
+//            return false;
+//        }
+//
+//        if (!GroovyProjectUtil.isGroovyFile(dataObject.getPrimaryFile())) {
+//            return false;
+//        }
+//        return true;
     }
 }
