@@ -498,6 +498,7 @@ public class JaxWsUtils {
                 targetName, null);
         implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);           // NOI18N
         DataObject.find(implClassFo).setValid(false);
+        DataObject.find(implClassFo);
 
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
