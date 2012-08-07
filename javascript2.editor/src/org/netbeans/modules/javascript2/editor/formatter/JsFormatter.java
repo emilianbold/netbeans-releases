@@ -369,20 +369,25 @@ public class JsFormatter implements Formatter {
                         // line wrap and eol handling
                         case ELSE_IF_AFTER_BLOCK_START:
                             if (!ELSE_IF_SINGLE_LINE) {
-                                i = handleLineWrap(tokens, i, formatContext, initialIndent);
+                                i = handleLineWrap(tokens, i, formatContext,
+                                        initialIndent, continuationIndent);
                             }
                             break;
                         case AFTER_CASE:
-                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
                             break;
                         case AFTER_BLOCK_START:
-                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
                             break;
                         case AFTER_STATEMENT:
-                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
                             break;
                         case AFTER_VAR_DECLARATION:
-                            i = handleLineWrap(tokens, i, formatContext, initialIndent);
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
                             break;
                         case SOURCE_START:
                         case EOL:
@@ -462,7 +467,7 @@ public class JsFormatter implements Formatter {
                             if (indentationEnd != null
                                     && indentationEnd.getKind() != FormatToken.Kind.EOL) {
                                 int indentationSize = initialIndent + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(doc);
-                                if (isContinuation(tokens, index)) {
+                                if (isContinuation(token, false)) {
                                     indentationSize += continuationIndent;
                                 }
                                 formatContext.indentLine(
@@ -503,7 +508,7 @@ public class JsFormatter implements Formatter {
     }
 
     private int handleLineWrap(List<FormatToken> tokens, int index, FormatContext formatContext,
-            int initialIndent) {
+            int initialIndent, int continuationIndent) {
 
         FormatToken token = tokens.get(index);
         int i = index;
@@ -545,6 +550,9 @@ public class JsFormatter implements Formatter {
                     // FIXME continuation, initialIndent and level - check it is ok
                     int indentationSize = initialIndent
                             + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                    if (isContinuation(lastWrap.getToken(), true)) {
+                        indentationSize += continuationIndent;
+                    }
                     formatContext.indentLineWithOffsetDiff(
                             lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
                             indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
@@ -595,6 +603,9 @@ public class JsFormatter implements Formatter {
                     // do the indentation
                     int indentationSize = initialIndent
                             + formatContext.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                    if (isContinuation(tokenBeforeEol, true)) {
+                        indentationSize += continuationIndent;
+                    }
                     formatContext.indentLine(
                             tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(),
                             indentationSize, Indentation.ALLOWED);
@@ -762,10 +773,8 @@ public class JsFormatter implements Formatter {
         return index;
     }
 
-    private boolean isContinuation(List<FormatToken> tokens, int index) {
-        FormatToken token = tokens.get(index);
-
-        assert token.getKind() == FormatToken.Kind.SOURCE_START
+    private boolean isContinuation(FormatToken token, boolean noRealEol) {
+        assert noRealEol || token.getKind() == FormatToken.Kind.SOURCE_START
                 || token.getKind() == FormatToken.Kind.EOL;
 
         if (token.getKind() == FormatToken.Kind.SOURCE_START) {
@@ -773,12 +782,14 @@ public class JsFormatter implements Formatter {
         }
 
         FormatToken next = token.next();
-        if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT
-                || next.getKind() == FormatToken.Kind.AFTER_PROPERTY
-                || next.getKind() == FormatToken.Kind.AFTER_CASE
-                // do not suppose continuation when indentation is changed
-                || next.isIndentationMarker()) {
-            return false;
+        for (FormatToken current = next; current != null && current.isVirtual(); current = current.next()) {
+            if (current.getKind() == FormatToken.Kind.AFTER_STATEMENT
+                    || current.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                    || current.getKind() == FormatToken.Kind.AFTER_CASE
+                    // do not suppose continuation when indentation is changed
+                    || current.isIndentationMarker()) {
+                return false;
+            }
         }
 
         // this may happen when curly bracket is on new line
@@ -797,7 +808,7 @@ public class JsFormatter implements Formatter {
 
         // search backwards for important token
         FormatToken result = null;
-        for (FormatToken previous = token.previous(); previous != null;
+        for (FormatToken previous = noRealEol ? token : token.previous(); previous != null;
                 previous = previous.previous()) {
 
             FormatToken.Kind kind = previous.getKind();
