@@ -577,6 +577,7 @@ public final class WebProject implements Project {
             ProjectClassPathModifier.extenderForModifier(cpMod),
             buildExtender,
             cpMod,
+            cpMod.getClassPathModifier(),
             new WebProjectOperations(this),
             new WebPersistenceProvider(this, evaluator(), cpProvider),
             new WebPersistenceProviderSupplier(this),
