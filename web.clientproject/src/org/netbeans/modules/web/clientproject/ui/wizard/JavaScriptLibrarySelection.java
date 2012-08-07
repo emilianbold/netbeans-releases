@@ -59,6 +59,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractListModel;
@@ -154,6 +156,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     private void initLibrariesList() {
         assert EventQueue.isDispatchThread();
         selectedLibrariesList.setModel(selectedLibrariesListModel);
+        selectedLibrariesList.setCellRenderer(new SelectedLibraryRenderer(selectedLibrariesList.getCellRenderer()));
     }
 
     private void initLibrariesButtons() {
@@ -285,7 +288,6 @@ public class JavaScriptLibrarySelection extends JPanel {
         for (int i = 0; i < librariesTable.getRowCount(); ++i) {
             selectLibrary(i);
         }
-        sanitizeSelectedLibraries();
         selectedLibrariesListModel.fireContentsChanged();
     }
 
@@ -294,24 +296,13 @@ public class JavaScriptLibrarySelection extends JPanel {
         for (int i : librariesTable.getSelectedRows()) {
             selectLibrary(i);
         }
-        sanitizeSelectedLibraries();
         selectedLibrariesListModel.fireContentsChanged();
     }
 
     private void selectLibrary(int libraryIndex) {
         ModelItem modelItem = librariesTableModel.getItems().get(libraryIndex);
         LibraryVersion libraryVersion = modelItem.getSelectedVersion();
-        selectedLibraries.add(new SelectedLibrary(modelItem.getSimpleDisplayName(), libraryVersion));
-    }
-
-    // XXX should be improved, later
-    /**
-     * Make selected libraries unique.
-     */
-    private void sanitizeSelectedLibraries() {
-        Set<SelectedLibrary> set = new LinkedHashSet<SelectedLibrary>(selectedLibraries);
-        selectedLibraries.clear();
-        selectedLibraries.addAll(set);
+        selectedLibraries.add(new SelectedLibrary(libraryVersion));
     }
 
     void deselectAllLibraries() {
@@ -677,6 +668,13 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         private static final long serialVersionUID = -57683546574861110L;
 
+        private static final Comparator<SelectedLibrary> SELECTED_LIBRARIES_COMPARATOR = new Comparator<SelectedLibrary>() {
+            @Override
+            public int compare(SelectedLibrary library1, SelectedLibrary library2) {
+                return library1.getFilename().compareToIgnoreCase(library2.getFilename());
+            }
+        };
+
         private final List<SelectedLibrary> libraries;
 
 
@@ -695,7 +693,35 @@ public class JavaScriptLibrarySelection extends JPanel {
         }
 
         public void fireContentsChanged() {
+            sanitizeLibraries();
             fireContentsChanged(this, 0, libraries.size() - 1);
+        }
+
+        /**
+         * Make selected libraries unique and sort them.
+         */
+        private void sanitizeLibraries() {
+            // unique & sort
+            SortedSet<SelectedLibrary> sortedSet = new TreeSet<SelectedLibrary>(SELECTED_LIBRARIES_COMPARATOR);
+            sortedSet.addAll(libraries);
+            libraries.clear();
+            libraries.addAll(sortedSet);
+        }
+
+    }
+
+    private static final class SelectedLibraryRenderer implements ListCellRenderer {
+
+        private final ListCellRenderer defaultRenderer;
+
+        public SelectedLibraryRenderer(ListCellRenderer defaultRenderer) {
+            this.defaultRenderer = defaultRenderer;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            SelectedLibrary selectedLibrary = (SelectedLibrary) value;
+            return defaultRenderer.getListCellRendererComponent(list, selectedLibrary.getFilename(), index, isSelected, cellHasFocus);
         }
 
     }
@@ -860,22 +886,59 @@ public class JavaScriptLibrarySelection extends JPanel {
         private final String filename;
         private final LibraryVersion libraryVersion;
 
-        /**
-         * @param filename file name
-         * @param libraryVersion library, can be {@code null} for files from selected site template
-         */
-        public SelectedLibrary(String filename, LibraryVersion libraryVersion) {
+        public SelectedLibrary(String filename) {
+            this(filename, null);
             assert filename != null;
+        }
+
+        public SelectedLibrary(LibraryVersion libraryVersion) {
+            this(null, libraryVersion);
+            assert libraryVersion != null;
+        }
+
+        private SelectedLibrary(String filename, LibraryVersion libraryVersion) {
             this.filename = filename;
             this.libraryVersion = libraryVersion;
         }
 
         public String getFilename() {
-            return filename;
+            if (filename != null) {
+                return filename;
+            }
+            return getLibraryFilename();
         }
 
         public LibraryVersion getLibraryVersion() {
             return libraryVersion;
+        }
+
+        private String getLibraryFilename() {
+            // XXX any chance to get proper filename?
+            Map<String, String> libraryProperties = libraryVersion.getLibrary().getProperties();
+            StringBuilder builder = new StringBuilder(50);
+            builder.append(libraryProperties.get(WebClientLibraryManager.PROPERTY_REAL_NAME));
+            builder.append("-"); // NOI18N
+            builder.append(libraryProperties.get(WebClientLibraryManager.PROPERTY_VERSION));
+            builder.append(getLibraryFilenameType());
+            builder.append(".js"); // NOI18N
+            return builder.toString();
+        }
+
+        private String getLibraryFilenameType() {
+            String rawType = libraryVersion.getType();
+            String type;
+            if (WebClientLibraryManager.VOL_DOCUMENTED.equals(rawType)) {
+                type = ".doc"; // NOI18N
+            } else if (WebClientLibraryManager.VOL_MINIFIED.equals(rawType)) {
+                type = ".min"; // NOI18N
+            } else if (WebClientLibraryManager.VOL_REGULAR.equals(rawType)) {
+                type = ""; // NOI18N
+            } else {
+                assert false : "Unknown library type: " + libraryVersion;
+                // fallback
+                type = ".???"; // NOI18N
+            }
+            return type;
         }
 
         @Override
