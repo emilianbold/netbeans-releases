@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+
+Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+Other names may be trademarks of their respective owners.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+particular file as subject to the "Classpath" exception as provided
+by Oracle in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<project name="NetBeansCordovaBuild" basedir="..">
+    <property file="nbproject/build.properties" />
+    <!-- <property file="nbproject/tools.properties" /> -->
+    <property name="android.exec.android" value="${android.sdk.home}/tools/android" />
+    <property name="ios.exec.simulator" value="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app/Contents/MacOS/iPhone Simulator"/>
+    <property name="cordova.ios.template" value="${cordova.home}/lib/ios/bin/templates/project" />
+    
+    <target name="check-phonegap-version">
+        <condition property="phonegap.ver.2">
+            <matches pattern="^[2-9]." string="${cordova.version}"/>
+        </condition>
+        <fail message="PhoneGap version 2.0 or greater required." unless="phonegap.ver.2"/>
+    </target>
+    
+    <target name="check-android-template">
+        <available file="${android.generated.dir}" property="android.generated.exists"/>
+    </target>
+
+    <target name="check-ios-template">
+        <available file="${ios.generated.dir}" property="ios.generated.exists"/>
+    </target>
+    
+    <target name="create-android" depends="check-android-template,check-phonegap-version" unless="android.generated.exists">
+        <mkdir dir="${android.generated.dir}"/>
+        
+        <exec executable="/bin/sh" osfamily="unix" resolveexecutable="true" failonerror="true">
+            <env key="PATH" path="/usr/bin:/bin:${android.sdk.home}/tools"/>
+            <arg value="${cordova.home}/lib/android/bin/create"/>
+            <arg value="${android.generated.dir}/${project.name}" />
+            <arg value="${android.project.package}"/>
+            <arg value="${android.project.activity}"/>
+        </exec>
+
+        <exec dir="." executable="cmd" osfamily="windows">
+            <arg value="/C"/>
+            <arg value="${cordova.home}/lib/android/bin/create.bat"/>
+            <arg value="${android.generated.dir}" />
+            <arg value="${android.project.package}"/>
+            <arg value="${android.project.activity}"/>
+        </exec>
+        
+        <!-- allow all hosts -->
+        <replace file="${android.generated.dir}/${project.name}/res/xml/config.xml">
+            <replacefilter>
+                <replacetoken>http://127.0.0.1</replacetoken>
+                <replacevalue>.</replacevalue>
+            </replacefilter>
+        </replace>
+        
+        <!-- delete www -->
+        <delete dir="${android.generated.dir}/${project.name}/assets/www" />
+
+        <mkdir dir="${android.generated.dir}/${project.name}/assets/www" />
+        
+
+    </target>
+
+    <target name="create-ios" depends="check-ios-template,check-phonegap-version" unless="ios.generated.exists">
+        <mkdir dir="${ios.generated.dir}"/>
+        
+        <exec executable="${cordova.home}/lib/ios/bin/create">
+            <arg value="${ios.generated.dir}" />
+            <arg value="${android.project.package}"/>
+            <arg value="${android.project.activity}"/>
+        </exec>
+                
+        <!-- allow all hosts -->
+        <replace file="${ios.generated.dir}/${project.name}/Cordova.plist">
+            <replacefilter>
+                <replacetoken><![CDATA[<array/>]]></replacetoken>
+                <replacevalue><![CDATA[<array><string>*</string></array>]]></replacevalue>
+            </replacefilter>
+        </replace>
+        <!-- delete www -->
+        <delete dir="${ios.generated.dir}/www" />
+
+        <mkdir dir="${ios.generated.dir}/www" />
+       
+    </target>
+    <target name="setup-ios" depends="create-ios">
+     <!-- copy generated template into build -->
+        <copy todir="${ios.build.projects.dir}">
+            <fileset dir="${ios.generated.dir}"/>
+        </copy>
+        
+     <!-- delete old www -->
+        <delete dir="${ios.build.projects.dir}/www" />
+     <!-- copy all html -->
+        <copy todir="${ios.build.projects.dir}/www">
+            <fileset dir="." excludes="generated/,build/,nbproject/,js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" />
+        </copy>
+        
+        <copy todir="${ios.build.projects.dir}/www/js/libs/Cordova-${cordova.version}" 
+              file="${cordova.ios.template}/www/cordova-${cordova.version}.js" />
+
+    </target>
+    <target name="build-ios" depends="setup-ios">
+        <property name="path" location="./build/ios/build"/>
+        <exec executable="xcodebuild" dir="${ios.build.projects.dir}">
+            <arg value="-project"/>
+            <arg value="${project.name}.xcodeproj"/>
+            <arg value="-arch"/>   
+            <arg value="${ios.build.arch}" />
+            <arg value="-target"/>
+            <arg value="${project.name}"/>
+            <arg value="-configuration"/> 
+            <arg value="${ios.build.configuration}"/>
+            <arg value="-sdk"/>   
+            <arg value="${ios.build.sdk}" />
+            <arg value="build"/>
+            <arg value="CONFIGURATION_BUILD_DIR=${path}"/>
+        </exec>
+    </target>
+
+    <target name="sim-ios" depends="build-ios">
+        <!-- <exec executable="${ios.exec.simulator}" dir="${ios.build.projects.dir}/${project.name}" spawn="true">
+            <arg value="-SimulateApplication"/>
+            <arg value="build/${ios.build.configuration}-iphonesimulator/${project.name}.app/${project.name}"/>
+        </exec> -->
+        <exec executable="${ios.sim.exec}" dir="${ios.build.projects.dir}">
+            <arg line="launch build/${project.name}.app ${ios.device.args}"/>
+        </exec> 
+        
+    </target>
+
+
+    <target name="setup-android" depends="create-android">
+     <!-- copy generated template into build -->
+        <copy todir="${android.build.projects.dir}">
+            <fileset dir="${android.generated.dir}"/>
+        </copy>
+
+        <!-- copy all html -->
+        <copy todir="${android.build.projects.dir}/${project.name}/assets/www">
+            <fileset dir="." excludes="generated/,build/,nbproject/,js/libs/Cordova-${cordova.version}/cordova-${cordova.version}.js" />
+        </copy>
+        <copy todir="${android.build.projects.dir}/${project.name}/assets/www/js/libs/Cordova-${cordova.version}" 
+              file="${cordova.home}/lib/android/cordova-${cordova.version}.js" />
+        
+    </target>
+    
+    <target name="build-android" depends="setup-android">
+        <ant dir="${android.build.projects.dir}/${project.name}" target="debug"/>
+    </target>    
+    <target name="sim-android" depends="build-android">
+        <ant dir="${android.build.projects.dir}/${project.name}" target="installd">
+            <property name="adb.device.arg" value="${android.target.device.arg}"/>
+        </ant>
+        <exec executable="${android.sdk.home}/platform-tools/adb">
+            <arg value="${android.target.device.arg}"/>
+            <arg value="shell"/>   
+            <arg value="am"/>   
+            <arg value="start"/>   
+            <arg value="-n"/>   
+            <arg value="${android.project.package}/.${android.project.activity}"/>
+        </exec>
+        
+    </target>
+    
+    <target name="clean-android">
+        <delete dir="${android.build.projects.dir}" />
+    </target>
+    
+    <target name="clean-ios">
+        <delete dir="${ios.build.projects.dir}" />
+    </target>
+</project>
