@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 8.19
+#Version 8.25.1
 
 CLSS public java.awt.datatransfer.Clipboard
 cons public init(java.lang.String)
@@ -91,7 +91,7 @@ meth public void close() throws java.io.IOException
 meth public void mark(int)
 meth public void reset() throws java.io.IOException
 supr java.lang.Object
-hfds SKIP_BUFFER_SIZE,skipBuffer
+hfds MAX_SKIP_BUFFER_SIZE
 
 CLSS public abstract interface java.io.ObjectInput
 intf java.io.DataInput
@@ -544,6 +544,7 @@ cons protected init()
 meth public abstract void exit()
 meth public abstract void saveAll()
 meth public static org.openide.LifecycleManager getDefault()
+meth public void exit(int)
 meth public void markForRestart()
 supr java.lang.Object
 hcls Trivial
@@ -680,12 +681,15 @@ hfds LOC_MSG_PLACEHOLDER,LOG
 hcls AnnException,OwnLevel
 
 CLSS public final org.openide.util.HelpCtx
-cons public init(java.lang.Class)
+cons public init(java.lang.Class<?>)
+ anno 0 java.lang.Deprecated()
 cons public init(java.lang.String)
 cons public init(java.net.URL)
  anno 0 java.lang.Deprecated()
 fld public final static org.openide.util.HelpCtx DEFAULT_HELP
+innr public abstract interface static Displayer
 innr public abstract interface static Provider
+meth public boolean display()
 meth public boolean equals(java.lang.Object)
 meth public int hashCode()
 meth public java.lang.String getHelpID()
@@ -696,6 +700,10 @@ meth public static org.openide.util.HelpCtx findHelp(java.lang.Object)
 meth public static void setHelpIDString(javax.swing.JComponent,java.lang.String)
 supr java.lang.Object
 hfds err,helpCtx,helpID
+
+CLSS public abstract interface static org.openide.util.HelpCtx$Displayer
+ outer org.openide.util.HelpCtx
+meth public abstract boolean display(org.openide.util.HelpCtx)
 
 CLSS public abstract interface static org.openide.util.HelpCtx$Provider
  outer org.openide.util.HelpCtx
@@ -895,7 +903,7 @@ meth public abstract java.lang.ClassLoader find()
 CLSS public abstract interface static !annotation org.openide.util.NbBundle$Messages
  outer org.openide.util.NbBundle
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
- anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[PACKAGE, TYPE, METHOD, CONSTRUCTOR])
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[PACKAGE, TYPE, METHOD, CONSTRUCTOR, FIELD])
 intf java.lang.annotation.Annotation
 meth public abstract java.lang.String[] value()
 
@@ -1012,8 +1020,8 @@ meth public void execute(java.lang.Runnable)
 meth public void shutdown()
 meth public void stop()
 supr java.lang.Object
-hfds DEFAULT,SLOW,TICK,UNLIMITED,counter,enableStackTraces,finishAwaitingTasks,inParallel,interruptThread,logger,name,processorLock,processors,queue,running,stopped,throughput,warnParallel
-hcls CreatedItem,FastItem,FixedDelayTask,FixedRateTask,Item,Processor,RPFutureTask,RunnableWrapper,ScheduledRPFutureTask,SlowItem,TaskFutureWrapper,TickTac,WaitableCallable
+hfds DEFAULT,SLOW,TOP_GROUP,UNLIMITED,counter,enableStackTraces,finishAwaitingTasks,inParallel,interruptThread,logger,name,processorLock,processors,queue,running,stopped,throughput,warnParallel
+hcls CreatedItem,FastItem,FixedDelayTask,FixedRateTask,Item,Processor,RPFutureTask,RunnableWrapper,ScheduledRPFutureTask,SlowItem,TaskFutureWrapper,TickTac,TopLevelThreadGroup,WaitableCallable
 
 CLSS public final org.openide.util.RequestProcessor$Task
  outer org.openide.util.RequestProcessor
@@ -1072,7 +1080,7 @@ meth public void removeTaskListener(org.openide.util.TaskListener)
 meth public void run()
 meth public void waitFinished()
 supr java.lang.Object
-hfds RP,finished,list,overrides,run
+hfds LOG,RP,finished,list,overrides,run
 
 CLSS public abstract interface org.openide.util.TaskListener
 intf java.util.EventListener
@@ -1153,7 +1161,7 @@ fld public final static int OS_WINVISTA = 262144
 fld public final static int OS_WIN_OTHER = 32768
 fld public final static int TYPICAL_WINDOWS_TASKBAR_HEIGHT = 27
 innr public static UnorderableException
-meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> topologicalSort(java.util.Collection<{%%0}>,java.util.Map<? super {%%0},? extends java.util.Collection<? extends {%%0}>>) throws org.openide.util.TopologicalSortException
+meth public static <%0 extends java.lang.Object> java.util.List<{%%0}> topologicalSort(java.util.Collection<? extends {%%0}>,java.util.Map<? super {%%0},? extends java.util.Collection<? extends {%%0}>>) throws org.openide.util.TopologicalSortException
 meth public static boolean compareObjects(java.lang.Object,java.lang.Object)
 meth public static boolean compareObjectsImpl(java.lang.Object,java.lang.Object,int)
 meth public static boolean isJavaIdentifier(java.lang.String)
@@ -1163,6 +1171,7 @@ meth public static boolean isMac()
 meth public static boolean isUnix()
 meth public static boolean isWindows()
 meth public static int arrayHashCode(java.lang.Object[])
+ anno 0 java.lang.Deprecated()
 meth public static int getOperatingSystem()
 meth public static int showJFileChooser(javax.swing.JFileChooser,java.awt.Component,java.lang.String)
  anno 0 java.lang.Deprecated()
@@ -1184,6 +1193,7 @@ meth public static java.awt.Rectangle getUsableScreenBounds()
 meth public static java.awt.Rectangle getUsableScreenBounds(java.awt.GraphicsConfiguration)
 meth public static java.beans.BeanInfo getBeanInfo(java.lang.Class<?>) throws java.beans.IntrospectionException
 meth public static java.beans.BeanInfo getBeanInfo(java.lang.Class<?>,java.lang.Class<?>) throws java.beans.IntrospectionException
+meth public static java.io.File toFile(java.net.URI)
 meth public static java.io.File toFile(java.net.URL)
  anno 0 java.lang.Deprecated()
 meth public static java.lang.Class<?> getObjectType(java.lang.Class<?>)
@@ -1207,6 +1217,7 @@ meth public static java.lang.String[] wrapStringToArray(java.lang.String,int,boo
  anno 0 java.lang.Deprecated()
 meth public static java.lang.String[] wrapStringToArray(java.lang.String,int,java.text.BreakIterator,boolean)
 meth public static java.lang.ref.ReferenceQueue<java.lang.Object> activeReferenceQueue()
+meth public static java.net.URI toURI(java.io.File)
 meth public static java.net.URL toURL(java.io.File) throws java.net.MalformedURLException
  anno 0 java.lang.Deprecated()
 meth public static java.util.List partialSort(java.util.List,java.util.Comparator,boolean)
@@ -1219,7 +1230,7 @@ meth public static javax.swing.KeyStroke[] stringToKeys(java.lang.String)
 meth public static org.openide.util.Lookup actionsGlobalContext()
 meth public static void attachInitJob(java.awt.Component,org.openide.util.AsyncGUIJob)
 supr java.lang.Object
-hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,clearIntrospector,doClear,global,keywords,namesAndValues,operatingSystem,transExp,transLoader
+hfds ALT_WILDCARD_MASK,CTRL_WILDCARD_MASK,LOG,TRANS_LOCK,TYPICAL_MACOSX_MENU_HEIGHT,clearIntrospector,doClear,fileToPath,global,namesAndValues,operatingSystem,pathToFile,pathToUri,pathsGet,transExp,transLoader
 hcls NamesAndValues,RE
 
 CLSS public static org.openide.util.Utilities$UnorderableException
@@ -1387,7 +1398,7 @@ meth public static javax.swing.JToolBar createToolbarPresenter(org.openide.util.
 meth public static org.openide.util.actions.SystemAction[] linkActions(org.openide.util.actions.SystemAction[],org.openide.util.actions.SystemAction[])
 meth public void setEnabled(boolean)
 supr org.openide.util.SharedClassObject
-hfds BLANK_ICON,LOG,PROP_ICON_TEXTUAL,relativeIconResourceClasses,serialVersionUID
+hfds LOG,PROP_ICON_TEXTUAL,relativeIconResourceClasses,serialVersionUID
 hcls ComponentIcon
 
 CLSS public final org.openide.util.datatransfer.ClipboardEvent
@@ -1563,6 +1574,14 @@ meth public java.lang.Throwable getCause()
 supr org.openide.util.io.FoldingIOException
 hfds ex,serialVersionUID
 
+CLSS public abstract interface !annotation org.openide.util.lookup.NamedServiceDefinition
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=RUNTIME)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[ANNOTATION_TYPE])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault java.lang.String position()
+meth public abstract java.lang.Class<?>[] serviceType()
+meth public abstract java.lang.String path()
+
 CLSS public abstract org.openide.xml.EntityCatalog
 cons protected init()
 fld public final static java.lang.String PUBLIC_ID = "-//NetBeans//Entity Mapping Registration 1.0//EN"
@@ -1593,7 +1612,7 @@ meth public static void copyDocument(org.w3c.dom.Element,org.w3c.dom.Element,jav
 meth public static void validate(org.w3c.dom.Element,javax.xml.validation.Schema) throws org.xml.sax.SAXException
 meth public static void write(org.w3c.dom.Document,java.io.OutputStream,java.lang.String) throws java.io.IOException
 supr java.lang.Object
-hfds DEC2HEX,IDENTITY_XSLT_WITH_INDENT,doms,saxes
+hfds DEC2HEX,IDENTITY_XSLT_WITH_INDENT,ORACLE_IS_STANDALONE,doms,saxes
 hcls ErrHandler
 
 CLSS public abstract interface org.xml.sax.EntityResolver
