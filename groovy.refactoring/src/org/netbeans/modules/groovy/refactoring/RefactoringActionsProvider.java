@@ -78,21 +78,22 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     }
 
     private boolean isValid(Lookup lookup) {
+        /*
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+
+        Node node = nodes.iterator().next();
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
+        if (dataObject == null) {
+            return false;
+        }
+
+        if (GroovyProjectUtil.isGroovyFile(dataObject.getPrimaryFile())) {
+            return true;
+        }
+        */
         return false;
-//        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
-//        if (nodes.size() != 1) {
-//            return false;
-//        }
-//
-//        Node node = nodes.iterator().next();
-//        DataObject dataObject = node.getLookup().lookup(DataObject.class);
-//        if (dataObject == null) {
-//            return false;
-//        }
-//
-//        if (!GroovyProjectUtil.isGroovyFile(dataObject.getPrimaryFile())) {
-//            return false;
-//        }
-//        return true;
     }
 }
