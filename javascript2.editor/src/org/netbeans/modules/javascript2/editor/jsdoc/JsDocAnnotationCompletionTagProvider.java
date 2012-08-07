@@ -39,38 +39,43 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public interface JsDocumentationProvider {
+public class JsDocAnnotationCompletionTagProvider extends AnnotationCompletionTagProvider {
 
-    /**
-     * Parses and gets {@code JsDocumentationHolder} with processed documentation comments.
-     *
-     * @param snapshot to be parsed and stored into holder
-     * @return JsDocumentationHolder
-     */
-    JsDocumentationHolder createDocumentationHolder(Snapshot snapshot);
+    List<AnnotationCompletionTag> annotations = null;
 
-    /**
-     * Gets all tags supported by the documentation tool (like @author, @link, ...)
-     *
-     * @return set of all supported tags
-     */
-    Set<String> getSupportedTags();
+    public JsDocAnnotationCompletionTagProvider(String name) {
+        super(name);
+    }
 
-    /**
-     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this JS documentation tool.
-     *
-     * @return list of annotations providers, never {@code null}
-     */
-    List<? extends AnnotationCompletionTagProvider> getAnnotationsProvider();
+    @Override
+    public synchronized List<AnnotationCompletionTag> getAnnotations() {
+        if (annotations == null) {
+            initAnnotations();
+        }
+        return annotations;
+    }
+
+    private void initAnnotations() {
+        annotations = new LinkedList<AnnotationCompletionTag>();
+        for (JsDocElement.Type type : JsDocElement.Type.values()) {
+            if (type == JsDocElement.Type.UNKNOWN || type == JsDocElement.Type.CONTEXT_SENSITIVE) {
+                continue;
+            }
+
+            annotations.add(new AnnotationCompletionTag(type.toString(), type.toString()));
+        }
+    }
 
 }

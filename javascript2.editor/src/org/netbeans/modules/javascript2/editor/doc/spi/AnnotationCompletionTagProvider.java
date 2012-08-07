@@ -42,35 +42,49 @@
 package org.netbeans.modules.javascript2.editor.doc.spi;
 
 import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
+ * Encapsulates a JS annotations completion provider.
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * <p>This class allows providing support for completion of JS annotations.</p>
+ *
+ * <p>Annotations are available per every {@code JsDocumentationProvider}. For <b>framework specific</b> annotations, use
+ * {@link org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider#getAnnotationsProvider()}.</p>
+
+ * @see org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider#getAnnotationsProvider()
  */
-public interface JsDocumentationProvider {
+public abstract class AnnotationCompletionTagProvider {
+
+    private final String name;
 
     /**
-     * Parses and gets {@code JsDocumentationHolder} with processed documentation comments.
+     * Create a new JS annotations provider with a name.
      *
-     * @param snapshot to be parsed and stored into holder
-     * @return JsDocumentationHolder
+     * @param  name <b>short, localized</b> name of this JS annotations provider (e.g., "JsDoc");
+     *         never {@code null}
+     * @throws NullPointerException if the {@code name} parameter is {@code null}
      */
-    JsDocumentationHolder createDocumentationHolder(Snapshot snapshot);
+    public AnnotationCompletionTagProvider(@NonNull String name) {
+        Parameters.notNull("name", name); // NOI18N
+        this.name = name;
+    }
 
     /**
-     * Gets all tags supported by the documentation tool (like @author, @link, ...)
+     * Get the <b>short, localized</b> name of this JS annotations provider.
      *
-     * @return set of all supported tags
+     * @return name; never {@code null}
      */
-    Set<String> getSupportedTags();
+    public final String getName() {
+        return name;
+    }
 
     /**
-     * Get list of {@link AnnotationCompletionTagProvider annotations providers} for this JS documentation tool.
-     *
-     * @return list of annotations providers, never {@code null}
+     * Get all supported annotations.
+     * 
+     * @return all supported annotations
      */
-    List<? extends AnnotationCompletionTagProvider> getAnnotationsProvider();
+    public abstract List<AnnotationCompletionTag> getAnnotations();
 
 }
