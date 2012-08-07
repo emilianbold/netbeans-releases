@@ -78,7 +78,7 @@ public class AnnotationUtils {
         return result;
     }
 
-    public static Map<OffsetRange, String> extractInlineTypes(final String line, final Set<String> expectedTypes) {
+    public static Map<OffsetRange, String> extractInlineAnnotations(final String line, final Set<String> expectedTypes) {
         Parameters.notNull("line", line); //NOI18N
         Parameters.notNull("expectedTypes", expectedTypes); //NOI18N
         final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
