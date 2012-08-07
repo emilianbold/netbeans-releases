@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.subversion.ui.checkout;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.netbeans.modules.subversion.util.CheckoutCompleted;
@@ -90,19 +91,21 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
           
     @Override
     public void actionPerformed(ActionEvent ae) {
-        perform();
-    }
-        
-    public static void perform() {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }
         
         Utils.logVCSActionEvent("SVN");
-
-        CheckoutWizard wizard = new CheckoutWizard();
-        if (!wizard.show()) return;
+        performCheckout(false);
+    }
         
+    public static File performCheckout (final boolean wait) {
+        assert !wait || !EventQueue.isDispatchThread(); // cannot wait in AWT
+        CheckoutWizard wizard = new CheckoutWizard();
+        if (!wizard.show()) {
+            return null;
+        
+        }
         final SVNUrl repository = wizard.getRepositoryRoot();
         final RepositoryFile[] repositoryFiles = wizard.getRepositoryFiles();
         final File workDir = wizard.getWorkdir();
@@ -110,8 +113,7 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
         final boolean doExport = wizard.isExport();
         final boolean showCheckoutCompleted = SvnModuleConfig.getDefault().getShowCheckoutCompleted();
         final boolean old16Format = wizard.isOldFormatPreferred();
-
-        Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+        Runnable run = new Runnable() {
             @Override
             public void run() {
                 final String oldPreference = System.getProperty(WORKING_COPY_FORMAT_PROP);
@@ -124,7 +126,8 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
                     SvnClientExceptionHandler.notifyException(ex, true, true); // should not happen
                     return;
                 }
-                performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted).addTaskListener(new TaskListener() {
+                Task t = performCheckout(repository, client, repositoryFiles, workDir, atWorkingDirLevel, doExport, showCheckoutCompleted);
+                t.addTaskListener(new TaskListener() {
                     @Override
                     public void taskFinished (Task task) {
                         if (oldPreference == null) {
@@ -134,8 +137,17 @@ public final class CheckoutAction implements ActionListener, HelpCtx.Provider {
                         }
                     }
                 });
+                if (wait) {
+                    t.waitFinished();
+                }
             }
-        });
+        };
+        if (wait) {
+            run.run();
+        } else {
+            Subversion.getInstance().getRequestProcessor().post(run);
+        }
+        return wizard.getWorkdir();
     }
     
     public static RequestProcessor.Task performCheckout(

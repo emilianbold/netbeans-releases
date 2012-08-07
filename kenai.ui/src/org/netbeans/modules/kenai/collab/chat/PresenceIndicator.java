@@ -67,8 +67,8 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiUser;
-import org.netbeans.modules.kenai.ui.LogoutAction;
 import org.netbeans.modules.kenai.ui.Utilities;
+import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -248,7 +248,7 @@ public class PresenceIndicator {
                     logoutItem.addActionListener(new ActionListener() {
 
                         public void actionPerformed(ActionEvent e) {
-                            LogoutAction.getDefault().actionPerformed(e);
+                            Actions.forID("Team", "org.netbeans.modules.team.ui.LogoutAction").actionPerformed(e);
                         }
                     });
 
