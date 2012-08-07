@@ -80,7 +80,7 @@ public final class SiteHelper {
      * Return <i>&lt;var/cache>/jslibs</i> directory.
      * @return <i>&lt;var/cache>/jslibs</i> directory
      */
-    public static File getJsLibDirectory() {
+    public static File getJsLibsDirectory() {
         return Places.getCacheSubdirectory(JS_LIBS_DIR);
     }
 

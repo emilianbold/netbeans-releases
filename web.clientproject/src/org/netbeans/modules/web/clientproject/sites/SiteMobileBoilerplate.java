@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(SiteMobileBoilerplate.class.getName());
-    private static final File LIB_FILE = new File(SiteHelper.getJsLibDirectory(), "mobile-boilerplate-30.zip"); // NOI18N
+    private static final File LIB_FILE = new File(SiteHelper.getJsLibsDirectory(), "mobile-boilerplate-30.zip"); // NOI18N
 
 
     @NbBundle.Messages("SiteMobileBoilerplate.name=Mobile Boilerplate")

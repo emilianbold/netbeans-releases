@@ -128,7 +128,7 @@ public class SiteZip implements SiteTemplateImplementation {
         crc.update(template.getBytes());
         String filename = String.valueOf(crc.getValue()) + ".zip"; // NOI18N
         LOGGER.log(Level.INFO, "Remote URL \"{0}\" set, downloaded to {1}", new Object[] {template, filename});
-        return new File(SiteHelper.getJsLibDirectory(), filename);
+        return new File(SiteHelper.getJsLibsDirectory(), filename);
     }
 
     private boolean isRemoteUrl(String input) {
