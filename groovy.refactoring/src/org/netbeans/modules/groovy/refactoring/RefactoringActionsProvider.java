@@ -45,7 +45,6 @@ package org.netbeans.modules.groovy.refactoring;
 import java.util.Collection;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
