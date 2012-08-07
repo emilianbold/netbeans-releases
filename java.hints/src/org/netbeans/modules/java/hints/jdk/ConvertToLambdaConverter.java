@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.TreeMaker;
@@ -146,8 +147,7 @@ public class ConvertToLambdaConverter {
 
     private class ShadowedVariableRenameScanner extends TreePathScanner<Tree, Trees> {
 
-        private Map<Name, CharSequence> originalNameToNewName = new HashMap<Name, CharSequence>();
-        private Map<Name, TreePath> originalNameToParentPath = new HashMap<Name, TreePath>();
+        private final Map<Element, CharSequence> originalToNewName = new HashMap<Element, CharSequence>();
 
         @Override
         public Tree visitMethod(MethodTree methodTree, Trees trees) {
@@ -168,8 +168,7 @@ public class ConvertToLambdaConverter {
 
                 CharSequence newName = getUniqueName(variableDeclTree.getName());
 
-                originalNameToNewName.put(variableDeclTree.getName(), newName);
-                originalNameToParentPath.put(variableDeclTree.getName(), path.getParentPath());
+                originalToNewName.put(trees.getElement(path), newName);
 
                 VariableTree newTree = copy.getTreeMaker()
                         .Variable(variableDeclTree.getModifiers(), newName, variableDeclTree.getType(), variableDeclTree.getInitializer());
@@ -183,8 +182,9 @@ public class ConvertToLambdaConverter {
         public Tree visitIdentifier(IdentifierTree identifierTree, Trees trees) {
             //rename shadowed variable
             TreePath currentPath = getCurrentPath();
-            if (shouldTreeBeRenamed(identifierTree, currentPath)) {
-                IdentifierTree newTree = copy.getTreeMaker().Identifier(originalNameToNewName.get(identifierTree.getName()));
+            CharSequence newName = originalToNewName.get(trees.getElement(currentPath));
+            if (newName != null) {
+                IdentifierTree newTree = copy.getTreeMaker().Identifier(newName);
                 copy.rewrite(identifierTree, newTree);
             }
 
@@ -193,12 +193,7 @@ public class ConvertToLambdaConverter {
 
         private boolean isNameAlreadyUsed(CharSequence name) {
             return isVariableShadowed(name)
-                    || originalNameToNewName.containsValue(name.toString());
-        }
-
-        private boolean shouldTreeBeRenamed(IdentifierTree identifierTree, TreePath currentPath) {
-            return originalNameToParentPath.containsKey(identifierTree.getName())
-                    && isTreeAncestor(originalNameToParentPath.get(identifierTree.getName()), currentPath);
+                    || originalToNewName.containsValue(name.toString());
         }
 
         private CharSequence getUniqueName(CharSequence originalName) {
