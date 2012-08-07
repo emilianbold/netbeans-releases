@@ -280,10 +280,8 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
                 if (comps[j] instanceof JComponent) {
                     if (smallToolbarIcons) {
                         ((JComponent) comps[j]).putClientProperty("PreferredIconSize",null); //NOI18N
-                        tb.putClientProperty("PreferredIconSize",null); //NOI18N
                     } else {
                         ((JComponent) comps[j]).putClientProperty("PreferredIconSize",Integer.valueOf(24)); //NOI18N
-                        tb.putClientProperty("PreferredIconSize",Integer.valueOf(24)); //NOI18N
                     }
                 }
                 //TODO add icon shadow for mac l&f?
