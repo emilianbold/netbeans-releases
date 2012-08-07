@@ -658,6 +658,10 @@ public final class ExternalBrowserPlugin {
                 return;
             }
             initialized = true;
+            
+            // lookup which contains Project instance if URL being opened is from a project:
+            Lookup projectContext = browserImpl.getProjectContext();
+            
             WebKitDebuggingTransport transport = browserImpl.getLookup().lookup(WebKitDebuggingTransport.class);
             WebKitDebugging webkitDebugger = browserImpl.getLookup().lookup(WebKitDebugging.class);
             NetBeansJavaScriptDebuggerFactory factory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
@@ -670,7 +674,7 @@ public final class ExternalBrowserPlugin {
             } else {
                 webkitDebugger.getDebugger().enable();
             }
-            session = factory.createDebuggingSession(webkitDebugger);
+            session = factory.createDebuggingSession(webkitDebugger, projectContext);
 
             PageInspector inspector = PageInspector.getDefault();
             if (inspector != null && !browserImpl.isDisablePageInspector()) {

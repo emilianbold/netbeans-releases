@@ -56,6 +56,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
@@ -95,11 +96,13 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
     private AtomicReference<? extends CallFrame>  myCurrentStack;
     
     private List<Annotation> annotations = new ArrayList<Annotation>();
+    private Project project;
     
     public CallStackModel(final ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, Debugger.class);
+        project = contextProvider.lookupFirst(null, Project.class);
         debugger.addListener(this);
-        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction();
+        GO_TO_SOURCE = MiscEditorUtil.createDebuggerGoToAction(project);
         // update now:
         setStackTrace(debugger.isSuspended() ? debugger.getCurrentCallStack() : new ArrayList<CallFrame>());
         updateAnnotations();
@@ -220,7 +223,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
             throws UnknownTypeException {
         if (node instanceof CallFrame) {
             CallFrame frame = (CallFrame)node;
-            Line line = MiscEditorUtil.getLine(frame.getScript().getURL(), frame.getLineNumber());
+            Line line = MiscEditorUtil.getLine(project, frame.getScript(), frame.getLineNumber());
             MiscEditorUtil.showLine(line, true);
         }
     }
@@ -325,7 +328,7 @@ public class CallStackModel extends ViewModelSupport implements TreeModel, NodeM
         annotations.clear();
         boolean first = true;
         for (CallFrame cf : stackTrace.get()) {
-            final Line line = MiscEditorUtil.getLine(cf.getScript().getURL(), cf.getLineNumber());
+            final Line line = MiscEditorUtil.getLine(project, cf.getScript(), cf.getLineNumber());
             if (line == null) {
                 first = false;
                 continue;

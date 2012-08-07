@@ -51,8 +51,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.WebBrowserPane.WebBrowserPaneEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Helper class to be added to project's lookup and to be used to open URLs from
@@ -176,6 +178,8 @@ public final class BrowserSupport {
         WebBrowserPane wbp = getWebBrowserPane();
         file = context;
         currentURL = url;
+        Project project = FileOwnerQuery.getOwner(context);
+        wbp.setProjectContext(project != null ? Lookups.singleton(project) : Lookup.EMPTY);
         wbp.showURL(url);
     }
     

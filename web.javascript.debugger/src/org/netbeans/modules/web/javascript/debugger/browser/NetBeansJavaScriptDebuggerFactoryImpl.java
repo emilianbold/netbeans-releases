@@ -45,23 +45,24 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
 import org.netbeans.modules.web.javascript.debugger.DebuggerEngineProviderImpl;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointRuntimeSetter;
-import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=NetBeansJavaScriptDebuggerFactory.class)
 public class NetBeansJavaScriptDebuggerFactoryImpl implements NetBeansJavaScriptDebuggerFactory {
 
     @Override
-    public Session createDebuggingSession(WebKitDebugging webkit) {
+    public Session createDebuggingSession(WebKitDebugging webkit, Lookup projectContext) {
         Debugger debugger = webkit.getDebugger();
-        DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO, new Object[]{webkit, debugger});
+        Project project = projectContext.lookup(Project.class);
+        DebuggerInfo di = DebuggerInfo.create(DebuggerConstants.DEBUGGER_INFO, new Object[]{webkit, debugger, project});
         DebuggerEngine engine = DebuggerManager.getDebuggerManager().startDebugging(di)[0];
         Session session = engine.lookupFirst(null, Session.class);
         return session;

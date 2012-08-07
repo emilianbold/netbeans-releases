@@ -43,6 +43,7 @@ package org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger;
 
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.openide.util.Lookup;
 
 /**
  * Factory which creates NetBeans Debugging session for given WebKit Debugging
@@ -55,8 +56,10 @@ public interface NetBeansJavaScriptDebuggerFactory {
     /**
      * Create and start new JavaScript debugging session using given WebKit
      * Debugging protocol.
+     * @param projectContext lookup which may contain Project instance if
+     *   JavaScript Debugger session is started in the context of a project
      */
-    Session createDebuggingSession(WebKitDebugging webkit);
+    Session createDebuggingSession(WebKitDebugging webkit, Lookup projectContext);
 
     /**
      * Stop session previously started by this factory.

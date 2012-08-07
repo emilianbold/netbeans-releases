@@ -223,6 +223,12 @@ public final class WebBrowserPane {
             SwingUtilities.invokeLater(r);
         }
     }
+    
+    void setProjectContext(Lookup projectContext) {
+        if ( impl instanceof EnhancedBrowser ){
+            ((EnhancedBrowser) impl).setProjectContext(projectContext);
+        }
+    }
 
     /**
      * Reload whatever is in this browser pane. Again can work reliable only
