@@ -41,48 +41,38 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
+import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class GeneratedValueParsedLineTest extends NbTestCase {
 
-    public Doctrine2OrmAnnotationLineParserTest(String name) {
+    public GeneratedValueParsedLineTest(String name) {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Doctrine2OrmAnnotationLineParser.getDefault();
+    public void testNonNullDescription() throws Exception {
+        try {
+            new GeneratedValueParsedLine(null, Collections.EMPTY_MAP);
+            fail();
+        } catch (AssertionError ex) {
+        }
     }
 
-    public void testColumnParser() {
-        assertNotNull(parser.parse("Column"));
+    public void testNonNullTypes() throws Exception  {
+        try {
+            new GeneratedValueParsedLine("", null);
+            fail();
+        } catch (AssertionError ex) {
+        }
     }
 
-    public void testChangeTrackingPolicyParser() {
-        assertNotNull(parser.parse("ChangeTrackingPolicy"));
-    }
-
-    public void testDiscriminatorColumnParser() {
-        assertNotNull(parser.parse("DiscriminatorColumn"));
-    }
-
-    public void testDiscriminatorMapParser() {
-        assertNotNull(parser.parse("DiscriminatorMap"));
-    }
-
-    public void testEntityParser() {
-        assertNotNull(parser.parse("Entity"));
-    }
-
-    public void testGeneratedValueParser() {
-        assertNotNull(parser.parse("GeneratedValue"));
+    public void testCorrectName() throws Exception {
+        GeneratedValueParsedLine parsedLine = new GeneratedValueParsedLine("", Collections.EMPTY_MAP);
+        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
     }
 
 }

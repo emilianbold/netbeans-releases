@@ -41,48 +41,33 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+class GeneratedValueLineParser implements AnnotationLineParser {
 
-    public Doctrine2OrmAnnotationLineParserTest(String name) {
-        super(name);
-    }
+    static final String ANNOTATION_NAME = "GeneratedValue"; //NOI18N
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Doctrine2OrmAnnotationLineParser.getDefault();
-    }
-
-    public void testColumnParser() {
-        assertNotNull(parser.parse("Column"));
-    }
-
-    public void testChangeTrackingPolicyParser() {
-        assertNotNull(parser.parse("ChangeTrackingPolicy"));
-    }
-
-    public void testDiscriminatorColumnParser() {
-        assertNotNull(parser.parse("DiscriminatorColumn"));
-    }
-
-    public void testDiscriminatorMapParser() {
-        assertNotNull(parser.parse("DiscriminatorMap"));
-    }
-
-    public void testEntityParser() {
-        assertNotNull(parser.parse("Entity"));
-    }
-
-    public void testGeneratedValueParser() {
-        assertNotNull(parser.parse("GeneratedValue"));
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            result = new GeneratedValueParsedLine(description, types);
+        }
+        return result;
     }
 
 }
