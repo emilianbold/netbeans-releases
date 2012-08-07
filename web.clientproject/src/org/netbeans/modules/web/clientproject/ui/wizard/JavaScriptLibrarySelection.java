@@ -71,8 +71,12 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.api.progress.ProgressHandle;
@@ -104,7 +108,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     // @GuardedBy("EDT")
     final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
     // @GuardedBy("EDT")
-    final LibrariesListModel librariesListModel = new LibrariesListModel(selectedLibraries);
+    final LibrariesListModel selectedLibrariesListModel = new LibrariesListModel(selectedLibraries);
 
     // folder path is accessed outside of EDT thread
     private volatile String librariesFolder = null;
@@ -149,7 +153,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
     private void initLibrariesList() {
         assert EventQueue.isDispatchThread();
-        selectedLibrariesList.setModel(librariesListModel);
+        selectedLibrariesList.setModel(selectedLibrariesListModel);
     }
 
     private void initLibrariesButtons() {
@@ -157,11 +161,37 @@ public class JavaScriptLibrarySelection extends JPanel {
         ListSelectionListener selectionListener = new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) {
+                    return;
+                }
                 enableLibraryButtons();
             }
         };
         librariesTable.getSelectionModel().addListSelectionListener(selectionListener);
         selectedLibrariesList.getSelectionModel().addListSelectionListener(selectionListener);
+        librariesTableModel.addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                enableLibraryButtons();
+            }
+        });
+        selectedLibrariesListModel.addListDataListener(new ListDataListener() {
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                dataChanged();
+            }
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                dataChanged();
+            }
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                dataChanged();
+            }
+            private void dataChanged() {
+                enableLibraryButtons();
+            }
+        });
         // action listeners
         selectAllButton.addActionListener(new ActionListener() {
             @Override
@@ -245,7 +275,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         selectSelectedButton.setEnabled(librariesTable.getSelectedRows().length > 0);
         // deselect
         // XXX do not allow to remove files from the selected site template
-        deselectSelectedButton.setEnabled(selectedLibrariesList.getSelectedIndices().length > 0);
+        deselectSelectedButton.setEnabled(selectedLibraries.size() > 0 && selectedLibrariesList.getSelectedIndices().length > 0);
         // XXX do not count files from the selected site template
         deselectAllButton.setEnabled(selectedLibraries.size() > 0);
     }
@@ -256,7 +286,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             selectLibrary(i);
         }
         sanitizeSelectedLibraries();
-        librariesListModel.fireContentsChanged();
+        selectedLibrariesListModel.fireContentsChanged();
     }
 
     void selectSelectedLibraries() {
@@ -265,7 +295,7 @@ public class JavaScriptLibrarySelection extends JPanel {
             selectLibrary(i);
         }
         sanitizeSelectedLibraries();
-        librariesListModel.fireContentsChanged();
+        selectedLibrariesListModel.fireContentsChanged();
     }
 
     private void selectLibrary(int libraryIndex) {
@@ -285,12 +315,19 @@ public class JavaScriptLibrarySelection extends JPanel {
     }
 
     void deselectAllLibraries() {
+        assert EventQueue.isDispatchThread();
+        // XXX keep default files
+        selectedLibraries.clear();
+        selectedLibrariesListModel.fireContentsChanged();
     }
 
     void deselectSelectedLibraries() {
-    }
-
-    private void deselectLibrary(Library library) {
+        assert EventQueue.isDispatchThread();
+        // XXX performance
+        for (int i : selectedLibrariesList.getSelectedIndices()) {
+            selectedLibraries.remove(i);
+        }
+        selectedLibrariesListModel.fireContentsChanged();
     }
 
     @NbBundle.Messages({
