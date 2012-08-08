@@ -46,16 +46,15 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class GeneratedValueLineParserTest extends NbTestCase {
+public class OrderByLineParserTest extends NbTestCase {
     private ParameterizedAnnotationLineParser parser;
 
-    public GeneratedValueLineParserTest(String name) {
+    public OrderByLineParserTest(String name) {
         super(name);
     }
 
@@ -69,113 +68,113 @@ public class GeneratedValueLineParserTest extends NbTestCase {
         assertTrue(parser instanceof AnnotationLineParser);
     }
 
-    public void testReturnValueIsGeneratedValueParsedLine_01() throws Exception {
-        assertTrue(parser.parse("GeneratedValue") instanceof ParsedLine);
+    public void testReturnValueIsOrderByParsedLine_01() throws Exception {
+        assertTrue(parser.parse("OrderBy") instanceof AnnotationParsedLine.ParsedLine);
     }
 
-    public void testReturnValueIsGeneratedValueParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\GeneratedValue") instanceof ParsedLine);
+    public void testReturnValueIsOrderByParsedLine_02() throws Exception {
+        assertTrue(parser.parse("Annotations\\OrderBy") instanceof AnnotationParsedLine.ParsedLine);
     }
 
-    public void testReturnValueIsGeneratedValueParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\GeneratedValue") instanceof ParsedLine);
+    public void testReturnValueIsOrderByParsedLine_03() throws Exception {
+        assertTrue(parser.parse("\\Foo\\Bar\\OrderBy") instanceof AnnotationParsedLine.ParsedLine);
     }
 
-    public void testReturnValueIsGeneratedValueParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\GeneratedValue(strategy=\"IDENTITY\")") instanceof ParsedLine);
+    public void testReturnValueIsOrderByParsedLine_04() throws Exception {
+        assertTrue(parser.parse("Annotations\\OrderBy({\"name\" = \"ASC\"})") instanceof AnnotationParsedLine.ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
-        assertNull(parser.parse("GeneratedValues"));
+        assertNull(parser.parse("OrderBys"));
     }
 
     public void testValidUseCase_01() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("GeneratedValue");
-        assertEquals("GeneratedValue", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("OrderBy");
+        assertEquals("OrderBy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 14));
-        assertEquals("GeneratedValue", type1);
+        String type1 = types.get(new OffsetRange(0, 7));
+        assertEquals("OrderBy", type1);
     }
 
     public void testValidUseCase_02() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("GeneratedValue   ");
-        assertEquals("GeneratedValue", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("OrderBy   ");
+        assertEquals("OrderBy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 14));
-        assertEquals("GeneratedValue", type1);
+        String type1 = types.get(new OffsetRange(0, 7));
+        assertEquals("OrderBy", type1);
     }
 
     public void testValidUseCase_03() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("GeneratedValue\t\t  ");
-        assertEquals("GeneratedValue", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("OrderBy\t\t  ");
+        assertEquals("OrderBy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 14));
-        assertEquals("GeneratedValue", type1);
+        String type1 = types.get(new OffsetRange(0, 7));
+        assertEquals("OrderBy", type1);
     }
 
     public void testValidUseCase_04() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("GeneratedValue(strategy=\"IDENTITY\")");
-        assertEquals("GeneratedValue", parsedLine.getName());
-        assertEquals("(strategy=\"IDENTITY\")", parsedLine.getDescription());
+        AnnotationParsedLine parsedLine = parser.parse("OrderBy({\"name\" = \"ASC\"})");
+        assertEquals("OrderBy", parsedLine.getName());
+        assertEquals("({\"name\" = \"ASC\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 14));
-        assertEquals("GeneratedValue", type1);
+        String type1 = types.get(new OffsetRange(0, 7));
+        assertEquals("OrderBy", type1);
     }
 
     public void testValidUseCase_05() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Annotations\\GeneratedValue(strategy=\"IDENTITY\")  \t");
-        assertEquals("GeneratedValue", parsedLine.getName());
-        assertEquals("(strategy=\"IDENTITY\")", parsedLine.getDescription());
+        AnnotationParsedLine parsedLine = parser.parse("Annotations\\OrderBy({\"name\" = \"ASC\"})  \t");
+        assertEquals("OrderBy", parsedLine.getName());
+        assertEquals("({\"name\" = \"ASC\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 26));
-        assertEquals("Annotations\\GeneratedValue", type1);
+        String type1 = types.get(new OffsetRange(0, 19));
+        assertEquals("Annotations\\OrderBy", type1);
 
     }
 
     public void testValidUseCase_06() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\GeneratedValue(strategy=\"IDENTITY\")  \t");
-        assertEquals("GeneratedValue", parsedLine.getName());
-        assertEquals("(strategy=\"IDENTITY\")", parsedLine.getDescription());
+        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\OrderBy({\"name\" = \"ASC\"})  \t");
+        assertEquals("OrderBy", parsedLine.getName());
+        assertEquals("({\"name\" = \"ASC\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 23));
-        assertEquals("\\Foo\\Bar\\GeneratedValue", type1);
+        String type1 = types.get(new OffsetRange(0, 16));
+        assertEquals("\\Foo\\Bar\\OrderBy", type1);
     }
 
     public void testValidUseCase_07() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("generatedvalue");
-        assertEquals("GeneratedValue", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("orderby");
+        assertEquals("OrderBy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 14));
-        assertEquals("generatedvalue", type1);
+        String type1 = types.get(new OffsetRange(0, 7));
+        assertEquals("orderby", type1);
     }
 
     public void testValidUseCase_08() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\generatedvalue(strategy=\"IDENTITY\")  \t");
-        assertEquals("GeneratedValue", parsedLine.getName());
-        assertEquals("(strategy=\"IDENTITY\")", parsedLine.getDescription());
+        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\orderby({\"name\" = \"ASC\"})  \t");
+        assertEquals("OrderBy", parsedLine.getName());
+        assertEquals("({\"name\" = \"ASC\"})", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 23));
-        assertEquals("\\Foo\\Bar\\generatedvalue", type1);
+        String type1 = types.get(new OffsetRange(0, 16));
+        assertEquals("\\Foo\\Bar\\orderby", type1);
     }
 
 }

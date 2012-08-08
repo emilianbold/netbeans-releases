@@ -52,7 +52,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class InheritanceTypeLineParserTest extends NbTestCase {
-    private InheritanceTypeLineParser parser;
+    private ParameterizedAnnotationLineParser parser;
 
     public InheritanceTypeLineParserTest(String name) {
         super(name);
@@ -61,7 +61,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new InheritanceTypeLineParser();
+        this.parser = new ParameterizedAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -90,7 +90,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("InheritanceType");
-        assertEquals(InheritanceTypeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("InheritanceType", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -104,7 +104,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("InheritanceType   ");
-        assertEquals(InheritanceTypeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("InheritanceType", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -118,7 +118,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("InheritanceType\t\t  ");
-        assertEquals(InheritanceTypeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("InheritanceType", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -132,7 +132,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("InheritanceType(\"SINGLE_TABLE\")");
-        assertEquals(InheritanceTypeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("InheritanceType", parsedLine.getName());
         assertEquals("(\"SINGLE_TABLE\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -147,7 +147,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\InheritanceType(\"SINGLE_TABLE\")  \t");
-        assertEquals(InheritanceTypeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("InheritanceType", parsedLine.getName());
         assertEquals("(\"SINGLE_TABLE\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -162,7 +162,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\InheritanceType(\"SINGLE_TABLE\")  \t");
-        assertEquals(InheritanceTypeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("InheritanceType", parsedLine.getName());
         assertEquals("(\"SINGLE_TABLE\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -177,7 +177,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("inheritancetype");
-        assertEquals(InheritanceTypeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("InheritanceType", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -191,7 +191,7 @@ public class InheritanceTypeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\inheritancetype(\"SINGLE_TABLE\")  \t");
-        assertEquals(InheritanceTypeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("InheritanceType", parsedLine.getName());
         assertEquals("(\"SINGLE_TABLE\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

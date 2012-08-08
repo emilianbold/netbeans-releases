@@ -54,7 +54,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class DiscriminatorColumnLineParserTest extends NbTestCase {
-    private DiscriminatorColumnLineParser parser;
+    private ParameterizedAnnotationLineParser parser;
 
     public DiscriminatorColumnLineParserTest(String name) {
         super(name);
@@ -63,7 +63,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new DiscriminatorColumnLineParser();
+        this.parser = new ParameterizedAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -92,7 +92,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("DiscriminatorColumn");
-        assertEquals(DiscriminatorColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorColumn", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -106,7 +106,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("DiscriminatorColumn   ");
-        assertEquals(DiscriminatorColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorColumn", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -120,7 +120,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("DiscriminatorColumn\t\t  ");
-        assertEquals(DiscriminatorColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorColumn", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -134,7 +134,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("DiscriminatorColumn(type=\"string\", length=32)");
-        assertEquals(DiscriminatorColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorColumn", parsedLine.getName());
         assertEquals("(type=\"string\", length=32)", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -149,7 +149,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\DiscriminatorColumn(type=\"string\", length=32)  \t");
-        assertEquals(DiscriminatorColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorColumn", parsedLine.getName());
         assertEquals("(type=\"string\", length=32)", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -164,7 +164,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\DiscriminatorColumn(type=\"string\", length=32)  \t");
-        assertEquals(DiscriminatorColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorColumn", parsedLine.getName());
         assertEquals("(type=\"string\", length=32)", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -179,7 +179,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("discriminatorcolumn");
-        assertEquals(DiscriminatorColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorColumn", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -193,7 +193,7 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\discriminatorcolumn(type=\"string\", length=32)  \t");
-        assertEquals(DiscriminatorColumnLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("DiscriminatorColumn", parsedLine.getName());
         assertEquals("(type=\"string\", length=32)", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
