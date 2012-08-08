@@ -288,6 +288,10 @@ public class JavaScriptLibrarySelection extends JPanel {
             return false;
         }
         for (int index : selectedLibrariesList.getSelectedIndices()) {
+            if (index >= selectedLibraries.size()) {
+                // apparently happens when deselecting more libraries
+                continue;
+            }
             if (!selectedLibraries.get(index).isFromTemplate()) {
                 return true;
             }
