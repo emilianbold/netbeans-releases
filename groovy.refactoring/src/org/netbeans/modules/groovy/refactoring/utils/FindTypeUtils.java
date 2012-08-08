@@ -61,6 +61,9 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Utility class for "find type usages". It provides some method for the correct
+ * recognition whether we have caret location on type (respectively ClassNode) or
+ * on the field, property, variable etc.
  *
  * @author Martin Janicek
  */
@@ -70,8 +73,29 @@ public class FindTypeUtils {
     }
 
 
-    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, FileObject fo, int carret) {
-        if (findCurrentNode(path, doc, fo, carret) instanceof ClassNode) {
+    /**
+     * Finds out whether we are on type of the field, property, method, etc. or
+     * not. Typically if we can have declaration like <code>private String something</code>.
+     * For that example this method returns true in following case:<br/>
+     *      <code>private St^ring something</code>
+     *
+     * <br/><br/>
+     * ..but it returns false for the following case:<br/>
+     *      <code>private String somet^hing</code>
+     *
+     * <br/><br/>
+     * This gives us a chance to recognize whether we are dealing with Find type usages
+     * or with Find field usages. It applies of course also for property, variables,
+     * methods, etc.
+     *
+     * @param path AST path to the current location
+     * @param doc document
+     * @param fo file object we are working on
+     * @param caret caret position
+     * @return true if we are directly on the type, false otherwise
+     */
+    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, FileObject fo, int caret) {
+        if (findCurrentNode(path, doc, fo, caret) instanceof ClassNode) {
             return true;
         }
         return false;
