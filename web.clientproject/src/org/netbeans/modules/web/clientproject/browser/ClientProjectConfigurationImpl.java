@@ -43,16 +43,15 @@
 package org.netbeans.modules.web.clientproject.browser;
 
 import javax.swing.JPanel;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
-import org.netbeans.modules.web.clientproject.ui.browser.RunConfigurationPanel;
+import org.netbeans.modules.web.clientproject.ui.browser.BrowserConfigurationPanel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -60,9 +59,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 
 public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation {
 
-    private static String USE_SERVER = "use.server";
-    private static String MAIN_FILE = "main.file";
-    private static String WEB_ROOT = "web.context.root";
     
     final private ClientSideProject project;
     final private WebBrowser browser;
@@ -70,38 +66,46 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     private BrowserSupport browserSupport;
     private ProjectConfigurationCustomizerImpl cust = null;
     private ServerURLMappingImplementation mapping;
+    private Boolean browserIntegration;
+    private int order;
+    private boolean disableIntegration;
 
-    public ClientProjectConfigurationImpl(ClientSideProject project, WebBrowser browser, ClientProjectPlatformImpl platform) {
+    public ClientProjectConfigurationImpl(ClientSideProject project, WebBrowser browser, 
+        ClientProjectPlatformImpl platform, Boolean browserIntegration, int order, boolean disableIntegration) {
         this.project = project;
         this.browser = browser;
         this.platform = platform;
+        this.browserIntegration = browserIntegration;
+        this.order = order;
+        this.disableIntegration = disableIntegration;
     }
     
     @Override
     public String getId() {
-        return PropertyUtils.getUsablePropertyName(browser.getId());
+        return PropertyUtils.getUsablePropertyName(browser.getId()+(disableIntegration ? ".dis" : ""));
     }
 
     @Override
     public void save() {
-        if (cust != null) {
+        if (cust != null && getBrowserIntegration() == Boolean.TRUE) {
             EditableProperties p = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            p.put(USE_SERVER+"."+getId(), Boolean.toString(cust.panel.isUseServer()));
-            p.put(MAIN_FILE+"."+getId(), cust.panel.getMainFile());
-            String s = cust.panel.getWebContextRoot();
-            if (s.trim().length() == 0) {
-                s = "/";
-            }
-            if (!s.startsWith("/")) {
-                s = "/" + s;
-            }
-            p.put(WEB_ROOT+"."+getId(), s);
+            p.put(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId(), Boolean.toString(cust.panel.isAutoRefresh()));
+            p.put(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId(), Boolean.toString(cust.panel.isHighlightSelection()));
             project.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, p);
         }
     }
 
-    public boolean isUseServer() {
-        String val = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(USE_SERVER+"."+getId());
+    /**
+     * @return null mean that browser in this configuration does not have nifty 
+     *    NetBeans integration; TRUE means it has and it is in enabled; FALSE means it has 
+     *    but it is disabled
+     */
+    public Boolean getBrowserIntegration() {
+        return browserIntegration;
+    }
+    
+    public boolean isAutoRefresh() {
+        String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+getId());
         if (val != null) {
             return Boolean.parseBoolean(val);
         } else {
@@ -109,27 +113,18 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         }
     }
 
-    public String getMainFile() {
-        String val = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(MAIN_FILE+"."+getId());
-        if (val == null) {
-            return "index.html";
+    public boolean isHighlightSelection() {
+        String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId());
+        if (val != null) {
+            return Boolean.parseBoolean(val);
         } else {
-            return val;
-        }
-    }
-
-    public String getWebContextRoot() {
-        String val = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(WEB_ROOT+"."+getId());
-        if (val == null) {
-            return "/"+project.getProjectDirectory().getName();
-        } else {
-            return val;
+            return false;
         }
     }
 
     @Override
     public String getDisplayName() {
-        return browser.getName();
+        return browser.getName() + (disableIntegration ? " - No NetBeans Integration" : "");
     }
 
     @Override
@@ -144,13 +139,15 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        cust = new ProjectConfigurationCustomizerImpl();
+        if (cust == null) {
+            cust = new ProjectConfigurationCustomizerImpl();
+        }
         return cust;
     }
     
     public BrowserSupport getBrowserSupport() {
         if (browserSupport == null) {
-            browserSupport = BrowserSupport.create(browser);
+            browserSupport = BrowserSupport.create(browser, disableIntegration);
         }
         return browserSupport;
     }
@@ -172,21 +169,18 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         }
     }
 
-    @Override
-    public ServerURLMappingImplementation getServerURLMapping() {
-        if (mapping == null) {
-            mapping = new ServerURLMappingImpl(this);
-        }
-        return mapping;
+    int getOrder() {
+        return order;
     }
     
     private class ProjectConfigurationCustomizerImpl implements ProjectConfigurationCustomizer {
 
-        private RunConfigurationPanel panel;
+        private BrowserConfigurationPanel panel;
         
         @Override
         public JPanel createPanel() {
-            panel = new RunConfigurationPanel(project, ClientProjectConfigurationImpl.this);
+            panel = new BrowserConfigurationPanel(project, 
+                    ClientProjectConfigurationImpl.this, ClientProjectConfigurationImpl.this.browser);
             return panel;
         }
 

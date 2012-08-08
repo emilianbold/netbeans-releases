@@ -42,12 +42,11 @@
 package org.netbeans.modules.web.clientproject.browser;
 
 import java.net.URL;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
@@ -57,11 +56,11 @@ import org.openide.util.Lookup;
 
 public class BrowserActionProvider implements ActionProvider {
 
-    final private Project project;
+    final private ClientSideProject project;
     private final BrowserSupport support;
     private ClientProjectConfigurationImpl cfg;
 
-    public BrowserActionProvider(Project project, BrowserSupport support, ClientProjectConfigurationImpl cfg) {
+    public BrowserActionProvider(ClientSideProject project, BrowserSupport support, ClientProjectConfigurationImpl cfg) {
         this.project = project;
         this.support = support;
         this.cfg = cfg;
@@ -74,21 +73,25 @@ public class BrowserActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        if (cfg.isUseServer()) {
-            WebServer.getWebserver().start(project, cfg.getWebContextRoot());
+        if (project.isUsingEmbeddedServer()) {
+            WebServer.getWebserver().start(project, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT));
         } else {
             WebServer.getWebserver().stop(project);
         }
         FileObject fo = null;
+        String startFile = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
+        if (startFile == null) {
+            startFile = "index.html";
+        }
         if (COMMAND_RUN.equals(command)) {
-            fo = project.getProjectDirectory().getFileObject(cfg.getMainFile());
+            fo = project.getProjectDirectory().getFileObject(startFile);
             if (fo == null) {
                 DialogDisplayer.getDefault().notify(
-                    new DialogDescriptor.Message("Main file "+cfg.getMainFile()+" cannot be found and opened."));
+                    new DialogDescriptor.Message("Main file "+startFile+" cannot be found and opened."));
                 CustomizerProviderImpl cust = project.getLookup().lookup(CustomizerProviderImpl.class);
                 cust.showCustomizer("buildConfig");
                 // try again:
-                fo = project.getProjectDirectory().getFileObject(cfg.getMainFile());
+                fo = project.getProjectDirectory().getFileObject(startFile);
                 if (fo == null) {
                     return;
                 }

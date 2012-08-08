@@ -94,7 +94,7 @@ public final class WebBrowser {
      * URLs in the single tab.
      */
     public WebBrowserPane createNewBrowserPane() {
-        return createNewBrowserPane(true);
+        return createNewBrowserPane(true, false);
     }
     
     /**
@@ -106,8 +106,9 @@ public final class WebBrowser {
      * in case when HTML file editor has multiview and one of its tabs is "Preview"
      * showing rendered view of the HTML document.
      */
-    public WebBrowserPane createNewBrowserPane(boolean wrapEmbeddedBrowserInTopComponent) {
-        return new WebBrowserPane( factoryDesc, wrapEmbeddedBrowserInTopComponent);
+    public WebBrowserPane createNewBrowserPane(boolean wrapEmbeddedBrowserInTopComponent,
+            boolean disableNetBeansIntegration) {
+        return new WebBrowserPane( factoryDesc, wrapEmbeddedBrowserInTopComponent, disableNetBeansIntegration);
     }
 
     /**

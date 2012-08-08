@@ -48,6 +48,7 @@ import java.nio.charset.Charset;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -58,10 +59,6 @@ public class SourcesPanel extends javax.swing.JPanel {
 
     private ClientSideProject project;
     
-    public static final String PROJECT_APP_FOLDER = "app.folder";
-    public static final String PROJECT_TEST_FOLDER = "test.folder";
-    public static final String PROJECT_ENCODING = "files.encoding";
-    
     /**
      * Creates new form SourcesPanel
      */
@@ -69,17 +66,17 @@ public class SourcesPanel extends javax.swing.JPanel {
         this.project = p;
         initComponents();
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        String s = project.getEvaluator().getProperty(PROJECT_APP_FOLDER);
+        String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_APP_FOLDER);
         if (s == null) {
             s = "";
         }
         jAppFolderTextField.setText(s);
-        s = project.getEvaluator().getProperty(PROJECT_TEST_FOLDER);
+        s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
         if (s == null) {
             s = "";
         }
         jTestFolderTextField.setText(s);
-        String originalEncoding = project.getEvaluator().getProperty(PROJECT_ENCODING);
+        String originalEncoding = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_ENCODING);
         if (originalEncoding == null) {
             originalEncoding = Charset.defaultCharset().name();
         }
@@ -90,11 +87,11 @@ public class SourcesPanel extends javax.swing.JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 EditableProperties ep = project.getProjectProperties();
-                ep.setProperty(PROJECT_APP_FOLDER, jAppFolderTextField.getText());
-                ep.setProperty(PROJECT_TEST_FOLDER, jTestFolderTextField.getText());
+                ep.setProperty(ClientSideProjectConstants.PROJECT_APP_FOLDER, jAppFolderTextField.getText());
+                ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, jTestFolderTextField.getText());
                 Charset enc = (Charset)jEncodingComboBox.getSelectedItem();
                 if (enc != null && enc.name() != null) {
-                    ep.setProperty(PROJECT_ENCODING, enc.name());
+                    ep.setProperty(ClientSideProjectConstants.PROJECT_ENCODING, enc.name());
                 }
                 project.getHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             }

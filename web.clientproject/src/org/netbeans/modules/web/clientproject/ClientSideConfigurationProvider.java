@@ -74,7 +74,7 @@ import org.openide.util.Utilities;
  *
  * @author Jan Becicka
  */
-public class ClientSideConfigurationProvider extends AbstractListModel implements ProjectConfigurationProvider<ClientProjectConfigurationImplementation>, ComboBoxModel, PropertyChangeListener {
+public class ClientSideConfigurationProvider implements ProjectConfigurationProvider<ClientProjectConfigurationImplementation>, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideConfigurationProvider.class.getName());
 
@@ -202,32 +202,6 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
 
 
     @Override
-    public int getSize() {
-        return getConfigurations().size();
-    }
-
-    @Override
-    public Object getElementAt(int index) {
-        return ((ArrayList) getConfigurations()).get(index);
-    }
-
-    @Override
-    public void setSelectedItem(Object anItem) {
-        try {
-            setActiveConfiguration((ClientProjectConfigurationImplementation) anItem);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    @Override
-    public Object getSelectedItem() {
-        return getActiveConfiguration();
-    }
-    
-    @Override
     public void propertyChange(PropertyChangeEvent e) {
         LOGGER.log(Level.FINEST, "Received {0}", e);
         refreshConfigurations();
@@ -240,8 +214,6 @@ public class ClientSideConfigurationProvider extends AbstractListModel implement
         if (!oldConfigs.equals(newConfigs)) {
             LOGGER.log(Level.FINER, "Firing " + ProjectConfigurationProvider.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[] {oldConfigs, newConfigs});
             pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
-            // XXX also fire PROP_ACTIVE_CONFIGURATION?
-            fireContentsChanged(this, 0, newConfigs.size()-1);
         }
     }
 

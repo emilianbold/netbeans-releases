@@ -74,6 +74,7 @@ public final class BrowserSupport {
     private WebBrowser browser;
     private PropertyChangeListener listener;
     private FileObject file;
+    private boolean disableNetBeansIntegration;
 
     private static BrowserSupport INSTANCE = create();
     
@@ -111,18 +112,24 @@ public final class BrowserSupport {
      * Creates a new instance of BrowserSupport for given browser.
      */
     public static BrowserSupport create(WebBrowser browser) {
-        return new BrowserSupport(browser);
+        return create(browser, false);
     }
+    
+    public static BrowserSupport create(WebBrowser browser, boolean disableNetBeansIntegration) {
+        return new BrowserSupport(browser, disableNetBeansIntegration);
+    }
+    
     /**
      * Use browser from IDE settings and change browser pane whenever default
      * browser changes in IDE options.
      */
     private BrowserSupport() {
-        this(null);
+        this(null, false);
     }
     
-    private BrowserSupport(WebBrowser browser) {
+    private BrowserSupport(WebBrowser browser, boolean disableNetBeansIntegration) {
         this.browser = browser;
+        this.disableNetBeansIntegration = disableNetBeansIntegration;
     }
     
     public void disablePageInspector() {
@@ -161,7 +168,7 @@ public final class BrowserSupport {
                 };
                 WebBrowsers.getInstance().addPropertyChangeListener(listener);
             }
-            pane = browser.createNewBrowserPane();
+            pane = browser.createNewBrowserPane(true, disableNetBeansIntegration);
         }
         return pane;
     }

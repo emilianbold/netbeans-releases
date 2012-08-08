@@ -123,11 +123,15 @@ public class ClientSideProject implements Project {
         ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
         if (cfg != null) {
             return cfg.getRefreshOnSaveListener();
-            } else {
+        } else {
             return null;
-            }
         }
+    }
 
+    public boolean isUsingEmbeddedServer() {
+        return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
+    }
+    
     public RemoteFiles getRemoteFiles() {
         return remoteFiles;
     }
@@ -165,7 +169,8 @@ public class ClientSideProject implements Project {
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
        return Lookups.fixed(new Object[] {
                this,
-               new FileEncodingQueryImpl(getEvaluator(), SourcesPanel.PROJECT_ENCODING),
+               new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING),
+               new ServerURLMappingImpl(this),
                configuration,
                helper.createCacheDirectoryProvider(),
                helper.createAuxiliaryProperties(),

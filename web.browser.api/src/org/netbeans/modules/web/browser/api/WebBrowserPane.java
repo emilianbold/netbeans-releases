@@ -75,13 +75,14 @@ public final class WebBrowserPane {
 //    }
     
     WebBrowserPane(WebBrowserFactoryDescriptor desc, 
-            boolean wrapEmbeddedBrowserInTopComponent) 
+            boolean wrapEmbeddedBrowserInTopComponent, boolean disableNetBeansIntegration) 
     {
-        this(desc, wrapEmbeddedBrowserInTopComponent, null);
+        this(desc, wrapEmbeddedBrowserInTopComponent, null, disableNetBeansIntegration);
     }
     
     private WebBrowserPane(WebBrowserFactoryDescriptor descriptor, 
-            boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp) 
+            boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp, 
+            boolean disableNetBeansIntegration) 
     {
         this.descriptor = descriptor;
         this.wrapEmbeddedBrowserInTopComponent = wrapEmbeddedBrowserInTopComponent;
@@ -118,7 +119,7 @@ public final class WebBrowserPane {
             }
             else {
                 impl = descriptor.getFactory().createHtmlBrowserImpl();
-                if ( impl instanceof EnhancedBrowser ){
+                if ( impl instanceof EnhancedBrowser && !disableNetBeansIntegration){
                     ((EnhancedBrowser) impl).setEnhancedMode( true );
                 }
                 impl.addPropertyChangeListener(listener);

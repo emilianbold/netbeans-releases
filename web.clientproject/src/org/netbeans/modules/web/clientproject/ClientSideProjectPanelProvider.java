@@ -43,7 +43,7 @@ package org.netbeans.modules.web.clientproject;
 
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.ui.ClientSideProjectPanel;
+import org.netbeans.modules.web.clientproject.ui.RunPanel;
 import org.netbeans.modules.web.clientproject.ui.SourcesPanel;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -58,7 +58,7 @@ public class ClientSideProjectPanelProvider implements ProjectCustomizer.Composi
     private enum Mode { Sources, Run};
     private Mode mode;
 
-    public ClientSideProjectPanelProvider(Mode mode) {
+    private ClientSideProjectPanelProvider(Mode mode) {
         this.mode = mode;
     }
     
@@ -80,7 +80,7 @@ public class ClientSideProjectPanelProvider implements ProjectCustomizer.Composi
     @Override
     public JComponent createComponent(Category category, Lookup context) {
         if (mode == Mode.Run) {
-            return new ClientSideProjectPanel((ClientSideProject)context.lookup(Project.class));
+            return new RunPanel(category, (ClientSideProject)context.lookup(Project.class));
         } else {
             return new SourcesPanel(category, (ClientSideProject)context.lookup(Project.class));
         }
