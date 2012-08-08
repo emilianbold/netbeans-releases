@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -69,19 +70,19 @@ public class GeneratedValueLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsGeneratedValueParsedLine_01() throws Exception {
-        assertTrue(parser.parse("GeneratedValue") instanceof GeneratedValueParsedLine);
+        assertTrue(parser.parse("GeneratedValue") instanceof ParsedLine);
     }
 
     public void testReturnValueIsGeneratedValueParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\GeneratedValue") instanceof GeneratedValueParsedLine);
+        assertTrue(parser.parse("Annotations\\GeneratedValue") instanceof ParsedLine);
     }
 
     public void testReturnValueIsGeneratedValueParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\GeneratedValue") instanceof GeneratedValueParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\GeneratedValue") instanceof ParsedLine);
     }
 
     public void testReturnValueIsGeneratedValueParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\GeneratedValue(strategy=\"IDENTITY\")") instanceof GeneratedValueParsedLine);
+        assertTrue(parser.parse("Annotations\\GeneratedValue(strategy=\"IDENTITY\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {

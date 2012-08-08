@@ -66,7 +66,7 @@ class DiscriminatorMapLineParser implements AnnotationLineParser {
             Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
             types.put(new OffsetRange(0, annotation.length()), annotation);
             types.putAll(AnnotationUtils.extractTypesFromParameters(line));
-            result = new DiscriminatorMapParsedLine(description, types);
+            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description);
         }
         return result;
     }
