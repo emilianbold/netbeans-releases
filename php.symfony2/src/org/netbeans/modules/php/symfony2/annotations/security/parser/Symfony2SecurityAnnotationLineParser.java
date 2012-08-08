@@ -41,10 +41,15 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.security.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
+import org.netbeans.modules.php.symfony2.annotations.AnnotationUtils;
 
 /**
  *
@@ -54,14 +59,14 @@ public class Symfony2SecurityAnnotationLineParser implements AnnotationLineParse
 
     private static final AnnotationLineParser INSTANCE = new Symfony2SecurityAnnotationLineParser();
 
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final Set<String> ANNOTATIONS = new HashSet<String>();
     static {
-        PARSERS.add(new SecureLineParser());
-        PARSERS.add(new SecureParamLineParser());
-        PARSERS.add(new SecureReturnLineParser());
-        PARSERS.add(new RunAsLineParser());
-        PARSERS.add(new SatisfiesParentSecurityPolicyLineParser());
-        PARSERS.add(new PreAuthorizeLineParser());
+        ANNOTATIONS.add("Secure"); //NOI18N
+        ANNOTATIONS.add("SecureParam"); //NOI18N
+        ANNOTATIONS.add("SecureReturn"); //NOI18N
+        ANNOTATIONS.add("RunAs"); //NOI18N
+        ANNOTATIONS.add("PreAuthorize"); //NOI18N
+        ANNOTATIONS.add("SatisfiesParentSecurityPolicy"); //NOI18N
     }
 
     private Symfony2SecurityAnnotationLineParser() {
@@ -75,9 +80,14 @@ public class Symfony2SecurityAnnotationLineParser implements AnnotationLineParse
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
+        String[] tokens = line.split(line.contains("(") ? "\\(" : "[ \t]+"); //NOI18N
+        for (String annotationName : ANNOTATIONS) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotationName)) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                result = new ParsedLine(annotationName, types, description, true);
                 break;
             }
         }
