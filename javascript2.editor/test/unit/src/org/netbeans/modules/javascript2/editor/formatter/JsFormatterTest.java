@@ -262,6 +262,50 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/functionCall2.js");
     }
 
+    public void testFunctionCall3Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/functionCall3.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testFunctionCall3Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/functionCall3.js", options, ".wrapNever.formatted");
+    }
+
+    public void testFunctionCall3IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/functionCall3.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testFunctionCall3Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/functionCall3.js");
+    }
+
+    public void testFunctionCall4Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/functionCall4.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testFunctionCall4Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/functionCall4.js", options, ".wrapNever.formatted");
+    }
+
+    public void testFunctionCall4IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapMethodCallArgs, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/functionCall4.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testFunctionCall4Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/functionCall4.js");
+    }
+
     public void testComments1() throws Exception {
         reformatFileContents("testfiles/formatter/comments1.js",new IndentPrefs(4, 4));
     }
