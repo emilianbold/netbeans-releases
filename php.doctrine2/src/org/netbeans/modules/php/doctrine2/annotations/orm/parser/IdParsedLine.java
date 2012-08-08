@@ -41,60 +41,23 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import java.util.Map;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
-    private AnnotationLineParser parser;
+public class IdParsedLine extends BaseParsedLine {
 
-    public Doctrine2OrmAnnotationLineParserTest(String name) {
-        super(name);
+    public IdParsedLine(String description, Map<OffsetRange, String> types) {
+        super(description, types);
     }
 
     @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        parser = Doctrine2OrmAnnotationLineParser.getDefault();
-    }
-
-    public void testColumnParser() {
-        assertNotNull(parser.parse("Column"));
-    }
-
-    public void testChangeTrackingPolicyParser() {
-        assertNotNull(parser.parse("ChangeTrackingPolicy"));
-    }
-
-    public void testDiscriminatorColumnParser() {
-        assertNotNull(parser.parse("DiscriminatorColumn"));
-    }
-
-    public void testDiscriminatorMapParser() {
-        assertNotNull(parser.parse("DiscriminatorMap"));
-    }
-
-    public void testEntityParser() {
-        assertNotNull(parser.parse("Entity"));
-    }
-
-    public void testGeneratedValueParser() {
-        assertNotNull(parser.parse("GeneratedValue"));
-    }
-
-    public void testHasLifecycleCallbacksParser() {
-        assertNotNull(parser.parse("HasLifecycleCallbacks"));
-    }
-
-    public void testTableParser() {
-        assertNotNull(parser.parse("Table"));
-    }
-
-    public void testIdParser() {
-        assertNotNull(parser.parse("Id"));
+    public String getName() {
+        return IdLineParser.ANNOTATION_NAME;
     }
 
 }
