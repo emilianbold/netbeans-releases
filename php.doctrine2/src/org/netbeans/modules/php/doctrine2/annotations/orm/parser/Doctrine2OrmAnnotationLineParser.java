@@ -66,6 +66,7 @@ public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
         PARSERS.add(new TableLineParser());
         PARSERS.add(new IdLineParser());
         PARSERS.add(new InheritanceTypeLineParser());
+        PARSERS.add(new JoinColumnLineParser());
     }
 
     private Doctrine2OrmAnnotationLineParser() {
