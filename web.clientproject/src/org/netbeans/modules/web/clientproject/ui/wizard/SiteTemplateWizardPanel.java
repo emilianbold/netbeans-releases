@@ -41,12 +41,8 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.EventQueue;
-import java.util.Collection;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -56,7 +52,7 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     private final Object siteTemplateWizardLock = new Object();
     // @GuardedBy("siteTemplateWizardLock")
     private SiteTemplateWizard siteTemplateWizard;
-    private WizardDescriptor wizardDescriptor;
+    private volatile WizardDescriptor wizardDescriptor;
 
 
     @Override
@@ -83,13 +79,8 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     @Override
     public void storeSettings(WizardDescriptor settings) {
         synchronized (siteTemplateWizardLock) {
+            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.SITE_TEMPLATE, getComponent().getSiteTemplate());
             getComponent().prepareTemplate();
-        }
-    }
-
-    public Collection<String> getSupportedLibraries() {
-        synchronized (siteTemplateWizardLock) {
-            return getComponent().getSupportedLibraries();
         }
     }
 
@@ -139,13 +130,6 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel<WizardDes
     @Override
     public boolean isFinishPanel() {
         return true;
-    }
-
-    public void apply(FileObject p, ProgressHandle handle) {
-        assert !EventQueue.isDispatchThread();
-        synchronized (siteTemplateWizardLock) {
-            getComponent().apply(p, handle);
-        }
     }
 
 }

@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,7 +115,7 @@ public class SiteZip implements SiteTemplateImplementation {
 
     @Override
     public Collection<String> supportedLibraries() {
-        return Collections.emptyList();
+        return SiteHelper.listJsFilenamesFromZipFile(getArchiveFile());
     }
 
     private File getArchiveFile() {
@@ -129,7 +128,7 @@ public class SiteZip implements SiteTemplateImplementation {
         crc.update(template.getBytes());
         String filename = String.valueOf(crc.getValue()) + ".zip"; // NOI18N
         LOGGER.log(Level.INFO, "Remote URL \"{0}\" set, downloaded to {1}", new Object[] {template, filename});
-        return new File(SiteHelper.getJsLibDirectory(), filename);
+        return new File(SiteHelper.getJsLibsDirectory(), filename);
     }
 
     private boolean isRemoteUrl(String input) {
