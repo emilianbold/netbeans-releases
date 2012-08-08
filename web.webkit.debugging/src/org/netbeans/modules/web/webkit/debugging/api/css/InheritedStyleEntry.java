@@ -73,6 +73,7 @@ public class InheritedStyleEntry {
             JSONObject rule  = (JSONObject)o;
             matchedRules.add(new Rule(rule));
         }
+        Collections.reverse(matchedRules);
     }
 
     /**
