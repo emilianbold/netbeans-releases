@@ -188,6 +188,7 @@ public class SiteTemplateWizard extends JPanel {
     }
 
     private void setOnlineTemplateEnabled(boolean enabled) {
+        onlineTemplateDescriptionLabel.setEnabled(enabled);
         onlineTemplateList.setEnabled(enabled);
         onlineTemplateDescriptionTextPane.setEnabled(enabled);
     }
@@ -326,7 +327,7 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateRadioButton = new javax.swing.JRadioButton();
         onlineTemplateScrollPane = new javax.swing.JScrollPane();
         onlineTemplateList = new javax.swing.JList();
-        descriptionLabel = new javax.swing.JLabel();
+        onlineTemplateDescriptionLabel = new javax.swing.JLabel();
         onlineTemplateDescriptionScrollPane = new javax.swing.JScrollPane();
         onlineTemplateDescriptionTextPane = new javax.swing.JTextPane();
 
@@ -347,8 +348,8 @@ public class SiteTemplateWizard extends JPanel {
         onlineTemplateList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         onlineTemplateScrollPane.setViewportView(onlineTemplateList);
 
-        descriptionLabel.setLabelFor(onlineTemplateDescriptionTextPane);
-        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.descriptionLabel.text")); // NOI18N
+        onlineTemplateDescriptionLabel.setLabelFor(onlineTemplateDescriptionTextPane);
+        org.openide.awt.Mnemonics.setLocalizedText(onlineTemplateDescriptionLabel, org.openide.util.NbBundle.getMessage(SiteTemplateWizard.class, "SiteTemplateWizard.onlineTemplateDescriptionLabel.text")); // NOI18N
 
         onlineTemplateDescriptionScrollPane.setViewportView(onlineTemplateDescriptionTextPane);
 
@@ -366,7 +367,7 @@ public class SiteTemplateWizard extends JPanel {
                         .addGap(21, 21, 21)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(descriptionLabel)
+                                .addComponent(onlineTemplateDescriptionLabel)
                                 .addGap(0, 0, Short.MAX_VALUE))
                             .addComponent(archiveTemplatePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(onlineTemplateScrollPane)
@@ -388,7 +389,7 @@ public class SiteTemplateWizard extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(descriptionLabel)
+                .addComponent(onlineTemplateDescriptionLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -397,9 +398,9 @@ public class SiteTemplateWizard extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel archiveTemplatePanel;
     private javax.swing.JRadioButton archiveTemplateRadioButton;
-    private javax.swing.JLabel descriptionLabel;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JRadioButton noTemplateRadioButton;
+    private javax.swing.JLabel onlineTemplateDescriptionLabel;
     private javax.swing.JScrollPane onlineTemplateDescriptionScrollPane;
     private javax.swing.JTextPane onlineTemplateDescriptionTextPane;
     private javax.swing.JList onlineTemplateList;
