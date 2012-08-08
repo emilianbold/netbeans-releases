@@ -179,9 +179,9 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
 
         private void updateJaxWs() {
             try {
-                Map<String, String> newServices = wsModel.runReadAction(new MetadataModelAction<WebservicesMetadata, Map<String, String>>() {
+                wsModel.runReadAction(new MetadataModelAction<WebservicesMetadata, Void>() {
 
-                    public Map<String, String> run(WebservicesMetadata metadata) {
+                    public Void run(WebservicesMetadata metadata) {
                         Map<String, String> result = new HashMap<String, String>();
                         Webservices webServices = metadata.getRoot();
                         for (WebserviceDescription wsDesc : webServices.getWebserviceDescription()) {
@@ -197,97 +197,101 @@ public class JavaEEWSOpenHook extends ProjectOpenedHook {
                             }
 
                         }
-                        return result;
+                        updateWsModel( result );
+                        return null;
                     }
                 });
 
-                final JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
-                if (jaxWsModel != null) {
-                    // create list of all existing services (from java)
-                    Map<String, Service> oldServices = new HashMap<String, Service>();
-                    Map<String, Service> oldServicesFromWsdl = new HashMap<String, Service>();
-                    Service[] allServices = jaxWsModel.getServices();
-
-                    for (Service s: allServices) {
-                        // add only services created from java
-                        if (s.getWsdlUrl() == null) {
-                            // implementationClass -> Service
-                            oldServices.put(s.getImplementationClass(), s);
-                        } else {
-                            // serviceName -> Service
-                            oldServicesFromWsdl.put("fromWsdl:"+s.getServiceName(), s); //NOI18N
-                        }
-                    }
-                    // compare new services with existing
-
-                    // looking for common services (implementationClass)
-                    Set<String> commonServices = new HashSet<String>();
-                    Set<String> keys1 = oldServices.keySet();
-                    Set<String> keys2 = newServices.keySet();
-                    for (String key : keys1) {
-                        if (keys2.contains(key)) {
-                            commonServices.add(key);
-                        }
-                    }
-
-                    for (String key : commonServices) {
-                        oldServices.remove(key);
-                        newServices.remove(key);
-                    }
-                    
-                    // remove old services
-                    boolean needToSave = false;
-                    for (String key : oldServices.keySet()) {
-                        jaxWsModel.removeService(oldServices.get(key).getName());
-                        needToSave = true;
-                    }
-                    Set<String> removedFromWsdl = new HashSet<String>( 
-                            oldServicesFromWsdl.keySet());
-                    removedFromWsdl.removeAll( newServices.keySet() );
-                    for( String key : removedFromWsdl ){
-                        Service service = oldServicesFromWsdl.remove(key);
-                        if ( service != null ){
-                            jaxWsModel.removeService(service.getName());
-                        }
-                    }
-
-                    
-                    // add new services
-                    for (String key : newServices.keySet()) { // services from WSDL
-                        if (key.startsWith("fromWsdl:")) { //NOI18N
-                            Service oldServiceFromWsdl = oldServicesFromWsdl.get(key);
-                            String newImplClass = newServices.get(key);
-                            if (oldServiceFromWsdl != null && !oldServiceFromWsdl.getImplementationClass().equals(newImplClass)) {
-                                oldServiceFromWsdl.setImplementationClass(newImplClass);
-                                needToSave = true;
-                            }
-                        } else { // services from JAVA
-                            // add only if doesn't exists
-                            if (jaxWsModel.findServiceByImplementationClass(key) == null) {
-                                try {
-                                    jaxWsModel.addService(newServices.get(key), key);
-                                    needToSave = true;
-                                } catch (ServiceAlreadyExistsExeption ex) {
-                                // TODO: need to handle this
-                                }
-                            }
-                        }
-                    }
-                    if (needToSave) {
-                        ProjectManager.mutex().writeAccess(new Runnable() {
-
-                            public void run() {
-                                try {
-                                    jaxWsModel.write();
-                                } catch (IOException ex) {
-                                    ErrorManager.getDefault().notify(ex);
-                                }
-                            }
-                        });
-                    }
-                }
             } catch (java.io.IOException ioe) {
                 ErrorManager.getDefault().notify(ioe);
+            }
+        }
+        
+        private void updateWsModel(Map<String, String> services){
+            final JaxWsModel jaxWsModel = prj.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                // create list of all existing services (from java)
+                Map<String, Service> oldServices = new HashMap<String, Service>();
+                Map<String, Service> oldServicesFromWsdl = new HashMap<String, Service>();
+                Service[] allServices = jaxWsModel.getServices();
+
+                for (Service s: allServices) {
+                    // add only services created from java
+                    if (s.getWsdlUrl() == null) {
+                        // implementationClass -> Service
+                        oldServices.put(s.getImplementationClass(), s);
+                    } else {
+                        // serviceName -> Service
+                        oldServicesFromWsdl.put("fromWsdl:"+s.getServiceName(), s); //NOI18N
+                    }
+                }
+                // compare new services with existing
+
+                // looking for common services (implementationClass)
+                Set<String> commonServices = new HashSet<String>();
+                Set<String> keys1 = oldServices.keySet();
+                Set<String> keys2 = services.keySet();
+                for (String key : keys1) {
+                    if (keys2.contains(key)) {
+                        commonServices.add(key);
+                    }
+                }
+
+                for (String key : commonServices) {
+                    oldServices.remove(key);
+                    services.remove(key);
+                }
+                
+                // remove old services
+                boolean needToSave = false;
+                for (String key : oldServices.keySet()) {
+                    jaxWsModel.removeService(oldServices.get(key).getName());
+                    needToSave = true;
+                }
+                Set<String> removedFromWsdl = new HashSet<String>( 
+                        oldServicesFromWsdl.keySet());
+                removedFromWsdl.removeAll( services.keySet() );
+                for( String key : removedFromWsdl ){
+                    Service service = oldServicesFromWsdl.remove(key);
+                    if ( service != null ){
+                        jaxWsModel.removeService(service.getName());
+                    }
+                }
+
+                
+                // add new services
+                for (String key : services.keySet()) { // services from WSDL
+                    if (key.startsWith("fromWsdl:")) { //NOI18N
+                        Service oldServiceFromWsdl = oldServicesFromWsdl.get(key);
+                        String newImplClass = services.get(key);
+                        if (oldServiceFromWsdl != null && !oldServiceFromWsdl.getImplementationClass().equals(newImplClass)) {
+                            oldServiceFromWsdl.setImplementationClass(newImplClass);
+                            needToSave = true;
+                        }
+                    } else { // services from JAVA
+                        // add only if doesn't exists
+                        if (jaxWsModel.findServiceByImplementationClass(key) == null) {
+                            try {
+                                jaxWsModel.addService(services.get(key), key);
+                                needToSave = true;
+                            } catch (ServiceAlreadyExistsExeption ex) {
+                            // TODO: need to handle this
+                            }
+                        }
+                    }
+                }
+                if (needToSave) {
+                    ProjectManager.mutex().writeAccess(new Runnable() {
+
+                        public void run() {
+                            try {
+                                jaxWsModel.write();
+                            } catch (IOException ex) {
+                                ErrorManager.getDefault().notify(ex);
+                            }
+                        }
+                    });
+                }
             }
         }
     }
