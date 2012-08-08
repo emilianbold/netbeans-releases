@@ -122,15 +122,8 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         initComponents();
 
-        initInfo();
         initLibraries();
         initLibrariesFolder();
-    }
-
-    @NbBundle.Messages("JavaScriptLibrarySelection.info=<html>Choose a library version and shuttle it to the Selected list to add it to your project.<br>"
-            + "Libraries added by your template are already selected.")
-    private void initInfo() {
-        infoLabel.setText(Bundle.JavaScriptLibrarySelection_info());
     }
 
     private void initLibraries() {
@@ -448,8 +441,7 @@ public class JavaScriptLibrarySelection extends JPanel {
         librariesFolderLabel = new javax.swing.JLabel();
         librariesFolderTextField = new javax.swing.JTextField();
 
-        infoLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, "INFO"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.infoLabel.text")); // NOI18N
 
         librariesLabel.setLabelFor(librariesTable);
         org.openide.awt.Mnemonics.setLocalizedText(librariesLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelection.class, "JavaScriptLibrarySelection.librariesLabel.text")); // NOI18N
@@ -498,7 +490,9 @@ public class JavaScriptLibrarySelection extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
                     .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
-            .addComponent(infoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectAllButton, deselectSelectedButton, selectAllButton, selectSelectedButton});
@@ -506,8 +500,8 @@ public class JavaScriptLibrarySelection extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(infoLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(infoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesLabel)
                     .addComponent(selectedLabel)
