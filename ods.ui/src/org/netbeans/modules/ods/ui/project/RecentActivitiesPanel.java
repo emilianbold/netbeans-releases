@@ -156,7 +156,12 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
         lblLoading.setFont(new java.awt.Font("Tahoma", 2, 11)); // NOI18N
         lblLoading.setForeground(new java.awt.Color(102, 102, 102));
         org.openide.awt.Mnemonics.setLocalizedText(lblLoading, org.openide.util.NbBundle.getMessage(RecentActivitiesPanel.class, "RecentActivitiesPanel.lblLoading.text")); // NOI18N
-        pnlContent.add(lblLoading, new java.awt.GridBagConstraints());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.insets = new java.awt.Insets(100, 0, 0, 0);
+        pnlContent.add(lblLoading, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
