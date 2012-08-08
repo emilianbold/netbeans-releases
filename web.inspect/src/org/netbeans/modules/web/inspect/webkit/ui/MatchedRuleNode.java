@@ -49,6 +49,8 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.nodes.Sheet;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -91,7 +93,8 @@ public class MatchedRuleNode extends AbstractNode {
      * @return property sets of this node.
      */
     private PropertySet[] createPropertySets() {
-        PropertySet set = new PropertySet() {
+        String displayName = NbBundle.getMessage(MatchedRuleNode.class, "MatchedRuleNode.properties"); // NOI18N
+        PropertySet set = new PropertySet(Sheet.PROPERTIES, displayName, null) {
             private Property<?> nodeProperty = new PropertySupport.ReadOnly<String>(
                     PROPERTY_NODE, String.class, null, null) {
                 @Override
