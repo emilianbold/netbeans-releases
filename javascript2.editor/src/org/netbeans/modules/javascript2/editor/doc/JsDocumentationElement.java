@@ -86,7 +86,7 @@ public class JsDocumentationElement implements ElementHandle {
 
     @Override
     public ElementKind getKind() {
-        return ElementKind.TAG;
+        return ElementKind.OTHER;
     }
 
     @Override
@@ -102,6 +102,10 @@ public class JsDocumentationElement implements ElementHandle {
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
         return OffsetRange.NONE;
+    }
+
+    public String getDocumentation() {
+        return documentation;
     }
 
 }
