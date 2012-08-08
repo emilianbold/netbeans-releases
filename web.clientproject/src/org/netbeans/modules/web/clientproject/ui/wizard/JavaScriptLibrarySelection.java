@@ -71,6 +71,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
+import javax.swing.RowFilter;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -82,6 +83,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableRowSorter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -111,6 +113,8 @@ public class JavaScriptLibrarySelection extends JPanel {
     // @GuardedBy("EDT")
     final LibrariesTableModel librariesTableModel = new LibrariesTableModel();
     // @GuardedBy("EDT")
+    final TableRowSorter<LibrariesTableModel> librariesTableSorter = new TableRowSorter<LibrariesTableModel>(librariesTableModel);
+    // @GuardedBy("EDT")
     final LibrariesListModel selectedLibrariesListModel = new LibrariesListModel(selectedLibraries);
 
     // folder path is accessed outside of EDT thread
@@ -135,14 +139,32 @@ public class JavaScriptLibrarySelection extends JPanel {
     private void initLibrariesTable() {
         assert EventQueue.isDispatchThread();
         librariesTable.setModel(librariesTableModel);
+        librariesTable.setRowSorter(librariesTableSorter);
         // tooltip
         librariesTable.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 assert EventQueue.isDispatchThread();
                 Point point = e.getPoint();
-                int row = librariesTable.rowAtPoint(point);
+                int row = librariesTable.convertRowIndexToModel(librariesTable.rowAtPoint(point));
                 librariesTable.setToolTipText(librariesTableModel.getItems().get(row).getDescription());
+            }
+        });
+        librariesFilterTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                filterLibrariesTable();
             }
         });
     }
@@ -283,6 +305,23 @@ public class JavaScriptLibrarySelection extends JPanel {
         deselectAllButton.setEnabled(canDeselectAll());
     }
 
+    void filterLibrariesTable() {
+        assert EventQueue.isDispatchThread();
+        final String filter = librariesFilterTextField.getText().toLowerCase();
+        if (filter.isEmpty()) {
+            // no filter
+            librariesTableSorter.setRowFilter(null);
+            return;
+        }
+        // we have some filter
+        librariesTableSorter.setRowFilter(new RowFilter<LibrariesTableModel, Integer>() {
+            @Override
+            public boolean include(RowFilter.Entry<? extends LibrariesTableModel, ? extends Integer> entry) {
+                return entry.getStringValue(0).toLowerCase().contains(filter);
+            }
+        });
+    }
+
     private boolean canDeselectSelected() {
         if (selectedLibraries.isEmpty()) {
             return false;
@@ -314,7 +353,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     void selectAllLibraries() {
         assert EventQueue.isDispatchThread();
         for (int i = 0; i < librariesTable.getRowCount(); ++i) {
-            selectLibrary(i);
+            selectLibrary(librariesTable.convertRowIndexToModel(i));
         }
         selectedLibrariesListModel.fireContentsChanged();
     }
@@ -322,7 +361,7 @@ public class JavaScriptLibrarySelection extends JPanel {
     void selectSelectedLibraries() {
         assert EventQueue.isDispatchThread();
         for (int i : librariesTable.getSelectedRows()) {
-            selectLibrary(i);
+            selectLibrary(librariesTable.convertRowIndexToModel(i));
         }
         selectedLibrariesListModel.fireContentsChanged();
     }
@@ -556,6 +595,7 @@ public class JavaScriptLibrarySelection extends JPanel {
 
         @Override
         public TableCellEditor getCellEditor(int row, int column) {
+            row = convertRowIndexToModel(row);
             if (column != 1) {
                 return super.getCellEditor(row, column);
             }
@@ -576,6 +616,11 @@ public class JavaScriptLibrarySelection extends JPanel {
             this.defaultRenderer = defaultRenderer;
         }
 
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            return defaultRenderer.getListCellRendererComponent(list, getLabel((LibraryVersion) value), index, isSelected, cellHasFocus);
+        }
+
         @NbBundle.Messages({
             "# {0} - library version",
             "# {1} - library type",
@@ -583,11 +628,6 @@ public class JavaScriptLibrarySelection extends JPanel {
             "VersionsRenderer.type.minified=minified",
             "VersionsRenderer.type.documented=documented"
         })
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            return defaultRenderer.getListCellRendererComponent(list, getLabel((LibraryVersion) value), index, isSelected, cellHasFocus);
-        }
-
         public static String getLabel(LibraryVersion libraryVersion) {
             String version = libraryVersion.getLibraryVersion();
             String rawType = libraryVersion.getType();
