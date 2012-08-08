@@ -124,7 +124,6 @@ public class JsDocumentationCodeCompletion {
 
         @Override
         public String getInsertPrefix() {
-            // TODO - writing CC window
             return getName();
         }
 
