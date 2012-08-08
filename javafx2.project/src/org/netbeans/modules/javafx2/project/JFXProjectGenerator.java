@@ -446,6 +446,11 @@ public class JFXProjectGenerator {
         ep.setProperty(JFXProjectProperties.JAVAFX_REBASE_LIBS, "false"); // NOI18N
         ep.setComment(JFXProjectProperties.JAVAFX_REBASE_LIBS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_rebase_libs")}, false); // NOI18N
 
+        ep.setProperty(JFXProjectProperties.JAVAFX_DISABLE_CONCURRENT_RUNS, "false"); // NOI18N
+        ep.setComment(JFXProjectProperties.JAVAFX_DISABLE_CONCURRENT_RUNS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_disable_concurrent_runs")}, false); // NOI18N
+        ep.setProperty(JFXProjectProperties.JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS, "false"); // NOI18N
+        ep.setComment(JFXProjectProperties.JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_enable_concurrent_external_runs")}, false); // NOI18N
+
         ep.setProperty(JFXProjectProperties.JAVAFX_NATIVE_BUNDLING_ENABLED, "false"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVAFX_NATIVE_BUNDLING_TYPE, JFXProjectProperties.BundlingType.NONE.getString().toLowerCase());
         

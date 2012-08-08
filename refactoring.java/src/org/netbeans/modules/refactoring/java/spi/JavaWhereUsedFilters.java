@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,66 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.refactoring.java.callhierarchy;
-
-import com.sun.source.util.TreePath;
-import javax.swing.Icon;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.refactoring.java.WhereUsedElement;
-import org.openide.text.PositionBounds;
+package org.netbeans.modules.refactoring.java.spi;
 
 /**
- *
- * @author Jan Pokorsky
+ * Filters used by Java Find Usages plugins.
+ * 
+ * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
+ * @since 1.39
  */
-final class CallOccurrence implements CallDescriptor {
-    
-    private String displayName;
-    private String htmlDisplayName;
-    private PositionBounds selectionBounds;
-    private TreePathHandle occurrence;
+public enum JavaWhereUsedFilters {
 
-    @Override
-    public String getDisplayName() {
-        return displayName;
+    IMPORT("filter-import"),
+    COMMENT("filter-comment"),
+    TESTFILE("filter-testfile");
+    private final String key;
+
+    private JavaWhereUsedFilters(String key) {
+        this.key = key;
     }
 
-    @Override
-    public String getHtmlDisplayName() {
-        return htmlDisplayName;
+    public String getKey() {
+        return key;
     }
 
-    @Override
-    public Icon getIcon() {
-        return null;
-    }
+    public static enum ReadWrite {
 
-    @Override
-    public boolean isLeaf() {
-        return true;
-    }
+        READ("filter-read"),
+        WRITE("filter-write"),
+        READ_WRITE("filter-readwrite");
+        private final String key;
 
-    @Override
-    public void open() {
-        Call.doOpen(occurrence.getFileObject(), selectionBounds);
-    }
+        private ReadWrite(String key) {
+            this.key = key;
+        }
 
-    public static CallOccurrence createOccurrence(
-            CompilationInfo javac, TreePath selection, Call parent) {
-        WhereUsedElement wue = WhereUsedElement.create(javac, selection, false);
-        CallOccurrence c = new CallOccurrence();
-        c.occurrence = TreePathHandle.create(selection, javac);
-        c.displayName = selection.getLeaf().toString();
-        c.htmlDisplayName = String.format("<html>%s</html>", wue.getDisplayText());
-        c.selectionBounds = wue.getPosition();
-        return c;
+        public String getKey() {
+            return key;
+        }
     }
-
 }

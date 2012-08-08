@@ -47,7 +47,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
@@ -56,31 +55,34 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.SourceUtilsEx;
 import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
+import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor.UsageInComment;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
+import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters;
+import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters.ReadWrite;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author  Jan Becicka
  * @author  Ralph Ruijs
  */
-public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
+public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements FiltersDescription.Provider {
     private boolean fromLibrary;
     private WhereUsedQuery refactoring;
     private ClasspathInfo cp;
@@ -340,7 +342,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         fireProgressListenerStep(a.size());
         Problem problem = null;
         try {
-            queryFiles(a, new FindTask(elements));
+            final FindTask findTask = new FindTask(elements);
+            queryFiles(a, findTask);
         } catch (IOException e) {
             problem = createProblemAndLog(null, e);
         }
@@ -379,11 +382,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
-        Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        Object obj = dob.getLookup().lookup(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport)obj;
         }
-        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        obj = dob.getLookup().lookup(org.openide.cookies.EditorCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport)obj;
         }
@@ -405,6 +408,34 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     }
     private boolean isSearchFromBaseClass() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS);
+    }
+
+    @Override
+    public void addFilters(FiltersDescription filtersDescription) {
+        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.READ.getKey(), "Read filter", true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_read.png", false));
+        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.WRITE.getKey(), "Write filter", true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_write.png", false));
+        filtersDescription.addFilter(JavaWhereUsedFilters.ReadWrite.READ_WRITE.getKey(), "Read/Write filter", true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_readwrite.png", false));
+        filtersDescription.addFilter(JavaWhereUsedFilters.IMPORT.getKey(), "Import filter", true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_import.png", false));
+        filtersDescription.addFilter(JavaWhereUsedFilters.COMMENT.getKey(), "Comment filter", true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_comment.png", false));
+        filtersDescription.addFilter(JavaWhereUsedFilters.TESTFILE.getKey(), "Test filter", true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_test.png", false));
+    }
+
+    private EnumSet<JavaWhereUsedFilters.ReadWrite> usedAccessFilters = EnumSet.noneOf(JavaWhereUsedFilters.ReadWrite.class);
+    private LinkedList<String> usedFilters = new LinkedList<String>();
+    @Override
+    public void enableFilters(FiltersDescription filtersDescription) {
+        for (JavaWhereUsedFilters.ReadWrite filter : usedAccessFilters) {
+            filtersDescription.enable(filter.getKey());
+        }
+        for (String string : usedFilters) {
+            filtersDescription.enable(string);
+        }
     }
     
     private class FindTask implements CancellableTask<CompilationController> {
@@ -442,15 +473,31 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 return;
             }
             
-            Collection<TreePath> result = new ArrayList<TreePath>();
+            final boolean fromTestRoot = RefactoringUtils.isFromTestRoot(compiler.getFileObject(), compiler.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE));
+            AtomicBoolean inImport = new AtomicBoolean();
             if (isFindUsages()) {
-                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS));
+                FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler, refactoring.getBooleanValue(WhereUsedQuery.SEARCH_IN_COMMENTS), fromTestRoot, inImport);
                 findVisitor.scan(compiler.getCompilationUnit(), element);
-                result.addAll(findVisitor.getUsages());
-                for (FindUsagesVisitor.UsageInComment usageInComment : findVisitor.getUsagesInComments()) {
-                    elements.add(refactoring, WhereUsedElement.create(usageInComment.from, usageInComment.to, compiler));
+                final Collection<UsageInComment> usagesInComments = findVisitor.getUsagesInComments();
+                for (FindUsagesVisitor.UsageInComment usageInComment : usagesInComments) {
+                    elements.add(refactoring, WhereUsedElement.create(usageInComment.from, usageInComment.to, compiler, fromTestRoot));
+                }
+                if(!usagesInComments.isEmpty()) {
+                    usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
+                }
+                Collection<WhereUsedElement> foundElements = findVisitor.getElements();
+                for (WhereUsedElement el : foundElements) {
+                    final ReadWrite access = el.getAccess();
+                    if(access != null) {
+                        usedAccessFilters.add(access);
+                    }
+                    elements.add(refactoring, el);
+                }
+                if(fromTestRoot && !foundElements.isEmpty()) {
+                    usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
                 }
             }
+            Collection<TreePath> result = new ArrayList<TreePath>();
             if (element.getKind() == ElementKind.METHOD && isFindOverridingMethods()) {
                 FindOverridingVisitor override = new FindOverridingVisitor(compiler);
                 override.scan(compiler.getCompilationUnit(), element);
@@ -462,13 +509,19 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 result.addAll(subtypes.getUsages());
             }
             for (TreePath tree : result) {
-                elements.add(refactoring, WhereUsedElement.create(compiler, tree));
+                elements.add(refactoring, WhereUsedElement.create(compiler, tree, fromTestRoot, inImport));
+            }
+            if(fromTestRoot && !result.isEmpty()) {
+                usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
+            }
+            if(inImport.get()) {
+                usedFilters.add(JavaWhereUsedFilters.IMPORT.getKey());
             }
             fireProgressListenerStep();
         }
     }
     
-        private static class FileComparator implements Comparator<FileObject> {
+    private static class FileComparator implements Comparator<FileObject> {
 
         @Override
         public int compare(FileObject o1, FileObject o2) {

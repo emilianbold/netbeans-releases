@@ -66,6 +66,7 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -976,6 +977,17 @@ public class RefactoringUtils {
             return "public"; //NOI18N
         }
         return "<default>"; //NOI18N
+    }
+
+    public static boolean isFromTestRoot(FileObject file, ClassPath cp) {
+        boolean inTest = false;
+        if (cp != null) {
+            FileObject root = cp.findOwnerRoot(file);
+            if (UnitTestForSourceQuery.findSources(root).length > 0) {
+                inTest = true;
+            }
+        }
+        return inTest;
     }
 
     private RefactoringUtils() {

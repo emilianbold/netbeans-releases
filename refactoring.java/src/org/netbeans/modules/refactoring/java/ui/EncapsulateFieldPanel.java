@@ -357,6 +357,8 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         jLblInsertPoint.setLabelFor(jComboInsertPoint);
         org.openide.awt.Mnemonics.setLocalizedText(jLblInsertPoint, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.jLblInsertPoint.text")); // NOI18N
 
+        jComboInsertPoint.setPreferredSize(new java.awt.Dimension(308, 31));
+
         jLblSort.setLabelFor(jComboSort);
         org.openide.awt.Mnemonics.setLocalizedText(jLblSort, org.openide.util.NbBundle.getMessage(EncapsulateFieldPanel.class, "EncapsulateFieldPanel.jLblSort.text")); // NOI18N
 
@@ -722,7 +724,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     String getClassname() {
         return classname;
     }
-    
+
     
     
     ////////////////////////////////////////////////////////////////////////////
