@@ -95,10 +95,4 @@ public interface ClientProjectConfigurationImplementation extends ProjectConfigu
      */
     void deactivate();
 
-    /**
-     * If configuration deploys files to server this method should be implemented
-     * and provide mapping.
-     * @return can be null
-     */
-    ServerURLMappingImplementation getServerURLMapping();
 }

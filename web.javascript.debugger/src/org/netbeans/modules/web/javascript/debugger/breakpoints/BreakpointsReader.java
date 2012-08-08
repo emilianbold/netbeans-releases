@@ -144,7 +144,7 @@ public class BreakpointsReader implements Properties.Reader {
         if (object instanceof LineBreakpoint) {
             LineBreakpoint breakpoint = (LineBreakpoint) object;
             
-            properties.setString(URL, breakpoint.getURLString());
+            properties.setString(URL, breakpoint.getURLStringToPersist());
             properties.setInt(LINE_NUMBER, breakpoint.getLine().getLineNumber());
             writeGeneralProperties(properties, breakpoint);
         }

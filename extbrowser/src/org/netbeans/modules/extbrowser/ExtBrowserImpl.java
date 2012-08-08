@@ -94,6 +94,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     
     private boolean running = false;
     
+    private Lookup projectContext;
+    
     /** Default constructor. 
       * <p>Builds PropertyChangeSupport. 
       */
@@ -232,6 +234,15 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                 ExternalBrowserPlugin.getInstance().close(tab, closeTab);
             }
         }
+    }
+
+    @Override
+    public void setProjectContext(Lookup projectContext) {
+        this.projectContext = projectContext;
+    }
+
+    public Lookup getProjectContext() {
+        return projectContext;
     }
     
     /** 

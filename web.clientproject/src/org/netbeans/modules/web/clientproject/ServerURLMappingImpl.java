@@ -40,27 +40,64 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.spi.webserver;
+package org.netbeans.modules.web.clientproject;
 
+import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
+import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
- * Provides mapping between project's source file and its location on server
- * and vice versa. To be registered in project's lookup.
+ *
  */
-public interface ServerURLMappingImplementation {
+public class ServerURLMappingImpl implements ServerURLMappingImplementation {
 
-    /**
-     * Convert given project's file into server URL.
-     * @return could return null if file is not deployed to server and therefore
-     *   not accessible
-     */
-    URL toServer(FileObject projectFile);
-    
-    /**
-     * Convert given server URL into project's file.
-     * @return returns null if nothing is known about this server URL
-     */
-    FileObject fromServer(URL serverURL);
+    private ClientSideProject project;
+
+    public ServerURLMappingImpl(ClientSideProject project) {
+        this.project = project;
+    }
+
+    @Override
+    public URL toServer(FileObject projectFile) {
+        if (project.isUsingEmbeddedServer()) {
+            return WebServer.getWebserver().toServer(projectFile);
+        } else {
+            String relPath = FileUtil.getRelativePath(project.getProjectDirectory(), projectFile);
+            String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
+            if (!root.endsWith("/")) {
+                root += "/";
+            }
+            try {
+                return new URL(root + relPath);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+    }
+
+    @Override
+    public FileObject fromServer(URL serverURL) {
+        if (project.isUsingEmbeddedServer()) {
+            return WebServer.getWebserver().fromServer(serverURL);
+        } else {
+            String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
+            String u = serverURL.toExternalForm();
+            if (u.startsWith(root)) {
+                u = u.substring(root.length());
+                if (u.startsWith("/")) {
+                    u = u.substring(1);
+                }
+                return project.getProjectDirectory().getFileObject(u);
+            }
+            return null;
+        }
+    }
+
 }

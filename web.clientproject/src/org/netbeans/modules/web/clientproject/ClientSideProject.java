@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.clientproject;
 
-import org.netbeans.modules.web.clientproject.browser.ServerURLMappingImpl;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
@@ -55,6 +54,7 @@ import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.clientproject.ui.SourcesPanel;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.GenericSources;
@@ -62,6 +62,7 @@ import org.netbeans.spi.project.support.ant.*;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -113,16 +114,24 @@ public class ClientSideProject implements Project {
     public ClientSideConfigurationProvider getProjectConfigurations() {
         return configurationProvider;
     }
+    
+    public EditableProperties getProjectProperties() {
+        return getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+    }
             
     private RefreshOnSaveListener getRefreshOnSaveListener() {
         ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
         if (cfg != null) {
             return cfg.getRefreshOnSaveListener();
-            } else {
+        } else {
             return null;
-            }
         }
+    }
 
+    public boolean isUsingEmbeddedServer() {
+        return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
+    }
+    
     public RemoteFiles getRemoteFiles() {
         return remoteFiles;
     }
@@ -141,7 +150,7 @@ public class ClientSideProject implements Project {
         return lookup;
     }
 
-    PropertyEvaluator getEvaluator() {
+    public PropertyEvaluator getEvaluator() {
         return eval;
     }
     
@@ -160,6 +169,8 @@ public class ClientSideProject implements Project {
     private Lookup createLookup(AuxiliaryConfiguration configuration) {
        return Lookups.fixed(new Object[] {
                this,
+               new FileEncodingQueryImpl(getEvaluator(), ClientSideProjectConstants.PROJECT_ENCODING),
+               new ServerURLMappingImpl(this),
                configuration,
                helper.createCacheDirectoryProvider(),
                helper.createAuxiliaryProperties(),

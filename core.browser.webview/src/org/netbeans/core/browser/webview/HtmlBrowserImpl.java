@@ -71,7 +71,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     private Session session;
     private boolean enhancedMode;
     private boolean disablePageInspector = false;
-
+    private Lookup projectContext;
 
     public HtmlBrowserImpl() {
         super();
@@ -117,6 +117,9 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             return;
         }
         initialized = true;
+
+        // projectContext lookup contains Project instance if URL being opened is from a project
+
         getBrowser();
         final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
         final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
@@ -129,7 +132,7 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             public void run() {
                 transport.attach();
                 webkitDebugger.getDebugger().enable();
-                session = debuggerFactory.createDebuggingSession(webkitDebugger);
+                session = debuggerFactory.createDebuggingSession(webkitDebugger, projectContext);
 
                 PageInspector inspector = PageInspector.getDefault();
                 if (inspector != null && !disablePageInspector) {
@@ -291,4 +294,10 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             // TBD
         }
     }
+
+    @Override
+    public void setProjectContext(Lookup projectContext) {
+        this.projectContext = projectContext;
+    }
+    
 }

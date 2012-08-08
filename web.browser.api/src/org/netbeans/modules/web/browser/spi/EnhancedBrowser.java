@@ -42,6 +42,8 @@
  */
 package org.netbeans.modules.web.browser.spi;
 
+import org.openide.util.Lookup;
+
 
 /**
  * @author ads
@@ -58,4 +60,13 @@ public interface EnhancedBrowser {
     void enableLiveHTML();
     
     void close(boolean closeTab);
+
+    /**
+     * A way to associate a project context with a URL which is going to be 
+     * opened in the browser. This method should be called before HtmlBrowser.Impl.setURL
+     * 
+     * @param projectContext a lookup containing Project instance; could be empty lookup if
+     * non-project URL is being opened in the browser
+     */
+    void setProjectContext(Lookup projectContext);
 }

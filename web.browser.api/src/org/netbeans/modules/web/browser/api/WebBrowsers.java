@@ -142,22 +142,22 @@ public final class WebBrowsers {
      * Returns browser corresponding to user's choice in IDE options.
      */
     public WebBrowser getPreferred() {
-        for (WebBrowserFactoryDescriptor desc : getFactories()) {
+        for (WebBrowserFactoryDescriptor desc : getFactories(true)) {
             if (!desc.isDefault()) {
                 continue;
             }
             return new WebBrowser(desc);
         }
-        assert false : "no default browser instance found: " + getFactories();
+        assert false : "no default browser instance found: " + getFactories(true);
         return null;
     }
 
     /**
      * Returns all browsers registered in the IDE.
      */
-    public List<WebBrowser> getAll() {
+    public List<WebBrowser> getAll(boolean includeSystemDefaultBrowser) {
         List<WebBrowser> browsers = new ArrayList<WebBrowser>();
-        for (WebBrowserFactoryDescriptor desc : getFactories()) {
+        for (WebBrowserFactoryDescriptor desc : getFactories(includeSystemDefaultBrowser)) {
             browsers.add(new WebBrowser(desc));
         }
         return browsers;
@@ -184,7 +184,7 @@ public final class WebBrowsers {
         return FileUtil.getConfigFile(BROWSERS_FOLDER);
     }
     
-    private List<WebBrowserFactoryDescriptor> getFactories() {
+    private List<WebBrowserFactoryDescriptor> getFactories(boolean includeSystemDefaultBrowser) {
         List<WebBrowserFactoryDescriptor> browsers = new ArrayList<WebBrowserFactoryDescriptor>();
         FileObject servicesBrowsers = getConfigFolder();
         if (servicesBrowsers == null) {
@@ -196,6 +196,9 @@ public final class WebBrowsers {
         Lookup.getDefault ().lookupAll(HtmlBrowser.Factory.class).toArray();
         for (DataObject browserSetting : folder.getChildren()) {
             if (Boolean.TRUE.equals(browserSetting.getPrimaryFile().getAttribute("hidden"))) {
+                continue;
+            }
+            if (!includeSystemDefaultBrowser && browserSetting.getPrimaryFile().getName().startsWith("SystemDefaultBrowser")) {
                 continue;
             }
             InstanceCookie cookie = browserSetting.getCookie(InstanceCookie.class);

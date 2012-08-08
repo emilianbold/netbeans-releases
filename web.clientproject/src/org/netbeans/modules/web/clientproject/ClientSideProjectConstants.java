@@ -40,38 +40,21 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.browser;
-
-import java.net.URL;
-import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
-import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.web.clientproject;
 
 /**
  *
  */
-public class ServerURLMappingImpl implements ServerURLMappingImplementation {
-
-    private ClientProjectConfigurationImpl cfg;
-
-    public ServerURLMappingImpl(ClientProjectConfigurationImpl cfg) {
-        this.cfg = cfg;
-    }
+public class ClientSideProjectConstants {
     
-    @Override
-    public URL toServer(FileObject projectFile) {
-        if (cfg.isUseServer()) {
-            return WebServer.getWebserver().toServer(projectFile);
-        }
-        return null;
-    }
-
-    @Override
-    public FileObject fromServer(URL serverURL) {
-        if (cfg.isUseServer()) {
-            return WebServer.getWebserver().fromServer(serverURL);
-        }
-        return null;
-    }
+    public static final String PROJECT_ENCODING = "files.encoding";
+    public static final String PROJECT_APP_FOLDER = "app.folder";
+    public static final String PROJECT_TEST_FOLDER = "test.folder";
+    public static final String PROJECT_SERVER = "server";
+    public static final String PROJECT_START_FILE = "start.file";
+    public static final String PROJECT_WEB_ROOT = "web.context.root";
+    public static final String PROJECT_PROJECT_URL = "external.project.url";
+    public static final String PROJECT_AUTO_REFRESH = "browser.autorefresh";
+    public static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection";
 
 }
