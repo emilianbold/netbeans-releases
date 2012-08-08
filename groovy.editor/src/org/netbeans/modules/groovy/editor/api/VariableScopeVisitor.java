@@ -45,11 +45,8 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
