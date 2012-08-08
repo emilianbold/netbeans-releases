@@ -44,7 +44,6 @@ package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.doctrine2.annotations.orm.parser.SimpleAnnotationLineParser.SimpleAnnotationParsedLine;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -52,10 +51,10 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IdLineParserTest extends NbTestCase {
+public class PrePersistLineParserTest extends NbTestCase {
     private SimpleAnnotationLineParser parser;
 
-    public IdLineParserTest(String name) {
+    public PrePersistLineParserTest(String name) {
         super(name);
     }
 
@@ -69,98 +68,98 @@ public class IdLineParserTest extends NbTestCase {
         assertTrue(parser instanceof AnnotationLineParser);
     }
 
-    public void testReturnValueIsIdParsedLine_01() throws Exception {
-        assertTrue(parser.parse("Id") instanceof SimpleAnnotationParsedLine);
+    public void testReturnValueIsPrePersistParsedLine_01() throws Exception {
+        assertTrue(parser.parse("PrePersist") instanceof SimpleAnnotationLineParser.SimpleAnnotationParsedLine);
     }
 
-    public void testReturnValueIsIdParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\Id") instanceof SimpleAnnotationParsedLine);
+    public void testReturnValueIsPrePersistParsedLine_02() throws Exception {
+        assertTrue(parser.parse("Annotations\\PrePersist") instanceof SimpleAnnotationLineParser.SimpleAnnotationParsedLine);
     }
 
-    public void testReturnValueIsIdParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\Id") instanceof SimpleAnnotationParsedLine);
+    public void testReturnValueIsPrePersistParsedLine_03() throws Exception {
+        assertTrue(parser.parse("\\Foo\\Bar\\PrePersist") instanceof SimpleAnnotationLineParser.SimpleAnnotationParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
-        assertNull(parser.parse("Ids"));
+        assertNull(parser.parse("PrePersists"));
     }
 
     public void testValidUseCase_01() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Id");
-        assertEquals("Id", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("PrePersist");
+        assertEquals("PrePersist", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 2));
-        assertEquals("Id", type1);
+        String type1 = types.get(new OffsetRange(0, 10));
+        assertEquals("PrePersist", type1);
     }
 
     public void testValidUseCase_02() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Id   ");
-        assertEquals("Id", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("PrePersist   ");
+        assertEquals("PrePersist", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 2));
-        assertEquals("Id", type1);
+        String type1 = types.get(new OffsetRange(0, 10));
+        assertEquals("PrePersist", type1);
     }
 
     public void testValidUseCase_03() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Id\t\t  ");
-        assertEquals("Id", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("PrePersist\t\t  ");
+        assertEquals("PrePersist", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 2));
-        assertEquals("Id", type1);
+        String type1 = types.get(new OffsetRange(0, 10));
+        assertEquals("PrePersist", type1);
     }
 
     public void testValidUseCase_05() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("Annotations\\Id  \t");
-        assertEquals("Id", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("Annotations\\PrePersist  \t");
+        assertEquals("PrePersist", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 14));
-        assertEquals("Annotations\\Id", type1);
+        String type1 = types.get(new OffsetRange(0, 22));
+        assertEquals("Annotations\\PrePersist", type1);
 
     }
 
     public void testValidUseCase_06() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\Id  \t");
-        assertEquals("Id", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\PrePersist  \t");
+        assertEquals("PrePersist", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 11));
-        assertEquals("\\Foo\\Bar\\Id", type1);
+        String type1 = types.get(new OffsetRange(0, 19));
+        assertEquals("\\Foo\\Bar\\PrePersist", type1);
     }
 
     public void testValidUseCase_07() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("id");
-        assertEquals("Id", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("prepersist");
+        assertEquals("PrePersist", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 2));
-        assertEquals("id", type1);
+        String type1 = types.get(new OffsetRange(0, 10));
+        assertEquals("prepersist", type1);
     }
 
     public void testValidUseCase_08() throws Exception {
-        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\id  \t");
-        assertEquals("Id", parsedLine.getName());
+        AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\prepersist  \t");
+        assertEquals("PrePersist", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 11));
-        assertEquals("\\Foo\\Bar\\id", type1);
+        String type1 = types.get(new OffsetRange(0, 19));
+        assertEquals("\\Foo\\Bar\\prepersist", type1);
     }
 
 }

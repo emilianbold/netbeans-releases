@@ -56,15 +56,14 @@ public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
 
     private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
     static {
+        PARSERS.add(new SimpleAnnotationLineParser());
         PARSERS.add(new ColumnLineParser());
         PARSERS.add(new ChangeTrackingPolicyLineParser());
         PARSERS.add(new DiscriminatorColumnLineParser());
         PARSERS.add(new DiscriminatorMapLineParser());
         PARSERS.add(new EntityLineParser());
         PARSERS.add(new GeneratedValueLineParser());
-        PARSERS.add(new HasLifecycleCallbacksLineParser());
         PARSERS.add(new TableLineParser());
-        PARSERS.add(new IdLineParser());
         PARSERS.add(new InheritanceTypeLineParser());
         PARSERS.add(new JoinColumnLineParser());
     }

@@ -105,4 +105,40 @@ public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("JoinColumn"));
     }
 
+    public void testMappedSuperclassParser() {
+        assertNotNull(parser.parse("MappedSuperclass"));
+    }
+
+    public void testPostLoadParser() {
+        assertNotNull(parser.parse("PostLoad"));
+    }
+
+    public void testPostPersistParser() {
+        assertNotNull(parser.parse("PostPersist"));
+    }
+
+    public void testPostRemoveParser() {
+        assertNotNull(parser.parse("PostRemove"));
+    }
+
+    public void testPostUpdateParser() {
+        assertNotNull(parser.parse("PostUpdate"));
+    }
+
+    public void testPrePersistParser() {
+        assertNotNull(parser.parse("PrePersist"));
+    }
+
+    public void testPreRemoveParser() {
+        assertNotNull(parser.parse("PreRemove"));
+    }
+
+    public void testPreUpdateParser() {
+        assertNotNull(parser.parse("PreUpdate"));
+    }
+
+    public void testVersionParser() {
+        assertNotNull(parser.parse("Version"));
+    }
+
 }

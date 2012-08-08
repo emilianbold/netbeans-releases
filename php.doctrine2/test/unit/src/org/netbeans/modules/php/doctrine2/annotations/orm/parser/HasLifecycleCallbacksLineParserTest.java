@@ -44,6 +44,7 @@ package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.orm.parser.SimpleAnnotationLineParser.SimpleAnnotationParsedLine;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -52,7 +53,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
-    private HasLifecycleCallbacksLineParser parser;
+    private SimpleAnnotationLineParser parser;
 
     public HasLifecycleCallbacksLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new HasLifecycleCallbacksLineParser();
+        this.parser = new SimpleAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,15 +70,15 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsHasLifecycleCallbacksParsedLine_01() throws Exception {
-        assertTrue(parser.parse("HasLifecycleCallbacks") instanceof HasLifecycleCallbacksParsedLine);
+        assertTrue(parser.parse("HasLifecycleCallbacks") instanceof SimpleAnnotationParsedLine);
     }
 
     public void testReturnValueIsHasLifecycleCallbacksParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\HasLifecycleCallbacks") instanceof HasLifecycleCallbacksParsedLine);
+        assertTrue(parser.parse("Annotations\\HasLifecycleCallbacks") instanceof SimpleAnnotationParsedLine);
     }
 
     public void testReturnValueIsHasLifecycleCallbacksParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\HasLifecycleCallbacks") instanceof HasLifecycleCallbacksParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\HasLifecycleCallbacks") instanceof SimpleAnnotationParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -86,7 +87,7 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("HasLifecycleCallbacks");
-        assertEquals(HasLifecycleCallbacksLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("HasLifecycleCallbacks", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -97,7 +98,7 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("HasLifecycleCallbacks   ");
-        assertEquals(HasLifecycleCallbacksLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("HasLifecycleCallbacks", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -108,7 +109,7 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("HasLifecycleCallbacks\t\t  ");
-        assertEquals(HasLifecycleCallbacksLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("HasLifecycleCallbacks", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -119,7 +120,7 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\HasLifecycleCallbacks  \t");
-        assertEquals(HasLifecycleCallbacksLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("HasLifecycleCallbacks", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -131,7 +132,7 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\HasLifecycleCallbacks  \t");
-        assertEquals(HasLifecycleCallbacksLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("HasLifecycleCallbacks", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -142,7 +143,7 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("haslifecyclecallbacks");
-        assertEquals(HasLifecycleCallbacksLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("HasLifecycleCallbacks", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -153,7 +154,7 @@ public class HasLifecycleCallbacksLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\haslifecyclecallbacks  \t");
-        assertEquals(HasLifecycleCallbacksLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("HasLifecycleCallbacks", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

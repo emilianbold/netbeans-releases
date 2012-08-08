@@ -41,23 +41,67 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IdParsedLine extends BaseParsedLine {
+public class SimpleAnnotationLineParser implements AnnotationLineParser {
 
-    public IdParsedLine(String description, Map<OffsetRange, String> types) {
-        super(description, types);
+    private static final Set<String> ANNOTATIONS = new HashSet<String>();
+    static {
+        ANNOTATIONS.add("HasLifecycleCallbacks"); //NOI18N
+        ANNOTATIONS.add("Id"); //NOI18N
+        ANNOTATIONS.add("MappedSuperclass"); //NOI18N
+        ANNOTATIONS.add("PostLoad"); //NOI18N
+        ANNOTATIONS.add("PostPersist"); //NOI18N
+        ANNOTATIONS.add("PostRemove"); //NOI18N
+        ANNOTATIONS.add("PostUpdate"); //NOI18N
+        ANNOTATIONS.add("PrePersist"); //NOI18N
+        ANNOTATIONS.add("PreRemove"); //NOI18N
+        ANNOTATIONS.add("PreUpdate"); //NOI18N
+        ANNOTATIONS.add("Version"); //NOI18N
     }
 
     @Override
-    public String getName() {
-        return IdLineParser.ANNOTATION_NAME;
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("[ \t]+"); //NOI18N
+        for (String annotationName : ANNOTATIONS) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotationName)) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                result = new SimpleAnnotationParsedLine(annotationName, description, types);
+                break;
+            }
+        }
+        return result;
+    }
+
+    static class SimpleAnnotationParsedLine extends BaseParsedLine {
+        private final String name;
+
+        public SimpleAnnotationParsedLine(String name, String description, Map<OffsetRange, String> types) {
+            super(description, types);
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
     }
 
 }
