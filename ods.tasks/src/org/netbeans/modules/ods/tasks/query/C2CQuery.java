@@ -367,9 +367,6 @@ public class C2CQuery {
         @Override
         public void accept(TaskData taskData) {
             String id = C2CIssue.getID(taskData);
-            
-            System.out.println(" issue " + id);
-            
             issues.add(id);
         }
     };
