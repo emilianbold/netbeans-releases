@@ -64,6 +64,8 @@ public class ParameterizedAnnotationLineParser implements AnnotationLineParser {
         ANNOTATIONS.add("GeneratedValue"); //NOI18N
         ANNOTATIONS.add("InheritanceType"); //NOI18N
         ANNOTATIONS.add("JoinColumn"); //NOI18N
+        ANNOTATIONS.add("SequenceGenerator"); //NOI18N
+        ANNOTATIONS.add("OrderBy"); //NOI18N
     }
 
     @Override
