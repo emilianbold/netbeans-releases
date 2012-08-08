@@ -41,8 +41,12 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
@@ -50,38 +54,34 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class Doctrine2OrmAnnotationLineParser implements AnnotationLineParser {
+public class SimpleAnnotationLineParser implements AnnotationLineParser {
 
-    private static final AnnotationLineParser INSTANCE = new Doctrine2OrmAnnotationLineParser();
-
-    private static final List<AnnotationLineParser> PARSERS = new ArrayList<AnnotationLineParser>();
+    private static final Set<String> ANNOTATIONS = new HashSet<String>();
     static {
-        PARSERS.add(new SimpleAnnotationLineParser());
-        PARSERS.add(new ColumnLineParser());
-        PARSERS.add(new ChangeTrackingPolicyLineParser());
-        PARSERS.add(new DiscriminatorColumnLineParser());
-        PARSERS.add(new DiscriminatorMapLineParser());
-        PARSERS.add(new EntityLineParser());
-        PARSERS.add(new GeneratedValueLineParser());
-        PARSERS.add(new TableLineParser());
-        PARSERS.add(new InheritanceTypeLineParser());
-        PARSERS.add(new JoinColumnLineParser());
-    }
-
-    private Doctrine2OrmAnnotationLineParser() {
-    }
-
-    @AnnotationLineParser.Registration(position=500)
-    public static AnnotationLineParser getDefault() {
-        return INSTANCE;
+        ANNOTATIONS.add("HasLifecycleCallbacks"); //NOI18N
+        ANNOTATIONS.add("Id"); //NOI18N
+        ANNOTATIONS.add("MappedSuperclass"); //NOI18N
+        ANNOTATIONS.add("PostLoad"); //NOI18N
+        ANNOTATIONS.add("PostPersist"); //NOI18N
+        ANNOTATIONS.add("PostRemove"); //NOI18N
+        ANNOTATIONS.add("PostUpdate"); //NOI18N
+        ANNOTATIONS.add("PrePersist"); //NOI18N
+        ANNOTATIONS.add("PreRemove"); //NOI18N
+        ANNOTATIONS.add("PreUpdate"); //NOI18N
+        ANNOTATIONS.add("Version"); //NOI18N
     }
 
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        for (AnnotationLineParser annotationLineParser : PARSERS) {
-            result = annotationLineParser.parse(line);
-            if (result != null) {
+        String[] tokens = line.split("[ \t]+"); //NOI18N
+        for (String annotationName : ANNOTATIONS) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotationName)) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                result = new AnnotationParsedLine.ParsedLine(annotationName, types, description);;
                 break;
             }
         }
