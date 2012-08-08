@@ -65,7 +65,7 @@ class GeneratedValueLineParser implements AnnotationLineParser {
             String description = line.substring(annotation.length()).trim();
             Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
             types.put(new OffsetRange(0, annotation.length()), annotation);
-            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description);
+            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description, true);
         }
         return result;
     }

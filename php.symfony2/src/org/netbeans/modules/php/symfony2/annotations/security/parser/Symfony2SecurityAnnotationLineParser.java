@@ -87,7 +87,7 @@ public class Symfony2SecurityAnnotationLineParser implements AnnotationLineParse
                 String description = line.substring(annotation.length()).trim();
                 Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
                 types.put(new OffsetRange(0, annotation.length()), annotation);
-                result = new ParsedLine(annotationName, types, description);
+                result = new ParsedLine(annotationName, types, description, true);
                 break;
             }
         }
