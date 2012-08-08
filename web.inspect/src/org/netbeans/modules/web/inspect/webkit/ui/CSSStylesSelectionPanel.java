@@ -57,13 +57,14 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
+import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
@@ -346,7 +347,8 @@ public class CSSStylesSelectionPanel extends JPanel {
                     return component;
                 }
             });
-            treeTable.setDefaultRenderer(Node.Property.class, new DefaultTableCellRenderer() {
+            final TableCellRenderer defaultRenderer = HtmlRenderer.createRenderer();
+            treeTable.setDefaultRenderer(Node.Property.class, new TableCellRenderer() {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
                 // is not baseline-aligned with the text in the other columns for some reason.
                 // This border attempts to work around this problem.
@@ -361,7 +363,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                         } catch (InvocationTargetException ex) {
                         }
                     }
-                    Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    Component component = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (component instanceof JComponent) {
                         ((JComponent)component).setBorder(border);
                     }
