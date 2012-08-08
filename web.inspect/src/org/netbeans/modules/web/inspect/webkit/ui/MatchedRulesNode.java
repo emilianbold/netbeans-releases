@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
@@ -94,12 +95,30 @@ public class MatchedRulesNode extends AbstractNode {
         for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
             currentNode = currentNode.getParentNode();
             for (Rule rule : entry.getMatchedRules()) {
-                if (Utilities.showInCSSStyles(rule)) {
+                if (Utilities.showInCSSStyles(rule) && containsInheritedProperties(rule)) {
                     nodes.add(createMatchedRuleNode(currentNode, rule));
                 }
             }
         }
         children.add(nodes.toArray(new MatchedRuleNode[nodes.size()]));
+    }
+
+    /**
+     * Determines whether the specified rule contains some properties that
+     * are inherited.
+     *
+     * @param rule rule to check.
+     * @return {@code true} if the rule contains some properties that are
+     * inherited, returns {@code false} otherwise.
+     */
+    private boolean containsInheritedProperties(Rule rule) {
+        for (org.netbeans.modules.web.webkit.debugging.api.css.Property property : rule.getStyle().getProperties()) {
+            String propertyName = property.getName();
+            if (CSSUtils.isInheritedProperty(propertyName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
