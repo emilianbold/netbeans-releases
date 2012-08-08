@@ -63,8 +63,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.ui.spi.UIUtils;
-import org.netbeans.modules.kenai.ui.treelist.TreeListUI;
+import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
+import org.netbeans.modules.team.ui.treelist.TreeListUI;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -604,7 +604,7 @@ public class KenaiSearchPanel extends JPanel {
     private static final int projectURLGroup = 1;
 
     private void invokeSearch() {
-        UIUtils.logKenaiUsage("PROJECT_SEARCH"); // NOI18N
+        KenaiUIUtils.logKenaiUsage("PROJECT_SEARCH"); // NOI18N
 
         kenaiProjectsTabPane.setSelectedComponent(searchResultsPanel);
         kenaiProjectsTabPane.validate();
