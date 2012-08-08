@@ -46,7 +46,9 @@ import org.netbeans.modules.ods.tasks.DummyUtils;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -69,6 +71,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -80,13 +83,38 @@ public class C2CTest extends NbTestCase  {
     private static String passw = null;
     private static String proxyHost = null;
     private static String proxyPort = null;
-    private static boolean firstRun = true;
     
     static NullProgressMonitor nullProgressMonitor = new NullProgressMonitor();
     private TaskRepository repository;
     private AbstractRepositoryConnector cfcrc;
     private TaskRepositoryManager trm;
 
+    static {
+        if (uname == null) {
+            uname = System.getProperty("team.user.login");
+            passw = System.getProperty("team.user.password");
+        }
+        if (uname == null) { // if it is still null, check the file in ~
+            BufferedReader br;
+            try {
+                br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
+                uname = br.readLine();
+                passw = br.readLine();
+
+                proxyHost = br.readLine();
+                proxyPort = br.readLine();
+
+                br.close();
+                
+                System.setProperty("http.proxyPort", proxyPort);
+                System.setProperty("http.proxyHost", proxyHost);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } 
+        }
+            
+    }
+    
     public static Test suite() {
         return NbModuleSuite.create(C2CTest.class, null, null);
     }
@@ -112,26 +140,6 @@ public class C2CTest extends NbTestCase  {
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         repository = new TaskRepository(cfcrc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
-        
-        if(firstRun) {
-            if (uname == null) {
-                uname = System.getProperty("team.user.login");
-                passw = System.getProperty("team.user.password");
-            }
-            if (uname == null) { // if it is still null, check the file in ~
-                BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
-                uname = br.readLine();
-                passw = br.readLine();
-
-                proxyHost = br.readLine();
-                proxyPort = br.readLine();
-
-                br.close();
-            }
-            if (firstRun) {
-                firstRun = false;
-            }
-        }
         
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(uname, passw);
         repository.setCredentials(AuthenticationType.REPOSITORY, authenticationCredentials, false);
