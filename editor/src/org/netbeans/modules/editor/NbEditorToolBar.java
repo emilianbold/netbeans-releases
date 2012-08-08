@@ -97,6 +97,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.impl.ToolbarActionsProvider;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
+import org.openide.awt.ToolbarWithOverflow;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -124,7 +125,7 @@ import org.openide.util.lookup.ProxyLookup;
  * @version 1.00
  */
 
-/* package */ final class NbEditorToolBar extends JToolBar {
+/* package */ final class NbEditorToolBar extends ToolbarWithOverflow {
 
     // -J-Dorg.netbeans.modules.editor.NbEditorToolBar.level=FINE
     private static final Logger LOG = Logger.getLogger(NbEditorToolBar.class.getName());
