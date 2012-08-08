@@ -79,6 +79,7 @@ public abstract class QueryParameter {
     
     abstract void setEnabled(boolean b);
 
+    // XXX perhaps parameters should be encoded
 //    public StringBuffer get(boolean encode) {
 //        StringBuffer sb = new StringBuffer();
 //        ParameterValue[] values = getValues();
