@@ -180,7 +180,15 @@ public final class FormatToken {
         BEFORE_FUNCTION_DECLARATION_PARAMETER,
         // for line wrap of arguments
         BEFORE_FUNCTION_CALL_ARGUMENT,
-        
+
+        // separate line wrap options
+        AFTER_IF_START,
+        AFTER_ELSE_START,
+        AFTER_WHILE_START,
+        AFTER_FOR_START,
+        AFTER_WITH_START,
+        AFTER_DO_START,
+
         BEFORE_OBJECT,
 
         // around binary operator
