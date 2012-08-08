@@ -42,7 +42,9 @@
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
@@ -52,20 +54,33 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class JoinColumnLineParser implements AnnotationLineParser {
+public class ParameterizedAnnotationLineParser implements AnnotationLineParser {
 
-    static final String ANNOTATION_NAME = "JoinColumn"; //NOI18N
+    private static final Set<String> ANNOTATIONS = new HashSet<String>();
+    static {
+        ANNOTATIONS.add("Column"); //NOI18N
+        ANNOTATIONS.add("ChangeTrackingPolicy"); //NOI18N
+        ANNOTATIONS.add("DiscriminatorColumn"); //NOI18N
+        ANNOTATIONS.add("GeneratedValue"); //NOI18N
+        ANNOTATIONS.add("InheritanceType"); //NOI18N
+        ANNOTATIONS.add("JoinColumn"); //NOI18N
+        ANNOTATIONS.add("SequenceGenerator"); //NOI18N
+        ANNOTATIONS.add("OrderBy"); //NOI18N
+    }
 
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
         String[] tokens = line.split("\\("); //NOI18N
-        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
-            String annotation = tokens[0].trim();
-            String description = line.substring(annotation.length()).trim();
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-            types.put(new OffsetRange(0, annotation.length()), annotation);
-            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description, true);
+        for (String annotationName : ANNOTATIONS) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotationName)) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                result = new AnnotationParsedLine.ParsedLine(annotationName, types, description, true);
+                break;
+            }
         }
         return result;
     }
