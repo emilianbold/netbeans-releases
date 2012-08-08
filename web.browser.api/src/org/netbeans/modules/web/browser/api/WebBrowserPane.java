@@ -119,7 +119,8 @@ public final class WebBrowserPane {
             }
             else {
                 impl = descriptor.getFactory().createHtmlBrowserImpl();
-                if ( impl instanceof EnhancedBrowser && !disableNetBeansIntegration){
+                if ( impl instanceof EnhancedBrowser && !disableNetBeansIntegration
+                        && descriptor.getBrowserFamily().hasNetBeansAdvancedIntegration()){
                     ((EnhancedBrowser) impl).setEnhancedMode( true );
                 }
                 impl.addPropertyChangeListener(listener);
