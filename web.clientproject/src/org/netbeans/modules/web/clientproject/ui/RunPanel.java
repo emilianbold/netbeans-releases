@@ -49,20 +49,17 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectConfigurationImpl;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.webserver.WebServer;
@@ -93,7 +90,7 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         initComponents();
         
         final ClientSideConfigurationProvider configProvider = project.getProjectConfigurations();
-        jConfigurationComboBox.setRenderer(new ConfigRenderer());
+        jConfigurationComboBox.setRenderer(new ConfigRenderer(jConfigurationComboBox.getRenderer()));
         jConfigurationComboBox.setModel(new DefaultComboBoxModel(configProvider.getConfigurations().toArray()));
         jConfigurationComboBox.setSelectedItem(configProvider.getActiveConfiguration());
         updateConfigurationCustomizer();
@@ -399,15 +396,20 @@ public class RunPanel extends javax.swing.JPanel implements DocumentListener, It
         updateWebRootEnablement();
     }
     
-    private static class ConfigRenderer extends DefaultListCellRenderer {
+    private static class ConfigRenderer implements ListCellRenderer {
+        
+        private ListCellRenderer original;
+
+        public ConfigRenderer(ListCellRenderer original) {
+            this.original = original;
+        }
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof ProjectConfiguration) {
-                setText(((ProjectConfiguration) value).getDisplayName());
+                value = ((ProjectConfiguration) value).getDisplayName();
             }
-            return this;
+            return original.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
         
     }
