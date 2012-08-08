@@ -401,6 +401,10 @@ public class JsFormatter implements Formatter {
                             i = handleLineWrap(tokens, i, formatContext,
                                     initialIndent, continuationIndent);
                             break;
+                        case BEFORE_FUNCTION_CALL_ARGUMENT:
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // XXX refactor eol token WRAP_IF_LONG handling
@@ -960,6 +964,9 @@ public class JsFormatter implements Formatter {
         }
         if (token.getKind() == FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER) {
             return CodeStyle.get(context).wrapMethodParams();
+        }
+        if (token.getKind() == FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT) {
+            return CodeStyle.get(context).wrapMethodCallArgs();
         }
         return null;
     }
