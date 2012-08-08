@@ -237,7 +237,7 @@ public class C2CQuery {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
     }  
 
-    void refresh(Map<String, QueryParameter> parameters, boolean autoRefresh) {
+    void refresh(List<QueryParameter> parameters, boolean autoRefresh) {
         assert parameters != null;
         this.parameters = parameters;
         refreshIntern(autoRefresh);
@@ -249,7 +249,7 @@ public class C2CQuery {
     
     private final Set<String> issues = new HashSet<String>();
     private Set<String> archivedIssues = new HashSet<String>();
-    private Map<String, QueryParameter> parameters = null;
+    private List<QueryParameter> parameters = null;
     public void refreshIntern(final boolean autoRefresh) {
         
         assert parameters != null;
@@ -285,12 +285,10 @@ public class C2CQuery {
                     
                     // IssuesIdCollector will populate the issues set
                     IRepositoryQuery query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName());
-                    for (Entry<String, QueryParameter> e : parameters.entrySet()) {
-                        String attribute = e.getKey();
-                        QueryParameter p = e.getValue();
+                    for (QueryParameter p : parameters) {
                         String values = p.getValues();
-                        if(values != null && !"".equals(values.trim())) {
-                            query.setAttribute(attribute, p.getValues());
+                        if(values != null) {
+                            query.setAttribute(p.getAttribute(), p.getValues());
                         }
                     }
                     

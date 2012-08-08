@@ -65,9 +65,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -126,7 +125,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
     private final ListParameter statusParameter;
     private final ListParameter resolutionParameter;
     
-    private final Map<String, QueryParameter> parameters;
+    private final List<QueryParameter> parameters;
 
     private RequestProcessor rp = new RequestProcessor("C2C query", 1, true);  // NOI18N
 
@@ -185,7 +184,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         panel.byTextTextField.addActionListener(this);
 
         // setup parameters
-        parameters = new LinkedHashMap<String, QueryParameter>();
+        parameters = new LinkedList<QueryParameter>();
         productParameter = createQueryParameter(ListParameter.class, panel.productList, TaskAttribute.PRODUCT);              // NOI18N
         componentParameter = createQueryParameter(ListParameter.class, panel.componentList, TaskAttribute.COMPONENT);        // NOI18N
         releasesParameter = createQueryParameter(ListParameter.class, panel.releaseList, C2CData.ATTR_MILESTONE);           // NOI18N
@@ -208,6 +207,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         postPopulate(parametersString, false);
     }
 
+    // XXX probably will need a redenderer like in jira to show parent - subtask relation
 //    private void setupRenderer(IssueTable issueTable) {
 //        C2CQueryCellRenderer renderer = new C2CQueryCellRenderer((QueryTableCellRenderer)issueTable.getRenderer());
 //        issueTable.setRenderer(renderer);
@@ -256,7 +256,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         try {
             Constructor<T> constructor = clazz.getConstructor(c.getClass(), String.class);
             T t = constructor.newInstance(c, attribute);
-            parameters.put(attribute, t);
+            parameters.add(t);
             return t;
         } catch (Exception ex) {
             C2C.LOG.log(Level.SEVERE, attribute, ex);
@@ -396,8 +396,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         // set all non parameter fields
         panel.enableFields(bl);
         // set the parameter fields
-        for (Map.Entry<String, QueryParameter> e : parameters.entrySet()) {
-            QueryParameter qp = parameters.get(e.getKey());
+        for (QueryParameter qp : parameters) {
             qp.setEnabled(bl);
         }
     }
