@@ -47,13 +47,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
@@ -338,6 +342,28 @@ public class CSSStylesSelectionPanel extends JPanel {
                             tree, value, selected, expanded, leaf, row, hasFocus);
                     if (component instanceof JLabel) {
                         ((JLabel)component).setIcon(null);
+                    }
+                    return component;
+                }
+            });
+            treeTable.setDefaultRenderer(Node.Property.class, new DefaultTableCellRenderer() {
+                // Text rendered in the first column of tree-table (i.e. in the tree)
+                // is not baseline-aligned with the text in the other columns for some reason.
+                // This border attempts to work around this problem.
+                private Border border = BorderFactory.createEmptyBorder(1,0,0,0);
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    if (value instanceof Node.Property) {
+                        Node.Property property = (Node.Property)value;
+                        try {
+                            value = property.getValue();
+                        } catch (IllegalAccessException ex) {
+                        } catch (InvocationTargetException ex) {
+                        }
+                    }
+                    Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    if (component instanceof JComponent) {
+                        ((JComponent)component).setBorder(border);
                     }
                     return component;
                 }
