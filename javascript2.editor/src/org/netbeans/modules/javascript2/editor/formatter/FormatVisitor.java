@@ -188,7 +188,7 @@ public class FormatVisitor extends NodeVisitor {
             markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_IF_BRACE);
 
             if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body);
+                handleVirtualBlock(body, FormatToken.Kind.AFTER_IF_START);
             } else {
                 visit(body, onset);
             }
@@ -206,7 +206,7 @@ public class FormatVisitor extends NodeVisitor {
                         handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
                                 FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
                     } else {
-                        handleVirtualBlock(body);
+                        handleVirtualBlock(body, FormatToken.Kind.AFTER_ELSE_START);
                     }
                 } else {
                     visit(body, onset);
@@ -638,6 +638,11 @@ public class FormatVisitor extends NodeVisitor {
                 FormatToken.Kind.AFTER_BLOCK_START);
     }
 
+    private void handleVirtualBlock(Block block, FormatToken.Kind afterBlock) {
+        handleVirtualBlock(block, FormatToken.Kind.INDENTATION_INC, FormatToken.Kind.INDENTATION_DEC,
+                afterBlock);
+    }
+
     private void handleVirtualBlock(Block block, FormatToken.Kind indentationInc,
             FormatToken.Kind indentationDec, FormatToken.Kind afterBlock) {
 
@@ -669,7 +674,9 @@ public class FormatVisitor extends NodeVisitor {
                     formatToken = tokenStream.getTokens().get(0);
                 }
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(indentationInc));
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
+                if (afterBlock != null) {
+                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(afterBlock));
+                }
             }
         }
 

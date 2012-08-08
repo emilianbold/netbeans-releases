@@ -8,7 +8,7 @@ FormattingToken{kind=TEXT, offset=4, text=x}
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=5, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=6, text=
 }
 FormattingToken{kind=WHITESPACE, offset=7, text=     }
@@ -23,7 +23,7 @@ FormattingToken{kind=WHITESPACE, offset=20, text=         }
 FormattingToken{kind=BEFORE_ELSE_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=29, text=else}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_ELSE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=33, text=
 }
 FormattingToken{kind=WHITESPACE, offset=34, text=         }
@@ -99,7 +99,7 @@ FormattingToken{kind=WHITESPACE, offset=109, text= }
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=110, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=111, text=
 }
 FormattingToken{kind=WHITESPACE, offset=112, text=         }
@@ -137,7 +137,7 @@ FormattingToken{kind=WHITESPACE, offset=140, text=  }
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=142, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=143, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=144, text=;}
@@ -149,7 +149,7 @@ FormattingToken{kind=EOL, offset=145, text=
 FormattingToken{kind=BEFORE_ELSE_KEYWORD, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=146, text=else}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_ELSE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=150, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=151, text=;}
@@ -241,7 +241,7 @@ FormattingToken{kind=WHITESPACE, offset=282, text= }
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=283, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=284, text=
 }
 FormattingToken{kind=WHITESPACE, offset=285, text=      }
