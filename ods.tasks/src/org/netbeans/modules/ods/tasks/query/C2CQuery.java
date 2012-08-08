@@ -43,16 +43,33 @@ package org.netbeans.modules.ods.tasks.query;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Level;
+import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.mylyn.GetMultiTaskDataCommand;
+import org.netbeans.modules.mylyn.PerformQueryCommand;
 import org.netbeans.modules.ods.tasks.C2C;
+import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
+import org.netbeans.modules.ods.tasks.util.C2CUtil;
 
 /**
  *
@@ -67,6 +84,9 @@ public class C2CQuery {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);;
     private String name;
     private long lastRefresh;
+    private boolean saved;
+    private boolean firstRun;
+    private ColumnDescriptor[] columnDescriptors;
         
     public C2CQuery(C2CRepository repository) {
         this.repository = repository;
@@ -77,15 +97,15 @@ public class C2CQuery {
     }
     
     public boolean isSaved() {
-        return false; // XXX
+        return saved;
     }
 
     int getSize() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return issues.size();
     }
 
     boolean wasRun() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        return !firstRun;
     }
 
     public String getDisplayName() {
@@ -93,19 +113,23 @@ public class C2CQuery {
     }
 
     void setName(String name) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        this.name = name;
     }
 
-    void setSaved(boolean b) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    void setSaved(boolean saved) {
+        if(saved) {
+//            XXX info = null;
+        }
+        this.saved = saved;
+        fireQuerySaved();
     }
 
     long getLastRefresh() {
         return lastRefresh;
     }
 
-    public boolean contains(String iD) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public boolean contains(String id) {
+        return issues.contains(id);
     }
 
     public void remove() {
@@ -113,9 +137,29 @@ public class C2CQuery {
     }
 
     public Collection<C2CIssue> getIssues() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (issues == null) {
+            return Collections.emptyList();
+        }
+        List<String> ids = new ArrayList<String>();
+        synchronized (issues) {
+            ids.addAll(issues);
+        }
+
+        IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
+        List<C2CIssue> ret = new ArrayList<C2CIssue>();
+        for (String id : ids) {
+            ret.add(cache.getIssue(id));
+        }
+        return ret;
     }
 
+    public ColumnDescriptor[] getColumnDescriptors() {
+        if(columnDescriptors == null) {
+            columnDescriptors = C2CIssue.getColumnDescriptors(repository);
+        }
+        return columnDescriptors;
+    }
+    
     public String getParametersString() {
         throw new UnsupportedOperationException("Not yet implemented");
     }
@@ -193,14 +237,126 @@ public class C2CQuery {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
     }  
 
+    void refresh(Map<String, QueryParameter> parameters, boolean autoRefresh) {
+        assert parameters != null;
+        this.parameters = parameters;
+        refreshIntern(autoRefresh);
+    }
+    
     public void refresh() {
+        refreshIntern(false);
+    }
+    
+    private final Set<String> issues = new HashSet<String>();
+    private Set<String> archivedIssues = new HashSet<String>();
+    private Map<String, QueryParameter> parameters = null;
+    public void refreshIntern(final boolean autoRefresh) {
+        
+        assert parameters != null;
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+          
+        executeQuery(new Runnable() {
+            @Override
+            public void run() {
+                C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, parameters.toString()}); // NOI18N
+                try {
+                    
+                    // keeps all issues we will retrieve from the server
+                    // - those matching the query criteria
+                    // - and the obsolete ones
+                    Set<String> queryIssues = new HashSet<String>();
+
+                    issues.clear();
+                    archivedIssues.clear();
+                    if(isSaved()) {
+                        if(!wasRun() && !issues.isEmpty()) {
+                            C2C.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
+                            assert false;
+                        }
+                        // read the stored state ...
+                        queryIssues.addAll(repository.getIssueCache().readQueryIssues(getDisplayName()));
+                        queryIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(getDisplayName()));
+                        // ... and they might be rendered obsolete if not returned by the query
+                        archivedIssues.addAll(queryIssues);
+                    }
+                    firstRun = false;
+
+                    // run query to know what matches the criteria
+                    
+                    // IssuesIdCollector will populate the issues set
+                    IRepositoryQuery query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), "ODS query -" + getDisplayName());
+                    for (Entry<String, QueryParameter> e : parameters.entrySet()) {
+                        String attribute = e.getKey();
+                        QueryParameter p = e.getValue();
+                        String values = p.getValues();
+                        if(values != null && !"".equals(values.trim())) {
+                            query.setAttribute(attribute, p.getValues());
+                        }
+                    }
+                    
+                    PerformQueryCommand queryCmd = 
+                        new PerformQueryCommand(
+                            C2C.getInstance().getRepositoryConnector(),
+                            repository.getTaskRepository(), 
+                            new IssuesIdCollector(),
+                            query);
+                    repository.getExecutor().execute(queryCmd, !autoRefresh);
+                    if(queryCmd.hasFailed()) {
+                        return;
+                    }
+
+                    // only issues not returned by the query are obsolete
+                    archivedIssues.removeAll(issues);
+                    if(isSaved()) {
+                        // ... and store all issues you got
+                        repository.getIssueCache().storeQueryIssues(getDisplayName(), issues.toArray(new String[issues.size()]));
+                        repository.getIssueCache().storeArchivedQueryIssues(getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
+                    }
+
+                    // now get the task data for
+                    // - all issue returned by the query
+                    // - and issues which were returned by some previous run and are archived now
+                    queryIssues.addAll(issues);
+
+//                  XXX  getController().switchToDeterminateProgress(queryIssues.size());
+
+                    // XXX this is toooooo slow - we should be able to work with partial taskData and get it whole only on issue open !!!!
+                    for (String id : queryIssues) {
+                        C2CIssue issue;
+                        try {
+                            TaskData taskData = C2CUtil.getTaskData(repository, id);
+                            IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
+                            issue = (C2CIssue) cache.setIssueData(id, taskData);
+                        } catch (IOException ex) {
+                            C2C.LOG.log(Level.SEVERE, null, ex);
+                            return;
+                        }
+                        fireNotifyData(issue); // XXX - !!! triggers getIssues()
+                    }
+                    
+                } finally {
+                    logQueryEvent(issues.size(), autoRefresh);
+                    if(C2C.LOG.isLoggable(Level.FINE)) {
+                        C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, parameters.toString()}); // NOI18N
+                    }
+                }
+            }
+        });
+    }
+
+    protected void logQueryEvent(int count, boolean autoRefresh) {
+        LogUtils.logQueryEvent(
+            C2CConnector.ID,
+            name,
+            count,
+            false,
+            autoRefresh);
+    }
+    
+    private void executeQuery (Runnable r) {
         fireStarted();
         try {
-         
-            IRepositoryQuery query = new RepositoryQuery(C2C.getInstance().getRepositoryConnector().getConnectorKind(), getDisplayName());
-            
-            System.out.println(" QUERY ");
-            
+            r.run();
         } finally {
             fireFinished();
             fireQueryIssuesChanged();
@@ -208,30 +364,32 @@ public class C2CQuery {
         }
     }
 
-//    private Object issues;
-//    private class IssuesIdCollector extends TaskDataCollector {
-//        public IssuesIdCollector() {}
-//        @Override
-//        public void accept(TaskData taskData) {
-//            String id = C2CIssue.getID(taskData);
-//            issues.add(id);
-//        }
-//    };
-//    private class IssuesCollector extends TaskDataCollector {
-//        public IssuesCollector() {}
-//        @Override
-//        public void accept(TaskData taskData) {
-//            String id = C2CIssue.getID(taskData);
-//            getController().addProgressUnit(C2CIssue.getDisplayName(taskData));
-//            C2CIssue issue;
-//            try {
-//                IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
-//                issue = (C2CIssue) cache.setIssueData(id, taskData);
-//            } catch (IOException ex) {
-//                C2C.LOG.log(Level.SEVERE, null, ex);
-//                return;
-//            }
-//            fireNotifyData(issue); // XXX - !!! triggers getIssues()
-//        }
-//    };    
+    private class IssuesIdCollector extends TaskDataCollector {
+        public IssuesIdCollector() {}
+        @Override
+        public void accept(TaskData taskData) {
+            String id = C2CIssue.getID(taskData);
+            
+            System.out.println(" issue " + id);
+            
+            issues.add(id);
+        }
+    };
+    private class IssuesCollector extends TaskDataCollector {
+        public IssuesCollector() {}
+        @Override
+        public void accept(TaskData taskData) {
+            String id = C2CIssue.getID(taskData);
+//            XXX getController().addProgressUnit(C2CIssue.getDisplayName(taskData));
+            C2CIssue issue;
+            try {
+                IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
+                issue = (C2CIssue) cache.setIssueData(id, taskData);
+            } catch (IOException ex) {
+                C2C.LOG.log(Level.SEVERE, null, ex);
+                return;
+            }
+            fireNotifyData(issue); // XXX - !!! triggers getIssues()
+        }
+    };    
 }

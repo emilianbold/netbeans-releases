@@ -71,8 +71,8 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
-import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -87,6 +87,7 @@ import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.C2CConfig;
+import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.query.QueryParameter.ComboParameter;
 import org.netbeans.modules.ods.tasks.query.QueryParameter.ListParameter;
@@ -137,6 +138,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 //    private final IssueTable issueTable;
 
     private final Object REFRESH_LOCK = new Object();
+    private final IssueTable issueTable;
         
     C2CQueryController(C2CRepository repository, C2CQuery query) {
         this(repository, query, null);
@@ -150,10 +152,9 @@ public class C2CQueryController extends QueryController implements ItemListener,
         this.repository = repository;
         this.query = query;
         
-//        issueTable = new IssueTable(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
-//        setupRenderer(issueTable);
-//        panel = new QueryPanel(issueTable.getComponent(), this);
-        panel = new QueryPanel(new JList());
+        issueTable = new IssueTable(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
+//      XXX  setupRenderer(issueTable);
+        panel = new QueryPanel(issueTable.getComponent());
 
         panel.productList.addListSelectionListener(this);
         panel.filterComboBox.addItemListener(this);
@@ -198,26 +199,8 @@ public class C2CQueryController extends QueryController implements ItemListener,
         resolutionParameter = createQueryParameter(ListParameter.class, panel.resolutionList, TaskAttribute.RESOLUTION);     // NOI18N
         
         tagsParameter = createQueryParameter(ComboParameter.class, panel.tagsComboBox, C2CData.ATTR_TAGS);                  // NOI18N
-//        nameParameter = createQueryParameter(ComboParameter.class, panel.tagsComboBox, CfcTaskAttribute.ggg);                  // NOI18N
         
-//        versionParameter = createQueryParameter(ListParameter.class, panel.List, CfcTaskAttribute.VERSION);                 // NOI18N
-//        peopleParameter = createQueryParameter(ComboParameter.class, panel.peopleComboBox, "emailtype1");           // NOI18N
-//        componentParameter = createQueryParameter(ListParameter.class, panel.componentList, "component");           // NOI18N
-//        versionParameter = createQueryParameter(ListParameter.class, panel.releaseList, "version");                 // NOI18N
-//        changedFieldsParameter = createQueryParameter(ListParameter.class, panel.changedList, "chfield");           // NOI18N
-
-//        createQueryParameter(TextFieldParameter.class, panel.byTextTextField, CfcTaskAttribute.su);                       // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.peopleTextField, "email1");                            // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.bugAssigneeCheckBox, "emailassigned_to1");              // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.reporterCheckBox, "emailreporter1");                    // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.ccCheckBox, "emailcc1");                                // NOI18N
-//        createQueryParameter(CheckBoxParameter.class, panel.commenterCheckBox, "emaillongdesc1");                   // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.changedFromTextField, "chfieldfrom");                  // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.changedToTextField, "chfieldto");                      // NOI18N
-//        createQueryParameter(TextFieldParameter.class, panel.newValueTextField, "chfieldvalue");                    // NOI18N
-
-        // XXX
-//        panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
+        panel.filterComboBox.setModel(new DefaultComboBoxModel(issueTable.getDefinedFilters()));
 
         if(query.isSaved()) {
             setAsSaved();
@@ -293,27 +276,22 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
     @Override
     public void setMode(QueryMode mode) {
-        // XXX
-//        Filter filter;
-//        switch(mode) {
-//            case SHOW_ALL:
-//                filter = issueTable.getAllFilter();
-//                break;
-//            case SHOW_NEW_OR_CHANGED:
-//                filter = issueTable.getNewOrChangedFilter();
-//                break;
-//            default: 
-//                throw new IllegalStateException("Unsupported mode " + mode);
-//        }
-//        selectFilter(filter);
+        Filter filter;
+        switch(mode) {
+            case SHOW_ALL:
+                filter = issueTable.getAllFilter();
+                break;
+            case SHOW_NEW_OR_CHANGED:
+                filter = issueTable.getNewOrChangedFilter();
+                break;
+            default: 
+                throw new IllegalStateException("Unsupported mode " + mode);
+        }
+        selectFilter(filter);
     }
         
     public String getUrlParameters(boolean encode) {
-        StringBuilder sb = new StringBuilder();
-        for (QueryParameter qp : parameters.values()) {
-//            XXX sb.append(qp.get(encode));
-        }
-        return sb.toString();
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     protected C2CRepository getRepository() {
@@ -392,6 +370,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
                     resolutionParameter.setParameterValues(toParameterValues(clientData.getResolutions()));
                     
                     tagsParameter.setParameterValues(toParameterValues(clientData.getKeywords()));
+                    panel.tagsComboBox.setSelectedIndex(-1); // ensure none is selected
                     
 //                    changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
 //                    peopleParameter.setParameterValues(QueryParameter.PV_PEOPLE_VALUES);
@@ -616,32 +595,31 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     public void selectFilter(final Filter filter) {
-        // XXX
-//        if(filter != null) {
-//            // XXX this part should be handled in the issues table - move the filtercombo and the label over
-//            Collection<C2CIssue> issues = query.getIssues();
-//            int c = 0;
-//            if(issues != null) {
-//                for (C2CIssue issue : issues) {
-//                    if(filter.accept(issue.getNode())) c++;
-//                }
-//            }
-//            final int issueCount = c;
-//
-//            Runnable r = new Runnable() {
-//                @Override
-//                public void run() {
-//                    panel.filterComboBox.setSelectedItem(filter);
-//                    setIssueCount(issueCount);
-//                }
-//            };
-//            if(EventQueue.isDispatchThread()) {
-//                r.run();
-//            } else {
-//                EventQueue.invokeLater(r);
-//            }
-//        }
-//        issueTable.setFilter(filter);
+        if(filter != null) {
+            // XXX this part should be handled in the issues table - move the filtercombo and the label over
+            Collection<C2CIssue> issues = query.getIssues();
+            int c = 0;
+            if(issues != null) {
+                for (C2CIssue issue : issues) {
+                    if(filter.accept(issue.getNode())) c++;
+                }
+            }
+            final int issueCount = c;
+
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    panel.filterComboBox.setSelectedItem(filter);
+                    setIssueCount(issueCount);
+                }
+            };
+            if(EventQueue.isDispatchThread()) {
+                r.run();
+            } else {
+                EventQueue.invokeLater(r);
+            }
+        }
+        issueTable.setFilter(filter);
     }
 
     private void setAsSaved() {
@@ -809,12 +787,12 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
-//        LogUtils.logAutoRefreshEvent(
-//            C2CConnector.getConnectorName(),
-//            query.getDisplayName(),
-//            false,
-//            autoRefresh
-//        );
+        LogUtils.logAutoRefreshEvent(
+            C2CConnector.ID,
+            query.getDisplayName(),
+            false,
+            autoRefresh
+        );
     }
 
     private void onRefreshConfiguration() {
@@ -1029,19 +1007,18 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }
 
         private void executeQuery() {
-            // XXX
-//            setQueryRunning(true);
-//            // XXX isn't persistent and should be merged with refresh
-//            String lastChageFrom = panel.changedFromTextField.getText().trim();
+            setQueryRunning(true);
+            // XXX isn't persistent and should be merged with refresh
+//            XXX String lastChageFrom = panel.changedFromTextField.getText().trim();
 //            if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
 //                C2CConfig.getInstance().setLastChangeFrom(lastChageFrom);
 //            }
-//            try {
-//                query.refresh(getUrlParameters(true), autoRefresh);
-//            } finally {
-//                setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
-//                task = null;
-//            }
+            try {
+                query.refresh(parameters, autoRefresh);
+            } finally {
+                setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
+                task = null;
+            }
         }
 
         private void setQueryRunning(final boolean running) {
@@ -1084,8 +1061,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
         @Override
         public void notifyData(final C2CIssue issue) {
-            // XXX
-            //            issueTable.addNode(issue.getNode());
+            issueTable.addNode(issue.getNode());
             if(!query.contains(issue.getID())) {
                 // XXX this is quite ugly - the query notifies an archived issue
                 // but it doesn't "contain" it!
@@ -1104,8 +1080,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
 
         @Override
         public void started() {
-            // XXX
-//            issueTable.started();
+            issueTable.started();
             counter = 0;
             setIssueCount(counter);
             // XXX move to API

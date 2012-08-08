@@ -66,6 +66,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
     @Override
     protected Property<?>[] getProperties() {
         return new Property<?>[] {
+            // XXX is this complete?
             new IDProperty(),
             new C2CFieldProperty(C2CIssue.LABEL_NAME_TASK_TYPE, IssueField.TASK_TYPE, "CTL_Issue_Task_Type_Title", "CTL_Issue_Task_Type_Desc"),
             new SeverityProperty(),

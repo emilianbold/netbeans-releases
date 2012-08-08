@@ -54,19 +54,25 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.openide.util.NbBundle;
@@ -102,6 +108,7 @@ public class C2CIssue {
     private String initialProduct = null;
     
     private static final RequestProcessor parallelRP = new RequestProcessor("C2CIssue", 5); //NOI18N
+    private C2CIssueNode node;
     
     public C2CIssue(TaskData data, C2CRepository repo) {
         this.data = data;
@@ -109,6 +116,13 @@ public class C2CIssue {
         support = new PropertyChangeSupport(this);
     }
 
+    public IssueNode getNode() {
+        if(node == null) {
+            node = new C2CIssueNode(this);
+        }
+        return node;
+    }
+    
     TaskData getTaskData() {
         return data;
     }
@@ -314,6 +328,58 @@ public class C2CIssue {
 
     public C2CRepository getRepository() {
         return repository;
+    }
+    
+    public static ColumnDescriptor[] getColumnDescriptors(C2CRepository repository) {
+        ResourceBundle loc = NbBundle.getBundle(C2CIssue.class);
+        JTable t = new JTable();
+        List<ColumnDescriptor<String>> ret = new LinkedList<ColumnDescriptor<String>>();
+        
+        // XXX is this complete ?
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_ID, String.class,
+                                          loc.getString("CTL_Issue_ID_Title"),                // NOI18N
+                                          loc.getString("CTL_Issue_ID_Desc"),                 // NOI18N
+                                          UIUtils.getColumnWidthInPixels(6, t)));
+        ret.add(new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
+                                          loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
+                                          loc.getString("CTL_Issue_Summary_Desc")));          // NOI18N
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_SEVERITY, String.class,
+                                          loc.getString("CTL_Issue_Severity_Title"),          // NOI18N
+                                          loc.getString("CTL_Issue_Severity_Desc"),           // NOI18N
+                                          0));
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_PRIORITY, String.class,
+                                          loc.getString("CTL_Issue_Priority_Title"),          // NOI18N
+                                          loc.getString("CTL_Issue_Priority_Desc"),           // NOI18N
+                                          0));
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_STATUS, String.class,
+                                          loc.getString("CTL_Issue_Status_Title"),            // NOI18N
+                                          loc.getString("CTL_Issue_Status_Desc"),             // NOI18N
+                                          0));
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_RESOLUTION, String.class,
+                                          loc.getString("CTL_Issue_Resolution_Title"),        // NOI18N
+                                          loc.getString("CTL_Issue_Resolution_Desc"),         // NOI18N
+                                          0));
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_PRODUCT, String.class,
+                                          loc.getString("CTL_Issue_Product_Title"),          // NOI18N
+                                          loc.getString("CTL_Issue_Product_Desc"),           // NOI18N
+                                          0, false));
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_COMPONENT, String.class,
+                                          loc.getString("CTL_Issue_Component_Title"),          // NOI18N
+                                          loc.getString("CTL_Issue_Component_Desc"),           // NOI18N
+                                          0, false));
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_VERSION, String.class,
+                                          loc.getString("CTL_Issue_Version_Title"),          // NOI18N
+                                          loc.getString("CTL_Issue_Version_Desc"),           // NOI18N
+                                          0, false));
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_MILESTONE, String.class,
+                                          loc.getString("CTL_Issue_Milestone_Title"),          // NOI18N
+                                          loc.getString("CTL_Issue_Milestone_Desc"),           // NOI18N
+                                          0, false));
+        ret.add(new ColumnDescriptor<String>(LABEL_NAME_MODIFIED, String.class,
+                                          loc.getString("CTL_Issue_Modification_Title"),          // NOI18N
+                                          loc.getString("CTL_Issue_Modification_Desc"),           // NOI18N
+                                          0, false));
+        return ret.toArray(new ColumnDescriptor[ret.size()]);
     }
         
     /**************************************************************************
