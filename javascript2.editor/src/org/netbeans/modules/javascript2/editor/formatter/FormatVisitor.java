@@ -360,6 +360,18 @@ public class FormatVisitor extends NodeVisitor {
                         }
                     }
                 }
+
+                // place function arguments marks
+                for (Node arg : callNode.getArgs()) {
+                    FormatToken argToken = getNextToken(getStart(arg), null);
+                    if (argToken != null) {
+                        FormatToken beforeArg = argToken.previous();
+                        if (beforeArg != null) {
+                            appendToken(beforeArg,
+                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT));
+                        }
+                    }
+                }
             }
         }
         return super.visit(callNode, onset);
@@ -983,16 +995,26 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private static int getStart(Node node) {
+        // unfortunately in binary node the token represents operator
+        // so string fix would not work
+        if (node instanceof BinaryNode) {
+            return getStart((BinaryNode) node);
+        }
         // All this magic is because nashorn nodes and tokens don't contain the
         // quotes for string. Due to this we call this method to add 1 to start
         // in case it is string literal.
         int start = node.getStart();
         long firstToken = node.getToken();
-        if (com.oracle.nashorn.parser.Token.descType(firstToken).equals(TokenType.STRING)) {
+        TokenType type = com.oracle.nashorn.parser.Token.descType(firstToken);
+        if (type.equals(TokenType.STRING) || type.equals(TokenType.ESCSTRING)) {
             start--;
         }
 
         return start;
+    }
+
+    private static int getStart(BinaryNode node) {
+        return getStart(node.lhs());
     }
 
     private static int getFunctionStart(FunctionNode node) {

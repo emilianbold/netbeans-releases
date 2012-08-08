@@ -5,6 +5,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -70,19 +71,19 @@ public class DiscriminatorColumnLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsDiscriminatorColumnParsedLine_01() throws Exception {
-        assertTrue(parser.parse("DiscriminatorColumn") instanceof DiscriminatorColumnParsedLine);
+        assertTrue(parser.parse("DiscriminatorColumn") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorColumnParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\DiscriminatorColumn") instanceof DiscriminatorColumnParsedLine);
+        assertTrue(parser.parse("Annotations\\DiscriminatorColumn") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorColumnParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\DiscriminatorColumn") instanceof DiscriminatorColumnParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\DiscriminatorColumn") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorColumnParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\DiscriminatorColumn(type=\"string\", length=32)") instanceof DiscriminatorColumnParsedLine);
+        assertTrue(parser.parse("Annotations\\DiscriminatorColumn(type=\"string\", length=32)") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {

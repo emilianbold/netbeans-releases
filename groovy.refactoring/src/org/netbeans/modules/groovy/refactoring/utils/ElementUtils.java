@@ -92,6 +92,8 @@ public final class ElementUtils {
             return ElementKind.PROPERTY;
         } else if (node instanceof VariableExpression) {
             return ElementKind.VARIABLE;
+        } else if (node instanceof DeclarationExpression) {
+            return ElementKind.VARIABLE;
         }
         return ElementKind.OTHER;
     }
@@ -223,7 +225,7 @@ public final class ElementUtils {
         if (declaringClass != null) {
             return declaringClass.getName();
         }
-        return "Dynamic type!";
+        return "Dynamic type!"; // NOI18N
     }
 
     public static String getDeclaringClassNameWithoutPackage(ASTNode node) {
@@ -231,7 +233,7 @@ public final class ElementUtils {
         if (declaringClass != null) {
             return declaringClass.getNameWithoutPackage();
         }
-        return "Dynamic type!";
+        return "Dynamic type!"; // NOI18N
     }
 
     public static String normalizeTypeName(String typeName, ClassNode type) {

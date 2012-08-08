@@ -127,6 +127,7 @@ FormattingToken{kind=TEXT, offset=140, text=round}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=145, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=146, text=Math}
 FormattingToken{kind=TEXT, offset=150, text=.}
 FormattingToken{kind=TEXT, offset=151, text=random}
