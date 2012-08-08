@@ -171,12 +171,15 @@ public final class FormatToken {
         AFTER_PROPERTY,
         AFTER_CASE,
 
-        AFTER_VAR_DECLARATION,
-        BEFORE_FUNCTION_DECLARATION_PARAMETER,
-        BEFORE_FUNCTION_CALL_ARGUMENT,
-        
         AFTER_BLOCK_START,
         ELSE_IF_AFTER_BLOCK_START,
+
+        // for line wrap after comma separated var
+        AFTER_VAR_DECLARATION,
+        // for line wrap of parameters
+        BEFORE_FUNCTION_DECLARATION_PARAMETER,
+        // for line wrap of arguments
+        BEFORE_FUNCTION_CALL_ARGUMENT,
         
         BEFORE_OBJECT,
 
