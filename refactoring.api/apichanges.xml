@@ -49,6 +49,25 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="RefactoringResultsFilters">
+        <api name="refactoring"/>
+        <summary>Added an API to support filters of the Find Usages results.</summary>
+        <version major="1" minor="29"/>
+        <date day="8" month="8" year="2012"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                This API allows refactoring plugins to add/enable filters to the
+                results window and refactoring elements to specify if they should
+                be included in the results.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.api" name="RefactoringElement"/>
+        <class package="org.netbeans.modules.refactoring.spi" name="FiltersManager"/>
+        <class package="org.netbeans.modules.refactoring.spi.ui" name="FiltersDescription"/>
+        <issue number="215361"/>
+    </change>
     <change id="FinishSession">
         <api name="refactoring"/>
         <summary>Changed access level of #finish() to public.</summary>

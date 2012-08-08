@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,45 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.api.impl;
+package org.netbeans.modules.refactoring.spi;
 
-import java.util.Collection;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProblemDetails;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
-import org.netbeans.modules.refactoring.spi.GuardedBlockHandler;
-import org.netbeans.modules.refactoring.spi.ProblemDetailsImplementation;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 
 /**
+ * Handles creation and manipulation with boolean state filters.
  *
- * @author Martin Matula, Jan Becicka
+ * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
+ * @see FiltersDescription
+ * @since 1.29
  */
-public abstract class APIAccessor {
-    public static APIAccessor DEFAULT;
+public abstract class FiltersManager {
 
-    static {
-        Class c = AbstractRefactoring.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    /**
+     * Indicates if a filter is selected.
+     *
+     * @param filterName the name of the filter to check
+     * @return Returns true when given filter is selected, false otherwise.
+     */
+    public abstract boolean isSelected(String filterName);
+
+    /**
+     * {@code RefactoringElement}s should implement this interface if they
+     * should be filterable in the results.
+     *
+     * @see RefactoringElement#include
+     */
+    public static interface Filterable {
+
+        /**
+         * Indicates if this element should be included in the results.
+         *
+         * @param manager the FiltersManager to use
+         * @return true if this element should be included
+         */
+        boolean filter(FiltersManager manager);
     }
-
-    public abstract Collection<GuardedBlockHandler> getGBHandlers(AbstractRefactoring refactoring);
-    public abstract Problem chainProblems(Problem p, Problem p1);
-    public abstract ProblemDetails createProblemDetails(ProblemDetailsImplementation pdi);
-    public abstract boolean isCommit(RefactoringSession session);
-    public abstract RefactoringElementImplementation getRefactoringElementImplementation(RefactoringElement el) ;
-    public abstract boolean hasPluginsWithProgress(AbstractRefactoring refactoring);
-    public abstract boolean hasChangesInGuardedBlocks(RefactoringSession session);
-    public abstract boolean hasChangesInReadOnlyFiles(RefactoringSession session);
-    public abstract FiltersDescription getFiltersDescription(AbstractRefactoring refactoring);
-    public abstract boolean isFinished(RefactoringSession session);
-
 }
