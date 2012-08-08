@@ -42,10 +42,21 @@
 package org.netbeans.modules.web.clientproject.sites;
 
 import java.awt.EventQueue;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
@@ -56,16 +67,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 
-/**
- *
- */
-@NbBundle.Messages({"MSG_Progress2=Downloading site template",
-    "MSG_Progress3=Unziping site template",
-    "ERR_EmptyZip=ZIP file with site template is either empty or its download failed.",
-    "ERR_StreamError=There was a network error trying to download the site template. See IDE log for more details.",
-    "ERR_NotFoundError=The template file cannot be found at {0}"
-})
-public class SiteHelper {
+public final class SiteHelper {
 
     private static final Logger LOGGER = Logger.getLogger(SiteHelper.class.getName());
     private static final String JS_LIBS_DIR = "jslibs"; // NOI18N
@@ -78,7 +80,7 @@ public class SiteHelper {
      * Return <i>&lt;var/cache>/jslibs</i> directory.
      * @return <i>&lt;var/cache>/jslibs</i> directory
      */
-    public static File getJsLibDirectory() {
+    public static File getJsLibsDirectory() {
         return Places.getCacheSubdirectory(JS_LIBS_DIR);
     }
 
@@ -132,6 +134,63 @@ public class SiteHelper {
         unZipFile(new FileInputStream(zipFile), FileUtil.toFileObject(targetDirectory), null, rootFolder);
     }
 
+    /**
+     * Get list of files from the given ZIP file according to the given {@link ZipEntryFilter filter}.
+     * @param zipFile ZIP file to be listed
+     * @param entryFilter filter to be applied on the ZIP file entries
+     * @return list of files from the given ZIP file according to the given {@link ZipEntryFilter filter}
+     * @throws IOException if any error occurs
+     */
+    public static List<String> listZipFiles(File zipFile, ZipEntryFilter entryFilter) throws IOException {
+        assert zipFile != null;
+        assert entryFilter != null;
+        List<String> files = new ArrayList<String>();
+        ZipFile zip = new ZipFile(zipFile);
+        try {
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry zipEntry = entries.nextElement();
+                if (entryFilter.accept(zipEntry)) {
+                    files.add(zipEntry.getName());
+                }
+            }
+        } finally {
+            zip.close();
+        }
+        return files;
+    }
+
+    /**
+     * Get list of JS file names (just filenames, without any relative path) from the given ZIP file.
+     * <p>
+     * If any error occurs, this error is logged with INFO level and an empty list is returned.
+     * @param zipFile ZIP file to be listed
+     * @return list of JS file names (just filenames, without any relative path) from the given ZIP file
+     * @see #listZipFiles(File, ZipEntryFilter)
+     */
+    public static List<String> listJsFilenamesFromZipFile(File zipFile) {
+        try {
+            List<String> entries = SiteHelper.listZipFiles(zipFile, new SiteHelper.ZipEntryFilter() {
+                @Override
+                public boolean accept(ZipEntry zipEntry) {
+                    return !zipEntry.isDirectory()
+                            && zipEntry.getName().toLowerCase().endsWith(".js"); // NOI18N
+                }
+            });
+            List<String> files = new ArrayList<String>(entries.size());
+            for (String entry : entries) {
+                String[] segments = entry.split("/"); // NOI18N
+                files.add(segments[segments.length - 1]);
+            }
+            return files;
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return Collections.emptyList();
+
+    }
+
+    @NbBundle.Messages("SiteHelper.error.emptyZip=ZIP file with site template is either empty or its download failed.")
     private static void unZipFile(InputStream source, FileObject projectRoot, ProgressHandle handle, String rootFolder) throws IOException {
         boolean firstItem = true;
         try {
@@ -169,7 +228,7 @@ public class SiteHelper {
         } finally {
             source.close();
             if (firstItem) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_EmptyZip()));
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.SiteHelper_error_emptyZip()));
             }
         }
     }
@@ -217,6 +276,26 @@ public class SiteHelper {
             source.close();
         }
         return folder;
+    }
+
+    //~ Inner classes
+
+    /**
+     * Filter for {@link ZipEntry}s.
+     * <p>
+     * Instances of this interface may be passed to the {@link SiteHelper#listZipFiles(File, ZipEntryFilter)} method.
+     * @see SiteHelper#listZipFiles(File, ZipEntryFilter)
+     */
+    public interface ZipEntryFilter {
+
+        /**
+         * Test whether or not the specified {@link ZipEntry} should be
+         * accepted.
+         *
+         * @param zipEntry the {@link ZipEntry} to be tested
+         * @return {@ code true} if {@link ZipEntry} should be accepted, {@code false} otherwise
+         */
+        boolean accept(ZipEntry zipEntry);
     }
 
 }

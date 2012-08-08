@@ -41,13 +41,9 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.EventQueue;
-import java.io.IOException;
-import java.util.Collection;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -58,7 +54,7 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
 
     // @GuardedBy("javaScriptLibrarySelectionLock")
     private JavaScriptLibrarySelection javaScriptLibrarySelection;
-    private WizardDescriptor wizardDescriptor;
+    private volatile WizardDescriptor wizardDescriptor;
 
 
     @Override
@@ -72,12 +68,6 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
         }
     }
 
-    public void updateDefaults(Collection<String> defaultLibs) {
-        synchronized (javaScriptLibrarySelectionLock) {
-            getComponent().updateDefaults(defaultLibs);
-        }
-    }
-
     @Override
     public HelpCtx getHelp() {
         return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel"); // NOI18N
@@ -86,10 +76,18 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
+        SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.SITE_TEMPLATE);
+        synchronized (javaScriptLibrarySelectionLock) {
+            getComponent().updateDefaults(siteTemplate.supportedLibraries());
+        }
     }
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
+        synchronized (javaScriptLibrarySelectionLock) {
+            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.LIBRARIES_FOLDER, getComponent().getLibrariesFolder());
+            wizardDescriptor.putProperty(ClientSideProjectWizardIterator.SELECTED_LIBRARIES, getComponent().getSelectedLibraries());
+        }
     }
 
     @Override
@@ -138,13 +136,6 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Panel<W
     @Override
     public boolean isFinishPanel() {
         return true;
-    }
-
-    public void apply(FileObject p, ProgressHandle handle) throws IOException {
-        assert !EventQueue.isDispatchThread();
-        synchronized (javaScriptLibrarySelectionLock) {
-            getComponent().apply(p, handle);
-        }
     }
 
 }

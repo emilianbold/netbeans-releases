@@ -23,33 +23,29 @@
           </Group>
           <Group type="102" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="infoLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  </Group>
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="librariesFilterTextField" max="32767" attributes="0"/>
-                          </Group>
-                          <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="selectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="selectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="deselectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                          <Component id="deselectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                      </Group>
+                      <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Component id="librariesFilterTextField" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
               </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="selectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="selectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="deselectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="deselectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="selectedLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="selectedLibrariesScrollPane" pref="0" max="32767" attributes="0"/>
               </Group>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="infoLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -57,7 +53,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="infoLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="librariesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="selectedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -90,10 +86,9 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="infoLabel">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="Form"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="JavaScriptLibrarySelection.infoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="INFO" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="librariesLabel">

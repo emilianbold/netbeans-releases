@@ -26,11 +26,15 @@
                   <Component id="noTemplateRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="archiveTemplateRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="onlineTemplateRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <EmptySpace min="21" pref="21" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Component id="onlineTemplateDescriptionLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
                           <Component id="archiveTemplatePanel" alignment="1" max="32767" attributes="0"/>
-                          <Component id="onlineTemplateScrollPane" alignment="0" pref="441" max="32767" attributes="0"/>
+                          <Component id="onlineTemplateScrollPane" alignment="0" max="32767" attributes="0"/>
                           <Component id="onlineTemplateDescriptionScrollPane" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -53,9 +57,11 @@
               <Component id="onlineTemplateRadioButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="onlineTemplateScrollPane" pref="106" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="onlineTemplateDescriptionLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="onlineTemplateDescriptionScrollPane" min="-2" pref="60" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -117,6 +123,16 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JLabel" name="onlineTemplateDescriptionLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="onlineTemplateDescriptionTextPane"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/wizard/Bundle.properties" key="SiteTemplateWizard.onlineTemplateDescriptionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
     <Container class="javax.swing.JScrollPane" name="onlineTemplateDescriptionScrollPane">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
