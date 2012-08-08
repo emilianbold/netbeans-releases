@@ -93,7 +93,7 @@ import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.GetAttachmentCommand;
-import org.netbeans.modules.bugzilla.commands.SubmitCommand;
+import org.netbeans.modules.mylyn.SubmitCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -944,7 +944,11 @@ public class BugzillaIssue {
         final boolean wasNew = data.isNew();
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
         
-        SubmitCommand submitCmd = new SubmitCommand(getRepository(), data);
+        SubmitCommand submitCmd = 
+            new SubmitCommand(
+                Bugzilla.getInstance().getRepositoryConnector(),
+                getRepository().getTaskRepository(), 
+                data);
         repository.getExecutor().execute(submitCmd);
 
         if (!wasNew) {
