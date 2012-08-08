@@ -231,6 +231,11 @@
       </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboInsertPoint">
+      <Properties>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[308, 31]"/>
+        </Property>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="EncapsulateFieldPanel.jComboInsertPoint.acsd" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>

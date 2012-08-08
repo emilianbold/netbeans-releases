@@ -60,6 +60,7 @@ import java.util.*;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -140,8 +141,6 @@ public class RefactoringPanel extends JPanel {
     private boolean inited = false;
     private Component customComponent;
     private AtomicBoolean cancelRequest = new AtomicBoolean();
-    private int size = 0;
-
 
     
     static Image PACKAGE_BADGE = ImageUtilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
@@ -698,6 +697,7 @@ public class RefactoringPanel extends JPanel {
         
         final RefactoringPanelContainer cont = isQuery ? RefactoringPanelContainer.getUsagesComponent() : RefactoringPanelContainer.getRefactoringComponent();
         cont.makeBusy(true);
+        final AtomicInteger size = new AtomicInteger();
         initialize();
 
         cancelRequest.set(false);
@@ -738,7 +738,7 @@ public class RefactoringPanel extends JPanel {
                             }
                         }
                     }
-                    StringBuffer errorsDesc = getErrorDesc(errorsNum, isQuery?size:elements.size());
+                    StringBuffer errorsDesc = getErrorDesc(errorsNum, isQuery?size.get():elements.size());
                     final CheckNode root = new CheckNode(ui, description + errorsDesc.toString() + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;",ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false), isQuery);
                     final Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
@@ -770,7 +770,7 @@ public class RefactoringPanel extends JPanel {
 
                                     final boolean last = !it.hasNext();
                                     final int occurrences = i + 1;
-                                    size = occurrences;
+                                    size.set(occurrences);
                                     if (occurrences % 10 == 0 || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
 
