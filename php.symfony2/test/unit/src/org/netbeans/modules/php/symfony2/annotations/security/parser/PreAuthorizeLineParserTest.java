@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class PreAuthorizeLineParserTest extends NbTestCase {
-    private PreAuthorizeLineParser parser;
+    private AnnotationLineParser parser;
 
     public PreAuthorizeLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class PreAuthorizeLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new PreAuthorizeLineParser();
+        this.parser = Symfony2SecurityAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class PreAuthorizeLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsPreAuthorizeParsedLine_01() throws Exception {
-        assertTrue(parser.parse("PreAuthorize") instanceof PreAuthorizeParsedLine);
+        assertTrue(parser.parse("PreAuthorize") instanceof ParsedLine);
     }
 
     public void testReturnValueIsPreAuthorizeParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\PreAuthorize") instanceof PreAuthorizeParsedLine);
+        assertTrue(parser.parse("Annotations\\PreAuthorize") instanceof ParsedLine);
     }
 
     public void testReturnValueIsPreAuthorizeParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\PreAuthorize") instanceof PreAuthorizeParsedLine);
+        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\PreAuthorize") instanceof ParsedLine);
     }
 
     public void testReturnValueIsPreAuthorizeParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\PreAuthorize(\"hasRole('A') or (hasRole('B') and hasRole('C'))\")") instanceof PreAuthorizeParsedLine);
+        assertTrue(parser.parse("Annotations\\PreAuthorize(\"hasRole('A') or (hasRole('B') and hasRole('C'))\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class PreAuthorizeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("PreAuthorize");
-        assertEquals(PreAuthorizeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("PreAuthorize", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -104,7 +105,7 @@ public class PreAuthorizeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("PreAuthorize   ");
-        assertEquals(PreAuthorizeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("PreAuthorize", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -118,7 +119,7 @@ public class PreAuthorizeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("PreAuthorize\t\t  ");
-        assertEquals(PreAuthorizeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("PreAuthorize", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -132,7 +133,7 @@ public class PreAuthorizeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("PreAuthorize(\"hasRole('A') or (hasRole('B') and hasRole('C'))\")");
-        assertEquals(PreAuthorizeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("PreAuthorize", parsedLine.getName());
         assertEquals("(\"hasRole('A') or (hasRole('B') and hasRole('C'))\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -147,7 +148,7 @@ public class PreAuthorizeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\PreAuthorize(\"hasRole('A') or (hasRole('B') and hasRole('C'))\")  \t");
-        assertEquals(PreAuthorizeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("PreAuthorize", parsedLine.getName());
         assertEquals("(\"hasRole('A') or (hasRole('B') and hasRole('C'))\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -162,7 +163,7 @@ public class PreAuthorizeLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\PreAuthorize(\"hasRole('A') or (hasRole('B') and hasRole('C'))\")  \t");
-        assertEquals(PreAuthorizeLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("PreAuthorize", parsedLine.getName());
         assertEquals("(\"hasRole('A') or (hasRole('B') and hasRole('C'))\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
