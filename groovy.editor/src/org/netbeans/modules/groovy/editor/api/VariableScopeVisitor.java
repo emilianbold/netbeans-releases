@@ -45,8 +45,11 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -98,9 +101,17 @@ public final class VariableScopeVisitor extends TypeVisitor {
         String visitedName = removeParentheses(visitedArray.getElementType().getName());
 
         if (leaf instanceof FieldNode) {
-            addArrayExpressionOccurences(visitedArray, ((FieldNode) leaf).getType());
+            if (isCaretOnFieldType(((FieldNode) leaf), doc, cursorOffset)) {
+                addArrayExpressionOccurences(visitedArray, ((FieldNode) leaf).getType());
+            }
         } else if (leaf instanceof PropertyNode) {
-            addArrayExpressionOccurences(visitedArray, ((PropertyNode) leaf).getField().getType());
+            if (isCaretOnFieldType(((PropertyNode) leaf).getField(), doc, cursorOffset)) {
+                addArrayExpressionOccurences(visitedArray, ((PropertyNode) leaf).getField().getType());
+            }
+        } else if (leaf instanceof Parameter) {
+            if (isCaretOnParamType(((Parameter) leaf), doc, cursorOffset)) {
+                addArrayExpressionOccurences(visitedArray, ((Parameter) leaf).getType());
+            }
         } else if (leaf instanceof Variable) {
             String varName = removeParentheses(((Variable) leaf).getName());
             if (varName.equals(visitedName)) {
@@ -151,6 +162,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
                 }
             }
         }
+        super.visitParameters(parameters, variable);
     }
 
     @Override
@@ -175,6 +187,10 @@ public final class VariableScopeVisitor extends TypeVisitor {
             addVariableExpressionOccurrences(variableExpression, (FieldNode) leaf);
         } else if (leaf instanceof PropertyNode) {
             addVariableExpressionOccurrences(variableExpression, ((PropertyNode) leaf).getField());
+        } else if (leaf instanceof Parameter) {
+            if (!isCaretOnParamType(((Parameter) leaf), doc, cursorOffset) && ((Parameter) leaf).getName().equals(variableExpression.getName())) {
+                occurrences.add(variableExpression);
+            }
         } else if (leaf instanceof Variable) {
             if (((Variable) leaf).getName().equals(variableExpression.getName())) {
                 occurrences.add(variableExpression);
@@ -210,6 +226,10 @@ public final class VariableScopeVisitor extends TypeVisitor {
             addDeclarationExpressionOccurrences(expression, (FieldNode) leaf);
         } else if (leaf instanceof PropertyNode) {
             addDeclarationExpressionOccurrences(expression, ((PropertyNode) leaf).getField());
+        } else if (leaf instanceof Parameter) {
+            if (isCaretOnParamType(((Parameter) leaf), doc, cursorOffset)) {
+                addDeclarationExpressionOccurrences(expression, ((Parameter) leaf).getType());
+            }
         } else if (leaf instanceof DeclarationExpression) {
             DeclarationExpression visitedDeclaration = expression;
             DeclarationExpression declaration = (DeclarationExpression) leaf;
@@ -289,6 +309,10 @@ public final class VariableScopeVisitor extends TypeVisitor {
             addFieldOccurrences(fieldNode, (FieldNode) leaf);
         } else if (leaf instanceof PropertyNode) {
             addFieldOccurrences(fieldNode, ((PropertyNode) leaf).getField());
+        } else if (leaf instanceof Parameter) {
+            if (isCaretOnParamType(((Parameter) leaf), doc, cursorOffset)) {
+                addFieldOccurrences(fieldNode, ((Parameter) leaf).getType());
+            }
         } else if (leaf instanceof Variable && ((Variable) leaf).getName().equals(fieldNode.getName())) {
             occurrences.add(fieldNode);
         } else if (leaf instanceof MethodNode) {
@@ -346,7 +370,19 @@ public final class VariableScopeVisitor extends TypeVisitor {
     @Override
     public void visitMethod(MethodNode methodNode) {
         VariableScope variableScope = methodNode.getVariableScope();
-        if (leaf instanceof Variable) {
+        if (leaf instanceof Parameter) {
+            if (isCaretOnParamType(((Parameter) leaf), doc, cursorOffset)) {
+                addMethodOccurrences(methodNode, ((Parameter) leaf).getType());
+            } else {
+                String name = ((Variable) leaf).getName();
+                // This check is here because we can have method parameter with the same
+                // name hidding property/field and we don't want to show occurences of these
+                if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                    return;
+
+                }
+            }
+        } else  if (leaf instanceof Variable) {
             String name = ((Variable) leaf).getName();
             // This check is here because we can have method parameter with the same
             // name hidding property/field and we don't want to show occurences of these
@@ -416,7 +452,17 @@ public final class VariableScopeVisitor extends TypeVisitor {
     @Override
     public void visitConstructor(ConstructorNode constructor) {
         VariableScope variableScope = constructor.getVariableScope();
-        if (leaf instanceof Variable) {
+        if (leaf instanceof Parameter) {
+            if (isCaretOnParamType(((Parameter) leaf), doc, cursorOffset)) {
+                addConstructorOccurrences(constructor, ((Parameter) leaf).getType());
+            } else {
+                String name = ((Variable) leaf).getName();
+                if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
+                    return;
+
+                }
+            }
+        } else if (leaf instanceof Variable) {
             String name = ((Variable) leaf).getName();
             if (variableScope != null && variableScope.getDeclaredVariable(name) != null) {
                 return;
@@ -518,6 +564,10 @@ public final class VariableScopeVisitor extends TypeVisitor {
             if (isCaretOnFieldType(field, doc, cursorOffset)) {
                 addClassExpressionOccurrences(clazz, field.getType());
             }
+        } else if (leaf instanceof Parameter) {
+            if (isCaretOnParamType(((Parameter) leaf), doc, cursorOffset)) {
+                addClassExpressionOccurrences(clazz, ((Parameter) leaf).getType());
+            }
         } else if (leaf instanceof ClassNode) {
             addClassExpressionOccurrences(clazz, (ClassNode) leaf);
         } else if (leaf instanceof ClassExpression) {
@@ -614,7 +664,9 @@ public final class VariableScopeVisitor extends TypeVisitor {
         } else if (leaf instanceof ForStatement) {
             addForLoopOccurrences(forLoop, ((ForStatement) leaf).getVariableType());
         } else if (leaf instanceof Parameter) {
-            addForLoopOccurrences(forLoop, ((Parameter) leaf).getType());
+            if (isCaretOnParamType(((Parameter) leaf), doc, cursorOffset)) {
+                addForLoopOccurrences(forLoop, ((Parameter) leaf).getType());
+            }
         }
         super.visitForLoop(forLoop);
     }
