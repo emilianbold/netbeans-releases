@@ -45,6 +45,12 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
+import org.netbeans.modules.javascript2.editor.jsdoc.completion.AssingTag;
+import org.netbeans.modules.javascript2.editor.jsdoc.completion.DescriptionTag;
+import org.netbeans.modules.javascript2.editor.jsdoc.completion.LinkTag;
+import org.netbeans.modules.javascript2.editor.jsdoc.completion.TypeDescribedTag;
+import org.netbeans.modules.javascript2.editor.jsdoc.completion.TypeNamedTag;
+import org.netbeans.modules.javascript2.editor.jsdoc.completion.TypeSimpleTag;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 
 /**
@@ -74,8 +80,32 @@ public class JsDocAnnotationCompletionTagProvider extends AnnotationCompletionTa
                 continue;
             }
 
-            annotations.add(new AnnotationCompletionTag(type.toString(), type.toString()));
+            switch (type.getCategory()) {
+                case ASSIGN:
+                    annotations.add(new AssingTag(type.toString()));
+                    break;
+                case DECLARATION:
+                    annotations.add(new TypeSimpleTag(type.toString()));
+                    break;
+                case DESCRIPTION:
+                    annotations.add(new DescriptionTag(type.toString()));
+                    break;
+                case LINK:
+                    annotations.add(new LinkTag(type.toString()));
+                    break;
+                case NAMED_PARAMETER:
+                    annotations.add(new TypeNamedTag(type.toString()));
+                    break;
+                case SIMPLE:
+                    annotations.add(new AnnotationCompletionTag(type.toString(), type.toString()));
+                    break;
+                case UNNAMED_PARAMETER:
+                    annotations.add(new TypeDescribedTag(type.toString()));
+                    break;
+                default:
+                    annotations.add(new AnnotationCompletionTag(type.toString(), type.toString()));
+                    break;
+            }
         }
     }
-
 }

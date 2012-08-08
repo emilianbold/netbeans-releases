@@ -39,50 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.extdoc;
+package org.netbeans.modules.javascript2.editor.jsdoc.completion;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
- * Provider for the ExtDoc documentations.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDocumentationProvider implements JsDocumentationProvider {
+public class LinkTag extends AnnotationCompletionTag {
 
-    private static Set<String> supportedTags;
+    public static final String TEMPLATE = " ${namePath}";
 
-    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
-            Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
-
-    @Override
-    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new ExtDocDocumentationHolder(snapshot);
+    public LinkTag(String name) {
+        super(name, name + TEMPLATE);
     }
 
     @Override
-    public synchronized Set getSupportedTags() {
-        if (supportedTags == null) {
-            supportedTags = new HashSet<String>(ExtDocElementType.values().length);
-            for (ExtDocElementType type : ExtDocElementType.values()) {
-                supportedTags.add(type.toString());
-            }
-            supportedTags.remove("unknown");
-            supportedTags.remove("description");
-        }
-        return supportedTags;
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("namePath"); //NOI18N
+        formatter.parameters(false);
     }
 
-    @Override
-    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return ANNOTATION_PROVIDERS;
-    }
 }

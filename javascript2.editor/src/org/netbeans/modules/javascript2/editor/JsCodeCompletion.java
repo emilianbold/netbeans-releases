@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
+import org.netbeans.modules.javascript2.editor.doc.JsDocumentationElement;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.jquery.JQueryCodeCompletion;
@@ -278,6 +279,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             if (doc != null && !doc.isEmpty()) {
                 documentation.append(doc);
             }
+        }
+        if (element instanceof JsDocumentationElement) {
+            return ((JsDocumentationElement) element).getDocumentation();
         }
         if (documentation.length() == 0) {
             documentation.append(NbBundle.getMessage(JsCodeCompletion.class, "MSG_DocNotAvailable"));

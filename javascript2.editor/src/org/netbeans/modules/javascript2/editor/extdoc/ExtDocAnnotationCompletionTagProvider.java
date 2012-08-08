@@ -41,48 +41,68 @@
  */
 package org.netbeans.modules.javascript2.editor.extdoc;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.extdoc.completeion.DescriptionTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completeion.IdentDescribedTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completeion.IdentSimpleTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completeion.TypeDescribedTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completeion.TypeNamedTag;
+import org.netbeans.modules.javascript2.editor.extdoc.completeion.TypeSimpleTag;
 import org.netbeans.modules.javascript2.editor.extdoc.model.ExtDocElementType;
-import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
- * Provider for the ExtDoc documentations.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExtDocDocumentationProvider implements JsDocumentationProvider {
+public class ExtDocAnnotationCompletionTagProvider extends AnnotationCompletionTagProvider {
 
-    private static Set<String> supportedTags;
+    List<AnnotationCompletionTag> annotations = null;
 
-    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
-            Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
-
-    @Override
-    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new ExtDocDocumentationHolder(snapshot);
+    public ExtDocAnnotationCompletionTagProvider(String name) {
+        super(name);
     }
 
     @Override
-    public synchronized Set getSupportedTags() {
-        if (supportedTags == null) {
-            supportedTags = new HashSet<String>(ExtDocElementType.values().length);
-            for (ExtDocElementType type : ExtDocElementType.values()) {
-                supportedTags.add(type.toString());
-            }
-            supportedTags.remove("unknown");
-            supportedTags.remove("description");
+    public synchronized List<AnnotationCompletionTag> getAnnotations() {
+        if (annotations == null) {
+            initAnnotations();
         }
-        return supportedTags;
+        return annotations;
     }
 
-    @Override
-    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return ANNOTATION_PROVIDERS;
+    private void initAnnotations() {
+        annotations = new LinkedList<AnnotationCompletionTag>();
+        for (ExtDocElementType type : ExtDocElementType.values()) {
+            if (type == ExtDocElementType.UNKNOWN) {
+                continue;
+            }
+
+            switch (type.getCategory()) {
+                case DESCRIPTION:
+                    annotations.add(new DescriptionTag(type.toString()));
+                    break;
+                case IDENT_SIMPLE:
+                    annotations.add(new IdentSimpleTag(type.toString()));
+                    break;
+                case IDENT_DESCRIBED:
+                    annotations.add(new IdentDescribedTag(type.toString()));
+                    break;
+                case TYPE_NAMED:
+                    annotations.add(new TypeNamedTag(type.toString()));
+                    break;
+                case TYPE_SIMPLE:
+                    annotations.add(new TypeSimpleTag(type.toString()));
+                    break;
+                case TYPE_DESCRIBED:
+                    annotations.add(new TypeDescribedTag(type.toString()));
+                    break;
+                default:
+                    annotations.add(new AnnotationCompletionTag(type.toString(), type.toString()));
+                    break;
+            }
+        }
     }
 }
