@@ -89,29 +89,21 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
         if (importer != null) {
             return importer;
         }
-        ImportProcessor proc = new ImportProcessor(env.getCompilationInfo(), env.getHierarchy(), env, env.getTreeUtilities());
-        env.getModel().accept(proc);
+        ImportProcessor proc = new ImportProcessor(env.getHierarchy(), env, env.getTreeUtilities());
+        proc.load(env.getCompilationInfo(), env.getModel());
         
         importer = proc;
         return importer;
     }
 
     @Override
-    public void visitInstance(FxNewInstance decl) {
-        visitBaseInstance(decl);
-    }
-
-    @Override
-    public void visitCopy(FxInstanceCopy copy) {
-        visitBaseInstance(copy);
-    }
-    
     public void visitBaseInstance(FxInstance decl) {
         FxInstance save = this.currentInstance;
         FxBean saveInfo = this.beanInfo;
         
         currentInstance = decl;
         beanInfo = env.getBeanInfo(decl.getResolvedName());
+        /*
         if (decl instanceof FxInstanceCopy) {
             super.visitCopy((FxInstanceCopy)decl);
         } else if (decl instanceof FxNewInstance) {
@@ -119,6 +111,9 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
         } else {
             throw new UnsupportedOperationException();
         }
+        */
+        super.visitBaseInstance(decl);
+        
         this.beanInfo = saveInfo;
         this.currentInstance = save;
     }

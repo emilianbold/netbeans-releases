@@ -43,6 +43,8 @@ package org.netbeans.modules.javafx2.editor.completion.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
@@ -107,5 +109,15 @@ public abstract class FxmlParserResult extends Parser.Result {
         return tokenHierarchy;
     }
     
-    protected abstract FxNewInstance resolveInstance(FxInclude include);
+    public abstract FxNewInstance resolveInstance(FxInclude include);
+    
+    public static FxmlParserResult get(Parser.Result p) {
+        if (p instanceof FxmlParserResult) {
+            return (FxmlParserResult)p;
+        } else {
+            return null;
+        }
+    }
+    
+    public abstract Set<String> resolveClassName(CompilationInfo info, String className);
 }
