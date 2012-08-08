@@ -55,6 +55,7 @@ import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -90,6 +91,50 @@ public final class VariableScopeVisitor extends TypeVisitor {
 
     public Set<ASTNode> getOccurrences() {
         return occurrences;
+    }
+
+    @Override
+    public void visitArrayExpression(ArrayExpression visitedArray) {
+        String visitedName = removeParentheses(visitedArray.getElementType().getName());
+
+        if (leaf instanceof FieldNode) {
+            addArrayExpressionOccurences(visitedArray, ((FieldNode) leaf).getType());
+        } else if (leaf instanceof PropertyNode) {
+            addArrayExpressionOccurences(visitedArray, ((PropertyNode) leaf).getField().getType());
+        } else if (leaf instanceof Variable) {
+            String varName = removeParentheses(((Variable) leaf).getName());
+            if (varName.equals(visitedName)) {
+                occurrences.add(new FakeASTNode(visitedArray, visitedName));
+            }
+        } else if (leaf instanceof MethodNode) {
+            if (isCaretOnReturnType((MethodNode) leaf, doc, cursorOffset)) {
+                addArrayExpressionOccurences(visitedArray, ((MethodNode) leaf).getReturnType());
+            }
+        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+            PropertyExpression property = (PropertyExpression) leafParent;
+            if (visitedName.equals(property.getPropertyAsString())) {
+                occurrences.add(new FakeASTNode(visitedArray, visitedName));
+            }
+        } else if (leaf instanceof DeclarationExpression) {
+            DeclarationExpression declarationExpression = (DeclarationExpression) leaf;
+            if (!declarationExpression.isMultipleAssignmentDeclaration()) {
+                addArrayExpressionOccurences(visitedArray, declarationExpression.getVariableExpression().getType());
+            }
+        } else if (leaf instanceof ClassExpression) {
+            addArrayExpressionOccurences(visitedArray, ((ClassExpression) leaf).getType());
+        } else if (leaf instanceof ForStatement) {
+            addArrayExpressionOccurences(visitedArray, ((ForStatement) leaf).getVariableType());
+        }
+        super.visitArrayExpression(visitedArray);
+    }
+
+    private void addArrayExpressionOccurences(ArrayExpression visitedArray, ClassNode findingNode) {
+        String visitedTypeName = removeParentheses(visitedArray.getElementType().getName());
+        String findingTypeName = removeParentheses(findingNode.getName());
+
+        if (visitedTypeName.equals(findingTypeName)) {
+            occurrences.add(new FakeASTNode(visitedArray, findingNode.getNameWithoutPackage()));
+        }
     }
 
     @Override
