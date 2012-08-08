@@ -179,10 +179,7 @@ public class FindTypeUtils {
             range = getRange(expression.getTupleExpression(), doc, cursorOffset);
         }
         
-        if (range != null && range.containsInclusive(cursorOffset)) {
-            return range;
-        }
-        return OffsetRange.NONE;
+        return range;
     }
 
     private static boolean isCaretOnVariableType(VariableExpression expression, BaseDocument doc, int cursorOffset) {
@@ -221,7 +218,7 @@ public class FindTypeUtils {
         if (variable.isDynamicTyped()) {
             return OffsetRange.NONE;
         }
-        return getRange(variable, doc, cursorOffset);
+        return getRange(variable.getAccessedVariable().getType(), doc, cursorOffset);
     }
 
     private static OffsetRange getRange(ASTNode node, BaseDocument doc, int cursorOffset) {
