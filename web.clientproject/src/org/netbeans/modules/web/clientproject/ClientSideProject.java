@@ -316,6 +316,6 @@ public class ClientSideProject implements Project {
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
-
+        
     }
 }

@@ -52,14 +52,19 @@ public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
 
     final private BrowserSupport support;
     final private Project project;
+    private ClientProjectConfigurationImpl cfg;
 
-    public RefreshOnSaveListenerImpl(Project project, BrowserSupport support) {
+    public RefreshOnSaveListenerImpl(Project project, BrowserSupport support, ClientProjectConfigurationImpl cfg) {
         this.support = support;
         this.project = project;
+        this.cfg = cfg;
     }
     
     @Override
     public void fileChanged(FileObject fo) {
+        if (!cfg.isAutoRefresh()) {
+            return;
+        }
         URL u = support.getBrowserURL(fo, true);
         if (u != null) {
             assert support.canReload(u) : u;

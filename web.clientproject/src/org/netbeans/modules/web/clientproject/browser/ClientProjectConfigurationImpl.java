@@ -129,7 +129,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshOnSaveListenerImpl(project, getBrowserSupport());
+        return new RefreshOnSaveListenerImpl(project, getBrowserSupport(), this);
     }
 
     @Override
