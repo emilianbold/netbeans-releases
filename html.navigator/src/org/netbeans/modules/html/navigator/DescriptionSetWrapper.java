@@ -42,8 +42,6 @@
 package org.netbeans.modules.html.navigator;
 
 /**
- * Allows to use the non-starndard hashCodes and equals in from the wrapped descriptions.
- *
  * @author marekfukala
  */
 public class DescriptionSetWrapper {
@@ -60,7 +58,7 @@ public class DescriptionSetWrapper {
 
     @Override
     public int hashCode() {
-        return peer.hashCode2();
+        return Diff.hashCode(getPeer());
     }
 
     @Override
@@ -69,7 +67,7 @@ public class DescriptionSetWrapper {
             return false;
         }
         DescriptionSetWrapper dsw = (DescriptionSetWrapper)obj;
-        return peer.equals2(dsw.getPeer());
+        return Diff.equals(getPeer(), dsw.getPeer());
     }
     
     

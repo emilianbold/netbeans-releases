@@ -60,19 +60,22 @@ public class WebKitNodeDescription extends DOMNodeDescription {
     private Node webKitNode;
     private final String elementPath;
     private final Map<String, String> attributes;
+    private Collection<WebKitNodeDescription> children;
+    private WebKitNodeDescription parent;
 
-    public static WebKitNodeDescription forNode(org.openide.nodes.Node nbNode) {
+    public static WebKitNodeDescription forNode(WebKitNodeDescription parent, org.openide.nodes.Node nbNode) {
         Node webKitNode = Utils.getWebKitNode(nbNode);
         if (webKitNode == null) {
             return null;
         }
 
-        return new WebKitNodeDescription(webKitNode);
+        return new WebKitNodeDescription(parent, webKitNode);
     }
 
-    public WebKitNodeDescription(Node webKitNode) {
+    public WebKitNodeDescription(WebKitNodeDescription parent, Node webKitNode) {
         Parameters.notNull("webKitNode", webKitNode);
 
+        this.parent = parent;
         this.webKitNode = webKitNode;
         this.elementPath = new WebKitNodeTreePath(webKitNode).getElementPath();
 
@@ -90,36 +93,27 @@ public class WebKitNodeDescription extends DOMNodeDescription {
         }
 
     }
-    
-     @Override
-    public int hashCode() {
-        int hash = 19;
-        hash = 41 * hash + getElementPath().hashCode();
-        hash = 41 * hash + getAttributesHash();
-        return hash;
-    }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
         if (!(obj instanceof WebKitNodeDescription)) {
             return false;
         }
-        final WebKitNodeDescription other = (WebKitNodeDescription) obj;
-        if (!getElementPath().equals(other.getElementPath())) {
-            return false;
-        }
-        if ((getAttributesHash() != other.getAttributesHash())) {
-            return false;
-        }
-        return true;
+        WebKitNodeDescription descr = (WebKitNodeDescription) obj;
+        return Diff.equals(this, descr);
     }
-    
-    
+
+    @Override
+    public int hashCode() {
+        return Diff.hashCode(this);
+    }
+
     @Override
     public String getName() {
+        return getName(webKitNode);
+    }
+
+    private static String getName(Node webKitNode) {
         return Utils.getWebKitNodeName(webKitNode);
     }
 
@@ -134,18 +128,20 @@ public class WebKitNodeDescription extends DOMNodeDescription {
     }
 
     @Override
-    public Collection<WebKitNodeDescription> getChildren() {
-        List<Node> wkChildren = webKitNode.getChildren();
-        if(wkChildren == null || wkChildren.isEmpty()) {
-            return Collections.emptyList();
-        }
-        Collection<WebKitNodeDescription> children = new ArrayList<WebKitNodeDescription>();
-        for (Node child : wkChildren) {
-            switch(child.getNodeType()) {
-                case org.w3c.dom.Node.ELEMENT_NODE:
-                case org.w3c.dom.Node.DOCUMENT_NODE:
-                    children.add(new WebKitNodeDescription(child));
-                    break;
+    public synchronized Collection<WebKitNodeDescription> getChildren() {
+        if (children == null) {
+            List<Node> wkChildren = webKitNode.getChildren();
+            if (wkChildren == null || wkChildren.isEmpty()) {
+                return Collections.emptyList();
+            }
+            children = new ArrayList<WebKitNodeDescription>();
+            for (Node child : wkChildren) {
+                switch (child.getNodeType()) {
+                    case org.w3c.dom.Node.ELEMENT_NODE:
+                    case org.w3c.dom.Node.DOCUMENT_NODE:
+                        children.add(new WebKitNodeDescription(this, child));
+                        break;
+                }
             }
         }
         return children;
@@ -154,6 +150,11 @@ public class WebKitNodeDescription extends DOMNodeDescription {
     @Override
     public int getType() {
         return DOM;
+    }
+
+    @Override
+    public Description getParent() {
+        return parent;
     }
 
     public static class WebKitNodeTreePath {
@@ -217,10 +218,10 @@ public class WebKitNodeDescription extends DOMNodeDescription {
                 Node parent = node.getParent();
                 int myIndex = parent == null ? 0 : getIndexInSimilarNodes(node.getParent(), node);
                 sb.append(getNodeId(node));
-//                if (myIndex > 0) {
-//                    sb.append(ELEMENT_PATH_INDEX_DELIMITER);
-//                    sb.append(myIndex);
-//                }
+                if (myIndex > 0) {
+                    sb.append(ELEMENT_PATH_INDEX_DELIMITER);
+                    sb.append(myIndex);
+                }
 
                 if (i > 0) {
                     sb.append(ELEMENT_PATH_ELEMENTS_DELIMITER);

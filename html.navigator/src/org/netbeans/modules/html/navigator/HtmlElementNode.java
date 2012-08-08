@@ -44,15 +44,12 @@
 package org.netbeans.modules.html.navigator;
 
 import java.awt.Image;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -102,8 +99,7 @@ public class HtmlElementNode extends AbstractNode {
     public HtmlElementNode(SourceDescription sourceDescription, HtmlNavigatorPanelUI ui, FileObject fileObject) {
         this(ui, fileObject);
         this.source = sourceDescription;
-        getElementChildren().setStaticKeys(sourceDescription.getChildren());
-        getElementChildren().resetKeys();
+        getElementChildren().setStaticKeys(sourceDescription.getChildren(), true);
         
         openAction = new OpenAction((HtmlElementDescription)sourceDescription);
 //        highlightInBrowserAction = new HighlightInBrowserAction(element, ui);
@@ -112,8 +108,7 @@ public class HtmlElementNode extends AbstractNode {
     public HtmlElementNode(Description domDescription, HtmlNavigatorPanelUI ui, FileObject fileObject) {
         this(ui, fileObject);
         this.dom = domDescription;
-        getElementChildren().setDynamicKeys(domDescription.getChildren());
-        getElementChildren().resetKeys();
+        getElementChildren().setDynamicKeys(domDescription.getChildren(), true);
     }
     
     public HtmlElementNode(HtmlNavigatorPanelUI ui, FileObject fileObject) {
@@ -178,7 +173,7 @@ public class HtmlElementNode extends AbstractNode {
                 return getSourceDescription();
                 
             default:
-                return null; //will not happen
+                return null; 
         }
     }
      
@@ -330,7 +325,7 @@ public class HtmlElementNode extends AbstractNode {
         }
         
     }
-
+ 
     
     @Override
     public String getDisplayName() {
@@ -340,8 +335,10 @@ public class HtmlElementNode extends AbstractNode {
                 return source.getName();
             case DOM:
                 return dom.getName();
+            case NON:
+                return "NON"; 
             default:
-                return null; 
+                throw new IllegalStateException();
         }
     }
 
@@ -371,6 +368,28 @@ public class HtmlElementNode extends AbstractNode {
                 b.append(classVal);
                 b.append("</font>");
             }
+        }
+        
+        boolean debug = false;
+        if(debug) {
+            b.append(" [");
+            if(getSourceDescription() != null) {
+                b.append("SOURCE:");
+                b.append("idx:");
+                b.append(Diff.getIndexInParent(getSourceDescription()));
+                b.append("hc:");
+                b.append(Diff.hashCode(getSourceDescription()));
+            }
+            b.append(' ');
+            if(getDOMDescription() != null) {
+                b.append("DOM:");
+                b.append("idx:");
+                b.append(Diff.getIndexInParent(getDOMDescription()));
+                b.append("hc:");
+                b.append(Diff.hashCode(getDOMDescription()));
+            }
+            
+            b.append("]");
         }
 
         return b.toString();
@@ -524,22 +543,27 @@ public class HtmlElementNode extends AbstractNode {
         // Now refresh keys
         switch(newDescription.getType()) {
             case Description.SOURCE:
-                ch.setStaticKeys(newChildrenDescriptions);
+                Collection newSourceKeys = Diff.mergeOldAndNew(ch.staticKeys, newChildrenDescriptions, this);
+                ch.setStaticKeys(newSourceKeys, false); //will set re-set the keys later
                 break;
             case Description.DOM:
-                ch.setDynamicKeys(newChildrenDescriptions);
+                Collection newDOMKeys = Diff.mergeOldAndNew(ch.dynamicKeys, newChildrenDescriptions, this);
+                ch.setDynamicKeys(newDOMKeys, false); //will set re-set the keys later
                 break;
         }
-        //really reset the node's children keys
-        ch.resetKeys();
+
+        //merge the source and dom keys
+        Collection<? extends Description> newKeys = Diff.mergeSourceAndDOM(ch.staticKeys, ch.dynamicKeys, this);
+        ch.resetKeys(newKeys);
 
         //update text & icon
-        if(currentState != getState()) {
+        boolean stateChanged = currentState != getState();
+        boolean descriptionChanged = originalDescription == null && newDescription != null || originalDescription.hashCode() != newDescription.hashCode();
+        if(stateChanged) {
             //state (type) changed
             fireIconChange();
         }
-        
-        if(originalDescription == null && newDescription != null || originalDescription.hashCode2() != newDescription.hashCode2()) {
+        if(stateChanged || descriptionChanged) {
             fireDisplayNameChange(null, getDisplayName());
         }
         
@@ -554,8 +578,8 @@ public class HtmlElementNode extends AbstractNode {
         Collection<? extends Description> addedKeys = new HashSet<Description>(newChildrenDescriptions);
         addedKeys.removeAll(originalChildrenDescriptions);
         
-//        Collection<Description> changedKeys = new HashSet<Description>(originalChildrenDescriptions);
-//        changedKeys.retainAll(newChildrenDescriptions);
+        Collection<Description> changedKeys = new HashSet<Description>(originalChildrenDescriptions);
+        changedKeys.retainAll(newChildrenDescriptions);
         
         addedKeys.removeAll(removedKeys);
         removedKeys.removeAll(addedKeys);
@@ -574,9 +598,9 @@ public class HtmlElementNode extends AbstractNode {
             }
         }
         
-//        for(Description changedKey : changedKeys) {
-//            System.out.println("* changed key : " + changedKey);
-//        }
+        for(Description changedKey : changedKeys) {
+            System.out.println("* changed key : " + changedKey);
+        }
         
         
         
@@ -637,32 +661,22 @@ public class HtmlElementNode extends AbstractNode {
             return new Node[]{newNode};
         }
 
-        void setStaticKeys(Collection<? extends Description> staticDescriptions) {
+        void setStaticKeys(Collection<? extends Description> staticDescriptions, boolean resetKeys) {
             staticKeys = Collections.<Description>unmodifiableCollection(staticDescriptions);
+            if(resetKeys) {
+                resetKeys(staticDescriptions);
+            }
         }
 
-        void setDynamicKeys(Collection<? extends Description> dynamicDescriptions) {
+        void setDynamicKeys(Collection<? extends Description> dynamicDescriptions, boolean resetKeys) {
             dynamicKeys = Collections.<Description>unmodifiableCollection(dynamicDescriptions);
+            if(resetKeys) {
+                resetKeys(dynamicDescriptions);
+            }
         }
 
-        void resetKeys() {
-            final Set<DescriptionSetWrapper> wrappers = new LinkedHashSet<DescriptionSetWrapper>();
-            
-            //static keys have precedence
-            for(Description d : staticKeys) {
-                wrappers.add(new DescriptionSetWrapper(d));
-            }
-            for(Description d : dynamicKeys) {
-                wrappers.add(new DescriptionSetWrapper(d));
-            }
-            
-            Collection<Description> result = new ArrayList<Description>();
-            for(DescriptionSetWrapper w : wrappers) {
-                result.add(w.getPeer());
-            }
-            
-            setKeys(result);
-
+        void resetKeys(Collection<? extends Description> keys) {
+            setKeys(keys);
         }
     }
 }

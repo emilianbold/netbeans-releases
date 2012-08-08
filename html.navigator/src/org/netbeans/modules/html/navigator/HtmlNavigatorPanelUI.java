@@ -123,7 +123,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         setLayout(new BorderLayout());
         add(view, BorderLayout.CENTER);
 
-        statusLabel = new JLabel();;
+        statusLabel = new JLabel();
         stateLabel = new JLabel(NOT_CONNECTED);
         stateLabel.setEnabled(false);
         statusPanel = new JPanel();
@@ -249,7 +249,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         HtmlElementNode root = getRootNode();
         if (root != null) {
             
-            WebKitNodeDescription domDescription = new WebKitNodeDescription(Utils.getWebKitNode(pageModel.getDocumentNode()));
+            WebKitNodeDescription domDescription = new WebKitNodeDescription(null, Utils.getWebKitNode(pageModel.getDocumentNode()));
             root.setDescription(domDescription);
             
             LOGGER.info("root.refreshDOMStatus() called");
@@ -343,7 +343,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      */
     public void setParserResult(HtmlParserResult result) {
         FileObject file = result.getSnapshot().getSource().getFileObject();
-        refresh(new HtmlElementDescription(result.root(), file));
+        refresh(new HtmlElementDescription(null, result.root(), file));
     }
 
     private void refresh(final HtmlElementDescription description) {
