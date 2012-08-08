@@ -192,9 +192,4 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     public void deactivate() {
     }
 
-    @Override
-    public ServerURLMappingImplementation getServerURLMapping() {
-        return null;
-    }
-    
 }

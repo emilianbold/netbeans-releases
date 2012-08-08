@@ -107,7 +107,7 @@ public final class DebugAction extends AbstractAction implements ContextAwareAct
                 WebKitDebugging webKitDebugging = APIFactory.createWebKitDebugging(transportHelper);
                 webKitDebugging.getDebugger().enable();
                 NetBeansJavaScriptDebuggerFactory fact = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
-                org.netbeans.api.debugger.Session debuggerSession = fact.createDebuggingSession(webKitDebugging);
+                org.netbeans.api.debugger.Session debuggerSession = fact.createDebuggingSession(webKitDebugging, Lookups.singleton(p));
                 PageInspector.getDefault().inspectPage(Lookups.singleton(webKitDebugging));
                 safariDebugTransport.setBaseUrl(webKitDebugging.getDOM().getDocument().getDocumentURL());
             }
