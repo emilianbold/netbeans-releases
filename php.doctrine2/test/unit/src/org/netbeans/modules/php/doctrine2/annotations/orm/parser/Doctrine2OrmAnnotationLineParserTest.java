@@ -97,4 +97,8 @@ public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("Id"));
     }
 
+    public void testInheritanceTypeParser() {
+        assertNotNull(parser.parse("InheritanceType"));
+    }
+
 }
