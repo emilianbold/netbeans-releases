@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.extdoc;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,6 +59,9 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class ExtDocDocumentationProvider implements JsDocumentationProvider {
 
     private static Set<String> supportedTags;
+
+    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
+            Arrays.<AnnotationCompletionTagProvider>asList(new ExtDocAnnotationCompletionTagProvider("ExtDoc"));
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
@@ -80,6 +83,6 @@ public class ExtDocDocumentationProvider implements JsDocumentationProvider {
 
     @Override
     public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return Collections.<AnnotationCompletionTagProvider>emptyList();
+        return ANNOTATION_PROVIDERS;
     }
 }

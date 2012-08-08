@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.sdoc;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +60,9 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class SDocDocumentationProvider implements JsDocumentationProvider {
 
     private static Set<String> supportedTags;
+
+    private static final List<AnnotationCompletionTagProvider> ANNOTATION_PROVIDERS =
+            Arrays.<AnnotationCompletionTagProvider>asList(new SDocAnnotationCompletionTagProvider("SDoc"));
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
@@ -80,6 +84,6 @@ public class SDocDocumentationProvider implements JsDocumentationProvider {
 
     @Override
     public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return Collections.<AnnotationCompletionTagProvider>emptyList();
+        return ANNOTATION_PROVIDERS;
     }
 }

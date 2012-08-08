@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class GeneratedValueLineParserTest extends NbTestCase {
-    private GeneratedValueLineParser parser;
+    private ParameterizedAnnotationLineParser parser;
 
     public GeneratedValueLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new GeneratedValueLineParser();
+        this.parser = new ParameterizedAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class GeneratedValueLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsGeneratedValueParsedLine_01() throws Exception {
-        assertTrue(parser.parse("GeneratedValue") instanceof GeneratedValueParsedLine);
+        assertTrue(parser.parse("GeneratedValue") instanceof ParsedLine);
     }
 
     public void testReturnValueIsGeneratedValueParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\GeneratedValue") instanceof GeneratedValueParsedLine);
+        assertTrue(parser.parse("Annotations\\GeneratedValue") instanceof ParsedLine);
     }
 
     public void testReturnValueIsGeneratedValueParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\GeneratedValue") instanceof GeneratedValueParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\GeneratedValue") instanceof ParsedLine);
     }
 
     public void testReturnValueIsGeneratedValueParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\GeneratedValue(strategy=\"IDENTITY\")") instanceof GeneratedValueParsedLine);
+        assertTrue(parser.parse("Annotations\\GeneratedValue(strategy=\"IDENTITY\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("GeneratedValue");
-        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("GeneratedValue", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -101,7 +102,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("GeneratedValue   ");
-        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("GeneratedValue", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -112,7 +113,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("GeneratedValue\t\t  ");
-        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("GeneratedValue", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -123,7 +124,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("GeneratedValue(strategy=\"IDENTITY\")");
-        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("GeneratedValue", parsedLine.getName());
         assertEquals("(strategy=\"IDENTITY\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -134,7 +135,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\GeneratedValue(strategy=\"IDENTITY\")  \t");
-        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("GeneratedValue", parsedLine.getName());
         assertEquals("(strategy=\"IDENTITY\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -146,7 +147,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\GeneratedValue(strategy=\"IDENTITY\")  \t");
-        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("GeneratedValue", parsedLine.getName());
         assertEquals("(strategy=\"IDENTITY\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -157,7 +158,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("generatedvalue");
-        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("GeneratedValue", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -168,7 +169,7 @@ public class GeneratedValueLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\generatedvalue(strategy=\"IDENTITY\")  \t");
-        assertEquals(GeneratedValueLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("GeneratedValue", parsedLine.getName());
         assertEquals("(strategy=\"IDENTITY\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
