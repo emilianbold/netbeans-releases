@@ -66,7 +66,7 @@ public class BrowserConfigurationPanel extends javax.swing.JPanel {
             jHighlightSelectionCheckBox.setVisible(false);
         }
         jAutoRefreshCheckBox.setSelected(cfg.isAutoRefresh());
-        jHighlightSelectionCheckBox.setSelected(cfg.isHighlightSelection());
+        jHighlightSelectionCheckBox.setSelected(cfg.isHighlightSelectionEnabled());
         updateEnablement();
     }
 

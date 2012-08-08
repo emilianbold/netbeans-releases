@@ -39,61 +39,28 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.platform;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
+package org.netbeans.modules.web.browser.spi;
+
+import java.beans.PropertyChangeListener;
 
 /**
- * Implementation of project configuration and associated actions, customizer, etc.
+ * A contract through which Project can communicate to PageInspector. Instance
+ * of this class is expected in project's lookup.
  */
-public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
+public interface PageInspectorCustomizer {
 
-    /**
-     * Configuration's unique ID used to persist selected configuration etc.
-     */
-    @NonNull String getId();
+    public static final String PROPERTY_HIGHLIGHT_SELECTION = "highlight.selection";
     
     /**
-     * Configuration's customizer.
-     * @return can return null if none
+     * Controls whether hovering over an element in IDE's Live DOM tree should 
+     * highlight the element in browser or not.
+     * Note: hovering over elements directly in browser (and impact of such action on IDE) is
+     * not controlled by this option - Select Mode in browser is.
      */
-    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
-
-    /**
-     * Persist changes done in configuration's customizer.
-     */
-    void save();
-    
-    /**
-     * Configuration's action provider.
-     * @return can return null
-     */
-    ActionProvider getActionProvider();
-
-    /**
-     * Can this platform be deleted?
-     */
-    boolean canBeDeleted();
-
-    /**
-     * Delete this configuration.
-     */
-    void delete();
-
-
-    /**
-     * Configuration's handler changes in project sources.
-     * @return can return null
-     */
-    RefreshOnSaveListener getRefreshOnSaveListener();
-
-    /**
-     * Notification that configuration is not active anymore.
-     */
-    void deactivate();
-
     boolean isHighlightSelectionEnabled();
+    
+    void addPropertyChangeListener(PropertyChangeListener l);
+    
+    void removePropertyChangeListener(PropertyChangeListener l);
 }

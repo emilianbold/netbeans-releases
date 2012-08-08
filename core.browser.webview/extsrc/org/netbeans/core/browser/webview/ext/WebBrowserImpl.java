@@ -76,6 +76,7 @@ import org.netbeans.core.browser.api.WebBrowserListener;
 import org.netbeans.core.browser.webview.BrowserCallback;
 import org.netbeans.core.browser.webview.HtmlBrowserImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
@@ -83,6 +84,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -91,7 +93,7 @@ import org.w3c.dom.Node;
  *
  * @author S. Aubrecht, Jan Stola
  */
-public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
+public class WebBrowserImpl extends WebBrowser implements BrowserCallback, EnhancedBrowser {
     
     private JFXPanel container;
     private String urlToLoad;
@@ -112,6 +114,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private final JToolBar toolbar = new JToolBar();
 
     private final Semaphore INIT_LOCK = new Semaphore( -1 );
+    private boolean enhancedMode;
+    private Lookup projectContext;
 
     /**
      * Creates a new {@code WebBrowserImpl}.
@@ -602,7 +606,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                         Logger logger = Logger.getLogger(WebBrowserImpl.class.getName());
                         logger.log(Level.INFO, "No PageInspector found: ignoring the request for page inspection!"); // NOI18N
                     } else {
-                        inspector.inspectPage(getLookup());
+                        inspector.inspectPage(new ProxyLookup(getLookup(), projectContext));
                     }
                 }
             });
@@ -720,5 +724,32 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             res = javafx.scene.paint.Color.rgb( c.getRed(), c.getGreen(), c.getBlue() );
         }
         return res;
+    }
+    
+    @Override
+    public void setProjectContext(Lookup projectContext) {
+        this.projectContext = projectContext;
+    }
+
+    @Override
+    public boolean hasEnhancedMode() {
+        return enhancedMode;
+    }
+
+    @Override
+    public void setEnhancedMode(boolean mode) {
+        enhancedMode = mode;
+    }
+
+    @Override
+    public void disablePageInspector() {
+    }
+
+    @Override
+    public void enableLiveHTML() {
+    }
+
+    @Override
+    public void close(boolean closeTab) {
     }
 }

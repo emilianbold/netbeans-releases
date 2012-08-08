@@ -195,6 +195,7 @@ public class ClientSideProject implements Project {
                //getBrowserSupport(),
                new ClassPathProviderImpl(this),
                configurationProvider,
+               new PageInspectorCustomizerImpl(this),
                GenericSources.genericOnly(this)
        });
     }

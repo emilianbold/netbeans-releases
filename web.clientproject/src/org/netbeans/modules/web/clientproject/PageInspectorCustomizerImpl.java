@@ -39,61 +39,47 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.spi.platform;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfiguration;
+package org.netbeans.modules.web.clientproject;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 
 /**
- * Implementation of project configuration and associated actions, customizer, etc.
+ *
  */
-public interface ClientProjectConfigurationImplementation extends ProjectConfiguration {
+public class PageInspectorCustomizerImpl implements PageInspectorCustomizer {
 
-    /**
-     * Configuration's unique ID used to persist selected configuration etc.
-     */
-    @NonNull String getId();
+    private ClientSideProject project;
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+
+    public PageInspectorCustomizerImpl(ClientSideProject project) {
+        this.project = project;
+        this.project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                // TODO: improve this later to fire change only when relevant!
+                //       that is when browser is changed or this option
+                support.firePropertyChange(PageInspectorCustomizer.PROPERTY_HIGHLIGHT_SELECTION, null, null);
+            }
+        });
+    }
     
-    /**
-     * Configuration's customizer.
-     * @return can return null if none
-     */
-    ProjectConfigurationCustomizer getProjectConfigurationCustomizer();
+    @Override
+    public boolean isHighlightSelectionEnabled() {
+        return project.getProjectConfigurations().getActiveConfiguration().isHighlightSelectionEnabled();
+    }
 
-    /**
-     * Persist changes done in configuration's customizer.
-     */
-    void save();
-    
-    /**
-     * Configuration's action provider.
-     * @return can return null
-     */
-    ActionProvider getActionProvider();
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        support.addPropertyChangeListener(l);
+    }
 
-    /**
-     * Can this platform be deleted?
-     */
-    boolean canBeDeleted();
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        support.removePropertyChangeListener(l);
+    }
 
-    /**
-     * Delete this configuration.
-     */
-    void delete();
-
-
-    /**
-     * Configuration's handler changes in project sources.
-     * @return can return null
-     */
-    RefreshOnSaveListener getRefreshOnSaveListener();
-
-    /**
-     * Notification that configuration is not active anymore.
-     */
-    void deactivate();
-
-    boolean isHighlightSelectionEnabled();
 }

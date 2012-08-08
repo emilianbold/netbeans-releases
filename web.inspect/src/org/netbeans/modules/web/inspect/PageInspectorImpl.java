@@ -43,8 +43,6 @@ package org.netbeans.modules.web.inspect;
 
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -61,9 +59,11 @@ import javax.swing.KeyStroke;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
+import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.openide.util.Lookup;
@@ -77,7 +77,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Stola
  */
 @ServiceProvider(service=PageInspector.class)
-public class PageInspectorImpl extends PageInspector {
+public class PageInspectorImpl extends PageInspector implements PropertyChangeListener {
     /** Name of the property that is fired when the page model changes. */
     public static final String PROP_MODEL = "model"; // NOI18N
     /** Name of the toolbar component responsible for selection mode switching. */
@@ -92,6 +92,7 @@ public class PageInspectorImpl extends PageInspector {
     private MessageDispatcher messageDispatcher;
     /** Lock guarding access to modifiable fields. */
     private final Object LOCK = new Object();
+    private PageInspectorCustomizer pageInspectorCustomizer;
 
     /**
      * Creates a new {@code PageInspectorImpl}.
@@ -118,6 +119,17 @@ public class PageInspectorImpl extends PageInspector {
                 if (messageDispatcher != null) {
                     messageDispatcher.removeMessageListener(messageListener);
                 }
+            }
+            if (pageInspectorCustomizer != null) {
+                pageInspectorCustomizer.removePropertyChangeListener(this);
+            }
+            Project p = pageContext.lookup(Project.class);
+            if (p != null) {
+                pageInspectorCustomizer = p.getLookup().lookup(PageInspectorCustomizer.class);
+            }
+            if (pageInspectorCustomizer != null) {
+                pageInspectorCustomizer.addPropertyChangeListener(this);
+                updateHighlightMode();
             }
             WebKitDebugging webKit = pageContext.lookup(WebKitDebugging.class);
             if (webKit != null) {
@@ -184,6 +196,21 @@ public class PageInspectorImpl extends PageInspector {
             });
             toolBar.add(selectionModeButton);
         }
+    }
+    
+    private void updateHighlightMode() {
+        PageInspectorCustomizer pic = pageInspectorCustomizer;
+        if (pic != null) {
+            boolean b = pic.isHighlightSelectionEnabled();
+            
+            // TODO: XXX: do something with the b
+            
+        }
+    }
+    
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        updateHighlightMode();
     }
 
     /**

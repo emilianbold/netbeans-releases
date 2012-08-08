@@ -113,7 +113,8 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         }
     }
 
-    public boolean isHighlightSelection() {
+    @Override
+    public boolean isHighlightSelectionEnabled() {
         String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_HIGHLIGHT_SELECTION+"."+getId());
         if (val != null) {
             return Boolean.parseBoolean(val);
@@ -172,7 +173,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     int getOrder() {
         return order;
     }
-    
+
     private class ProjectConfigurationCustomizerImpl implements ProjectConfigurationCustomizer {
 
         private BrowserConfigurationPanel panel;

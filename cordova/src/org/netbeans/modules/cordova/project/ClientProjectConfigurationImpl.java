@@ -192,4 +192,9 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     public void deactivate() {
     }
 
+    @Override
+    public boolean isHighlightSelectionEnabled() {
+        return true;
+    }
+
 }
