@@ -475,6 +475,28 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/if7.js");
     }
 
+    public void testIf8Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapIfStatement, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/if8.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testIf8Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapIfStatement, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/if8.js", options, ".wrapNever.formatted");
+    }
+
+    public void testIf8IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapIfStatement, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/if8.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testIf8Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/if8.js");
+    }
+
     public void testDoWhile1() throws Exception {
         reformatFileContents("testfiles/formatter/dowhile1.js",new IndentPrefs(4, 4));
     }
