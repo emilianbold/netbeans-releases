@@ -143,56 +143,8 @@
         <folder name="text">
             <folder name="x-tpl">
                 <!-- GSF -->
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/php/smarty/resources/tpl-icon.png"/>
                 <!-- eof GSF -->
-                <folder name="Actions">
-                    <file name="CopyAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
-                        <attr name="position" intvalue="120"/>
-                    </file>
-                    <file name="CutAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CutAction.instance"/>
-                        <attr name="position" intvalue="110"/>
-                    </file>
-                    <file name="DeleteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-DeleteAction.instance"/>
-                        <attr name="position" intvalue="140"/>
-                    </file>
-                    <file name="OpenAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-OpenAction.instance"/>
-                        <attr name="position" intvalue="100"/>
-                    </file>
-                    <file name="PasteAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-PasteAction.instance"/>
-                        <attr name="position" intvalue="130"/>
-                    </file>
-                    <file name="PropertiesAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="190"/>
-                    </file>
-                    <file name="RenameAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
-                        <attr name="position" intvalue="150"/>
-                    </file>
-                    <file name="FileSystemAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="170"/>
-                    </file>
-                    <file name="SaveAsTemplateAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-SaveAsTemplateAction.instance"/>
-                        <attr name="position" intvalue="160"/>
-                    </file>
-                    <file name="ToolsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ToolsAction.instance"/>
-                        <attr name="position" intvalue="250"/>
-                    </file>
-                </folder>
-                <folder name="Factories">
-                    <file name="org-netbeans-modules-php-smarty-editor-TplDataLoader.instance">
-                        <attr intvalue="10998" name="position"/>
-                    <attr name="displayName" stringvalue="TPL"/></file>
-                </folder>
             </folder>
         </folder>
     </folder>

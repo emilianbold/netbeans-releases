@@ -46,7 +46,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,27 +54,19 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -92,7 +83,6 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
     private static final Image BROKEN_PROJECT_BADGE = ImageUtilities.loadImage(BROKEN_PROJECT_BADGE_PATH, true);
     private static final int FIRE_DELAY = 500;
     private static final RequestProcessor FIRER = new RequestProcessor(BrokenProjectAnnotator.class.getName()+".fire", 1, false, false);   //NOI18N
-    private static final RequestProcessor NOTIFIER = new RequestProcessor(BrokenProjectAnnotator.class.getName()+".alert", 1, false, false);   //NOI18N
     private static final Logger LOG = Logger.getLogger(BrokenProjectAnnotator.class.getName());
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -100,7 +90,7 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
         @Override
         public void run() {
             changeSupport.fireChange();
-            LOG.fine("Fire.");
+            LOG.fine("Fire.");  //NOI18N
         }
     });
     private final Object cacheLock = new Object();
@@ -109,12 +99,6 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
     //@GuardedBy("cacheLock")
     private final Map<ProjectProblemsProvider, Set<Reference<Project>>> problemsProvider2prj =
             new WeakHashMap<ProjectProblemsProvider, Set<Reference<Project>>>();
-    private final AtomicBoolean listensOnOpenProjects = new AtomicBoolean();
-    private final Object openedProjectsLock = new Object();
-    //@GuardedBy("openedProjectsLock")
-    private long eventId;
-    //@GuardedBy("openedProjectsLock")
-    private Set<URI> openedProjects;
 
 
     @NonNull
@@ -125,39 +109,23 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
             final boolean openedNode) {
         LOG.log(Level.FINE, "The annotateIcon called for project: {0}.", project);  //NOI18N
         Integer problemsCount = null;
-        boolean firstTime = false;
         synchronized (cacheLock) {
             if (brokenCache.containsKey(project)) {
                 problemsCount = brokenCache.get(project);
                 LOG.log(Level.FINE, "In cache: {0}.", problemsCount);   //NOI18N
             } else {
-                firstTime = true;
-            }
-        }
-        if (firstTime) {
-            //Threading: Aquires PM.mutex().RL -> Cannot be called under private lock.
-            if (!isOpened(project)) {
-                return original;
-            }
-            synchronized (cacheLock) {
-                if (!brokenCache.containsKey(project)) {
-                    brokenCache.put(project, problemsCount);
-                    final ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
-                    if (ppp != null) {
-                        ppp.addPropertyChangeListener(this);
-                        Set<Reference<Project>> projects = problemsProvider2prj.get(ppp);
-                        if (projects == null) {
-                            projects = new HashSet<Reference<Project>>();
-                            problemsProvider2prj.put(ppp, projects);
-                        }
-                        projects.add(new WeakReference<Project>(project));
+                brokenCache.put(project, problemsCount);
+                final ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
+                if (ppp != null) {
+                    ppp.addPropertyChangeListener(this);
+                    Set<Reference<Project>> projects = problemsProvider2prj.get(ppp);
+                    if (projects == null) {
+                        projects = new HashSet<Reference<Project>>();
+                        problemsProvider2prj.put(ppp, projects);
                     }
-                    LOG.fine("Added listeners.");    //NOI18N
-                } else {
-                    firstTime = false;
-                    problemsCount = brokenCache.get(project);
-                    LOG.log(Level.FINE, "In cache: {0}.", problemsCount);   //NOI18N
+                    projects.add(new WeakReference<Project>(project));
                 }
+                LOG.fine("Added listeners.");    //NOI18N
             }
         }
 
@@ -168,14 +136,6 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
                 Collections.<ProjectProblemsProvider.ProjectProblem>emptySet():
                 provider.getProblems();
             problemsCount = problems.size();
-            if (firstTime) {
-                for (ProjectProblemsProvider.ProjectProblem p : problems) {
-                    if (p.getSeverity() == ProjectProblemsProvider.Severity.ERROR) {
-                        scheduleAlert(project);
-                        break;
-                    }
-                }
-            }
             synchronized (cacheLock) {
                 brokenCache.put(project, problemsCount);
                 LOG.log(Level.FINE, "Set {0} to cache.", problemsCount);   //NOI18N
@@ -234,70 +194,6 @@ public class BrokenProjectAnnotator implements ProjectIconAnnotator, PropertyCha
                 }
             }
             task.schedule(FIRE_DELAY);
-        } else if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(name)) {
-            synchronized (openedProjectsLock) {
-                eventId++;
-                openedProjects = null;
-            }
         }
-    }
-
-    /**
-     * Shows alert for given project.
-     * Todo: Better would be to use ProjectOpenHook, however there is no way
-     * how to register the POH for all project types, see issue #215687.
-     * @param prj
-     */
-    private void scheduleAlert(@NonNull final Project prj) {
-        NOTIFIER.post(new Runnable() {
-            @Override
-            public void run() {
-                final Future<Project[]> projects = OpenProjects.getDefault().openProjects();
-                try {
-                    projects.get();
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InterruptedException ie) {
-                    Exceptions.printStackTrace(ie);
-                }
-                ProjectProblems.showAlert(prj);
-            }
-        });
-    }
-
-    private boolean isOpened(@NonNull final Project p) {
-        long curId;
-        Set<URI> ol;
-        synchronized (openedProjectsLock) {
-            ol = openedProjects;
-            curId = eventId;
-        }
-        if (ol == null) {
-            final OpenProjects opl;
-            try {
-                opl = OpenProjects.getDefault();
-            } catch (LinkageError le) {
-                //The org.openide.windows.WindowManager.invokeWhenUIReady
-                //causes ExceptionInInitializerError in some unit tests.
-                //Safe to ignore
-                LOG.warning("No OpenProjects instance found."); //NOI18N
-                return false;
-            }
-            if (listensOnOpenProjects.compareAndSet(false, true)) {
-                opl.addPropertyChangeListener(WeakListeners.propertyChange(this, opl));
-            }
-            ol = new HashSet<URI>();
-            for (Project op : OpenProjects.getDefault().getOpenProjects()) {
-                ol.add(op.getProjectDirectory().toURI());
-            }
-            synchronized (openedProjectsLock) {
-                if (curId == eventId) {
-                    openedProjects = ol;
-                } else if (openedProjects != null) {
-                    ol = openedProjects;
-                }
-            }
-        }
-        return ol.contains(p.getProjectDirectory().toURI());
     }
 }

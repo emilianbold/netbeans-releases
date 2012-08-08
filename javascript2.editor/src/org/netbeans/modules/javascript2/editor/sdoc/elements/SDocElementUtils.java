@@ -44,9 +44,9 @@ package org.netbeans.modules.javascript2.editor.sdoc.elements;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.doc.api.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 
 /**
@@ -95,16 +95,16 @@ public class SDocElementUtils {
      */
     public static List<Type> parseTypes(String textToParse, int offset) {
         List<Type> types = new LinkedList<Type>();
+        textToParse = removeCurlyBraces(textToParse);
         String[] typesArray = textToParse.split("[,]"); //NOI18N
         for (String string : typesArray) {
-            types.add(new TypeImpl(string, offset + textToParse.indexOf(string)));
+            types.add(new TypeImpl(string.trim(), offset + textToParse.indexOf(string.trim())));
         }
         return types;
     }
 
     private static TypeInformation parseTypeInformation(SDocElementType elementType, String elementText, int descStartOffset) {
         TypeInformation typeInformation = new TypeInformation();
-        int nameOffset = -1;
         int process = 0;
         
         String[] parts = elementText.split("[\\s]+"); //NOI18N
@@ -114,16 +114,26 @@ public class SDocElementUtils {
                 int typeOffset = descStartOffset + 1;
                 int rparIndex = parts[0].indexOf("}"); //NOI18N
                 if (rparIndex == -1) {
-                    typeInformation.setType(parseTypes(parts[0].trim(), typeOffset));
+                    StringBuilder sb = new StringBuilder();
+                    while (process < parts.length) {
+                        sb.append(parts[process]);
+                        if (parts[process].indexOf("}") == -1) { //NOI18N
+                            sb.append(" ");
+                            process++;
+                        } else {
+                            break;
+                        }
+                    }
+                    typeInformation.setType(parseTypes(sb.toString(), typeOffset));
                 } else {
-                    typeInformation.setType(parseTypes(parts[0].substring(1, rparIndex), typeOffset));
+                    typeInformation.setType(parseTypes(parts[0], typeOffset));
                 }
                 process++;
             }
 
             // get name value (at named types)
             if (parts.length > process && elementType.getCategory() == SDocElementType.Category.TYPE_NAMED) {
-                nameOffset = descStartOffset + elementText.indexOf(parts[process]);
+                int nameOffset = descStartOffset + elementText.indexOf(parts[process]);
                 parseAndStoreTypeDetails(typeInformation, nameOffset, parts[process].trim());
                 process++;
             }
@@ -148,6 +158,10 @@ public class SDocElementUtils {
         }
         typeInfo.setOptional(optional);
         typeInfo.setName(new DocIdentifierImpl(nameText, nameOffset));
+    }
+
+    private static String removeCurlyBraces(String textToParse) {
+        return textToParse.replaceAll("[{}]+", "");
     }
 
     private static class TypeInformation {

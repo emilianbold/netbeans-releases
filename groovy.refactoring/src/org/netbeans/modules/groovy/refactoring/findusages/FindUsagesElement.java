@@ -60,14 +60,23 @@ import org.openide.util.Lookup;
  *
  * @author Martin Janicek
  */
-public class FindUsagesElement extends SimpleRefactoringElementImplementation {
+public class FindUsagesElement extends SimpleRefactoringElementImplementation implements Comparable<FindUsagesElement> {
 
     private final GroovyRefactoringElement element;
     private final BaseDocument doc;
+    private final Line line;
+    private final int lineNumber;
+
 
     public FindUsagesElement(GroovyRefactoringElement element, BaseDocument doc) {
         this.element = element;
         this.doc = doc;
+        this.line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
+        this.lineNumber = line.getLineNumber();
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
     }
 
     @Override
@@ -77,7 +86,6 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation {
 
     @Override
     public String getDisplayText() {
-        Line line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
         return line.getText().trim();
     }
 
@@ -106,5 +114,10 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation {
         PositionRef ref1 = ces.createPositionRef(range.getStart(), Position.Bias.Forward);
         PositionRef ref2 = ces.createPositionRef(range.getEnd(), Position.Bias.Forward);
         return new PositionBounds(ref1, ref2);
+    }
+
+    @Override
+    public int compareTo(FindUsagesElement comparedElement) {
+        return this.lineNumber - comparedElement.lineNumber;
     }
 }

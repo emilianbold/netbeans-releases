@@ -93,6 +93,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -159,6 +160,12 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
     private Preferences prefs;
 
     /**
+     * Prevent listeners from being reclaimed before this Component
+     */
+    private LookupListener  lookupListenerGC;
+    private PreferenceChangeListener prefListenerGC;
+
+    /**
      * Coloring from user settings. Updated in {@link #updateColors}.
      */
     private Coloring coloring;
@@ -168,12 +175,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         this.mimeType = DocumentUtilities.getMimeType(editor);
         this.prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
         
-        ViewHierarchy.get(editor).addViewHierarchyListener(this);
-        editor.addFocusListener(this);
-        
         final Lookup.Result r = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editor)).lookupResult(
                 FontColorSettings.class);
-        r.addLookupListener(new LookupListener() {
+        lookupListenerGC = new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
                 Iterator<FontColorSettings> fcsIt = r.allInstances().iterator();
@@ -181,10 +185,11 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
                   updateColors(r);
                 }
             }
-        });
-        
-        PreferenceChangeListener l = new PrefListener();
-        prefs.addPreferenceChangeListener(l);
+        };
+        prefListenerGC = new PrefListener();
+
+        r.addLookupListener(WeakListeners.create(LookupListener.class, lookupListenerGC , r));
+        prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListenerGC, prefs));
         loadPreferences();
         
         editorPane = findEditorPane(editor);
@@ -205,7 +210,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
     }
     
     private class PrefListener implements PreferenceChangeListener {
-
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String prefName = evt == null ? null : evt.getKey();
@@ -238,6 +242,22 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
     public void viewHierarchyChanged(ViewHierarchyEvent evt) {
         checkRepaint(evt);
     }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        ViewHierarchy.get(editor).addViewHierarchyListener(this);
+        editor.addFocusListener(this);
+    }
+
+    @Override
+    public void removeNotify() {
+        ViewHierarchy.get(editor).removeViewHierarchyListener(this);
+        editor.removeFocusListener(this);
+        super.removeNotify();
+    }
+    
+    
     
     private void updateColors(Lookup.Result r) {
         Iterator<FontColorSettings> fcsIt = r.allInstances().iterator();
@@ -364,32 +384,35 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
      * @return array of Y coordinates of outline start/end/branching.
      */
     private int[] findLinePoints(int[] origin, int[] matches) throws BadLocationException {
+        boolean lineDown = false;
+        
         if (editorPane != null) {
             Object o = editorPane.getClientProperty(MATCHED_BRACES);
             if (o instanceof int[]) {
                 origin = (int[])o;
                 matches = null;
+                lineDown = true;
             }
         }
-        if (baseUI == null || origin == null) {
+        if (baseUI == null || origin == null || (matches == null && !lineDown)) {
             return null;
         }
         int minOffset = origin[0];
         int maxOffset = origin[1];
         
-        if (matches != null) {
+        int maxY;
+        
+        if (lineDown) {
+            maxY = getSize().height;
+        } else {
             for (int i = 0; i < matches.length; i += 2) {
                 minOffset = Math.min(minOffset, matches[i]);
                 maxOffset = Math.max(maxOffset, matches[i + 1]);
             }
+            maxY = baseUI.getYFromPos(maxOffset);
         }
-        
+
         int minY = baseUI.getYFromPos(minOffset);
-        int maxY = baseUI.getYFromPos(maxOffset);
-        
-        if (matches == null) {
-            maxY = getSize().height;
-        }
         
         // do not paint ranges for a single-line brace
         if (minY == maxY) {

@@ -63,7 +63,7 @@ public class TemplateParsedLineTest extends NbTestCase {
         try {
             new TemplateParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -71,7 +71,7 @@ public class TemplateParsedLineTest extends NbTestCase {
         try {
             new TemplateParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 

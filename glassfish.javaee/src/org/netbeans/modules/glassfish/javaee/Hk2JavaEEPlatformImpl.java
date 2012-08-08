@@ -90,6 +90,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -647,6 +648,25 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         
         @Override
         public void configureCustomJersey( Project project ){
+        }
+        
+        /* (non-Javadoc)
+         * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#isBundled(java.lang.String)
+         */
+        @Override
+        public boolean isBundled( String classFqn ) {
+            List<URL> urls = getJerseyLibraryURLs();
+            for( URL url : urls ){
+                FileObject root = URLMapper.findFileObject(url);
+                if ( FileUtil.isArchiveFile(root)){
+                    root = FileUtil.getArchiveRoot(root);
+                }
+                String path = classFqn.replace('.', '/')+".class";
+                if ( root.getFileObject(path )!= null ){
+                    return true;
+                }
+            }
+            return false;
         }
         
         private boolean hasJee6Profile(){

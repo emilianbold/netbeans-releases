@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.openfile;
 
+import java.awt.FileDialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -136,8 +137,32 @@ public class OpenFileAction implements ActionListener {
             JFileChooser chooser = prepareFileChooser();
             File[] files;
             try {
-                files = chooseFilesToOpen(chooser);
-                currentDirectory = chooser.getCurrentDirectory();
+                if( Boolean.getBoolean("nb.native.filechooser") ) { //NOI18N
+                    String oldFileDialogProp = System.getProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+                    System.setProperty("apple.awt.fileDialogForDirectories", "false"); //NOI18N
+                    FileDialog fileDialog = new FileDialog(WindowManager.getDefault().getMainWindow());
+                    fileDialog.setMode(FileDialog.LOAD);
+                    fileDialog.setDirectory(getCurrentDirectory().getAbsolutePath());
+                    fileDialog.setTitle(chooser.getDialogTitle());
+                    fileDialog.setVisible(true);
+                    if( null != oldFileDialogProp ) {
+                        System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
+                    } else {
+                        System.clearProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+                    }
+
+                    if( fileDialog.getDirectory() != null && fileDialog.getFile() != null ) {
+                        String selFile = fileDialog.getFile();
+                        File dir = new File( fileDialog.getDirectory() );
+                        files = new File[] { new File( dir, selFile ) };
+                        currentDirectory = dir;
+                    } else {
+                        throw new UserCancelException();
+                    }
+                } else {
+                    files = chooseFilesToOpen(chooser);
+                    currentDirectory = chooser.getCurrentDirectory();
+                }
             } catch (UserCancelException ex) {
                 return;
             }

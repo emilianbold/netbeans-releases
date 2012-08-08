@@ -42,9 +42,13 @@
 package org.netbeans.modules.javascript2.editor.sdoc;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.sdoc.elements.SDocElementType;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -54,14 +58,28 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public class SDocDocumentationProvider implements JsDocumentationProvider {
 
+    private static Set<String> supportedTags;
+
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
         return new SDocDocumentationHolder(snapshot);
     }
 
     @Override
-    public Set getSupportedTags() {
-        return Collections.emptySet();
+    public synchronized Set getSupportedTags() {
+        if (supportedTags == null) {
+            supportedTags = new HashSet<String>(SDocElementType.values().length);
+            for (SDocElementType type : SDocElementType.values()) {
+                supportedTags.add(type.toString());
+            }
+            supportedTags.remove("unknown");
+            supportedTags.remove("contextSensitive");
+        }
+        return supportedTags;
     }
 
+    @Override
+    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
+        return Collections.<AnnotationCompletionTagProvider>emptyList();
+    }
 }

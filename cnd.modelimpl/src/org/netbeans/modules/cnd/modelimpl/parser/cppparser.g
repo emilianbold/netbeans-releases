@@ -838,8 +838,6 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 				printf("external_declaration_template_1b[%d]: Class template definition\n",
 					LT(1).getLine());
 			}
-                        {action.simple_declaration(LT(1));}
-                        {action.class_declaration(LT(1));}                           
 			declaration[declOther]
 			{ #external_declaration_template = #(#[CSM_TEMPLATE_CLASS_DECLARATION, "CSM_TEMPLATE_CLASS_DECLARATION"], #external_declaration_template); }
 		|
@@ -1029,6 +1027,8 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		|   cv_qualifier 
 		|   LITERAL_typedef
 		)* class_head) =>
+                {action.simple_declaration(LT(1));}
+                {action.class_declaration(LT(1));}
 		(LITERAL___extension__!)? declaration[declOther]
 		{ #external_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #external_declaration); }
 
@@ -1050,6 +1050,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             )*
             LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
         ) =>
+        {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
@@ -1059,6 +1060,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
         enum_specifier (init_declarator_list[declOther])? 
         {action.end_enum_declaration(LT(1));}
+        {action.end_simple_declaration(LT(1));}
         SEMICOLON! //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
     |
@@ -1069,6 +1071,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             )*
             LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
         ) =>
+        {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
             (   sc = storage_class_specifier
@@ -1077,6 +1080,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
         enum_specifier
         {action.end_enum_declaration(LT(1));}
+        {action.end_simple_declaration(LT(1));}
         SEMICOLON //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #external_declaration); }
     |
@@ -1299,9 +1303,13 @@ decl_namespace
 namespace_alias_definition
 	{String qid; String name = "";}
 	:
-		LITERAL_namespace
+		lns:LITERAL_namespace
 		ns2:IDENT{_td = true;name=ns2.getText();declaratorID((name),qiType);}
-		ASSIGNEQUAL qid = qualified_id SEMICOLON!
+		lae:ASSIGNEQUAL 
+                {action.namespace_alias_definition(lns, ns2, lae);}
+                qid = qualified_id 
+                {action.end_namespace_alias_definition(LT(1));}
+                SEMICOLON!
 		{#namespace_alias_definition = #(#[CSM_NAMESPACE_ALIAS, name], #namespace_alias_definition);}
 	;
 
@@ -1437,6 +1445,7 @@ member_declaration
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
 		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY )=>
+                {action.simple_declaration(LT(1));}
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
@@ -1445,11 +1454,13 @@ member_declaration
 		}
 		enum_specifier (member_declarator_list)? 
                 {action.end_enum_declaration(LT(1));}
+                {action.end_simple_declaration(LT(1));}
                 SEMICOLON!	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|
 		// Enum definition (don't want to backtrack over this in other alts)
 		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON )=>
+                {action.simple_declaration(LT(1));}
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1)
@@ -1458,6 +1469,7 @@ member_declaration
 		}
 		enum_specifier
                 {action.end_enum_declaration(LT(1));}
+                {action.end_simple_declaration(LT(1));}
                 SEMICOLON	//{end_of_stmt();}
 		{ #member_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #member_declaration); }
 	|	
@@ -2119,7 +2131,8 @@ qualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
-                {action.using_directive(action.USING_DIRECTIVE__IDENT, id);}
+                {action.simple_template_id_or_ident(id);}
+                //{action.using_directive(action.USING_DIRECTIVE__IDENT, id);}
 		{qitem.append(id.getText());}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
@@ -2147,6 +2160,7 @@ unqualified_id returns [String q = ""]
 	(  
 		id:IDENT	(options{warnWhenFollowAmbig = false;}:
 				 LESSTHAN template_argument_list GREATERTHAN)?
+                {action.simple_template_id_or_ident(id);}
 		{qitem.append(id.getText());}
 		|  
 		LITERAL_OPERATOR optor (options{warnWhenFollowAmbig = false;}:
@@ -3599,13 +3613,16 @@ using_declaration
                     {action.using_directive(u, ns);}
                     {if(LA(1) == SCOPE) {action.using_directive(action.USING_DIRECTIVE__SCOPE, LT(1));}} 
                     qid = qualified_id	// Using-directive
-
+                    {action.end_using_directive(LT(0));}
 		    {#using_declaration = #[CSM_USING_DIRECTIVE, qid]; #using_declaration.addChild(#u);}
 		|
+                    {action.using_declaration(u);}
+                    {if(LA(1) == SCOPE) {action.using_declaration(action.USING_DECLARATION__SCOPE, LT(1));}} 
                     qid = unqualified_id				// Using-declaration
+                    {action.end_using_declaration(LT(1));}
 		    {#using_declaration = #[CSM_USING_DECLARATION, qid]; #using_declaration.addChild(#u);}
 		)
-                {action.end_using_directive(LT(0));}
+                
 		SEMICOLON! //{end_of_stmt();}
 	;
 

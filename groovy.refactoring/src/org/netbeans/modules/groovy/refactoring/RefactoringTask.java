@@ -47,11 +47,14 @@ import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
+import org.netbeans.modules.groovy.refactoring.utils.FindTypeUtils;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -119,8 +122,10 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
             BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
             AstPath path = new AstPath(root, caret, doc);
+            ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, fileObject, caret);;
+            ElementKind kind = ElementUtils.getKind(path, fileObject, doc, caret);
 
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, (ModuleNode) root, path.leaf(), fileObject);
+            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, findingNode, fileObject, kind);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, start, end, parserResult);
             }
@@ -146,12 +151,10 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         private final FileObject fileObject;
         private RefactoringUI ui;
-        private Node node;
 
 
         private NodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
             assert nodes.size() == 1;
-            this.node = nodes.iterator().next();
             this.fileObject = fileObject;
         }
 
@@ -163,7 +166,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
                 return;
             }
             
-            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, (ModuleNode) root, root, fileObject);
+            GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, root, fileObject, ElementKind.CLASS);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, parserResult);
             }

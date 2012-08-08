@@ -43,8 +43,8 @@
  */
 package org.openide.filesystems;
 
-import org.openide.util.*;
 import java.awt.Component;
+import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.awt.KeyboardFocusManager;
@@ -53,9 +53,11 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
+import org.openide.util.*;
 
 /**
  * Utility class for working with JFileChoosers.  In particular, remembering
@@ -314,6 +316,12 @@ public class FileChooserBuilder {
      */
     public File showOpenDialog() {
         JFileChooser chooser = createFileChooser();
+        if( Boolean.getBoolean("nb.native.filechooser") ) { //NOI18N
+            FileDialog fileDialog = createFileDialog( chooser.getCurrentDirectory() );
+            if( null != fileDialog ) {
+                return showFileDialog(fileDialog, FileDialog.LOAD );
+            }
+        }
         chooser.setMultiSelectionEnabled(false);
         int dlgResult = chooser.showOpenDialog(findDialogParent());
         if (JFileChooser.APPROVE_OPTION == dlgResult) {
@@ -336,6 +344,12 @@ public class FileChooserBuilder {
      */
     public File showSaveDialog() {
         JFileChooser chooser = createFileChooser();
+        if( Boolean.getBoolean("nb.native.filechooser") ) { //NOI18N
+            FileDialog fileDialog = createFileDialog( chooser.getCurrentDirectory() );
+            if( null != fileDialog ) {
+                return showFileDialog( fileDialog, FileDialog.SAVE );
+            }
+        }
         int result = chooser.showSaveDialog(findDialogParent());
         if (JFileChooser.APPROVE_OPTION == result) {
             return chooser.getSelectedFile();
@@ -343,7 +357,29 @@ public class FileChooserBuilder {
             return null;
         }
     }
-
+    
+    private File showFileDialog( FileDialog fileDialog, int mode ) {
+        String oldFileDialogProp = System.getProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+        if( dirsOnly ) {
+            System.setProperty("apple.awt.fileDialogForDirectories", "true"); //NOI18N
+        }
+        fileDialog.setMode( mode );
+        fileDialog.setVisible(true);
+        if( dirsOnly ) {
+            if( null != oldFileDialogProp ) {
+                System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
+            } else {
+                System.clearProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+            }
+        }
+        if( fileDialog.getDirectory() != null && fileDialog.getFile() != null ) {
+            String selFile = fileDialog.getFile();
+            File dir = new File( fileDialog.getDirectory() );
+            return new File( dir, selFile );
+        }
+        return null;
+    }
+    
     private void prepareFileChooser(JFileChooser chooser) {
         chooser.setFileSelectionMode(dirsOnly ? JFileChooser.DIRECTORIES_ONLY
                 : filesOnly ? JFileChooser.FILES_ONLY :
@@ -377,6 +413,24 @@ public class FileChooserBuilder {
         }
     }
 
+    private FileDialog createFileDialog( File currentDirectory ) {
+        if( badger != null )
+            return null;
+        if( !Boolean.getBoolean("nb.native.filechooser") )
+            return null;
+        if( dirsOnly && !Utilities.isMac() )
+            return null;
+        Component parentComponent = findDialogParent();
+        Frame parentFrame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parentComponent);
+        FileDialog fileDialog = new FileDialog(parentFrame);
+        if (title != null) {
+            fileDialog.setTitle(title);
+        }
+        if( null != currentDirectory )
+            fileDialog.setDirectory(currentDirectory.getAbsolutePath());
+        return fileDialog;
+    }
+    
     /**
      * Equivalent to calling <code>JFileChooser.addChoosableFileFilter(filter)</code>.
      * Adds another file filter that can be displayed in the file filters combo

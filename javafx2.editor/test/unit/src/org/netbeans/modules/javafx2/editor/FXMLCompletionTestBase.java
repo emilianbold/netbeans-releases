@@ -45,6 +45,7 @@
 package org.netbeans.modules.javafx2.editor;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -73,6 +74,7 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.javafx2.editor.parser.FxmlParserFactory;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
@@ -107,6 +109,10 @@ public class FXMLCompletionTestBase extends NbTestCase {
 
     static final int FINISH_OUTTIME = 5 * 60 * 1000;
     
+    protected ClasspathInfo cpInfo;
+    
+    protected ClassPathProvider cpProvider;
+    
     public static class Lkp extends ProxyLookup {
         
         private static Lkp DEFAULT;
@@ -130,14 +136,34 @@ public class FXMLCompletionTestBase extends NbTestCase {
     public FXMLCompletionTestBase(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Field f = org.netbeans.modules.parsing.impl.Utilities.class.getDeclaredField("status");
+        f.setAccessible(true);
+        f.set(null, null);
+        super.tearDown();
+    }
     
     @Override
     protected void setUp() throws Exception {
         XMLFileSystem system = new XMLFileSystem();
-        system.setXmlUrls(new URL[] {
-            FXMLCompletionTest.class.getResource("/org/netbeans/modules/javafx2/editor/resources/layer.xml"),
-            FXMLCompletionTest.class.getResource("/org/netbeans/modules/defaults/mf-layer.xml")
-        });
+        String[] initUrls = new String[] {
+            "/org/netbeans/modules/javafx2/editor/resources/layer.xml",
+            "/org/netbeans/modules/javafx2/editor/test/layer.xml",
+            "/META-INF/generated-layer.xml",
+            "/org/netbeans/modules/defaults/mf-layer.xml"
+        };
+        Collection<URL> allUrls = new ArrayList<URL>();
+        for (String u : initUrls) {
+            if (u.charAt(0) == '/') {
+                u = u.substring(1);
+            }
+            for (Enumeration<URL> en = Thread.currentThread().getContextClassLoader().getResources(u); en.hasMoreElements(); ) {
+                allUrls.add(en.nextElement());
+            }
+        }
+        system.setXmlUrls(allUrls.toArray(new URL[allUrls.size()]));
         Repository repository = new Repository(new MultiFileSystem(new FileSystem[] {FileUtil.createMemoryFileSystem(), system}));
         final ClassPath bootPath = createClassPath(System.getProperty("sun.boot.class.path"));
         final ClassPath fxPath = ClassPathSupport.createClassPath(getFxrtJarURL());
@@ -158,11 +184,26 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 return null;
             }
         };
+        this.cpProvider = cpp;
         SharedClassObject loader = JavaDataLoader.findObject(JavaDataLoader.class, true);
         MimeDataProvider mdp = new MimeDataProvider() {
             @Override
             public Lookup getLookup(MimePath mimePath) {
-                return Lookups.fixed(new XMLKit(), new JavacParserFactory(), new XMLDocumentModelProvider());
+                if (mimePath.toString().contains("/x-fxml")) {
+                    return Lookups.fixed(
+                            new XMLKit(), 
+                            new FxmlParserFactory(), 
+                            new XMLDocumentModelProvider(), 
+                            XMLTokenId.language()
+                            );
+                } else {
+                    return Lookups.fixed(
+                            new XMLKit(), 
+                            new JavacParserFactory(), 
+                            new XMLDocumentModelProvider(), 
+                            XMLTokenId.language()
+                            );
+                }
             }
         };
         Lkp.initLookups(new Object[] {repository, loader, cpp, mdp});
@@ -180,7 +221,7 @@ public class FXMLCompletionTestBase extends NbTestCase {
                 tx.commit();
             }
         }
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, fxPath, sourcePath);
+        cpInfo = ClasspathInfo.create(bootPath, fxPath, sourcePath);
         assertNotNull(cpInfo);
         final JavaSource js = JavaSource.create(cpInfo);
         assertNotNull(js);

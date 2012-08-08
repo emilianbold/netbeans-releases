@@ -56,7 +56,7 @@ public class SDocSimpleElement extends SDocBaseElement {
 
     /**
      * Creates new {@code SDocSimpleElement}.
-     * @param type simple type (tag), never null
+     * @param type simple type (tag), never {@code null}
      */
     public static SDocSimpleElement create(SDocElementType type) {
         return new SDocSimpleElement(type);

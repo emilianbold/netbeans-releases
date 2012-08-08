@@ -78,12 +78,32 @@ public interface AnnotationParsedLine {
     public Map<OffsetRange, String> getTypes();
 
     /**
+     * Returns {@code true} if parsed line starts with an annotation.
+     * <p>
+     * This line must return {@code true}:
+     * </p>
+     * <pre>
+     *  * @return FooBar
+     * </pre>
+     * <p>
+     * This line must return {@code false}:
+     * </p>
+     * <pre>
+     *  * some text @myInlineAnnotation some another text
+     * </pre>
+     *
+     * @return {@code true} if this line starts with the annotations, {@code false} otherwise
+     */
+    public boolean startsWithAnnotation();
+
+    /**
      * Dummy implementation of {@link AnnotationParsedLine}.
      */
     static final class ParsedLine implements AnnotationParsedLine {
         private final String name;
         private final String description;
         private final Map<OffsetRange, String> types;
+        private final boolean startsWithAnnotation;
 
         /**
          * Creates new annotation parsed line.
@@ -91,7 +111,7 @@ public interface AnnotationParsedLine {
          * @param name name of the annotation; never {@code null}
          */
         public ParsedLine(@NonNull final String name) {
-            this(name, null, null);
+            this(name, null, null, false);
         }
 
         /**
@@ -101,7 +121,7 @@ public interface AnnotationParsedLine {
          * @param types types of the annotation; can be {@code null}
          */
         public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types) {
-            this(name, types, null);
+            this(name, types, null, false);
         }
 
         /**
@@ -111,7 +131,7 @@ public interface AnnotationParsedLine {
          * @param description description of the annotation; can be {@code null}
          */
         public ParsedLine(@NonNull final String name, @NullAllowed final String description) {
-            this(name, null, description);
+            this(name, null, description, false);
         }
 
         /**
@@ -120,12 +140,14 @@ public interface AnnotationParsedLine {
          * @param name name of the annotation; never {@code null}
          * @param types types of the annotation; can be {@code null}
          * @param description description of the annotation; can be {@code null}
+         * @param startsWithAnnotation {@code true} if this line starts with the annotations, {@code false} otherwise
          */
-        public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types, @NullAllowed final String description) {
+        public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types, @NullAllowed final String description, final boolean startsWithAnnotation) {
             Parameters.notNull("name", name); //NOI18N
             this.name = name;
             this.types = types;
             this.description = description;
+            this.startsWithAnnotation = startsWithAnnotation;
         }
 
         /**
@@ -164,6 +186,28 @@ public interface AnnotationParsedLine {
                 result = description;
             }
             return result;
+        }
+
+        /**
+         * Returns {@code true} if parsed line starts with an annotation.
+         * <p>
+         * This line must return {@code true}:
+         * </p>
+         * <pre>
+         *  * @return FooBar
+         * </pre>
+         * <p>
+         * This line must return {@code false}:
+         * </p>
+         * <pre>
+         *  * some text @myInlineAnnotation some another text
+         * </pre>
+         *
+         * @return {@code true} if this line starts with the annotations, {@code false} otherwise
+         */
+        @Override
+        public boolean startsWithAnnotation() {
+            return startsWithAnnotation;
         }
 
         @Override

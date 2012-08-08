@@ -54,13 +54,13 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  */
 public class SDocTypeNamedElement extends SDocTypeDescribedElement {
 
-    private final DocIdentifier paramName;
+    private final DocIdentifier typeName;
     private final boolean optional;
 
     private SDocTypeNamedElement(SDocElementType type, List<Type> declaredTypes, String description,
-            DocIdentifier paramName, boolean optional) {
+            DocIdentifier typeName, boolean optional) {
         super(type, declaredTypes, description);
-        this.paramName = paramName;
+        this.typeName = typeName;
         this.optional = optional;
     }
 
@@ -73,8 +73,8 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramDescription description of the parameter
      * @param paramName name of the parameter
      */
-    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier paramName) {
-        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, false);
+    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier typeName) {
+        return new SDocTypeNamedElement(type, declaredTypes, description, typeName, false);
     }
 
     /**
@@ -87,8 +87,27 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramName name of the parameter
      * @param optional flag if the parameter is optional
      */
-    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier paramName, boolean optional) {
-        return new SDocTypeNamedElement(type, declaredTypes, description, paramName, optional);
+    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier typeName, boolean optional) {
+        return new SDocTypeNamedElement(type, declaredTypes, description, typeName, optional);
+    }
+
+    public DocIdentifier getTypeName() {
+        return typeName;
+    }
+
+    @Override
+    public DocIdentifier getParamName() {
+        return typeName;
+    }
+
+    @Override
+    public String getDefaultValue() {
+        return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return optional;
     }
 
 }

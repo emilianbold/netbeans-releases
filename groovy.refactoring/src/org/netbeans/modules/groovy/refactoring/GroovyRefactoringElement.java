@@ -42,13 +42,13 @@
 package org.netbeans.modules.groovy.refactoring;
 
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.AstPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.elements.ast.ASTElement;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.refactoring.utils.ElementUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,13 +58,13 @@ import org.openide.filesystems.FileObject;
 public class GroovyRefactoringElement extends ASTElement {
 
     private final FileObject fileObject;
-    private final AstPath path;
+    private final ElementKind refactoringKind;
 
     
-    public GroovyRefactoringElement(GroovyParserResult info, ModuleNode root, ASTNode node, FileObject fileObject) {
+    public GroovyRefactoringElement(GroovyParserResult info, ASTNode node, FileObject fo, ElementKind kind) {
         super(info, node);
-        this.fileObject = fileObject;
-        this.path = new AstPath(root, node.getLineNumber(), node.getColumnNumber());
+        this.fileObject = fo;
+        this.refactoringKind = kind;
     }
 
     @Override
@@ -73,114 +73,101 @@ public class GroovyRefactoringElement extends ASTElement {
     }
 
     @Override
-    public String getName() {
-        if (node instanceof ClassNode) {
-            return ((ClassNode) node).getNameWithoutPackage();
-        } else if (node instanceof MethodNode) {
-            return ((MethodNode) node).getName();
-        } else if (node instanceof FieldNode) {
-            return ((FieldNode) node).getName();
-        } else if (node instanceof PropertyNode) {
-            return ((PropertyNode) node).getName();
-        } else if (node instanceof VariableExpression) {
-            return ((VariableExpression) node).getName();
-        } else if (node instanceof ClassExpression) {
-            return ((ClassExpression) node).getType().getNameWithoutPackage();
-        }
-        return "Not implemented yet - GroovyRefactoringElement.getName() needs to be improve for type: " + node.getClass().getSimpleName();
-    }
-
-    @Override
     public ElementKind getKind() {
-        if ((node instanceof ClassNode) ||
-            (node instanceof ClassExpression)) {
-            return ElementKind.CLASS;
-        } else if (node instanceof MethodNode) {
-            return ElementKind.METHOD;
-        } else if (node instanceof FieldNode) {
-            return ElementKind.FIELD;
-        } else if (node instanceof PropertyNode) {
-            return ElementKind.PROPERTY;
-        } else if (node instanceof VariableExpression) {
-            return ElementKind.VARIABLE;
-        }
-        return super.getKind();
+        return refactoringKind;
     }
 
-    public final String getDeclaratingClassName() {
-        return getDeclaringClass().getNameWithoutPackage();
+    /**
+     * Returns the name of the refactoring element. (e.g. for field declaration
+     * "private GalacticMaster master" the method return "master")
+     *
+     * @return name of the refactoring element
+     */
+    @Override
+    public String getName() {
+        return ElementUtils.getNameWithoutPackage(node);
+    }
+
+    /**
+     * Returns type of the refactoring element. (e.g. for field declaration 
+     * "private GalacticMaster master" the method return "GalacticMaster")
+     * 
+     * @return type of the refactoring element
+     */
+    public final String getTypeName() {
+        return ElementUtils.getTypeNameWithoutPackage(node);
     }
 
     public final ClassNode getDeclaringClass() {
-        if (node instanceof ClassNode) {
-            return (ClassNode) node;
-        } else if (node instanceof MethodNode) {
-            return ((MethodNode) node).getDeclaringClass();
-        } else if (node instanceof FieldNode) {
-            return ((FieldNode) node).getDeclaringClass();
-        } else if (node instanceof PropertyNode) {
-            return ((PropertyNode) node).getDeclaringClass();
-        } else if (node instanceof VariableExpression) {
-            return ((VariableExpression) node).getDeclaringClass();
-        } else if (node instanceof ClassExpression) {
-            return ((ClassExpression) node).getType().getDeclaringClass();
-        }
-        throw new IllegalStateException("Not implemented yet - GroovyRefactoringElement.getDeclaringClass() ..looks like the type: " + node.getClass().getName() + "isn't handled at the moment!");
+        return ElementUtils.getDeclaringClass(node);
     }
 
-    public final String getFQN() {
-        return AstUtilities.getFqnName(path);
+    public final String getDeclaringClassName() {
+        return ElementUtils.getDeclaringClass(node).getName();
+    }
+
+    public final String getDeclaringClassNameWithoutPackage() {
+        return ElementUtils.getDeclaringClassNameWithoutPackage(node);
     }
 
     @Override
     public String getSignature() {
         if (node instanceof MethodNode) {
-            MethodNode method = ((MethodNode) node);
-            StringBuilder builder = new StringBuilder(super.getSignature());
-            Parameter[] params = method.getParameters();
-            if (params.length > 0) {
-                builder.append("("); // NOI18N
-                for (Parameter param : params) {
-                    builder.append(getTypeName(param.getType()));
-                    builder.append(" "); // NOI18N
-                    builder.append(param.getName());
-                    builder.append(","); // NOI18N
-                }
-                builder.setLength(builder.length() - 1);
-                builder.append(")"); // NOI18N
-            }
-            String returnType = method.getReturnType().getNameWithoutPackage();
-            builder.append(" : "); // NOI18N
-            builder.append(returnType);
-            
-            return builder.toString();
+            return getMethodSignature(((MethodNode) node));
+        } else if (node instanceof ConstructorCallExpression) {
+            return getConstructorSignature(((ConstructorCallExpression) node));
         }
         return super.getSignature();
     }
 
-    public final String getType() {
-        ClassNode type;
-        if (node instanceof ClassNode) {
-            type = ((ClassNode) node);
-        } else if (node instanceof FieldNode) {
-            type = ((FieldNode) node).getType();
-        } else if (node instanceof PropertyNode) {
-            type = ((PropertyNode) node).getType();
-        } else if (node instanceof VariableExpression) {
-            type = ((VariableExpression) node).getType();
-        } else {
-            return "Not implemented yet - GroovyRefactoringElement.getType() needs to be improve!";
+    private String getMethodSignature(MethodNode method) {
+        StringBuilder builder = new StringBuilder(super.getSignature());
+        Parameter[] params = method.getParameters();
+
+        builder.append("("); // NOI18N
+        if (params.length > 0) {
+            for (Parameter param : params) {
+                builder.append(ElementUtils.getType(param.getType()).getNameWithoutPackage());
+                builder.append(" "); // NOI18N
+                builder.append(param.getName());
+                builder.append(","); // NOI18N
+            }
+            builder.setLength(builder.length() - 1);
         }
-        return getTypeName(type);
+        builder.append(")"); // NOI18N
+
+        // No return type for constructors
+        if (!"<init>".equals(method.getName())) { // NOI18N
+            String returnType = method.getReturnType().getNameWithoutPackage();
+            builder.append(" : "); // NOI18N
+            builder.append(returnType);
+        }
+
+        return builder.toString();
     }
 
-    private String getTypeName(ClassNode type) {
-        String typeName = type.getNameWithoutPackage();
+    private String getConstructorSignature(ConstructorCallExpression constructorCall) {
+        StringBuilder builder = new StringBuilder();
+        ClassNode type = constructorCall.getType();
+        Expression arguments = constructorCall.getArguments();
 
-        // This will happened with all primitive type arrays, e.g. 'double [] x'
-        if (typeName.startsWith("[")) {
-            typeName = type.getComponentType().getNameWithoutPackage() + "[]";
+        builder.append(type.getNameWithoutPackage());
+        builder.append("("); // NOI18N
+
+        if (arguments instanceof ArgumentListExpression) {
+            ArgumentListExpression argumentList = ((ArgumentListExpression) arguments);
+            if (argumentList.getExpressions().size() > 0) {
+                for (Expression argument : argumentList.getExpressions()) {
+                    builder.append(ElementUtils.getTypeNameWithoutPackage(argument.getType()));
+                    builder.append(" "); // NOI18N
+                    builder.append(argument.getText());
+                    builder.append(","); // NOI18N
+                }
+                builder.setLength(builder.length() - 1);
+            }
         }
-        return typeName;
+        builder.append(")"); // NOI18N
+
+        return builder.toString();
     }
 }

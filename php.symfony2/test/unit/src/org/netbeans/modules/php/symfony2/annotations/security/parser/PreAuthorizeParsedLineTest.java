@@ -58,7 +58,7 @@ public class PreAuthorizeParsedLineTest extends NbTestCase {
         try {
             new PreAuthorizeParsedLine(null, Collections.EMPTY_MAP);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 
@@ -66,7 +66,7 @@ public class PreAuthorizeParsedLineTest extends NbTestCase {
         try {
             new PreAuthorizeParsedLine("", null);
             fail();
-        } catch (NullPointerException ex) {
+        } catch (AssertionError ex) {
         }
     }
 

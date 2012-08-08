@@ -55,6 +55,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
+import org.netbeans.spi.project.ui.PathFinder;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import org.netbeans.spi.java.project.support.ui.PackageView;
@@ -65,9 +66,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 @NodeFactory.Registration(projectType="org-netbeans-modules-maven", position=520)
 public class BootCPNodeFactory implements NodeFactory {
@@ -89,7 +94,7 @@ public class BootCPNodeFactory implements NodeFactory {
 
         @Messages("BootCPNode_displayName=Java Dependencies")
         BootCPNode(Project p) {
-            super(Children.create(new BootCPChildren(p), false));
+            super(Children.create(new BootCPChildren(p), false), Lookups.singleton(PathFinders.createPathFinder()));
             setName("BootCPNode");
             setDisplayName(BootCPNode_displayName());
         }
@@ -160,7 +165,7 @@ public class BootCPNodeFactory implements NodeFactory {
             this(p, p.getLookup().lookup(ActiveJ2SEPlatformProvider.class).getJavaPlatform());
         }
         private JRENode(Project p, JavaPlatform jp) {
-            super(Children.create(new CPChildren(p, jp.getBootstrapLibraries()), true));
+            super(Children.create(new CPChildren(p, jp.getBootstrapLibraries()), true), Lookups.singleton(PathFinders.createPathFinder()));
             // XXX how to refresh this after a platform change?
             setDisplayName(jp.getDisplayName());
             setIconBaseWithExtension("org/netbeans/modules/java/api/common/project/ui/resources/platform.gif");
@@ -204,7 +209,7 @@ public class BootCPNodeFactory implements NodeFactory {
     }
 
     private static Node jarNode(Project p, final FileObject root) {
-        return PackageView.createPackageView(new SourceGroup() {
+        final Node delegate = PackageView.createPackageView(new SourceGroup() {
             @Override public FileObject getRootFolder() {
                 return root;
             }
@@ -228,6 +233,15 @@ public class BootCPNodeFactory implements NodeFactory {
             @Override public void addPropertyChangeListener(PropertyChangeListener listener) {}
             @Override public void removePropertyChangeListener(PropertyChangeListener listener) {}
         });
+        final PathFinder pathFinder = PathFinders.createDelegatingPathFinder(delegate.getLookup().lookup(PathFinder.class));
+        final Lookup lkp = new ProxyLookup(
+                Lookups.exclude(delegate.getLookup(), PathFinder.class),
+                Lookups.singleton(pathFinder));
+        return new FilterNode(
+                delegate,
+                null,
+                lkp){};
+
     }
 
 }

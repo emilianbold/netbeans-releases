@@ -494,3 +494,15 @@ Foo.Bar = function(){
 Foo.Bar.prototype = new Bar();
 /** The y. */
 Foo.Bar.prototype.y = '3';
+
+/**
+ * Create a new Rectangle2 instance.
+ */
+function Rectangle2(width, height) {
+}
+
+/**
+ * @description Create a new Rectangle3 instance.
+ */
+function Rectangle3(width, height) {
+}

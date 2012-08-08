@@ -111,6 +111,7 @@
             </public-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>middleware</word>
             <word>undeployed</word>
             <word>undeployment</word>
         </spellchecker-wordlist>

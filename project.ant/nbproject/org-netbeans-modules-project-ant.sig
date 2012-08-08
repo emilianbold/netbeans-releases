@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.45
+#Version 1.48.1
 
 CLSS public abstract java.awt.Component
 cons protected init()
@@ -867,6 +867,8 @@ meth public org.netbeans.spi.project.support.ant.PropertyProvider getPropertyPro
 meth public org.netbeans.spi.project.support.ant.PropertyProvider getStockPropertyPreprovider()
 meth public org.netbeans.spi.queries.FileBuiltQueryImplementation createGlobFileBuiltQuery(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String[],java.lang.String[])
 meth public org.netbeans.spi.queries.SharabilityQueryImplementation createSharabilityQuery(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String[],java.lang.String[])
+ anno 0 java.lang.Deprecated()
+meth public org.netbeans.spi.queries.SharabilityQueryImplementation2 createSharabilityQuery2(org.netbeans.spi.project.support.ant.PropertyEvaluator,java.lang.String[],java.lang.String[])
 meth public org.openide.filesystems.FileObject getProjectDirectory()
 meth public org.openide.filesystems.FileObject resolveFileObject(java.lang.String)
  anno 0 org.netbeans.api.annotations.common.CheckForNull()
@@ -933,7 +935,7 @@ meth public boolean refreshBuildScript(java.lang.String,java.net.URL,boolean) th
 meth public int getBuildScriptState(java.lang.String,java.net.URL)
 meth public void generateBuildScriptFromStylesheet(java.lang.String,java.net.URL) throws java.io.IOException
 supr java.lang.Object
-hfds GENFILES_PROPERTIES_PATH,KEY_SUFFIX_DATA_CRC,KEY_SUFFIX_SCRIPT_CRC,KEY_SUFFIX_STYLESHEET_CRC_PLUS_VERSION,STYLESHEET_VERSIONS,crcCache,crcCacheTimestampsXorSizes,dir,extender,h
+hfds GENFILES_PROPERTIES_PATH,KEY_SUFFIX_DATA_CRC,KEY_SUFFIX_SCRIPT_CRC,KEY_SUFFIX_STYLESHEET_CRC_PLUS_VERSION,ORACLE_IS_STANDALONE,STYLESHEET_VERSIONS,crcCache,crcCacheTimestampsXorSizes,dir,extender,h
 hcls EolFilterOutputStream
 
 CLSS public final org.netbeans.spi.project.support.ant.PathMatcher
@@ -956,8 +958,13 @@ supr java.lang.Object
 
 CLSS public abstract interface org.netbeans.spi.project.support.ant.PropertyEvaluator
 meth public abstract java.lang.String evaluate(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public abstract java.lang.String getProperty(java.lang.String)
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+ anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public abstract java.util.Map<java.lang.String,java.lang.String> getProperties()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
 meth public abstract void addPropertyChangeListener(java.beans.PropertyChangeListener)
 meth public abstract void removePropertyChangeListener(java.beans.PropertyChangeListener)
 

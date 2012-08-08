@@ -45,7 +45,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.openide.util.Parameters;
 
 /**
  *
@@ -57,8 +56,8 @@ public abstract class BaseParsedLine implements AnnotationParsedLine {
     private final Map<OffsetRange, String> types;
 
     public BaseParsedLine(final String description, final Map<OffsetRange, String> types) {
-        Parameters.notNull("description", description); //NOI18N
-        Parameters.notNull("types", types); //NOI18N
+        assert description != null;
+        assert types != null;
         this.description = description;
         this.types = types;
     }
@@ -71,6 +70,11 @@ public abstract class BaseParsedLine implements AnnotationParsedLine {
     @Override
     public Map<OffsetRange, String> getTypes() {
         return new HashMap<OffsetRange, String>(types);
+    }
+
+    @Override
+    public boolean startsWithAnnotation() {
+        return true;
     }
 
 }
