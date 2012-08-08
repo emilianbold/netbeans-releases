@@ -121,19 +121,15 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
                     VariableScope variableScope = method.getVariableScope();
                     if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
                         visitParameters(method.getParameters(), variable);
-                        // call super method to avoid additional scope checks in our implementation
-                        super.visitMethod(method);
-                        return;
                     }
+                    super.visitMethod(method);
                 } else if (scope instanceof ConstructorNode) {
                     ConstructorNode constructor = (ConstructorNode) scope;
                     VariableScope variableScope = (constructor).getVariableScope();
                     if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {
                         visitParameters(constructor.getParameters(), variable);
-                        // call super method to avoid additional scope checks in our implementation
-                        super.visitConstructor(constructor);
-                        return;
                     }
+                    super.visitConstructor(constructor);
                 } else if (scope instanceof ForStatement) {
                     VariableScope variableScope = ((ForStatement) scope).getVariableScope();
                     if (variableScope != null && variableScope.getDeclaredVariable(variable.getName()) != null) {

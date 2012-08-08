@@ -39,47 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.apigen.annotations.parser;
+package org.netbeans.modules.javascript2.editor.extdoc.completeion;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.openide.util.Parameters;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SeeParsedLine implements AnnotationParsedLine {
-    private final String description;
-    private final Map<OffsetRange, String> types;
+public class IdentSimpleTag extends AnnotationCompletionTag {
 
-    public SeeParsedLine(final String description, final Map<OffsetRange, String> types) {
-        Parameters.notNull("description", types);
-        Parameters.notNull("types", types);
-        this.description = description;
-        this.types = types;
+    public static final String TEMPLATE = " ${identifier}";
+
+    public IdentSimpleTag(String name) {
+        super(name, name + TEMPLATE);
     }
 
     @Override
-    public String getName() {
-        return SeeLineParser.ANNOTATION_NAME;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return new HashMap<OffsetRange, String>(types);
-    }
-
-    @Override
-    public boolean startsWithAnnotation() {
-        return true;
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("identifier"); //NOI18N
+        formatter.parameters(false);
     }
 
 }

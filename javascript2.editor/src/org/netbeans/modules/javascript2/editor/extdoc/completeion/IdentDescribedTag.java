@@ -39,40 +39,34 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.javascript2.editor.extdoc.completeion;
 
-import java.util.Collections;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SecureParamParsedLineTest extends NbTestCase {
+public class IdentDescribedTag extends AnnotationCompletionTag {
 
-    public SecureParamParsedLineTest(String name) {
-        super(name);
+    public static final String TEMPLATE = " ${identifier} ${description}";
+
+    public IdentDescribedTag(String name) {
+        super(name, name + TEMPLATE);
     }
 
-    public void testNonNullDescription() throws Exception {
-        try {
-            new SecureParamParsedLine(null, Collections.EMPTY_MAP);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("identifier"); //NOI18N
+        formatter.parameters(false);
 
-    public void testNonNullTypes() throws Exception  {
-        try {
-            new SecureParamParsedLine("", null);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
-
-    public void testCorrectName() throws Exception {
-        SecureParamParsedLine cache = new SecureParamParsedLine("", Collections.EMPTY_MAP);
-        assertEquals(SecureParamLineParser.ANNOTATION_NAME, cache.getName());
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("description"); //NOI18N
+        formatter.parameters(false);
     }
 
 }

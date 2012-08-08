@@ -39,40 +39,30 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.javascript2.editor.extdoc.completeion;
 
-import java.util.Collections;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.javascript2.editor.sdoc.completion.*;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SecureReturnParsedLineTest extends NbTestCase {
+public class DescriptionTag extends AnnotationCompletionTag {
 
-    public SecureReturnParsedLineTest(String name) {
-        super(name);
+    public static final String TEMPLATE = " ${text}";
+
+    public DescriptionTag(String name) {
+        super(name, name + TEMPLATE);
     }
 
-    public void testNonNullDescription() throws Exception {
-        try {
-            new SecureReturnParsedLine(null, Collections.EMPTY_MAP);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
-
-    public void testNonNullTypes() throws Exception  {
-        try {
-            new SecureReturnParsedLine("", null);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
-
-    public void testCorrectName() throws Exception {
-        SecureReturnParsedLine cache = new SecureReturnParsedLine("", Collections.EMPTY_MAP);
-        assertEquals(SecureReturnLineParser.ANNOTATION_NAME, cache.getName());
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("text"); //NOI18N
+        formatter.parameters(false);
     }
 
 }

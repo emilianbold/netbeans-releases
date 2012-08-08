@@ -39,39 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.javascript2.editor.jsdoc.completion;
 
-import java.util.Collections;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ParamConverterParsedLineTest extends NbTestCase {
+public class LinkTag extends AnnotationCompletionTag {
 
-    public ParamConverterParsedLineTest(String name) {
-        super(name);
+    public static final String TEMPLATE = " ${namePath}";
+
+    public LinkTag(String name) {
+        super(name, name + TEMPLATE);
     }
 
-    public void testHasCorrectName() throws Exception {
-        ParamConverterParsedLine paramConverterParsedLine = new ParamConverterParsedLine("", Collections.EMPTY_MAP);
-        assertEquals(ParamConverterLineParser.ANNOTATION_NAME, paramConverterParsedLine.getName());
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("namePath"); //NOI18N
+        formatter.parameters(false);
     }
 
-    public void testNonNullDescription() throws Exception {
-        try {
-            new ParamConverterParsedLine(null, Collections.EMPTY_MAP);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
-
-    public void testNonNullTypes() throws Exception  {
-        try {
-            new ParamConverterParsedLine("", null);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
 }

@@ -39,34 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.javascript2.editor.extdoc.completeion;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.netbeans.modules.php.symfony2.annotations.AnnotationUtils;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-class MethodLineParser implements AnnotationLineParser {
-    static final String ANNOTATION_NAME = "Method"; //NOI18N
+public class TypeNamedTag extends AnnotationCompletionTag {
+
+    public static final String TEMPLATE = " {${type}} ${name} ${description}";
+
+    public TypeNamedTag(String name) {
+        super(name, name + TEMPLATE);
+    }
 
     @Override
-    public AnnotationParsedLine parse(final String line) {
-        AnnotationParsedLine result = null;
-        String[] tokens = line.split("\\("); //NOI18N
-        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
-            String annotation = tokens[0].trim();
-            String description = line.substring(annotation.length()).trim();
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-            types.put(new OffsetRange(0, annotation.length()), annotation);
-            result = new MethodParsedLine(description, types);
-        }
-        return result;
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" {"); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("type"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText("}"); //NOI18N
+
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("name"); //NOI18N
+        formatter.parameters(false);
+
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("description"); //NOI18N
+        formatter.parameters(false);
     }
+
 
 }

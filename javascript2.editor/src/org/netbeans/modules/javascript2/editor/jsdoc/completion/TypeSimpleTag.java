@@ -39,40 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.extra.parser;
+package org.netbeans.modules.javascript2.editor.jsdoc.completion;
 
-import java.util.Collections;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class TemplateParsedLineTest extends NbTestCase {
+public class TypeSimpleTag extends AnnotationCompletionTag {
 
-    public TemplateParsedLineTest(String name) {
-        super(name);
+    public static final String TEMPLATE = " ${type}";
+
+    public TypeSimpleTag(String name) {
+        super(name, name + TEMPLATE);
     }
 
-    public void testHasCorrectName() throws Exception {
-        TemplateParsedLine templateParsedLine = new TemplateParsedLine("", Collections.EMPTY_MAP);
-        assertEquals(TemplateLineParser.ANNOTATION_NAME, templateParsedLine.getName());
+    @Override
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("type"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText(""); //NOI18N
     }
 
-    public void testNonNullDescription() throws Exception {
-        try {
-            new TemplateParsedLine(null, Collections.EMPTY_MAP);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
-
-    public void testNonNullTypes() throws Exception  {
-        try {
-            new TemplateParsedLine("", null);
-            fail();
-        } catch (AssertionError ex) {
-        }
-    }
 
 }

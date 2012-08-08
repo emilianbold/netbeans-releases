@@ -39,25 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.symfony2.annotations.security.parser;
+package org.netbeans.modules.javascript2.editor.jsdoc.completion;
 
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.symfony2.annotations.BaseParsedLine;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SecureReturnParsedLine extends BaseParsedLine {
+public class DescriptionTag extends AnnotationCompletionTag {
 
-    public SecureReturnParsedLine(String description, Map<OffsetRange, String> types) {
-        super(description, types);
+    public static final String TEMPLATE = " ${text}";
+
+    public DescriptionTag(String name) {
+        super(name, name + TEMPLATE);
     }
 
     @Override
-    public String getName() {
-        return SecureReturnLineParser.ANNOTATION_NAME;
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("text"); //NOI18N
+        formatter.parameters(false);
     }
 
 }

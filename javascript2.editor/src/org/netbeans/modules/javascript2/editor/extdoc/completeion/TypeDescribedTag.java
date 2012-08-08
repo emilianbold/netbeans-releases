@@ -39,48 +39,36 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.phpunit.annotations.parser;
+package org.netbeans.modules.javascript2.editor.extdoc.completeion;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
-import org.openide.util.Parameters;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTag;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ExpectedExceptionParsedLine implements AnnotationParsedLine {
+public class TypeDescribedTag extends AnnotationCompletionTag {
 
-    private final String description;
-    private final Map<OffsetRange, String> types;
+    public static final String TEMPLATE = " {${type}} ${description}";
 
-    public ExpectedExceptionParsedLine(final String description, final Map<OffsetRange, String> types) {
-        Parameters.notNull("description", description); //NOI18N
-        Parameters.notNull("types", types); //NOI18N
-        this.description = description;
-        this.types = types;
+    public TypeDescribedTag(String name) {
+        super(name, name + TEMPLATE);
     }
 
     @Override
-    public String getDescription() {
-        return description;
+    public void formatParameters(HtmlFormatter formatter) {
+        formatter.appendText(" {"); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("type"); //NOI18N
+        formatter.parameters(false);
+        formatter.appendText("}"); //NOI18N
+
+        formatter.appendText(" "); //NOI18N
+        formatter.parameters(true);
+        formatter.appendText("description"); //NOI18N
+        formatter.parameters(false);
     }
 
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return new HashMap<OffsetRange, String>(types);
-    }
-
-    @Override
-    public String getName() {
-        return ExpectedExceptionLineParser.ANNOTATION_NAME;
-    }
-
-    @Override
-    public boolean startsWithAnnotation() {
-        return true;
-    }
 
 }
