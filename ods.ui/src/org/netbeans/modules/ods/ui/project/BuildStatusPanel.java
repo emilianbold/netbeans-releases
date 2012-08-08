@@ -46,6 +46,8 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -68,14 +70,23 @@ public class BuildStatusPanel extends javax.swing.JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor(BuildStatusPanel.class);
     private final ProjectHandle<ODSProject> projectHandle;
+    private final BuildPropertyListener buildPropertyListener;
+    private List<BuildHandle> builds;
 
     /**
      * Creates new form BuildStatusPanel
      */
     public BuildStatusPanel(ProjectHandle<ODSProject> projectHandle) {
         this.projectHandle = projectHandle;
+        this.buildPropertyListener = new BuildPropertyListener();
         initComponents();
         loadBuildStatuses();
+    }
+
+    void removeBuildListeners() {
+        for (BuildHandle buildHandle : builds) {
+            buildHandle.removePropertyChangeListener(buildPropertyListener);
+        }
     }
 
     /**
@@ -185,8 +196,10 @@ public class BuildStatusPanel extends javax.swing.JPanel {
     }
 
     private void showBuildStatuses(List<BuildHandle> builds) {
+        this.builds = builds;
         pnlStatuses.removeAll();
         for (BuildHandle buildHandle : builds) {
+            buildHandle.addPropertyChangeListener(buildPropertyListener);
             JPanel panel = createPanel(buildHandle);
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.insets = new Insets(0, 0, 5, 0);
@@ -240,5 +253,16 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         pnlStatuses.removeAll();
         pnlStatuses.add(lblError, new GridBagConstraints());
         this.repaint();
+    }
+
+    private class BuildPropertyListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(BuildHandle.PROP_STATUS)) {
+                removeBuildListeners();
+                loadBuildStatuses();
+            }
+        }
     }
 }

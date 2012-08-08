@@ -104,17 +104,9 @@ public class ProjectLinksNode extends AsynchronousLeafNode<MessagingHandle> {
         synchronized( LOCK ) {
             labels.clear();
             buttons.clear();
-            LinkButton btn = null;
-
-            btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ProjectDetails"), dashboardProvider.getProjectAccessor().getDetailsAction(project)); //NOI18N
+            LinkButton btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ProjectDashboard"), dashboardProvider.getProjectAccessor().getDetailsAction(project)); //NOI18N
             buttons.add( btn );
             panel.add( btn, new GridBagConstraints(1,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            Action a = WikiAction.forProject(project);
-            if(a != null) {
-                btn = new LinkButton(NbBundle.getMessage(ProjectLinksNode.class, "LBL_ProjectWiki"), a); //NOI18N
-                buttons.add( btn );
-                panel.add( btn, new GridBagConstraints(2,0,1,1,0.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0,0));
-            }
             panel.add( new JLabel(), new GridBagConstraints(8,0,1,1,1.0,0.0,GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0,0));
         }
         return panel;

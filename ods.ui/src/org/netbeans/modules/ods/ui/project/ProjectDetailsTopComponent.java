@@ -90,7 +90,7 @@ import org.openide.util.NbBundle.Messages;
 autostore = false)
 @TopComponent.Description(
     preferredID = "ProjectDetailsTopComponent",
-iconBase="org/netbeans/modules/ods/ui/resources/ods.png",
+iconBase = "org/netbeans/modules/ods/ui/resources/ods.png",
 persistenceType = TopComponent.PERSISTENCE_NEVER)
 @TopComponent.Registration(mode = "editor", openAtStartup = false)
 @TopComponent.OpenActionRegistration(
@@ -101,7 +101,7 @@ preferredID = "ProjectDetailsTopComponent")
     "CTL_ProjectDetailsTopComponent=ProjectDetails Window",
     "HINT_ProjectDetailsTopComponent=This is a ProjectDetails window"
 })
-public final class ProjectDetailsTopComponent extends TopComponent implements Expandable{
+public final class ProjectDetailsTopComponent extends TopComponent implements Expandable {
 
     private static Map<String, ProjectDetailsTopComponent> projectToTC = new HashMap<String, ProjectDetailsTopComponent>();
     private boolean detailsExpanded;
@@ -110,6 +110,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     private ProjectHandle<ODSProject> projectHandle;
     private ODSProject project = null;
     private ODSClient client = null;
+    private BuildStatusPanel buildStatusPanel;
 
     static ProjectDetailsTopComponent getInstanceFor(ProjectHandle<ODSProject> projectHandle) {
         ODSProject project = projectHandle.getTeamProject();
@@ -130,34 +131,13 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     }
 
     public ProjectDetailsTopComponent() {
-        init();
+        initComponents();
     }
 
     private ProjectDetailsTopComponent(ProjectHandle<ODSProject> projectHandle) {
         this.projectHandle = projectHandle;
         this.project = projectHandle.getTeamProject();
-        init();
-    }
-
-    private void init() {
-        if (project != null) {
-            setName(project.getName());
-            initComponents();
-            scrollPanelMain.getVerticalScrollBar().setUnitIncrement(16);
-            scrollPanelDetails.getVerticalScrollBar().setUnitIncrement(16);
-            detailsExpanded = false;
-            scrollPanelDetails.setVisible(false);
-            expandMouseListener = new ExpandableMouseListener(this, this);
-            pnlProjectName.addMouseListener(expandMouseListener);
-            client = ODSFactory.getInstance().createClient(project.getServer().getUrl().toString(), project.getServer().getPasswordAuthentication());
-            initDetails();
-            loadBuildStatus();
-            loadRecentActivities();
-        } else {
-            setName(Bundle.CTL_ProjectDetailsTopComponent());
-            this.setLayout(new GridBagLayout());
-            this.add(new JLabel(NbBundle.getMessage(ProjectDetailsTopComponent.class, "LBL_NoProject")), new GridBagConstraints());
-        }
+        initComponents();
     }
 
     /**
@@ -218,7 +198,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         pnlProjectName.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 1, 1, 1, borderColor));
 
         lblProjectName.setFont(new java.awt.Font("Tahoma", 0, 20)); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(lblProjectName, project.getName() + " - " +  NbBundle.getMessage(ProjectDetailsTopComponent.class, "LBL_Details"));
+        org.openide.awt.Mnemonics.setLocalizedText(lblProjectName, project.getName() + " - " +  NbBundle.getMessage(ProjectDetailsTopComponent.class, "LBL_Dashboard"));
 
         lblExpandIcon.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblExpandIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/ods/ui/resources/arrow-down.png"))); // NOI18N
@@ -516,7 +496,17 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
 
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        setName(project.getName());
+        scrollPanelMain.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPanelDetails.getVerticalScrollBar().setUnitIncrement(16);
+        detailsExpanded = false;
+        scrollPanelDetails.setVisible(false);
+        expandMouseListener = new ExpandableMouseListener(this, this);
+        pnlProjectName.addMouseListener(expandMouseListener);
+        client = ODSFactory.getInstance().createClient(project.getServer().getUrl().toString(), project.getServer().getPasswordAuthentication());
+        initDetails();
+        loadRecentActivities();
+        loadBuildStatus();
     }
 
     @Override
@@ -524,6 +514,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         if (project != null) {
             projectToTC.remove(project.getId());
         }
+        buildStatusPanel.removeBuildListeners();
     }
 
     void writeProperties(java.util.Properties p) {
@@ -547,7 +538,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     }
 
     private void loadBuildStatus() {
-        BuildStatusPanel buildStatusPanel = new BuildStatusPanel(projectHandle);
+        buildStatusPanel = new BuildStatusPanel(projectHandle);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(3, 3, 0, 3);
         gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -657,6 +648,5 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
         public boolean getScrollableTracksViewportHeight() {
             return false;
         }
-
     }
 }
