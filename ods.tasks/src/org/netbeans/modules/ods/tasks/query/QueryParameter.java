@@ -260,7 +260,7 @@ public abstract class QueryParameter {
     }
 
     static class CheckBoxParameter extends QueryParameter {
-        private String selected = "true"; // NOI18N
+        private boolean selected = true; 
         private final JCheckBox chk;
         public CheckBoxParameter(JCheckBox chk, String attribute) {
             super(attribute);
@@ -268,7 +268,7 @@ public abstract class QueryParameter {
         }
         @Override
         public String getValues() {
-            return chk.isSelected() ? selected : null; //EMPTY_PARAMETER_VALUE;
+            return Boolean.toString(chk.isSelected());
         }
         @Override
         public void setValues(String value) {
