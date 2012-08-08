@@ -54,11 +54,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -70,11 +68,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
-import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -87,7 +83,7 @@ import org.netbeans.spi.editor.completion.CompletionProvider;
  * @author sdedic
  */
 @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
-public class ClassCompleter implements Completer, Completer.Factory {
+final public class ClassCompleter implements Completer, Completer.Factory {
     private static final Logger LOG = Logger.getLogger(ClassCompleter.class.getName());
     
     private static final int IMPORTED_PRIORITY = 50;

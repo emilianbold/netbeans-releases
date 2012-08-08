@@ -51,18 +51,10 @@ import javax.swing.ImageIcon;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.util.ImageUtilities;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Completes ?import instructions. Uses classpath to list available packages, and filters them by prefix

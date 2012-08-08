@@ -43,34 +43,21 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
-import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
-import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
-import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
-import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.openide.util.Exceptions;
 
 /**
  * Creates property names completions. Activates in tag names, or attribute names

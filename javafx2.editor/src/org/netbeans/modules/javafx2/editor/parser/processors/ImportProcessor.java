@@ -58,6 +58,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
 import org.netbeans.modules.javafx2.editor.ErrorReporter;
+import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
@@ -101,16 +102,69 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
     
     private FxTreeUtilities nodes;
     
-    public ImportProcessor(CompilationInfo info, TokenHierarchy<XMLTokenId> h, ErrorReporter errors, FxTreeUtilities nodes) {
-        Parameters.notNull("info", info);
+    public ImportProcessor(TokenHierarchy<XMLTokenId> h, ErrorReporter errors, FxTreeUtilities nodes) {
         Parameters.notNull("h", h);
         this.info = info;
         this.hierarchy = h;
         this.errors = errors;
         this.nodes = nodes;
         
-        // initialize java.lang
-        handleWildcard("java.lang", false); // NOI18N
+    }
+    
+    public void load(CompilationInfo info, FxModel source) {
+        Parameters.notNull("info", info);
+        this.info = info;
+        try {
+            // initialize java.lang
+            handleWildcard("java.lang", false); // NOI18N
+            source.accept(this);
+        } finally {
+            this.info = null;
+        }
+    }
+    
+    public Set<String> resolveTypeName(CompilationInfo info, String anyName) {
+        int dot = anyName.indexOf('.');
+        if (dot == -1) {
+            // probably simple name, does not contain any dots
+            return resolveName(anyName);
+        }
+        // try to interpret as a fully qualified name; it's not usual that 
+        // people work with inner symbols of imported classes:
+        TypeElement el = info.getElements().getTypeElement(anyName);
+        if (el != null) {
+            return Collections.singleton(el.getQualifiedName().toString());
+        }
+        // try to interpret the 1st part as a resolvable simple name:
+        String firstPart = anyName.substring(0, dot);
+        
+        Set<String> resolved = resolveName(firstPart);
+        if (resolved == null) {
+            return null;
+        } else if (resolved.size() == 1) {
+            String resolvedClass = resolved.iterator().next();
+            // add the rest to the resolved name
+            String joined = resolvedClass + anyName.substring(dot);
+            
+            el = info.getElements().getTypeElement(joined);
+            if (el != null) {
+                return Collections.singleton(el.getQualifiedName().toString());
+            } else {
+                // while the outer class was resolved, the inner identifier not.
+                return null;
+            }
+        }
+        
+        Set<String> result = new HashSet<String>();
+        for (String prefix : resolved) {
+            String joined = prefix + anyName.substring(dot);
+            
+            el = info.getElements().getTypeElement(joined);
+            if (el != null) {
+                result.add(el.getQualifiedName().toString());
+            }
+        }
+        return result;
     }
     
     /**

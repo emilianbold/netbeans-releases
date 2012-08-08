@@ -41,50 +41,86 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.impl;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.spi.editor.completion.CompletionItem;
+import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
+
+import static org.netbeans.modules.javafx2.editor.completion.impl.Bundle.*;
 
 /**
- *
+ * TODO - consolidate with PropertyElementItem
+ * 
  * @author sdedic
  */
-@MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
-public class FxIncludeCompleter implements Completer, Completer.Factory { 
-    private CompletionContext   context;
-
-    public FxIncludeCompleter() {
-    }
-
-    FxIncludeCompleter(CompletionContext context) {
-        this.context = context;
-    }
-
-    @Override
-    public List<? extends CompletionItem> complete() {
-        FxInstructionItem item = new FxInstructionItem("fx:include", context, 
-                "<fx:include source=\"\"/>", CompletionUtils.makeFxNamespaceCreator(context));
-        return Collections.singletonList(item);
-    }
-
-    @Override
-    public boolean hasMoreItems() {
-        return false;
-    }
-
-    @Override
-    public Completer createCompleter(CompletionContext ctx) {
-        switch (ctx.getType()) {
-            case BEAN:
-            case ROOT:
-            case CHILD_ELEMENT:
-                return new FxIncludeCompleter(ctx);
-        }
-        return null;
-    }
-
+final class EventCompletionItem extends AbstractCompletionItem {
+    private static final String ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/event.png"; // NOI18N
+    private static ImageIcon ICON;
     
+    /**
+     * type in a printable form
+     */
+    private String  eventType;
+    
+    private boolean attribute;
+    
+    private boolean inherited;
+
+    public EventCompletionItem(String eventType, boolean attribute, CompletionContext ctx, String text) {
+        super(ctx, text);
+        this.eventType = eventType;
+        this.attribute = attribute;
+    }
+
+    public void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - event name",
+        "FMT_ownEvent=<b>{0}</b>"
+    })
+    @Override
+    protected String getLeftHtmlText() {
+        if (!inherited) {
+            return FMT_ownEvent(super.getLeftHtmlText());
+        } else {
+            return super.getLeftHtmlText();
+        }
+    }
+
+    @Override
+    protected String getSubstituteText() {
+        if (attribute) {
+            return super.getSubstituteText() + "=\"\" ";
+        } else {
+            return "<" + super.getSubstituteText() + "></" + super.getSubstituteText() + ">";
+        }
+    }
+    
+    @Override
+    protected int getCaretShift() {
+        // incidentally, for all 3 cases:
+        return 2 + super.getSubstituteText().length();
+    }
+
+    @NbBundle.Messages({
+        "# {0} - event type name",
+        "FMT_eventType=<i>{0}</i>"
+    })
+    @Override
+    protected String getRightHtmlText() {
+        if (eventType == null) {
+            return null;
+        }
+        return FMT_eventType(eventType);
+    }
+
+    @Override
+    protected ImageIcon getIcon() {
+        if (ICON == null) {
+            ICON = ImageUtilities.loadImageIcon(ICON_RESOURCE, false);
+        }
+        return ICON;
+    }
     
 }

@@ -44,9 +44,7 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 
 /**
  *
