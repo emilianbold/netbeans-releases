@@ -583,7 +583,6 @@ public class JsFormatter implements Formatter {
                     formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
                             + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
                     // do the indentation
-                    // FIXME continuation, initialIndent and level - check it is ok
                     int indentationSize = initialIndent
                             + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
                     if (isContinuation(lastWrap.getToken(), true)) {
