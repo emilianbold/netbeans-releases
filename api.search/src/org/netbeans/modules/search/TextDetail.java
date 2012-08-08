@@ -45,7 +45,6 @@
 
 package org.netbeans.modules.search;
 
-import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
@@ -68,15 +67,11 @@ import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
@@ -398,9 +393,15 @@ public final class TextDetail implements Selectable {
                                           implements OutputListener {
         private static final String ICON =
                 "org/netbeans/modules/search/res/textDetail.png";       //NOI18N
+        /** Maximal lenght of displayed text detail. */
+        static final int DETAIL_DISPLAY_LENGTH = 240;
+        private static final String ELLIPSIS = "...";                   //NOI18N
         
         /** Detail to represent. */
         private TextDetail txtDetail;
+        /** Cached toString value. */
+        private String name;
+        private String htmlDisplayName;
         
         /**
          * Constructs a node representing the specified information about
@@ -467,13 +468,19 @@ public final class TextDetail implements Selectable {
         /** {@inheritDoc} */
         @Override
         public String getName() {
-            return txtDetail.getLineText() +
+            if (name == null) {
+                name = cutLongLine(txtDetail.getLineText()) +
                     "      [" + DetailNode.getName(txtDetail) + "]";  // NOI18N
+            }
+            return name;
         }
 
         /** {@inheritDoc} */
         @Override
         public String getHtmlDisplayName() {
+            if (htmlDisplayName != null) {
+                return htmlDisplayName;
+            }
             try {
                 StringBuffer text = new StringBuffer();
                 text.append("<html><font color='!controlShadow'>");     //NOI18N
@@ -485,15 +492,27 @@ public final class TextDetail implements Selectable {
                     appendMarkedText(text);
                 }
                 else {
-                    text.append(escape(txtDetail.getLineText()));
+                    text.append(escape(cutLongLine(txtDetail.getLineText())));
                 }
                 text.append("      ");  // NOI18N
                 text.append("<font color='!controlShadow'>[");  // NOI18N
                 text.append(escape(DetailNode.getLinePos(txtDetail)));
-                text.append("]</html>");                                //NOI18N
-                return text.toString();
+                text.append("]</font></html>");                         //NOI18N
+                htmlDisplayName = text.toString();
+                return htmlDisplayName;
             } catch (CharConversionException e) {
                 return null; // exception in escape(String s)
+            }
+        }
+
+        private String cutLongLine(String s) {
+            if (s == null) {
+                return "";                                              //NOI18N
+            } else if (s.length() < DETAIL_DISPLAY_LENGTH) {
+                return s;
+            } else {
+                return s.substring(0,
+                        DETAIL_DISPLAY_LENGTH - ELLIPSIS.length()) + ELLIPSIS;
             }
         }
 
@@ -508,26 +527,107 @@ public final class TextDetail implements Selectable {
                    col0 < txtDetail.getLineTextLength(); // #177891
         }
 
-        private void appendMarkedText(StringBuffer text)
-                                                throws CharConversionException {
-            int col0 = txtDetail.getColumn0();  // base 0
-            int end = col0 + Math.min(txtDetail.getMarkLength(),
-                                      txtDetail.getLineTextLength() - col0);
-            int markEnd = col0 + txtDetail.getMarkLength();
-            final int detailLen = txtDetail.getLineTextLength();
+        private void appendMarkedText(StringBuffer sb)
+                throws CharConversionException {
+            final int lineLen = txtDetail.getLineTextLength();
+            int matchStart = txtDetail.getColumn0();  // base 0
+            int matchEnd = matchStart + Math.min(txtDetail.getMarkLength(),
+                    lineLen - matchStart);
+            int detailLen = matchEnd - matchStart;
+            int prefixStart, suffixEnd;
 
-            text.append(escape(txtDetail.getLineTextPart(0, col0)));
+            if (detailLen > DETAIL_DISPLAY_LENGTH) {
+                prefixStart = matchStart;
+                suffixEnd = matchEnd;
+            } else if (lineLen > DETAIL_DISPLAY_LENGTH) {
+                int remaining = DETAIL_DISPLAY_LENGTH - detailLen;
+                int quarter = remaining / 4;
+                int shownPrefix = Math.min(quarter, matchStart);
+                int shownSuffix = Math.min(3 * quarter, lineLen - matchEnd);
+                int extraForSuffix = quarter - shownPrefix;
+                int extraForPrefix = 3 * quarter - shownSuffix;
+                prefixStart = Math.max(0,
+                        matchStart - shownPrefix - extraForPrefix);
+                suffixEnd = Math.min(lineLen,
+                        matchEnd + shownSuffix + extraForSuffix);
+            } else { // whole line can be displayed
+                prefixStart = 0;
+                suffixEnd = lineLen;
+            }
+            appendMarkedTextPrefix(sb, prefixStart, matchStart);
+            appendMarkedTextMatch(sb, matchStart, matchEnd, lineLen, detailLen);
+            appendMarkedTextSuffix(sb, matchEnd, suffixEnd, lineLen);
+        }
+
+        /**
+         * Append part of line that is before matched text.
+         *
+         * @param text Buffer to append to.
+         * @param prefixStart Line index of the first character to be displayed.
+         * @param matchStart Line index of the matched text.
+         */
+        private void appendMarkedTextPrefix(StringBuffer text, int prefixStart,
+                int matchStart) throws CharConversionException {
+            if (prefixStart > 0) {
+                text.append(ELLIPSIS);
+            }
+            text.append(escape(txtDetail.getLineTextPart(prefixStart,
+                    matchStart)));
+        }
+
+        /**
+         * Append part of line that contains the matched text.
+         *
+         * @param text Buffer to append to.
+         * @param matchStart Line index of the first character of the matched
+         * text.
+         * @param matchEnd Line index after the last character of the matched
+         * text.
+         * @param lineLength Lenght of the line.
+         * @param detailLength Lengt of matched part.
+         */
+        private void appendMarkedTextMatch(StringBuffer text, int matchStart,
+                int matchEnd, int lineLength, int matchedLength)
+                throws CharConversionException {
+
             text.append("<b>");  // NOI18N
-            if (markEnd > detailLen) { // mark up to the text end?
-                text.append(escape(txtDetail.getLineTextPart(col0, end)));
-                text.append(" ..."); //NOI18N
+            if (matchedLength > DETAIL_DISPLAY_LENGTH) {
+                int off = (DETAIL_DISPLAY_LENGTH - ELLIPSIS.length()) / 2;
+                text.append(escape(txtDetail.getLineTextPart(
+                        matchStart, matchStart + off)));
+                text.append("</b>");
+                text.append(ELLIPSIS);
+                text.append("<b>");
+                text.append(escape(txtDetail.getLineTextPart(
+                        matchEnd - off, matchEnd)));
+            } else {
+                text.append(txtDetail.getLineTextPart(matchStart, matchEnd));
             }
-            else {
-                text.append(escape(txtDetail.getLineTextPart(col0, end)));
-            }
+            int markEnd = matchStart + txtDetail.getMarkLength();
             text.append("</b>"); // NOI18N
-            if (detailLen > end) {
-                text.append(escape(txtDetail.getLineTextPart(end)));
+            if (markEnd > lineLength) { // mark up to the text end?
+                text.append(ELLIPSIS);
+            }
+        }
+
+        /**
+         * Append a part of line that is after the matched text.
+         *
+         * @param text Buffer to append to.
+         * @param matchEnd Line index after the last character of the matched
+         * text.
+         * @param suffixEnd Line index after the last character of displayed
+         * text.
+         */
+        private void appendMarkedTextSuffix(StringBuffer text, int matchEnd,
+                int suffixEnd, int lineLength) throws CharConversionException {
+
+            if (lineLength > matchEnd) {
+                text.append(escape(txtDetail.getLineTextPart(matchEnd,
+                        suffixEnd)));
+                if (suffixEnd < lineLength) {
+                    text.append(ELLIPSIS);
+                }
             }
         }
 

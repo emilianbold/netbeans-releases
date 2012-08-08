@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.29.0
+#Version 1.37.1
 
 CLSS public abstract interface com.sun.source.tree.TreeVisitor<%0 extends java.lang.Object, %1 extends java.lang.Object>
 meth public abstract {com.sun.source.tree.TreeVisitor%0} visitAnnotation(com.sun.source.tree.AnnotationTree,{com.sun.source.tree.TreeVisitor%1})
@@ -250,6 +250,8 @@ hfds defaultVal,name,origIndex,type
 CLSS public final org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring
 cons public init(org.netbeans.api.java.source.TreePathHandle)
 meth public boolean isAlwaysUseAccessors()
+meth public boolean isGeneratePropertyChangeSupport()
+meth public boolean isGenerateVetoableChangeSupport()
 meth public java.lang.String getGetterName()
 meth public java.lang.String getSetterName()
 meth public java.util.Set<javax.lang.model.element.Modifier> getFieldModifiers()
@@ -257,11 +259,13 @@ meth public java.util.Set<javax.lang.model.element.Modifier> getMethodModifiers(
 meth public org.netbeans.api.java.source.TreePathHandle getSourceType()
 meth public void setAlwaysUseAccessors(boolean)
 meth public void setFieldModifiers(java.util.Set<javax.lang.model.element.Modifier>)
+meth public void setGeneratePropertyChangeSupport(boolean)
+meth public void setGenerateVetoableSupport(boolean)
 meth public void setGetterName(java.lang.String)
 meth public void setMethodModifiers(java.util.Set<javax.lang.model.element.Modifier>)
 meth public void setSetterName(java.lang.String)
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
-hfds alwaysUseAccessors,fieldModifiers,getterName,methodModifiers,setterName
+hfds alwaysUseAccessors,fieldModifiers,getterName,isGeneratePropertyChangeSupport,isGenerateVetoableSupport,methodModifiers,setterName
 
 CLSS public final org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring
 cons public init(org.netbeans.api.java.source.TreePathHandle)
@@ -287,7 +291,7 @@ meth public void setSuperClassName(java.lang.String)
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
 hfds EMPTY_MEMBERS,members,scName
 
-CLSS public org.netbeans.modules.refactoring.java.api.InlineRefactoring
+CLSS public final org.netbeans.modules.refactoring.java.api.InlineRefactoring
 cons public init(org.netbeans.api.java.source.TreePathHandle,org.netbeans.modules.refactoring.java.api.InlineRefactoring$Type)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 innr public final static !enum Type
@@ -315,6 +319,41 @@ meth public void setReferenceName(java.lang.String)
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
 hfds className,referenceName
 
+CLSS public final org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring
+cons public init(org.netbeans.api.java.source.TreePathHandle)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+innr public final static !enum Equality
+meth public boolean getReplace()
+meth public boolean getWrap()
+meth public java.lang.String getNewName()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public java.lang.String getPackageName()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality getEquality()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public org.openide.filesystems.FileObject getSourceRoot()
+ anno 0 org.netbeans.api.annotations.common.CheckForNull()
+meth public void setEquality(org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setNewName(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public void setPackageName(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+meth public void setReplace(boolean)
+meth public void setSourceRoot(org.openide.filesystems.FileObject)
+meth public void setWrap(boolean)
+supr org.netbeans.modules.refactoring.api.AbstractRefactoring
+hfds equality,newName,packageName,replace,sourceRoot,wrap
+
+CLSS public final static !enum org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality
+ outer org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring
+fld public final static org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality DELEGATE
+fld public final static org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality GENERATE
+fld public final static org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality SEPARATE
+meth public static org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality valueOf(java.lang.String)
+meth public static org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality[] values()
+supr java.lang.Enum<org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring$Equality>
+
 CLSS public final org.netbeans.modules.refactoring.java.api.IntroduceParameterRefactoring
 cons public init(org.netbeans.api.java.source.TreePathHandle)
  anno 1 org.netbeans.api.annotations.common.NonNull()
@@ -331,6 +370,47 @@ meth public void setReplaceAll(boolean)
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
 hfds isFinal,isReplaceAll,overloadMethod,parameterName
 
+CLSS public final org.netbeans.modules.refactoring.java.api.InvertBooleanRefactoring
+cons public init(org.netbeans.api.java.source.TreePathHandle)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getNewName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public void setNewName(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NullAllowed()
+supr org.netbeans.modules.refactoring.api.AbstractRefactoring
+hfds newName
+
+CLSS public final org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties
+cons public !varargs init(org.netbeans.api.java.source.TreePathHandle[])
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+innr public final static !enum Visibility
+meth public boolean isAddDeprecated()
+meth public boolean isDelegate()
+meth public boolean isUpdateJavaDoc()
+meth public org.netbeans.api.java.source.TreePathHandle[] getPreSelectedMembers()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility getVisibility()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public void setAddDeprecated(boolean)
+meth public void setDelegate(boolean)
+meth public void setUpdateJavaDoc(boolean)
+meth public void setVisibility(org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds addDeprecated,delegate,preSelectedMembers,updateJavaDoc,visibility
+
+CLSS public final static !enum org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility
+ outer org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties
+fld public final static org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility ASIS
+fld public final static org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility DEFAULT
+fld public final static org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility ESCALATE
+fld public final static org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility PRIVATE
+fld public final static org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility PROTECTED
+fld public final static org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility PUBLIC
+meth public static org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility valueOf(java.lang.String)
+meth public static org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility[] values()
+supr java.lang.Enum<org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties$Visibility>
+
 CLSS public final org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils
 meth public !varargs static org.netbeans.api.java.source.ClasspathInfo getClasspathInfoFor(org.openide.filesystems.FileObject[])
 meth public static <%0 extends javax.lang.model.element.Element> java.util.List<org.netbeans.api.java.source.ElementHandle<{%%0}>> elementsToHandles(java.lang.Iterable<? extends {%%0}>)
@@ -340,6 +420,8 @@ meth public static boolean isRefactorable(org.openide.filesystems.FileObject)
 meth public static com.sun.source.util.TreePath findEnclosingClass(org.netbeans.api.java.source.CompilationInfo,com.sun.source.util.TreePath,boolean,boolean,boolean,boolean,boolean)
 meth public static java.util.Collection<javax.lang.model.element.ExecutableElement> getOverriddenMethods(javax.lang.model.element.ExecutableElement,org.netbeans.api.java.source.CompilationInfo)
 meth public static java.util.Collection<javax.lang.model.element.ExecutableElement> getOverridingMethods(javax.lang.model.element.ExecutableElement,org.netbeans.api.java.source.CompilationInfo)
+ anno 0 java.lang.Deprecated()
+meth public static java.util.Collection<javax.lang.model.element.ExecutableElement> getOverridingMethods(javax.lang.model.element.ExecutableElement,org.netbeans.api.java.source.CompilationInfo,java.util.concurrent.atomic.AtomicBoolean)
 meth public static java.util.Collection<javax.lang.model.element.TypeElement> getSuperTypes(javax.lang.model.element.TypeElement,org.netbeans.api.java.source.CompilationInfo,boolean)
 meth public static java.util.Collection<org.netbeans.api.java.source.TreePathHandle> getInvocationsOf(org.netbeans.api.java.source.ElementHandle,org.netbeans.api.java.source.CompilationController) throws java.io.IOException
 meth public static java.util.Collection<org.netbeans.api.java.source.TreePathHandle> getReferencesToMember(org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement>,org.netbeans.api.java.source.ClasspathInfo,org.netbeans.api.java.source.ElementHandle) throws java.io.IOException
@@ -402,6 +484,49 @@ meth public void setMembers(org.netbeans.modules.refactoring.java.api.MemberInfo
 supr org.netbeans.modules.refactoring.api.AbstractRefactoring
 hfds EMPTY_MEMBERS,members
 
+CLSS public final org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring
+cons public init(org.netbeans.api.java.source.TreePathHandle)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+innr public final static Setter
+meth public java.lang.String getBuilderName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.util.List<org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring$Setter> getSetters()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public void setBuilderName(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void setSetters(java.util.List<org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring$Setter>)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr org.netbeans.modules.refactoring.api.AbstractRefactoring
+hfds builderName,setters
+
+CLSS public final static org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring$Setter
+ outer org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring
+cons public init(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+ anno 2 org.netbeans.api.annotations.common.NonNull()
+ anno 3 org.netbeans.api.annotations.common.NullAllowed()
+ anno 4 org.netbeans.api.annotations.common.NonNull()
+meth public boolean isOptional()
+meth public java.lang.String getDefaultValue()
+meth public java.lang.String getName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getType()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getVarName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+supr java.lang.Object
+hfds defaultValue,name,optional,type,varName
+
+CLSS public final org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithFactoryRefactoring
+cons public init(org.netbeans.api.java.source.TreePathHandle)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public java.lang.String getFactoryName()
+ anno 0 org.netbeans.api.annotations.common.NonNull()
+meth public void setFactoryName(java.lang.String)
+ anno 1 org.netbeans.api.annotations.common.NonNull()
+supr org.netbeans.modules.refactoring.api.AbstractRefactoring
+hfds factoryName
+
 CLSS public final org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring
 cons public init(org.netbeans.api.java.source.TreePathHandle)
 meth public org.netbeans.api.java.source.ElementHandle<javax.lang.model.element.TypeElement> getTargetSuperType()
@@ -428,6 +553,7 @@ meth public static org.openide.util.ContextAwareAction extractInterfaceAction()
 meth public static org.openide.util.ContextAwareAction extractSuperclassAction()
 meth public static org.openide.util.ContextAwareAction inlineAction()
 meth public static org.openide.util.ContextAwareAction innerToOuterAction()
+meth public static org.openide.util.ContextAwareAction introduceLocalExtensionAction()
 meth public static org.openide.util.ContextAwareAction introduceParameterAction()
 meth public static org.openide.util.ContextAwareAction pullUpAction()
 meth public static org.openide.util.ContextAwareAction pushDownAction()
@@ -454,7 +580,9 @@ hfds bounds,diff,displayText,modification,newFileContent,parentFile
 
 CLSS public abstract org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin
 cons public init()
+fld protected final java.util.concurrent.atomic.AtomicBoolean cancelRequested
 fld protected volatile boolean cancelRequest
+ anno 0 java.lang.Deprecated()
 innr protected TransformTask
 innr protected final static !enum Phase
 intf org.netbeans.modules.refactoring.spi.RefactoringPlugin
@@ -464,11 +592,12 @@ meth protected final java.util.Collection<org.netbeans.api.java.source.Modificat
 meth protected final org.netbeans.modules.refactoring.api.Problem createAndAddElements(java.util.Set<org.openide.filesystems.FileObject>,org.netbeans.api.java.source.CancellableTask<org.netbeans.api.java.source.WorkingCopy>,org.netbeans.modules.refactoring.spi.RefactoringElementsBag,org.netbeans.modules.refactoring.api.AbstractRefactoring)
 meth protected final org.netbeans.modules.refactoring.api.Problem createAndAddElements(java.util.Set<org.openide.filesystems.FileObject>,org.netbeans.api.java.source.CancellableTask<org.netbeans.api.java.source.WorkingCopy>,org.netbeans.modules.refactoring.spi.RefactoringElementsBag,org.netbeans.modules.refactoring.api.AbstractRefactoring,org.netbeans.api.java.source.ClasspathInfo)
 meth protected final org.netbeans.modules.refactoring.api.Problem createProblemAndLog(org.netbeans.modules.refactoring.api.Problem,java.lang.Throwable)
-meth protected final static org.netbeans.modules.refactoring.api.Problem createProblem(org.netbeans.modules.refactoring.api.Problem,boolean,java.lang.String)
+meth protected final void queryFiles(java.util.Set<org.openide.filesystems.FileObject>,org.netbeans.api.java.source.CancellableTask<? extends org.netbeans.api.java.source.CompilationController>) throws java.io.IOException
 meth protected org.netbeans.api.java.source.ClasspathInfo getClasspathInfo(org.netbeans.modules.refactoring.api.AbstractRefactoring)
 meth protected org.netbeans.modules.refactoring.api.Problem checkParameters(org.netbeans.api.java.source.CompilationController) throws java.io.IOException
 meth protected org.netbeans.modules.refactoring.api.Problem fastCheckParameters(org.netbeans.api.java.source.CompilationController) throws java.io.IOException
 meth protected org.netbeans.modules.refactoring.api.Problem preCheck(org.netbeans.api.java.source.CompilationController) throws java.io.IOException
+meth protected static org.netbeans.modules.refactoring.api.Problem createProblem(org.netbeans.modules.refactoring.api.Problem,boolean,java.lang.String)
 meth protected static org.netbeans.modules.refactoring.api.Problem isElementAvail(org.netbeans.api.java.source.TreePathHandle,org.netbeans.api.java.source.CompilationInfo)
 meth public org.netbeans.modules.refactoring.api.Problem checkParameters()
 meth public org.netbeans.modules.refactoring.api.Problem fastCheckParameters()
@@ -519,6 +648,7 @@ meth public boolean canExtractInterface(org.openide.util.Lookup)
 meth public boolean canExtractSuperclass(org.openide.util.Lookup)
 meth public boolean canInline(org.openide.util.Lookup)
 meth public boolean canInnerToOuter(org.openide.util.Lookup)
+meth public boolean canIntroduceLocalExtension(org.openide.util.Lookup)
 meth public boolean canIntroduceParameter(org.openide.util.Lookup)
 meth public boolean canPullUp(org.openide.util.Lookup)
 meth public boolean canPushDown(org.openide.util.Lookup)
@@ -529,6 +659,7 @@ meth public void doExtractInterface(org.openide.util.Lookup)
 meth public void doExtractSuperclass(org.openide.util.Lookup)
 meth public void doInline(org.openide.util.Lookup)
 meth public void doInnerToOuter(org.openide.util.Lookup)
+meth public void doIntroduceLocalExtension(org.openide.util.Lookup)
 meth public void doIntroduceParameter(org.openide.util.Lookup)
 meth public void doPullUp(org.openide.util.Lookup)
 meth public void doPushDown(org.openide.util.Lookup)

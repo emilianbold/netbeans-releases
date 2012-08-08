@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
-    private SatisfiesParentSecurityPolicyLineParser parser;
+    private AnnotationLineParser parser;
 
     public SatisfiesParentSecurityPolicyLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new SatisfiesParentSecurityPolicyLineParser();
+        this.parser = Symfony2SecurityAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsSatisfiesParentSecurityPolicyParsedLine_01() throws Exception {
-        assertTrue(parser.parse("SatisfiesParentSecurityPolicy") instanceof SatisfiesParentSecurityPolicyParsedLine);
+        assertTrue(parser.parse("SatisfiesParentSecurityPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsSatisfiesParentSecurityPolicyParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\SatisfiesParentSecurityPolicy") instanceof SatisfiesParentSecurityPolicyParsedLine);
+        assertTrue(parser.parse("Annotations\\SatisfiesParentSecurityPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsSatisfiesParentSecurityPolicyParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\SatisfiesParentSecurityPolicy") instanceof SatisfiesParentSecurityPolicyParsedLine);
+        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\SatisfiesParentSecurityPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsSatisfiesParentSecurityPolicyParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\SatisfiesParentSecurityPolicy My Description") instanceof SatisfiesParentSecurityPolicyParsedLine);
+        assertTrue(parser.parse("Annotations\\SatisfiesParentSecurityPolicy My Description") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("SatisfiesParentSecurityPolicy");
-        assertEquals(SatisfiesParentSecurityPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("SatisfiesParentSecurityPolicy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -104,7 +105,7 @@ public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("SatisfiesParentSecurityPolicy   ");
-        assertEquals(SatisfiesParentSecurityPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("SatisfiesParentSecurityPolicy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -118,7 +119,7 @@ public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("SatisfiesParentSecurityPolicy\t\t  ");
-        assertEquals(SatisfiesParentSecurityPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("SatisfiesParentSecurityPolicy", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -132,7 +133,7 @@ public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("SatisfiesParentSecurityPolicy My description");
-        assertEquals(SatisfiesParentSecurityPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("SatisfiesParentSecurityPolicy", parsedLine.getName());
         assertEquals("My description", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -147,7 +148,7 @@ public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\SatisfiesParentSecurityPolicy  \t My description  \t");
-        assertEquals(SatisfiesParentSecurityPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("SatisfiesParentSecurityPolicy", parsedLine.getName());
         assertEquals("My description", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -162,7 +163,7 @@ public class SatisfiesParentSecurityPolicyLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\SatisfiesParentSecurityPolicy \t My description  \t");
-        assertEquals(SatisfiesParentSecurityPolicyLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("SatisfiesParentSecurityPolicy", parsedLine.getName());
         assertEquals("My description", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

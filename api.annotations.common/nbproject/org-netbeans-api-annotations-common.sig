@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.11
+#Version 1.14.1
 
 CLSS public abstract interface java.lang.annotation.Annotation
 meth public abstract boolean equals(java.lang.Object)
@@ -72,6 +72,14 @@ CLSS public abstract interface !annotation org.netbeans.api.annotations.common.N
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)
  anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[FIELD, METHOD, PARAMETER, LOCAL_VARIABLE])
 intf java.lang.annotation.Annotation
+
+CLSS public abstract interface !annotation org.netbeans.api.annotations.common.StaticResource
+ anno 0 java.lang.annotation.Documented()
+ anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=SOURCE)
+ anno 0 java.lang.annotation.Target(java.lang.annotation.ElementType[] value=[FIELD])
+intf java.lang.annotation.Annotation
+meth public abstract !hasdefault boolean relative()
+meth public abstract !hasdefault boolean searchClasspath()
 
 CLSS public abstract interface !annotation org.netbeans.api.annotations.common.SuppressWarnings
  anno 0 java.lang.annotation.Retention(java.lang.annotation.RetentionPolicy value=CLASS)

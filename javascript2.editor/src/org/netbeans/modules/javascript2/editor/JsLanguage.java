@@ -165,5 +165,10 @@ public class JsLanguage extends DefaultLanguageConfig {
         return new JsInstantRenamer();
     }
 
-    
+    @Override
+    public boolean isIdentifierChar(char c) {
+        // due to CC filtering of DOC annotations - see GsfCompletionProvider#getCompletableLanguage()
+        return super.isIdentifierChar(c) || c == '@';
+    }
+
 }

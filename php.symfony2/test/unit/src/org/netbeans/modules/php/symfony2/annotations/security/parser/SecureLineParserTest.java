@@ -46,13 +46,14 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class SecureLineParserTest extends NbTestCase {
-    private SecureLineParser parser;
+    private AnnotationLineParser parser;
 
     public SecureLineParserTest(String name) {
         super(name);
@@ -61,7 +62,7 @@ public class SecureLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new SecureLineParser();
+        this.parser = Symfony2SecurityAnnotationLineParser.getDefault();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -69,19 +70,19 @@ public class SecureLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsSecureParsedLine_01() throws Exception {
-        assertTrue(parser.parse("Secure") instanceof SecureParsedLine);
+        assertTrue(parser.parse("Secure") instanceof ParsedLine);
     }
 
     public void testReturnValueIsSecureParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\Secure") instanceof SecureParsedLine);
+        assertTrue(parser.parse("Annotations\\Secure") instanceof ParsedLine);
     }
 
     public void testReturnValueIsSecureParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Secure") instanceof SecureParsedLine);
+        assertTrue(parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Secure") instanceof ParsedLine);
     }
 
     public void testReturnValueIsSecureParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\Secure(roles=\"ROLE_USER, ROLE_FOO, ROLE_ADMIN\")") instanceof SecureParsedLine);
+        assertTrue(parser.parse("Annotations\\Secure(roles=\"ROLE_USER, ROLE_FOO, ROLE_ADMIN\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
@@ -90,7 +91,7 @@ public class SecureLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Secure");
-        assertEquals(SecureLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Secure", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -104,7 +105,7 @@ public class SecureLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Secure   ");
-        assertEquals(SecureLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Secure", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -118,7 +119,7 @@ public class SecureLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Secure\t\t  ");
-        assertEquals(SecureLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Secure", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
@@ -132,7 +133,7 @@ public class SecureLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Secure(roles=\"ROLE_USER, ROLE_FOO, ROLE_ADMIN\")");
-        assertEquals(SecureLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Secure", parsedLine.getName());
         assertEquals("(roles=\"ROLE_USER, ROLE_FOO, ROLE_ADMIN\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -147,7 +148,7 @@ public class SecureLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\Secure(roles=\"ROLE_USER, ROLE_FOO, ROLE_ADMIN\")  \t");
-        assertEquals(SecureLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Secure", parsedLine.getName());
         assertEquals("(roles=\"ROLE_USER, ROLE_FOO, ROLE_ADMIN\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -162,7 +163,7 @@ public class SecureLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Sensio\\Bundle\\FrameworkExtraBundle\\Configuration\\Secure(roles=\"ROLE_USER, ROLE_FOO, ROLE_ADMIN\")  \t");
-        assertEquals(SecureLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Secure", parsedLine.getName());
         assertEquals("(roles=\"ROLE_USER, ROLE_FOO, ROLE_ADMIN\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

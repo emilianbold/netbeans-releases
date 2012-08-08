@@ -146,6 +146,7 @@ FormattingToken{kind=TEXT, offset=213, text=writeln}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=220, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=221, text=text}
 FormattingToken{kind=WHITESPACE, offset=225, text= }
 FormattingToken{kind=BEFORE_BINARY_OPERATOR, offset=-1, text=null}
@@ -378,7 +379,7 @@ FormattingToken{kind=TEXT, offset=543, text=a}
 FormattingToken{kind=BEFORE_IF_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=544, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_BLOCK_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_IF_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=545, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=546, text=;}
@@ -512,6 +513,7 @@ FormattingToken{kind=TEXT, offset=780, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=787, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=788, text=obdelnik}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=796, text=)}
@@ -526,6 +528,7 @@ FormattingToken{kind=TEXT, offset=807, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=814, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=815, text="}
 FormattingToken{kind=TEXT, offset=816, text=kulate kolo }
 FormattingToken{kind=TEXT, offset=828, text="}
@@ -586,6 +589,7 @@ FormattingToken{kind=TEXT, offset=915, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=922, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=923, text="}
 FormattingToken{kind=TEXT, offset=924, text=Kolo.getColor is called:}
 FormattingToken{kind=TEXT, offset=948, text="}
@@ -602,10 +606,12 @@ FormattingToken{kind=TEXT, offset=956, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=963, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=964, text=addSpace}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=972, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=973, text=4}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=974, text=)}
@@ -628,10 +634,12 @@ FormattingToken{kind=TEXT, offset=992, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=999, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1000, text=addSpace}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1008, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1009, text=4}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1010, text=)}
@@ -814,6 +822,7 @@ FormattingToken{kind=WHITESPACE, offset=1304, text= }
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1305, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1306, text='}
 FormattingToken{kind=TEXT, offset=1307, text=Pocet valcu: }
 FormattingToken{kind=TEXT, offset=1320, text='}
@@ -886,6 +895,7 @@ FormattingToken{kind=TEXT, offset=1403, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1410, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1411, text="}
 FormattingToken{kind=TEXT, offset=1412, text=auto}
 FormattingToken{kind=TEXT, offset=1416, text="}
@@ -913,6 +923,7 @@ FormattingToken{kind=TEXT, offset=1442, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1449, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1450, text=myKolo}
 FormattingToken{kind=TEXT, offset=1456, text=.}
 FormattingToken{kind=TEXT, offset=1457, text=getColor}
@@ -931,6 +942,7 @@ FormattingToken{kind=TEXT, offset=1470, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1477, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1478, text=myKolo}
 FormattingToken{kind=TEXT, offset=1484, text=.}
 FormattingToken{kind=TEXT, offset=1485, text=isEmpty}
@@ -988,6 +1000,7 @@ FormattingToken{kind=TEXT, offset=1555, text=Ridic}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1560, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1561, text='}
 FormattingToken{kind=TEXT, offset=1562, text=Petr}
 FormattingToken{kind=TEXT, offset=1566, text='}
@@ -995,6 +1008,7 @@ FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1567, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=1568, text= }
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1569, text='}
 FormattingToken{kind=TEXT, offset=1570, text=Hejl}
 FormattingToken{kind=TEXT, offset=1574, text='}
@@ -1010,6 +1024,7 @@ FormattingToken{kind=TEXT, offset=1578, text=println}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1585, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=1586, text=ridic}
 FormattingToken{kind=TEXT, offset=1591, text=.}
 FormattingToken{kind=TEXT, offset=1592, text=getName}

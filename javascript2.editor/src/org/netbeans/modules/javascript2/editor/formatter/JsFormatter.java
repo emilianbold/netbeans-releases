@@ -401,6 +401,18 @@ public class JsFormatter implements Formatter {
                             i = handleLineWrap(tokens, i, formatContext,
                                     initialIndent, continuationIndent);
                             break;
+                        case BEFORE_FUNCTION_CALL_ARGUMENT:
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
+                            break;
+                        case AFTER_IF_START:
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
+                            break;
+                        case AFTER_ELSE_START:
+                            i = handleLineWrap(tokens, i, formatContext,
+                                    initialIndent, continuationIndent);
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // XXX refactor eol token WRAP_IF_LONG handling
@@ -538,11 +550,17 @@ public class JsFormatter implements Formatter {
 
         // search for token which will be present just before eol
         FormatToken tokenBeforeEol = null;
+        // we need to distinct whether there are only virtual tokens only
+        // if so we will later use the current indentation (that might be one
+        // of that virtual tokens)
+        boolean virtualOnlyFollows = true;
         for (int j = startIndex - 1; j >= 0; j--) {
             tokenBeforeEol = tokens.get(j);
             if (!tokenBeforeEol.isVirtual()
                     && tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE) {
                 break;
+            } else if (tokenBeforeEol.getKind() == FormatToken.Kind.WHITESPACE) {
+                virtualOnlyFollows = false;
             }
         }
         
@@ -565,7 +583,6 @@ public class JsFormatter implements Formatter {
                     formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
                             + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
                     // do the indentation
-                    // FIXME continuation, initialIndent and level - check it is ok
                     int indentationSize = initialIndent
                             + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
                     if (isContinuation(lastWrap.getToken(), true)) {
@@ -577,14 +594,17 @@ public class JsFormatter implements Formatter {
                     // we need to mark the current wrap
                     formatContext.setLastLineWrap(new FormatContext.LineWrap(
                             tokenBeforeEol, lastOffsetDiff + (formatContext.getOffsetDiff() - offsetBeforeChanges),
-                            lastIndentationLevel));
+                            // use current indentation if there were only virtual tokens
+                            virtualOnlyFollows ? formatContext.getIndentationLevel() : lastIndentationLevel));
                     return i;
                 }
                 // we proceed with wrapping if there is no wrap other than current
                 // and we are longer than whats allowed
             } else {
                 formatContext.setLastLineWrap(new FormatContext.LineWrap(
-                        tokenBeforeEol, lastOffsetDiff, lastIndentationLevel));
+                        tokenBeforeEol, lastOffsetDiff,
+                        // use current indentation if there were only virtual tokens
+                        virtualOnlyFollows ? formatContext.getIndentationLevel() : lastIndentationLevel));
                 return i;
             }
         }
@@ -609,7 +629,7 @@ public class JsFormatter implements Formatter {
                 || extendedTokenAfterEol != tokenAfterEol && !isStatementWrap(token))) {
 
             // proceed the skipped tokens moving the main loop
-            i = moveForward(token, i, extendedTokenAfterEol, formatContext);
+            i = moveForward(token, i, extendedTokenAfterEol, formatContext, true);
 
             if (style != CodeStyle.WrapStyle.WRAP_NEVER) {
                 if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
@@ -730,7 +750,7 @@ public class JsFormatter implements Formatter {
             }
             // we have done everything needed so move forward
             if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                return moveForward(token, index, end, formatContext);
+                return moveForward(token, index, end, formatContext, false);
             }
         }
         return index;
@@ -786,7 +806,7 @@ public class JsFormatter implements Formatter {
             }
             // we have done everything needed so move forward
             if (style == CodeStyle.WrapStyle.WRAP_NEVER) {
-                return moveForward(token, index, theToken, formatContext);
+                return moveForward(token, index, theToken, formatContext, false);
             }
         }
         return index;
@@ -961,6 +981,15 @@ public class JsFormatter implements Formatter {
         if (token.getKind() == FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER) {
             return CodeStyle.get(context).wrapMethodParams();
         }
+        if (token.getKind() == FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT) {
+            return CodeStyle.get(context).wrapMethodCallArgs();
+        }
+        if (token.getKind() == FormatToken.Kind.AFTER_IF_START) {
+            return CodeStyle.get(context).wrapIfStatement();
+        }
+        if (token.getKind() == FormatToken.Kind.AFTER_ELSE_START) {
+            return CodeStyle.get(context).wrapIfStatement();
+        }
         return null;
     }
 
@@ -975,13 +1004,17 @@ public class JsFormatter implements Formatter {
      * @return the new index
      */
     private static int moveForward(FormatToken token, int index, FormatToken limit,
-            FormatContext formatContext) {
+            FormatContext formatContext, boolean allowComment) {
 
         int i = index;
         for (FormatToken current = token; current != null && current != limit; current = current.next()) {
             assert current.isVirtual()
                     || current.getKind() == FormatToken.Kind.WHITESPACE
-                    || current.getKind() == FormatToken.Kind.EOL : current;
+                    || current.getKind() == FormatToken.Kind.EOL
+                    || allowComment
+                        && (current.getKind() == FormatToken.Kind.BLOCK_COMMENT
+                        || current.getKind() == FormatToken.Kind.LINE_COMMENT
+                        || current.getKind() == FormatToken.Kind.DOC_COMMENT): current;
 
             updateIndentationLevel(current, formatContext);
             if (current.getKind() == FormatToken.Kind.EOL) {

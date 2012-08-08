@@ -49,6 +49,8 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -233,27 +235,50 @@ class BlobCellRenderer extends SQLConstantsCellRenderer {
     }
 }
 
-class ClobCellRenderer extends SQLConstantsCellRenderer {
+class ClobCellRenderer extends CellFocusCustomRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (!(value instanceof Clob)) {
-            throw new IllegalArgumentException("ClobCellRenderer can only be used for Blobs");
+            throw new IllegalArgumentException(
+                    "ClobCellRenderer can only be used for Clobs");     //NOI18N
         }
+        Clob clobValue = (Clob) value;
+        StringBuilder contentPart = new StringBuilder();
+        StringBuilder clobDescription = new StringBuilder("<CLOB ");    //NOI18N
+
         try {
-            Long size = ((Clob) value).length();
-            StringBuilder stringValue = new StringBuilder();
-            stringValue.append("<CLOB ");
-            if(size < 1000) {
-                stringValue.append(String.format("%1$d Chars", size));
-            } else if ( size < 1000000) {
-                stringValue.append(String.format("%1$d kChars", size / 1000));
+            long size = clobValue.length();
+            if (size < 1000) {
+                clobDescription.append(String.format("%1$d Chars", size)); //NOI18N
+            } else if (size < 1000000) {
+                clobDescription.append(String.format("%1$d kChars", size / 1000)); //NOI18N
             } else {
-                stringValue.append(String.format("%1$d MChars", size / 1000000));
+                clobDescription.append(String.format("%1$d MChars", size / 1000000)); //NOI18N
             }
-            stringValue.append(">");
-            return super.getTableCellRendererComponent(table, stringValue.toString(), isSelected, hasFocus, row, column);
         } catch (SQLException ex) {
-            return super.getTableCellRendererComponent(table, "<CLOB of unkown size>", isSelected, hasFocus, row, column);
+            clobDescription.append("of unknown size");                  //NOI18N
         }
+        clobDescription.append(">");                                    //NOI18N
+
+        try {
+            long size = clobValue.length();
+            long retrievalCount = Math.min(size, 255);
+            String sampleContent = clobValue.getSubString(1, (int) retrievalCount);
+            contentPart.append(sampleContent.replaceAll("[\n\r]+", " "));//NOI18N
+            if (size > 255) {
+                contentPart.append(" [...]");                           //NOI18N
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO,
+                    "Failed to retrieve CLOB content", //NOI18N
+                    ex);
+            contentPart.append(clobDescription.toString());
+        }
+        Component renderer = super.getTableCellRendererComponent(table,
+                contentPart.toString(), isSelected, hasFocus, row, column);
+        if (renderer instanceof JComponent) {
+            ((JComponent) renderer).setToolTipText(clobDescription.toString());
+        }
+        return renderer;
     }
 }
