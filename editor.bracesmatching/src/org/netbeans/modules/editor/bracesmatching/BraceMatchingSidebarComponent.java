@@ -429,7 +429,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
     
     private void hideToolTip() {
         ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
-        tts.setToolTipVisible(false);
+        if (tts.getToolTip() instanceof BraceToolTip) {
+            tts.setToolTipVisible(false);
+        }
     }
     
     private int[] findTooltipRange() {

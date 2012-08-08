@@ -291,6 +291,18 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 }
 
+                // place function parameters marks
+                for (IdentNode param : functionNode.getParameters()) {
+                    FormatToken ident = getNextToken(getStart(param), JsTokenId.IDENTIFIER);
+                    if (ident != null) {
+                        FormatToken beforeIdent = ident.previous();
+                        if (beforeIdent != null) {
+                            appendToken(beforeIdent,
+                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARAMETER));
+                        }
+                    }
+                }
+
                 if (functionNode.isStatement()) {
                     FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
                             JsTokenId.BRACKET_RIGHT_CURLY, leftBrace.getOffset());
@@ -345,6 +357,18 @@ public class FormatVisitor extends NodeVisitor {
                         if (previous != null) {
                             appendToken(previous, FormatToken.forFormat(
                                     FormatToken.Kind.BEFORE_FUNCTION_CALL_PARENTHESIS));
+                        }
+                    }
+                }
+
+                // place function arguments marks
+                for (Node arg : callNode.getArgs()) {
+                    FormatToken argToken = getNextToken(getStart(arg), null);
+                    if (argToken != null) {
+                        FormatToken beforeArg = argToken.previous();
+                        if (beforeArg != null) {
+                            appendToken(beforeArg,
+                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL_ARGUMENT));
                         }
                     }
                 }
@@ -971,16 +995,26 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private static int getStart(Node node) {
+        // unfortunately in binary node the token represents operator
+        // so string fix would not work
+        if (node instanceof BinaryNode) {
+            return getStart((BinaryNode) node);
+        }
         // All this magic is because nashorn nodes and tokens don't contain the
         // quotes for string. Due to this we call this method to add 1 to start
         // in case it is string literal.
         int start = node.getStart();
         long firstToken = node.getToken();
-        if (com.oracle.nashorn.parser.Token.descType(firstToken).equals(TokenType.STRING)) {
+        TokenType type = com.oracle.nashorn.parser.Token.descType(firstToken);
+        if (type.equals(TokenType.STRING) || type.equals(TokenType.ESCSTRING)) {
             start--;
         }
 
         return start;
+    }
+
+    private static int getStart(BinaryNode node) {
+        return getStart(node.lhs());
     }
 
     private static int getFunctionStart(FunctionNode node) {

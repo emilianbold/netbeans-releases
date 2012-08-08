@@ -75,6 +75,7 @@ FormattingToken{kind=WHITESPACE, offset=128, text= }
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=129, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=130, text='}
 FormattingToken{kind=TEXT, offset=131, text=Cylinders: }
 FormattingToken{kind=TEXT, offset=142, text='}

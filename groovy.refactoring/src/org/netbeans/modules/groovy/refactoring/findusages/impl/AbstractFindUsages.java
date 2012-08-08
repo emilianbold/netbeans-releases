@@ -130,7 +130,7 @@ public abstract class AbstractFindUsages {
 
             for (ASTNode node : getVisitor(moduleNode, defClass).findUsages()) {
                 if (node.getLineNumber() != -1 && node.getColumnNumber() != -1) {
-                    usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, moduleNode, node, fo, getElementKind()), doc));
+                    usages.add(new FindUsagesElement(new GroovyRefactoringElement(result, node, fo, getElementKind()), doc));
                 }
             }
             Collections.sort(usages);

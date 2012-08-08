@@ -49,6 +49,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -60,6 +61,9 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
+ * Utility class for "find type usages". It provides some method for the correct
+ * recognition whether we have caret location on type (respectively ClassNode) or
+ * on the field, property, variable etc.
  *
  * @author Martin Janicek
  */
@@ -69,8 +73,29 @@ public class FindTypeUtils {
     }
 
 
-    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, FileObject fo, int carret) {
-        if (findCurrentNode(path, doc, fo, carret) instanceof ClassNode) {
+    /**
+     * Finds out whether we are on type of the field, property, method, etc. or
+     * not. Typically if we can have declaration like <code>private String something</code>.
+     * For that example this method returns true in following case:<br/>
+     *      <code>private St^ring something</code>
+     *
+     * <br/><br/>
+     * ..but it returns false for the following case:<br/>
+     *      <code>private String somet^hing</code>
+     *
+     * <br/><br/>
+     * This gives us a chance to recognize whether we are dealing with Find type usages
+     * or with Find field usages. It applies of course also for property, variables,
+     * methods, etc.
+     *
+     * @param path AST path to the current location
+     * @param doc document
+     * @param fo file object we are working on
+     * @param caret caret position
+     * @return true if we are directly on the type, false otherwise
+     */
+    public static boolean isCaretOnClassNode(AstPath path, BaseDocument doc, FileObject fo, int caret) {
+        if (findCurrentNode(path, doc, fo, caret) instanceof ClassNode) {
             return true;
         }
         return false;
@@ -124,6 +149,8 @@ public class FindTypeUtils {
             } else {
                 return AstUtilities.getOwningClass(path);
             }
+        } else if (leaf instanceof ConstructorCallExpression) {
+            return leaf;
         }
 
         ClassNode currentType = ElementUtils.getType(leaf);
@@ -176,10 +203,7 @@ public class FindTypeUtils {
             range = getRange(expression.getTupleExpression(), doc, cursorOffset);
         }
         
-        if (range != null && range.containsInclusive(cursorOffset)) {
-            return range;
-        }
-        return OffsetRange.NONE;
+        return range;
     }
 
     private static boolean isCaretOnVariableType(VariableExpression expression, BaseDocument doc, int cursorOffset) {
@@ -218,7 +242,7 @@ public class FindTypeUtils {
         if (variable.isDynamicTyped()) {
             return OffsetRange.NONE;
         }
-        return getRange(variable, doc, cursorOffset);
+        return getRange(variable.getAccessedVariable().getType(), doc, cursorOffset);
     }
 
     private static OffsetRange getRange(ASTNode node, BaseDocument doc, int cursorOffset) {

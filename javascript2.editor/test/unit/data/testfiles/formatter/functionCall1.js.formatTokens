@@ -65,6 +65,7 @@ FormattingToken{kind=TEXT, offset=68, text=log}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=71, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=72, text=z}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=73, text=)}
@@ -143,11 +144,13 @@ FormattingToken{kind=WHITESPACE, offset=161, text= }
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=162, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=163, text=param1}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=169, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=170, text= }
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=171, text=param2}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=177, text=)}
@@ -183,11 +186,13 @@ FormattingToken{kind=TEXT, offset=197, text=multi}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=202, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=203, text=paramA}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=209, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=210, text= }
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=211, text=paramB}
 FormattingToken{kind=BEFORE_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=217, text=)}

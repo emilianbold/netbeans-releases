@@ -78,4 +78,9 @@ public class ExpectedExceptionParsedLine implements AnnotationParsedLine {
         return ExpectedExceptionLineParser.ANNOTATION_NAME;
     }
 
+    @Override
+    public boolean startsWithAnnotation() {
+        return true;
+    }
+
 }

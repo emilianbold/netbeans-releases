@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.12
+#Version 1.16.1
 
 CLSS public java.lang.Object
 cons public init()
@@ -19,6 +19,7 @@ CLSS public abstract interface org.netbeans.core.netigso.spi.BundleContent
 meth public abstract byte[] resource(java.lang.String) throws java.io.IOException
 
 CLSS public final org.netbeans.core.netigso.spi.NetigsoArchive
+meth public boolean isActive()
 meth public byte[] fromArchive(java.lang.String) throws java.io.IOException
 meth public org.netbeans.core.netigso.spi.NetigsoArchive forBundle(long,org.netbeans.core.netigso.spi.BundleContent)
 supr java.lang.Object

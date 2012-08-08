@@ -6,11 +6,13 @@ FormattingToken{kind=WHITESPACE, offset=12, text= }
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=13, text=(}
 FormattingToken{kind=AFTER_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=14, text=color}
 FormattingToken{kind=WHITESPACE, offset=19, text=    }
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=23, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=24, text=maker}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=29, text=)}
@@ -152,17 +154,20 @@ FormattingToken{kind=WHITESPACE, offset=260, text= }
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=261, text=(}
 FormattingToken{kind=AFTER_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=262, text=street}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=268, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=269, text=
 }
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=270, text=town}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=274, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=275, text=        }
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=283, text=country}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=290, text=)}
@@ -235,6 +240,7 @@ FormattingToken{kind=WHITESPACE, offset=387, text= }
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=388, text=(}
 FormattingToken{kind=AFTER_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=389, text=street}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=395, text=,}
@@ -242,11 +248,13 @@ FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=396, text=        }
 FormattingToken{kind=EOL, offset=404, text=
 }
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=405, text=town}
 FormattingToken{kind=BEFORE_COMMA, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=409, text=,}
 FormattingToken{kind=AFTER_COMMA, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=410, text=    }
+FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARAMETER, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=414, text=country}
 FormattingToken{kind=BEFORE_FUNCTION_DECLARATION_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=421, text=)}

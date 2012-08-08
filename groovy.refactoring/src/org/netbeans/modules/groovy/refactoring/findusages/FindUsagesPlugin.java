@@ -94,7 +94,7 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
 
     private List<FindUsagesElement> collectUsages() {
         final AbstractFindUsages strategy;
-        if (element.getKind() == ElementKind.METHOD) {
+        if (isMethodUsage()) {
             strategy = getMethodStrategy();
         } else if (isClassTypeUsage()) {
             strategy = getClassStrategy();
@@ -118,6 +118,15 @@ public class FindUsagesPlugin extends ProgressProviderAdapter implements Refacto
             element.getKind() == ElementKind.INTERFACE ||
             element.getKind() == ElementKind.PROPERTY ||
             element.getKind() == ElementKind.FIELD) {
+
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isMethodUsage() {
+        if (element.getKind() == ElementKind.METHOD ||
+            element.getKind() == ElementKind.CONSTRUCTOR) {
 
             return true;
         }

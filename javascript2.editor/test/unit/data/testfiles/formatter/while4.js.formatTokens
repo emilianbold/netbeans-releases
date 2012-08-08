@@ -246,6 +246,7 @@ FormattingToken{kind=TEXT, offset=241, text=print}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=246, text=(}
 FormattingToken{kind=AFTER_FUNCTION_CALL_PARENTHESIS, offset=-1, text=null}
+FormattingToken{kind=BEFORE_FUNCTION_CALL_ARGUMENT, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=247, text="}
 FormattingToken{kind=TEXT, offset=248, text=ok}
 FormattingToken{kind=TEXT, offset=250, text="}
