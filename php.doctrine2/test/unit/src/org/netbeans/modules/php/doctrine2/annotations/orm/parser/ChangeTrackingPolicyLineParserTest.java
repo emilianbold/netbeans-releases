@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -69,19 +70,19 @@ public class ChangeTrackingPolicyLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsChangeTrackingPolicyParsedLine_01() throws Exception {
-        assertTrue(parser.parse("ChangeTrackingPolicy") instanceof ChangeTrackingPolicyParsedLine);
+        assertTrue(parser.parse("ChangeTrackingPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsChangeTrackingPolicyParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\ChangeTrackingPolicy") instanceof ChangeTrackingPolicyParsedLine);
+        assertTrue(parser.parse("Annotations\\ChangeTrackingPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsChangeTrackingPolicyParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\ChangeTrackingPolicy") instanceof ChangeTrackingPolicyParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\ChangeTrackingPolicy") instanceof ParsedLine);
     }
 
     public void testReturnValueIsChangeTrackingPolicyParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\ChangeTrackingPolicy(\"NOTIFY\")") instanceof ChangeTrackingPolicyParsedLine);
+        assertTrue(parser.parse("Annotations\\ChangeTrackingPolicy(\"NOTIFY\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {

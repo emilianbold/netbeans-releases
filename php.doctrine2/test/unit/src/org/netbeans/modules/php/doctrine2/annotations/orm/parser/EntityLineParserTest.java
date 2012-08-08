@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -69,19 +70,19 @@ public class EntityLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsEntityParsedLine_01() throws Exception {
-        assertTrue(parser.parse("Entity") instanceof EntityParsedLine);
+        assertTrue(parser.parse("Entity") instanceof ParsedLine);
     }
 
     public void testReturnValueIsEntityParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\Entity") instanceof EntityParsedLine);
+        assertTrue(parser.parse("Annotations\\Entity") instanceof ParsedLine);
     }
 
     public void testReturnValueIsEntityParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\Entity") instanceof EntityParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\Entity") instanceof ParsedLine);
     }
 
     public void testReturnValueIsEntityParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\Entity(repositoryClass=\"MyProject\\UserRepository\")") instanceof EntityParsedLine);
+        assertTrue(parser.parse("Annotations\\Entity(repositoryClass=\"MyProject\\UserRepository\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {

@@ -74,7 +74,7 @@ class TableLineParser implements AnnotationLineParser {
             Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
             types.put(new OffsetRange(0, annotation.length()), annotation);
             types.putAll(AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS));
-            result = new TableParsedLine(description, types);
+            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description);
         }
         return result;
     }

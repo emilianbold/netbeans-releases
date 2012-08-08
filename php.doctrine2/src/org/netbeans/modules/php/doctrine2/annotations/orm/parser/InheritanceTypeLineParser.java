@@ -39,42 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class BaseParsedLine implements AnnotationParsedLine {
+class InheritanceTypeLineParser implements AnnotationLineParser {
 
-    private final String description;
-    private final Map<OffsetRange, String> types;
-
-    public BaseParsedLine(final String description, final Map<OffsetRange, String> types) {
-        assert description != null;
-        assert types != null;
-        this.description = description;
-        this.types = types;
-    }
+    static final String ANNOTATION_NAME = "InheritanceType"; //NOI18N
 
     @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public Map<OffsetRange, String> getTypes() {
-        return new HashMap<OffsetRange, String>(types);
-    }
-
-    @Override
-    public boolean startsWithAnnotation() {
-        return true;
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description);
+        }
+        return result;
     }
 
 }

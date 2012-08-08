@@ -140,6 +140,17 @@ public interface AnnotationParsedLine {
          * @param name name of the annotation; never {@code null}
          * @param types types of the annotation; can be {@code null}
          * @param description description of the annotation; can be {@code null}
+         */
+        public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types, @NullAllowed final String description) {
+            this(name, types, description, false);
+        }
+
+        /**
+         * Creates new annotation parsed line.
+         *
+         * @param name name of the annotation; never {@code null}
+         * @param types types of the annotation; can be {@code null}
+         * @param description description of the annotation; can be {@code null}
          * @param startsWithAnnotation {@code true} if this line starts with the annotations, {@code false} otherwise
          */
         public ParsedLine(@NonNull final String name, @NullAllowed final Map<OffsetRange, String> types, @NullAllowed final String description, final boolean startsWithAnnotation) {

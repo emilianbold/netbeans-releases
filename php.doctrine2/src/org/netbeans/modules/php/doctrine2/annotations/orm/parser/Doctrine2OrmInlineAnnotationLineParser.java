@@ -46,9 +46,9 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
-import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -78,27 +78,9 @@ public class Doctrine2OrmInlineAnnotationLineParser implements AnnotationLinePar
         AnnotationParsedLine result = null;
         final Map<OffsetRange, String> extractInlineTypes = AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS);
         if (!extractInlineTypes.isEmpty()) {
-            result = new InlineAnnotationParsedLine(line.trim(), extractInlineTypes);
+            result = new ParsedLine("", extractInlineTypes, line.trim());
         }
         return result;
-    }
-
-    private class InlineAnnotationParsedLine extends BaseParsedLine {
-
-        public InlineAnnotationParsedLine(String description, Map<OffsetRange, String> types) {
-            super(description, types);
-        }
-
-        @Override
-        public String getName() {
-            return "";
-        }
-
-        @Override
-        public boolean startsWithAnnotation() {
-            return false;
-        }
-
     }
 
 }

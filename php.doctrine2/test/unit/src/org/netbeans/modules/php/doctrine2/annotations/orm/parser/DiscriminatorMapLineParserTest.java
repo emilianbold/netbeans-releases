@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -69,19 +70,19 @@ public class DiscriminatorMapLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsDiscriminatorMapParsedLine_01() throws Exception {
-        assertTrue(parser.parse("DiscriminatorMap") instanceof DiscriminatorMapParsedLine);
+        assertTrue(parser.parse("DiscriminatorMap") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorMapParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\DiscriminatorMap") instanceof DiscriminatorMapParsedLine);
+        assertTrue(parser.parse("Annotations\\DiscriminatorMap") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorMapParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\DiscriminatorMap") instanceof DiscriminatorMapParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\DiscriminatorMap") instanceof ParsedLine);
     }
 
     public void testReturnValueIsDiscriminatorMapParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\DiscriminatorMap({\"person\" = \"Person\", \"employee\" = \"Employee\"})") instanceof DiscriminatorMapParsedLine);
+        assertTrue(parser.parse("Annotations\\DiscriminatorMap({\"person\" = \"Person\", \"employee\" = \"Employee\"})") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {

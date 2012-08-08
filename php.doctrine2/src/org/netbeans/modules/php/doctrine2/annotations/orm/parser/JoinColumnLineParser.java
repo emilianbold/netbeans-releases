@@ -41,23 +41,33 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.doctrine2.annotations.BaseParsedLine;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class EntityParsedLine extends BaseParsedLine {
+class JoinColumnLineParser implements AnnotationLineParser {
 
-    public EntityParsedLine(String description, Map<OffsetRange, String> types) {
-        super(description, types);
-    }
+    static final String ANNOTATION_NAME = "JoinColumn"; //NOI18N
 
     @Override
-    public String getName() {
-        return EntityLineParser.ANNOTATION_NAME;
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
+            String annotation = tokens[0].trim();
+            String description = line.substring(annotation.length()).trim();
+            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            types.put(new OffsetRange(0, annotation.length()), annotation);
+            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description);
+        }
+        return result;
     }
 
 }

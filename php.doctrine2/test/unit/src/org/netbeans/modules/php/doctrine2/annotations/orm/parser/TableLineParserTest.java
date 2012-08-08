@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
 
 /**
  *
@@ -69,19 +70,19 @@ public class TableLineParserTest extends NbTestCase {
     }
 
     public void testReturnValueIsTableParsedLine_01() throws Exception {
-        assertTrue(parser.parse("Table") instanceof TableParsedLine);
+        assertTrue(parser.parse("Table") instanceof ParsedLine);
     }
 
     public void testReturnValueIsTableParsedLine_02() throws Exception {
-        assertTrue(parser.parse("Annotations\\Table") instanceof TableParsedLine);
+        assertTrue(parser.parse("Annotations\\Table") instanceof ParsedLine);
     }
 
     public void testReturnValueIsTableParsedLine_03() throws Exception {
-        assertTrue(parser.parse("\\Foo\\Bar\\Table") instanceof TableParsedLine);
+        assertTrue(parser.parse("\\Foo\\Bar\\Table") instanceof ParsedLine);
     }
 
     public void testReturnValueIsTableParsedLine_04() throws Exception {
-        assertTrue(parser.parse("Annotations\\Table(name=\"user\")") instanceof TableParsedLine);
+        assertTrue(parser.parse("Annotations\\Table(name=\"user\")") instanceof ParsedLine);
     }
 
     public void testReturnValueIsNull() throws Exception {
