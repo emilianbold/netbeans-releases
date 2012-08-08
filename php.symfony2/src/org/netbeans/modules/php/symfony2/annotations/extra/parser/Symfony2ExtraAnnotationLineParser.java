@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.php.symfony2.annotations.extra.parser;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
