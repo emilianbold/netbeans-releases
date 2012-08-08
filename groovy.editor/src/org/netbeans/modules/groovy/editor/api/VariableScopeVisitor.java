@@ -130,6 +130,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         } else if (leaf instanceof ClassExpression) {
             addArrayExpressionOccurences(visitedArray, ((ClassExpression) leaf).getType());
+        } else if (leaf instanceof ArrayExpression) {
+            addArrayExpressionOccurences(visitedArray, ((ArrayExpression) leaf).getElementType());
         } else if (leaf instanceof ForStatement) {
             addArrayExpressionOccurences(visitedArray, ((ForStatement) leaf).getVariableType());
         }
@@ -244,6 +246,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
             if (!variable.isDynamicTyped()) {
                 addDeclarationExpressionOccurrences(expression, ((ClassExpression) leaf).getType());
             }
+        } else if (leaf instanceof ArrayExpression) {
+            addDeclarationExpressionOccurrences(expression, ((ArrayExpression) leaf).getElementType());
         } else if (leaf instanceof ClassNode) {
             ClassNode clazz = (ClassNode) leaf;
 
@@ -334,6 +338,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
             }
         } else if (leaf instanceof ClassExpression) {
             addFieldOccurrences(fieldNode, ((ClassExpression) leaf).getType());
+        } else if (leaf instanceof ArrayExpression) {
+            addFieldOccurrences(fieldNode, ((ArrayExpression) leaf).getElementType());
         } else if (leaf instanceof ForStatement) {
             addFieldOccurrences(fieldNode, ((ForStatement) leaf).getVariableType());
         }
@@ -417,6 +423,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
             if (!variable.isDynamicTyped() && !methodNode.isDynamicReturnType()) {
                 addMethodOccurrences(methodNode, variable.getType());
             }
+        } else if (leaf instanceof ArrayExpression) {
+            addMethodOccurrences(methodNode, ((ArrayExpression) leaf).getElementType());
         } else if (leaf instanceof ClassNode) {
             if (!methodNode.isDynamicReturnType()) {
                 addMethodOccurrences(methodNode, (ClassNode) leaf);
@@ -503,6 +511,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
             if (Methods.isSameConstructor(constructor, methodCallExpression)) {
                 occurrences.add(constructor);
             }
+        } else if (leaf instanceof ArrayExpression) {
+            addConstructorOccurrences(constructor, ((ArrayExpression) leaf).getElementType());
         }
         super.visitConstructor(constructor);
     }
@@ -569,6 +579,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
             addClassExpressionOccurrences(clazz, (ClassNode) leaf);
         } else if (leaf instanceof ClassExpression) {
             addClassExpressionOccurrences(clazz, ((ClassExpression) leaf).getType());
+        } else if (leaf instanceof ArrayExpression) {
+            addClassExpressionOccurrences(clazz, ((ArrayExpression) leaf).getElementType());
         } else if (leaf instanceof DeclarationExpression) {
             DeclarationExpression declaration = (DeclarationExpression) leaf;
             VariableExpression variable = declaration.getVariableExpression();
@@ -658,6 +670,8 @@ public final class VariableScopeVisitor extends TypeVisitor {
             if (!variable.isDynamicTyped()) {
                 addForLoopOccurrences(forLoop, variable.getType());
             }
+        } else if (leaf instanceof ArrayExpression) {
+            addForLoopOccurrences(forLoop, ((ArrayExpression) leaf).getElementType());
         } else if (leaf instanceof ForStatement) {
             addForLoopOccurrences(forLoop, ((ForStatement) leaf).getVariableType());
         } else if (leaf instanceof Parameter) {
