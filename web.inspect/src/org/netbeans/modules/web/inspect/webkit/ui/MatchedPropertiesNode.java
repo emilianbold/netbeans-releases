@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
@@ -85,13 +86,13 @@ public class MatchedPropertiesNode extends AbstractNode {
         List<MatchedPropertyNode> nodes = new ArrayList<MatchedPropertyNode>();
         for (Rule rule : matchedStyles.getMatchedRules()) {
             if (Utilities.showInCSSStyles(rule)) {
-                addChildrenFor(rule, nodes, properties);
+                addChildrenFor(rule, nodes, properties, true);
             }
         }
         for (InheritedStyleEntry entry : matchedStyles.getInheritedRules()) {
             for (Rule rule : entry.getMatchedRules()) {
                 if (Utilities.showInCSSStyles(rule)) {
-                    addChildrenFor(rule, nodes, properties);
+                    addChildrenFor(rule, nodes, properties, false);
                 }
             }
         }
@@ -104,11 +105,13 @@ public class MatchedPropertiesNode extends AbstractNode {
      * @param rule rule for which the children should be created.
      * @param toPopulate list where the newly created children should be appended.
      * @param properties names of properties for which there are children already created.
+     * @param matchingSelection determines whether the given rule matches the selected
+     * node or whether it matches some parent of the selected node.
      */
-    private void addChildrenFor(Rule rule, List<MatchedPropertyNode> toPopulate, Set<String> properties) {
+    private void addChildrenFor(Rule rule, List<MatchedPropertyNode> toPopulate, Set<String> properties, boolean matchingSelection) {
         for (org.netbeans.modules.web.webkit.debugging.api.css.Property property : rule.getStyle().getProperties()) {
             String name = property.getName();
-            if (!properties.contains(name)) {
+            if (!properties.contains(name) && (matchingSelection || CSSUtils.isInheritedProperty(name))) {
                 properties.add(name);
                 toPopulate.add(new MatchedPropertyNode(rule, property));
             }
