@@ -72,12 +72,15 @@ public class HtmlElementDescription extends SourceDescription {
     private final boolean isLeaf;
     private final String name;
 
-    public HtmlElementDescription(Element element, FileObject file) {
+    private HtmlElementDescription parent;
+    
+    public HtmlElementDescription(HtmlElementDescription parent, Element element, FileObject file) {
+        this.parent = parent;
         this.file = file;
         this.type = element.type();
         this.from = element.from();
         
-        this.elementPath = encodeToString(new TreePath(element));
+        this.elementPath = ElementUtils.encodeToString(new TreePath(element));
         
         //acceptable, not 100% correct - may say it is not leaf, but then there 
         //won't be children if all children are virtual with no non-virtual ancestors
@@ -107,74 +110,29 @@ public class HtmlElementDescription extends SourceDescription {
         this.name = openTag != null ? openTag.name().toString() : null;
         
     }
-    
-    private static final char ELEMENT_PATH_ELEMENTS_DELIMITER = '/';
-    private static final char ELEMENT_PATH_INDEX_DELIMITER = '|';
-    
-    private static String encodeToString(TreePath treePath) {
-        StringBuilder sb = new StringBuilder();
-        List<Element> p = treePath.path();
-        for(int i = p.size() - 2; i >= 0; i-- ) { //do not include the root element
-            Element node = p.get(i);
-            Node parent = node.parent();
-            int myIndex = parent == null ? 0 : getIndexInSimilarNodes(node.parent(), node);
-            sb.append(node.id());
-//            if(myIndex > 0) {
-//                sb.append(ELEMENT_PATH_INDEX_DELIMITER);
-//                sb.append(myIndex);
-//            }
-            
-            if(i > 0) {
-                sb.append(ELEMENT_PATH_ELEMENTS_DELIMITER);
-            }
-        }
-        return sb.toString();
-    }
-    
-    private static int getIndexInSimilarNodes(Node parent, Element node) {
-        int index = -1;
-        for(Element child : parent.children()) {
-            if(node.id().equals(child.id()) && node.type() == child.type()) {
-                index++;
-            }
-            if(child == node) {
-                break;
-            }
-        }
-        return index;
-    }
-
-    
-
-    @Override
-    public int hashCode() {
-        int hash = 13;
-        hash = 41 * hash + getElementPath().hashCode();
-        hash = 41 * hash + getAttributesHash();
-        return hash;
-    }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
+        if(!(obj instanceof HtmlElementDescription)) {
             return false;
         }
-        if (!(obj instanceof HtmlElementDescription)) {
-            return false;
-        }
-        final HtmlElementDescription other = (HtmlElementDescription) obj;
-        if (!getElementPath().equals(other.getElementPath())) {
-            return false;
-        }
-        if ((getAttributesHash() != other.getAttributesHash())) {
-            return false;
-        }
-        return true;
+        HtmlElementDescription descr = (HtmlElementDescription)obj;
+        return Diff.equals(this, descr);
     }
-    
+
     @Override
-    public String getElementPath() {
+    public int hashCode() {
+        return Diff.hashCode(this);
+    }
+
+    @Override
+    protected String getElementPath() {
         return elementPath;
+    }
+
+    @Override
+    public Description getParent() {
+        return parent;
     }
     
     public FileObject getFileObject() {
@@ -207,10 +165,6 @@ public class HtmlElementDescription extends SourceDescription {
     @Override
     protected Map<String, String> getAttributes() {
         return attributes;
-    }
-    
-    public boolean signatureEquals(HtmlElementDescription handle) {
-        return handle.elementPath.equals(elementPath);
     }
 
     public Node resolve(ParserResult result) {
@@ -273,7 +227,7 @@ public class HtmlElementDescription extends SourceDescription {
                             children = new ArrayList<HtmlElementDescription>();
                             List<OpenTag> nonVirtualChildren = gatherNonVirtualChildren(node);
                             for (OpenTag child : nonVirtualChildren) {
-                                children.add(new HtmlElementDescription(child, file));
+                                children.add(new HtmlElementDescription(HtmlElementDescription.this, child, file));
                             }
                         }
                     }
@@ -305,4 +259,5 @@ public class HtmlElementDescription extends SourceDescription {
         public void run(HtmlParserResult result);
         
     }
+    
 }

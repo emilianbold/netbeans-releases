@@ -73,6 +73,10 @@ public abstract class Description {
 
     public abstract Collection<? extends Description> getChildren();
     
+//    protected abstract int getNodeIndex();
+    
+    public abstract Description getParent();
+    
     public abstract String getName();
     
     public abstract int getType();
@@ -95,37 +99,68 @@ public abstract class Description {
         return hash;
     }
 
-    final int hashCode2() {
-        int hash = 7;
-        hash = 41 * hash + getElementPath().hashCode();
-        hash = 41 * hash + getAttributesHash();
-        return hash;
-    }
+//    @Override
+//    public int hashCode() {
+//        int hash = 7;
+//        hash = 41 * hash + getName().hashCode();
+//        String id = getAttributeValue("id");
+//        if(id != null) {
+//            hash = 41 * hash + id.hashCode();
+//        } else {
+//            hash = 41 * hash + getAttributesHash();
+//        }
+//        return hash;
+//    }
 
-    final boolean equals2(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof Description)) {
-            return false;
-        }
-        final Description other = (Description) obj;
-        if (!getElementPath().equals(other.getElementPath())) {
-            return false;
-        }
-        if ((getAttributesHash() != other.getAttributesHash())) {
-            return false;
-        }
-        return true;
-    }
+//    @Override
+//    public boolean equals(Object obj) {
+//        return equals(obj, true);
+//    }
+//    
+//    boolean equals(Object obj, boolean checkInstanceType) {
+//        if (obj == null) {
+//            return false;
+//        }
+//        if (!(obj instanceof Description)) {
+//            return false;
+//        }
+//        
+//        if(checkInstanceType) {
+//            if(!getClass().equals(obj.getClass())) {
+//                return false;
+//            }
+//        }
+//        
+//        final Description other = (Description) obj;
+//        if (!getName().equals(other.getName())) {
+//            return false;
+//        }
+//        String id = getAttributeValue("id");
+//        String otherId = other.getAttributeValue("id");
+//        if(id != null && id.equalsIgnoreCase(otherId)) {
+//            return true;
+//        }
+//        if ((getAttributesHash() != other.getAttributesHash())) {
+//            return false;
+//        }
+//        if(getNodeIndex() != other.getNodeIndex()) {
+//            return false;
+//        }
+//        
+//        return true;
+//    }
 
     @Override
     public String toString() {
         return new StringBuilder()
-                .append(getClass().getSimpleName())
-                .append(getElementPath())
-                .append('/')
+                .append(getType() == Description.SOURCE ? "source" : "dom")
+                .append(':')
+                .append(getName())
+                .append("(ahash=")
                 .append(getAttributesHash())
+                .append(", idx=")
+                .append(Diff.getIndexInParent(this))
+                .append(')')
                 .toString();
     }
     
@@ -139,7 +174,7 @@ public abstract class Description {
 
         @Override
         public String getName() {
-            return null;
+            return "empty_source_node_description";
         }
 
         @Override
@@ -156,7 +191,7 @@ public abstract class Description {
             return ElementType.ERROR;
         }
 
-        @Override
+        @Override 
         public int getFrom() {
             return 0;
         }
@@ -164,6 +199,16 @@ public abstract class Description {
         @Override
         public int getTo() {
             return 0;
+        }
+
+//        @Override
+//        protected int getNodeIndex() {
+//            return -1;
+//        }
+
+        @Override
+        public Description getParent() {
+            return null;
         }
         
     }
@@ -177,7 +222,7 @@ public abstract class Description {
 
         @Override
         public String getName() {
-            return null;
+            return "empty_dom_node_description";
         }
 
         @Override
@@ -190,6 +235,15 @@ public abstract class Description {
             return Collections.emptyMap();
         }
         
+//        @Override
+//        protected int getNodeIndex() {
+//            return -1;
+//        }
+        
+        @Override
+        public Description getParent() {
+            return null;
+        }
     }
     
         
