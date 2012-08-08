@@ -74,7 +74,7 @@ public class BrowserActionProvider implements ActionProvider {
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         if (project.isUsingEmbeddedServer()) {
-            WebServer.getWebserver().start(project, project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT));
+            WebServer.getWebserver().start(project, project.getWebContextRoot());
         } else {
             WebServer.getWebserver().stop(project);
         }

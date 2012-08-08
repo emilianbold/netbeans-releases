@@ -132,6 +132,17 @@ public class ClientSideProject implements Project {
         return !"external".equals(getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SERVER));
     }
     
+    public String getWebContextRoot() {
+        String ctx = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_WEB_ROOT);
+        if (ctx == null || ctx.trim().length() == 0) {
+            ctx = "/";
+        }
+        if (!ctx.startsWith("/")) {
+            ctx = "/" + ctx;
+        }
+        return ctx;
+    }
+    
     public RemoteFiles getRemoteFiles() {
         return remoteFiles;
     }
