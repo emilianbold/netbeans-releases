@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,27 +55,33 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class TableLineParser implements AnnotationLineParser {
+public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
 
-    static final String ANNOTATION_NAME = "Table"; //NOI18N
-
-    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
+    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
     static {
-        INLINE_ANNOTATIONS.add("Index"); //NOI18N
-        INLINE_ANNOTATIONS.add("UniqueConstraint"); //NOI18N
+        Set<String> tableInlineAnnotations = new HashSet<String>();
+        tableInlineAnnotations.add("Index"); //NOI18N
+        tableInlineAnnotations.add("UniqueConstraint"); //NOI18N
+        ANNOTATIONS.put("Table", tableInlineAnnotations); //NOI18N
+        Set<String> joinColumnsInlineAnnotations = new HashSet<String>();
+        joinColumnsInlineAnnotations.add("JoinColumn"); //NOI18N
+        ANNOTATIONS.put("JoinColumns", joinColumnsInlineAnnotations); //NOI18N
     }
 
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
         String[] tokens = line.split("\\("); //NOI18N
-        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
-            String annotation = tokens[0].trim();
-            String description = line.substring(annotation.length()).trim();
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-            types.put(new OffsetRange(0, annotation.length()), annotation);
-            types.putAll(AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS));
-            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description, true);
+        for (Map.Entry<String, Set<String>> entry : ANNOTATIONS.entrySet()) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], entry.getKey())) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                types.putAll(AnnotationUtils.extractInlineAnnotations(line, entry.getValue()));
+                result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);
+                break;
+            }
         }
         return result;
     }

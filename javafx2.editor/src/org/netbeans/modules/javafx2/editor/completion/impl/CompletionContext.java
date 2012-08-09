@@ -59,8 +59,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.whitelist.WhiteListQuery;
 import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.javafx2.editor.completion.beans.BeanModelBuilder;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
@@ -71,10 +69,7 @@ import org.netbeans.modules.javafx2.editor.parser.processors.ImportProcessor;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.xml.text.syntax.dom.SyntaxNode;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.openide.nodes.ChildFactory;
-import sun.security.krb5.internal.SeqNumber;
 
 /**
  * Provides information about the soruce, caret position etc to the individual
@@ -285,10 +280,9 @@ public final class CompletionContext {
     public String resolveClassName(String name) {
         if (importProcessor == null) {
             importProcessor = new ImportProcessor(
-                    compilationInfo, 
                     hierarchy, 
                     null, fxmlParserResult.getTreeUtilities());
-            getModel().accept(importProcessor);
+            importProcessor.load(compilationInfo, getModel());
         }
         Collection<String> names = importProcessor.resolveName(name);
         if (names == null || names.size() > 1) {
@@ -366,6 +360,12 @@ public final class CompletionContext {
         }
     }
     
+    public FxInstance getInstanceElement() {
+        return instanceElement;
+    }
+    
+    private FxInstance instanceElement;
+    
     private void processPath() {
         parents = fxmlParserResult.getTreeUtilities().findEnclosingElements(
                 getCaretOffset(), getType() == CompletionContext.Type.PROPERTY_ELEMENT, true);
@@ -391,6 +391,26 @@ public final class CompletionContext {
             }
         } 
         this.elementParent = parent;
+        
+        FxNode candidate;
+        switch (parent.getKind()) {
+            case Property:
+            case Event:
+            case Attribute:
+            case Element:
+            case Namespace:
+            case Error:
+                candidate = parents.size() > 1 ? parents.get(1) : null;
+                break;
+            case Instance:
+                candidate = parent;
+                break;
+            default:
+                candidate = null;
+        }
+        if (candidate != null && candidate.getKind() == FxNode.Kind.Instance) {
+            this.instanceElement = (FxInstance)candidate;
+        }
     }
  
     /**
@@ -907,7 +927,11 @@ public final class CompletionContext {
     }
 
     private void processValueType() {
-        attribute = type == Type.PROPERTY_VALUE;
+        switch (type) {
+            case PROPERTY:
+            case PROPERTY_VALUE:
+                attribute = true;
+        }
         if (type != Type.PROPERTY_VALUE && type != Type.PROPERTY_VALUE_CONTENT) {
             return;
         }
@@ -1135,13 +1159,14 @@ public final class CompletionContext {
         if (!dontAdvance && (wsFound || !middle)) {
             // in between tokens, so shift the type
             Type oldType = this.type;
-            switch (type) {
+            switch (oldType) {
                 case INSTRUCTION_TARGET: type = Type.INSTRUCTION_DATA; break;
                     
+                case PROPERTY_VALUE: type = Type.PROPERTY; break;
+
                 case BEAN:
                 case PROPERTY_ELEMENT: type = Type.PROPERTY; break;
                     
-                case PROPERTY_VALUE: type = Type.PROPERTY; break;
             }
             if (oldType != type) {
                 prefix = "";

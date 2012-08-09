@@ -48,10 +48,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
+import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.parser.BuildEnvironment;
 import org.netbeans.modules.javafx2.editor.parser.ModelBuilderStep;
 import org.openide.util.NbBundle;
@@ -74,13 +76,14 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
 
     @Override
     public void visitSource(FxModel model) {
-        importProcessor = new ImportProcessor(env.getCompilationInfo(), env.getHierarchy(), null, env.getTreeUtilities());
-        model.accept(importProcessor);
+        importProcessor = new ImportProcessor(env.getHierarchy(), null, env.getTreeUtilities());
+        importProcessor.load(env.getCompilationInfo(), model);
         
         // try to resolve the fx:controller
         String controller = model.getController();
         if (controller != null) {
-            ElementHandle<TypeElement> handle = resolveClassname(controller, model.getRootComponent());
+            int[] pos = env.getTreeUtilities().findAttributePos(model.getRootComponent(), JavaFXEditorUtils.FXML_FX_NAMESPACE, FxXmlSymbols.FX_CONTROLLER, true);
+            ElementHandle<TypeElement> handle = resolveClassname(controller, model.getRootComponent(), pos[0]);
             env.getAccessor().resolve(model, handle, null, null, null);
         }
         
@@ -101,7 +104,8 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
         FxBean bean = null;
         
         if (el == null) {
-            ElementHandle<TypeElement> handle = resolveClassname(sourceName, decl);
+            int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
+            ElementHandle<TypeElement> handle = resolveClassname(sourceName, decl, start);
             String fqn;
             
             if (handle != null) {
@@ -141,9 +145,20 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
         "# {0} - class name.",
         "# {1} - alternative1",
         "# {2} - alternative2",
-        "ERR_symbolAmbiguous=Name {0} is ambiguous. Can be e.g. {1} or {2}"
+        "ERR_symbolAmbiguous=Name {0} is ambiguous. Can be e.g. {1} or {2}",
+        "# {0} - the identifier",
+        "ERR_invalidJavaIdentifier={0} is not a valid Java identifier"
     })
-    private ElementHandle<TypeElement> resolveClassname(String name, FxNode decl) {
+    private ElementHandle<TypeElement> resolveClassname(String name, FxNode decl, int start) {
+        if (!FxXmlSymbols.isQualifiedIdentifier(name)) {
+            env.addError(new ErrorMark(
+                start, name.length(),
+                "invalid-java-identifier",
+                ERR_invalidJavaIdentifier(name),
+                name
+            ));
+            return null;
+        }
         TypeElement el = env.getCompilationInfo().getElements().getTypeElement(name);
         if (el != null) {
             return ElementHandle.create(el);
@@ -161,7 +176,6 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
             }
         }
         
-        int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
         // also cover the fall-through case of not found TypeElement
         if (names == null || names.size() == 1) {
             env.addError(new ErrorMark(
