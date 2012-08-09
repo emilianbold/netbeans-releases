@@ -287,13 +287,18 @@ public final class Utils {
             String refName = ref.getLeaf().getName();
             if (refName.startsWith(prefix)) {
                 String name = refName.substring(prefix.length());
+                ObjectId id = ref.getLeaf().getObjectId();
+                if (id == null) {
+                    Logger.getLogger(Utils.class.getName()).log(Level.WARNING, "Null object id for ref: {0}, {1}:{2}, {3}", //NOI18N
+                            new Object[] { ref.toString(), ref.getName(), ref.getObjectId(), ref.getLeaf() } );
+                }
                 branches.put(
                     name, 
                     factory.createBranch(
                         name, 
                         false, 
                         head != null && ref.getObjectId().equals(head.getObjectId()), 
-                        ref.getLeaf().getObjectId()));
+                        id));
             }
         }
         return branches;
