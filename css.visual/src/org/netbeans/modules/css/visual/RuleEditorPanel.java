@@ -56,6 +56,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
@@ -268,6 +269,7 @@ public class RuleEditorPanel extends JPanel {
     }
     
     public void setRule(final Rule rule) {
+        assert SwingUtilities.isEventDispatchThread();
         if(model == null) {
             throw new IllegalStateException("you must call setModel(Model model) beforehand!"); //NOI18N
         }
@@ -307,11 +309,12 @@ public class RuleEditorPanel extends JPanel {
                 ruleNameRef.set(model.getElementSource(rule.getSelectorsGroup()).toString());
             }
         });
-        
         titleLabel.setText(Bundle.titleLabel_text(ruleNameRef.get()));
+        
     }
     
     public void setNoRuleState() {
+        assert SwingUtilities.isEventDispatchThread();
         this.rule = null;
         titleLabel.setText(null);
         addPropertyButton.setEnabled(false);
