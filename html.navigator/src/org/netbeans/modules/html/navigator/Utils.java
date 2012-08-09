@@ -76,7 +76,7 @@ public class Utils {
      * 
      * @return corresponding node or null if no matching element found.
      */
-    public static Node findNode(Node base, HtmlElementDescription description) {
+    public static Node findNode(Node base, Description description) {
         String path = description.getElementPath();
         StringTokenizer st = new StringTokenizer(path, Character.toString(ELEMENT_PATH_ELEMENTS_DELIMITER));
         Node found = base;

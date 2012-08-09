@@ -52,6 +52,7 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute;
 import org.openide.util.Parameters;
 
 /**
+ * Implementation of {@link Description} for WebKit's DOM nodes.
  *
  * @author marekfukala
  */
@@ -61,9 +62,9 @@ public class WebKitNodeDescription extends DOMNodeDescription {
     private final String elementPath;
     private final Map<String, String> attributes;
     private Collection<WebKitNodeDescription> children;
-    private WebKitNodeDescription parent;
+    private Description parent;
 
-    public static WebKitNodeDescription forNode(WebKitNodeDescription parent, org.openide.nodes.Node nbNode) {
+    public static WebKitNodeDescription forNode(Description parent, org.openide.nodes.Node nbNode) {
         Node webKitNode = Utils.getWebKitNode(nbNode);
         if (webKitNode == null) {
             return null;
@@ -72,7 +73,7 @@ public class WebKitNodeDescription extends DOMNodeDescription {
         return new WebKitNodeDescription(parent, webKitNode);
     }
 
-    public WebKitNodeDescription(WebKitNodeDescription parent, Node webKitNode) {
+    public WebKitNodeDescription(Description parent, Node webKitNode) {
         Parameters.notNull("webKitNode", webKitNode);
 
         this.parent = parent;
@@ -93,6 +94,10 @@ public class WebKitNodeDescription extends DOMNodeDescription {
         }
 
     }
+    
+    public Node getWebKitNode() {
+        return webKitNode;
+    }
 
     @Override
     public boolean equals(Object obj) {
@@ -100,12 +105,12 @@ public class WebKitNodeDescription extends DOMNodeDescription {
             return false;
         }
         WebKitNodeDescription descr = (WebKitNodeDescription) obj;
-        return Diff.equals(this, descr);
+        return Diff.equals(this, descr, false);
     }
 
     @Override
     public int hashCode() {
-        return Diff.hashCode(this);
+        return Diff.hashCode(this, false);
     }
 
     @Override
