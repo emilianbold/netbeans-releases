@@ -388,6 +388,8 @@ public class JsFormatter implements Formatter {
                         case AFTER_IF_START:
                         case AFTER_ELSE_START:
                         case AFTER_WHILE_START:
+                        case AFTER_DO_START:
+                        case AFTER_FOR_START:
                             i = handleLineWrap(tokens, i, formatContext,
                                     initialIndent, continuationIndent);
                             break;
@@ -962,6 +964,10 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(context).wrapIfStatement();
             case AFTER_WHILE_START:
                 return CodeStyle.get(context).wrapWhileStatement();
+            case AFTER_DO_START:
+                return CodeStyle.get(context).wrapDoWhileStatement();
+            case AFTER_FOR_START:
+                return CodeStyle.get(context).wrapForStatement();
             default:
                 return null;
         }

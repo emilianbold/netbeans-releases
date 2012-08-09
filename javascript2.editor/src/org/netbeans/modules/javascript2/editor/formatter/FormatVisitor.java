@@ -124,7 +124,7 @@ public class FormatVisitor extends NodeVisitor {
             // mark space before left brace
             markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_WHILE_BRACE);
 
-            if (handleWhile(whileNode)) {
+            if (handleWhile(whileNode, FormatToken.Kind.AFTER_WHILE_START)) {
                 return null;
             }
         }
@@ -147,7 +147,7 @@ public class FormatVisitor extends NodeVisitor {
             if (beforeWhile != null) {
                 appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
             }
-            if (handleWhile(doWhileNode)) {
+            if (handleWhile(doWhileNode, FormatToken.Kind.AFTER_DO_START)) {
                 return null;
             }
         }
@@ -165,7 +165,7 @@ public class FormatVisitor extends NodeVisitor {
             // mark space before left brace
             markSpacesBeforeBrace(forNode.getBody(), FormatToken.Kind.BEFORE_FOR_BRACE);
 
-            if (handleWhile(forNode)) {
+            if (handleWhile(forNode, FormatToken.Kind.AFTER_FOR_START)) {
                 return null;
             }
         }
@@ -590,10 +590,10 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(varNode, onset);
     }
 
-    private boolean handleWhile(WhileNode whileNode) {
+    private boolean handleWhile(WhileNode whileNode, FormatToken.Kind afterStart) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {
-            handleVirtualBlock(body, FormatToken.Kind.AFTER_WHILE_START);
+            handleVirtualBlock(body, afterStart);
             return true;
         }
         return false;
