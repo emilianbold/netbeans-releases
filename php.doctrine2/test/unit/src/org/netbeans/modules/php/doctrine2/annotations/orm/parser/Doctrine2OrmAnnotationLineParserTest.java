@@ -145,4 +145,8 @@ public class Doctrine2OrmAnnotationLineParserTest extends NbTestCase {
         assertNotNull(parser.parse("JoinColumns"));
     }
 
+    public void testJoinTableParser() {
+        assertNotNull(parser.parse("JoinTable"));
+    }
+
 }
