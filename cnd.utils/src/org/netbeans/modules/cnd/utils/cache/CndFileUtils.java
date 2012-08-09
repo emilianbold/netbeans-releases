@@ -390,7 +390,7 @@ public final class CndFileUtils {
                             // if we're inside INDEXED_DIRECTORY then the file does not exist
                             exists = Flags.NOT_FOUND;
                             if (ASSERT_INDEXED_NOTFOUND) {
-                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                                assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND : absolutePath + " exists, but reported as NOT_FOUND"; //NOI18N
                             }
                         }
                     }
@@ -399,7 +399,7 @@ public final class CndFileUtils {
                         // if we're inside INDEXED_DIRECTORY then the file does not exist
                         exists = Flags.NOT_FOUND;
                         if (ASSERT_INDEXED_NOTFOUND) {
-                            assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND;
+                            assert Flags.get(fs, absolutePath) == Flags.NOT_FOUND : absolutePath + " exists, but reported as NOT_FOUND"; //NOI18N
                         }
                     } else if (parentDirFlags == Flags.NOT_FOUND || parentDirFlags == Flags.BROKEN_LINK) {
                         // no need to check non existing file

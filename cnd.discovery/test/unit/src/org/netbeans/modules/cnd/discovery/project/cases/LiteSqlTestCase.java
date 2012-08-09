@@ -57,7 +57,7 @@ public class LiteSqlTestCase extends MakeProjectTestBase {
     }
 
     @Test
-    public void testLiteSql(){
+    public void testLiteSql() throws Exception {
         if (Utilities.isWindows()) {
             // configure script requires more then 10 minutes
             return;
