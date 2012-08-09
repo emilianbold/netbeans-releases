@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.php.doctrine2.annotations;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.OffsetRange;
 
@@ -86,7 +89,9 @@ public class AnnotationUtilsTest extends NbTestCase {
     }
 
     public void testExtractParamTypes() throws Exception {
-        Map<OffsetRange, String> types = AnnotationUtils.extractTypesFromParameters("DiscriminatorMap({\"person\" = \" Person \", \"employee\" = \" Employee \"})");
+        Set<String> discriminatorMapRegexs = new HashSet<String>();
+        discriminatorMapRegexs.add(""); //NOI18N
+        Map<OffsetRange, String> types = AnnotationUtils.extractTypesFromParameters("DiscriminatorMap({\"person\" = \" Person \", \"employee\" = \" Employee \"})", discriminatorMapRegexs);
         assertNotNull(types);
         assertTrue(!types.isEmpty());
         assertEquals(2, types.size());
@@ -97,7 +102,9 @@ public class AnnotationUtilsTest extends NbTestCase {
     }
 
     public void testQualifiedExtractParamTypes() throws Exception {
-        Map<OffsetRange, String> types = AnnotationUtils.extractTypesFromParameters("DiscriminatorMap({\"person\" = \" My\\Person \", \"employee\" = \" \\Full\\Q\\Employee \"})");
+        Set<String> discriminatorMapRegexs = new HashSet<String>();
+        discriminatorMapRegexs.add(""); //NOI18N
+        Map<OffsetRange, String> types = AnnotationUtils.extractTypesFromParameters("DiscriminatorMap({\"person\" = \" My\\Person \", \"employee\" = \" \\Full\\Q\\Employee \"})", discriminatorMapRegexs);
         assertNotNull(types);
         assertTrue(!types.isEmpty());
         assertEquals(2, types.size());
@@ -105,6 +112,30 @@ public class AnnotationUtilsTest extends NbTestCase {
         assertTrue(types.containsValue("\\Full\\Q\\Employee"));
         assertTrue(types.containsKey(new OffsetRange(31, 40)));
         assertTrue(types.containsKey(new OffsetRange(59, 75)));
+    }
+
+    public void extractJustSomeParamTypes_01() throws Exception {
+        Set<String> manyToOneRegexs = new HashSet<String>();
+        manyToOneRegexs.add("targetEntity"); //NOI18N
+        Map<OffsetRange, String> types = AnnotationUtils.extractTypesFromParameters("ManyToOne(targetEntity=\"Cart\", cascade={\"all\"}, fetch=\"EAGER\")", manyToOneRegexs);
+        assertNotNull(types);
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(0, 9));
+        assertEquals("ManyToOne", type1);
+        String type2 = types.get(new OffsetRange(24, 28));
+        assertEquals("Cart", type2);
+    }
+
+    public void extractJustSomeParamTypes_02() throws Exception {
+        Set<String> manyToOneRegexs = new HashSet<String>();
+        manyToOneRegexs.add("targetEntity"); //NOI18N
+        Map<OffsetRange, String> types = AnnotationUtils.extractTypesFromParameters("ManyToOne(targetEntity=\"\\Foo\\Cart\", cascade={\"all\"}, fetch=\"EAGER\")", manyToOneRegexs);
+        assertNotNull(types);
+        assertEquals(2, types.size());
+        String type1 = types.get(new OffsetRange(0, 9));
+        assertEquals("ManyToOne", type1);
+        String type2 = types.get(new OffsetRange(24, 33));
+        assertEquals("\\Foo\\Cart", type2);
     }
 
     public void testNotNullTypeAnnotation_01() throws Exception {
@@ -123,7 +154,14 @@ public class AnnotationUtilsTest extends NbTestCase {
 
     public void testNotNullExtracParamTypes() throws Exception {
         try {
-            AnnotationUtils.extractTypesFromParameters(null);
+            AnnotationUtils.extractTypesFromParameters(null, Collections.EMPTY_SET);
+            fail();
+        } catch (NullPointerException ex) {}
+    }
+
+    public void testNotNullExtracParamTypesRegexs() throws Exception {
+        try {
+            AnnotationUtils.extractTypesFromParameters("", null);
             fail();
         } catch (NullPointerException ex) {}
     }
