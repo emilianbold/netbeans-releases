@@ -125,6 +125,7 @@ public class OptionsPanel extends JPanel {
     private JPanel pCategories;
     private JPanel pCategories2;
     private JPanel pOptions;
+    private JPanel quickSearch;
     private CardLayout cLayout;
     
     private int selectedTabIndex = -1;
@@ -312,10 +313,16 @@ public class OptionsPanel extends JPanel {
         pCategories2.setBorder (null);
         addCategoryButtons();        
 
+        quickSearch = new JPanel(new BorderLayout());
+        quickSearch.setBackground(Color.white);
+        QuickSearch qs = QuickSearch.attach(quickSearch, null, new OptionsQSCallback());
+        qs.setAlwaysShown(true);
+        
         pCategories = new JPanel (new BorderLayout ());
         pCategories.setBorder (BorderFactory.createMatteBorder(0,0,1,0,Color.lightGray));        
         pCategories.setBackground (Color.white);
         pCategories.add ("Center", pCategories2);
+        pCategories.add ("East", quickSearch);
         
         // layout
         setLayout (new BorderLayout (10, 10));
@@ -607,6 +614,10 @@ public class OptionsPanel extends JPanel {
         @Override
         public void quickSearchUpdate(String searchText) {
             searchText = searchText.trim();
+            if (searchText.length() == 0) {
+                clearAll();
+                return;
+            }
             if (searchText.length() < 3) {
                 return;
             }
