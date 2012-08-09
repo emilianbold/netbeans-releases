@@ -143,7 +143,7 @@ public class ManyToOneLineParserTest extends NbTestCase {
         assertEquals(2, types.size());
         String type1 = types.get(new OffsetRange(0, 21));
         assertEquals("Annotations\\ManyToOne", type1);
-        String type2 = types.get(new OffsetRange(39, 63));
+        String type2 = types.get(new OffsetRange(36, 40));
         assertEquals("Cart", type2);
     }
 
@@ -154,10 +154,10 @@ public class ManyToOneLineParserTest extends NbTestCase {
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(2, types.size());
-        String type1 = types.get(new OffsetRange(0, 15));
+        String type1 = types.get(new OffsetRange(0, 18));
         assertEquals("\\Foo\\Bar\\ManyToOne", type1);
-        String type2 = types.get(new OffsetRange(33, 57));
-        assertEquals("MyProject\\UserRepository", type2);
+        String type2 = types.get(new OffsetRange(33, 37));
+        assertEquals("Cart", type2);
     }
 
     public void testValidUseCase_07() throws Exception {
@@ -167,7 +167,7 @@ public class ManyToOneLineParserTest extends NbTestCase {
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(1, types.size());
-        String type1 = types.get(new OffsetRange(0, 6));
+        String type1 = types.get(new OffsetRange(0, 9));
         assertEquals("manytoone", type1);
     }
 
@@ -178,10 +178,10 @@ public class ManyToOneLineParserTest extends NbTestCase {
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
         assertEquals(2, types.size());
-        String type1 = types.get(new OffsetRange(0, 15));
+        String type1 = types.get(new OffsetRange(0, 18));
         assertEquals("\\Foo\\Bar\\manytoone", type1);
-        String type2 = types.get(new OffsetRange(33, 57));
-        assertEquals("MyProject\\UserRepository", type2);
+        String type2 = types.get(new OffsetRange(33, 37));
+        assertEquals("Cart", type2);
     }
 
 }
