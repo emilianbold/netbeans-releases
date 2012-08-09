@@ -41,12 +41,17 @@
  */
 package org.netbeans.modules.ods.tasks.tasktop;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ods.tasks.C2CTestInfrastructure;
 import org.netbeans.modules.ods.tasks.QueryTst;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /** Runs all the tests from TCK defined in ods.tasks module.
@@ -54,10 +59,27 @@ import org.openide.util.Lookup;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public class TasktopTCKTest extends NbTestCase {
+    
+    private static String proxyHost = null;
+    private static String proxyPort = null;
+    
     static {
-      // XXX should be temporary, we don't want to connect to net to read XSD
-      // System.setProperty("http.proxyPort", "8080");
-      // System.setProperty("http.proxyHost", "squid");
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-team")));
+            br.readLine();
+            br.readLine();
+
+            proxyHost = br.readLine();
+            proxyPort = br.readLine();
+
+            br.close();
+
+            System.setProperty("http.proxyPort", proxyPort);
+            System.setProperty("http.proxyHost", proxyHost);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } 
     }
 
     public TasktopTCKTest(String name) {
