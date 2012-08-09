@@ -91,7 +91,11 @@ public class EventResolver extends FxNodeVisitor.ModelTreeTraversal implements M
                 controllerElement = cTypeH.resolve(env.getCompilationInfo());
             }
         }
-        eventType = env.getCompilationInfo().getElements().getTypeElement(FX_EVENT_TYPE).asType();
+        TypeElement el = env.getCompilationInfo().getElements().getTypeElement(FX_EVENT_TYPE);
+        if (el == null) {
+            return;
+        }
+        eventType = el.asType();
         super.visitSource(source);
     }
     
