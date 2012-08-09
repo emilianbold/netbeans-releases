@@ -154,7 +154,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         
         if (model == null) {
             //the new model is null model, disable
-            old.removePropertyChangeListener(pageModelListener);
+            if(old != null) {
+                old.removePropertyChangeListener(pageModelListener);
+            }
 
             stateLabel.setEnabled(false);
             stateLabel.setText(NOT_CONNECTED);
