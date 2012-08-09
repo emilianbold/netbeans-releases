@@ -478,11 +478,19 @@ public class FormatVisitor extends NodeVisitor {
                                 && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
                                     || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()));
                         FormatToken toRemove = formatToken.previous();
-                        assert toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR;
+                        while (toRemove != null && toRemove.isVirtual()
+                                && toRemove.getKind() != FormatToken.Kind.BEFORE_BINARY_OPERATOR) {
+                            toRemove = toRemove.previous();
+                        }
+                        assert toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
 
                         toRemove = formatToken.next();
-                        assert toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR;
+                        while (toRemove != null && toRemove.isVirtual()
+                                && toRemove.getKind() != FormatToken.Kind.AFTER_BINARY_OPERATOR) {
+                            toRemove = toRemove.next();
+                        }
+                        assert toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR : toRemove;
                         tokenStream.removeToken(toRemove);
                     }
 
