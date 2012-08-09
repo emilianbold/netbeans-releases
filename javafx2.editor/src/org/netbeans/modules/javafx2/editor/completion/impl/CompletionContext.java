@@ -213,7 +213,7 @@ public final class CompletionContext {
     
     private FxmlParserResult    fxmlParserResult;
     
-    private TokenHierarchy<XMLTokenId> hierarchy;
+    private TokenHierarchy hierarchy;
     
     private List<? extends FxNode>  parents;
     
@@ -228,7 +228,7 @@ public final class CompletionContext {
     @SuppressWarnings("unchecked")
     /* For testing only */ CompletionContext(FxmlParserResult result, int offset, int completionType) {
         this.fxmlParserResult = result;
-        this.hierarchy = (TokenHierarchy<XMLTokenId>)result.getTokenHierarchy();
+        this.hierarchy = result.getTokenHierarchy();
         this.caretOffset = offset;
         this.completionType = completionType;
         processTokens(hierarchy);
@@ -238,7 +238,7 @@ public final class CompletionContext {
         return completionType;
     }
     
-    public void init(TokenHierarchy<XMLTokenId> h, CompilationInfo info, FxmlParserResult fxmlResult) {
+    public void init(TokenHierarchy h, CompilationInfo info, FxmlParserResult fxmlResult) {
         this.hierarchy = h;
         this.compilationInfo = info;
         this.cpInfo = info.getClasspathInfo();
@@ -292,7 +292,7 @@ public final class CompletionContext {
     }
 
     @SuppressWarnings("unchecked")
-    private void processTokens(TokenHierarchy<XMLTokenId> h) {
+    private void processTokens(TokenHierarchy h) {
         TokenSequence<XMLTokenId> ts = (TokenSequence<XMLTokenId>)h.tokenSequence();
         processType(ts);
         processValueType();

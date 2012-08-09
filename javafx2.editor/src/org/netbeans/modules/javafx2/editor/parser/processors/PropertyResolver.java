@@ -89,7 +89,7 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
         if (importer != null) {
             return importer;
         }
-        ImportProcessor proc = new ImportProcessor(env.getHierarchy(), env, env.getTreeUtilities());
+        ImportProcessor proc = new ImportProcessor(env.getHierarchy(), null, env.getTreeUtilities());
         proc.load(env.getCompilationInfo(), env.getModel());
         
         importer = proc;

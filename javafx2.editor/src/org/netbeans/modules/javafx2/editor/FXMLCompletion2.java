@@ -153,7 +153,8 @@ public class FXMLCompletion2 implements CompletionProvider {
             FxmlParserResult fxmlResult = (FxmlParserResult)resultIterator.getParserResult();
 
             // initialize the Context under read lock, it moves through TokenHierarchy back & forward
-            ctx.init(fxmlResult.getTokenHierarchy(), ci, fxmlResult); 
+            // bug in parsing API: snapshot source not modified just after modification to the source file
+            ctx.init(TokenHierarchy.get(doc), ci, fxmlResult); 
             
             List<CompletionItem> items = new ArrayList<CompletionItem>();
             Collection<? extends Completer.Factory> completers = MimeLookup.getLookup(JavaFXEditorUtils.FXML_MIME_TYPE).lookupAll(Completer.Factory.class);
