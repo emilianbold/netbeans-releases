@@ -41,35 +41,24 @@
  */
 package org.netbeans.modules.javascript2.editor.doc;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.javascript2.editor.doc.spi.AnnotationCompletionTagProvider;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
- * This is fallback instance of the {@link JsDocumentationProvider}. It enables to not
- * return {@code null} values anywhere where the {@code JsDocumentationProvider} is needed.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocumentationFallbackProvider implements JsDocumentationProvider {
+public class DocumentationUtils {
 
-    @Override
-    public Set getSupportedTags() {
-        return Collections.emptySet();
+    public static OffsetRange getOffsetRange(DocIdentifier identifier) {
+        int startOffset = identifier.getOffset();
+        return new OffsetRange(startOffset, startOffset + identifier.getName().length());
     }
 
-    @Override
-    public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return new JsDocumentationFallbackHolder(snapshot);
-    }
-
-    @Override
-    public List<AnnotationCompletionTagProvider> getAnnotationsProvider() {
-        return Collections.<AnnotationCompletionTagProvider>emptyList();
+    public static OffsetRange getOffsetRange(Type type) {
+        int startOffset = type.getOffset();
+        return new OffsetRange(startOffset, startOffset + type.getType().length());
     }
 
 }
