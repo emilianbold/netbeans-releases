@@ -99,7 +99,7 @@ public class MatchedRuleNode extends AbstractNode {
                     PROPERTY_NODE, String.class, null, null) {
                 @Override
                 public String getValue() throws IllegalAccessException, InvocationTargetException {
-                    return node.getDisplayName();
+                    return node.getHtmlDisplayName();
                 }
             };
             @Override
