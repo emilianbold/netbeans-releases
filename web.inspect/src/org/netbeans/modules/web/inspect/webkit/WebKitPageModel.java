@@ -86,11 +86,13 @@ public class WebKitPageModel extends PageModel {
     private boolean selectionMode;
     /** Owner project of the inspected page. */
     private Project project;
-    
+    /** Updater of the stylesheets in the browser according to changes of the corresponding source files. */
     private CSSUpdater cSSUpdater = CSSUpdater.getDefault();
-
+    /**
+     * Map with content documents in the inspected page. Maps node ID of
+     * the document node to the corresponding {@code RemoteObject}.
+     */
     private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
-
     /** Logger used by this class */
     static final Logger LOG = Logger.getLogger(WebKitPageModel.class.getName());
 
