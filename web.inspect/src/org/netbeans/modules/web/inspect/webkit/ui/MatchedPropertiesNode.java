@@ -45,7 +45,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
@@ -62,14 +64,18 @@ import org.openide.util.NbBundle;
 public class MatchedPropertiesNode extends AbstractNode {
     /** Rules matching a node. */
     private MatchedStyles matchedStyles;
+    /** Owning project of the inspected page. */
+    private Project project;
 
     /**
      * Creates a new {@code MatchedPropertiesNode}.
      *
+     * @param project owning project of the inspected page.
      * @param matchedStyles rules matching a node.
      */
-    MatchedPropertiesNode(MatchedStyles matchedStyles) {
+    MatchedPropertiesNode(Project project, MatchedStyles matchedStyles) {
         super(new Children.Array());
+        this.project = project;
         this.matchedStyles = matchedStyles;
         if (matchedStyles != null) {
             initChildren();
@@ -113,7 +119,7 @@ public class MatchedPropertiesNode extends AbstractNode {
             String name = property.getName();
             if (!properties.contains(name) && (matchingSelection || CSSUtils.isInheritedProperty(name))) {
                 properties.add(name);
-                toPopulate.add(new MatchedPropertyNode(rule, property));
+                toPopulate.add(new MatchedPropertyNode(rule, new Resource(project, rule.getSourceURL()), property));
             }
         }
     }

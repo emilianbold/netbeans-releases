@@ -47,11 +47,14 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToNodeSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
@@ -82,12 +85,31 @@ public class DOMNode extends AbstractNode {
      * @param node WebKit node represented by the node.
      */
     public DOMNode(WebKitPageModel model, Node node) {
-        super(shouldBeLeaf(node) ? Children.LEAF : new DOMChildren(model), Lookups.fixed(node));
+        super(shouldBeLeaf(node) ? Children.LEAF : new DOMChildren(model), lookupFor(model, node));
         this.node = node;
         this.model = model;
         setIconBaseWithExtension(ICON_BASE);
         setName(node.getNodeName());
         updateDisplayName();
+    }
+
+    /**
+     * Creates a lookup for the given page model and node.
+     * 
+     * @param model page model the node belongs to.
+     * @param node WebKit node represented by the node.
+     * @return lookup for the given page model and node.
+     */
+    private static Lookup lookupFor(WebKitPageModel model, Node node) {
+        Lookup lookup;
+        String documentURL = node.getDocumentURL();
+        if (documentURL == null) {
+            lookup = Lookups.fixed(node);
+        } else {
+            Project project = model.getProject();
+            lookup = Lookups.fixed(node, new Resource(project, documentURL));
+        }
+        return lookup;
     }
 
     @Override

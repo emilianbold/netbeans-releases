@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
@@ -83,6 +84,8 @@ public class WebKitPageModel extends PageModel {
     private DOM.Listener domListener;
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
+    /** Owner project of the inspected page. */
+    private Project project;
     
     private CSSUpdater cSSUpdater = CSSUpdater.getDefault();
 
@@ -98,6 +101,7 @@ public class WebKitPageModel extends PageModel {
      */
     public WebKitPageModel(Lookup pageContext) {
         this.webKit = pageContext.lookup(WebKitDebugging.class);
+        this.project = pageContext.lookup(Project.class);
         addPropertyChangeListener(new WebPaneSynchronizer());
 
         // Register DOM domain listener
@@ -141,6 +145,15 @@ public class WebKitPageModel extends PageModel {
      */
     public WebKitDebugging getWebKit() {
         return webKit;
+    }
+
+    /**
+     * Returns the owner project of the inspected page.
+     * 
+     * @return the owner project of the inspected page.
+     */
+    public Project getProject() {
+        return project;
     }
 
     @Override

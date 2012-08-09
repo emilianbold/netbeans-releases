@@ -60,6 +60,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -269,8 +270,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                     CSS css = webKit.getCSS();
                     MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
                     if (matchedStyles != null) {
-                        rulePaneManager.setRootContext(new MatchedRulesNode(selectedNode, matchedStyles));
-                        propertyPaneManager.setRootContext(new MatchedPropertiesNode(matchedStyles));
+                        Project project = pageModel.getProject();
+                        rulePaneManager.setRootContext(new MatchedRulesNode(project, selectedNode, matchedStyles));
+                        propertyPaneManager.setRootContext(new MatchedPropertiesNode(project, matchedStyles));
                     }
                 } else {
                     setDummyRoots();

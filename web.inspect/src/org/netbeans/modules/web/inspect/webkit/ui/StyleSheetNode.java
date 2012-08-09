@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.OpenResourceAction;
@@ -75,17 +74,21 @@ public class StyleSheetNode extends AbstractNode {
     static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
     /** Header of the style sheet. */
     private StyleSheetHeader header;
+    /** Owning project of the inspected page. */
+    private Project project;
 
     /**
      * Creates a new {@code StyleSheetNode}.
      *
+     * @param project owning project of the inspected page.
      * @param css CSS domain of the corresponding WebKit debugging.
      * @param header header of the represented stylesheet.
      * @param filter filter for the subtree of the node.
      */
-    StyleSheetNode(CSS css, StyleSheetHeader header, Filter filter) {
-        super(Children.create(new StyleSheetChildFactory(css, header, filter), true),
-                Lookups.fixed(new Resource(header.getSourceURL())));
+    StyleSheetNode(Project project, CSS css, StyleSheetHeader header, Filter filter) {
+        super(Children.create(new StyleSheetChildFactory(project, css, header, filter), true),
+                Lookups.fixed(new Resource(project, header.getSourceURL())));
+        this.project = project;
         this.header = header;
         updateDisplayName();
         setIconBaseWithExtension(ICON_BASE);
@@ -97,13 +100,12 @@ public class StyleSheetNode extends AbstractNode {
     private void updateDisplayName() {
         String sourceURL = header.getSourceURL();
         String displayName = sourceURL;
-        FileObject fob = new Resource(sourceURL).toFileObject();
-        if (fob != null) {
-            Project project = FileOwnerQuery.getOwner(fob);
-            if (project != null) {
+        if (project != null) {
+            FileObject fob = new Resource(project, sourceURL).toFileObject();
+            if (fob != null) {
                 FileObject projectDir = project.getProjectDirectory();
                 String relativePath = FileUtil.getRelativePath(projectDir, fob);
-                displayName = relativePath;
+                displayName = relativePath;                
             }
         }
         String title = header.getTitle();
@@ -129,6 +131,8 @@ public class StyleSheetNode extends AbstractNode {
      * Factory for children of {@code StyleSheetNode}.
      */
     static class StyleSheetChildFactory extends ChildFactory<Rule> {
+        /** Owning project of the inspected page. */
+        private Project project;
         /** CSS domain of the corresponding WebKit debugging. */
         private CSS css;
         /** Header of the style sheet. */
@@ -141,11 +145,13 @@ public class StyleSheetNode extends AbstractNode {
         /**
          * Creates a new {@code StyleSheetChildFactory}.
          *
+         * @param project owning project of the inspected page.
          * @param css CSS domain of the corresponding WebKit debugging.
          * @param header header of the style sheet.
          * @param filter filter for the subtree of the node.
          */
-        StyleSheetChildFactory(CSS css, StyleSheetHeader header, Filter filter) {
+        StyleSheetChildFactory(Project project, CSS css, StyleSheetHeader header, Filter filter) {
+            this.project = project;
             this.css = css;
             this.header = header;
             this.filter = filter;
@@ -208,7 +214,7 @@ public class StyleSheetNode extends AbstractNode {
 
         @Override
         protected Node createNodeForKey(Rule key) {
-            return new RuleNode(key, header.getSourceURL());
+            return new RuleNode(key, new Resource(project, header.getSourceURL()));
         }
 
     }

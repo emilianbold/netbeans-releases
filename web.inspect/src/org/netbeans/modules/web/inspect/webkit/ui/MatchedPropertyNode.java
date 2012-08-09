@@ -43,6 +43,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToPropertySourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
@@ -70,10 +71,11 @@ public class MatchedPropertyNode extends AbstractNode {
      * Creates a new {@code MatchedPropertyNode}.
      *
      * @param rule owning rule of the property to represent.
+     * @param ruleOrigin origin of the rule.
      * @param property property to represent.
      */
-    MatchedPropertyNode(Rule rule, org.netbeans.modules.web.webkit.debugging.api.css.Property property) {
-        super(Children.LEAF, Lookups.fixed(rule, property));
+    MatchedPropertyNode(Rule rule, Resource ruleOrigin, org.netbeans.modules.web.webkit.debugging.api.css.Property property) {
+        super(Children.LEAF, Lookups.fixed(rule, ruleOrigin, property));
         this.property = property;
         setDisplayName(property.getName());
     }

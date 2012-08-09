@@ -76,7 +76,7 @@ public class GoToRuleSourceAction extends NodeAction {
         Lookup lookup = activatedNodes[0].getLookup();
         org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                 lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
-        Resource resource = new Resource(rule.getSourceURL());
+        Resource resource = lookup.lookup(Resource.class);
         FileObject fob = resource.toFileObject();
         try {
             Source source = Source.create(fob);
@@ -94,8 +94,8 @@ public class GoToRuleSourceAction extends NodeAction {
             org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                     lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
             if (rule != null) {
-                Resource resource = new Resource(rule.getSourceURL());
-                enabled = (resource.toFileObject() != null);
+                Resource resource = lookup.lookup(Resource.class);
+                enabled = (resource != null) && (resource.toFileObject() != null);
             }
         }
         return enabled;
