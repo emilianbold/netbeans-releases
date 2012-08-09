@@ -43,97 +43,113 @@ package org.netbeans.modules.javafx2.editor.completion.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.ElementFilter;
+import java.util.Set;
+import javax.swing.ImageIcon;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
+import org.netbeans.modules.javafx2.editor.completion.beans.FxEvent;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.netbeans.spi.editor.completion.CompletionProvider;
 
 /**
  *
  * @author sdedic
  */
 @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
-public class FxIdCompleter implements Completer, Completer.Factory {
+public class EventCompleter implements Completer, Completer.Factory {
+    
     private CompletionContext ctx;
-    private ElementHandle<TypeElement> controllerType;
     
-    private static final String ICON_RESOURCE = "org/netbeans/modules/javafx2/editor/resources/fxid-value.gif"; // NOI18N
+    private FxInstance instance;
     
-    public FxIdCompleter() {
-    }
+    private FxBean fxBean;
+    
+    private boolean moreItems;
 
-    FxIdCompleter(CompletionContext ctx, ElementHandle<TypeElement> controllerType) {
+    EventCompleter(CompletionContext ctx, FxInstance inst) {
         this.ctx = ctx;
-        this.controllerType = controllerType;
+        this.instance = inst;
+        this.fxBean = inst.getDefinition();
+    }
+    
+    public EventCompleter() {
+    }
+    
+    private EventCompletionItem createItem(FxEvent e, boolean noInherit) {
+        String cn = e.getEventClassName();
+        int dot = cn.lastIndexOf('.');
+        cn = cn.substring(dot + 1);
+        EventCompletionItem item = new EventCompletionItem(
+                cn, 
+                ctx.isAttribute(), 
+                ctx, 
+                e.getSymbol());
+        item.setInherited(noInherit ||
+                fxBean.getDeclareadInfo().getEvent(e.getName()) != null);
+        return item;
+    }
+    
+    private void completeShallow(List<CompletionItem> result) {
+        String prefix = ctx.getPrefix();
+        
+        Set<String> eventNames;
+        
+        if (prefix.contains("on")) {
+            eventNames = fxBean.getEventNames();
+        } else {
+            eventNames = fxBean.getDeclareadInfo().getEventNames();
+            moreItems = true;
+        }
+        for (String s : eventNames) {
+            FxEvent e = fxBean.getEvent(s);
+            if (e.isPropertyChange()) {
+                moreItems = true;
+                continue;
+            }
+            result.add(createItem(e, true));
+        }
+    }
+    
+    private void completeAllEvents(List<CompletionItem> result) {
+        for (String s : fxBean.getEventNames()) {
+            FxEvent e = fxBean.getEvent(s);
+            result.add(createItem(e, true));
+        }
     }
 
     @Override
-    public List<CompletionItem> complete() {
-        // get type of the enclosing instance
-        FxInstance inst = (FxInstance)ctx.getElementParent();
-        TypeElement instType = inst.getJavaType().resolve(ctx.getCompilationInfo());
-        TypeElement ct = controllerType.resolve(ctx.getCompilationInfo());
-        if (ct == null) {
-            return null;
+    public List<? extends CompletionItem> complete() {
+        List<CompletionItem> result = new ArrayList<CompletionItem>();
+        if (ctx.getCompletionType() == CompletionProvider.COMPLETION_QUERY_TYPE) {
+            completeShallow(result);
+        } else {
+            completeAllEvents(result);
         }
-        
-        List<CompletionItem> items = new ArrayList<CompletionItem>();
-        for (VariableElement v : ElementFilter.fieldsIn(
-                ctx.getCompilationInfo().getElements().getAllMembers(ct))) {
-            if (!FxClassUtils.isFxmlAccessible(v)) {
-                continue;
-            }
-            // do not suggest a variable, whose ID is used elsewhere:
-            String sn = v.getSimpleName().toString();
-            if (ctx.getModel().getInstance(sn) != null) {
-                continue;
-            }
-            // check that the instance is assignable to the var
-            if (ctx.getCompilationInfo().getTypes().isAssignable(instType.asType(), v.asType())) {
-                ValueItem vi = new ValueItem(
-                    ctx,
-                    v.getSimpleName().toString(),
-                    ICON_RESOURCE
-                );
-                vi.setAttribute(ctx.getType() == CompletionContext.Type.PROPERTY_VALUE);
-                items.add(vi);
-            }
-        }
-        
-        return items;
+        return result;
     }
 
     @Override
     public boolean hasMoreItems() {
-        return false;
+        return moreItems;
     }
 
     @Override
     public Completer createCompleter(CompletionContext ctx) {
-        if (ctx.getType() != CompletionContext.Type.PROPERTY_VALUE ||
-            ctx.getElementParent().getKind() != FxNode.Kind.Instance) {
+        switch (ctx.getType()) {
+            case CHILD_ELEMENT:
+            case PROPERTY:
+            case PROPERTY_ELEMENT:
+                break;
+            default:
+        }
+        FxNode n = ctx.getInstanceElement();
+        if (n.getKind() != FxNode.Kind.Instance) {
             return null;
         }
-        
-        // check if the property is the fx:id
-        String propName = ctx.getPropertyName();
-        String prefix = ctx.findNsPrefix(JavaFXEditorUtils.FXML_FX_NAMESPACE);
-        if (!(prefix + ":id").equals(propName)) {
-            return null;
-        }
-        // check that the controller is defined && resolved
-        ElementHandle<TypeElement> controllerType = ctx.getModel().getControllerType();
-        if (controllerType != null) {
-            return new FxIdCompleter(ctx, controllerType);
-        } else {
-            return null;
-        }
+        return new EventCompleter(ctx, (FxInstance)n);
     }
-    
+   
 }

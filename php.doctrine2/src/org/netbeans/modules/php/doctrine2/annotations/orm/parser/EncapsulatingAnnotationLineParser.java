@@ -39,52 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.editor.completion.impl;
+package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
-import org.netbeans.spi.editor.completion.CompletionItem;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
+import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
+import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 
 /**
  *
- * @author sdedic
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
-public class FxIncludeCompleter implements Completer, Completer.Factory { 
-    private CompletionContext   context;
+public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
 
-    public FxIncludeCompleter() {
-    }
-
-    FxIncludeCompleter(CompletionContext context) {
-        this.context = context;
-    }
-
-    @Override
-    public List<? extends CompletionItem> complete() {
-        FxInstructionItem item = new FxInstructionItem("fx:include", context, 
-                "<fx:include source=\"\"/>", CompletionUtils.makeFxNamespaceCreator(context));
-        return Collections.singletonList(item);
+    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
+    static {
+        Set<String> tableInlineAnnotations = new HashSet<String>();
+        tableInlineAnnotations.add("Index"); //NOI18N
+        tableInlineAnnotations.add("UniqueConstraint"); //NOI18N
+        ANNOTATIONS.put("Table", tableInlineAnnotations); //NOI18N
+        Set<String> joinColumnsInlineAnnotations = new HashSet<String>();
+        joinColumnsInlineAnnotations.add("JoinColumn"); //NOI18N
+        ANNOTATIONS.put("JoinColumns", joinColumnsInlineAnnotations); //NOI18N
     }
 
     @Override
-    public boolean hasMoreItems() {
-        return false;
-    }
-
-    @Override
-    public Completer createCompleter(CompletionContext ctx) {
-        switch (ctx.getType()) {
-            case BEAN:
-            case ROOT:
-            case CHILD_ELEMENT:
-                return new FxIncludeCompleter(ctx);
+    public AnnotationParsedLine parse(String line) {
+        AnnotationParsedLine result = null;
+        String[] tokens = line.split("\\("); //NOI18N
+        for (Map.Entry<String, Set<String>> entry : ANNOTATIONS.entrySet()) {
+            if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], entry.getKey())) {
+                String annotation = tokens[0].trim();
+                String description = line.substring(annotation.length()).trim();
+                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                types.put(new OffsetRange(0, annotation.length()), annotation);
+                types.putAll(AnnotationUtils.extractInlineAnnotations(line, entry.getValue()));
+                result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);
+                break;
+            }
         }
-        return null;
+        return result;
     }
 
-    
-    
 }

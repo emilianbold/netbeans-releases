@@ -79,7 +79,8 @@ public class NamedInstancesCollector extends FxNodeVisitor.ModelTreeTraversal im
         "# {0} - tag name",
         "ERR_defineMustProvideId=Missing fx:id attribute on {0} inside fx:define block"
     })
-    private void visitBaseInstance(FxInstance i) {
+    @Override
+    protected void visitBaseInstance(FxInstance i) {
         if (i.getId() == null) {
             // check if the instance is not directly inside 'define' node:
             if (parentNode != null && parentNode.getKind() == FxNode.Kind.Element &&
@@ -130,18 +131,6 @@ public class NamedInstancesCollector extends FxNodeVisitor.ModelTreeTraversal im
         this.parentNode = previous;
     }
     
-    @Override
-    public void visitInstance(FxNewInstance decl) {
-        visitBaseInstance(decl);
-        super.visitInstance(decl);
-    }
-
-    @Override
-    public void visitCopy(FxInstanceCopy copy) {
-        visitBaseInstance(copy);
-        super.visitCopy(copy);
-    }
-
     @Override
     public void visitSource(FxModel source) {
         super.visitSource(source);

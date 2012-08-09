@@ -293,9 +293,18 @@ public final class FxBean extends FxDefinition {
     public Map<String, FxProperty> getAttachedProperties() {
         return Collections.unmodifiableMap(attachedProperties);
     }
+    
+    public Set<String> getEventNames() {
+        return Collections.unmodifiableSet(events.keySet());
+    }
 
     public Map<String, FxEvent> getEvents() {
-        return events;
+        return Collections.unmodifiableMap(events);
+    }
+    
+    public FxEvent getEvent(String eventName) {
+        FxEvent ev = events.get(eventName);
+        return ev;
     }
 
     FxBean(String className) {
