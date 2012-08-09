@@ -1438,11 +1438,15 @@ public class TokenFormatter {
             }
 
             private Whitespace countWhiteSpaceBeforeLeftBrace(CodeStyle.BracePlacement placement, boolean spaceBefore, CharSequence text, int indent, int lastBracedBlockIndent) {
+                Whitespace result;
                 int lines = 0;
                 int spaces = 0;
-                Whitespace result = null;
                 if (placement == CodeStyle.BracePlacement.PRESERVE_EXISTING) {
-                    result = countWhiteSpaceForPreserveExistingBracePlacement(text, text.toString().indexOf('\n') == -1 ? 0 : lastBracedBlockIndent);
+                    if (text == null) {
+                        result = new Whitespace(lines, spaces);
+                    } else {
+                        result = countWhiteSpaceForPreserveExistingBracePlacement(text, text.toString().indexOf('\n') == -1 ? 0 : lastBracedBlockIndent);
+                    }
                 } else {
                     lines = (placement == CodeStyle.BracePlacement.SAME_LINE) ? 0 : 1;
                     spaces = lines > 0
