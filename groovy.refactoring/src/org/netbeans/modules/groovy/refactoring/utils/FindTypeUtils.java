@@ -105,7 +105,20 @@ public class FindTypeUtils {
         ASTNode leaf = path.leaf();
         ASTNode leafParent = path.leafParent();
 
-        if (leaf instanceof FieldNode) {
+        if (leaf instanceof ClassNode) {
+            ClassNode classNode = ((ClassNode) leaf);
+            if (isCaretOnClassNode(classNode, doc, caret)) {
+                return classNode;
+            }
+            if (isCaretOnClassNode(classNode.getSuperClass(), doc, caret)) {
+                return classNode.getSuperClass();
+            }
+            for (ClassNode interfaceNode : classNode.getInterfaces()) {
+                if (isCaretOnClassNode(interfaceNode, doc, caret)) {
+                    return interfaceNode;
+                }
+            }
+        } else if (leaf instanceof FieldNode) {
             if (!isCaretOnFieldType(((FieldNode) leaf), doc, caret)) {
                 return leaf;
             }
@@ -158,6 +171,13 @@ public class FindTypeUtils {
             return currentType;
         }
         return leaf;
+    }
+
+    private static boolean isCaretOnClassNode(ClassNode classNode, BaseDocument doc, int cursorOffset) {
+        if (getClassNodeRange(classNode, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
     }
 
     private static boolean isCaretOnReturnType(MethodNode method, BaseDocument doc, int cursorOffset) {
@@ -218,6 +238,10 @@ public class FindTypeUtils {
             return OffsetRange.NONE;
         }
         return getRange(method, doc, cursorOffset);
+    }
+
+    private static OffsetRange getClassNodeRange(ClassNode classNode, BaseDocument doc, int cursorOffset) {
+        return getRange(classNode, doc, cursorOffset);
     }
 
     private static OffsetRange getFieldRange(FieldNode field, BaseDocument doc, int cursorOffset) {
