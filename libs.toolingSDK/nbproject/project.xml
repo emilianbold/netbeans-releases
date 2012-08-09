@@ -16,6 +16,7 @@
                 <package>org.glassfish.tools.ide.data</package>
                 <package>org.glassfish.tools.ide.data.cloud</package>
                 <package>org.glassfish.tools.ide.server</package>
+                <package>org.glassfish.tools.ide.server.config</package>
                 <package>org.glassfish.tools.ide.server.parser</package>
                 <package>org.glassfish.tools.ide.admin</package>
                 <package>org.glassfish.tools.ide.admin.response</package>

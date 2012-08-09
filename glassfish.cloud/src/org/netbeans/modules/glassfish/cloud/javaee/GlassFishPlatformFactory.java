@@ -41,8 +41,9 @@
  */
 package org.netbeans.modules.glassfish.cloud.javaee;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishUrl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
@@ -53,7 +54,22 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class GlassFishCloudPlatformFactory extends J2eePlatformFactory {
+public class GlassFishPlatformFactory extends J2eePlatformFactory {
+
+    /** Cached Java EE platforms for individual URLs. */
+    private static final Map<GlassFishUrl, GlassFishPlatformImpl> cache
+            = new HashMap<GlassFishUrl, GlassFishPlatformImpl>();
+
+    /**
+     * Invalidate Java EE platform if currently stored in internal cache.
+     * <p/>
+     * @param url GlassFish cloud URL.
+     */
+    public static void removeJ2eePlatformImpl(GlassFishUrl url) {
+         synchronized (cache) {
+             cache.remove(url);
+         }
+    }
 
     /**
      * Return Java EE platform SPI interface implementation for Java EE platform
@@ -65,24 +81,35 @@ public class GlassFishCloudPlatformFactory extends J2eePlatformFactory {
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         if (dm instanceof GlassFishDeploymentManager) {
-            GlassFishDeploymentManager deploymentManager
-                    = (GlassFishDeploymentManager) dm;
+            GlassFishDeploymentManager deploymentManager = (GlassFishDeploymentManager) dm;
             GlassFishUrl url = deploymentManager.url;
-            switch (url.getType()) {
-                case CLOUD:
-                    return new GlassFishAccountPlatformImpl(url);
-                case LOCAL:
-                    return new GlassFishCloudPlatformImpl(url);
-                // This is unrecheable. Being here means this class does not handle
-                // all possible values correctly.
-                default:
-                    throw new IllegalArgumentException(
-                            "URL constructor set unknown URL type");
+            GlassFishPlatformImpl platform;
+            // Java EE platforms cache handling should be locked to avoid
+            // concurrent modifications. 
+            synchronized (cache) {
+                platform = cache.get(url);
+                if (platform == null) {
+                    switch (url.getType()) {
+                        case CLOUD:
+                            platform = new GlassFishAccountPlatformImpl(url);
+                            break;
+                        case LOCAL:
+                            platform = new GlassFishCloudPlatformImpl(url);
+                            break;
+                        // This is unrecheable. Being here means this class does
+                        // not handle all possible values correctly.
+                        default:
+                            throw new IllegalArgumentException(
+                                    "URL constructor set unknown URL type");
+                    }
+                    cache.put(url, platform);
+                }
             }
+            return platform;
         } else {
             throw new IllegalArgumentException(
                     "Not a deployment manager for GlassFish cloud.");
         }
     }
-    
+
 }

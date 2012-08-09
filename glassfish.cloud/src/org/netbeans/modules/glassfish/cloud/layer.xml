@@ -39,7 +39,7 @@
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="J2eePlatformFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishCloudPlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
                 </file>
             </folder>
@@ -53,7 +53,7 @@
                     <attr name="instanceOf" stringvalue="javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
                 <file name="J2eePlatformFactory.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishCloudPlatformFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.glassfish.cloud.javaee.GlassFishPlatformFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory"/>
                 </file>
             </folder>
