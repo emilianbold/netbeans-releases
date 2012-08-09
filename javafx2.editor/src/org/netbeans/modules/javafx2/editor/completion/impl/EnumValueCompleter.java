@@ -76,7 +76,7 @@ public final class EnumValueCompleter implements Completer, Completer.Factory {
      * Boolean constructor
      * @param ctx 
      */
-    public EnumValueCompleter(CompletionContext ctx) {
+    EnumValueCompleter(CompletionContext ctx) {
         this.ctx = ctx;
     }
     
