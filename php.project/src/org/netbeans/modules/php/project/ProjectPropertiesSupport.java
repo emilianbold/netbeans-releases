@@ -162,18 +162,21 @@ public final class ProjectPropertiesSupport {
     }
 
     public static File getSourceSubdirectory(PhpProject project, String subdirectoryPath) {
-        FileObject sources = project.getSourcesDirectory();
-        File sourcesDir = FileUtil.toFile(sources);
+        return getSubdirectory(project, project.getSourcesDirectory(), subdirectoryPath);
+    }
+
+    public static File getSubdirectory(PhpProject project, FileObject rootDirectory, String subdirectoryPath) {
+        File rootDir = FileUtil.toFile(rootDirectory);
         if (!StringUtils.hasText(subdirectoryPath)) {
-            return sourcesDir;
+            return rootDir;
         }
         // first try to resolve fileobject
-        FileObject fo = sources.getFileObject(subdirectoryPath);
+        FileObject fo = rootDirectory.getFileObject(subdirectoryPath);
         if (fo != null) {
             return FileUtil.toFile(fo);
         }
         // fallback for OS specific paths (should be changed everywhere, my fault, sorry)
-        return PropertyUtils.resolveFile(FileUtil.toFile(sources), subdirectoryPath);
+        return PropertyUtils.resolveFile(FileUtil.toFile(rootDirectory), subdirectoryPath);
     }
 
     public static PhpInterpreter getValidPhpInterpreter(PhpProject project) throws InvalidPhpExecutableException {
