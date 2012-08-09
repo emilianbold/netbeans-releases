@@ -39,50 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.livehtml.filter.groupscripts;
+package org.netbeans.modules.web.livehtml.filter;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.livehtml.StackTrace;
-import org.netbeans.modules.web.livehtml.filter.RevisionFilter;
 
 /**
  *
  * @author petr-podzimek
  */
-public class ScriptRevisionFilter implements RevisionFilter<JSONArray> {
-
-    private final StackTraceFilter stackTraceFilter;
-
-    public ScriptRevisionFilter(StackTraceFilter stackTraceFilter) {
-        this.stackTraceFilter = stackTraceFilter;
-    }
-
-    public StackTraceFilter getStackTraceFilter() {
-        return stackTraceFilter;
-    }
-
-    @Override
-    public JSONArray filter(JSONArray jsonArray) {
-        JSONArray filteredJSONArray = new JSONArray();
-        
-        boolean addAll = false;
-        for (Object object : jsonArray) {
-            if (object instanceof JSONObject) {
-                JSONObject jSONObject = (JSONObject) object;
-                if (!addAll && getStackTraceFilter().match(jSONObject)) {
-                    addAll = true;
-                }
-                if (addAll) {
-                    filteredJSONArray.add(object);
-                }
-            }
-        }
-        return filteredJSONArray;
-    }
-
-    @Override
-    public boolean match(JSONArray jsonArray1, JSONArray jsonArray2) {
+public class FilterUtilities {
+    
+    public static boolean match(JSONArray jsonArray1, JSONArray jsonArray2) {
         if (jsonArray1 == null || jsonArray2 == null) {
             return false;
         }
@@ -107,10 +78,10 @@ public class ScriptRevisionFilter implements RevisionFilter<JSONArray> {
                 final Object columnNumber1 = jSONObject1.get(StackTrace.COLUMN_NUMBER);
                 final Object columnNumber2 = jSONObject2.get(StackTrace.COLUMN_NUMBER);
                 
-                if (!equals(script1, script2) ||
-                        !equals(function1, function2) ||
-                        !equals(lineNumber1, lineNumber2) || 
-                        !equals(columnNumber1, columnNumber2)) {
+                if (!safeEquals(script1, script2) ||
+                        !safeEquals(function1, function2) ||
+                        !safeEquals(lineNumber1, lineNumber2) || 
+                        !safeEquals(columnNumber1, columnNumber2)) {
                     return false;
                 }
             }
@@ -119,11 +90,71 @@ public class ScriptRevisionFilter implements RevisionFilter<JSONArray> {
         return true;
     }
     
-    private boolean equals(Object object1, Object object2) {
+    private static boolean safeEquals(Object object1, Object object2) {
         if (object1 == null || object2 == null) {
             return object1 == object2;
         }
         return object1.equals(object2);
     }
     
+//    protected static void putGoupedRevisionIndex(FilteredAnalysis.GroupedRevisions target, Integer targetIndex, Integer value) {
+//        Set<Integer> record = target.get(targetIndex);
+//        if (record == null) {
+//            record = new HashSet<Integer>();
+//            target.put(targetIndex, record);
+//        }
+//        record.add(value);
+//    }
+//
+//    protected static void putGroupedRevisions(FilteredAnalysis.GroupedRevisions target, Integer targetIndex, Set<Integer> revisions) {
+//        if (revisions != null) {
+//            for (Integer revision : revisions) {
+//                putGoupedRevisionIndex(target, targetIndex, revision);
+//            }
+//        }
+//    }
+    
+    protected static Integer safeMax(Collection<Integer> collection) {
+        if (collection == null) {
+            return Integer.MIN_VALUE;
+        } else {
+            return Collections.max(collection);
+        }
+    }
+
+//    private static void fixRemovedRevisions(List<Integer> indexes, FilteredAnalysis.GroupedRevisions source, FilteredAnalysis.GroupedRevisions target) {
+//        Set<Integer> indexesToRemove = new HashSet<Integer>();
+//        for (Map.Entry<Integer, Set<Integer>> entry : target.entrySet()) {
+//            final Integer key = entry.getKey();
+//            if (!indexes.contains(key)) {
+//                final Set<Integer> values = entry.getValue();
+//                final Integer indexReplacement = getIndexReplacement(indexes, key, source);
+//                if (indexReplacement != null) {
+//                    for (Integer value : values) {
+//                        putGoupedRevisionIndex(target, indexReplacement, value);
+//                    }
+//                    indexesToRemove.add(key);
+//                }
+//            }
+//        }
+//        target.keySet().removeAll(indexesToRemove);
+//    }
+//
+    /**
+     * 
+     * @param indexes
+     * @param sources 
+     */
+//
+//    protected static Integer getIndexReplacement(List<Integer> indexes, Integer index, FilteredAnalysis.GroupedRevisions source) {
+//        for (Map.Entry<Integer, Set<Integer>> entry : source.entrySet()) {
+//            final Integer key = entry.getKey();
+//            final Set<Integer> values = entry.getValue();
+//            if (values.contains(index) && indexes.contains(key)) {
+//                return key;
+//            }
+//        }
+//        return null;
+//    }
+
 }

@@ -109,6 +109,8 @@ public class ChangesToolTipProvider extends RevisionToolTipService implements Ex
         changesScrollPane = new javax.swing.JScrollPane();
         changesListView = new org.openide.explorer.view.ListView();
 
+        changesListView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        changesListView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
         changesScrollPane.setViewportView(changesListView);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
