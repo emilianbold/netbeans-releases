@@ -388,6 +388,8 @@ public class JsFormatter implements Formatter {
                         case AFTER_IF_START:
                         case AFTER_ELSE_START:
                         case AFTER_WHILE_START:
+                        case AFTER_DO_START:
+                        case AFTER_FOR_START:
                             i = handleLineWrap(tokens, i, formatContext,
                                     initialIndent, continuationIndent);
                             break;
@@ -611,6 +613,32 @@ public class JsFormatter implements Formatter {
 
             if (style != CodeStyle.WrapStyle.WRAP_NEVER) {
                 if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+
+                    // we have to check the line length and wrap if needed
+                    // FIXME duplicated code
+                    int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
+                            - formatContext.getCurrentLineStart() + lastOffsetDiff;
+
+                    if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
+                        FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
+                        if (lastWrap != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+                            // we dont have to remove trailing spaces as indentation will fix it
+                            formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
+                            // there is + 1 for eol
+                            formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
+                                    + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
+                            // do the indentation
+                            int indentationSize = initialIndent
+                                    + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                            if (isContinuation(lastWrap.getToken(), true)) {
+                                indentationSize += continuationIndent;
+                            }
+                            formatContext.indentLineWithOffsetDiff(
+                                    lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
+                                    indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                        }
+                    }
+
                     // we dont have to remove trailing spaces as indentation will fix it
                     formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
                     // there is + 1 for eol
@@ -962,6 +990,10 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(context).wrapIfStatement();
             case AFTER_WHILE_START:
                 return CodeStyle.get(context).wrapWhileStatement();
+            case AFTER_DO_START:
+                return CodeStyle.get(context).wrapDoWhileStatement();
+            case AFTER_FOR_START:
+                return CodeStyle.get(context).wrapForStatement();
             default:
                 return null;
         }
