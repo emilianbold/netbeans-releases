@@ -57,6 +57,7 @@ import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.UIManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -64,7 +65,6 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
-import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
@@ -97,24 +97,18 @@ public final class Utils {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "# {1} - source file directory path",
-        "Utils.metadata.corrupted=<html><b>Project {0} has corrupted metadata</b>.<br><br>Restore \"{1}\" directory and eventually reopen the project."
+        "Utils.metadata.corrupted=<html><b>Project {0} is corrupted.</b><br><br>Do you want to open Project Problems dialog?"
     })
     public static void warnInvalidSourcesDirectory(PhpProject project) {
         String name = project.getName();
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
-                Bundle.Utils_metadata_corrupted(name, getSourceDirectory(project).getAbsolutePath()),
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(
+                Bundle.Utils_metadata_corrupted(name),
                 name,
-                NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE,
-                new Object[] {NotifyDescriptor.OK_OPTION},
-                NotifyDescriptor.OK_OPTION));
-        // XXX show problems customizer
-    }
-
-    private static File getSourceDirectory(PhpProject project) {
-        String srcDir = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(PhpProjectProperties.SRC_DIR);
-        return FileUtil.normalizeFile(new File(project.getHelper().resolvePath(srcDir)));
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE);
+        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
+            ProjectProblems.showCustomizer(project);
+        }
     }
 
     public static Color getSafeColor(int red, int green, int blue) {
