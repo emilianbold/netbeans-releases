@@ -228,6 +228,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
                 ERR_importPackageNotExists(packName),
                 packName)
             );
+            return;
         }
         if (add) {
             allPackages.add(packName);
@@ -299,6 +300,7 @@ public final class ImportProcessor extends FxNodeVisitor.ModelTraversal {
         while (cont && seq.moveNext()) {
             Token<XMLTokenId> token = seq.token();
             switch (token.id()) {
+                case PI_TARGET:
                 case PI_START:
                 case WS:
                     break;
