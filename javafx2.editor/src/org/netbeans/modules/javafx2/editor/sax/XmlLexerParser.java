@@ -145,13 +145,17 @@ public class XmlLexerParser implements ContentLocator {
     }
     
     private void addError(String type, String msg, Object... params) {
-        if (errors.isEmpty()) {
-            errors = new LinkedList<ErrorMark>();
-        }
         Token t = seq.token();
         
         ErrorMark mark = new ErrorMark(seq.offset(), t == null ? 1 : t.length(),
                 type, msg, params);
+        addError(mark);
+    }
+    
+    private void addError(ErrorMark mark) {
+        if (errors.isEmpty()) {
+            errors = new ArrayList<ErrorMark>();
+        }
         errors.add(mark);
         errorCount++;
     }
@@ -497,7 +501,7 @@ public class XmlLexerParser implements ContentLocator {
     
     @NbBundle.Messages({
         "# {0} - tag name",
-        "ERR_unexpectedTag=Unexpected closing tag: {0}"
+        "ERR_unexpectedTag=Unexpected closing tag: {0}",
     })
     private void parseClosingTag(String tagName) throws SAXException {
         this.elementOffset = seq.offset();
@@ -542,6 +546,12 @@ public class XmlLexerParser implements ContentLocator {
         }
 
         processTagName(tagName);
+        if (levelStack.isEmpty()) {
+            // raise an error, do not emit 
+            addError(new ErrorMark(this.elementOffset, seq.offset() + token.length() - this.elementOffset, ERR_MissingEndTag, ERR_unexpectedTag(tagName), tagName));
+            terminateLevel();
+            return;
+        }
         if (levelStack.size() <= levelBound || this.qName.equals(currentLevel.tagQName)) {
             contentHandler.endElement(tagUri, this.tagName, qName);
             terminateLevel();

@@ -168,6 +168,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     
     @Override
     public void endDocument() throws SAXException {
+        addElementErrors();
         accessor.initModel(fxModel, controllerName, rootComponent, language);
         int end = contentLocator.getElementOffset();
         i(fxModel).endContent(end).endsAt(end);
@@ -441,7 +442,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         }
         
         FxObjectBase ref = accessor.createCopyReference(copy, refId);
-        if (refId == null) {
+        if (refId == null || "".equals(refId)) {
             // error, no source attribute found
             addError(
                     "missing-reference-source",
@@ -536,6 +537,10 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         return accessor.createEventHandler(eventName);
     }
 
+    @NbBundle.Messages({
+        "# {0} - NS prefix",
+        "ERR_undeclaredElementPrefix=XML namespace prefix ''{0}'' is undeclared"
+    })
     @Override
     public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
         this.tagName = localName;
@@ -547,17 +552,23 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         
         addElementErrors();
         
-        if ("".equals(localName)) {
+        if (uri == null && !qName.equals(localName)) {
+            // undeclared prefix
+            int prefColon = qName.indexOf(':');
+            String prefix = qName.substring(0, prefColon);
+            addError("undeclared-prefix", ERR_undeclaredElementPrefix(prefix));
+            newElement = accessor.createErrorElement(localName);
+        } else if ("".equals(localName)) {
             newElement = accessor.createErrorElement(localName);
         } else if (FXML_FX_NAMESPACE.equals(uri)) {
             newElement = handleFxmlElement(localName, atts);
         } else {
-            String eventName = FxXmlSymbols.getEventHandlerName(localName);
             // non-fx namespace, should be either an instance, or a property or an event
-            if (eventName != null) {
-                newElement = handleEventHandlerTag(eventName);
-            } else if (FxXmlSymbols.isClassTagName(localName)) {
+            String eventName = FxXmlSymbols.getEventHandlerName(localName);
+            if (rootComponent == null || FxXmlSymbols.isClassTagName(localName)) {
                 newElement = handleClassTag(localName, atts);
+            } else if (eventName != null) {
+                newElement = handleEventHandlerTag(eventName);
             } else {
                 newElement = handlePropertyTag(localName, atts);
             }
@@ -866,6 +877,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         // check whether the current node supports content
     }
 
+    @NbBundle.Messages({
+        "ERR_instructionBadPlacement=Bad placement for processing instruction. Must be before all elements."
+    })
     @Override
     public void processingInstruction(String target, String data) throws SAXException {
         start = contentLocator.getElementOffset();
@@ -874,6 +888,11 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
         addElementErrors();
         
         FxNode node = null;
+        boolean broken = false;
+        if (!isTopLevel() || rootComponent != null) {
+            addError("instruction-bad-placement", ERR_instructionBadPlacement());
+            broken = true;
+        }
         
         if (FX_IMPORT.equals(target)) {
             node = handleFxImport(data);
@@ -886,6 +905,9 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             return;
         }
         i(node).makePI().startAt(start).endsAt(end);
+        if (broken) {
+            accessor.makeBroken(node);
+        }
         attachChildNode(node);
     }
     
@@ -925,16 +947,6 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             );
             accessor.makeBroken(decl);
         }
-        
-        // check that ?import is at top level, and does not follow a root element:
-        if (!isTopLevel()) {
-            int o = contentLocator.getElementOffset();
-            addError(
-                new ErrorMark(o, contentLocator.getEndOffset() - o, 
-                    "import-inside-element",
-                    ERR_importInsideElement())
-            );
-        } 
         
         imports.add(decl);
         
@@ -988,8 +1000,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     
     @NbBundle.Messages({
         "ERR_missingLanguageName=Language name is missing",
-        "ERR_duplicateLanguageDeclaration=Language is already declared",
-        "ERR_languageNotTopLevel=Language declaration must precede all elements"
+        "ERR_duplicateLanguageDeclaration=Language is already declared"
     })
     private FxNode handleFxLanguage(String language) {
         LanguageDecl decl = accessor.createLanguage(language);
@@ -1010,17 +1021,7 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
                     fxModel.getLanguage()
                 ));
                 accessor.makeBroken(decl);
-            } else {
-                if (!isTopLevel()) {
-                    addError(
-                        new ErrorMark(
-                            start, end - start,
-                            "language-not-toplevel",
-                            ERR_languageNotTopLevel()
-                        )
-                    );
-                    accessor.makeBroken(decl);
-                }
+            } else if (isTopLevel()) {
                 this.language = decl;
             }
         }

@@ -105,7 +105,7 @@ public class FXMLCompletion2 implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
                 ClasspathInfo cpInfo = ClasspathInfo.create(doc);
-                ParserManager.parse(JavaFXEditorUtils.JAVA_MIME_TYPE,
+                ParserManager.parse(Collections.singleton(Source.create(doc)), 
                         new Task(cpInfo, component, resultSet, doc, caretOffset, queryType));
                 resultSet.finish();
             } catch (ParseException ex) {
@@ -123,9 +123,10 @@ public class FXMLCompletion2 implements CompletionProvider {
         private JTextComponent component;
         private ClasspathInfo cpInfo;
         private int queryType;
-        private boolean fxmlParsing;
+        private boolean fxmlParsing = true;
         private CompletionContext ctx;
         private CompilationInfo ci;
+        private FxmlParserResult fxmlResult;
 
         public Task(ClasspathInfo cpInfo, JTextComponent component, CompletionResultSet resultSet, Document doc, int caretOffset, int queryType) {
             this.resultSet = resultSet;
@@ -138,20 +139,21 @@ public class FXMLCompletion2 implements CompletionProvider {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            if (!fxmlParsing) {
+            if (fxmlParsing) {
                 Parser.Result result = resultIterator.getParserResult();
-                ci = (CompilationInfo)CompilationInfo.get(result);
+                
+                fxmlResult = FxmlParserResult.get(result);
 
-                fxmlParsing = true;
-                // next round, with FXML parser on this source:
-                ParserManager.parse(Collections.singleton(Source.create(doc)), this);
+                fxmlParsing = false;
+                // next round, with Java parser to get access to java typesystem
+                ParserManager.parse(JavaFXEditorUtils.JAVA_MIME_TYPE, this);
                 return;
             }
+            Parser.Result result = resultIterator.getParserResult();
+            ci = (CompilationInfo)CompilationInfo.get(result);
 
             ctx = new CompletionContext(resultSet, doc, caretOffset, queryType);
             
-            FxmlParserResult fxmlResult = (FxmlParserResult)resultIterator.getParserResult();
-
             // initialize the Context under read lock, it moves through TokenHierarchy back & forward
             // bug in parsing API: snapshot source not modified just after modification to the source file
             ctx.init(TokenHierarchy.get(doc), ci, fxmlResult); 
