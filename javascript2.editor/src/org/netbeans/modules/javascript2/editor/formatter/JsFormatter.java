@@ -613,6 +613,32 @@ public class JsFormatter implements Formatter {
 
             if (style != CodeStyle.WrapStyle.WRAP_NEVER) {
                 if (tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+
+                    // we have to check the line length and wrap if needed
+                    // FIXME duplicated code
+                    int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
+                            - formatContext.getCurrentLineStart() + lastOffsetDiff;
+
+                    if (segmentLength >= CodeStyle.get(formatContext).getRightMargin()) {
+                        FormatContext.LineWrap lastWrap = formatContext.getLastLineWrap();
+                        if (lastWrap != null && tokenAfterEol.getKind() != FormatToken.Kind.EOL) {
+                            // we dont have to remove trailing spaces as indentation will fix it
+                            formatContext.insertWithOffsetDiff(lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length(), "\n", lastWrap.getOffsetDiff()); // NOI18N
+                            // there is + 1 for eol
+                            formatContext.setCurrentLineStart(lastWrap.getToken().getOffset()
+                                    + lastWrap.getToken().getText().length() + 1 + lastWrap.getOffsetDiff());
+                            // do the indentation
+                            int indentationSize = initialIndent
+                                    + lastWrap.getIndentationLevel() * IndentUtils.indentLevelSize(formatContext.getDocument());
+                            if (isContinuation(lastWrap.getToken(), true)) {
+                                indentationSize += continuationIndent;
+                            }
+                            formatContext.indentLineWithOffsetDiff(
+                                    lastWrap.getToken().getOffset() + lastWrap.getToken().getText().length() + 1,
+                                    indentationSize, Indentation.ALLOWED, lastWrap.getOffsetDiff());
+                        }
+                    }
+
                     // we dont have to remove trailing spaces as indentation will fix it
                     formatContext.insert(tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length(), "\n"); // NOI18N
                     // there is + 1 for eol
