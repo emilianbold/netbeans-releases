@@ -57,8 +57,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
  */
 public class JsDocumentationFallbackProvider implements JsDocumentationProvider {
 
-    private static final JsDocumentationHolder fallbackHolder = new JsDocumentationFallbackHolder(null);
-
     @Override
     public Set getSupportedTags() {
         return Collections.emptySet();
@@ -66,7 +64,7 @@ public class JsDocumentationFallbackProvider implements JsDocumentationProvider 
 
     @Override
     public JsDocumentationHolder createDocumentationHolder(Snapshot snapshot) {
-        return fallbackHolder;
+        return new JsDocumentationFallbackHolder(snapshot);
     }
 
     @Override

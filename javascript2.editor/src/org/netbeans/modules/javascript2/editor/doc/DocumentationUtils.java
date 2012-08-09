@@ -39,36 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.doctrine2.annotations.orm.parser;
+package org.netbeans.modules.javascript2.editor.doc;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.doctrine2.annotations.AnnotationUtils;
-import org.netbeans.modules.php.spi.annotation.AnnotationLineParser;
-import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
+import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-class EntityLineParser implements AnnotationLineParser {
+public class DocumentationUtils {
 
-    static final String ANNOTATION_NAME = "Entity"; //NOI18N
+    public static OffsetRange getOffsetRange(DocIdentifier identifier) {
+        int startOffset = identifier.getOffset();
+        return new OffsetRange(startOffset, startOffset + identifier.getName().length());
+    }
 
-    @Override
-    public AnnotationParsedLine parse(String line) {
-        AnnotationParsedLine result = null;
-        String[] tokens = line.split("\\("); //NOI18N
-        if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
-            String annotation = tokens[0].trim();
-            String description = line.substring(annotation.length()).trim();
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
-            types.put(new OffsetRange(0, annotation.length()), annotation);
-            types.putAll(AnnotationUtils.extractTypesFromParameters(line));
-            result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description, true);
-        }
-        return result;
+    public static OffsetRange getOffsetRange(Type type) {
+        int startOffset = type.getOffset();
+        return new OffsetRange(startOffset, startOffset + type.getType().length());
     }
 
 }

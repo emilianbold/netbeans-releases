@@ -53,7 +53,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine.ParsedLine;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class EntityLineParserTest extends NbTestCase {
-    private EntityLineParser parser;
+    private TypedParametersAnnotationLineParser parser;
 
     public EntityLineParserTest(String name) {
         super(name);
@@ -62,7 +62,7 @@ public class EntityLineParserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        this.parser = new EntityLineParser();
+        this.parser = new TypedParametersAnnotationLineParser();
     }
 
     public void testIsAnnotationParser() throws Exception {
@@ -91,7 +91,7 @@ public class EntityLineParserTest extends NbTestCase {
 
     public void testValidUseCase_01() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Entity");
-        assertEquals(EntityLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Entity", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -102,7 +102,7 @@ public class EntityLineParserTest extends NbTestCase {
 
     public void testValidUseCase_02() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Entity   ");
-        assertEquals(EntityLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Entity", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -113,7 +113,7 @@ public class EntityLineParserTest extends NbTestCase {
 
     public void testValidUseCase_03() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Entity\t\t  ");
-        assertEquals(EntityLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Entity", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -124,7 +124,7 @@ public class EntityLineParserTest extends NbTestCase {
 
     public void testValidUseCase_04() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Entity(repositoryClass=\"MyProject\\UserRepository\")");
-        assertEquals(EntityLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Entity", parsedLine.getName());
         assertEquals("(repositoryClass=\"MyProject\\UserRepository\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -137,7 +137,7 @@ public class EntityLineParserTest extends NbTestCase {
 
     public void testValidUseCase_05() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("Annotations\\Entity(repositoryClass=\"MyProject\\UserRepository\")  \t");
-        assertEquals(EntityLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Entity", parsedLine.getName());
         assertEquals("(repositoryClass=\"MyProject\\UserRepository\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -150,7 +150,7 @@ public class EntityLineParserTest extends NbTestCase {
 
     public void testValidUseCase_06() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\Entity(repositoryClass=\"MyProject\\UserRepository\")  \t");
-        assertEquals(EntityLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Entity", parsedLine.getName());
         assertEquals("(repositoryClass=\"MyProject\\UserRepository\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -163,7 +163,7 @@ public class EntityLineParserTest extends NbTestCase {
 
     public void testValidUseCase_07() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("entity");
-        assertEquals(EntityLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Entity", parsedLine.getName());
         assertEquals("", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);
@@ -174,7 +174,7 @@ public class EntityLineParserTest extends NbTestCase {
 
     public void testValidUseCase_08() throws Exception {
         AnnotationParsedLine parsedLine = parser.parse("\\Foo\\Bar\\entity(repositoryClass=\"MyProject\\UserRepository\")  \t");
-        assertEquals(EntityLineParser.ANNOTATION_NAME, parsedLine.getName());
+        assertEquals("Entity", parsedLine.getName());
         assertEquals("(repositoryClass=\"MyProject\\UserRepository\")", parsedLine.getDescription());
         Map<OffsetRange, String> types = parsedLine.getTypes();
         assertNotNull(types);

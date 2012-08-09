@@ -55,7 +55,7 @@ import org.openide.util.Parameters;
  */
 public class AnnotationUtils {
 
-    private static final Pattern PARAM_TYPE_PATTERN = Pattern.compile("=\\s*\\\"\\s*([\\w\\\\]+)\\s*\\\""); //NOI18N
+    private static final String PARAM_TYPE_PATTERN = "\\s*=\\s*\\\"\\s*([\\w\\\\]+)\\s*\\\""; //NOI18N
 
     private static final Pattern INLINE_TYPE_PATTERN = Pattern.compile("@([\\w\\\\]+)"); //NOI18N
 
@@ -68,12 +68,17 @@ public class AnnotationUtils {
         return lineToCheck.toLowerCase().matches("\\\\?(\\w+\\\\)*" + annotationName.toLowerCase() + "\\s*"); //NOI18N
     }
 
-    public static Map<OffsetRange, String> extractTypesFromParameters(final String line) {
+    public static Map<OffsetRange, String> extractTypesFromParameters(final String line, final Set<String> parameterNameRegexs) {
         Parameters.notNull("line", line); //NOI18N
+        Parameters.notNull("parameterNameRegexs", parameterNameRegexs); //NOI18N
         final Map<OffsetRange, String> result = new HashMap<OffsetRange, String>();
-        final Matcher matcher = PARAM_TYPE_PATTERN.matcher(line);
-        while (matcher.find()) {
-            result.put(new OffsetRange(matcher.start(1), matcher.end(1)), matcher.group(1));
+        for (String parameterNameRegex : parameterNameRegexs) {
+            Pattern pattern = Pattern.compile(parameterNameRegex + PARAM_TYPE_PATTERN);
+            final Matcher matcher = pattern.matcher(line);
+            while (matcher.find()) {
+                int lastGroupId = matcher.groupCount();
+                result.put(new OffsetRange(matcher.start(lastGroupId), matcher.end(lastGroupId)), matcher.group(lastGroupId));
+            }
         }
         return result;
     }

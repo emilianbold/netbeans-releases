@@ -129,6 +129,11 @@ public class FindTypeUsages extends AbstractFindUsages {
             if (isEquals(clazz.getSuperClass())) {
                 usages.add(clazz);
             }
+            for (ClassNode interfaceNode : clazz.getInterfaces()) {
+                if (isEquals(interfaceNode)) {
+                    usages.add(clazz);
+                }
+            }
             super.visitClass(clazz);
         }
 

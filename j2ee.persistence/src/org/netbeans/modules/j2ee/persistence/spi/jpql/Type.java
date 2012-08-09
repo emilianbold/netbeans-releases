@@ -238,7 +238,9 @@ public class Type implements IType{
         
         TypeElement tmpEl = el;
         while(tmpEl != null){
-            if(tmpEl.getQualifiedName().toString().equals(name)) return true;
+            if(tmpEl.getQualifiedName().contentEquals(name)) {
+                return true;
+            }
             else {
                 TypeMirror supMirror = tmpEl.getSuperclass();
                 if (supMirror.getKind() == TypeKind.DECLARED) {

@@ -13,6 +13,7 @@ FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=12, text=
 }
 FormattingToken{kind=WHITESPACE, offset=13, text=  }
+FormattingToken{kind=BEFORE_WHILE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=15, text="}
 FormattingToken{kind=TEXT, offset=16, text= something strange}
 FormattingToken{kind=TEXT, offset=34, text="}
@@ -40,6 +41,7 @@ FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=54, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
+FormattingToken{kind=BEFORE_WHILE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=55, text=;}
 FormattingToken{kind=AFTER_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
@@ -91,6 +93,7 @@ FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=98, text=
 }
 FormattingToken{kind=WHITESPACE, offset=99, text=       }
+FormattingToken{kind=BEFORE_WHILE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=106, text=print}
 FormattingToken{kind=BEFORE_FUNCTION_CALL, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=111, text=(}
@@ -122,6 +125,7 @@ FormattingToken{kind=TEXT, offset=128, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=129, text= }
+FormattingToken{kind=BEFORE_WHILE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=130, text="}
 FormattingToken{kind=TEXT, offset=131, text=dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
 FormattingToken{kind=TEXT, offset=203, text="}
@@ -146,6 +150,7 @@ FormattingToken{kind=TEXT, offset=215, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
 FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=216, text= }
+FormattingToken{kind=BEFORE_WHILE_BRACE, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=217, text="}
 FormattingToken{kind=TEXT, offset=218, text=ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd}
 FormattingToken{kind=TEXT, offset=281, text="}
