@@ -63,16 +63,25 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.InstanceContent.Convertor;
 
 /**
  *
@@ -183,7 +192,7 @@ class Nodes {
             @NonNull final Description description,
             @NonNull final Context ctx,
             @NonNull final Action[] globalActions) {
-            super(cld);
+            super(cld, createLookup(description));
             assert description != null;
             assert ctx != null;
             assert globalActions != null;
@@ -284,6 +293,15 @@ class Nodes {
             setDisplayName(name);
         }
 
+        @NonNull
+        private static Lookup createLookup (@NonNull Description desc) {
+            final InstanceContent ic = new InstanceContent();
+            ic.add(desc, ConvertDescription2TreePathHandle);
+            ic.add(desc, ConvertDescription2FileObject);
+            ic.add(desc, ConvertDescription2DataObject);
+            return new AbstractLookup(ic);
+        }
+
         private class OpenAction extends AbstractAction {
 
             @NbBundle.Messages({"LBL_GoTo=Go to Source"})
@@ -303,6 +321,76 @@ class Nodes {
                 }
             }
         }
+
+
+        private static final Convertor<Description, TreePathHandle> ConvertDescription2TreePathHandle =
+                new InstanceContent.Convertor<Description, TreePathHandle>() {
+                    @Override
+                    public TreePathHandle convert(Description desc) {
+                        return TreePathHandle.from(desc.getHandle(), desc.getClasspathInfo());
+                    }
+                    @Override
+                    public Class<? extends TreePathHandle> type(Description desc) {
+                        return TreePathHandle.class;
+                    }
+                    @Override
+                    public String id(Description desc) {
+                        return "IL[" + desc.toString();
+                    }
+                    @Override
+                    public String displayName(Description desc) {
+                        return id(desc);
+                    }
+            };
+
+        private static final Convertor<Description, FileObject> ConvertDescription2FileObject =
+                new InstanceContent.Convertor<Description, FileObject>() {
+                    @Override
+                    public FileObject convert(Description desc) {
+                        return SourceUtils.getFile(
+                                desc.getHandle(),
+                                desc.getClasspathInfo());
+                    }
+                    @Override
+                    public Class<? extends FileObject> type(Description desc) {
+                        return FileObject.class;
+                    }
+                    @Override
+                    public String id(Description desc) {
+                        return "IL[" + desc.toString();
+                    }
+                    @Override
+                    public String displayName(Description desc) {
+                        return id(desc);
+                    }
+            };
+
+    private static final Convertor<Description, DataObject> ConvertDescription2DataObject =
+            new InstanceContent.Convertor<Description, DataObject>(){
+                @Override
+                public DataObject convert(Description desc) {
+                    try {
+                        final FileObject file = SourceUtils.getFile(
+                                desc.getHandle(),
+                                desc.getClasspathInfo());
+                        return file == null ? null : DataObject.find(file);
+                    } catch (DataObjectNotFoundException ex) {
+                        return null;
+                    }
+                }
+                @Override
+                public Class<? extends DataObject> type(Description desc) {
+                    return DataObject.class;
+                }
+                @Override
+                public String id(Description desc) {
+                    return "IL[" + desc.toString();
+                }
+                @Override
+                public String displayName(Description desc) {
+                    return id(desc);
+                }
+        };
 
     }
 
@@ -336,10 +424,6 @@ class Nodes {
     }
 
     private static final class LexicographicComparator implements Comparator<Node> {
-
-        LexicographicComparator() {
-        }
-
         @Override
         public int compare(Node n1, Node n2) {
             return n1.getDisplayName().compareTo(n2.getDisplayName());
