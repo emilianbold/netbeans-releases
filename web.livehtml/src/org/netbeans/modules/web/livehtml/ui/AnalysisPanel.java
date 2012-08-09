@@ -479,8 +479,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
         reformatRevisionButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/pretty.png"))); // NOI18N
         reformatRevisionButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.reformatRevisionsButton.toolTipText")); // NOI18N
-        reformatRevisionButton.setBorderPainted(false);
-        reformatRevisionButton.setFocusable(false);
         reformatRevisionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reformatRevisionButtonActionPerformed(evt);
@@ -489,8 +487,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
         startAnalysisButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/go.png"))); // NOI18N
         startAnalysisButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.startAnalysisButton.toolTipText")); // NOI18N
-        startAnalysisButton.setBorderPainted(false);
-        startAnalysisButton.setFocusable(false);
         startAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 startAnalysisButtonActionPerformed(evt);
@@ -499,8 +495,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
         filterButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/filter.png"))); // NOI18N
         filterButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.filterButton.toolTipText")); // NOI18N
-        filterButton.setBorderPainted(false);
-        filterButton.setFocusable(false);
         filterButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterButtonActionPerformed(evt);
@@ -509,8 +503,6 @@ public class AnalysisPanel extends javax.swing.JPanel {
 
         previewRevisionToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/livehtml/resources/preview.png"))); // NOI18N
         previewRevisionToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(AnalysisPanel.class, "AnalysisPanel.previewRevisionButton.toolTipText")); // NOI18N
-        previewRevisionToggleButton.setBorderPainted(false);
-        previewRevisionToggleButton.setFocusable(false);
         previewRevisionToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 previewRevisionToggleButtonActionPerformed(evt);
@@ -535,12 +527,12 @@ public class AnalysisPanel extends javax.swing.JPanel {
         toolBarPanelLayout.setVerticalGroup(
             toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(toolBarPanelLayout.createSequentialGroup()
-                .addGroup(toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(previewRevisionToggleButton)
-                    .addComponent(analysisComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(startAnalysisButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(reformatRevisionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(filterButton))
+                .addGroup(toolBarPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(analysisComboBox)
+                    .addComponent(startAnalysisButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(reformatRevisionButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(filterButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(previewRevisionToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 

@@ -52,12 +52,12 @@
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="previewRevisionToggleButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="analysisComboBox" min="-2" pref="32" max="-2" attributes="0"/>
-                      <Component id="startAnalysisButton" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
-                      <Component id="reformatRevisionButton" alignment="0" min="-2" pref="32" max="-2" attributes="0"/>
-                      <Component id="filterButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                      <Component id="analysisComboBox" max="32767" attributes="0"/>
+                      <Component id="startAnalysisButton" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="reformatRevisionButton" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="filterButton" alignment="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="previewRevisionToggleButton" alignment="0" pref="0" max="32767" attributes="0"/>
                   </Group>
                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
               </Group>
@@ -83,8 +83,6 @@
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/web/livehtml/ui/Bundle.properties" key="AnalysisPanel.reformatRevisionsButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="borderPainted" type="boolean" value="false"/>
-            <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reformatRevisionButtonActionPerformed"/>
@@ -98,8 +96,6 @@
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/web/livehtml/ui/Bundle.properties" key="AnalysisPanel.startAnalysisButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="borderPainted" type="boolean" value="false"/>
-            <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startAnalysisButtonActionPerformed"/>
@@ -113,8 +109,6 @@
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/web/livehtml/ui/Bundle.properties" key="AnalysisPanel.filterButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="borderPainted" type="boolean" value="false"/>
-            <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="filterButtonActionPerformed"/>
@@ -131,8 +125,6 @@
             <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/web/livehtml/ui/Bundle.properties" key="AnalysisPanel.previewRevisionButton.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="borderPainted" type="boolean" value="false"/>
-            <Property name="focusable" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="previewRevisionToggleButtonActionPerformed"/>
