@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.doc.api;
 
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationResolver;
-import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -89,11 +88,6 @@ public final class JsDocumentationSupport {
     public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
         // XXX - complete caching of documentation tool provider
         return JsDocumentationResolver.getDefault().getDocumentationProvider(result.getSnapshot());
-    }
-
-    public static JsComment getCommentForOffset(JsParserResult result, int offset) {
-        JsDocumentationHolder holder = result.getDocumentationHolder();
-        return holder.getCommentForOffset(offset, holder.getCommentBlocks());
     }
 
 }
