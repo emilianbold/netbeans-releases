@@ -158,6 +158,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
 			    Dialog dd = d.get();
 			    if (dd != null) {
 				dd.setVisible(false);
+	                        dd.dispose();
 			    }
 			}
 		    });
@@ -196,6 +197,7 @@ public class RunOffEDTImpl implements RunOffEDTProvider, Progress {
             public @Override void actionPerformed(ActionEvent e) {
                 cancelOperation.set(true);
                 d.get().setVisible(false);
+                d.get().dispose();
             }
         });
 
