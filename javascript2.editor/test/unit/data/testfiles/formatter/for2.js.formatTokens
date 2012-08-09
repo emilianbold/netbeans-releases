@@ -13,7 +13,7 @@ FormattingToken{kind=TEXT, offset=14, text=b}
 FormattingToken{kind=BEFORE_FOR_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=15, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_FOR_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=16, text=
 }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
@@ -58,7 +58,7 @@ FormattingToken{kind=TEXT, offset=40, text=++}
 FormattingToken{kind=BEFORE_FOR_PARENTHESIS, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=42, text=)}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_FOR_START, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=43, text=
 }
 FormattingToken{kind=WHITESPACE, offset=44, text=       }

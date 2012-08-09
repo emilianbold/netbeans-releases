@@ -32,7 +32,7 @@ FormattingToken{kind=EOL, offset=41, text=
 }
 FormattingToken{kind=TEXT, offset=42, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=44, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=45, text=;}
@@ -61,7 +61,7 @@ FormattingToken{kind=EOL, offset=64, text=
 }
 FormattingToken{kind=TEXT, offset=65, text=do}
 FormattingToken{kind=INDENTATION_INC, offset=-1, text=null}
-FormattingToken{kind=AFTER_WHILE_START, offset=-1, text=null}
+FormattingToken{kind=AFTER_DO_START, offset=-1, text=null}
 FormattingToken{kind=WHITESPACE, offset=67, text= }
 FormattingToken{kind=BEFORE_SEMICOLON, offset=-1, text=null}
 FormattingToken{kind=TEXT, offset=68, text=;}

@@ -505,6 +505,28 @@ public class JsFormatterTest extends JsTestBase {
         dumpFormatTokens("testfiles/formatter/dowhile1.js");
     }
 
+    public void testDoWhile2Always() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapDoWhileStatement, CodeStyle.WrapStyle.WRAP_ALWAYS);
+        reformatFileContents("testfiles/formatter/dowhile2.js", options, ".wrapAlways.formatted");
+    }
+
+    public void testDoWhile2Never() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapDoWhileStatement, CodeStyle.WrapStyle.WRAP_NEVER);
+        reformatFileContents("testfiles/formatter/dowhile2.js", options, ".wrapNever.formatted");
+    }
+
+    public void testDoWhile2IfLong() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapDoWhileStatement, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatter/dowhile2.js", options, ".wrapIfLong.formatted");
+    }
+
+    public void testDoWhile2Tokens() throws Exception {
+        dumpFormatTokens("testfiles/formatter/dowhile2.js");
+    }
+
     public void testFor1() throws Exception {
         reformatFileContents("testfiles/formatter/for1.js",new IndentPrefs(4, 4));
     }
