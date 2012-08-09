@@ -45,7 +45,7 @@ import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ods.tasks.C2CTestInfrastructure;
-import org.netbeans.modules.ods.tasks.QueryTst;
+import org.netbeans.modules.ods.tasks.QueryTck;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.util.Lookup;
 
@@ -69,7 +69,7 @@ public class TasktopTCKTest extends NbTestCase {
             .honorAutoloadEager(true)
             .gui(false)
             .addTest(TasktopTCKTest.class) // initialize first
-            .addTest(QueryTst.class)
+            .addTest(QueryTck.class)
             .suite();
     }
     

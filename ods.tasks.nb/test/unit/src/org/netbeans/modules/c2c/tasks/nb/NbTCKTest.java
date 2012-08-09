@@ -42,7 +42,7 @@
 package org.netbeans.modules.c2c.tasks.nb;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.ods.tasks.QueryTst;
+import org.netbeans.modules.ods.tasks.QueryTck;
 
 /** Runs all the tests from TCK defined in ods.tasks module.
  *
@@ -51,7 +51,7 @@ import org.netbeans.modules.ods.tasks.QueryTst;
 public class NbTCKTest {
     public static NbTestSuite suite() {
         NbTestSuite s = new NbTestSuite();
-        s.addTestSuite(QueryTst.class);
+        s.addTestSuite(QueryTck.class);
         return s;
     }
     
