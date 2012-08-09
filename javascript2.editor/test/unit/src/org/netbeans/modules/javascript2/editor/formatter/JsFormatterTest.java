@@ -593,6 +593,13 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/for5.js", options, ".wrapIfLong.formatted");
     }
 
+    public void testFor5IfLongNoSpace() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.wrapForStatement, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
+        reformatFileContents("testfiles/formatter/for5.js", options, ".wrapIfLongNoSpace.formatted");
+    }
+
     public void testFor5Tokens() throws Exception {
         dumpFormatTokens("testfiles/formatter/for5.js");
     }
