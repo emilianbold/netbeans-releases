@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -64,6 +65,8 @@ import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
+import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
+import org.netbeans.modules.web.webkit.debugging.api.css.RuleId;
 import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -113,6 +116,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         splitPane.setDividerLocation(100);
         selectionView = splitPane;
         initMessageLabel();
+        initSelectionOfOwningRule();
         add(splitPane, BorderLayout.CENTER);
         updateContent(null);
     }
@@ -161,6 +165,55 @@ public class CSSStylesSelectionPanel extends JPanel {
         rulePaneManager = rulePanePanel.getExplorerManager();
         lookup = ExplorerUtils.createLookup(rulePaneManager, getActionMap());
         return rulePanePanel;
+    }
+
+    /**
+     * Initializes the listener responsible for selection of the owning
+     * rule (in Style Cascade) when the selection in Property Summary changes.
+     */
+    private void initSelectionOfOwningRule() {
+        propertyPaneManager.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propertyName = evt.getPropertyName();
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(propertyName)) {
+                    Node[] selection = propertyPaneManager.getSelectedNodes();
+                    if (selection.length == 1) {
+                        Lookup lookup = selection[0].getLookup();
+                        Rule rule = lookup.lookup(Rule.class);
+                        if (rule != null) {
+                            selectRule(rule, rulePaneManager.getRootContext());
+                        }
+                    }
+                }
+            }
+            /**
+             * Attempts to select the specified rule in the given sub-tree
+             * of Style Cascade view.
+             * 
+             * @param rule rule to select.
+             * @param root root of a sub-tree in Style Cascade to search.
+             * @return {@code true} when the rule was selected successfully,
+             * returns {@code false} otherwise.
+             */
+            private boolean selectRule(Rule rule, Node root) {
+                RuleId id = rule.getId();
+                Lookup lookup = root.getLookup();
+                Rule otherRule = lookup.lookup(Rule.class);
+                if (otherRule != null && otherRule.getId().equals(id)) {
+                    try {
+                        rulePaneManager.setSelectedNodes(new Node[] { root });
+                    } catch (PropertyVetoException ex) {}
+                    return true;
+                }
+                for (Node subNode : root.getChildren().getNodes()) {
+                    if (selectRule(rule, subNode)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     /**
