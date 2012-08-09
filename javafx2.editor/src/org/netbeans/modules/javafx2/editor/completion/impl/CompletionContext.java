@@ -157,6 +157,12 @@ public final class CompletionContext {
          * instruction target
          */
         INSTRUCTION_DATA,
+        
+        /**
+         * PI end marker
+         */
+        INSTRUCTION_END,
+        
         /**
          * Unspecified child element: can be either a Bean or a property element,
          * depending on further analysis
@@ -1022,7 +1028,7 @@ public final class CompletionContext {
             switch (id) {
                 case PI_END:
                     // was after PI, PI or Bean is allowed; no completion 
-                    type = middle ? Type.UNKNOWN : Type.ROOT;
+                    type = Type.INSTRUCTION_END;
                     break;
 
                 case PI_CONTENT:
@@ -1166,6 +1172,8 @@ public final class CompletionContext {
 
                 case BEAN:
                 case PROPERTY_ELEMENT: type = Type.PROPERTY; break;
+                        
+                case INSTRUCTION_END: type = Type.ROOT; break;
                     
             }
             if (oldType != type) {

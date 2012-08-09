@@ -53,6 +53,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
+import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.util.ImageUtilities;
 
@@ -64,10 +65,14 @@ import org.openide.util.ImageUtilities;
 @MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=Completer.Factory.class)
 public class ImportCompleter implements Completer, Completer.Factory {
     /** 
-     * The 'import' processing instruction name
+     * The 'import' processing instruction text; must start with &lt;? and end with space
      */
-    private static final String PI_IMPORT = "<?import"; // NOI18N
-    private static final String PI_IMPORT2 = "import"; // NOI18N
+    private static final String PI_IMPORT = "<?import "; // NOI18N
+    
+    /**
+     * Import instruction target
+     */
+    private static final String PI_IMPORT2 = FxXmlSymbols.FX_IMPORT;
     
     private final CompletionContext ctx;
     private List<CompletionItem>    results;
