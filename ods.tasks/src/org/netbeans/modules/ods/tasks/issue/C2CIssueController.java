@@ -60,7 +60,6 @@ public class C2CIssueController extends BugtrackingController {
     public C2CIssueController(C2CIssue issue) {
         IssuePanel panel = new IssuePanel();
         panel.setIssue(issue);
-        panel.headerField.setText(issue.getDisplayName());
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.getViewport().setBackground(panel.getBackground());
         scrollPane.setBorder(null);
