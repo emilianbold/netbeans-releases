@@ -614,6 +614,10 @@ public class OptionsPanel extends JPanel {
         @Override
         public void quickSearchUpdate(String searchText) {
             searchText = searchText.trim();
+            if (searchText.length() == 0) {
+                clearAll();
+                return;
+            }
             if (searchText.length() < 3) {
                 return;
             }
