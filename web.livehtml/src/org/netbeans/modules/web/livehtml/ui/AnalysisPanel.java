@@ -712,7 +712,9 @@ public class AnalysisPanel extends javax.swing.JPanel {
     private void reformatRevisionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_reformatRevisionButtonActionPerformed
         final Revision selectedRevision = getSelectedRevision();
         selectRevision(selectedRevision);
-        previewRevision(selectedRevision);
+        if (previewRevisionToggleButton.isSelected()) {
+            previewRevision(selectedRevision);
+        }
     }//GEN-LAST:event_reformatRevisionButtonActionPerformed
 
     private void analysisComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_analysisComboBoxItemStateChanged
