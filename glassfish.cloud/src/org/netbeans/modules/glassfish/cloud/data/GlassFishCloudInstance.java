@@ -44,6 +44,7 @@ package org.netbeans.modules.glassfish.cloud.data;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.data.DataException;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishServerEntity;
@@ -52,8 +53,8 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.api.server.properties.InstanceProperties;
 import org.netbeans.modules.glassfish.cloud.wizards.GlassFishCloudWizardCpasComponent;
 import org.netbeans.spi.server.ServerInstanceFactory;
-import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import static org.openide.util.NbBundle.getMessage;
 
 /**
@@ -61,6 +62,9 @@ import static org.openide.util.NbBundle.getMessage;
  * <p/>
  * GlassFish cloud instance represents CPAS interface. Based on Tooling SDK
  * entity object.
+ * <p/>
+ * Supports change listeners to watch GlassFish cloud instance changes.
+ * Listeners are notified when persistency operation is being invoked.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
@@ -103,6 +107,15 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     /** Stored server instance. */
     private ServerInstance serverInstance;
 
+    /** Support for load events listeners. */
+    private final ChangeSupport loadListeners;
+
+    /** Support for store events listeners. */
+    private final ChangeSupport storeListeners;
+
+    /** Support for remove events listeners. */
+    private final ChangeSupport removeListeners;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -123,6 +136,9 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
         this.serverDisplayName = getMessage(GlassFishCloudInstance.class,
                 Bundle.GLASSFISH_CLOUD_SERVER_TYPE, new Object[]{});
         this.serverInstance = ServerInstanceFactory.createServerInstance(this);
+        this.loadListeners = new ChangeSupport(Event.LOAD);
+        this.storeListeners = new ChangeSupport(Event.STORE);
+        this.removeListeners = new ChangeSupport(Event.REMOVE);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -233,6 +249,73 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
     }
     
     ////////////////////////////////////////////////////////////////////////////
+    // Listeners handling methods                                             //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Check for <code>Event</code> occurrence in <code>Event</code>s array.
+     * <p/>
+     * @param events Events to be checked.
+     * @return Array of <code>Event.length</code> size where values on indexes
+     *         of <code>Event</code> ordinal values passed to this method are
+     *         set to <code>true</code> and rest of the array values set
+     *         to <code>false</code>.
+     */
+    private boolean[] selectEventsToModify(Event[] events) {
+        boolean addEvent[] = new boolean[Event.length];
+        for (int i = 0; i < Event.length; i++) {
+            addEvent[i] = false;
+        }
+        if (events != null) {
+            for (int i = 0; i < events.length; i++) {
+                addEvent[events[i].ordinal()] = true;
+            }
+        }
+        return addEvent;
+    }
+
+    /**
+     * Add a listener to changes of the panel validity.
+     * <p/>
+     * @param listener Listener to add.
+     * @param events   Which events to listen for.
+     * @see #isValid
+     */
+    @Override
+    public void addChangeListener(ChangeListener listener, Event[] events) {
+        boolean addEvent[] = selectEventsToModify(events);
+        if (addEvent[Event.LOAD.ordinal()]) {
+            loadListeners.addChangeListener(listener);
+        }
+        if (addEvent[Event.STORE.ordinal()]) {
+            storeListeners.addChangeListener(listener);
+        }
+        if (addEvent[Event.REMOVE.ordinal()]) {
+            removeListeners.addChangeListener(listener);
+        }
+    }
+
+    /**
+     * Remove a listener to changes of the panel validity.
+     * <p/>
+     * @param listener Listener to remove
+     * @param events   Events from which specified listener will be removed.
+     */
+    @Override
+    public void removeChangeListener(ChangeListener listener, Event[] events) {
+        boolean addEvent[] = selectEventsToModify(events);
+        if (addEvent[Event.LOAD.ordinal()]) {
+            loadListeners.removeChangeListener(listener);
+        }
+        if (addEvent[Event.STORE.ordinal()]) {
+            storeListeners.removeChangeListener(listener);
+        }
+        if (addEvent[Event.REMOVE.ordinal()]) {
+            removeListeners.removeChangeListener(listener);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // Persistency methods                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
@@ -251,6 +334,7 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
         LOG.log(Level.FINER,
                 "Stored GlassFishCloudInstance({0}, {1}, {2})",
                 new Object[]{name, host, port});
+        storeListeners.fireChange();
 
     }
 
@@ -279,12 +363,25 @@ public class GlassFishCloudInstance extends GlassFishCloudEntity
             } catch (DataException de) {
                 localServer = null;
             }
-            return new GlassFishCloudInstance(name, host, port, localServer);
+            GlassFishCloudInstance instance
+                    = new GlassFishCloudInstance(name, host, port, localServer);
+            instance.loadListeners.fireChange();
+            return instance;
         } else {
             LOG.log(Level.WARNING,
                     "Stored GlassFishCloudInstance name is null, skipping");
             return null;
         }
+    }
+
+    /**
+     * Remove content of GlassFish Cloud instance object from given properties.
+     * <P/>
+     * @param props Set of properties to remove.
+     */
+    void remove(InstanceProperties props) {
+        props.remove();
+        removeListeners.fireChange();
     }
 
     /**
